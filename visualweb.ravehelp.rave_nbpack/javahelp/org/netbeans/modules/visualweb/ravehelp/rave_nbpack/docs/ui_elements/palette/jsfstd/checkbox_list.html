@@ -1,1 +1,107 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Standard Checkbox List Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Standard Checkbox List Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You can drag the Standard JavaServer Faces Checkbox List component <img src="../../../images/checkboxlisticon.gif" alt="checkbox list icon">&nbsp;from the Palette's Standard category to the Visual Designer to create a table initially containing three checkboxes in single row. </p><ul class="warning">  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/checkbox_group.html">Checkbox Group component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li></ul><p>A Checkbox List is a composite component that has the following elements: </p><ul>	<li>The enclosing component, checkboxList, manages the style and behavior of the list itself. In addition, when the user submits the page, the value property of this component is an object array containing the user's choices. You can bind this component's value property to an <code>Object</code> array and use that object to test what the user's choices were.</li>	<li>The inside component, <i>checkboxList</i>SelectItems, is intended to be used to bind to a data provider that specifies the actual items in the list. </li>	<li>A third, related component, <i>checkboxList</i>DefaultItems, contains an array of initial checkboxes for the list. This array is used to populate the list only if the list is not bound to a data provider. Each checkbox in this third component has a label with default text (<code>item1</code>, <code>item2</code>, <code>item3</code>). </li></ul><p>After dragging the component to the Visual Designer, you can do a number of things with it:</p><ul>	<li>Select the Checkbox List component and drag it to another location on the page.</li>	<li>Right-click the checkboxList component in the		<object classid=java:com.sun.java.help.impl.JHSecondaryViewer>		<param name="content" value="app_outline_chkbxlist_graphic.html">		<param name="viewerActivator" value="javax.help.LinkLabel">		<param name="viewerStyle" value="javax.help.Popup">		<param name="viewerSize" value="350,400">		<param name="text" value="Navigator window"></object>&nbsp; and choose Property Bindings to bind its value property to an <code>Object</code> array that you have added to the session bean as a property. You can use this session bean property to evaluate what the user chose after the page is submitted. For more information, see the value property description below.</li>	<li>Right-click the checkboxListSelectItems component in the  Outline window and bind it to a data provider that will be used to populate the list. </li>	<li>Select the Checkbox List component on the page in the Visual Designer and edit its properties in the Checkbox List <a href="../../propsheets/jsfstd_checkbox_list_props.html">Properties window</a>. These properties affect the overall style and behavior of the list. Some typical properties you might set are:		<ul>			<li><b>id.</b> The name of the Checkbox List component. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>HtmlSelectManyCheckbox</code> object.</li>			<li><b>layout.</b> The orientation of the list. The default orientation is lineDirection: The list is laid out horizontally, left to right. If you choose pageDirection, the list is laid out vertically, from top to bottom.</li>			<li><b>value.</b> The data that is sent when the page is submitted.				<p>The Checkbox List component can have more than one value, which has implications about what type of value you can use. </p>				<ul>					<li>If you use a value binding expression, it must point to an array of objects or primitives. The individual elements in this array represent the currently selected values from the set of all possible options. </li>					<li>If you do not use a value binding expression, the object returned to you when you call <code>checkboxList.getValue()</code> is an object array.</li>					<li>There is no usable way to bind this component to database data, because the value will typically be represented by multiple rows in some detail table. </li>				</ul>				<p>One way to process the values chosen by the user is to bind this component to an <code>Object</code> array and check the array values when the user submits the page. </p></li>		</ul>  </li>	<li>Right-click the Checkbox List component in the Visual Designer and choose one of several actions:		<ul>			<li><b>Edit Event Handler.</b> Write code for one of the following event handlers.				<ul>					<li><b>validate. </b>Opens the Java Editor with the cursor positioned in the checkbox list's <code>validate</code> method so you can insert code to validate the value of the checkbox list.</li>					<li><b>processValueChange.</b> Opens the Java Editor with the cursor positioned in the checkbox list's <code>processValueChange</code> method so you can insert code that executes when the value of this checkbox list changes (for example, the user checks two of the boxes and submits the form). </li>			    </ul>			</li>			<li><b>Bind to Data.</b> Bind the component's <code>value</code> property to an object or to a data provider, as described in <a href="../../dialogs/bindtodata_list_db.html">Bind to Data Dialog Box</a>. </li>			<li><b>Property Bindings</b>. Opens a dialog box that enables you to bind the properties of the component to other objects or properties that update this component's properties automatically.</li>		</ul></li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>		<dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">                <param name="content" value="http://www.netbeans.org/kb/55/vwp-listbox_components.html">                <param name="text" value="Using Listbox Components"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Checkbox List Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Standard Checkbox List Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Standard Checkbox List Component</h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+
+<p>You can drag the Standard JavaServer Faces Checkbox List component <img src="../../../images/checkboxlisticon.gif" alt="checkbox list icon">&nbsp;from the Palette's Standard category to the Visual Designer to create a table initially containing three checkboxes in single row. </p>
+<ul class="warning">
+  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/checkbox_group.html">Checkbox Group component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li>
+</ul>
+<p>A Checkbox List is a composite component that has the following elements: </p>
+<ul>
+	<li>The enclosing component, checkboxList, manages the style and behavior of the list itself. In addition, when the user submits the page, the value property of this component is an object array containing the user's choices. You can bind this component's value property to an <code>Object</code> array and use that object to test what the user's choices were.</li>
+	<li>The inside component, <i>checkboxList</i>SelectItems, is intended to be used to bind to a data provider that specifies the actual items in the list. </li>
+	<li>A third, related component, <i>checkboxList</i>DefaultItems, contains an array of initial checkboxes for the list. This array is used to populate the list only if the list is not bound to a data provider. Each checkbox in this third component has a label with default text (<code>item1</code>, <code>item2</code>, <code>item3</code>). </li>
+</ul>
+
+<p>After dragging the component to the Visual Designer, you can do a number of things with it:</p>
+<ul>
+	<li>Select the Checkbox List component and drag it to another location on the page.</li>
+	<li>Right-click the checkboxList component in the
+		<object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+		<param name="content" value="app_outline_chkbxlist_graphic.html">
+		<param name="viewerActivator" value="javax.help.LinkLabel">
+		<param name="viewerStyle" value="javax.help.Popup">
+		<param name="viewerSize" value="350,400">
+		<param name="text" value="Navigator window"></object>&nbsp; and choose Property Bindings to bind its value property to an <code>Object</code> array that you have added to the session bean as a property. You can use this session bean property to evaluate what the user chose after the page is submitted. For more information, see the value property description below.</li>
+	<li>Right-click the checkboxListSelectItems component in the  Navigator window and bind it to a data provider that will be used to populate the list. 
+</li>
+	<li>Select the Checkbox List component on the page in the Visual Designer and edit its properties in the Checkbox List <a href="../../propsheets/jsfstd_checkbox_list_props.html">Properties window</a>. These properties affect the overall style and behavior of the list. Some typical properties you might set are:
+		<ul>
+			<li><b>id.</b> The name of the Checkbox List component. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>HtmlSelectManyCheckbox</code> object.</li>
+			<li><b>layout.</b> The orientation of the list. The default orientation is lineDirection: The list is laid out horizontally, left to right. If you choose pageDirection, the list is laid out vertically, from top to bottom.</li>
+			<li><b>value.</b> The data that is sent when the page is submitted.
+				<p>The Checkbox List component can have more than one value, which has implications about what type of value you can use. </p>
+				<ul>
+					<li>If you use a value binding expression, it must point to an array of objects or primitives. The individual elements in this array represent the currently selected values from the set of all possible options. </li>
+					<li>If you do not use a value binding expression, the object returned to you when you call <code>checkboxList.getValue()</code> is an object array.</li>
+					<li>There is no usable way to bind this component to database data, because the value will typically be represented by multiple rows in some detail table. </li>
+				</ul>
+				<p>One way to process the values chosen by the user is to bind this component to an <code>Object</code> array and check the array values when the user submits the page. 
+</p>
+</li>
+		</ul>
+  </li>
+	<li>Right-click the Checkbox List component in the Visual Designer and choose one of several actions:
+		<ul>
+			<li><b>Edit Event Handler.</b> Write code for one of the following event handlers.
+				<ul>
+					<li><b>validate. </b>Opens the Java Editor with the cursor positioned in the checkbox list's <code>validate</code> method so you can insert code to validate the value of the checkbox list.</li>
+					<li><b>processValueChange.</b> Opens the Java Editor with the cursor positioned in the checkbox list's <code>processValueChange</code> method so you can insert code that executes when the value of this checkbox list changes (for example, the user checks two of the boxes and submits the form). </li>
+			    </ul>
+			</li>
+			<li><b>Bind to Data.</b> Bind the component's <code>value</code> property to an object or to a data provider, as described in <a href="../../dialogs/bindtodata_list_db.html">Bind to Data Dialog Box</a>. </li>
+			<li><b>Property Bindings</b>. Opens a dialog box that enables you to bind the properties of the component to other objects or properties that update this component's properties automatically.</li>
+		</ul></li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+	
+	<dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+<dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://www.netbeans.org/kb/55/vwp-listbox_components.html">
+                <param name="text" value="Using Listbox Components"></object>
+</dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Checkbox List Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

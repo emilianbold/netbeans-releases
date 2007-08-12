@@ -1,1 +1,105 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Standard Hyperlink Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Standard Hyperlink Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You can drag the Standard JavaServer Faces Hyperlink <img src="../../../images/hyperlinkicon.gif" alt="Hyperlink icon">&nbsp;component   from the Palette's Standard category to the Visual Designer to create a standard hyperlink to a URL. </p><p>When the web page is generated, the Hyperlink becomes an HTML <code>&lt;a&gt;</code>   element.</p><ul class="warning">  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/hyperlink.html">Hyperlink component</a> and the <a href="../bh/image_hyperlink.html">Image Hyperlink component</a>  in the Basic category do support themes and provide other features that improve ease of use.</li></ul><p>After dragging the component to the Visual Designer, you can do a number of things   with it:</p><ul>  <li>Select either the text element (inner part) or the hyperlink     element (outer part). This component is composed of an <code>HtmlOutputHyperlink</code>     and an embedded <code>HtmlOutputText</code> component. Depending     on where you click this component in the Visual Designer, you     get different Properties windows. You use the <code>HtmlOutputHyperlink</code>     to set the link part of the component, and the <code>HtmlOutputText</code>     part to set the text of the link.     <p>When this composite component is selected in the Visual Designer, you see it in the Outline window, and you can       see which part of the component you have selected. The hyperlink       <img src="../../../images/hyperlinkicon.gif" alt="Hyperlink icon">&nbsp;is       the main node of the component, and the hyperlinkText <img src="../../../images/outputtexticon.gif" alt="Output Text icon">&nbsp;is       a subnode. You can also use the <a href="../../navigator_win/about_navigator_win.html">Navigator window</a> to select either part of the component and work       with the selected component part's properties.</p>  </li>  <li>Select the component drag it to another location on the     page.</li>  <li>Select the inner, hyperlinkText <img src="../../../images/outputtexticon.gif" alt="Output Text icon">&nbsp;    part of the component and start typing to change the displayed     text. </li>  <li>Select the component and edit its properties in the Hyperlink     <a href="../../propsheets/jsfstd_hyperlink_props.html">Properties window</a>. Some typical properties you might set are:     <ul>      <li><b>id.</b> The name of the Hyperlink. In the JSP file,         this name is the value of the <code>id</code> attribute. In         the page bean, this property's value is the name of the         <code>HtmlOutputHyperlink</code> object.</li>      <li><b>value.</b> The URL for the hyperlink's target document         or resource.</li>    </ul>  </li>  <li>Select the inner, hyperlinkText<img src="../../../images/outputtexticon.gif" alt="Output Text icon">&nbsp;     part of the component and edit its properties in the Output     Text <a href="../../propsheets/jsfstd_output_text_props.html">Properties window</a>. The most useful thing you can do in the Properties window is to set the visible label (or link text) for the component     in the value property. You can also bind the Output Text component     to a table and set the label dynamically.</li>  <li>Right-click the Hyperlink component in the Outline window and choose one of several     actions:     <ul>      <li><b>Bind to Data. </b>Dynamically set the text that displays for the link. You can bind the component's <code>value</code> property to an object or a data provider, as described in the topic <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>      <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>vlaue</code> property to other objects or bean properties that update this component's properties automatically.</li>      </ul>  </li></ul><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>   <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Hyperlink Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table> </body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Standard Hyperlink Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Standard Hyperlink Component</h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+<p>You can drag the Standard JavaServer Faces Hyperlink <img src="../../../images/hyperlinkicon.gif" alt="Hyperlink icon">&nbsp;component 
+  from the Palette's Standard category to the Visual Designer to create a standard hyperlink to a URL. 
+</p>
+<p>When the web page is generated, the Hyperlink becomes an HTML <code>&lt;a&gt;</code> 
+  element.</p>
+<ul class="warning">
+  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/hyperlink.html">Hyperlink component</a> and the <a href="../bh/image_hyperlink.html">Image Hyperlink component</a>  in the Basic category do support themes and provide other features that improve ease of use.</li>
+</ul>
+<p>After dragging the component to the Visual Designer, you can do a number of things 
+  with it:</p>
+<ul>
+  <li>Select either the text element (inner part) or the hyperlink 
+    element (outer part). This component is composed of an <code>HtmlOutputHyperlink</code> 
+    and an embedded <code>HtmlOutputText</code> component. Depending 
+    on where you click this component in the Visual Designer, you 
+    get different Properties windows. You use the <code>HtmlOutputHyperlink</code> 
+    to set the link part of the component, and the <code>HtmlOutputText</code> 
+    part to set the text of the link. 
+    <p>When this composite component is selected in the Visual Designer, you see it in the Navigator window, and you can 
+      see which part of the component you have selected. The hyperlink 
+      <img src="../../../images/hyperlinkicon.gif" alt="Hyperlink icon">&nbsp;is 
+      the main node of the component, and the hyperlinkText <img src="../../../images/outputtexticon.gif" alt="Output Text icon">&nbsp;is 
+      a subnode. You can also use the <a href="../../navigator_win/about_navigator_win.html">Navigator window</a> to select either part of the component and work 
+      with the selected component part's properties.</p>
+  </li>
+  <li>Select the component drag it to another location on the 
+    page.</li>
+  <li>Select the inner, hyperlinkText <img src="../../../images/outputtexticon.gif" alt="Output Text icon">&nbsp;
+    part of the component and start typing to change the displayed 
+    text. </li>
+  <li>Select the component and edit its properties in the Hyperlink 
+    <a href="../../propsheets/jsfstd_hyperlink_props.html">Properties window</a>. Some typical properties you might set are: 
+    <ul>
+      <li><b>id.</b> The name of the Hyperlink. In the JSP file, 
+        this name is the value of the <code>id</code> attribute. In 
+        the page bean, this property's value is the name of the 
+        <code>HtmlOutputHyperlink</code> object.</li>
+      <li><b>value.</b> The URL for the hyperlink's target document 
+        or resource.</li>
+    </ul>
+  </li>
+  <li>Select the inner, hyperlinkText<img src="../../../images/outputtexticon.gif" alt="Output Text icon">&nbsp; 
+    part of the component and edit its properties in the Output 
+    Text <a href="../../propsheets/jsfstd_output_text_props.html">Properties window</a>. The most useful thing you can do in the Properties window is to set the visible label (or link text) for the component 
+    in the value property. You can also bind the Output Text component 
+    to a table and set the label dynamically.</li>
+  <li>Right-click the Hyperlink component in the Navigator window and choose one of several 
+    actions: 
+    <ul>
+      <li><b>Bind to Data. </b>Dynamically set the text that displays for the link. You can bind the component's <code>value</code> property to an object or a data provider, as described in the topic <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>
+      <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>vlaue</code> property to other objects or bean properties that update this component's properties automatically.</li>
+      </ul>
+  </li>
+</ul>
+
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+ 
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl><dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Hyperlink Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+</body>
+</html>

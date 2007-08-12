@@ -1,1 +1,95 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>CachedRowSet Table Data Provider Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>CachedRowSet Table Data Provider Properties Window </h2><p><small><a href="#seealso">See Also</a></small></p><p>You see the Properties window for a CachedRowSet Table Data Provider component &nbsp;when you select the component's node in the		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../../../navigator_win/navigator_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="385,450">    <param name="text" value="Navigator window"></object>&nbsp;</object></p><p>This component has the following properties.</p><h3>General</h3><ul>	<li><b>id.</b> Type: text<br>		The name of the instance variable that is created in the page bean. The instance variable is of type <code>CachedRowSetDataProvider</code>.</li></ul><h3>Data</h3><ul>  <li><b>cachedRowSet.</b> Type: String<br>  The CachedRowSet instance that this data provider is bound to.</li></ul><h3>Events</h3><p>You typically set the event properties by right-clicking the component's node in the Outline window and choosing Edit Event Handler &gt; <i>eventname</i>.  The IDE creates the approriate event method for this data provider and opens the Java Editor so you can edit the new method. </p><ul>	<li><b>changesCommitted. </b>Type: <code>trasactionalDataListener</code><p>This event is called when the current buffered changes have been committed. </p>	</li>	<li>      <div><b>changesReverted. </b>Type: <code>trasactionalDataListener</code>        <p>This event is called when the previously committed changes have been reverted.</p>      </div>  </li>    <li>          <div><b>cursorChanged. </b>Type: <code>tableCursorListener</code>              <p>This event is called when the cursor has moved to another row in the table. </p>      </div>  </li>    <li><b>cursorChanging. </b>Type: <code>tableCursorListener</code>      <p>This event gives a listener the opportunity to veto a change, similar to the way a <code>PropertyChangeListener</code> in JavaBeans can veto a change.&nbsp;For example, you might use this event when the user is positioned on a current row and tries to navigate away, but there are validation failures on the fields in the current row.</p>        </li>    <li><b>providerChanged. </b>Type: <code>dataListener</code>      <p>This event is called when a large scale change occurs that is not an individual property change.&nbsp; The most common scenario is if you change the object that this data provider wraps. That event is significant because it potentially changes the set of fields that are available.</p>    </li>    <li>      <div><b>refreshed. </b>Type: <code>refreshableDataListener</code>        <p>Property description</p>      </div>    </li>    <li><b>rowAdded. </b>Type: <code>tableDataListener</code>        <p>This event is called when a row has been added to the table.</p>    </li>    <li><b>rowRemoved. </b>Type: <code>tableDataListener</code>        <p>This event is called when a row has been removed from the table. </p>    </li>    <li><b>valueChanged. </b>Type: <code>dataListener</code>        <div>This event is called when there is a change to one of the fields in the object wrapped by this data provider.</div>    </li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../cachedrowset_dp.html">CachedRowSet Table Data Provider</a></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20CachedRowSet Table Data Provider Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>CachedRowSet Table Data Provider Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>CachedRowSet Table Data Provider Properties Window </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>You see the Properties window for a CachedRowSet Table Data Provider component &nbsp;when you select the component's node in the		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../../navigator_win/navigator_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window"></object>&nbsp;</object></p>
+<p>This component has the following properties.</p>
+
+<h3>General</h3>
+<ul>
+	<li><b>id.</b> Type: text<br>
+		The name of the instance variable that is created in the page bean. The instance variable is of type <code>CachedRowSetDataProvider</code>.</li>
+</ul>
+<h3>Data</h3>
+<ul>
+  <li><b>cachedRowSet.</b> Type: String<br>
+  The CachedRowSet instance that this data provider is bound to.</li>
+</ul>
+<h3>Events</h3>
+<p>You typically set the event properties by right-clicking the component's node in the Navigator window and choosing Edit Event Handler &gt; <i>eventname</i>.  The IDE creates the approriate event method for this data provider and opens the Java Editor so you can edit the new method. </p>
+<ul>
+	<li><b>changesCommitted. </b>Type: <code>trasactionalDataListener</code>
+<p>This event is called when the current buffered changes have been committed. </p>
+	</li>
+	<li>
+      <div><b>changesReverted. </b>Type: <code>trasactionalDataListener</code>
+        <p>This event is called when the previously committed changes have been reverted.</p>
+      </div>
+  </li>
+    <li>
+          <div><b>cursorChanged. </b>Type: <code>tableCursorListener</code>
+              <p>This event is called when the cursor has moved to another row in the table. </p>
+      </div>
+  </li>
+    <li><b>cursorChanging. </b>Type: <code>tableCursorListener</code>
+      <p>This event gives a listener the opportunity to veto a change, similar to the way a <code>PropertyChangeListener</code> in JavaBeans can veto a change.&nbsp;For example, you might use this event when the user is positioned on a current row and tries to navigate away, but there are validation failures on the fields in the current row.</p>
+      
+  </li>
+    <li><b>providerChanged. </b>Type: <code>dataListener</code>
+      <p>This event is called when a large scale change occurs that is not an individual property change.&nbsp; The most common scenario is if you change the object that this data provider wraps. That event is significant because it potentially changes the set of fields that are available.</p>
+    </li>
+    <li>
+      <div><b>refreshed. </b>Type: <code>refreshableDataListener</code>
+        <p>Property description</p>
+      </div>
+    </li>
+    <li><b>rowAdded. </b>Type: <code>tableDataListener</code>
+        <p>This event is called when a row has been added to the table.</p>
+    </li>
+    <li><b>rowRemoved. </b>Type: <code>tableDataListener</code>
+        <p>This event is called when a row has been removed from the table. </p>
+    </li>
+    <li><b>valueChanged. </b>Type: <code>dataListener</code>
+        <div>This event is called when there is a change to one of the fields in the object wrapped by this data provider.</div>
+    </li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../cachedrowset_dp.html">CachedRowSet Table Data Provider</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20CachedRowSet Table Data Provider Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

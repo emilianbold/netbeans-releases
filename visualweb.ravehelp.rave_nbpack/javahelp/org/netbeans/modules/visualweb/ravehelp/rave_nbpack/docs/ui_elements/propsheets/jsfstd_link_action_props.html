@@ -1,1 +1,203 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Standard Link Action Component Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Standard Link Action Component Properties Window </h2><p><small><a href="#seealso">See Also</a></small></p><p>You see the Properties window for a JavaServer Faces Link Action when you select the outer part of the component on a page that you are editing in the Visual Designer or you select the Link Action <img src="../../images/link_action_icon.gif" alt="Link Action icon" >&nbsp;part of this composite component in the Outline window. </p><ul class="note">	<li>The Link Action component consists of an Output Text component <img src="../../images/outputtexticon.gif" alt="output text icon">&nbsp;embedded in a Link Action component <img src="../../images/link_action_icon.gif" alt="Link Action icon" >. When you select this component in the Visual Designer, you also see it in the Outline window, where you can select the part of the component you want to work with. </li></ul><p>This standard JavaServer Faces component has the following properties.</p><h3>General</h3><ul>	<li><b>id.</b><code> Type: text</code><br>	The name of the Link Action component in the page bean and the JSP file. </li>	<li><b>target.</b><code> Type: String</code><br>	The frame of the current page in which the link is to be opened. </li></ul><h3>Appearance</h3><ul>	<li><b>style.</b><code> Type: String</code><br>		Cascading Style Sheet rules (CSS level 2) to be applied to the component. This property overrides any settings in the project CSS file. For example: 		<p><code>position: absolute; left: 288px; top: 312px</code></p>		<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../propeditors/style_prop_ed_main.html">Style Editor</a>.</p>		<p>For a list of CSS2 style attributes, see the web page at<br>		<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">		<param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object></p></li>	<li><b>styleClass.</b><code> Type: String</code><br>		Enter a space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet.   If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../editors/about_css_editor.html">CSS Editor</a>.</li>	<li><b>title.</b><code> Type: String</code><br>		Information about the Link Action that is readable by a screen reader and can be displayed as a tool tip.   <ul class="note">  <li>If the component is disabled, the tool tip will not display in most browsers.     </li></ul> </li></ul><h3>Events</h3><p>Set the event properties by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; <i>eventname</i>.</p><ul>	<li><b>action.</b> Indicates the name of the Link Action method that is called when the user clicks the Link Action. If you enter a method name that doesn't exist in the page bean, such as <code>CommandHyperlink1_action</code>, the IDE adds it to the page bean for you and updates the value of the Application Action property to point to that method.		<p>If all you want to do is have the Link Action display another page when the user clicks it, you do not need an action method. The easiest thing to do is open the page in the Navigation Editor, click the page and then click the Link Action, and then drag to the page you want the Link Action to open. See <a href="../../multiple_forms/howtomultiforms/set_form_navigation.html">Setting Up Static Page Navigation</a> for more information.</p>		<p>If you want the Link Action to be able to determine which page to open based on certain conditions, then you need an action method. The action method typically processes Link Action clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). You typically define this method by selecting the component in the Visual Designer, then right-clicking the Link Action part of the component in the Outline window, and then choosing Edit Event Handler &gt; action. The default name for the method is <i><code>CommandHyperlink-id</code></i><code>_action</code>, where <i>CommandHyperlink-id</i> is the value of the Link Action's <code>id</code> property. For more information, see <a href="../../multiple_forms/howtomultiforms/dynamic_form_navigation.html">Setting Up Dynamic Page Navigation</a>. </p></li></ul><h3>JavaScript</h3><ul>	<li><b>onblur.</b><code> Type: String</code><br>		JavaScript to be executed when the component loses focus. </li>	<li><b>onclick.</b><code> Type: String</code><br>		JavaScript to be executed when the user clicks the component.</li>	<li><b>ondblclick.</b> <code> Type: String</code><br>		JavaScript to be executed when the user double-clicks the component.</li>	<li><b>onfocus.</b><code> Type: String</code><br>		JavaScript to be executed when the component gains focus. </li>	<li><b>onkeydown.</b><code> Type: String</code><br>		JavaScript to be executed when the component has focus and a key is pressed. </li>	<li><b>onkeypress.</b><code> Type: String</code><br>		JavaScript to be executed when the component has focus and a key is pressed and released.</li>	<li><b>onkeyup.</b><code> Type: String</code><br>		JavaScript to be executed when the component has focus and a key is released.</li>	<li><b>onmousedown.</b><b></b><code> Type: String</code><br>		JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>	<li><b>onmousemove.</b><code> Type: String</code><br>		JavaScript to be executed when the user moves the mouse cursor within the component.</li>	<li><b>onmouseout.</b><code> Type: String</code><br>		JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>	<li><b>onmouseover.</b><code> Type: String</code><br>		JavaScript to be executed when the user moves the mouse cursor onto the component.</li>	<li><b>onmouseup.</b><code> Type: String</code><br>		JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li></ul><h3>Advanced</h3><ul>	<li><b>accesskey.</b><code> Type: String</code><br>		A keyboard key, or keyboard shortcut, that activates this Link Action. You can enter any valid character that can be typed on the keyboard. Equivalent to the <code>accesskey</code> attribute of the HTML <code>&lt;input&gt;</code> tag.</li>	<li><b>action.</b><code> Type: MethodBinding</code><br>		See the Event section's Action property above, which is where you should set this value. This property gets set for you if you set the Event section's Action property or if you right-click the Link Action in the Visual Designer and choose Edit Even Handler &gt; action. This property can also be set for you if you use the Navigation Editor to link the Link Action on this page to another page.</li>	<li><b>actionListener.</b><code> Type: MethodBinding</code><br>		A method binding representing  an action listener method that is notified when this component is activated by the user. The value must be a valid JSF method binding expression, such as <code>#{Page1.action_method}</code>, and it must evaluate to the name of a public method that takes an <code>ActionEvent</code> parameter with a return type of void. You can type a <code>MethodBinding</code> expression directly into this actionListener property, for example, if you want to call a method that is not in the page bean.  </li>	<li><b>charset.</b><code> Type: String</code><br>		The character encoding of the document or resource to which this hyperlink links. Equivalent to the HTML attribute <code>charset</code> of the <code>&lt;a&gt;</code> tag. You can see a list of encodings at<br>		<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.iana.org/assignments/character-sets">		<param name="text" value="http://www.iana.org/assignments/character-sets"></object>.</li>	<li><b>coords.</b><code> Type: String</code><br>		The position and shape of the hotspot on the page, used for client-side image maps. Equivalent to the HTML attribute <code>coords</code> of the <code>&lt;a&gt;</code> tag. The number and order of values depends on the shape being defined. Possible combinations are: 		<ul>			<li><b>rect.</b> left-x, top-y, right-x, bottom-y. </li>			<li><b>circle.</b> center-x, center-y, radius. </li>			<li><b>poly.</b> x1, y1, x2, y2, ..., xN, yN. The first x and y coordinate pair and the last should be the same to close the polygon. </li>		</ul>		<p>Coordinates are relative to the top, left corner of the object. All values are lengths. All values are separated by commas. </p>  </li>	<li><b>dir.</b><code> Type: String</code><br>		An indicator of the directionality if the text does not inherit directionality (for example, because the text is English but the primary language for the page is Hebrew). Equivalent to the <code>dir</code> attribute of the HTML <code>&lt;input&gt;</code> tag.		<p>Values can be: </p>		<ul>			<li><b>LTR.</b> Left-to-right.</li>			<li><b>RTL.</b> Right-to-left.</li>		</ul>  </li>	<li><b>hreflang.</b><code> Type: String</code><br>		Code describing the language used by the document or resource to which the hyperlink links. This property takes the same values as Language Code, which is described next. </li>	<li><b>immediate.</b><code> Type: boolean</code><br>		If this property is selected, when the user activates the Link Action, the code in the page bean is executed before the validation, updating of model values, and so on. Essentially, code execution happens right away on the server, which then returns the page.		<p>The most common example of an immediate action is a Cancel button. You make it immediate so that the normal validation and update steps can be skipped, but the action handler can still do whatever is necessary. Typically, the action handler will navigate back to some previous page. In some designs the action handler might also enqueue an informational message like &quot;Transaction cancelled&quot;. It is possible to do more: for example, an application might record the fact that the user got partially through a form and then cancelled it.</p>  </li>	<li><b>lang.</b><code> Type: String</code><br>		Code describing the language used in the generated markup for the component. Equivalent to the <code>lang</code> attribute of the HTML <code>&lt;input&gt;</code> tag. To choose a language code, you can click the ellipsis button (...) to open the property editor. Some examples:		<ul>			<li><code>ar</code> - Traditional Arabic</li>			<li><code>de</code> - German</li><li><code>en</code> - English</li><li><code>es</code> - Spanish</li>			<li><code>fr</code> - French</li>			<li><code>ja</code> - Japanese </li>		</ul>		<p>In addition to the codes available in the property editor, you can also enter additional codes using ISO standard names. Some examples:</p>		<ul>			<li><code>en-US</code> - United States English</li>			<li><code>ja-JP</code> - Japanese</li>			<li><code>zh-guoyu</code> - Mandarin or Standard Chinese </li>			<li><code>zh-Hans</code> - Simplified Chinese script</li>			<li><code>zh-HanT</code> - Traditional Chinese script</li>		</ul>  </li>	<li><b>rel.</b><code> Type: String</code><br>		Specifies the relationship to the linked document. Same as the HTML attribute <code>rel</code>: a space separated list of types. The types can be any of the following: 		<ul>			<li><b>Alternate.</b> Substitute versions for the document in which the link occurs. When used with the lang attribute, it means that the substitute is a translated version of the document.</li>			<li><b>Appendix. </b>An appendix in a collection of documents. </li>			<li><b>Bookmark.</b> A link to an entry point in a document. </li>			<li><b>Chapter.</b> A chapter in a collection of documents.</li>			<li><b>Contents.</b> A table of contents.</li>			<li><b>Copyright.</b> A copyright for the current document. </li>			<li><b>Glossary.</b> A glossary of terms for the current document. </li>			<li><b>Help.</b> A help document. </li>			<li><b>Index.</b> An index for the current document. </li>			<li><b>Next.</b> The next document in a sequence of documents.</li>			<li><b>Prev.</b> The previous document in a sequence of documents.</li>			<li><b>Section.</b> A section in a collection of documents.</li>			<li><b>Start.</b> The first document in a collection of documents: the starting point of the collection. </li>			<li><b>Stylesheet.</b> Refers to an external style sheet. Used with the link type Alternate to provide for user-selectable alternate style sheets. </li>			<li><b>Subsection.</b> A subsection in a collection of documents. </li>		</ul></li>	<li><b>rendered.</b><code> Type: boolean</code><br>		If selected, the Link Action is to be rendered and processed on any subsequent page submission. If not selected, the Link Action doesn't appear on the page at all, not even as a hidden component. You can bind this property to a variable that determines when the Link Action does get rendered. For example, an airline reservation form might show a Link Action for frequent flyers and not show it for the general public. To bind this property, right-click the component in the Visual Designer and choose Property Bindings, and then select the All radio button to display all properties so you can bind the rendered property.</li>	<li><b>rev.</b><code> Type: String</code><br>		A reverse type link from the document to which this hyperlink links back to this document. Equivalent to the HTML attribute <code>rev</code>, a space-separated list of types. See the Relationship property above for a list of types.</li>	<li><b>shape.</b><code> Type: String</code><br>		The shape of the hotspot on the page, used for client-side image maps. Equivalent to the HTML attribute <code>shape</code> of the <code>&lt;a&gt;</code> tag. Possible values are: 		<ul>			<li><b>default.</b> Entire region</li>			<li><b>rectangle.</b> Rectangular region.</li>			<li><b>circle.</b> Circular region.</li>			<li><b>polygon.</b> Polygonal region.</li>		</ul></li>	<li><b>tabindex.</b><code> Type: String</code><br>		Optionally specifies the position of the Link Action in the tab order of the document, determining when the Link Action will get focus if the user tabs through the document. The value must be an integer between 0 and 32767. Equivalent to the <code>tabindex</code> attribute of the HTML <code>&lt;input&gt;</code> tag.</li>	<li><b>type.</b><code> Type: String</code><br>		The content type of the resource to which this hyperlink links. Equivalent to the HTML attribute <code>type</code>, which is a MIME type, such as <code>text/html</code>, <code>image/png</code>, <code>image/gif</code>, <code>video/mpeg</code>, <code>text/css</code>, or <code>audio/basic</code>.</li></ul><dl>	<dt><a name="seealso"><b>See Also</b></a></dt>	<dd><a href="../palette/jsfstd/link_action.html">Standard Link Action Component</a></dd>	<dd><a href="../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Link Action Component Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Standard Link Action Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Standard Link Action Component Properties Window </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>You see the Properties window for a JavaServer Faces Link Action when you select the outer part of the component on a page that you are editing in the Visual Designer or you select the Link Action <img src="../../images/link_action_icon.gif" alt="Link Action icon" >&nbsp;part of this composite component in the Navigator window. </p>
+<ul class="note">
+	<li>The Link Action component consists of an Output Text component <img src="../../images/outputtexticon.gif" alt="output text icon">&nbsp;embedded in a Link Action component <img src="../../images/link_action_icon.gif" alt="Link Action icon" >. When you select this component in the Visual Designer, you also see it in the Navigator window, where you can select the part of the component you want to work with. </li>
+</ul>
+
+<p>This standard JavaServer Faces component has the following properties.</p>
+
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: text</code><br>
+	The name of the Link Action component in the page bean and the JSP file. </li>
+	<li><b>target.</b><code> Type: String</code><br>
+	The frame of the current page in which the link is to be opened. </li>
+</ul>
+<h3>Appearance</h3>
+<ul>
+	<li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the component. This property overrides any settings in the project CSS file. For example: 
+		<p><code>position: absolute; left: 288px; top: 312px</code></p>
+		<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../propeditors/style_prop_ed_main.html">Style Editor</a>.</p>
+		<p>For a list of CSS2 style attributes, see the web page at<br>
+		<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+		<param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object></p></li>
+	<li><b>styleClass.</b><code> Type: String</code><br>
+		Enter a space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet.   If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../editors/about_css_editor.html">CSS Editor</a>.</li>
+	<li><b>title.</b><code> Type: String</code><br>
+		Information about the Link Action that is readable by a screen reader and can be displayed as a tool tip. 
+  <ul class="note">
+  <li>If the component is disabled, the tool tip will not display in most browsers. 
+    </li>
+</ul>
+ </li>
+</ul>
+
+<h3>Events</h3>
+<p>Set the event properties by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; <i>eventname</i>.</p>
+<ul>
+	<li><b>action.</b> Indicates the name of the Link Action method that is called when the user clicks the Link Action. If you enter a method name that doesn't exist in the page bean, such as <code>CommandHyperlink1_action</code>, the IDE adds it to the page bean for you and updates the value of the Application Action property to point to that method.
+		<p>If all you want to do is have the Link Action display another page when the user clicks it, you do not need an action method. The easiest thing to do is open the page in the Navigation Editor, click the page and then click the Link Action, and then drag to the page you want the Link Action to open. See <a href="../../multiple_forms/howtomultiforms/set_form_navigation.html">Setting Up Static Page Navigation</a> for more information.</p>
+		<p>If you want the Link Action to be able to determine which page to open based on certain conditions, then you need an action method. The action method typically processes Link Action clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). You typically define this method by selecting the component in the Visual Designer, then right-clicking the Link Action part of the component in the Navigator window, and then choosing Edit Event Handler &gt; action. The default name for the method is <i><code>CommandHyperlink-id</code></i><code>_action</code>, where <i>CommandHyperlink-id</i> is the value of the Link Action's <code>id</code> property. For more information, see <a href="../../multiple_forms/howtomultiforms/dynamic_form_navigation.html">Setting Up Dynamic Page Navigation</a>. </p></li>
+</ul>
+
+<h3>JavaScript</h3>
+<ul>
+	<li><b>onblur.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component loses focus. </li>
+	<li><b>onclick.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user clicks the component.</li>
+	<li><b>ondblclick.</b> <code> Type: String</code><br>
+		JavaScript to be executed when the user double-clicks the component.</li>
+	<li><b>onfocus.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component gains focus. </li>
+	<li><b>onkeydown.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component has focus and a key is pressed. </li>
+	<li><b>onkeypress.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component has focus and a key is pressed and released.</li>
+	<li><b>onkeyup.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component has focus and a key is released.</li>
+	<li><b>onmousedown.</b><b></b><code> Type: String</code><br>
+		JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>
+	<li><b>onmousemove.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user moves the mouse cursor within the component.</li>
+	<li><b>onmouseout.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>
+	<li><b>onmouseover.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user moves the mouse cursor onto the component.</li>
+	<li><b>onmouseup.</b><code> Type: String</code><br>
+		JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li>
+</ul>
+
+<h3>Advanced</h3>
+<ul>
+	<li><b>accesskey.</b><code> Type: String</code><br>
+		A keyboard key, or keyboard shortcut, that activates this Link Action. You can enter any valid character that can be typed on the keyboard. Equivalent to the <code>accesskey</code> attribute of the HTML <code>&lt;input&gt;</code> tag.</li>
+	<li><b>action.</b><code> Type: MethodBinding</code><br>
+		See the Event section's Action property above, which is where you should set this value. This property gets set for you if you set the Event section's Action property or if you right-click the Link Action in the Visual Designer and choose Edit Even Handler &gt; action. This property can also be set for you if you use the Navigation Editor to link the Link Action on this page to another page.</li>
+	<li><b>actionListener.</b><code> Type: MethodBinding</code><br>
+		A method binding representing  an action listener method that is notified when this component is activated by the user. The value must be a valid JSF method binding expression, such as <code>#{Page1.action_method}</code>, and it must evaluate to the name of a public method that takes an <code>ActionEvent</code> parameter with a return type of void. You can type a <code>MethodBinding</code> expression directly into this actionListener property, for example, if you want to call a method that is not in the page bean.
+  </li>
+	<li><b>charset.</b><code> Type: String</code><br>
+		The character encoding of the document or resource to which this hyperlink links. Equivalent to the HTML attribute <code>charset</code> of the <code>&lt;a&gt;</code> tag. You can see a list of encodings at<br>
+		<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.iana.org/assignments/character-sets">
+		<param name="text" value="http://www.iana.org/assignments/character-sets"></object>.</li>
+	<li><b>coords.</b><code> Type: String</code><br>
+		The position and shape of the hotspot on the page, used for client-side image maps. Equivalent to the HTML attribute <code>coords</code> of the <code>&lt;a&gt;</code> tag. The number and order of values depends on the shape being defined. Possible combinations are: 
+		<ul>
+			<li><b>rect.</b> left-x, top-y, right-x, bottom-y. </li>
+			<li><b>circle.</b> center-x, center-y, radius. </li>
+			<li><b>poly.</b> x1, y1, x2, y2, ..., xN, yN. The first x and y coordinate pair and the last should be the same to close the polygon. </li>
+		</ul>
+		<p>Coordinates are relative to the top, left corner of the object. All values are lengths. All values are separated by commas. </p>
+  </li>
+	<li><b>dir.</b><code> Type: String</code><br>
+		An indicator of the directionality if the text does not inherit directionality (for example, because the text is English but the primary language for the page is Hebrew). Equivalent to the <code>dir</code> attribute of the HTML <code>&lt;input&gt;</code> tag.
+		<p>Values can be: </p>
+		<ul>
+			<li><b>LTR.</b> Left-to-right.</li>
+			<li><b>RTL.</b> Right-to-left.</li>
+		</ul>
+  </li>
+	<li><b>hreflang.</b><code> Type: String</code><br>
+		Code describing the language used by the document or resource to which the hyperlink links. This property takes the same values as Language Code, which is described next. </li>
+	<li><b>immediate.</b><code> Type: boolean</code><br>
+		If this property is selected, when the user activates the Link Action, the code in the page bean is executed before the validation, updating of model values, and so on. Essentially, code execution happens right away on the server, which then returns the page.
+		<p>The most common example of an immediate action is a Cancel button. You make it immediate so that the normal validation and update steps can be skipped, but the action handler can still do whatever is necessary. Typically, the action handler will navigate back to some previous page. In some designs the action handler might also enqueue an informational message like &quot;Transaction cancelled&quot;. It is possible to do more: for example, an application might record the fact that the user got partially through a form and then cancelled it.</p>
+  </li>
+	<li><b>lang.</b><code> Type: String</code><br>
+		Code describing the language used in the generated markup for the component. Equivalent to the <code>lang</code> attribute of the HTML <code>&lt;input&gt;</code> tag. To choose a language code, you can click the ellipsis button (...) to open the property editor. Some examples:
+		<ul>
+			<li><code>ar</code> - Traditional Arabic</li>
+			<li><code>de</code> - German</li><li><code>en</code> - English</li>
+<li><code>es</code> - Spanish</li>
+			<li><code>fr</code> - French</li>
+			<li><code>ja</code> - Japanese </li>
+		</ul>
+		<p>In addition to the codes available in the property editor, you can also enter additional codes using ISO standard names. Some examples:</p>
+		<ul>
+			<li><code>en-US</code> - United States English</li>
+			<li><code>ja-JP</code> - Japanese</li>
+			<li><code>zh-guoyu</code> - Mandarin or Standard Chinese </li>
+			<li><code>zh-Hans</code> - Simplified Chinese script</li>
+			<li><code>zh-HanT</code> - Traditional Chinese script</li>
+		</ul>
+  </li>
+	<li><b>rel.</b><code> Type: String</code><br>
+		Specifies the relationship to the linked document. Same as the HTML attribute <code>rel</code>: a space separated list of types. The types can be any of the following: 
+		<ul>
+			<li><b>Alternate.</b> Substitute versions for the document in which the link occurs. When used with the lang attribute, it means that the substitute is a translated version of the document.</li>
+			<li><b>Appendix. </b>An appendix in a collection of documents. </li>
+			<li><b>Bookmark.</b> A link to an entry point in a document. </li>
+			<li><b>Chapter.</b> A chapter in a collection of documents.</li>
+			<li><b>Contents.</b> A table of contents.</li>
+			<li><b>Copyright.</b> A copyright for the current document. </li>
+			<li><b>Glossary.</b> A glossary of terms for the current document. </li>
+			<li><b>Help.</b> A help document. </li>
+			<li><b>Index.</b> An index for the current document. </li>
+			<li><b>Next.</b> The next document in a sequence of documents.</li>
+			<li><b>Prev.</b> The previous document in a sequence of documents.</li>
+			<li><b>Section.</b> A section in a collection of documents.</li>
+			<li><b>Start.</b> The first document in a collection of documents: the starting point of the collection. </li>
+			<li><b>Stylesheet.</b> Refers to an external style sheet. Used with the link type Alternate to provide for user-selectable alternate style sheets. </li>
+			<li><b>Subsection.</b> A subsection in a collection of documents. </li>
+		</ul></li>
+	<li><b>rendered.</b><code> Type: boolean</code><br>
+		If selected, the Link Action is to be rendered and processed on any subsequent page submission. If not selected, the Link Action doesn't appear on the page at all, not even as a hidden component. You can bind this property to a variable that determines when the Link Action does get rendered. For example, an airline reservation form might show a Link Action for frequent flyers and not show it for the general public. To bind this property, right-click the component in the Visual Designer and choose Property Bindings, and then select the All radio button to display all properties so you can bind the rendered property.</li>
+	<li><b>rev.</b><code> Type: String</code><br>
+		A reverse type link from the document to which this hyperlink links back to this document. Equivalent to the HTML attribute <code>rev</code>, a space-separated list of types. See the Relationship property above for a list of types.</li>
+	<li><b>shape.</b><code> Type: String</code><br>
+		The shape of the hotspot on the page, used for client-side image maps. Equivalent to the HTML attribute <code>shape</code> of the <code>&lt;a&gt;</code> tag. Possible values are: 
+		<ul>
+			<li><b>default.</b> Entire region</li>
+			<li><b>rectangle.</b> Rectangular region.</li>
+			<li><b>circle.</b> Circular region.</li>
+			<li><b>polygon.</b> Polygonal region.</li>
+		</ul></li>
+	<li><b>tabindex.</b><code> Type: String</code><br>
+		Optionally specifies the position of the Link Action in the tab order of the document, determining when the Link Action will get focus if the user tabs through the document. The value must be an integer between 0 and 32767. Equivalent to the <code>tabindex</code> attribute of the HTML <code>&lt;input&gt;</code> tag.</li>
+	<li><b>type.</b><code> Type: String</code><br>
+		The content type of the resource to which this hyperlink links. Equivalent to the HTML attribute <code>type</code>, which is a MIME type, such as <code>text/html</code>, <code>image/png</code>, <code>image/gif</code>, <code>video/mpeg</code>, <code>text/css</code>, or <code>audio/basic</code>.</li>
+</ul>
+
+<dl>
+	<dt><a name="seealso"><b>See Also</b></a></dt>
+	<dd><a href="../palette/jsfstd/link_action.html">Standard Link Action Component</a></dd>
+	<dd><a href="../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Link Action Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,1 +1,198 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Table Row Group Component Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Table Row Group Component Properties Window </h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You see the Properties window for a Table Row Group component <img src="../../../../images/bh_rowgroup_icon.gif" alt="Row Group Component Icon" width="16" height="13">&nbsp;when you select it under a Table component in the		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../../../navigator_win/navigator_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="385,450">    <param name="text" value="Navigator window"></object>&nbsp;  </object>A Table Row Group component is part of a table component, so you might have to expand a table's node in the Outline window to see the Table Row Group components under it. </p><ul class="note">  <li>You can use the Table Layout dialog box to set many of these properties. Not only is that dialog box easier to use in some respects than individual Properties windows for the Table, Table Column, and Table Row Group components, but you can work more naturally with the table and all its columns there. To open the dialog box, right-click the table in the Visual Designer and choose Table Layout.</li></ul><p>This JavaServer Faces 1.2 component has the following properties.</p><h3>General</h3><ul>	<li><b>id.</b><code> Type: String</code><br>		The name of the Table Row Group component in the page bean and the JSP file.</li></ul><h3>Appearance</h3><ul>	<li><b>aboveColumnFooter.</b> <code>Type: boolean </code><br>		If selected,  the row group footer is displayed above the column footers. The default is to display the row group footer below the column footers.</li>	<li><b>aboveColumnHeader.</b> <code>Type: boolean </code><br>If selected, the row group header is displayed above the column headers. The default is to display the row group header below the column headers.</li>	<li>	  <p><b>align.</b> <code>Type: String</code><br>	    Specifies the horizontal alignment for the cell. Possible values are left, center, right, and justify.</p>  </li>  <li><b>collapsed.</b> <code>Type: boolean </code><br>	  If selected, the  row group shows only the header and not the rows, footer, or column text. This property is not selected by default, andthe table row group is expanded, with all rows in the group visible. </li>	<li><b>footerText.</b> <code>Type: String</code><br>		The text displayed for the row group footer, providing an overall footer for the data group represented by this row group.</li>	<li><b>groupToggleButton.</b> <code>Type: boolean </code><br> 	  If selected, displays a button that the user can click to expand or contract the row group. </li>	<li><b>headerText.</b> <code>Type: String</code><br>The text displayed for the row group header, providing an overall header for the data group represented by this row group. </li>  <li><b>selectMultipleToggleButton.</b><code> Type: boolean</code><br>If selected, adds a button that enables a user to select all rows displayed in the table at once. This button is used to toggle a column of checkboxes by using the ID given to the <code>selectId</code> property of the <a href="column_props.html">Table Column Component</a>. </li>    <li><b>selected.</b><code> Type: boolean </code><br>If this property is selected, the appearance of the current row changes to indicate that it is selected. Typically you bind this property to a JavaBeans property that returns a value based on the request scope attribute set in the <code>sourceVar</code> property.</li>    <li><b>styleClasses.</b><code> Type: String</code><br>  A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.	        <ul class="note">          <li>This property overrides any settings in the theme or the project CSS file for this component. If a class specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li><li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.               </li>	        </ul>  </li>	<li> <b> valign.</b><code> Type: String</code><br>  Specifies the vertical position within the cell of the cell contents. Possible values are:    <ul>      <li> <b><code> top</code></b> - Positions the contents at the top of the cell.</li>      <li><code><b>middle</b></code> - The default value, which centers the contents vertically.</li>      <li><b><code> bottom</code></b> - Positions the contents at the bottom of the cell.</li>      </ul>    </li></ul><h3>Layout</h3><ul>  <li><b>multipleColumnFooters.</b><code> Type: boolean </code><br>    If selected, multiple column footers are shown. If Table Column components are nested, footers are rendered inverted to column headers. The default value, not selected, shows one level only. </li>  <li><b>multipleTableColumnFooters.</b><code> Type: boolean </code><br>    If selected, multiple table column footers are shown. If Table Column components are nested, footers are rendered inverted to column headers. The default value, not selected, shows one level only. </li></ul><h3>Data</h3><ul>  <li><b>rows.</b> <code>Type: int </code><br>    The number of rows to be displayed for a paginated table. The default value is 25 rows per page. See the <code>paginateButton</code> property description in <a href="table_props.html">Table Properties Window</a> for more information on paginated tables.</li>  <li><b>sourceData.</b> <code>Type: Object </code><br>    The source data for this component, which can be of type <code>TableDataProvider</code>, <code>ObjectArrayDataProvider</code>,  <code>ObjectListDataProvider</code>, or <code>CachedRowSetDataProvider</code>. Because this property is referenced during the decode,     validate, update and renderer phases when iterating over rows, the      object bound to this property should be cached so that the object     is not created more often than needed.    <p>If you drop a database table on the Table Row Group, this property is set for you. You can also click the ellipsis button (...) to the right of the property and choose a data provider from a list. For example, there is a <code>TableDataProvider</code> for every database table that you have added to the page.</p>  </li>  <li><b>sourceVar.</b> <code>Type: TableDataProvider</code><br>    Name of the request-scope attribute under which model data for the current row     is exposed when iterating through the data. During iterative processing over the rows of     data in the data provider, the <code>TableDataProvider</code> for the current row is exposed     as a request attribute under the key specified by  this property. This     value must be unique for each table in the  page. </li></ul><h3>Behavior</h3><ul>  <li><b>first.</b> <code>Type: int </code><br>    The zero-relative row number of the first row to be displayed for a paginated table. See the <code>paginateButton</code> property description in <a href="table_props.html">Table Properties Window</a> for more information on paginated tables. </li></ul><ul>  <li><b>toolTip.</b><code> Type: String</code><br>    The value of the title attribute for the column. The specified text will display as a tooltip if the mouse cursor hovers over a cell in the column.  <ul class="note">  <li>If the component is disabled, the tooltip will not display in most browsers.     </li></ul></li>  <li><b>visible.</b><code> Type: boolean</code><br>    Indicates whether or not the component can be seen by the user on the rendered HTML page. This property is selected by default, making the Row Group visible by default. If you deselect this property, the rows of the Table Row Group are rendered to HTML but are hidden, although any  header, footer, or column text remains visible. Since it is rendered, but hidden, the Table Row Group can be made visible again through a client side action.</li></ul><h3>JavaScript</h3><ul>  <li><b>onClick.</b><code> Type: String</code><br>    JavaScript to be executed when the user clicks the component.</li>  <li><b>onDblClick.</b> <code> Type: String</code><br>    JavaScript to be executed when the user double-clicks the component.</li>  <li><b>onKeyDown.</b><code> Type: String</code><br>    JavaScript to be executed when the component has focus and a key is pressed. </li>  <li><b>onKeyPress.</b><code> Type: String</code><br>    JavaScript to be executed when the component has focus and a key is pressed and released.</li>  <li><b>onKeyUp.</b><code> Type: String</code><br>    JavaScript to be executed when the component has focus and a key is released.</li>  <li><b>onMouseDown.</b><code> Type: String</code><br>    JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>  <li><b>onMouseMove.</b><code> Type: String</code><br>    JavaScript to be executed when the user moves the mouse cursor within the component.</li>  <li><b>onMouseOut.</b><code> Type: String</code><br>    JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>  <li><b>onMouseOver.</b><code> Type: String</code><br>    JavaScript to be executed when the user moves the mouse cursor onto the component.</li>  <li><b>onMouseUp.</b><code> Type: String</code><br>    JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li></ul><h3>Advanced</h3><ul>  <li><b>emptyDataMessage.</b><code> Type: String </code><br>    The message displayed on a single table row when the table does not contain data. This row, which consists of one cell that spans all columns, is blank except for the text provided by this property. </li>  <li><b>extraFooterHtml.</b><code> Type: String</code><br>Extra HTML code to be appended to the <code>&lt;tr&gt;</code> HTML element that is rendered for the row group footer. Use only code that is valid in an HTML <code>&lt;td&gt;</code> element. The code you specify is inserted in the HTML element and is not checked for validity. For example, you might set this attribute to <code>nowrap='nowrap'</code>. </li>  <li><b>extraHeaderHtml.</b><code> Type: String</code><br>    Extra HTML code to be appended to the <code>&lt;tr&gt;</code> HTML element that is rendered for the row group header. Use only code that is valid in an HTML <code>&lt;td&gt;</code> element. The code you specify is inserted in the HTML element and is not checked for validity. For example, you might set this attribute to <code>nowrap='nowrap'</code>. </li>  <li><b>rendered.</b><code> Type: boolean</code><br>    If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the Table Row Group  shows nothing on the page, including the rows and any associated header, footer, or column text for the group, and none of the information is in the HTML. not even as hidden components. If this property is not selected (false), it overrides the <code>rendered</code> properties of any child components.      <p>You can bind this property to a JavaBeans property that determines when the component does get rendered. For example, an airline reservation form might show a Table Row Group for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>  </li></ul><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="../row_group.html">Table Row Group Component</a></dd>  <dd><a href="../../../../components/component_process.html">Working With Components</a></dd>  <dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">      <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">      <param name="text" value="Understanding Scope and Managed Beans"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Table Row Group Component Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Table Row Group Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Table Row Group Component Properties Window </h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+
+<p>You see the Properties window for a Table Row Group component <img src="../../../../images/bh_rowgroup_icon.gif" alt="Row Group Component Icon" width="16" height="13">&nbsp;when you select it under a Table component in the		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../../navigator_win/navigator_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window"></object>&nbsp;
+  </object>
+A Table Row Group component is part of a table component, so you might have to expand a table's node in the Navigator window to see the Table Row Group components under it. </p>
+<ul class="note">
+  <li>You can use the Table Layout dialog box to set many of these properties. Not only is that dialog box easier to use in some respects than individual Properties windows for the Table, Table Column, and Table Row Group components, but you can work more naturally with the table and all its columns there. To open the dialog box, right-click the table in the Visual Designer and choose Table Layout.</li>
+</ul>
+<p>This JavaServer Faces 1.2 component has the following properties.</p>
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: String</code><br>
+		The name of the Table Row Group component in the page bean and the JSP file.</li>
+</ul>
+
+<h3>Appearance</h3>
+<ul>
+	<li><b>aboveColumnFooter.</b> <code>Type: boolean </code><br>
+		If selected,  the row group footer is displayed above the column footers. The default is 
+to display the row group footer below the column footers.</li>
+	<li><b>aboveColumnHeader.</b> <code>Type: boolean </code><br>
+If selected, the row group header is displayed above the column headers. The default is to 
+display the row group header below the column headers.</li>
+	<li>
+	  <p><b>align.</b> <code>Type: String</code><br>
+	    Specifies the horizontal alignment for the cell. Possible values are left, center, right, and justify.</p>
+  </li>
+  <li><b>collapsed.</b> <code>Type: boolean </code><br>
+	  If selected, the  row group shows only the header and not the rows, footer, or column text. This property is not selected by default, and
+the table row group is expanded, with all rows in the group visible. </li>
+	<li><b>footerText.</b> <code>Type: String</code><br>
+		The text displayed for the row group footer, providing an overall footer for the data group represented by this row group.</li>
+	<li><b>groupToggleButton.</b> <code>Type: boolean </code><br> 
+	  If selected, displays a button that the user can click to expand or contract the row group. </li>
+	<li><b>headerText.</b> <code>Type: String</code><br>
+The text displayed for the row group header, providing an overall header for the data group represented by this row group. </li>
+  <li><b>selectMultipleToggleButton.</b><code> Type: boolean</code><br>
+If selected, adds a button that enables a user to select all rows displayed in the table at once. This button is used to toggle a column of checkboxes by using the ID given to the <code>selectId</code> property of the <a href="column_props.html">Table Column Component</a>. </li>
+    <li><b>selected.</b><code> Type: boolean </code><br>
+If this property is selected, the appearance of the current row changes to indicate that it is selected. Typically you bind this property to a JavaBeans property that returns a value based on the request scope attribute set in the <code>sourceVar</code> property.</li>
+    <li><b>styleClasses.</b><code> Type: String</code><br>
+  A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
+	        <ul class="note">
+          <li>This property overrides any settings in the theme or the project CSS file for this component. If a class specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
+<li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.
+       
+        </li>
+	        </ul>
+  </li>
+	<li> <b> valign.</b><code> Type: String</code><br>
+  Specifies the vertical position within the cell of the cell contents. Possible values are:
+    <ul>
+      <li> <b><code> top</code></b> - Positions the contents at the top of the cell.</li>
+      <li><code><b>middle</b></code> - The default value, which centers the contents vertically.</li>
+      <li><b><code> bottom</code></b> - Positions the contents at the bottom of the cell.</li>
+      </ul>
+    </li>
+</ul>
+<h3>Layout</h3>
+<ul>
+  <li><b>multipleColumnFooters.</b><code> Type: boolean </code><br>
+    If selected, multiple column footers are shown. If Table Column components are nested, footers are rendered inverted to column headers. The default value, not selected, shows one level only. </li>
+  <li><b>multipleTableColumnFooters.</b><code> Type: boolean </code><br>
+    If selected, multiple table column footers are shown. If Table Column components are nested, footers are rendered inverted to column headers. The default value, not selected, shows one level only. </li>
+</ul>
+<h3>Data</h3>
+<ul>
+  <li><b>rows.</b> <code>Type: int </code><br>
+    The number of rows to be displayed for a paginated table. The default value is 
+25 rows per page. See the <code>paginateButton</code> property description in <a href="table_props.html">Table Properties Window</a> for more information on paginated tables.</li>
+  <li><b>sourceData.</b> <code>Type: Object </code><br>
+    The source data for this component, which can be of type <code>TableDataProvider</code>, <code>ObjectArrayDataProvider</code>,  <code>ObjectListDataProvider</code>, or <code>CachedRowSetDataProvider</code>. Because this property is referenced during the decode, 
+    validate, update and renderer phases when iterating over rows, the 
+     object bound to this property should be cached so that the object 
+    is not created more often than needed.
+    <p>If you drop a database table on the Table Row Group, this property is set for you. You can also click the ellipsis button (...) to the right of the property and choose a data provider from a list. For example, there is a <code>TableDataProvider</code> for every database table that you have added to the page.</p>
+  </li>
+  <li><b>sourceVar.</b> <code>Type: TableDataProvider</code><br>
+    Name of the request-scope attribute under which model data for the current row 
+    is exposed when iterating through the data. During iterative processing over the rows of 
+    data in the data provider, the <code>TableDataProvider</code> for the current row is exposed 
+    as a request attribute under the key specified by  this property. This 
+    value must be unique for each table in the  page. </li>
+</ul>
+<h3>Behavior</h3>
+<ul>
+  <li><b>first.</b> <code>Type: int </code><br>
+    The zero-relative row number of the first row to be displayed for a paginated 
+table. See the <code>paginateButton</code> property description in <a href="table_props.html">Table Properties Window</a> for more information on paginated tables. </li>
+</ul>
+<ul>
+  <li><b>toolTip.</b><code> Type: String</code><br>
+    The value of the title attribute for the column. The specified text will display as a tooltip if the mouse cursor hovers over a cell in the column.
+  <ul class="note">
+  <li>If the component is disabled, the tooltip will not display in most browsers. 
+    </li>
+</ul>
+</li>
+  <li><b>visible.</b><code> Type: boolean</code><br>
+    Indicates whether or not the component can be seen by the user on the rendered HTML page. This property is selected by default, making the Row Group visible by default. If you deselect this property, the rows of the Table Row Group are rendered to HTML but are hidden, although any  header, footer, or column text remains visible. Since it is rendered, but hidden, the Table Row Group can be made visible again through a client side action.</li>
+</ul>
+<h3>JavaScript</h3>
+<ul>
+  <li><b>onClick.</b><code> Type: String</code><br>
+    JavaScript to be executed when the user clicks the component.</li>
+  <li><b>onDblClick.</b> <code> Type: String</code><br>
+    JavaScript to be executed when the user double-clicks the component.</li>
+  <li><b>onKeyDown.</b><code> Type: String</code><br>
+    JavaScript to be executed when the component has focus and a key is pressed. </li>
+  <li><b>onKeyPress.</b><code> Type: String</code><br>
+    JavaScript to be executed when the component has focus and a key is pressed and released.</li>
+  <li><b>onKeyUp.</b><code> Type: String</code><br>
+    JavaScript to be executed when the component has focus and a key is released.</li>
+  <li><b>onMouseDown.</b><code> Type: String</code><br>
+    JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>
+  <li><b>onMouseMove.</b><code> Type: String</code><br>
+    JavaScript to be executed when the user moves the mouse cursor within the component.</li>
+  <li><b>onMouseOut.</b><code> Type: String</code><br>
+    JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>
+  <li><b>onMouseOver.</b><code> Type: String</code><br>
+    JavaScript to be executed when the user moves the mouse cursor onto the component.</li>
+  <li><b>onMouseUp.</b><code> Type: String</code><br>
+    JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li>
+</ul>
+<h3>Advanced</h3>
+<ul>
+  <li><b>emptyDataMessage.</b><code> Type: String </code><br>
+    The message displayed on a single table row when the table does not contain 
+data. This row, which consists of one cell that spans all columns, is blank 
+except for the text provided by this property. </li>
+  <li><b>extraFooterHtml.</b><code> Type: String</code><br>
+Extra HTML code to be appended to the <code>&lt;tr&gt;</code> HTML element that is rendered for the row group footer. Use only code that is valid in an HTML <code>&lt;td&gt;</code> element. The code you specify is inserted in the HTML element and is not checked for validity. For example, you might set this attribute to <code>nowrap='nowrap'</code>. </li>
+  <li><b>extraHeaderHtml.</b><code> Type: String</code><br>
+    Extra HTML code to be appended to the <code>&lt;tr&gt;</code> HTML element that is rendered for the row group header. Use only code that is valid in an HTML <code>&lt;td&gt;</code> element. The code you specify is inserted in the HTML element and is not checked for validity. For example, you might set this attribute to <code>nowrap='nowrap'</code>. </li>
+  <li><b>rendered.</b><code> Type: boolean</code><br>
+    If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the Table Row Group  shows nothing on the page, including the rows and any associated 
+header, footer, or column text for the group, and none of the information is in the 
+HTML. not even as hidden components. If this property is not selected (false), it overrides the <code>rendered</code> properties of any child components.
+      <p>You can bind this property to a JavaBeans property that determines when the component does get rendered. For example, an airline reservation form might show a Table Row Group for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>
+  </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../row_group.html">Table Row Group Component</a></dd>
+  <dd><a href="../../../../components/component_process.html">Working With Components</a></dd>
+  <dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">
+      <param name="text" value="Understanding Scope and Managed Beans"></object>
+</dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Table Row Group Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

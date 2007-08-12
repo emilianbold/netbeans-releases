@@ -1,1 +1,114 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Tab Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Tab Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>A Tab <img src="../../../images/bh_tab_icon.gif" alt="Tab icon">&nbsp;component is part of a <a href="tab_set.html">Tab Set component</a>. You can add a new tab to a tab set in two ways, by right-clicking the Tab Set component or a Tab component and choosing Add Tab or by dragging a new Tab component from the Layout category of the Palette and dropping it on the Tab Set or on another Tab component. You can also drag  from the Palette and drop the tab on the tab set's nodes in the 		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../../navigator_win/navigator_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="385,450">    <param name="text" value="Navigator window."></object></p>   <ul class="note">      <li>        This component is a JavaServer Faces 1.2 component. You see components that use this        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,        see:<br>         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value=          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>      </li></ul><ul>  <li>If you drop the Tab component to the left or right of an existing tab, it is added to the same row of tabs.</li>  <li> If you drop the Tab component on  an existing tab, the dropped tab becomes a child tab of the tab on which you drop it unless the existing tab is a third level tab. You can have at most three levels of  tabs in a tab set.    <ul class="note">      <li>You cannot add a child tab to a tab that has components in its Layout Panel. When you drop a tab on an existing tab component that has an empty Layout Panel, the empty Layout Panel is deleted to make room for the dropped tab. </li>    </ul>  </li></ul><p>By default, a Tab component has a Layout Panel below it where you can drop components that will be displayed when the user selects the tab.  The Layout Panel by default has its <code>panelLayout</code> property set to Grid Layout, meaning that components dropped on the panel are aligned at the location where they are dropped. You can change the layout behavior by  setting the <code>panelLayout</code> property to Flow Layout, which aligns dropped components left to right in rows. For more information on Layout Panel properties, see <a href="propsheets/layoutPanel_props.html">Layout Panel Component Properties Window</a>.</p><p>To select a tab in a tab set, either click the Tab component on the page or select the Tab component's node in the 		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../../navigator_win/navigator_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="385,450">    <param name="text" value="Navigator window."></object>&nbsp;To select the whole tab set, either click the border of the Tab Set component on the page or select the tab set's node in the Outline window. Alternatively, you can select a Tab component and either press Escape or right-click and choose Select Parent to select its parent component. </p><ul class="note">  <li>If you select a tab on a page in the Visual Designer, a side effect is that it becomes the <a href="tab_set.html#selectedtab">selected tab</a>. If this effect is not what  you want, select the tab in the Outline window so you can set its properties.</li></ul>  <p>You can drag tabs   in the Outline window to change their location and level in the tab set. </p>  <p><b>Some typical uses of tabs: </b></p>  <ul>    <li>You can drop components on the Layout Panel component below a tab to enable a set of components to be displayed below each tab. When the user selects a tab, they see only the components that are associated with the tab, without having to change pages. </li>    <li>You can use a tab set to navigate among a set of pages. Each tab  component links to a page in your web application.  You would use the <a href="../../editors/about_navigation_editor.html">Page Flow editor</a> to define each tab to display a page in the application, with the current page's tab set as the selected tab. If you want to use the tab set for page navigation, be sure to delete each tab component's Layout Panel.</li>  </ul>  <p>You can also right-click the Tab component and choose a number of options, including the following: </p><ul>  <li><b>Edit Text.</b> Type the text that will appear on the tab and press Enter. The new text will be set in the <code>text</code> property.</li>  <li><b>Edit action Event Handler.</b> Code the action event handler, the method that is called when the user clicks the tab. This method determines which page or resource to open based on specified conditions. The action method typically processes mouse clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). The default name for the method is <i><code>tab-id</code></i><code>_action</code>, where <i>tab-id</i> is the name of the tab, the value of the tab's <code>id</code> property. </li>  <li><b>Bind to Data. </b>Dynamically set the text that appears on the tab. You can bind the component's <code>text</code> property to an object or a data provider, as described in the topic <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>  <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>text</code> property to other objects or bean properties that update this component's properties automatically.</li></ul><dl><dt><a name="seealso">See Also</a></dt><dd><a href="propsheets/tab_props.html">Tab Component Properties Window</a></dd><dd><a href="propsheets/layoutPanel_props.html">Layout Panel Component Properties Window</a></dd>  <dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>   <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl>     <dt>         <a name="tutorials">Tutorials</a>      </dt>      <dd>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">          <param name="text" value="Delving Into Components"></object>      </dd><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Tab Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table> </body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Tab Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Tab Component</h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+<p>A Tab <img src="../../../images/bh_tab_icon.gif" alt="Tab icon">&nbsp;component 
+is part of a <a href="tab_set.html">Tab Set component</a>. You can add a new tab to a tab set in two ways, by right-clicking the Tab Set component or a Tab component and choosing Add Tab or by dragging a new Tab component from the Layout category of the Palette and dropping it on the Tab Set or on another Tab component. You can also drag  from the Palette and drop the tab on the tab set's nodes in the 
+		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../navigator_win/navigator_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window."></object></p>
+   <ul class="note">
+      <li>
+        This component is a JavaServer Faces 1.2 component. You see components that use this
+        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,
+        see:<br>
+         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value=
+          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">
+          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>
+      </li>
+</ul>
+
+<ul>
+  <li>If you drop the Tab component to the left or right of an existing tab, it is added to the same row of tabs.</li>
+  <li> If you drop the Tab component on  an existing tab, the dropped tab becomes a child tab of the tab on which you drop it unless the existing tab is a third level tab. You can have at most three levels of  tabs in a tab set.
+    <ul class="note">
+      <li>You cannot add a child tab to a tab that has components in its Layout Panel. When you drop a tab on an existing tab component that has an empty Layout Panel, the empty Layout Panel is deleted to make room for the dropped tab. </li>
+    </ul>
+  </li>
+</ul>
+<p>By default, a Tab component has a Layout Panel below it where you can drop components that will be displayed when the user selects the tab.  The Layout Panel by default has its <code>panelLayout</code> property set to Grid Layout, meaning that components dropped on the panel are aligned at the location where they are dropped. You can change the layout behavior by  setting the <code>panelLayout</code> property to Flow Layout, which aligns dropped components left to right in rows. For more information on Layout Panel properties, see <a href="propsheets/layoutPanel_props.html">Layout Panel Component Properties Window</a>.</p>
+<p>To select a tab in a tab set, either click the Tab component on the page or select the Tab component's node in the 
+		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../navigator_win/navigator_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window."></object>&nbsp;
+
+To select the whole tab set, either click the border of the Tab Set component on the page or select the tab set's node in the Navigator window. Alternatively, you can select a Tab component and either press Escape or right-click and choose Select Parent to select its parent component. </p>
+<ul class="note">
+  <li>If you select a tab on a page in the Visual Designer, a side effect is that it becomes the <a href="tab_set.html#selectedtab">selected tab</a>. If this effect is not what  you want, select the tab in the Navigator window so you can set its properties.</li>
+</ul>
+  <p>You can drag tabs   in the Navigator window to change their location and level in the tab set. </p>
+  <p><b>Some typical uses of tabs: </b></p>
+  <ul>
+    <li>You can drop components on the Layout Panel component below a tab to enable a set of components to be displayed below each tab. When the user selects a tab, they see only the components that are associated with the tab, without having to change pages. </li>
+    <li>You can use a tab set to navigate among a set of pages. Each tab  component links to a page in your web application.  You would use the <a href="../../editors/about_navigation_editor.html">Page Flow editor</a> to define each tab to display a page in the application, with the current page's tab set as the selected tab. If you want to use the tab set for page navigation, be sure to delete each tab component's Layout Panel.</li>
+  </ul>
+  <p>You can also right-click the Tab component and choose a number of options, including the following: </p>
+<ul>
+  <li><b>Edit Text.</b> Type the text that will appear on the tab and press Enter. The new text will be set in the <code>text</code> property.</li>
+  <li><b>Edit action Event Handler.</b> Code the action event handler, the method that is called when the user clicks the tab. This method determines which page or resource to open based on specified conditions. The action method typically processes mouse clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). The default name for the method is <i><code>tab-id</code></i><code>_action</code>, where <i>tab-id</i> is the name of the tab, the value of the tab's <code>id</code> property. </li>
+  <li><b>Bind to Data. </b>Dynamically set the text that appears on the tab. You can bind the component's <code>text</code> property to an object or a data provider, as described in the topic <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>
+  <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>text</code> property to other objects or bean properties that update this component's properties automatically.</li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="propsheets/tab_props.html">Tab Component Properties Window</a></dd>
+<dd><a href="propsheets/layoutPanel_props.html">Layout Panel Component Properties Window</a></dd>  <dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+ 
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>     <dt>
+         <a name="tutorials">Tutorials</a>
+      </dt>
+      <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">
+          <param name="text" value="Delving Into Components"></object>
+      </dd>
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Tab Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+</body>
+</html>

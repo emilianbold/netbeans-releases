@@ -1,1 +1,74 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Object Data Provider Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Object Data Provider Properties Window </h2><p><small><a href="#seealso">See Also</a></small></p><p>You see the Properties window for a Object Data Provider component &nbsp;when you select the component's node in the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../../../navigator_win/navigator_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="385,450">    <param name="text" value="Navigator window"></object>. </p><p>This component has the following properties.</p><h3>General</h3><ul>	<li><b>id.</b><code> Type: text</code><br>		The name of the instance variable that is created in the page bean. The instance variable is of type <code>ObjectDataProvider</code>.</li></ul><h3>Data</h3><ul>  <li><b>includeFields.</b> <code>Type: Boolean </code><br>  Indicates whether public instance variables in the wrapped class should be exposed as fields.  The flag is <code>False</code> by default to encourage use of standard JavaBeans design patterns.&nbsp;Normally, JavaBeans properties are recognized by the existence of appropriate getter and setter methods.&nbsp;Selecting this option enables an instance variable to be exposed by this data provider  as if it were a property. </li>  <li><b>object.</b> <code>Type: Object </code>    <p>      The <code>Object</code> to be wrapped by this data provider. In the IDE, you can set this property's value to properties of the current page bean, properties of RequestBean1, properties of SessionBean1, and properties of ApplicationBean1. You can  also set this data provider programmatically to wrap any <code>Object</code> you like.</p>  </li></ul><h3>Events</h3><p>You typically set the event properties by right-clicking the component's node in the Outline window and choosing Edit Event Handler &gt; <i>eventname</i>. The IDE creates the approriate event method for this data provider and opens the Java Editor so you can edit the new method. </p><ul>	<li><b>providerChanged. </b>Type: <code>dataListener</code>      <p>This event is called when a large scale change occurs that is not an individual property change.&nbsp; The most common scenario is if you change the object that this ODP wraps. That event is significant because it potentially changes the set of fields that are available.</p>	</li>	<li><b>valueChanged. </b>Type: <code>dataListener</code>      <div>This event is called  when there is a change to one of the fields in the object wrapped by this data provider.</div>    </li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../object_dp.html">Object Data Provider</a></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Object Data Provider Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Object Data Provider Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Object Data Provider Properties Window </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>You see the Properties window for a Object Data Provider component &nbsp;when you select the component's node in the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../../navigator_win/navigator_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window"></object>. </p>
+<p>This component has the following properties.</p>
+
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: text</code><br>
+		The name of the instance variable that is created in the page bean. The instance variable is of type <code>ObjectDataProvider</code>.</li>
+</ul>
+<h3>Data</h3>
+<ul>
+  <li><b>includeFields.</b> <code>Type: Boolean </code><br>
+  Indicates whether public instance variables in the wrapped class should be exposed as fields.  The flag is <code>False</code> by default to encourage use of standard JavaBeans design patterns.&nbsp;Normally, JavaBeans properties are recognized by the existence of appropriate getter and setter methods.&nbsp;Selecting this option enables an instance variable to be exposed by this data provider  as if it were a property. </li>
+
+  <li><b>object.</b> <code>Type: Object </code>
+    <p>
+      The <code>Object</code> to be wrapped by this data provider. In the IDE, you can set this property's value to properties of the current page bean, properties of RequestBean1, properties of SessionBean1, and properties of ApplicationBean1. You can  also set this data provider programmatically to wrap any <code>Object</code> you like.</p>
+
+  </li>
+</ul>
+<h3>Events</h3>
+<p>You typically set the event properties by right-clicking the component's node in the Navigator window and choosing Edit Event Handler &gt; <i>eventname</i>. The IDE creates the approriate event method for this data provider and opens the Java Editor so you can edit the new method. </p>
+<ul>
+	<li><b>providerChanged. </b>Type: <code>dataListener</code>
+      <p>This event is called when a large scale change occurs that is not an individual property change.&nbsp; The most common scenario is if you change the object that this ODP wraps. That event is significant because it potentially changes the set of fields that are available.</p>
+	</li>
+	<li><b>valueChanged. </b>Type: <code>dataListener</code>
+      <div>This event is called  when there is a change to one of the fields in the object wrapped by this data provider.</div>
+
+    </li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../object_dp.html">Object Data Provider</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Object Data Provider Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

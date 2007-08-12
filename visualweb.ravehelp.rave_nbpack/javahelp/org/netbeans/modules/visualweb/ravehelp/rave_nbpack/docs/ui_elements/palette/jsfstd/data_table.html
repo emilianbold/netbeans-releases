@@ -1,1 +1,160 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Standard Data Table Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Standard Data Table  Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You can drag the Standard JavaServer Faces Data Table component <img src="../../../images/datatableicon.gif" alt="Data Table Component Icon">&nbsp;from   the Palette to the Visual Designer to create a data table, a table   that you can fill with data from a database table or some other   source of repeating information for which the number of rows   is not known ahead of time.</p><ul class="warning">  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/table.html">Table component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li></ul><p>If you want a table that serves as an HTML layout element, use the <a href="grid_panel.html">Grid Panel</a> component from the Layout category of the Palette instead.</p><p>A Data Table initially has <a href="output_text.html">Output Text</a> components in each table cell. You can modify this component type if you like.</p><p>Data Tables render as <code>&lt;table&gt;</code> tags in HTML.</p><p>After dragging the component to the Visual Designer, you can   do a number of things with it:</p><ul>  <li>Select either any text element, or a column, or the Data     Table element. The Data Table component consists of a series     of columns that contain <a href="output_text.html">Output     Text</a> components <img src="../../../images/outputtexticon.gif" alt="output text icon">,     as you can see in     <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>      <param name="content" value="app_outline_datatable_graphic.html">      <param name="viewerActivator" value="javax.help.LinkLabel">      <param name="viewerStyle" value="javax.help.Popup">      <param name="viewerSize" value="550,400">      <param name="text" value="this screen shot"></object>    &nbsp;of a default data table and the data table's components     in the Outline window. You use the <code>OutputText</code>     components to set the data that displays in individual columns     and cells of the table, and you use the <code>DataTable</code>     part to specify how the table looks and to bind the entire     Data Table to a data provider.     <p>In the Outline window, the first outputText component       in a column is the column header, the second represents       the column data, and if you add column footers in the <a href="../../dialogs/data_table_layout_db.html">Data       Table Layout Dialog Box</a>, there is a third outputText       component that represents the footer.</p>  </li>  <li>You can bind a Data Table component to a data provider for a RowSet by     dropping a database table on the component, as described in     <a href="../../../connect_data/howtodata/binding_data_2_table_component.html">Binding     Data to a Data Table Component</a>. You can also bind the     Data Table separately to an object or data provider by setting     the value property, which is described below.     <p></p>  </li>  <li>After binding the Data Table, you can right-click either     the outer border of the component or the dataTable node in     the Outline window and choose Table Layout to design     the table, as described in <a href="../../dialogs/data_table_layout_db.html">Data     Table Layout Dialog Box</a>.</li>  <li>Select the component and drag it to another location on     the page.</li>  <li>Select the Data Table <img src="../../../images/datatableicon.gif" alt="Data Table Component Icon">&nbsp;part     of the component and edit its properties in the Data Table     <a href="../../propsheets/jsfstd_data_table_props.html">Properties window</a>. Some typical properties you might set are:     <ul>      <li><b>id.</b> The name of the Data Table. In the JSP         file, this name is the value of the <code>id</code> attribute.         In the page bean, this property's value is the name of         the <code>HtmlDataTable</code> object.</li>      <li><b>value.</b><code> Type: Object</code><br>        The object or database table that provides values for         the table. Clicking the ellipsis (...) button opens a         dialog box that enables you to bind the value property         either to a database table or to another object. The types         of objects to which this component can be bound are:         <ul>          <li><code>RowSetDataModel</code>, created for you when you             drop a database table on this component</li>          <li>Any instance of <code>javax.faces.model.DataModel</code></li>          <li> A list or array of JavaBeans</li>          <li> A single JavaBean, treated as a one-row table</li>        </ul>      </li>      <li><b>border.</b> Size of the table borders in pixels.</li>      <li><b>cellpadding.</b> <code>Type: String<br>        </code> Number of pixels to add on all sides of the contents         of each cell. </li>      <li><b>cellspacing.</b> <code>Type: String<br>        </code>Spacing between cells in pixels.</li>      <li><b>rows.</b><code> Type: int</code><br>        The number of rows displayed at one time in the Data Table.         If the number is zero, all rows of the database table         will be displayed at once. This value is updated automatically         if you use the Paging tab of the <a href="../../dialogs/data_table_layout_db.html">Table         Layout dialog box</a>, and enable paging.</li>      <li>Various properties specifying CSS style classes and         styles that can be applied to the table columns, the table         rows, the header and footer, and the entire table.</li>    </ul>  </li>  <li>Select the <code>OutputText </code><img src="../../../images/outputtexticon.gif" alt="output text icon">&nbsp;parts     of the component and edit their properties in the Output Text     <a href="../../propsheets/jsfstd_output_text_props.html">Properties window</a>. You can bind the Output Text components to a table     or another component and set their values dynamically. You     can select a column in the Outline window and bind its     Output Text components separately from other columns in the     table. Each column of the table has two Output Text components,     one for the heading and another for all the cells in the column,     each of which can be separately bound.</li></ul><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>   <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">      <param name="content" value="http://www.netbeans.org/kb/55/vwp-databoundcomponents.html">      <param name="text" value="Using Databound Components to Access a Database"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Data Table Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Standard Data Table Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Standard Data Table  Component</h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+
+<p>You can drag the Standard JavaServer Faces Data Table component <img src="../../../images/datatableicon.gif" alt="Data Table Component Icon">&nbsp;from 
+  the Palette to the Visual Designer to create a data table, a table 
+  that you can fill with data from a database table or some other 
+  source of repeating information for which the number of rows 
+  is not known ahead of time.</p>
+<ul class="warning">
+  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/table.html">Table component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li>
+</ul>
+<p>If you want a table that serves as an HTML layout element, 
+use the <a href="grid_panel.html">Grid Panel</a> component from the Layout category of the Palette instead.</p>
+<p>A Data Table initially has <a href="output_text.html">Output Text</a> components in each table cell. You can modify this component type if you like.</p>
+<p>Data Tables render as <code>&lt;table&gt;</code> tags in HTML.</p>
+<p>After dragging the component to the Visual Designer, you can 
+  do a number of things with it:</p>
+<ul>
+  <li>Select either any text element, or a column, or the Data 
+    Table element. The Data Table component consists of a series 
+    of columns that contain <a href="output_text.html">Output 
+    Text</a> components <img src="../../../images/outputtexticon.gif" alt="output text icon">, 
+    as you can see in 
+    <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+      <param name="content" value="app_outline_datatable_graphic.html">
+      <param name="viewerActivator" value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="550,400">
+      <param name="text" value="this screen shot"></object>
+    &nbsp;of a default data table and the data table's components 
+    in the Navigator window. You use the <code>OutputText</code> 
+    components to set the data that displays in individual columns 
+    and cells of the table, and you use the <code>DataTable</code> 
+    part to specify how the table looks and to bind the entire 
+    Data Table to a data provider. 
+    <p>In the Navigator window, the first outputText component 
+      in a column is the column header, the second represents 
+      the column data, and if you add column footers in the <a href="../../dialogs/data_table_layout_db.html">Data 
+      Table Layout Dialog Box</a>, there is a third outputText 
+      component that represents the footer.</p>
+  </li>
+  <li>You can bind a Data Table component to a data provider for a RowSet by 
+    dropping a database table on the component, as described in 
+    <a href="../../../connect_data/howtodata/binding_data_2_table_component.html">Binding 
+    Data to a Data Table Component</a>. You can also bind the 
+    Data Table separately to an object or data provider by setting 
+    the value property, which is described below. 
+    <p></p>
+  </li>
+  <li>After binding the Data Table, you can right-click either 
+    the outer border of the component or the dataTable node in 
+    the Navigator window and choose Table Layout to design 
+    the table, as described in <a href="../../dialogs/data_table_layout_db.html">Data 
+    Table Layout Dialog Box</a>.</li>
+  <li>Select the component and drag it to another location on 
+    the page.</li>
+  <li>Select the Data Table <img src="../../../images/datatableicon.gif" alt="Data Table Component Icon">&nbsp;part 
+    of the component and edit its properties in the Data Table 
+    <a href="../../propsheets/jsfstd_data_table_props.html">Properties window</a>. Some typical properties you might set are: 
+    <ul>
+      <li><b>id.</b> The name of the Data Table. In the JSP 
+        file, this name is the value of the <code>id</code> attribute. 
+        In the page bean, this property's value is the name of 
+        the <code>HtmlDataTable</code> object.</li>
+      <li><b>value.</b><code> Type: Object</code><br>
+        The object or database table that provides values for 
+        the table. Clicking the ellipsis (...) button opens a 
+        dialog box that enables you to bind the value property 
+        either to a database table or to another object. The types 
+        of objects to which this component can be bound are: 
+        <ul>
+          <li><code>RowSetDataModel</code>, created for you when you 
+            drop a database table on this component</li>
+          <li>Any instance of <code>javax.faces.model.DataModel</code></li>
+          <li> A list or array of JavaBeans</li>
+          <li> A single JavaBean, treated as a one-row table</li>
+        </ul>
+      </li>
+      <li><b>border.</b> Size of the table borders in pixels.</li>
+      <li><b>cellpadding.</b> <code>Type: String<br>
+        </code> Number of pixels to add on all sides of the contents 
+        of each cell. </li>
+      <li><b>cellspacing.</b> <code>Type: String<br>
+        </code>Spacing between cells in pixels.</li>
+      <li><b>rows.</b><code> Type: int</code><br>
+        The number of rows displayed at one time in the Data Table. 
+        If the number is zero, all rows of the database table 
+        will be displayed at once. This value is updated automatically 
+        if you use the Paging tab of the <a href="../../dialogs/data_table_layout_db.html">Table 
+        Layout dialog box</a>, and enable paging.</li>
+      <li>Various properties specifying CSS style classes and 
+        styles that can be applied to the table columns, the table 
+        rows, the header and footer, and the entire table.</li>
+    </ul>
+  </li>
+  <li>Select the <code>OutputText </code><img src="../../../images/outputtexticon.gif" alt="output text icon">&nbsp;parts 
+    of the component and edit their properties in the Output Text 
+    <a href="../../propsheets/jsfstd_output_text_props.html">Properties window</a>. You can bind the Output Text components to a table 
+    or another component and set their values dynamically. You 
+    can select a column in the Navigator window and bind its 
+    Output Text components separately from other columns in the 
+    table. Each column of the table has two Output Text components, 
+    one for the heading and another for all the cells in the column, 
+    each of which can be separately bound.</li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+ 
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+
+<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/kb/55/vwp-databoundcomponents.html">
+      <param name="text" value="Using Databound Components to Access a Database"></object>
+</dd>
+
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Data Table Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

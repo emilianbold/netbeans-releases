@@ -1,1 +1,86 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Table Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Table  Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You can drag the Table component <img src="../../../images/bh_table_icon.gif" alt="Table Component Icon">&nbsp;from   the Palette's Basic category to the Visual Designer to create a  table  that you can fill with data from a database table or some other   source of repeating information for which the number of rows   is not known ahead of time. A Table component renders as an HTML <code>&lt;table&gt;</code> tag.</p>    <ul class="note">      <li>        This component is a JavaServer Faces 1.1 component. You see components that use this        version of JavaServer Faces when your project uses J2EE 1.4 or J2EE 1.3.       </li>    </ul><p>If you want a table that serves as an HTML layout element, use the <a href="../jsfstd/grid_panel.html">Grid Panel</a> component instead.</p><ul class="note">  <li>You can drag a database table from the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../../../ui_elements/server_nav/services_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="325,175">    <param name="text" value="Services window"></object> and drop it on a table component in your page. The table component binds automatically to the data provider for the database table and the table columns are updated to match the fields of the database table. You can then format the table by right-clicking it and choosing Table Layout. For more information, see <a href="../../../connect_data/howtodata/binding_data_2_table_component.html">Binding a Table Component to a Database</a>,</li></ul><p>The table component itself does not define rows and columns. Those elements of the table are defined by the <a href="column.html">Table Column</a>  and <a href="row_group.html">Table Row Group</a> components. However, you can right-click a table that you have dropped on your page and choose Table Layout to set things like the data provider for the object or for the database table that populates your table, the table columns based on that data provider, and, for each table column, the column header, column footer, the type of object in the column, the expression that populates the column, and the vertical and horizontal alignment of the column. In addition, in this dialog box you can set table characteristics such as the title, the summary and footer text, the message that displays when there is no data in the table, and buttons that enable the user to manipulate aspects of the table's display.</p><p>You can also set all these values in the Properties windows for the Table, Table Row Group, and Table Column components that comprise the table, but the Table Layout dialog saves you time going from component to component. </p><p>When you first drop a table on a page, you get a table with three columns,  five rows, a default title that is selected and can be  edited immediately, default headers for each column, and  initial <a href="static_text.html">Static Text</a> components in each table cell. </p><p>To work with the rows of the table, you can select the table's Table Row Group component in the <a href="../../navigator_win/about_navigator_win.html">Navigator window</a>. If you want different rows to do different things, you can add additional Table Row Group components to the table.</p><p>To work with the columns of the table, you can use the Table Layout dialog box or you can select each column of the table in turn, either in the Table component on the page or in the Outline window. You can also add additional columns one at time by dragging a Table Column component to a Table Row Group component in the Outline window. </p><p>For a detailed view of the elements of a table, see <a href="table_structure.html">Table Component Structure</a>.</p><dl>  <dt><a name="seealso">See Also</a></dt> <dd><a href="propsheets/bh_table_props.html">Table Component Properties Window</a></dd>  <dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>   <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">      <param name="content" value="http://www.netbeans.org/kb/55/vwp-databoundcomponents.html">      <param name="text" value="Using Databound Components to Access a Database"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Table Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Table Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Table  Component</h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+
+<p>You can drag the Table component <img src="../../../images/bh_table_icon.gif" alt="Table Component Icon">&nbsp;from 
+  the Palette's Basic category to the Visual Designer to create a  table  that you can fill with data from a database table or some other 
+  source of repeating information for which the number of rows 
+  is not known ahead of time. A Table component renders as an HTML <code>&lt;table&gt;</code> tag.</p>
+    <ul class="note">
+      <li>
+        This component is a JavaServer Faces 1.1 component. You see components that use this
+        version of JavaServer Faces when your project uses J2EE 1.4 or J2EE 1.3. 
+      </li>
+    </ul>
+
+<p>If you want a table that serves as an HTML layout element, use the <a href="../jsfstd/grid_panel.html">Grid Panel</a> component instead.</p>
+<ul class="note">
+  <li>You can drag a database table from the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../../ui_elements/server_nav/services_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="325,175">
+    <param name="text" value="Services window"></object> and drop it on a table component in your page. The table component binds automatically to the data provider for the database table and the table columns are updated to match the fields of the database table. You can then format the table by right-clicking it and choosing Table Layout. For more information, see <a href="../../../connect_data/howtodata/binding_data_2_table_component.html">Binding a Table Component to a Database</a>,</li>
+</ul>
+<p>The table component itself does not define rows and columns. Those elements of the table are defined by the <a href="column.html">Table Column</a>  and <a href="row_group.html">Table Row Group</a> components. However, you can right-click a table that you have dropped on your page and choose Table Layout to set things like the data provider for the object or for the database table that populates your table, the table columns based on that data provider, and, for each table column, the column header, column footer, the type of object in the column, the expression that populates the column, and the vertical and horizontal alignment of the column. In addition, in this dialog box you can set table characteristics such as the title, the summary and footer text, the message that displays when there is no data in the table, and buttons that enable the user to manipulate aspects of the table's display.</p>
+<p>You can also set all these values in the Properties windows for the Table, Table Row Group, and Table Column components that comprise the table, but the Table Layout dialog saves you time going from component to component. </p>
+<p>When you first drop a table on a page, you get a table with three columns,  five rows, a default title that is selected and can be  edited immediately, default headers for each column, and  initial <a href="static_text.html">Static 
+Text</a> components in each table cell. </p>
+<p>To work with the rows of the table, you can select the table's Table Row Group component in the <a href="../../navigator_win/about_navigator_win.html">Navigator window</a>. If you want different rows to do different things, you can add additional Table Row Group components to the table.</p>
+<p>To work with the columns of the table, you can use the Table Layout dialog box or you can select each column of the table in turn, either in the Table component on the page or in the Navigator window. You can also add additional columns one at time by dragging a Table Column component to a Table 
+Row Group component in the Navigator window. </p>
+<p>For a detailed view of the elements of a table, see <a href="table_structure.html">Table Component Structure</a>.</p>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+ <dd><a href="propsheets/bh_table_props.html">Table Component Properties Window</a></dd>  <dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+ 
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/kb/55/vwp-databoundcomponents.html">
+      <param name="text" value="Using Databound Components to Access a Database"></object>
+</dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Table Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

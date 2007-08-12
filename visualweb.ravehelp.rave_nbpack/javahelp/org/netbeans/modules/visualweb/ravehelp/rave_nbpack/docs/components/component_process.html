@@ -1,1 +1,152 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Working With Components</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Working With Components</h2>The following table shows how to use components.<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each process step. The right column contains detail information to accomplish that process.">    <tr valign="top">     <td align="center"><p><img src="../images/circle1.gif" alt="Number one"><br>      <b>Add components</b></p>    </td>    <td>       <ul>        <li><a href="howtocomponents/add_component.html">Drag components</a> from the 	    <a href="../ui_elements/palette/palette.html">Palette</a> to the <a href="../ui_elements/editors/about_visual_editor.html">Visual Designer</a>.</li>    </ul></td>  </tr>  <tr>     <td colspan="2">       <hr align="center" width="80%">    </td>  </tr>  <tr valign="top">    <td align="center">      <p><img src="../images/circle2.gif" alt="Number two"><br>      <b>Choose page layout</b></p>    </td>    <td>      <ol>        <li>In the Visual Designer, click the page. </li>        <li>In the page's <a href="../ui_elements/propsheets/propsheet_win.html">Properties window</a>, select the value for <a href="howtocomponents/layout_comp.html">Page Layout</a>.</li>    </ol></td>  </tr>  <tr>    <td colspan="2">      <hr align="center" width="80%">    </td>  </tr>  <tr valign="top">     <td align="center"><p><img src="../images/circle3.gif" alt="Number three"><br>          <b>Position components</b></p>    </td>    <td>     <ol>        <li>Drag the component to the desired location in the Visual Designer or Outline window.</li>	    <li>If desired, <a href="howtocomponents/align_components.html">align the components</a>.</li>        <li>If you are <a href="howtocomponents/layer_comp.html">stacking components</a>, 		  ensure that you position the components correctly.</li>        <li>If you are <a href="howtocomponents/nest_comp.html">nesting a component</a>, ensure that you  move the component inside its container. </li>    </ol></td>  </tr>  <tr>     <td colspan="2">       <hr align="center" width="80%">    </td>  </tr>  <tr valign="top">    <td align="center"><p><img src="../images/circle4.gif" alt="Number four"><br>        <b>(Optional)<br>        Connect to database </b></p>    </td>    <td>      <ol>        <li> If you are connecting to a table in a database, drag the table from the 		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../ui_elements/server_nav/services_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="400,250">    <param name="text" value="Services window"></object> 		to the Visual Designer. </li>        <li>Decide whether to drop the table directly on the component or  on the page, and then 		<a href="../connect_data/about_data_binding.html">bind  the table</a> to the component. </li>    </ol></td>  </tr>  <tr>    <td colspan="2">      <hr align="center" width="80%">    </td>  </tr>  <tr valign="top">    <td align="center"><p><img src="../images/circle5.gif" alt="Number five"><br>        <b>Set properties </b></p>    </td>    <td>      <ul>        <li>In the <a href="../ui_elements/propsheets/propsheet_win.html">Properties window</a>, set the properties.</li>    </ul></td>  </tr>  <tr>    <td colspan="2">      <hr align="center" width="80%">    </td>  </tr>  <tr valign="top">    <td align="center"><p><img src="../images/circle6.gif" alt="Number six"><br>        <b>Set event handling</b></p>    </td>    <td>      <ul>        <li>        Specify event 		handling by right-clicking  the component, clicking Edit Event Handler, and choosing the appropriate event handling method.</li>      </ul></td>  </tr>  <tr>    <td colspan="2">      <hr align="center" width="80%">    </td>  </tr>   <tr valign="top">     <td align="center"><p><img src="../images/circle7.gif" alt="Number seven"><br>      <b>Preview</b></p>    </td>    <td>       <ul>        <li>In the Visual Designer, right-click and choose 		<a href="howtocomponents/preview_form.html">Preview in Browser</a>. </li>      </ul>    </td>  </tr></table><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Working With Components">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Working With Components</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Working With Components</h2>
+
+The following table shows how to use components.
+<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each process step. The right column contains detail information to accomplish that process.">
+  
+  <tr valign="top"> 
+    <td align="center"><p><img src="../images/circle1.gif" alt="Number one"><br>
+      <b>Add components</b></p>
+    </td>
+    <td> 
+      <ul>
+        <li><a href="howtocomponents/add_component.html">Drag components</a> from the 
+	    <a href="../ui_elements/palette/palette.html">Palette</a> to the <a href="../ui_elements/editors/about_visual_editor.html">Visual Designer</a>.</li>
+    </ul></td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top">
+    <td align="center">
+      <p><img src="../images/circle2.gif" alt="Number two"><br>
+      <b>Choose page layout</b></p>
+    </td>
+    <td>
+      <ol>
+        <li>In the Visual Designer, click the page. </li>
+        <li>In the page's <a href="../ui_elements/propsheets/propsheet_win.html">Properties window</a>, select the value for <a href="howtocomponents/layout_comp.html">Page Layout</a>.</li>
+    </ol></td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"><p><img src="../images/circle3.gif" alt="Number three"><br>
+          <b>Position components</b></p>
+    </td>
+    <td> 
+    <ol>
+        <li>Drag the component to the desired location in the Visual Designer or Navigator window.</li>
+	    <li>If desired, <a href="howtocomponents/align_components.html">align the components</a>.</li>
+        <li>If you are <a href="howtocomponents/layer_comp.html">stacking components</a>, 
+		  ensure that you position the components correctly.</li>
+        <li>If you are <a href="howtocomponents/nest_comp.html">nesting a component</a>, ensure that you  move the component inside its container. </li>
+    </ol></td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top">
+    <td align="center"><p><img src="../images/circle4.gif" alt="Number four"><br>
+        <b>(Optional)<br>
+        Connect to database </b></p>
+    </td>
+    <td>
+      <ol>
+        <li> If you are connecting to a table in a database, drag the table from the 
+		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../ui_elements/server_nav/services_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,250">
+    <param name="text" value="Services window"></object> 
+		to the Visual Designer. </li>
+        <li>Decide whether to drop the table directly on the component or  on the page, and then 
+		<a href="../connect_data/about_data_binding.html">bind  the table</a> to the component. </li>
+    </ol></td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top">
+    <td align="center"><p><img src="../images/circle5.gif" alt="Number five"><br>
+        <b>Set properties </b></p>
+    </td>
+    <td>
+      <ul>
+        <li>In the <a href="../ui_elements/propsheets/propsheet_win.html">Properties window</a>, set the properties.</li>
+    </ul></td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top">
+    <td align="center"><p><img src="../images/circle6.gif" alt="Number six"><br>
+        <b>Set event handling</b></p>
+    </td>
+    <td>
+      <ul>
+        <li>
+        Specify event 
+		handling by right-clicking  the component, clicking Edit Event Handler, and choosing the appropriate event handling method.</li>
+      </ul></td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+ 
+  <tr valign="top"> 
+    <td align="center"><p><img src="../images/circle7.gif" alt="Number seven"><br>
+      <b>Preview</b></p>
+    </td>
+    <td> 
+      <ul>
+        <li>In the Visual Designer, right-click and choose 
+		<a href="howtocomponents/preview_form.html">Preview in Browser</a>. </li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Working With Components">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

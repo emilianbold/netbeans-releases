@@ -1,1 +1,109 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Standard Component Label Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Standard Component Label Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You can drag the Standard JavaServer Faces Component Label component   <img src="../../../images/componentlabelicon.gif" alt="component label icon">&nbsp;from   the Palette to the Visual Designer to create a label for another   component. A Component Label associates a label with another   component of your page, providing support for speech browsers   and enabling visual browsers to provide features like the ability   to click a text label to select a radio button or checkbox.   If all you need is simple text not directly associated with   a component, as in a title or a heading or a set of instructions,   use the <a href="../bh/static_text.html">Static Text component</a>   instead.</p><ul class="warning">  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/label.html">Label component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li></ul><p>After dragging the component to the Visual Designer, you can do a number of things   with it:</p><ul>  <li>Change the displayed text of the component by selecting the the component    and typing the new text. Press Enter to save the text in the component's    value property.</li>  <li>Select either the text element (inner part) or the label     element (outer part). This component is composed of a<code>     ComponentLabel</code> and an embedded <code>OutputText</code> component.     Depending on where you click this component in the Visual Designer, you get different Properties windows.    <p>When this composite component is selected in the Visual Designer, you see it in the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../../../ui_elements/navigator_win/navigator_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="385,450">    <param name="text" value="Navigator window"></object>, and you can       see which part of the component you have selected. The <code>componentLabel</code>       <img src="../../../images/componentlabelicon.gif" alt="component label icon">&nbsp;is       the main node of the component, and the <code>componentLabelText       </code> <img src="../../../images/outputtexticon.gif" alt="Output Text icon">&nbsp;is       a subnode. You can also use the Outline window to select       either part of the component and work with the selected       component part's properties.</p>  </li>  <li>Select the component drag it to another location on the     page.</li>  <li>Select the outer component and edit its properties in the     Component Label <a href="../../propsheets/jsfstd_component_label_props.html">Properties window</a>. Some typical properties you might set are:     <ul>      <li><b>id.</b> The name of the Component Label. In the JSP         file, this name is the value of the <code>id</code> attribute.         In the page bean, this property's value is the name of         the <code>HtmlOutputLabel</code> object.</li>      <li><b>for.</b> The component for which this Component Label         component provides a label.</li>    </ul>  </li>  <li>Select the inner part of the component, the <code>componentLabelText</code> <img src="../../../images/outputtexticon.gif" alt="Output Text icon">,     and edit its properties in the Output Text <a href="../../propsheets/jsfstd_output_text_props.html">Properties window</a>. The most useful thing you can do in the Properties window is to set the visible label text for the component in     the Output Text component's value property. You can also bind     the Output Text component to a table and set the label's text     dynamically.</li></ul><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>    <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Component Label Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Standard Component Label Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Standard Component Label Component</h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+<p>You can drag the Standard JavaServer Faces Component Label component 
+  <img src="../../../images/componentlabelicon.gif" alt="component label icon">&nbsp;from 
+  the Palette to the Visual Designer to create a label for another 
+  component. A Component Label associates a label with another 
+  component of your page, providing support for speech browsers 
+  and enabling visual browsers to provide features like the ability 
+  to click a text label to select a radio button or checkbox. 
+  If all you need is simple text not directly associated with 
+  a component, as in a title or a heading or a set of instructions, 
+  use the <a href="../bh/static_text.html">Static Text component</a> 
+  instead.</p>
+<ul class="warning">
+  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/label.html">Label component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li>
+</ul>
+<p>After dragging the component to the Visual Designer, you can do a number of things 
+  with it:</p>
+<ul>
+  <li>Change the displayed text of the component by selecting the the component
+    and typing the new text. Press Enter to save the text in the component's
+    value property.</li>
+  <li>Select either the text element (inner part) or the label 
+    element (outer part). This component is composed of a<code> 
+    ComponentLabel</code> and an embedded <code>OutputText</code> component. 
+    Depending on where you click this component in the Visual Designer, you get different Properties windows.
+    <p>When this composite component is selected in the Visual Designer, you see it in the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../../ui_elements/navigator_win/navigator_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window"></object>, and you can 
+      see which part of the component you have selected. The <code>componentLabel</code> 
+      <img src="../../../images/componentlabelicon.gif" alt="component label icon">&nbsp;is 
+      the main node of the component, and the <code>componentLabelText 
+      </code> <img src="../../../images/outputtexticon.gif" alt="Output Text icon">&nbsp;is 
+      a subnode. You can also use the Navigator window to select 
+      either part of the component and work with the selected 
+      component part's properties.</p>
+  </li>
+  <li>Select the component drag it to another location on the 
+    page.</li>
+  <li>Select the outer component and edit its properties in the 
+    Component Label <a href="../../propsheets/jsfstd_component_label_props.html">Properties window</a>. Some typical properties you might set are: 
+    <ul>
+      <li><b>id.</b> The name of the Component Label. In the JSP 
+        file, this name is the value of the <code>id</code> attribute. 
+        In the page bean, this property's value is the name of 
+        the <code>HtmlOutputLabel</code> object.</li>
+      <li><b>for.</b> The component for which this Component Label 
+        component provides a label.</li>
+    </ul>
+  </li>
+  <li>Select the inner part of the component, the <code>componentLabelText</code> <img src="../../../images/outputtexticon.gif" alt="Output Text icon">, 
+    and edit its properties in the Output Text <a href="../../propsheets/jsfstd_output_text_props.html">Properties window</a>. The most useful thing you can do in the Properties window is to set the visible label text for the component in 
+    the Output Text component's value property. You can also bind 
+    the Output Text component to a table and set the label's text 
+    dynamically.</li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+ 
+ 
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Component Label Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
