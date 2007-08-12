@@ -75,9 +75,11 @@ import org.openide.util.NbBundle;
  */
 public class EqualsHashCodeGenerator implements CodeGenerator {
 
+    private static final String ERROR = "<error>"; //NOI18N
+        
     public static class Factory implements CodeGenerator.Factory {
         
-        Factory() {            
+        Factory() {
         }
         
         public Iterable<? extends CodeGenerator> create(CompilationController cc, TreePath path) throws IOException {
@@ -125,8 +127,8 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         
         List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
         for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
-            cc.toPhase(JavaSource.Phase.RESOLVED);
-            descriptions.add(ElementNode.Description.create(variableElement, null, true, isUsed(cc, variableElement, equalsHashCode)));
+            if (!ERROR.contentEquals(variableElement.getSimpleName()))
+                descriptions.add(ElementNode.Description.create(variableElement, null, true, isUsed(cc, variableElement, equalsHashCode)));
         }
         if (descriptions.isEmpty() || (equalsHashCode[0] != null && equalsHashCode[1] != null))
             return null;

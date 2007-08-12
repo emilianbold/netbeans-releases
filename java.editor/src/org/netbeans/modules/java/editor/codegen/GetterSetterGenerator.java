@@ -58,6 +58,8 @@ public class GetterSetterGenerator implements CodeGenerator {
     
     public static class Factory implements CodeGenerator.Factory {
         
+        private static final String ERROR = "<error>"; //NOI18N
+        
         Factory() {
         }
 
@@ -84,6 +86,8 @@ public class GetterSetterGenerator implements CodeGenerator {
             Map<Element, List<ElementNode.Description>> sDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
             Map<Element, List<ElementNode.Description>> gsDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
             for (VariableElement variableElement : ElementFilter.fieldsIn(elements.getAllMembers(typeElement))) {
+                if (ERROR.contentEquals(variableElement.getSimpleName()))
+                    continue;
                 ElementNode.Description description = ElementNode.Description.create(variableElement, null, true, false);
                 boolean hasGetter = GeneratorUtils.hasGetter(controller, variableElement, methods);
                 boolean hasSetter = variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, variableElement, methods);

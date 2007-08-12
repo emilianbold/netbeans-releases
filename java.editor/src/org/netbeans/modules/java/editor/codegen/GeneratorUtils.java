@@ -87,6 +87,7 @@ import org.openide.util.NbBundle;
 public class GeneratorUtils {
     
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(GeneratorUtils.class.getName());
+    private static final String ERROR = "<error>"; //NOI18N
     public static final int GETTERS_ONLY = 1;
     public static final int SETTERS_ONLY = 2;
     
@@ -167,6 +168,8 @@ public class GeneratorUtils {
         new TreePathScanner<Void, Boolean>() {
             @Override
             public Void visitVariable(VariableTree node, Boolean p) {
+                if (ERROR.contentEquals(node.getName()))
+                    return null;
                 Element el = trees.getElement(getCurrentPath());
                 if (el != null && el.getKind() == ElementKind.FIELD && !el.getModifiers().contains(Modifier.STATIC) && node.getInitializer() == null && !initializedFields.remove(el))
                     uninitializedFields.add((VariableElement)el);

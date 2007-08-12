@@ -73,6 +73,8 @@ public class DelegateMethodGenerator implements CodeGenerator {
 
     public static class Factory implements CodeGenerator.Factory {
         
+        private static final String ERROR = "<error>"; //NOI18N
+        
         Factory() {            
         }
         
@@ -92,7 +94,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
             while(scope != null && (cls = scope.getEnclosingClass()) != null) {
                 DeclaredType type = (DeclaredType)cls.asType();
                 for (VariableElement field : ElementFilter.fieldsIn(elements.getAllMembers(cls))) {
-                    if (!field.asType().getKind().isPrimitive() && trees.isAccessible(scope, field, type)) {
+                    if (!ERROR.contentEquals(field.getSimpleName()) && !field.asType().getKind().isPrimitive() && trees.isAccessible(scope, field, type)) {
                         List<ElementNode.Description> descriptions = map.get(field.getEnclosingElement());
                         if (descriptions == null) {
                             descriptions = new ArrayList<ElementNode.Description>();
