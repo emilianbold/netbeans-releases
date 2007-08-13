@@ -41,6 +41,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -693,10 +694,7 @@ public final class JavaSource {
             //Otherwise interrupt currently running task and try to aquire lock
             do {
                 final JavaSource.Request[] request = new JavaSource.Request[1];
-                boolean isScanner = false;
-                if (request[0] == null) {
-                    isScanner = currentRequest.getUserTaskToCancel(request);
-                }
+                boolean isScanner = currentRequest.getUserTaskToCancel(request);
                 try {
                     if (isScanner) {
                         return sync;
@@ -704,7 +702,7 @@ public final class JavaSource {
                     if (request[0] != null) {
                         request[0].task.cancel();
                     }
-                    if (javacLock.tryLock()) {
+                    if (javacLock.tryLock(100, TimeUnit.MILLISECONDS)) {
                         try {
                             if (todo.remove(r)) {
                                 try {
@@ -718,8 +716,13 @@ public final class JavaSource {
                             javacLock.unlock();
                         }
                     }
-                } finally {
-                    currentRequest.cancelCompleted(request[0]);
+                } catch (InterruptedException e) {
+                    throw (InterruptedIOException) new InterruptedIOException ().initCause(e);
+                }
+                finally {
+                    if (!isScanner) {
+                        currentRequest.cancelCompleted(request[0]);
+                    }
                 }
             } while (true);            
         }
@@ -2057,9 +2060,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                      request[0] = this.reference;
                     if (request[0] != null) {
                         result = request[0].phase == null;
-                        assert this.canceledReference == null || result;
-                        this.canceledReference = request[0];
+                        assert this.canceledReference == null;                        
                         if (!result) {
+                            this.canceledReference = request[0];
                             this.reference = null;                        
                         }
                         this.canceled.set(result);
