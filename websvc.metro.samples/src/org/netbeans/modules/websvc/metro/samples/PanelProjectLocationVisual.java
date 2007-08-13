@@ -230,16 +230,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     protected javax.swing.JTextField projectNameTextField;
     // End of variables declaration//GEN-END:variables
         
-    private static JFileChooser createChooser() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
-        
-        return chooser;
-    }
-
     private String validFreeProjectName(final File parentFolder, final String formater, final int index) {
-        String name = MessageFormat.format(formater, new Object[] {new Integer (index)});                
+        String name = MessageFormat.format(formater, new Object[] {Integer.valueOf(index)});
         File file = new File(parentFolder, name);
         return file.exists() ? null : name;
     }

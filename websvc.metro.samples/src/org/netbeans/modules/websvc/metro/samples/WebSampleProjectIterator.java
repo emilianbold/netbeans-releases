@@ -113,7 +113,7 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
             NbBundle.getMessage(PanelConfigureProject.class, "LBL_NWP1_ProjectTitleName"), // NOI18N
         };
         component.putClientProperty ("WizardPanel_contentData", list); // NOI18N
-        component.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer (currentIndex)); // NOI18N
+        component.putClientProperty ("WizardPanel_contentSelectedIndex", Integer.valueOf(currentIndex)); // NOI18N
     }
     
     private FileObject getIndexFile(FileObject webRoot) {

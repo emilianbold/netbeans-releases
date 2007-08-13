@@ -19,9 +19,7 @@
 
 package org.netbeans.modules.websvc.metro.samples;
 
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
 
 public class PanelOptionsVisual extends javax.swing.JPanel {
 
