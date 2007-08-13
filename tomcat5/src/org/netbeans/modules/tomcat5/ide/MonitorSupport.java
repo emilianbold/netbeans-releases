@@ -100,12 +100,12 @@ public class MonitorSupport {
         // find the web.xml file
         File webXML = getDefaultWebXML(tm);
         if (webXML == null) {
-            Logger.getLogger("global").log(Level.INFO, null, new Exception(url));
+            Logger.getLogger(MonitorSupport.class.getName()).log(Level.INFO, null, new Exception(url));
             return;
         }
         WebApp webApp = DDProvider.getDefault().getDDRoot(webXML);
         if (webApp == null) {
-            Logger.getLogger("global").log(Level.INFO, null, new Exception(url));
+            Logger.getLogger(MonitorSupport.class.getName()).log(Level.INFO, null, new Exception(url));
             return;
         }
         boolean needsSave = false;

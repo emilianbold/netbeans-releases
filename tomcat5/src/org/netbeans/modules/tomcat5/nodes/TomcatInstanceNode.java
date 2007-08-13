@@ -121,14 +121,14 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
             try {
                 dataObject = DataObject.find(fileObject);
             } catch(DataObjectNotFoundException ex) {
-                Logger.getLogger("global").log(Level.INFO, null, ex);
+                Logger.getLogger(TomcatInstanceNode.class.getName()).log(Level.INFO, null, ex);
             }
             if (dataObject != null) {
                 EditorCookie editorCookie = (EditorCookie)dataObject.getCookie(EditorCookie.class);
                 if (editorCookie != null) {
                     editorCookie.open();
                 } else {
-                    Logger.getLogger("global").log(Level.INFO, "Cannot find EditorCookie."); // NOI18N
+                    Logger.getLogger(TomcatInstanceNode.class.getName()).log(Level.INFO, "Cannot find EditorCookie."); // NOI18N
                 }
             }
         }

@@ -108,9 +108,9 @@ public class TomcatManagerConfig {
         try {
             return Server.createGraph(serverXml);
         } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
+            Logger.getLogger(TomcatManagerConfig.class.getName()).log(Level.INFO, null, ioe);
         } catch (RuntimeException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(TomcatManagerConfig.class.getName()).log(Level.INFO, null, e);
         }
         return null;
     }

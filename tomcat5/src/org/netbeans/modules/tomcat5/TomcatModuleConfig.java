@@ -85,10 +85,10 @@ public class TomcatModuleConfig {
             Context ctx = Context.createGraph(contextXml);
             return ctx;
         } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
+            Logger.getLogger(TomcatModuleConfig.class.getName()).log(Level.INFO, null, ioe);
             return null;
         } catch (RuntimeException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(TomcatModuleConfig.class.getName()).log(Level.INFO, null, e);
             return null;
         }
     }
@@ -121,7 +121,7 @@ public class TomcatModuleConfig {
             }
             
         } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
+            Logger.getLogger(TomcatModuleConfig.class.getName()).log(Level.INFO, null, ioe);
         }
         return null;
     }

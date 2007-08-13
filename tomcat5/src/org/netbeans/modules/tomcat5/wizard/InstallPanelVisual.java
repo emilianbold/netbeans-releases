@@ -365,8 +365,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
         if (jCheckBoxShared.isEnabled() && jCheckBoxShared.isSelected()) {
             url += ":base=" + jTextFieldBaseDir.getText();  // NOI18N
         }
-        
-        TomcatFactory.getEM().log(Level.INFO, "TomcatInstall.getUrl: " + url);    // NOI18N
+        Logger.getLogger(InstallPanelVisual.class.getName()).log(Level.INFO, "TomcatInstall.getUrl: " + url);    // NOI18N
         return url;
     }
     
@@ -422,12 +421,12 @@ class InstallPanelVisual extends javax.swing.JPanel {
                 return true;
             }
         } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
+            Logger.getLogger(InstallPanelVisual.class.getName()).log(Level.INFO, null, ioe);
         } catch (NumberFormatException nfe) {
-            Logger.getLogger("global").log(Level.INFO, null, nfe);
+            Logger.getLogger(InstallPanelVisual.class.getName()).log(Level.INFO, null, nfe);
         } catch (RuntimeException e) {
             // catch any runtime exception that may occur during graph parsing
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(InstallPanelVisual.class.getName()).log(Level.INFO, null, e);
         }
         return false;
     }

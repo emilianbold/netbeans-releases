@@ -60,7 +60,7 @@ public class TMIDResolver extends TargetModuleIDResolver {
                     result.add(tm);
             }
         } catch(Exception ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            Logger.getLogger(TMIDResolver.class.getName()).log(Level.INFO, null, ex);
         }
         
         return (TargetModuleID[]) result.toArray(new TargetModuleID[result.size()]);

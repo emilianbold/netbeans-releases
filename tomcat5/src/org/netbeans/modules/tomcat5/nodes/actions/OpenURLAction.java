@@ -48,7 +48,7 @@ public class OpenURLAction extends NodeAction {
                 try {
                     URLDisplayer.getDefault().showURL(new URL(tomcatMod.getWebURL()));
                 } catch (MalformedURLException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
+                    Logger.getLogger(OpenURLAction.class.getName()).log(Level.INFO, null, e);
                 }
             }
         }

@@ -529,9 +529,9 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         try {
             graph.write(out);
         } catch (Schema2BeansException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            Logger.getLogger(TomcatModuleConfiguration.class.getName()).log(Level.INFO, null, ex);
         } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
+            Logger.getLogger(TomcatModuleConfiguration.class.getName()).log(Level.INFO, null, ioe);
         }
         NbDocument.runAtomic(doc, new Runnable() {
 

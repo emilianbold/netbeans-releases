@@ -50,7 +50,7 @@ public class AdminConsoleAction extends NodeAction {
                         try {
                             URLDisplayer.getDefault().showURL(new URL(adminUrl));
                         } catch (MalformedURLException e) {
-                            Logger.getLogger("global").log(Level.INFO, null, e);
+                            Logger.getLogger(AdminConsoleAction.class.getName()).log(Level.INFO, null, e);
                         }
                     }
                 });

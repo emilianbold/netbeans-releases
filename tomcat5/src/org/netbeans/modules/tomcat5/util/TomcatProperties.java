@@ -208,7 +208,7 @@ public class TomcatProperties {
                     try {
                         storeAntDeploymentProperties(getAntDeploymentPropertiesFile(), false);
                     } catch(IOException ioe) {
-                        Logger.getLogger("global").log(Level.INFO, null, ioe);
+                        Logger.getLogger(TomcatProperties.class.getName()).log(Level.INFO, null, ioe);
                     }
                 }
             }
@@ -478,7 +478,7 @@ public class TomcatProperties {
             try {
                 return Integer.parseInt(val);
             } catch (NumberFormatException nfe) {
-                TomcatManager.ERR.log(Level.INFO, null, nfe);
+                Logger.getLogger(TomcatProperties.class.getName()).log(Level.INFO, null, nfe);
             }
         }
         
@@ -503,7 +503,7 @@ public class TomcatProperties {
                     return port;
                 }
             } catch (NumberFormatException nfe) {
-                TomcatManager.ERR.log(Level.INFO, null, nfe);
+                Logger.getLogger(TomcatProperties.class.getName()).log(Level.INFO, null, nfe);
             }
         }
         return tm.isBundledTomcat() ? DEF_VALUE_BUNDLED_SERVER_PORT : DEF_VALUE_SERVER_PORT;
@@ -523,7 +523,7 @@ public class TomcatProperties {
                     return port;
                 }
             } catch (NumberFormatException nfe) {
-                TomcatManager.ERR.log(Level.INFO, null, nfe);
+                Logger.getLogger(TomcatProperties.class.getName()).log(Level.INFO, null, nfe);
             }
         }
         return tm.isBundledTomcat() ? DEF_VALUE_BUNDLED_SHUTDOWN_PORT : DEF_VALUE_SHUTDOWN_PORT;
@@ -655,7 +655,7 @@ public class TomcatProperties {
             try {
                 return Long.parseLong(val);
             } catch (NumberFormatException nfe) {
-                TomcatManager.ERR.log(Level.INFO, null, nfe);
+                Logger.getLogger(TomcatProperties.class.getName()).log(Level.INFO, null, nfe);
             }
         }
         return -1;
@@ -692,7 +692,7 @@ public class TomcatProperties {
             try {
                 return Integer.parseInt(val);
             } catch (NumberFormatException nfe) {
-                TomcatManager.ERR.log(Level.INFO, null, nfe);
+                Logger.getLogger(TomcatProperties.class.getName()).log(Level.INFO, null, nfe);
             }
         }
         return DEF_VALUE_RUNNING_CHECK_TIMEOUT;

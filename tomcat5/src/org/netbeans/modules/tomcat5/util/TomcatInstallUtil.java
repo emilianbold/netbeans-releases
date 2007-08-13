@@ -76,13 +76,7 @@ public class TomcatInstallUtil {
     }
     
     public static String getShutdownPort(Server server) {
-        String port;
-        
-        port = server.getAttributeValue("port");
-                
-        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
-            TomcatFactory.getEM().log(Level.FINE, "T5Util.getAdminPort: " + port);             // NOI18N
-        }
+        String port = server.getAttributeValue("port");
         return port != null ? port : String.valueOf(TomcatProperties.DEF_VALUE_SHUTDOWN_PORT);
     }
     
@@ -108,10 +102,6 @@ public class TomcatInstallUtil {
         }
         
         port = service.getAttributeValue(PROP_CONNECTOR, defCon, ATTR_PORT);
-
-        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
-            TomcatFactory.getEM().log(Level.FINE, "T5Util.getPort: " + port);             // NOI18N
-        }
         return port;
     }
     
@@ -120,10 +110,6 @@ public class TomcatInstallUtil {
         Service service = server.getService(0);
         if (service != null) {
             host = service.getAttributeValue("Engine",0,"defaultHost");
-        }
-       
-        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
-           TomcatFactory.getEM().log(Level.FINE, "T5Util.getHost: " + host);             // NOI18N
         }
         return host;
     }
@@ -295,9 +281,9 @@ public class TomcatInstallUtil {
             setHostAttributeValue(server, ATTR_AUTO_DEPLOY, BUNDLED_DEFAULT_AUTO_DEPLOY.toString());
             server.write(serverXml);
         } catch (IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(TomcatInstallUtil.class.getName()).log(Level.INFO, null, e);
         } catch (RuntimeException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(TomcatInstallUtil.class.getName()).log(Level.INFO, null, e);
         }
     }
     

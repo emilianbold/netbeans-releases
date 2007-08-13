@@ -83,7 +83,7 @@ class ServerLog extends Thread {
             io.getOut().reset();
         } 
         catch (IOException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(ServerLog.class.getName()).log(Level.INFO, null, e);
         }
         writer = io.getOut();
         errorWriter = io.getErr();
@@ -161,7 +161,7 @@ class ServerLog extends Thread {
                 sleep(100); // take a nap
             }
         } catch (IOException ex) {
-            TomcatManager.ERR.log(Level.INFO, null, ex);
+            Logger.getLogger(ServerLog.class.getName()).log(Level.INFO, null, ex);
         } catch (InterruptedException e) {
             // no op - the thread was interrupted 
         } finally {
@@ -224,7 +224,7 @@ class ServerLog extends Thread {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) { 
                                 // ignore it
-                                TomcatManager.ERR.log(Level.INFO, null, nfe);
+                                Logger.getLogger(ServerLog.class.getName()).log(Level.INFO, null, nfe);
                             }
                             if (lineLenght > nextColonIdx) {
                                 message = logLine.substring(nextColonIdx + 1, lineLenght); 
@@ -249,7 +249,7 @@ class ServerLog extends Thread {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) { 
                                 // ignore it
-                                TomcatManager.ERR.log(Level.INFO, null, nfe);
+                                Logger.getLogger(ServerLog.class.getName()).log(Level.INFO, null, nfe);
                             }
                             if (lineLenght > thirdColonIdx) {
                                 message = logLine.substring(thirdColonIdx + 1, lineLenght);
@@ -275,7 +275,7 @@ class ServerLog extends Thread {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) {
                                 // ignore it
-                                TomcatManager.ERR.log(Level.INFO, null, nfe);
+                                Logger.getLogger(ServerLog.class.getName()).log(Level.INFO, null, nfe);
                             }
                             message = prevMessage;
                         }

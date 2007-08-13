@@ -73,9 +73,7 @@ public class ProgressEventSupport {
 
     /** Report event to any registered listeners. */
     public void fireHandleProgressEvent (TargetModuleID targetModuleID, DeploymentStatus sCode) {
-        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
-            TomcatFactory.getEM().log(Level.FINE, "progress event from " + obj + " status " + sCode); // NOI18N
-        }
+        Logger.getLogger(ProgressEventSupport.class.getName()).log(Level.FINE, "progress event from " + obj + " status " + sCode); // NOI18N
         synchronized (this) {
             status = sCode;
         }

@@ -204,7 +204,7 @@ public class LogSupport {
                 try {
                     dataObject = DataObject.find(sourceFile);
                 } catch(DataObjectNotFoundException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                    Logger.getLogger(LogSupport.class.getName()).log(Level.INFO, null, ex);
                 }
             }
             if (dataObject != null) {

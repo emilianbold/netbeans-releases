@@ -89,6 +89,8 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     /** TargetModuleID of module that is managed. */
     private TomcatModule tmId;
     
+    private static final Logger LOGGER = Logger.getLogger(TomcatManagerImpl.class.getName());
+    
     public TomcatManagerImpl (TomcatManager tm) {
         this.tm = tm;
         pes = new ProgressEventSupport (this);
@@ -464,7 +466,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     
     /** Executes one management task. */
     public synchronized void run () {
-        TomcatFactory.getEM().log(Level.INFO, command);
+        LOGGER.log(Level.FINE, command);
         pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, command /* message */, StateType.RUNNING));
         
         output = "";
@@ -491,8 +493,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 
                 if (Boolean.getBoolean("org.netbeans.modules.tomcat5.LogManagerCommands")) { // NOI18N
                     String message = "Tomcat 5 sending manager command: " + urlToConnectTo;
-                    System.out.println(message);
-                    Logger.getLogger("global").log(Level.INFO, null, new Exception(message));
+                    Logger.getLogger(TomcatManagerImpl.class.getName()).log(Level.FINE, null, new Exception(message));
                 }
 
                 conn = urlToConnectTo.openConnection();
@@ -534,7 +535,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     int code = hconn.getResponseCode();
                     String message = "Tomcat 5 receiving response, code: " + code;
                     System.out.println(message);
-                    Logger.getLogger("global").log(Level.INFO, null, new Exception(message));
+                    Logger.getLogger(TomcatManagerImpl.class.getName()).log(Level.INFO, null, new Exception(message));
                 }
                 // Send the request data (if any)
                 if (istream != null) {
@@ -568,7 +569,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     } else if ((ch == '\r') || (ch == '\n')) {
                         String line = buff.toString();
                         buff.setLength(0);
-                        TomcatFactory.getEM().log(Level.INFO, line);
+                        LOGGER.log(Level.FINE, line);
                         if (first) {
                             // hard fix to accept the japanese localization of manager app
                             String japaneseOK="\u6210\u529f"; //NOI18N
@@ -591,19 +592,17 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     }
                 }
                 if (buff.length() > 0) {
-                    TomcatFactory.getEM().log(Level.INFO, buff.toString());
+                    LOGGER.log(Level.FINE, buff.toString());
                 }
                 if (error != null) {
-                    TomcatFactory.getEM().log(Level.INFO, "TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
-                    TomcatFactory.getEM ().log (Level.INFO, null, error);
+                    LOGGER.log (Level.INFO, "TomcatManagerImpl connecting to: " + urlToConnectTo, error); // NOI18N
                     pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, error, StateType.FAILED));
                     failed = true;
                 }
 
             } catch (Exception e) {
                 if (retries < 0) {
-                    TomcatFactory.getEM().log(Level.INFO, "TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
-                    TomcatFactory.getEM ().log(Level.INFO, null, e);
+                    LOGGER.log(Level.INFO, "TomcatManagerImpl connecting to: " + urlToConnectTo, e); // NOI18N
                     pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, e.getLocalizedMessage (), StateType.FAILED));
                     failed = true;
                 }

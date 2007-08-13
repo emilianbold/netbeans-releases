@@ -66,7 +66,7 @@ public class AntDeploymentProviderImpl implements AntDeploymentProvider {
             try {
                 tp.storeAntDeploymentProperties(file, true);
             } catch (IOException ioe) {
-                Logger.getLogger("global").log(Level.INFO, null, ioe);
+                Logger.getLogger(AntDeploymentProviderImpl.class.getName()).log(Level.INFO, null, ioe);
             }
         }
         return file;

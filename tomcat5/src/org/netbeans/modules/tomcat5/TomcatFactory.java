@@ -155,13 +155,6 @@ public final class TomcatFactory implements DeploymentFactory {
         return instance60;
     }
     
-    /** Get the {@link Logger} that logs module events.
-     * @return Module specific Logger.
-     */
-    public static Logger getEM () {
-        return err;
-    }
-    
     /** Factory method to create DeploymentManager.
      * @param uri URL of configured manager application.
      * @param uname user with granted manager role

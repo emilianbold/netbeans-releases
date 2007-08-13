@@ -234,7 +234,7 @@ public class LogViewer extends Thread {
         } 
         catch (IOException e) {
             // not a critical error, continue
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(LogViewer.class.getName()).log(Level.INFO, null, e);
         }        
         inOut.select();
         writer = inOut.getOut();
@@ -371,7 +371,7 @@ public class LogViewer extends Thread {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) { 
                                 // ignore it
-                                TomcatManager.ERR.log(Level.INFO, null, nfe);
+                                Logger.getLogger(LogViewer.class.getName()).log(Level.INFO, null, nfe);
                             }
                             if (lineLenght > nextColonIdx) {
                                 message = logLine.substring(nextColonIdx + 1, lineLenght); 
@@ -395,7 +395,7 @@ public class LogViewer extends Thread {
                             try {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) { // ignore it
-                                TomcatManager.ERR.log(Level.INFO, null, nfe);
+                                Logger.getLogger(LogViewer.class.getName()).log(Level.INFO, null, nfe);
                             }
                             if (lineLenght > thirdColonIdx) {
                                 message = logLine.substring(thirdColonIdx + 1, lineLenght);
@@ -420,7 +420,7 @@ public class LogViewer extends Thread {
                             try {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) { // ignore it
-                                TomcatManager.ERR.log(Level.INFO, null, nfe);
+                                Logger.getLogger(LogViewer.class.getName()).log(Level.INFO, null, nfe);
                             }
                             message = prevMessage;
                         }

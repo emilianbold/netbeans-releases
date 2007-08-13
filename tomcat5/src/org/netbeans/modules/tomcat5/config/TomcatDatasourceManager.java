@@ -67,11 +67,11 @@ public class TomcatDatasourceManager implements DatasourceManager {
             server = Server.createGraph(serverXml);
         } catch (IOException e) {
             // ok, log it and give up
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(TomcatDatasourceManager.class.getName()).log(Level.INFO, null, e);
             return Collections.<Datasource>emptySet();
         } catch (RuntimeException e) {
             // server.xml file is most likely not parseable, log it and give up
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(TomcatDatasourceManager.class.getName()).log(Level.INFO, null, e);
             return Collections.<Datasource>emptySet();
         }
         GlobalNamingResources[] globalNamingResources = server.getGlobalNamingResources();

@@ -64,7 +64,7 @@ public class TomcatManager implements DeploymentManager {
     
     public enum TomcatVersion {TOMCAT_50, TOMCAT_55, TOMCAT_60};
     
-    public static Logger ERR = Logger.getLogger("org.netbeans.modules.tomcat5"); // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(TomcatManager.class.getName());
 
     /** Enum value for get*Modules methods. */
     static final int ENUM_AVAILABLE = 0;
@@ -112,9 +112,7 @@ public class TomcatManager implements DeploymentManager {
      */
     public TomcatManager(boolean conn, String uri, TomcatVersion tomcatVersion) 
     throws IllegalArgumentException {
-        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
-            Logger.getLogger("global").log(Level.FINE, "Creating connected TomcatManager uri=" + uri); //NOI18N
-        }
+        LOGGER.log(Level.FINE, "Creating connected TomcatManager uri=" + uri); //NOI18N
         this.connected = conn;
         this.tomcatVersion = tomcatVersion;
         this.uri = uri;
@@ -275,7 +273,7 @@ public class TomcatManager implements DeploymentManager {
 
         sdi = getStartTomcat().getDebugInfo(null);
         if (sdi == null) {
-            Logger.getLogger("global").log(Level.INFO, "DebuggerInfo cannot be found for: " + this.toString());
+            LOGGER.log(Level.INFO, "DebuggerInfo cannot be found for: " + this.toString());
         }
 
         for (int i=0; i < sessions.length; i++) {
@@ -311,7 +309,7 @@ public class TomcatManager implements DeploymentManager {
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         ServerDebugInfo sdi = getStartTomcat().getDebugInfo(null);
         if (sdi == null) {
-            Logger.getLogger("global").log(Level.INFO, "DebuggerInfo cannot be found for: " + this.toString());
+            LOGGER.log(Level.INFO, "DebuggerInfo cannot be found for: " + this.toString());
         }
 
         for (int i=0; i < sessions.length; i++) {
@@ -550,10 +548,7 @@ public class TomcatManager implements DeploymentManager {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.distribute called on disconnected instance");   // NOI18N
         }
-        
-        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
-            TomcatFactory.getEM().log(Level.FINE, "TomcatManager.distribute streams");
-        }
+        LOGGER.log(Level.FINE, "TomcatManager.distribute streams");
         TomcatManagerImpl impl = new TomcatManagerImpl (this);
         impl.deploy (targets[0], is, deplPlan);
         return impl;
@@ -571,10 +566,7 @@ public class TomcatManager implements DeploymentManager {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.distribute called on disconnected instance");   // NOI18N
         }
-        
-        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
-            TomcatFactory.getEM().log(Level.FINE, "TomcatManager.distribute archive=" + moduleArchive.getPath() + ", plan=" + deplPlan.getPath()); // NOI18N
-        }
+        LOGGER.log(Level.FINE, "TomcatManager.distribute archive=" + moduleArchive.getPath() + ", plan=" + deplPlan.getPath()); // NOI18N
         TomcatManagerImpl impl = new TomcatManagerImpl (this);
         impl.install (targets[0], moduleArchive, deplPlan);
         return impl;
@@ -677,11 +669,11 @@ public class TomcatManager implements DeploymentManager {
                     tp.setServerPort(Integer.parseInt(TomcatInstallUtil.getPort(server)));
                     tp.setShutdownPort(Integer.parseInt(TomcatInstallUtil.getShutdownPort(server)));
                 } catch (IOException ioe) {
-                    TomcatFactory.getEM().log(Level.INFO, null, ioe);
+                    LOGGER.log(Level.INFO, null, ioe);
                 } catch (NumberFormatException nfe) {
-                    TomcatFactory.getEM().log(Level.INFO, null, nfe);
+                    LOGGER.log(Level.INFO, null, nfe);
                 } catch (RuntimeException e) {
-                    TomcatFactory.getEM().log(Level.INFO, null, e);
+                    LOGGER.log(Level.INFO, null, e);
                 }
             }
         }
@@ -691,12 +683,10 @@ public class TomcatManager implements DeploymentManager {
         try {
             return Server.createGraph(tp.getServerXml());
         } catch (IOException e) {
-            if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
-                TomcatFactory.getEM().log(Level.FINE, e.toString());
-            }
+            LOGGER.log(Level.FINE, null, e);
             return null;
         } catch (RuntimeException e) {
-            TomcatFactory.getEM().log(Level.INFO, null, e);
+            LOGGER.log(Level.INFO, null, e);
             return null;
         }
     }
@@ -719,7 +709,7 @@ public class TomcatManager implements DeploymentManager {
         try {
             
             if (targetFolder == null) {
-                TomcatFactory.getEM().log(Level.INFO, "Cannot find parent folder for base dir " + baseDir.getPath());
+                LOGGER.log(Level.INFO, "Cannot find parent folder for base dir " + baseDir.getPath());
                 return null;
             }
             File baseDirFO = new File (targetFolder, baseDir.getName ());
@@ -790,7 +780,7 @@ public class TomcatManager implements DeploymentManager {
                 if (patternTo[i] == null) {
                     File fileToCopy = new File(homeDir, files[i]);
                     if (!fileToCopy.exists()) {
-                        Logger.getLogger("global").log(Level.INFO, "Cannot copy file " + fileToCopy.getAbsolutePath() + " to the Tomcat base dir, since it does not exist.");
+                        LOGGER.log(Level.INFO, "Cannot copy file " + fileToCopy.getAbsolutePath() + " to the Tomcat base dir, since it does not exist.");
                         continue;
                     }
                     FileInputStream is = new FileInputStream(fileToCopy);
@@ -806,7 +796,7 @@ public class TomcatManager implements DeploymentManager {
                         }
                     }
                     catch (IOException ioe) {
-                        Logger.getLogger("global").log(Level.INFO, null, ioe);
+                        LOGGER.log(Level.INFO, null, ioe);
                     } finally {
                         try {
                             if (os != null)
@@ -827,7 +817,7 @@ public class TomcatManager implements DeploymentManager {
                         patternTo[i]
                         )) {
                         if (!(ADMIN_XML.equals(files[i]) && !(new File (fromDir, files[i].substring (slash+1))).exists()) ){
-                            Logger.getLogger("global").log(Level.INFO, "Cannot create config file "+files[i]);
+                            LOGGER.log(Level.INFO, "Cannot create config file "+files[i]);
                         }
                     }
                 }
@@ -850,7 +840,7 @@ public class TomcatManager implements DeploymentManager {
                 TomcatInstallUtil.createNBLibDirectory(baseDir);
             }
         } catch (java.io.IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
+            LOGGER.log(Level.INFO, null, ioe);
             return null;
         }
         if (isBundledTomcat()) {
@@ -898,13 +888,13 @@ public class TomcatManager implements DeploymentManager {
             }
             else {
                 // Something unexpected
-                TomcatFactory.getEM().log(Level.INFO, "Pattern " + from + " not found in " + src.getPath());
+                LOGGER.log(Level.INFO, "Pattern " + from + " not found in " + src.getPath()); // NOI18N
             }
             out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream (dst), "utf-8")); // NOI18N
             out.write (sb.toString ());
             
         } catch (java.io.IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
+            LOGGER.log(Level.INFO, null, ioe);
             return false;
         } finally {
             try { if (out != null) out.close (); } catch (java.io.IOException ioe) { // ignore this
@@ -935,7 +925,7 @@ public class TomcatManager implements DeploymentManager {
                     }
                 }
             } catch (TargetException te) {
-                Logger.getLogger("global").log(Level.INFO, null, te);
+                LOGGER.log(Level.INFO, null, te);
             }
         }
         if (tomcatModule != null && logManager.hasContextLogger(tomcatModule)) {

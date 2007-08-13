@@ -154,7 +154,7 @@ public class LogManager {
             DialogDisplayer.getDefault().notify(notDesc);
             return;
         } catch (NullPointerException npe) {
-            Logger.getLogger("global").log(Level.INFO, null, npe);
+            Logger.getLogger(LogManager.class.getName()).log(Level.INFO, null, npe);
         }
         
         // ensure only one thread will be opened
@@ -230,10 +230,10 @@ public class LogManager {
                     juliLogViewer = new LogViewer(manager, null, null, null, "localhost.", null, true, false); // NOI18N
                     juliLogViewer.setDisplayName(NbBundle.getMessage(LogManager.class, "TXT_JuliLogDisplayName", tp.getDisplayName()));
                 } catch (UnsupportedLoggerException e) { // should never occur
-                    Logger.getLogger("global").log(Level.INFO, null, e);
+                    Logger.getLogger(LogManager.class.getName()).log(Level.INFO, null, e);
                     return;
                 } catch (NullPointerException npe) {
-                    Logger.getLogger("global").log(Level.INFO, null, npe);
+                    Logger.getLogger(LogManager.class.getName()).log(Level.INFO, null, npe);
                     return;
                 }
 		juliLogViewer.addLogViewerStopListener(new LogViewer.LogViewerStopListener() {
@@ -293,7 +293,7 @@ public class LogManager {
             DialogDisplayer.getDefault().notify(notDesc);
             return;
         } catch (NullPointerException npe) {
-            Logger.getLogger("global").log(Level.INFO, null, npe);
+            Logger.getLogger(LogManager.class.getName()).log(Level.INFO, null, npe);
         }
         
         // ensure only one thread will be opened
