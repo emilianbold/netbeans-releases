@@ -33,6 +33,7 @@ import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.TextBoxCD;
 import org.netbeans.modules.vmd.midp.components.items.TextFieldCD;
@@ -61,6 +62,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private String comment;
     private String defaultValue;
     private boolean useTextArea;
+    private TypeID parentTypeID;
 
     /**
      * Creates instance of PropertyEditorString.
@@ -73,11 +75,12 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * example is given text length is more than TextBoxCD.PROP_MAX_SIZE then
      * this property will be automatically increased to be equal of text length.
      */
-    private PropertyEditorString(String comment, int dependence, boolean useTextArea, String userCodeLabel) {
+    private PropertyEditorString(String comment, int dependence, boolean useTextArea, String userCodeLabel, TypeID parentTypeID) {
         super(userCodeLabel);
         this.comment = comment;
         this.dependence = dependence;
         this.useTextArea = useTextArea;
+        this.parentTypeID = parentTypeID; 
         initComponents();
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
@@ -97,7 +100,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * value specified in the component descriptor
      */
     private PropertyEditorString(String comment, int dependence, String defaultValue, String userCodeLabel) {
-        this(comment, dependence, true, userCodeLabel);
+        this(comment, dependence, true, userCodeLabel, null);
         this.defaultValue = defaultValue;
     }
 
@@ -105,7 +108,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * Creates instance of PropertyEditorString without dependences.
      */
     public static final PropertyEditorString createInstance(String userCodeLabel) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, true, userCodeLabel);
+        return new PropertyEditorString(null, DEPENDENCE_NONE, true, userCodeLabel, null);
     }
 
     /**
@@ -114,14 +117,24 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @see PropertyEditorString(String comment, int dependence)
      */
     public static final PropertyEditorString createInstance(int dependence, String userCodeLabel) {
-        return new PropertyEditorString(null, dependence, true, userCodeLabel);
+        return new PropertyEditorString(null, dependence, true, userCodeLabel, null);
+    }
+    
+    /**
+     * Creates instance of PropertyEditorString with particular dependences and NOT editable for given parent TypeID.
+     * @param int dependence
+     * @param parentTypeID parentComponent TypeID
+     * @see PropertyEditorString(String comment, int dependence)
+     */
+    public static final PropertyEditorString createInstance(String userCodeLabel, TypeID parentTypeID) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, true, userCodeLabel, parentTypeID);
     }
 
     /**
      * Creates instance of PropertyEditorString using JTExtField.
      */
     public static final PropertyEditorString createTextFieldInstance(String userCodeLabel) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, false, userCodeLabel);
+        return new PropertyEditorString(null, DEPENDENCE_NONE, false, userCodeLabel, null);
     }
 
     /**
@@ -211,6 +224,24 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         return null;
     }
 
+    @Override
+    public boolean canWrite() {
+        if (component.get() == null) {
+            return super.canWrite();
+        }
+        final DesignComponent[] isEditable = new DesignComponent[1];
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+            public void run() {
+                isEditable[0] = component.get().getParentComponent();
+            }
+        });
+        if (parentTypeID != null && isEditable[0] != null && isEditable[0].getType().equals(parentTypeID)) {
+            return false;
+        }
+        return super.canWrite();
+    }
+
+    
     /*
      * This method updates state of custom property editor.
      */

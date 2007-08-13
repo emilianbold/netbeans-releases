@@ -35,6 +35,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.util.Collections;
 import javax.swing.*;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.TypeID;
 
 /**
  *
@@ -50,20 +52,26 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     private JRadioButton radioButton;
     private BooleanInplaceEditor inplaceEditor;
     private boolean supportsCustomEditor;
+    private TypeID parentTypeID;
 
-    private PropertyEditorBooleanUC(boolean supportsCustomEditor) {
+    private PropertyEditorBooleanUC(boolean supportsCustomEditor, TypeID parentTypeID) {
         super(NbBundle.getMessage(PropertyEditorBooleanUC.class, "LBL_VALUE_BOOLEAN_UCLABEL")); // NOI18N
         this.supportsCustomEditor = supportsCustomEditor;
+        this.parentTypeID = parentTypeID;
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static PropertyEditorBooleanUC createInstance(boolean supportsCustomEditor) {
-        return new PropertyEditorBooleanUC(supportsCustomEditor);
+        return new PropertyEditorBooleanUC(supportsCustomEditor, null);
     }
 
     public static PropertyEditorBooleanUC createInstance() {
-        return new PropertyEditorBooleanUC(true);
+        return new PropertyEditorBooleanUC(true, null);
+    }
+    
+    public static PropertyEditorBooleanUC createInstance(TypeID parentTypeID) {
+        return new PropertyEditorBooleanUC(true, parentTypeID);
     }
 
     @Override
@@ -177,11 +185,24 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
             }
         }
     }
-
+    
     @Override
     public boolean canWrite() {
+        if (component.get() == null) {
+            return MidpPropertyEditorSupport.singleSelectionEditAsTextOnly();
+        }
+        final DesignComponent[] isEditable = new DesignComponent[1];
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+            public void run() {
+                isEditable[0] = component.get().getParentComponent();
+            }
+        });
+        if (parentTypeID != null && isEditable[0] != null && isEditable[0].getType().equals(parentTypeID)) {
+            return false;
+        }
         return MidpPropertyEditorSupport.singleSelectionEditAsTextOnly();
     }
+    
 
     @Override
     public Object getDefaultValue() {

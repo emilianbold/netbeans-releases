@@ -62,6 +62,10 @@ public class BooleanInplaceEditor implements InplaceEditor {
     
     public JComponent getComponent() {
         checkBox.setBorder(BorderFactory.createEmptyBorder(0,3,0,0));
+        if (!propertyEditor.canWrite())
+            checkBox.setEnabled(false);
+        else
+            checkBox.setEnabled(true);
         return checkBox;
     }
     

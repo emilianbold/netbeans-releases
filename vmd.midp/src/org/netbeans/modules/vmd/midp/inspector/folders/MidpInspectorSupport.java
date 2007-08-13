@@ -48,12 +48,13 @@ public final class MidpInspectorSupport {
     
     
     //Ordering inside of category by array property defined by propertyName
-    public static Presenter createComponentCategory(String categoryName, TypeID folderTypeID, Image icon, List<InspectorOrderingController> orderingControllers, TypeID... filtersTypeID) {
+    public static Presenter createComponentCategory(String categoryName, TypeID folderTypeID, Image icon, List<InspectorOrderingController> orderingControllers, TypeID parentTypeID, TypeID... filtersTypeID) {
         
         return new InspectorFolderCategoryPresenter(categoryName, 
                                                folderTypeID,
                                                icon,
                                                filtersTypeID,
+                                               parentTypeID,
                                                orderingControllers.toArray(new InspectorOrderingController[orderingControllers.size()]));
     } 
     
@@ -64,6 +65,7 @@ public final class MidpInspectorSupport {
                                        TYPEID_COMMANDS,
                                        ICON_ELEMENTS,
                                        Collections.<InspectorOrderingController>emptyList (),
+                                       null,
                                        filtersTypeID); 
     }
     //Ordering inside of category by array property defined by propertyName
@@ -73,8 +75,21 @@ public final class MidpInspectorSupport {
                                        TYPEID_COMMANDS,
                                        ICON_COMMANDS,
                                        orderingControllers,
+                                       null,
                                        filtersTypeID); 
     }
+    //Ordering inside of category by array property defined by propertyName, with given parentTypeID category would not be visible when 
+    // parent compoennt TypeID is the same like given parent TypeID
+    public static Presenter createSpecialComponentCommandCategory(List<InspectorOrderingController> orderingControllers, TypeID parentTypeID, TypeID... filtersTypeID) {
+        
+        return createComponentCategory(NbBundle.getMessage(MidpInspectorSupport.class, "DISP_InspectorCategory_Assigned_Commands"), // NOI18N
+                                       TYPEID_COMMANDS,
+                                       ICON_COMMANDS,
+                                       orderingControllers,
+                                       parentTypeID,
+                                       filtersTypeID); 
+    }
+    
     
     //Default Sorting
     public static Presenter createComponentElementsCategory(String displayName, TypeID... filtersTypeID) {
@@ -83,6 +98,7 @@ public final class MidpInspectorSupport {
                                        TYPEID_ELEMENTS,
                                        ICON_ELEMENTS,
                                        Collections.<InspectorOrderingController>emptyList (),
+                                       null,
                                        filtersTypeID); 
     }
     
@@ -93,8 +109,8 @@ public final class MidpInspectorSupport {
                                        TYPEID_ELEMENTS,
                                        ICON_ELEMENTS,
                                        orderingControllers,
+                                       null,
                                        filtersTypeID); 
     }
-    
 
 }

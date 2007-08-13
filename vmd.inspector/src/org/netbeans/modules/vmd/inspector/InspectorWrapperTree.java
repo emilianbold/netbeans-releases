@@ -79,7 +79,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
             public void run() {
                 if (rootFolderWrapper.getChildren() != null && event != null) {
                     if (event.getFullyAffectedComponents() != null && !event.getFullyAffectedComponents().isEmpty()) {
-                        updateFolderToUpdate(event.getFullyAffectedComponents(), rootFolderWrapper);
+                        addFoldersToUpdate(event.getFullyAffectedComponents(), rootFolderWrapper);
                     }
                     updateChangedDescriptors(event.getCreatedComponents(), event.getFullyAffectedComponents());
                     dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
@@ -105,14 +105,12 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
         lock = false;
     }
 
-
-
-    private void updateFolderToUpdate(Collection<DesignComponent> fullyAffected, InspectorFolderWrapper parentWrapper) {
+    private void addFoldersToUpdate(Collection<DesignComponent> fullyAffected, InspectorFolderWrapper parentWrapper) {
         if (parentWrapper.getChildren() == null) {
             return;
         }
         for (InspectorFolderWrapper wrapper : parentWrapper.getChildren()) {
-            updateFolderToUpdate(fullyAffected, wrapper);
+            addFoldersToUpdate(fullyAffected, wrapper);
             if (fullyAffected.contains(wrapper.getComponent())) {
                 foldersToUpdate.add(wrapper);
             }

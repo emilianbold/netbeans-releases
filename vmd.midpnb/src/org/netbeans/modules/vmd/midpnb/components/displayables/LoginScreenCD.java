@@ -60,7 +60,7 @@ public final class LoginScreenCD extends ComponentDescriptor {
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/login_screen_16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/login_screen_32.png"; // NOI18N
     
-    private static final String ICON_PATH_SD = "org/netbeans/modules/vmd/midpnb/resources/login_screen_sd.png"; // NOI18N   
+   // private static final String ICON_PATH_SD = "org/netbeans/modules/vmd/midpnb/resources/login_screen_sd.png"; // NOI18N   
 
     public static final String PROP_USERNAME = "username"; //NOI18N
     public static final String PROP_PASSWORD = "password"; //NOI18N

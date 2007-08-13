@@ -64,8 +64,8 @@ public abstract class DefaultPropertySupport extends PropertySupport {
     }
 
     protected PropertyValue readPropertyValue(final DesignComponent component, final String propertyName) {
+        assert component != null;
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
-
             public void run() {
                 propertyValue = component.readProperty(propertyName);
             }

@@ -37,6 +37,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassCode;
+import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.openide.explorer.propertysheet.InplaceEditor;
 
 /**
@@ -97,10 +102,10 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
         if (inplaceEditor == null) {
             inplaceEditor = new BooleanInplaceEditor(this);
             PropertyValue propertyValue = (PropertyValue) getValue();
-            Boolean value = (Boolean) propertyValue.getPrimitiveValue();
+            DesignComponent value = propertyValue.getComponent();
             JCheckBox checkBox = (JCheckBox) inplaceEditor.getComponent();
             if (value != null) {
-                checkBox.setSelected(value);
+                checkBox.setSelected(true);
             }
             checkBox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
@@ -191,6 +196,8 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
             DesignComponent gauge = producer.createComponent(alertComponent.getDocument()).getMainComponent();
             gauge.writeProperty(GaugeCD.PROP_INTERACTIVE, MidpTypes.createBooleanValue(false));
             gauge.writeProperty(GaugeCD.PROP_USED_BY_ALERT, MidpTypes.createBooleanValue(true));
+            gauge.writeProperty(ItemCD.PROP_LABEL, PropertyValue.createNull());
+            gauge.writeProperty(ClassCD.PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested (gauge, "indicator"));
             PropertyValue newGauge = PropertyValue.createComponentReference(gauge);
             PropertyEditorAlertIndicator.super.setValue(newGauge);
             alertComponent.addComponent(gauge);

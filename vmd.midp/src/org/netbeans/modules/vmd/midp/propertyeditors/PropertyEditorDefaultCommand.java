@@ -36,6 +36,7 @@ import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
@@ -63,16 +64,25 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
 
     private CustomEditor customEditor;
     private JRadioButton radioButton;
+    private TypeID parentTypeID;
 
-    private PropertyEditorDefaultCommand() {
+    private PropertyEditorDefaultCommand(TypeID parentTypeID) {
         super(NbBundle.getMessage(PropertyEditorDefaultCommand.class, "LBL_DEF_COMMAND_UCLABEL")); // NOI18N
+        this.parentTypeID = parentTypeID;
         initComponents();
-
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static PropertyEditorDefaultCommand createInstance() {
-        return new PropertyEditorDefaultCommand();
+        return new PropertyEditorDefaultCommand(null);
+    }
+
+    /**
+     * Crates instance of PropertyEditorDefaultCommand NOT editable for given parent component TypeID.
+     * @param parentTypeID parent components typeID
+     */
+    public static PropertyEditorDefaultCommand createInstance(TypeID parentTypeID) {
+        return new PropertyEditorDefaultCommand(parentTypeID);
     }
 
     private void initComponents() {
@@ -105,9 +115,25 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         } else if (isCurrentValueANull()) {
             return NONE_ITEM;
         }
-
         PropertyValue value = (PropertyValue) super.getValue();
         return getDecodeValue(value);
+    }
+
+    @Override
+    public boolean canWrite() {
+        if (component.get() == null) {
+            return super.canWrite();
+        }
+        final DesignComponent[] isEditable = new DesignComponent[1];
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+            public void run() {
+                isEditable[0] = component.get().getParentComponent();
+            }
+        });
+        if (parentTypeID != null && isEditable[0] != null && isEditable[0].getType().equals(parentTypeID)) {
+            return false;
+        }
+        return super.canWrite();
     }
 
     @Override
@@ -288,7 +314,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
             if (cmdValue[0] == null) {
                 return;
             }
-            
+
             DesignComponent command = cmdValue[0].getComponent();
             for (String key : values.keySet()) {
                 DesignComponent tmpCommand = values.get(key);

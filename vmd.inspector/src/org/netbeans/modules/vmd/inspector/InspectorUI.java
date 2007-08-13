@@ -19,7 +19,6 @@ import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -44,7 +43,6 @@ import org.openide.windows.TopComponent;
 final class InspectorUI  extends TopComponent implements ExplorerManager.Provider, PropertyChangeListener, Presenter.Popup {
     
     static final String INSPECTOR_UI_ID = "InspectorUI"; //NOI18N
-    
     private transient ExplorerManager explorerManager;
     private transient volatile boolean lockSelectionSetting;
     private transient BeanTreeView inspectorBeanTreeView;

@@ -41,7 +41,24 @@ import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderCategoryPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
+import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
+import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
+import org.netbeans.modules.vmd.api.properties.PropertiesPresenter;
+import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.sources.ItemCommandEventSourceCD;
+import org.netbeans.modules.vmd.midp.inspector.controllers.GaugePC;
+import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorArrayInteger;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorDefaultCommand;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorLayout;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 
 /**
  *
@@ -90,15 +107,26 @@ public class GaugeCD extends ComponentDescriptor {
     @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
+        DocumentSupport.removePresentersOfClass(presenters, PropertiesPresenter.class);
+        DocumentSupport.removePresentersOfClass(presenters, InspectorFolderCategoryPresenter.class);
         super.gatherPresenters (presenters);
     }
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                     .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Is_Interactive"), PropertyEditorBooleanUC.createInstance(), PROP_INTERACTIVE) // NOI18N
+                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Is_Interactive"), PropertyEditorBooleanUC.createInstance(AlertCD.TYPEID), PROP_INTERACTIVE) // NOI18N
                         .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Maximum_Value"), PropertyEditorGaugeMaxValue.createInstance(), PROP_MAX_VALUE) // NOI18N
-                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Value"), PropertyEditorNumber.createIntegerInstance(), PROP_VALUE ); // NOI18N
+                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Value"), PropertyEditorNumber.createIntegerInstance(), PROP_VALUE ) // NOI18N
+                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label"), // NOI18N
+                            PropertyEditorString.createInstance(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label_UCLABEL"), AlertCD.TYPEID), ItemCD.PROP_LABEL) // NOI18N
+                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Default_Command"), PropertyEditorDefaultCommand.createInstance(AlertCD.TYPEID), ItemCD.PROP_DEFAULT_COMMAND) // NOI18N
+                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Layout"), PropertyEditorLayout.createInstance(), ItemCD.PROP_LAYOUT) // NOI18N
+                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Size"), PropertyEditorArrayInteger.create(AlertCD.TYPEID), ItemCD.PROP_PREFERRED_WIDTH, ItemCD.PROP_PREFERRED_HEIGHT) // NOI18N
+                     .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
+                        .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Instance_Name"), PropertyEditorInstanceName.createInstance(ClassCD.TYPEID), ClassCD.PROP_INSTANCE_NAME) // NOI18N
+                        .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Is_Lazy_Initialized"), PropertyEditorBooleanUC.createInstance(false), ClassCD.PROP_LAZY_INIT); // NOI18N
+                        
     }
     
     private static Presenter createSetterPresenter() {
@@ -127,8 +155,15 @@ public class GaugeCD extends ComponentDescriptor {
                     }
                 },
                 // screen
-                new GaugeDisplayPresenter()
+                new GaugeDisplayPresenter(),
+                //inspector
+                InspectorPositionPresenter.create(new GaugePC()),
+                MidpInspectorSupport.createSpecialComponentCommandCategory(createOrderingArrayController(), AlertCD.TYPEID, CommandCD.TYPEID)
         );
+    }
+    
+    private List<InspectorOrderingController> createOrderingArrayController() {
+        return Collections.<InspectorOrderingController>singletonList(new ArrayPropertyOrderingController(ItemCD.PROP_COMMANDS, 0, ItemCommandEventSourceCD.TYPEID));
     }
 
     private static class GaugeValueParameter extends MidpParameter {

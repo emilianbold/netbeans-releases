@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.vmd.api.properties;
 
+import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 
@@ -28,8 +30,15 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
  */
 
 public abstract class DesignPropertyDescriptor {
-    
-    //First name of the list is always name which will be return when Property.getName 
+
+    /** Default implementation of DesignPropertyDescriptor
+     *
+     */
+    public static final DesignPropertyDescriptor create(String displayName, String toolTip, String category, DesignPropertyEditor propertyEditor, Class propertyEditorType, String... propertyNames) {
+        return new DefaultPropertyDescriptor(displayName, toolTip, category, propertyEditor, propertyEditorType, propertyNames);
+    }
+
+    //First name of the list is always name which will be return when Property.getName
     public abstract List<String> getPropertyNames();
 
     public abstract String getPropertyDisplayName();
@@ -41,10 +50,71 @@ public abstract class DesignPropertyDescriptor {
     public abstract DesignPropertyEditor getPropertyEditor();
 
     public abstract DesignComponent getComponent();
-    
+
     @Deprecated
     public abstract Class getPropertyEditorType();
-    
+
     public abstract void init(DesignComponent component);
-    
+
+    private static class DefaultPropertyDescriptor extends DesignPropertyDescriptor {
+
+        private List<String> propertyNames;
+        private String displayName;
+        private String toolTip;
+        private String category;
+        private DesignPropertyEditor propertyEditor;
+        private WeakReference<DesignComponent> component;
+        private Class propertyEditorType;
+
+        private DefaultPropertyDescriptor(String displayName, String toolTip, String category, DesignPropertyEditor propertyEditor, Class propertyEditorType, String... propertyNames) {
+            if (category == null) {
+                throw new IllegalArgumentException("Empty category"); // NOI18N
+            }
+            this.propertyNames = Arrays.asList(propertyNames);
+            this.displayName = displayName;
+            this.toolTip = toolTip;
+            this.category = category;
+            this.propertyEditor = propertyEditor;
+            this.propertyEditorType = propertyEditorType;
+        }
+
+        public List<String> getPropertyNames() {
+            return propertyNames;
+        }
+
+        public String getPropertyDisplayName() {
+            return displayName;
+        }
+
+        public String getPropertyToolTip() {
+            return toolTip;
+        }
+
+        public String getPropertyCategory() {
+            return category;
+        }
+
+        public DesignPropertyEditor getPropertyEditor() {
+            return propertyEditor;
+        }
+
+        public DesignComponent getComponent() {
+            if (component == null) {
+                return null;
+            }
+            return component.get();
+        }
+
+        public Class getPropertyEditorType() {
+            if (propertyEditor != null) {
+                return propertyEditor.getClass();
+            } else {
+                return propertyEditorType;
+            }
+        }
+
+        public void init(DesignComponent component) {
+            this.component = new WeakReference<DesignComponent>(component);
+        }
+    }
 }

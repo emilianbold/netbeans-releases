@@ -19,11 +19,13 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.regex.Pattern;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.properties.GroupPropertyEditor;
 import org.netbeans.modules.vmd.api.properties.GroupValue;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
@@ -37,27 +39,40 @@ import org.openide.util.NbBundle;
  *
  * @author Karol Harezlak
  */
-public class PropertyEditorArrayInteger extends GroupPropertyEditor implements ExPropertyEditor{
-    
+public class PropertyEditorArrayInteger extends GroupPropertyEditor implements ExPropertyEditor {
+
     private static String ERROR_WARNING = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_ARRAY_INTEGER_DIALOG"); // NOI18N
+    private WeakReference<DesignComponent> component;
+    private Object parentTypeID;
     
     public static DesignPropertyEditor create() {
         return new PropertyEditorArrayInteger();
     }
-    
+
+    public static DesignPropertyEditor create(TypeID parentTypeID) {
+        return new PropertyEditorArrayInteger(parentTypeID);
+    }
+
+    private PropertyEditorArrayInteger() {
+    }
+
+    private PropertyEditorArrayInteger(TypeID parentTypeID) {
+        this.parentTypeID = parentTypeID;
+    }
+
     @Override
     public boolean supportsCustomEditor() {
         return false;
     }
-   
+
     @Override
     public String getAsText() {
         StringBuffer text = new StringBuffer();
         text.append('['); // NOI18N
         GroupValue values = getValue();
-        for (Iterator<String> i = Arrays.asList(getValue().getPropertyNames()).iterator() ; i.hasNext() ; ) {
+        for (Iterator<String> i = Arrays.asList(getValue().getPropertyNames()).iterator(); i.hasNext();) {
             PropertyValue value = (PropertyValue) values.getValue(i.next());
-            text.append(value.getPrimitiveValue ());
+            text.append(value.getPrimitiveValue());
             if (i.hasNext()) {
                 text.append(','); //NOI18N
             }
@@ -65,36 +80,57 @@ public class PropertyEditorArrayInteger extends GroupPropertyEditor implements E
         text.append(']'); //NOI18N
         return text.toString();
     }
-    
+
     @Override
     public void setAsText(String text) {
         String newText = decodeValuesFromText(text);
-        
-        if (newText == null)
+
+        if (newText == null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERROR_WARNING + ' ' + text)); //NOI18N
-        else {
+        } else {
             GroupValue values = getValue();
             Iterator<String> propertyNamesIter = Arrays.asList(values.getPropertyNames()).iterator();
-            for (String number : newText.split(",")) { //NOI18N
+            for (String number : newText.split(",")) {
+                //NOI18N
                 values.putValue(propertyNamesIter.next(), MidpTypes.createIntegerValue(Integer.parseInt(number)));
             }
             setValue(values);
         }
     }
-    
+
     private String decodeValuesFromText(String text) {
         text = text.trim().replaceAll(Pattern.compile("[\\[$\\]]").pattern(), ""); //NOI18N
-        if (Pattern.compile("[^0123456789,]").matcher(text).find() //NOI18N
-            || text.split(",").length != getValue().getPropertyNames().length) { //NOI18N
+        if (Pattern.compile("[^0123456789,]").matcher(text).find() || text.split(",").length != getValue().getPropertyNames().length) {
+            //NOI18N
             return null;
         }
-        
         return text;
     }
-    
+
     @Override
-   public Boolean canEditAsText() {
+    public Boolean canEditAsText() {
         return true;
-   }
-    
+    }
+
+    @Override
+    public boolean canWrite() {
+        if (component.get() == null) {
+            return super.canWrite();
+        }
+        final DesignComponent[] isEditable = new DesignComponent[1];
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+            public void run() {
+                isEditable[0] = component.get().getParentComponent();
+            }
+        });
+        if (parentTypeID != null && isEditable[0] != null && isEditable[0].getType().equals(parentTypeID)) {
+            return false;
+        }
+        return super.canWrite();
+    }
+
+    @Override
+    public void init(DesignComponent component) {
+        this.component = new WeakReference<DesignComponent>(component);
+    }
 }

@@ -34,7 +34,9 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JToggleButton;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.general.Bitmask.BitmaskItem;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
@@ -53,16 +55,22 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
     
     private CustomEditorConstraints customEditor;
     private JRadioButton radioButton;
+    private TypeID parentTypeID;
     
-    private PropertyEditorLayout() {
+    private PropertyEditorLayout(TypeID parentTypeID) {
         super(NbBundle.getMessage(PropertyEditorLayout.class, "LBL_LAYOUT_STR_UCLABEL")); // NOI18N
+        this.parentTypeID = parentTypeID; 
         initComponents();
         
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
     
     public static final PropertyEditorLayout createInstance() {
-        return new PropertyEditorLayout();
+        return new PropertyEditorLayout(null);
+    }
+    
+    public static final PropertyEditorLayout createInstance( TypeID parentTypeID) {
+        return new PropertyEditorLayout(null);
     }
     
     private void initComponents() {
@@ -129,6 +137,24 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
     public Boolean canEditAsText() {
         return false;
     }
+    
+    @Override
+    public boolean canWrite() {
+        if (component.get() == null) {
+            return super.canWrite();
+        }
+        final DesignComponent[] isEditable = new DesignComponent[1];
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+            public void run() {
+                isEditable[0] = component.get().getParentComponent();
+            }
+        });
+        if (parentTypeID != null && isEditable[0] != null && isEditable[0].getType().equals(parentTypeID)) {
+            return false;
+        }
+        return super.canWrite();
+    }
+
     
     private final class CustomEditorConstraints extends JPanel implements ItemListener {
         

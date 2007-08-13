@@ -23,7 +23,6 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEvent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
 import org.netbeans.modules.vmd.api.model.PresenterEvent;
-import org.netbeans.modules.vmd.properties.DefaultDesignerPropertyDescriptor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +30,7 @@ import java.util.List;
  *
  * @author Karol Harezlak
  */
-public final class DefaultPropertiesPresenter extends PropertiesPresenter {
+public class DefaultPropertiesPresenter extends PropertiesPresenter {
 
     private static final String NULL_DEFAULT = "Null DefaultPropertyEditorSupport not allowed"; //NOI18N
     
@@ -57,7 +56,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
         if (propertyEditor == null) {
             throw new IllegalArgumentException(NULL_DEFAULT);
         }
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, toolTip, category, propertyEditor, propertyEditor.getClass(), propertyNames));
+        descriptors.add(DesignPropertyDescriptor.create(displayName, toolTip, category, propertyEditor, propertyEditor.getClass(), propertyNames));
         return this;
     }
 
@@ -68,7 +67,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
         if (propertyEditor == null) {
             throw new IllegalArgumentException(NULL_DEFAULT);
         }
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, propertyEditor, propertyEditor.getClass(), propertyNames));
+        descriptors.add(DesignPropertyDescriptor.create(displayName, displayName, category, propertyEditor, propertyEditor.getClass(), propertyNames));
         return this;
     }
 

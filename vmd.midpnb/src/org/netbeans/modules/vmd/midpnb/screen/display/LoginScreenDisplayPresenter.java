@@ -69,10 +69,9 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
 
     private class LoginView extends JPanel {
 
-        // Variables declaration - do not modify
         JButton loginButton;
         JLabel passwordLabel;
-        JTextField passwordTextField;
+        JPasswordField passwordTextField;
         JLabel usernameLabel;
         JTextField usernameTextField;
         GridBagConstraints gridBagConstraints;
@@ -85,7 +84,7 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
             usernameLabel = new javax.swing.JLabel();
             passwordLabel = new javax.swing.JLabel();
             usernameTextField = new javax.swing.JTextField();
-            passwordTextField = new javax.swing.JTextField();
+            passwordTextField = new javax.swing.JPasswordField();
             loginButton = new javax.swing.JButton();
 
             setLayout(new java.awt.GridBagLayout());

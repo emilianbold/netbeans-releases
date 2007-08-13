@@ -87,7 +87,6 @@ final class InspectorManagerView implements DesignDocumentAwareness, ActiveDocum
 
     private void notifyUIContentChanged(final DesignEvent event) {
         IOUtils.runInAWTNoBlocking(new Runnable() {
-
             public void run() {
                 if (folderWrapperTree.isLocked()) {
                     throw new IllegalStateException("Access to the Navigator is locked"); //NOI18N
