@@ -334,7 +334,6 @@ public class LookupProviderImpl implements LookupProvider {
             "Templates/JSP_Servlet/JSP.jsp",
             "Templates/JSP_Servlet/Html.html",
             "Templates/JSP_Servlet/Servlet.java",
-            "Templates/Classes/Class.java",
         };
         
         private static final String[] RECOMENDED_TYPES = new String[] {         
