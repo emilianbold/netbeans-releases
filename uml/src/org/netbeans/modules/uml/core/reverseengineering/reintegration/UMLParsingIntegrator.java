@@ -26,6 +26,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +97,7 @@ import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframe
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageManager;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageParserSettings;
+import org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent.JavaChangeHandlerUtilities;
 import org.netbeans.modules.uml.core.scm.ISCMElementItem;
 import org.netbeans.modules.uml.core.scm.ISCMIntegrator;
 import org.netbeans.modules.uml.core.scm.ISCMItemFactory;
@@ -150,8 +152,8 @@ import org.openide.util.NbPreferences;
  *
  */
 public class UMLParsingIntegrator
-    implements IUMLParsingIntegrator, IUMLParserEventsSink, ITaskWorker
-    //, IProgressDialogListener
+        implements IUMLParsingIntegrator, IUMLParserEventsSink, ITaskWorker
+        //, IProgressDialogListener
 {
     public UMLParsingIntegrator()
     {
@@ -177,6 +179,7 @@ public class UMLParsingIntegrator
         m_BaseDirectory = null;
         
         m_ReplaceDocs = false;
+        redef = new HashSet();
     }
     
     /**
@@ -254,11 +257,11 @@ public class UMLParsingIntegrator
     * @see org.netbeans.modules.uml.core.reverseengineering.reintegration.IUMLParsingIntegrator#reverseEngineer(org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace, boolean, boolean, boolean, boolean)
     */
     public boolean reverseEngineer(
-        INamespace pSpace,
-        boolean useFileChooser,
-        boolean useDiagramCreateWizard,
-        boolean displayProgress,
-        boolean extractClasses)
+            INamespace pSpace,
+            boolean useFileChooser,
+            boolean useDiagramCreateWizard,
+            boolean displayProgress,
+            boolean extractClasses)
     {
         m_Cancelled = false;
         boolean wasCancelled = false;
@@ -287,7 +290,7 @@ public class UMLParsingIntegrator
                 // notifying other subsystems of changes, etc. So to be safe,
                 // check out the namespace and the Project if not already.
                 if ((m_Files) != null && (m_Namespace != null) &&
-                    isAbleToWrite(m_Project) && isAbleToWrite(m_Namespace))
+                        isAbleToWrite(m_Project) && isAbleToWrite(m_Namespace))
                 {
                     ETList<String> scrubbedFiles = new ETArrayList();
                     verifyUniqueness(scrubbedFiles);
@@ -299,8 +302,8 @@ public class UMLParsingIntegrator
                             m_Namespace = displayDiagramCreationWizard();
                         
                         // **************************************************
-                        // Saving the project file before starting the RE 
-                        // process. If the user presses the cancel button 
+                        // Saving the project file before starting the RE
+                        // process. If the user presses the cancel button
                         // I will be able to roll back to the pre-RE state.
                         // **************************************************
                         if (saveProject(m_Namespace))
@@ -322,8 +325,8 @@ public class UMLParsingIntegrator
                                 
                                 supervisor.log(ITaskSupervisor.SUMMARY);
                                 supervisor.log(ITaskSupervisor.SUMMARY,
-                                    getLocalMsg("IDS_PARSING_ELEMENTS_SIZE", // NOI18N
-                                    Integer.valueOf(count)));
+                                        getLocalMsg("IDS_PARSING_ELEMENTS_SIZE", // NOI18N
+                                        Integer.valueOf(count)));
                                 
                                 // start next subtask: element parsing
                                 if (!supervisor.start(count))
@@ -332,22 +335,22 @@ public class UMLParsingIntegrator
                                 for (int x = 0; x < count && !m_Cancelled; x++)
                                 {
                                     String groupMessage =
-                                        REIntegrationMessages.getString(
-                                        "IDS_PARSING", new Object[]  // NOI18N
-                                            {String.valueOf(x + 1),
-                                            String.valueOf(count)});
+                                            REIntegrationMessages.getString(
+                                            "IDS_PARSING", new Object[]  // NOI18N
+                                    {String.valueOf(x + 1),
+                                     String.valueOf(count)});
                                     
-                                    supervisor.log(ITaskSupervisor.TERSE, 
-                                        INDENT + groupMessage);
+                                    supervisor.log(ITaskSupervisor.TERSE,
+                                            INDENT + groupMessage);
                                     
                                     if (!supervisor.proceed(1))
                                         onCancelled();
                                     
-                                    String fileName = 
-                                        (String)scrubbedFiles.get(x);
+                                    String fileName =
+                                            (String)scrubbedFiles.get(x);
                                     
                                     supervisor.log(ITaskSupervisor.TERSE,
-                                        INDENT + fileName);
+                                            INDENT + fileName);
                                     
                                     try
                                     {
@@ -357,8 +360,8 @@ public class UMLParsingIntegrator
                                         else
                                         {
                                             parser.processStreamFromFile(
-                                                fileName,
-                                                m_LanguageParserSettings);
+                                                    fileName,
+                                                    m_LanguageParserSettings);
                                         }
                                     }
                                     
@@ -380,7 +383,7 @@ public class UMLParsingIntegrator
                                     
                                     // Build the .QueryCache if we have a new Project
                                     String msg = REIntegrationMessages.getString(
-                                        "IDS_BUILDING_QUERYCACHE"); // NOI18N
+                                            "IDS_BUILDING_QUERYCACHE"); // NOI18N
                                     
                                     supervisor.log(ITaskSupervisor.SUMMARY);
                                     supervisor.log(ITaskSupervisor.SUMMARY, msg);
@@ -486,15 +489,15 @@ public class UMLParsingIntegrator
         {org.openide.DialogDescriptor.CANCEL_OPTION };
         
         org.openide.DialogDescriptor dd =
-            new org.openide.DialogDescriptor(
-            msg,
-            msgTitle,
-            true,
-            options,
-            options[0],
-            org.openide.DialogDescriptor.BOTTOM_ALIGN,
-            org.openide.util.HelpCtx.DEFAULT_HELP,
-            new java.awt.event.ActionListener()
+                new org.openide.DialogDescriptor(
+                msg,
+                msgTitle,
+                true,
+                options,
+                options[0],
+                org.openide.DialogDescriptor.BOTTOM_ALIGN,
+                org.openide.util.HelpCtx.DEFAULT_HELP,
+                new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent ae)
             {
@@ -560,9 +563,9 @@ public class UMLParsingIntegrator
     * @see org.netbeans.modules.uml.core.reverseengineering.reintegration.IUMLParsingIntegrator#reverseEngineerOperations(org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace)
     */
     public void reverseEngineerOperations(
-        INamespace pSpace, ETList<IElement> pElements)
+            INamespace pSpace, ETList<IElement> pElements)
     {
-	boolean orig = EventBlocker.startBlocking();
+        boolean orig = EventBlocker.startBlocking();
         try
         {
             setProject(pSpace);
@@ -573,10 +576,10 @@ public class UMLParsingIntegrator
         {
             sendExceptionMessage(e);
         }
-	finally
-	{
-	    EventBlocker.stopBlocking(orig);
-	}
+        finally
+        {
+            EventBlocker.stopBlocking(orig);
+        }
     }
     
    /* (non-Javadoc)
@@ -677,7 +680,7 @@ public class UMLParsingIntegrator
     /**
      * The event method used by the UMLParser to notify listeners that a class
      * was found while parsing a file.
-     * 
+     *
      * @param data The class information.
      * @param cell The result.
      */
@@ -731,13 +734,13 @@ public class UMLParsingIntegrator
             if (fileName.length() > 0)
             {
                 
-                ILanguage pLanguage = 
-                    m_LanguageManager.getLanguageForFile(fileName);
+                ILanguage pLanguage =
+                        m_LanguageManager.getLanguageForFile(fileName);
                 
                 if (pLanguage != null)
                     m_ContextStack.peek().setLanguage(pLanguage);
             }
-
+            
         }
     }
     
@@ -902,7 +905,7 @@ public class UMLParsingIntegrator
                                 if (numElements > 0)
                                 {
                                     Node parent = XMLManip.ensureNodeExists(
-                                            foundNode, 
+                                            foundNode,
                                             "UML:Element.ownedElement", // NOI18N
                                             "UML:Element.ownedElement"); // NOI18N
                                     
@@ -987,10 +990,10 @@ public class UMLParsingIntegrator
             ensureXMLAttrValues(childInDestinationNamespace, elementBeingInjected, "appliedStereotype"); // NOI18N
             ensureXMLAttrValues(childInDestinationNamespace, elementBeingInjected, "isTransient"); // NOI18N
             ensureOwnedMetaElementsAreMoved(childInDestinationNamespace, elementBeingInjected, "UML:Constraint", true); // NOI18N
-//         if (m_ReplaceDocs == false)
-//         {
-//            ensureOwnedMetaElementsAreMoved(childInDestinationNamespace, elementBeingInjected, "UML:TaggedValue", false);
-//         }
+            //         if (m_ReplaceDocs == false)
+            //         {
+            //            ensureOwnedMetaElementsAreMoved(childInDestinationNamespace, elementBeingInjected, "UML:TaggedValue", false);
+            //         }
         }
         
     }
@@ -1033,9 +1036,9 @@ public class UMLParsingIntegrator
         if (nodeName != null)
         {
             if (("UML:Package".equals(nodeName)) || // NOI18N
-                ("UML:Project".equals(nodeName)) || // NOI18N
-                ("UML:Model".equals(nodeName)) ||   // NOI18N
-                ("UML:Subsystem".equals(nodeName))) // NOI18N
+                    ("UML:Project".equals(nodeName)) || // NOI18N
+                    ("UML:Model".equals(nodeName)) ||   // NOI18N
+                    ("UML:Subsystem".equals(nodeName))) // NOI18N
             {
                 isContainer = true;
             }
@@ -1043,43 +1046,43 @@ public class UMLParsingIntegrator
         return isContainer;
     }
     
-//   public void verifyInMemoryStatus()
-//   {
-////   /**
-////    *
-////    * Makes sure that the passed in element has not been 'orphaned' from its original
-////    * document. This can happen when a modify of the element causes this SCMIntegrator
-////    * to unload it's outer document. ( this can happen when moving a versioned element
-////    * from one package to another, where those packages themselves have been versioned ).
-////    * Essentially, the check is made to ensure that the element still has a parent
-////    * xml node. If not, it has been orphaned.
-////    *
-////    * @param element[in]      The element to check for validity
-////    * @param elementProj[in]  The Project the element is ultimately owned by.
-////    */
-////   protected void verifyInMemoryStatus( IElement element, IProject elementProj )
-////   {
-////      if( null == element )
-////      {
-////         throw new IllegalArgumentException();
-////      }
-////
-////      if( elementProj != null)
-////      {
-////         ITypeManager man = elementProj.getTypeManager();
-////
-////         if( man != null)
-////         {
-////            boolean modified = man.verifyInMemoryStatus( element);
-////         }
-////      }
-////   }
-//
-//      for (int i = 0; i < count; ++i)
-//      {
-//         m_ItemsToSink.get(i)
-//      }
-//   }
+    //   public void verifyInMemoryStatus()
+    //   {
+    ////   /**
+    ////    *
+    ////    * Makes sure that the passed in element has not been 'orphaned' from its original
+    ////    * document. This can happen when a modify of the element causes this SCMIntegrator
+    ////    * to unload it's outer document. ( this can happen when moving a versioned element
+    ////    * from one package to another, where those packages themselves have been versioned ).
+    ////    * Essentially, the check is made to ensure that the element still has a parent
+    ////    * xml node. If not, it has been orphaned.
+    ////    *
+    ////    * @param element[in]      The element to check for validity
+    ////    * @param elementProj[in]  The Project the element is ultimately owned by.
+    ////    */
+    ////   protected void verifyInMemoryStatus( IElement element, IProject elementProj )
+    ////   {
+    ////      if( null == element )
+    ////      {
+    ////         throw new IllegalArgumentException();
+    ////      }
+    ////
+    ////      if( elementProj != null)
+    ////      {
+    ////         ITypeManager man = elementProj.getTypeManager();
+    ////
+    ////         if( man != null)
+    ////         {
+    ////            boolean modified = man.verifyInMemoryStatus( element);
+    ////         }
+    ////      }
+    ////   }
+    //
+    //      for (int i = 0; i < count; ++i)
+    //      {
+    //         m_ItemsToSink.get(i)
+    //      }
+    //   }
     
     public void broadCastDiagramSync()
     {
@@ -1142,7 +1145,7 @@ public class UMLParsingIntegrator
                 
                 removeTokenDescriptors(node, true);
             }
-//         verifyInMemoryStatus();
+            //         verifyInMemoryStatus();
             broadCastDiagramSync();
         }
         catch (Exception e)
@@ -1163,14 +1166,14 @@ public class UMLParsingIntegrator
             Node presNode = childInDestinationNamespace.selectSingleNode("./UML:Element.presentation"); // NOI18N
             if (presNode != null)
             {
-//            String xmiID = UMLXMLManip.getAttributeValue(presNode, "xmi.id");
-//
-//            FactoryRetriever fr = FactoryRetriever.instance();
-//            IVersionableElement inMemory = fr.retrieveObject(xmiID);
-//            if (inMemory instanceof org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)
-//            {
-//               ((org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)inMemory).setModelElement(null);
-//            }
+                //            String xmiID = UMLXMLManip.getAttributeValue(presNode, "xmi.id");
+                //
+                //            FactoryRetriever fr = FactoryRetriever.instance();
+                //            IVersionableElement inMemory = fr.retrieveObject(xmiID);
+                //            if (inMemory instanceof org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)
+                //            {
+                //               ((org.netbeans.modules.uml.ui.support.applicationmanager.IGraphPresentation)inMemory).setModelElement(null);
+                //            }
                 
                 presNode.detach();
                 // This moves the presentation elements from the destination ( which is being wholly replaced )
@@ -1183,13 +1186,13 @@ public class UMLParsingIntegrator
     }
     
     public void handlePartElements(
-        Node childInDestinationNamespace, Node elementBeingInjected)
+            Node childInDestinationNamespace, Node elementBeingInjected)
     {
-        if ((childInDestinationNamespace != null) && 
-            (elementBeingInjected != null))
+        if ((childInDestinationNamespace != null) &&
+                (elementBeingInjected != null))
         {
             List pPartNodes = childInDestinationNamespace.selectNodes(
-                "./UML:Element.ownedElement/UML:Part"); // NOI18N
+                    "./UML:Element.ownedElement/UML:Part"); // NOI18N
             
             if (pPartNodes != null)
             {
@@ -1197,15 +1200,15 @@ public class UMLParsingIntegrator
                 if (size > 0)
                 {
                     Node pOwnedElement = XMLManip.ensureNodeExists(
-                        elementBeingInjected, 
-                        "UML:Element.ownedElement", "" +  // NOI18N
+                            elementBeingInjected,
+                            "UML:Element.ownedElement", "" +  // NOI18N
                             "UML:Element.ownedElement"); // NOI18N
                     
                     if (pOwnedElement != null)
                     {
                         for (int index = 0; index < size; index++)
                         {
-                            // This moves the presentation elements from the 
+                            // This moves the presentation elements from the
                             // destination ( which is being wholly replaced )
                             // to the replacing element
                             Node pCurrentNode = (Node) pPartNodes.get(0);
@@ -1213,7 +1216,7 @@ public class UMLParsingIntegrator
                             if (pCurrentNode != null)
                             {
                                 XMLManip.insertNode(
-                                    (Element) pOwnedElement, pCurrentNode, 0);
+                                        (Element) pOwnedElement, pCurrentNode, 0);
                             }
                         }
                     }
@@ -1223,21 +1226,21 @@ public class UMLParsingIntegrator
     }
     
     public boolean handleVersionedElement(
-        Element docElement, 
-        Node childInDestinationNamespace, 
-        Node elementBeingInjected, 
-        String finalXMIID)
+            Element docElement,
+            Node childInDestinationNamespace,
+            Node elementBeingInjected,
+            String finalXMIID)
     {
         boolean handled = false;
-        if ((childInDestinationNamespace != null) && 
-            (elementBeingInjected != null) && 
-            (docElement != null))
+        if ((childInDestinationNamespace != null) &&
+                (elementBeingInjected != null) &&
+                (docElement != null))
         {
             // Now, if the childInDestinationNamespace is versioned, there are a number of xml
             // attributes that need to be maintained in elementBeingInjected.
             String href = UMLXMLManip.getAttributeValue(childInDestinationNamespace, "href"); // NOI18N
             String xmiIDToChange = UMLXMLManip.getAttributeValue(elementBeingInjected, "xmi.id"); // NOI18N
-
+            
             if (href != null)
             {
                 // If we have an href value, then we want to replace all references to the old
@@ -1247,12 +1250,12 @@ public class UMLParsingIntegrator
                 // Now set the xmi id of elementBeingInjected with finalXMIID, as it was
                 // certainly changed in ReplaceReferences().
                 XMLManip.setAttributeValue(
-                    elementBeingInjected, "xmi.id", finalXMIID); // NOI18N
+                        elementBeingInjected, "xmi.id", finalXMIID); // NOI18N
                 
                 // Need to add all the version control specific xml attributes
                 String isVersioned = XMLManip.getAttributeValue(
-                    childInDestinationNamespace, "isVersioned"); // NOI18N
-
+                        childInDestinationNamespace, "isVersioned"); // NOI18N
+                
                 if (isVersioned != null)
                     XMLManip.setAttributeValue(elementBeingInjected, "isVersioned", isVersioned); // NOI18N
                 
@@ -1269,7 +1272,7 @@ public class UMLParsingIntegrator
                 
                 if (scmID != null)
                     XMLManip.setAttributeValue(elementBeingInjected, "scmmID", scmID); // NOI18N
-
+                
                 handled = true;
             }
             
@@ -1281,57 +1284,58 @@ public class UMLParsingIntegrator
     
     
     /**
-     * implements simplistic "merging" for nested classes and interfaces. 
-     * "The sameness" is decided upon whether the full-qualified name the same or not. 
-     * It is a merge only in the sense that PEs from diagrams would still continue 
+     * implements simplistic "merging" for nested classes and interfaces.
+     * "The sameness" is decided upon whether the full-qualified name the same or not.
+     * It is a merge only in the sense that PEs from diagrams would still continue
      * to be valid in the sense that their refferrences to the MEs will continue to be valid.
      */
-    public void handleNested(Node childInDestinationNamespace, Node elementBeingInjected) {
-
+    public void handleNested(Node childInDestinationNamespace, Node elementBeingInjected)
+    {
+        
         if ((childInDestinationNamespace != null) && (elementBeingInjected != null))
         {
-	    Node destinationOwnedElement = childInDestinationNamespace.selectSingleNode("UML:Element.ownedElement"); // NOI18N
-	    Node injectOwnedElement = elementBeingInjected.selectSingleNode("UML:Element.ownedElement"); // NOI18N
-	
-	    if ((destinationOwnedElement != null) && (injectOwnedElement != null))
-	    {
-		String types[] = new String[]{"UML:Class", "UML:Interface"}; // NOI18N
-		for(int j = 0; j < types.length; j ++) 
-		{
-		    String nodeType = types[j];
-		    List destList = destinationOwnedElement.selectNodes(nodeType);
-		    if (destList != null) 
-		    {
-			for(int i = 0; i < destList.size(); i++) 
-			{			    
-			    Node destinationNestedClass = (Node)destList.get(i);
-			    if (destinationNestedClass == null) continue;
-			    
-			    TypedFactoryRetriever < IElement > fact = new TypedFactoryRetriever < IElement > ();
-			    IElement nodeInNamespace = fact.createTypeAndFill(destinationNestedClass);
-			    removeClientDependencies(nodeInNamespace);
-			    removeNonNavigableAssoc(nodeInNamespace);
-			    removeGeneralizations(nodeInNamespace);
-			    
-			    String destName = UMLXMLManip.getAttributeValue(destinationNestedClass, "name"); // NOI18N
-			    Node injectNestedClass = injectOwnedElement
-				.selectSingleNode(nodeType+"[@name='"+destName+"']"); // NOI18N
-
-			    if (injectNestedClass != null) 
-			    {
-				String finalXMIID = null;				
-				finalXMIID = replaceReferences(destinationNestedClass, injectNestedClass, finalXMIID);
-
-				handleNested(destinationNestedClass, injectNestedClass);			    
-			    }
-			}
-		    }
-		}
-	    }
-	}
+            Node destinationOwnedElement = childInDestinationNamespace.selectSingleNode("UML:Element.ownedElement"); // NOI18N
+            Node injectOwnedElement = elementBeingInjected.selectSingleNode("UML:Element.ownedElement"); // NOI18N
+            
+            if ((destinationOwnedElement != null) && (injectOwnedElement != null))
+            {
+                String types[] = new String[]{"UML:Class", "UML:Interface"}; // NOI18N
+                for(int j = 0; j < types.length; j ++)
+                {
+                    String nodeType = types[j];
+                    List destList = destinationOwnedElement.selectNodes(nodeType);
+                    if (destList != null)
+                    {
+                        for(int i = 0; i < destList.size(); i++)
+                        {
+                            Node destinationNestedClass = (Node)destList.get(i);
+                            if (destinationNestedClass == null) continue;
+                            
+                            TypedFactoryRetriever < IElement > fact = new TypedFactoryRetriever < IElement > ();
+                            IElement nodeInNamespace = fact.createTypeAndFill(destinationNestedClass);
+                            removeClientDependencies(nodeInNamespace);
+                            removeNonNavigableAssoc(nodeInNamespace);
+                            removeGeneralizations(nodeInNamespace);
+                            
+                            String destName = UMLXMLManip.getAttributeValue(destinationNestedClass, "name"); // NOI18N
+                            Node injectNestedClass = injectOwnedElement
+                                    .selectSingleNode(nodeType+"[@name='"+destName+"']"); // NOI18N
+                            
+                            if (injectNestedClass != null)
+                            {
+                                String finalXMIID = null;
+                                finalXMIID = replaceReferences(destinationNestedClass, injectNestedClass, finalXMIID);
+                                
+                                handleNested(destinationNestedClass, injectNestedClass);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-
-
+    
+    
     public void verifyUniqueness(ETList<String> files)
     {
         if (m_Files != null)
@@ -1347,9 +1351,9 @@ public class UMLParsingIntegrator
     }
     
     protected String replaceReferences(
-        Node childInDestinationNamespace, 
-        Node elementBeingInjected, 
-        String finalXMIID)
+            Node childInDestinationNamespace,
+            Node elementBeingInjected,
+            String finalXMIID)
     {
         boolean resolved = false;
         if ((childInDestinationNamespace != null) && (elementBeingInjected != null))
@@ -1365,30 +1369,30 @@ public class UMLParsingIntegrator
                 // replace the xmi.id of the elementBeingInjected with this value.
                 String xmiIDToChange;
                 finalXMIID = UMLXMLManip.getAttributeValue(
-                    childInDestinationNamespace, "xmi.id"); // NOI18N
+                        childInDestinationNamespace, "xmi.id"); // NOI18N
                 
                 // Now, if the childInDestinationNamespace is versioned, there are a number of xml
                 // attributes that need to be maintained in elementBeingInjected.
                 // VERSON TODO : Need to add in after version control is added
                 handleVersionedElement(
-                    docElement, childInDestinationNamespace, 
-                    elementBeingInjected, finalXMIID);
+                        docElement, childInDestinationNamespace,
+                        elementBeingInjected, finalXMIID);
                 
                 // If the element has presentation elements associated with it, we need to inject those
                 // into the elementBeingInjected
                 handlePresentationElements(
-                    childInDestinationNamespace, elementBeingInjected);
+                        childInDestinationNamespace, elementBeingInjected);
                 
                 handlePartElements(
-                    childInDestinationNamespace, elementBeingInjected);
+                        childInDestinationNamespace, elementBeingInjected);
                 
                 handleMiscMetaData(
-                    childInDestinationNamespace, elementBeingInjected);
+                        childInDestinationNamespace, elementBeingInjected);
                 
                 // Now make sure that if we have a type on our m_Types list by this name, we change
                 // its ID as well
                 String typeName = UMLXMLManip.getAttributeValue(
-                    elementBeingInjected, "name"); // NOI18N
+                        elementBeingInjected, "name"); // NOI18N
                 
                 //m_Types.put(typeName, finalXMIID);
                 UnresolvedType type = m_Types.get(typeName);
@@ -1412,8 +1416,8 @@ public class UMLParsingIntegrator
                     ArrayList < ETPairT < Node, String > > entries = m_SymbolTable.get(typeName);
                     if (entries != null)
                     {
-                        for (Iterator<ETPairT<Node, String>> iter = 
-                            entries.iterator(); iter.hasNext();)
+                        for (Iterator<ETPairT<Node, String>> iter =
+                                entries.iterator(); iter.hasNext();)
                         {
                             ETPairT<Node, String> entry = iter.next();
                             entry.setParamTwo(finalXMIID);
@@ -1430,11 +1434,11 @@ public class UMLParsingIntegrator
     }
     
     public void injectElementsIntoNamespace(
-        Node destinationParent, Node parentOfNodesToInject)
+            Node destinationParent, Node parentOfNodesToInject)
     {
         supervisor.log(ITaskSupervisor.TERSE, INDENT
-            + " injecting elements into namespace "  // NOI18N
-            + destinationParent.getName());
+                + " injecting elements into namespace "  // NOI18N
+                + destinationParent.getName());
         
         try
         {
@@ -1449,7 +1453,7 @@ public class UMLParsingIntegrator
                         parentXMIID = m_Namespace.getXMIID();
                     
                     HashMap<String, ETList<Node>> destinationParentNodes =
-                        new HashMap<String, ETList<Node>>();
+                            new HashMap<String, ETList<Node>>();
                     
                     buildNodesFromParent(destinationParent, destinationParentNodes);
                     
@@ -1457,11 +1461,11 @@ public class UMLParsingIntegrator
                     while ((x < num) && !m_CancelDueToConflict)
                     {
                         String groupMessage = REIntegrationMessages.getString(
-                            "IDS_INJECTING_ELEMENTS", new Object[] // NOI18N
-                            {new Integer(x + 1), new Integer(num)});
+                                "IDS_INJECTING_ELEMENTS", new Object[] // NOI18N
+                        {new Integer(x + 1), new Integer(num)});
                         
-                        supervisor.log(ITaskSupervisor.VERBOSE, 
-                            INDENT + INDENT + groupMessage);
+                        supervisor.log(ITaskSupervisor.VERBOSE,
+                                INDENT + INDENT + groupMessage);
                         
                         // Note: C++ code does children->get_item( 0, &child ),
                         //       which'll pick up only one class per file.
@@ -1469,8 +1473,8 @@ public class UMLParsingIntegrator
                         
                         if (child instanceof Element)
                         {
-                            if (oKToInject(destinationParent, 
-                                destinationParentNodes, child))
+                            if (oKToInject(destinationParent,
+                                    destinationParentNodes, child))
                             {
                                 // If the object that is being injected already has an owner (It is
                                 // already scoped by a package or outer class) then we do NOT want
@@ -1480,7 +1484,7 @@ public class UMLParsingIntegrator
                                 String curOwner = XMLManip.getAttributeValue(child, "owner"); // NOI18N
                                 if (curOwner == null)
                                     XMLManip.setAttributeValue(child, "owner", parentXMIID); // NOI18N
-
+                                
                                 XMLManip.insertNode((Element) destinationParent, child, 0);
                                 
                                 // Be sure to add the name and node to the parent map of named elements
@@ -1547,10 +1551,10 @@ public class UMLParsingIntegrator
                 
                 if (!isNodeContainer(destNodeName))
                 {
-		    // IZ 87008. While the node isn't of container type, yet it still may contain 
-		    // nested classes and interfaces. 
-		    handleNested(childInDestinationNamespace, elementBeingInjected);
-
+                    // IZ 87008. While the node isn't of container type, yet it still may contain
+                    // nested classes and interfaces.
+                    handleNested(childInDestinationNamespace, elementBeingInjected);
+                    
                     Node parent = childInDestinationNamespace.getParent();
                     if (parent != null)
                     {
@@ -1601,18 +1605,18 @@ public class UMLParsingIntegrator
         
         switch (promptStatus)
         {
-            case PROMPT_NO_TO_ALL:
-                return false;
-                
-            case PROMPT_YES_TO_ALL:
-                return true;
-        
-            default:
-                overwrite = userAuthorizedOverwrite(eleName);
+        case PROMPT_NO_TO_ALL:
+            return false;
+            
+        case PROMPT_YES_TO_ALL:
+            return true;
+            
+        default:
+            overwrite = userAuthorizedOverwrite(eleName);
         }
         
         if (dmgr.getResult() == DialogDescriptor.CANCEL_OPTION ||
-            dmgr.getResult() == DialogDescriptor.CLOSED_OPTION)
+                dmgr.getResult() == DialogDescriptor.CLOSED_OPTION)
         {
             onCancelled();
             m_CancelDueToConflict = true;
@@ -1622,7 +1626,7 @@ public class UMLParsingIntegrator
     }
     
     private DialogManager dmgr = null;
-
+    
     private boolean userAuthorizedOverwrite(String eleName)
     {
         if (dmgr == null)
@@ -1631,7 +1635,7 @@ public class UMLParsingIntegrator
         dmgr.prompt(eleName);
         
         return dmgr.getResult() == DialogDescriptor.YES_OPTION
-            ? true : false;
+                ? true : false;
     }
     
     private class DialogManager implements ActionListener
@@ -1642,16 +1646,16 @@ public class UMLParsingIntegrator
         private ConflictMessage msgPanel = new ConflictMessage();
         
         private JButton yesToAllBtn = new JButton(NbBundle.getMessage(
-            UMLParsingIntegrator.class, "LBL_YesToAllButton")); // NOI18N
+                UMLParsingIntegrator.class, "LBL_YesToAllButton")); // NOI18N
         
         private JButton noToAllBtn = new JButton(NbBundle.getMessage(
-            UMLParsingIntegrator.class, "LBL_NoToAllButton")); // NOI18N
+                UMLParsingIntegrator.class, "LBL_NoToAllButton")); // NOI18N
         
         private JButton noBtn = new JButton(NbBundle.getMessage(
-            UMLParsingIntegrator.class, "LBL_NoButton")); // NOI18N
+                UMLParsingIntegrator.class, "LBL_NoButton")); // NOI18N
         
         
-        private final Object[] buttonOptions = 
+        private final Object[] buttonOptions =
         {
             DialogDescriptor.YES_OPTION,
             noBtn,
@@ -1660,7 +1664,7 @@ public class UMLParsingIntegrator
             DialogDescriptor.CANCEL_OPTION,
         };
         
-        private final Object[] closeOptions = 
+        private final Object[] closeOptions =
         {
             DialogDescriptor.YES_OPTION,
             DialogDescriptor.NO_OPTION,
@@ -1668,15 +1672,15 @@ public class UMLParsingIntegrator
             DialogDescriptor.NO_OPTION,
             DialogDescriptor.CANCEL_OPTION,
         };
-
+        
         
         private void setDialogMessage(String eleName)
         {
             msgPanel.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(
+                    NbBundle.getMessage(
                     UMLParsingIntegrator.class, "ACSN_ConflictDialog")); // NOI18N
             msgPanel.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(
+                    NbBundle.getMessage(
                     UMLParsingIntegrator.class, "ACSD_ConflictDialog")); // NOI18N
             
             msgPanel.setElementName(eleName);
@@ -1686,17 +1690,17 @@ public class UMLParsingIntegrator
         public DialogManager()
         {
             dialogDesc = new DialogDescriptor(
-                "", // NOI18N
-                NbBundle.getMessage(UMLParsingIntegrator.class, 
+                    "", // NOI18N
+                    NbBundle.getMessage(UMLParsingIntegrator.class,
                     "LBL_ElementOverwriteConfirmationDialog_Title"), // NOI18N
-                true, // modal?
-                buttonOptions,
-                DialogDescriptor.YES_OPTION,
-                DialogDescriptor.DEFAULT_ALIGN,
-                null, // help context
-                this, // button action listener
-                false); // leaf?
-
+                    true, // modal?
+                    buttonOptions,
+                    DialogDescriptor.YES_OPTION,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null, // help context
+                    this, // button action listener
+                    false); // leaf?
+            
             initAccessibility();
             
             dialogDesc.setClosingOptions(closeOptions);
@@ -1712,21 +1716,21 @@ public class UMLParsingIntegrator
         public void actionPerformed(ActionEvent actionEvent)
         {
             if (actionEvent.getActionCommand().equalsIgnoreCase(NbBundle
-                .getMessage(UMLParsingIntegrator.class, "LBL_YesToAllButton"))) // NOI18N
+                    .getMessage(UMLParsingIntegrator.class, "LBL_YesToAllButton"))) // NOI18N
             {
                 supervisor.log(ITaskSupervisor.VERBOSE, NbBundle.getMessage(
-                    UMLParsingIntegrator.class, 
-                    "MSG_DismissedOverwritePrompt_YesToAll")); // NOI18N
+                        UMLParsingIntegrator.class,
+                        "MSG_DismissedOverwritePrompt_YesToAll")); // NOI18N
                 
                 promptStatus = PROMPT_YES_TO_ALL;
             }
             
             else if (actionEvent.getActionCommand().equalsIgnoreCase(NbBundle
-                .getMessage(UMLParsingIntegrator.class, "LBL_NoToAllButton"))) // NOI18N
+                    .getMessage(UMLParsingIntegrator.class, "LBL_NoToAllButton"))) // NOI18N
             {
                 supervisor.log(ITaskSupervisor.VERBOSE, NbBundle.getMessage(
-                    UMLParsingIntegrator.class, 
-                    "MSG_DismissedOverwritePrompt_NoToAll")); // NOI18N
+                        UMLParsingIntegrator.class,
+                        "MSG_DismissedOverwritePrompt_NoToAll")); // NOI18N
                 
                 promptStatus = PROMPT_NO_TO_ALL;
             }
@@ -1737,45 +1741,48 @@ public class UMLParsingIntegrator
         
         public Object getResult()
         {
-	    result = dialogDesc.getValue();
-	    if (result == yesToAllBtn) {
+            result = dialogDesc.getValue();
+            if (result == yesToAllBtn)
+            {
                 result = DialogDescriptor.YES_OPTION;
-	    } else if (result == noToAllBtn) {
+            }
+            else if (result == noToAllBtn)
+            {
                 result = DialogDescriptor.NO_OPTION;
-	    }
+            }
             return result;
         }
-
-        private void initAccessibility() 
+        
+        private void initAccessibility()
         {
             // Yes to All button
             yesToAllBtn.setActionCommand(NbBundle.getMessage(
-                UMLParsingIntegrator.class, "LBL_YesToAllButton")); // NOI18N
+                    UMLParsingIntegrator.class, "LBL_YesToAllButton")); // NOI18N
             yesToAllBtn.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(
+                    NbBundle.getMessage(
                     UMLParsingIntegrator.class, "ACSD_YesToAllButton")); // NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(
-                yesToAllBtn, NbBundle.getMessage(
+                    yesToAllBtn, NbBundle.getMessage(
                     UMLParsingIntegrator.class, "LBL_YesToAllButton")); // NOI18N
-
+            
             // No to All button
             noToAllBtn.setActionCommand(NbBundle.getMessage(
-                UMLParsingIntegrator.class, "LBL_NoToAllButton")); // NOI18N
+                    UMLParsingIntegrator.class, "LBL_NoToAllButton")); // NOI18N
             noToAllBtn.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(
+                    NbBundle.getMessage(
                     UMLParsingIntegrator.class, "ACSD_NoToAllButton")); // NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(
-                noToAllBtn, NbBundle.getMessage(
+                    noToAllBtn, NbBundle.getMessage(
                     UMLParsingIntegrator.class, "LBL_NoToAllButton")); // NOI18N
-
+            
             // No to All button
             noBtn.setActionCommand(NbBundle.getMessage(
-                UMLParsingIntegrator.class, "LBL_NoButton")); // NOI18N
+                    UMLParsingIntegrator.class, "LBL_NoButton")); // NOI18N
             noBtn.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(
+                    NbBundle.getMessage(
                     UMLParsingIntegrator.class, "ACSD_NoButton")); // NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(
-                noBtn, NbBundle.getMessage(
+                    noBtn, NbBundle.getMessage(
                     UMLParsingIntegrator.class, "LBL_NoButton")); // NOI18N
         }
     }
@@ -1784,19 +1791,19 @@ public class UMLParsingIntegrator
     private final static int PROMPT_YES_TO_ALL = 1;
     private final static int PROMPT_NO_TO_ALL = 2;
     private int promptStatus = PROMPT_FOR_ALL;
-
-
+    
+    
     public boolean oKToInject(
-        Node parent, 
-        HashMap<String, ETList<Node>> namedNodes, 
-        Node elementBeingInjected)
+            Node parent,
+            HashMap<String, ETList<Node>> namedNodes,
+            Node elementBeingInjected)
     {
         boolean ok = false;
         if ((parent != null) && (elementBeingInjected != null))
         {
             ok = true;
-            String childName = 
-                XMLManip.getAttributeValue(elementBeingInjected, "name");
+            String childName =
+                    XMLManip.getAttributeValue(elementBeingInjected, "name");
             
             ETList<Node> temp = namedNodes.get(childName);
             
@@ -1806,8 +1813,8 @@ public class UMLParsingIntegrator
                 String injectNodeName = injected.getQualifiedName();
                 Node childInDestinationNamespace = getElementOfType(temp, injectNodeName);
                 
-                if ((childInDestinationNamespace != null) && 
-                    !m_CancelDueToConflict)
+                if ((childInDestinationNamespace != null) &&
+                        !m_CancelDueToConflict)
                 {
                     boolean overwrite = true;
                     
@@ -1818,7 +1825,7 @@ public class UMLParsingIntegrator
                         // displayConflictDialog(childName, destFile, injectFile);
                         
                         overwrite = displayConflictDialog(
-                            XMLManip.getAttributeValue(
+                                XMLManip.getAttributeValue(
                                 elementBeingInjected, "name")); // NOI18N
                     }
                     
@@ -1829,21 +1836,21 @@ public class UMLParsingIntegrator
                         {
                             //ok = ReplaceElement(pNewNode, elementBeingInjected);
                             ok = replaceElement(
-                                childInDestinationNamespace, 
-                                elementBeingInjected);
+                                    childInDestinationNamespace,
+                                    elementBeingInjected);
                         }
                         
                         else
                             ok = false;
                     }
-
+                    
                     else
                         ok = false;
                 }
-
+                
                 else
                 {
-                    // There is not name conflict because the two 
+                    // There is not name conflict because the two
                     // elements are different model element types.
                     //ok = false;
                     ok = true;
@@ -1924,7 +1931,7 @@ public class UMLParsingIntegrator
     }
     
     public void processRanges(Node multiplicity)
-    
+            
     {
         try
         {
@@ -2099,7 +2106,7 @@ public class UMLParsingIntegrator
             
             // TODO: Remove after the RE Dialog has been implemented.
             org.netbeans.modules.uml.ui.support.applicationmanager.IProductProjectManager projMgr =
-                ProductHelper.getProductProjectManager();
+                    ProductHelper.getProductProjectManager();
             
             if (projMgr != null)
             {
@@ -2114,10 +2121,10 @@ public class UMLParsingIntegrator
                     javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
                     
                     chooser.setFileSelectionMode(
-                        javax.swing.JFileChooser.DIRECTORIES_ONLY);
+                            javax.swing.JFileChooser.DIRECTORIES_ONLY);
                     
                     if (chooser.showOpenDialog(null) ==
-                        javax.swing.JFileChooser.APPROVE_OPTION)
+                            javax.swing.JFileChooser.APPROVE_OPTION)
                     {
                         File selected = chooser.getSelectedFile();
                         
@@ -2146,9 +2153,9 @@ public class UMLParsingIntegrator
             
             if (curFile.isDirectory() == true)
                 fillInFiles(curFile, extension);
-
+            
             else if (StringUtilities.hasExtension(
-                curFile.getAbsolutePath(), extension))
+                    curFile.getAbsolutePath(), extension))
             {
                 m_Files.add(curFile.getAbsolutePath());
             }
@@ -2159,8 +2166,8 @@ public class UMLParsingIntegrator
     {
         supervisor.log(ITaskSupervisor.SUMMARY);
         supervisor.log(
-            ITaskSupervisor.SUMMARY, 
-            getLocalMsg("IDS_ANALYZING_ATTRS_OPS_SIZE", 
+                ITaskSupervisor.SUMMARY,
+                getLocalMsg("IDS_ANALYZING_ATTRS_OPS_SIZE",
                 new Integer(m_SymbolTable.size())));
         
         try
@@ -2178,45 +2185,45 @@ public class UMLParsingIntegrator
             // call was already done. This is bad in the case where the package is a top level
             // package that should go directly under the Project node.
             
-            Collection<ArrayList<ETPairT<Node, String>>> values = 
-                m_SymbolTable.values();
-
-            supervisor.log(ITaskSupervisor.DEBUG, 
-                INDENT_DASH + " symbolTable keys=" + m_SymbolTable.toString());
+            Collection<ArrayList<ETPairT<Node, String>>> values =
+                    m_SymbolTable.values();
+            
+            supervisor.log(ITaskSupervisor.DEBUG,
+                    INDENT_DASH + " symbolTable keys=" + m_SymbolTable.toString());
             
             // start next subtask: analyze attr/oper types
             if (!supervisor.start(values.size()))
                 onCancelled();
             
-            for (Iterator<ArrayList<ETPairT<Node, String>>> iter = 
-                values.iterator(); iter.hasNext() && !m_Cancelled;)
+            for (Iterator<ArrayList<ETPairT<Node, String>>> iter =
+                    values.iterator(); iter.hasNext() && !m_Cancelled;)
             {
                 ArrayList<ETPairT<Node, String>> curSymbolList = iter.next();
                 
-//                supervisor.log(
-//                    ITaskSupervisor.SUMMARY, 
-//                    getLocalMsg("IDS_ANALYZING_ATTRS_OPS_SIZE", 
-//                        new Integer(curSymbolList.size())));
+                //                supervisor.log(
+                //                    ITaskSupervisor.SUMMARY,
+                //                    getLocalMsg("IDS_ANALYZING_ATTRS_OPS_SIZE",
+                //                        new Integer(curSymbolList.size())));
                 
-                supervisor.log(ITaskSupervisor.VERBOSE, INDENT + INDENT + 
-                    "Analyzing " + curSymbolList.size() + "symbol(s)");
-
+                supervisor.log(ITaskSupervisor.VERBOSE, INDENT + INDENT +
+                        "Analyzing " + curSymbolList.size() + "symbol(s)");
+                
                 supervisor.log(ITaskSupervisor.DEBUG, INDENT_DASH +
-                    "curSymbolList " + curSymbolList.toArray());
+                        "curSymbolList " + curSymbolList.toArray());
                 
-                for (Iterator<ETPairT<Node, String>> symbolIter = 
-                    curSymbolList.iterator(); 
-                    symbolIter.hasNext() && !m_Cancelled;)
+                for (Iterator<ETPairT<Node, String>> symbolIter =
+                        curSymbolList.iterator();
+                symbolIter.hasNext() && !m_Cancelled;)
                 {
                     ETPairT<Node, String> curSymbol = symbolIter.next();
                     Node curNode = curSymbol.getParamOne();
-   
-//                    if (!supervisor.proceed(1))
-//                        onCancelled();
                     
-                    supervisor.log(ITaskSupervisor.VERBOSE, 
-                        INDENT + INDENT + "Analyzing " + curNode.getName());
-
+                    //                    if (!supervisor.proceed(1))
+                    //                        onCancelled();
+                    
+                    supervisor.log(ITaskSupervisor.VERBOSE,
+                            INDENT + INDENT + "Analyzing " + curNode.getName());
+                    
                     analyzeAttributeTypes(curNode);
                     analyzeOperationTypes(curNode);
                 }
@@ -2227,7 +2234,7 @@ public class UMLParsingIntegrator
             // packages and classes in the DOM tree for easy lookup later.
             injectIntoNamespace(pSpace);
             performPreAttributeTypeResolution();
-
+            
             if (!m_CancelDueToConflict && !m_Cancelled)
             {
                 prepareForIntegration(pSpace);
@@ -2244,17 +2251,17 @@ public class UMLParsingIntegrator
     public void onCancelled()
     {
         supervisor.log(ITaskSupervisor.SUMMARY, " Cancelled");
-
+        
         m_Cancelled = true;
         supervisor.cancel();
     }
     
     public void establishDependency(
-        INamedElement client, 
-        INamedElement supplier, 
-        INamespace classSpace, 
-        String depType, 
-        String typeName)
+            INamedElement client,
+            INamedElement supplier,
+            INamespace classSpace,
+            String depType,
+            String typeName)
     {
         //This method not completed.
         try
@@ -2275,17 +2282,19 @@ public class UMLParsingIntegrator
                 if(supplier instanceof IDerivationClassifier)
                 {
                     IDependency pImplementation = m_Factory.createDependency2( client,
-                                supplier, depType, relSpace);
+                            supplier, depType, relSpace);
                     pOutSupplier = (IClassifier)supplier;
                     supplierType = supplier.getElementType();
+                    redef.add(pImplementation);
                 }
                 else
                 {
                     argumentPair = m_Factory.createImplementation(
-                        client, supplier, relSpace);
+                            client, supplier, relSpace);
                     
                     pOutSupplier = argumentPair.getParamOne();
                     supplierType = supplier.getElementType();
+                    redef.add(argumentPair.getParamTwo());                    
                 }
                 
                 
@@ -2295,8 +2304,8 @@ public class UMLParsingIntegrator
                     String id = pOutSupplier.getXMIID();
                     
                     // ANOTHER QUESTION
-                    ArrayList<ETPairT<Node, String>> symList = 
-                        m_SymbolTable.get(name);
+                    ArrayList<ETPairT<Node, String>> symList =
+                            m_SymbolTable.get(name);
                     
                     if ((symList != null) && (symList.size() > 0))
                     {
@@ -2423,6 +2432,7 @@ public class UMLParsingIntegrator
         try
         {
             IGeneralization gen = m_Factory.createGeneralization(superClass, subClass);
+            redef.add(gen);
         }
         catch (Exception e)
         {
@@ -2462,11 +2472,11 @@ public class UMLParsingIntegrator
         return null;
     }
     
-    public INamedElement resolveType(Node clazz, 
-                                     IClassifier clazzObj, 
-                                     INamespace classSpace, 
-                                     String typeName,
-                                     boolean createUnknownType)
+    public INamedElement resolveType(Node clazz,
+            IClassifier clazzObj,
+            INamespace classSpace,
+            String typeName,
+            boolean createUnknownType)
     {
         INamedElement newType = null;
         try
@@ -2510,9 +2520,9 @@ public class UMLParsingIntegrator
         return newType;
     }
     
-    protected INamedElement findQualifiedType(INamespace classSpace, 
-                                              final String typeName,
-                                              Node clazzNode)
+    protected INamedElement findQualifiedType(INamespace classSpace,
+            final String typeName,
+            Node clazzNode)
     {
         return findQualifiedType(classSpace, typeName, clazzNode, true);
     }
@@ -2529,10 +2539,10 @@ public class UMLParsingIntegrator
      * @return HRESULT
      */
     
-    protected INamedElement findQualifiedType(INamespace classSpace, 
-                                              final String typeName, 
-                                              Node clazzNode,
-                                              boolean createUnknown)
+    protected INamedElement findQualifiedType(INamespace classSpace,
+            final String typeName,
+            Node clazzNode,
+            boolean createUnknown)
     {
         INamedElement newType = null;
         // First attempt to find the type in the immediate namespace, if it exists
@@ -2711,14 +2721,14 @@ public class UMLParsingIntegrator
                                 spaceID = curID;
                             }
                         }
-//                  The C++ version incremented there iterator to check if
-//                  typeNameIsComplete == true.  Since I did not have to
-//                  increment the tokens to check if we where complete, I do not
-//                  have to back up the tokenizer.
-//                  if(tokens != null)
-//                  {
-//                     --iter;
-//                  }
+                        //                  The C++ version incremented there iterator to check if
+                        //                  typeNameIsComplete == true.  Since I did not have to
+                        //                  increment the tokens to check if we where complete, I do not
+                        //                  have to back up the tokenizer.
+                        //                  if(tokens != null)
+                        //                  {
+                        //                     --iter;
+                        //                  }
                     }
                 }
             }
@@ -2741,7 +2751,7 @@ public class UMLParsingIntegrator
                 if (entry.size() == 1)
                 {
                     Node node = entry.get(0).getParamOne();
-//               Debug.assertNull(node);
+                    //               Debug.assertNull(node);
                     
                     if (node != null)
                     {
@@ -2814,19 +2824,19 @@ public class UMLParsingIntegrator
         }
     }
     
-//
-//   public void addDataTypeToUnresolved( String typeName, INamedElement namedElement, boolean needSearch )
-//   {
-//      if( namedElement != null )
-//      {
-//         String xmiID = namedElement.getXMIID();
-//
-//         String elementType = namedElement.getElementType();
-//
-//         setUnknowTypeDetails( typeName, xmiID, elementType.equals(mUnknownType), needSearch, namedElement );
-//      }
-//  }
-
+    //
+    //   public void addDataTypeToUnresolved( String typeName, INamedElement namedElement, boolean needSearch )
+    //   {
+    //      if( namedElement != null )
+    //      {
+    //         String xmiID = namedElement.getXMIID();
+    //
+    //         String elementType = namedElement.getElementType();
+    //
+    //         setUnknowTypeDetails( typeName, xmiID, elementType.equals(mUnknownType), needSearch, namedElement );
+    //      }
+    //  }
+    
     protected void resolveUnknownType(final String typeName, final String xmiID, boolean needSearch)
     {
         setUnknowTypeDetails(typeName, xmiID, false, needSearch, null);
@@ -3076,9 +3086,9 @@ public class UMLParsingIntegrator
                             if (supplier != null)
                             {
                                 String typeName = supplier.getName();
-                                establishDependency(clazzObj, supplier, 
-                                                    classSpace, "Implementation", 
-                                                    typeName);
+                                establishDependency(clazzObj, supplier,
+                                        classSpace, "Implementation",
+                                        typeName);
                             }
                         }
                     }
@@ -3285,7 +3295,7 @@ public class UMLParsingIntegrator
                         for (int j = 0; j < numNamedElements; j++)
                         {
                             INamedElement spNamedElement = spNamedElements.get(j);
-
+                            
                             if (spNamedElement instanceof IClassifier)
                             {
                                 spClassifier = (IClassifier) spNamedElement;
@@ -3323,11 +3333,11 @@ public class UMLParsingIntegrator
                             Node spParameterelement = (Node) spDerivationParameterElements.get(y);
                             String paramenterValue = XMLManip.getAttributeValue(spParameterelement, "value");
                             // Set fromal type
-                            INamedElement spNamedElement = resolveType(clazz, 
-                                                                       clazzObj, 
-                                                                       classSpace, 
-                                                                       paramenterValue,
-                                                                       true);
+                            INamedElement spNamedElement = resolveType(clazz,
+                                    clazzObj,
+                                    classSpace,
+                                    paramenterValue,
+                                    true);
                             if (spNamedElement != null)
                             {
                                 IParameterableElement spIParameterableElement = (spNamedElement instanceof IParameterableElement) ? (IParameterableElement) spNamedElement : null;
@@ -3347,33 +3357,34 @@ public class UMLParsingIntegrator
     
     protected void addTaggedValue(Node parent, String tag, String value)
     {
-	addTaggedValue(parent, tag, value, false);
+        addTaggedValue(parent, tag, value, false);
     }
-
+    
     protected void addTaggedValue(Node parent, String tag, String value, boolean hidden)
     {
         try
         {
             Node node = XMLManip.ensureNodeExists(
-                parent, "UML:Element.ownedElement", "UML:Element.ownedElement");
+                    parent, "UML:Element.ownedElement", "UML:Element.ownedElement");
             
             if (node != null)
             {
                 Node tagNode = XMLManip.createElement(
-                    m_FragDocument, "UML:TaggedValue");
+                        m_FragDocument, "UML:TaggedValue");
                 
                 if (tagNode != null)
                 {
                     establishXMIID(tagNode);
                     XMLManip.setAttributeValue(tagNode, "name", tag);
-		    if (hidden) {
-			XMLManip.setAttributeValue(tagNode, "hidden", "true");
-		    }
-
+                    if (hidden)
+                    {
+                        XMLManip.setAttributeValue(tagNode, "hidden", "true");
+                    }
+                    
                     try
                     {
                         XMLManip.setNodeTextValue(
-                            tagNode, "UML:TaggedValue.dataValue", value, false);
+                                tagNode, "UML:TaggedValue.dataValue", value, false);
                         XMLManip.insertNode((Element) node, tagNode, 0);
                     }
                     
@@ -3382,7 +3393,7 @@ public class UMLParsingIntegrator
                         sendExceptionMessage(e);
                         
                         String errorMsg = REIntegrationMessages.getString(
-                            "IDS_INVALID_CHARACTER"); // NOI18N
+                                "IDS_INVALID_CHARACTER"); // NOI18N
                         
                         new UMLMessagingHelper().sendErrorMessage(errorMsg);
                         supervisor.log(ITaskSupervisor.SUMMARY, errorMsg);
@@ -3400,7 +3411,7 @@ public class UMLParsingIntegrator
     
     /**
      * Adds a source file artifact node that can be added to a class.
-     * 
+     *
      * @param fileName The name of the source file that contains a class.
      * @return The XML node taht represents a  source file artifact.
      */
@@ -3506,8 +3517,8 @@ public class UMLParsingIntegrator
             if (markerIDNode != null)
             {
                 String markerID = XMLManip.getAttributeValue(markerIDNode, "value");
-		addTaggedValue(node, "MarkerID", markerID, true);
-		markerIDNode.detach();
+                addTaggedValue(node, "MarkerID", markerID, true);
+                markerIDNode.detach();
             }
         }
         catch (Exception e)
@@ -4021,10 +4032,10 @@ public class UMLParsingIntegrator
         return new ETPairT < INamedElement, String > (found, typeID);
     }
     
-    public INamedElement retrieveType(Node clazz, 
-                                      INamespace space, 
-                                      String typeName,
-                                      boolean createUnknownType)
+    public INamedElement retrieveType(Node clazz,
+            INamespace space,
+            String typeName,
+            boolean createUnknownType)
     {
         INamedElement foundType = null;
         boolean innerClass = false;
@@ -4138,9 +4149,9 @@ public class UMLParsingIntegrator
     {
         INamedElement retVal = null;
         
-        // Before adding the type as a unresolved type.  Check 
+        // Before adding the type as a unresolved type.  Check
         // the type is an inner class.
-
+        
         List < Node > nestedClasses = clazz.selectNodes("UML:Element.ownedElement/*[ name() = 'UML:Class' or name() = 'UML:Interface'  or name() = 'UML:Enumeration']");
         for(Node innerClassifier : nestedClasses)
         {
@@ -4151,8 +4162,8 @@ public class UMLParsingIntegrator
                 
                 String elementType = XMLManip.retrieveSimpleName(clazz);
                 
-                TypedFactoryRetriever<IClassifier> retreiver = 
-                    new TypedFactoryRetriever<IClassifier>();
+                TypedFactoryRetriever<IClassifier> retreiver =
+                        new TypedFactoryRetriever<IClassifier>();
                 retVal = retreiver.createTypeAndFill(elementType, clazz);
                 break;
             }
@@ -4175,7 +4186,7 @@ public class UMLParsingIntegrator
                 nameElement(pNavEnd, attr);
                 setDefaultValue(pNavEnd, attr);
                 setMultiplicity(pNavEnd, attr);
-		setVisibility(pNavEnd, attr);
+                setVisibility(pNavEnd, attr);
             }
             //NameNavigableEnd(assoc, to, attr));
         }
@@ -4275,16 +4286,16 @@ public class UMLParsingIntegrator
     }
     
     /**
-     * Checks if any attributes are generic collection types.  If they are 
-     * generic collection types, the collection is removed and the type 
+     * Checks if any attributes are generic collection types.  If they are
+     * generic collection types, the collection is removed and the type
      * of the attribute will be changed to the collections parameter.  The
      * attribute will have a multiplicity of [0..*]
-     * 
+     *
      * @param param The XML data for the class.
      * @param clazzObj The UML metamodel object.
      */
-    protected void analyzeParameterForCollections(Node param, 
-                                                  IClassifier clazzObj)
+    protected void analyzeParameterForCollections(Node param,
+            IClassifier clazzObj)
     {
         try
         {
@@ -4292,8 +4303,8 @@ public class UMLParsingIntegrator
             ILanguage lang = clazzObj.getLanguages().get(0);
             if ((param != null) && (lang != null))
             {
-                Node derivation = isDerivationPresent(param, false); 
-                            
+                Node derivation = isDerivationPresent(param, false);
+                
                 if (derivation != null)
                 {
                     convertCollection(derivation, param, lang);
@@ -4308,22 +4319,22 @@ public class UMLParsingIntegrator
     }
     
     /**
-     * Checks if any attributes are generic collection types.  If they are 
-     * generic collection types, the collection is removed and the type 
+     * Checks if any attributes are generic collection types.  If they are
+     * generic collection types, the collection is removed and the type
      * of the attribute will be changed to the collections parameter.  The
      * attribute will have a multiplicity of [0..*]
-     * 
+     *
      * @param clazz The XML data for the class.
      * @param clazzObj The UML metamodel object.
      */
-    protected void analyzeAttributesForCollections(Node clazz, 
-                                                   IClassifier clazzObj)
+    protected void analyzeAttributesForCollections(Node clazz,
+            IClassifier clazzObj)
     {
         try
         {
             // Get all of this Classes attributes and resolve their types...
             List attrs = clazz.selectNodes(
-                "./UML:Element.ownedElement/UML:Attribute");
+                    "./UML:Element.ownedElement/UML:Attribute");
             
             // Since we are reverse engineering, there will only be one language
             ILanguage lang = clazzObj.getLanguages().get(0);
@@ -4358,15 +4369,15 @@ public class UMLParsingIntegrator
     }
     
     /**
-     * Converts an attribute of a collection type, to have a type that is 
+     * Converts an attribute of a collection type, to have a type that is
      * contained by the collection.  There are two type the simple type
      * where the contained type simply a type.  The muli-diminsional type, where
      * the contained type is another collection.
-     * 
+     *
      * @param type The attributes type.
      * @param attr The attribute to modify
-     * @param lang The language to use when determining a type is a collection. 
-     * @return true if a collection was found, false if a collection was not 
+     * @param lang The language to use when determining a type is a collection.
+     * @return true if a collection was found, false if a collection was not
      *         found.
      */
     protected boolean convertCollection(Node type, Node attr, ILanguage lang)
@@ -4376,7 +4387,7 @@ public class UMLParsingIntegrator
         String name = XMLManip.getAttributeValue(type, "name");
         
         // First try to find the fully qualified name of the type.  The fully
-        // qualified type name is needed to make sure that we compare the 
+        // qualified type name is needed to make sure that we compare the
         // correct types.
         String fullName = "";
         ETList < INamedElement > spNamedElements = m_Locator.findByNameInMembersAndImports(m_Project, name);
@@ -4408,7 +4419,7 @@ public class UMLParsingIntegrator
                 setDefaultRange(attr, fullName);
                 
                 // Currently the Data is setup so that if one of the parameters
-                // has derivation, then it is under the parent derivation not 
+                // has derivation, then it is under the parent derivation not
                 // the parameter.  It should be under the parameter.  However,
                 // since we only have 1 parameter this is not a big deal at this
                 // time.
@@ -4428,15 +4439,15 @@ public class UMLParsingIntegrator
                     }
                 }
                 else
-                { 
+                {
                     Node param = (Node) params.get(0);
                     String typeName = XMLManip.getAttributeValue(param, "value");
                     
                     XMLManip.setAttributeValue(attr, "type", typeName);
                 }
                 
-//                setDefaultRange(attr, fullName);
-
+                //                setDefaultRange(attr, fullName);
+                
                 // since we have moved the type directly into the attribute, we
                 // need to remove the derivation declaration.
                 type.detach();
@@ -4450,29 +4461,29 @@ public class UMLParsingIntegrator
     
     protected void setDefaultRange(Node owner, String collectionType)
     {
-
+        
         if(owner != null)
         {
             Node structureNode = XMLManip.ensureNodeExists(owner,
-                                           "UML:TypedElement.multiplicity",
-                                           "UML:TypedElement.multiplicity");
-
+                    "UML:TypedElement.multiplicity",
+                    "UML:TypedElement.multiplicity");
+            
             if(structureNode != null)
             {
                 Node multiplictyNode = XMLManip.ensureNodeExists(structureNode,
-                                              "UML:Multiplicity",
-                                              "UML:Multiplicity");
+                        "UML:Multiplicity",
+                        "UML:Multiplicity");
                 if(multiplictyNode != null)
                 {
                     Node rangeNode = XMLManip.ensureNodeExists(multiplictyNode,
-                                                 "UML:Multiplicity.range",
-                                                 "UML:Multiplicity.range");
+                            "UML:Multiplicity.range",
+                            "UML:Multiplicity.range");
                     if(rangeNode instanceof Element)
                     {
                         Element rangeElement = (Element)rangeNode;
-                        Node dataNode = XMLManip.createElement(rangeElement, 
-                                                               "UML:MultiplicityRange");
-
+                        Node dataNode = XMLManip.createElement(rangeElement,
+                                "UML:MultiplicityRange");
+                        
                         if(dataNode != null)
                         {
                             XMLManip.setAttributeValue(dataNode, "lower", "0");
@@ -4486,18 +4497,18 @@ public class UMLParsingIntegrator
     }
     
     
-    protected void analyzeAttributesForAssociations(Node clazz, 
-                                                    IClassifier clazzObj,
-                                                    INamespace classSpace)
+    protected void analyzeAttributesForAssociations(Node clazz,
+            IClassifier clazzObj,
+            INamespace classSpace)
     {
-        supervisor.log(ITaskSupervisor.VERBOSE, INDENT + INDENT + 
-            " analyzing attribute for associations");
-
+        supervisor.log(ITaskSupervisor.VERBOSE, INDENT + INDENT +
+                " analyzing attribute for associations");
+        
         try
         {
             // Get all of this Classes attributes and resolve their types...
             List attrs = clazz.selectNodes(
-                "./UML:Element.ownedElement/UML:Attribute");
+                    "./UML:Element.ownedElement/UML:Attribute");
             
             if (attrs != null)
             {
@@ -4510,62 +4521,62 @@ public class UMLParsingIntegrator
                         Node attr = (Node) attrs.get(x);
                         if (attr != null)
                         {
-                            Node spDerivationElement = 
-                                isDerivationPresent(attr, true);
+                            Node spDerivationElement =
+                                    isDerivationPresent(attr, true);
                             
                             if (spDerivationElement != null)
                             {
-                                IClassifier spDerivationClassifier = 
-                                    ensureDerivation(
-                                        spDerivationElement, 
+                                IClassifier spDerivationClassifier =
+                                        ensureDerivation(
+                                        spDerivationElement,
                                         clazz, clazzObj, classSpace);
-                            
+                                
                                 if (spDerivationClassifier != null)
                                 {
                                     establishAssociation(
-                                        attr, clazzObj, spDerivationClassifier);
+                                            attr, clazzObj, spDerivationClassifier);
                                 }
                             }
                             
                             else
                             {
                                 if (!aliasedTypeAttribute(
-                                    attr, clazz, clazzObj, classSpace))
+                                        attr, clazz, clazzObj, classSpace))
                                 {
-                                    // This flag will be used to remove this 
-                                    // attribute node once we know that the 
+                                    // This flag will be used to remove this
+                                    // attribute node once we know that the
                                     // attribute has been fully realized
                                     // in an association
                                     
-                                    String typeName = 
-                                        XMLManip.getAttributeValue(
+                                    String typeName =
+                                            XMLManip.getAttributeValue(
                                             attr, "type"); // NOI18N
                                     
-                                    ETPairT<Boolean, String> dec = 
-                                        getUndecoratedName(typeName);
+                                    ETPairT<Boolean, String> dec =
+                                            getUndecoratedName(typeName);
                                     
                                     String actualType = dec.getParamTwo();
                                     
-                                    if (actualType != null && 
-                                        actualType.length() > 0 && 
-                                        isTypeAllowedInAssociation(
+                                    if (actualType != null &&
+                                            actualType.length() > 0 &&
+                                            isTypeAllowedInAssociation(
                                             attr, actualType))
                                     {
                                         establishAssociation(
-                                            attr, clazz, clazzObj, 
-                                            classSpace, typeName);
+                                                attr, clazz, clazzObj,
+                                                classSpace, typeName);
                                     }
                                     
-                                    else if (actualType != null && 
-                                        actualType.length() > 0)
+                                    else if (actualType != null &&
+                                            actualType.length() > 0)
                                     {
-                                        // Need to scrub this Attribute node, 
+                                        // Need to scrub this Attribute node,
                                         // giving it a proper ID, etc.
                                         
                                         processComment(attr);
                                         scrubTypedElement(
-                                            attr, clazz, classSpace, 
-                                            classID, typeName);
+                                                attr, clazz, classSpace,
+                                                classID, typeName);
                                     }
                                 }
                             }
@@ -4584,17 +4595,17 @@ public class UMLParsingIntegrator
     protected void injectIntoNamespace(INamespace space)
     {
         supervisor.log(ITaskSupervisor.TERSE,
-            INDENT + " injecting into namespace " +
-            space.getFullyQualifiedName(true));
-
+                INDENT + " injecting into namespace " +
+                space.getFullyQualifiedName(true));
+        
         try
         {
             IVersionableElement ver = space;
             Node spaceNode = ver.getNode();
             Node element = XMLManip.ensureNodeExists(
-                spaceNode, 
-                "UML:Element.ownedElement", 
-                "UML:Element.ownedElement");
+                    spaceNode,
+                    "UML:Element.ownedElement",
+                    "UML:Element.ownedElement");
             
             if (element != null)
             {
@@ -4625,14 +4636,14 @@ public class UMLParsingIntegrator
     protected void performPreAttributeTypeResolution()
     {
         supervisor.log(ITaskSupervisor.SUMMARY);
-        supervisor.log(ITaskSupervisor.SUMMARY, 
-            getLocalMsg("IDS_RESOLVING_ATTR_TYPES_SIZE", 
+        supervisor.log(ITaskSupervisor.SUMMARY,
+                getLocalMsg("IDS_RESOLVING_ATTR_TYPES_SIZE",
                 new Integer(m_Types.size())));
         
         try
         {
-            Iterator<Map.Entry<String, UnresolvedType>> iter = 
-                m_Types.entrySet().iterator();
+            Iterator<Map.Entry<String, UnresolvedType>> iter =
+                    m_Types.entrySet().iterator();
             
             if (!supervisor.start(m_Types.size()))
                 onCancelled();
@@ -4657,8 +4668,8 @@ public class UMLParsingIntegrator
                     // We checking to make sure that we only have one symbol on the symbol table
                     // of a certain name. That's the only time we can feel safe assigning the id
                     // of that symbol to the unknown type.
-                    ArrayList<ETPairT<Node, String>> symbols = 
-                        m_SymbolTable.get(attrTypeName);
+                    ArrayList<ETPairT<Node, String>> symbols =
+                            m_SymbolTable.get(attrTypeName);
                     
                     if ((symbols != null) && (symbols.size() == 1))
                     {
@@ -4668,9 +4679,9 @@ public class UMLParsingIntegrator
                     
                     type.setXMIID(id);
                     
-//		    String id = m_SymbolTable.get(attrTypeName).getParamTwo();
-//		    if (id != null)
-//                      entry.setValue(id);
+                    //		    String id = m_SymbolTable.get(attrTypeName).getParamTwo();
+                    //		    if (id != null)
+                    //                      entry.setValue(id);
                 }
             }
         }
@@ -4709,9 +4720,9 @@ public class UMLParsingIntegrator
     }
     protected void analyzeAttributeTypes(Node node)
     {
-        supervisor.log(ITaskSupervisor.TERSE, 
-            INDENT + " analyzing attribute types");
-
+        supervisor.log(ITaskSupervisor.TERSE,
+                INDENT + " analyzing attribute types");
+        
         try
         {
             analyzeTypes(node, "./UML:Element.ownedElement/UML:Attribute/@type");
@@ -4726,8 +4737,8 @@ public class UMLParsingIntegrator
     protected void analyzeOperationTypes(Node node)
     {
         supervisor.log(ITaskSupervisor.TERSE,
-            INDENT + " analyzing operation types");
-                    
+                INDENT + " analyzing operation types");
+        
         try
         {
             analyzeTypes(node, "./UML:Element.ownedElement/UML:Operation/UML:Element.ownedElement/UML:Parameter/@type");
@@ -4754,13 +4765,13 @@ public class UMLParsingIntegrator
                     Attribute attr = nodeValue instanceof Attribute ? (Attribute) nodeValue : null;
                     if (attr != null)
                     {
-                        supervisor.log(ITaskSupervisor.VERBOSE,INDENT + INDENT 
-                            + "attribute " + attr.getName(), false);
-
+                        supervisor.log(ITaskSupervisor.VERBOSE,INDENT + INDENT
+                                + "attribute " + attr.getName(), false);
+                        
                         String typeName = attr.getValue();
-
+                        
                         supervisor.log(ITaskSupervisor.VERBOSE,
-                            INDENT + INDENT + "; type=" + attr.getName());
+                                INDENT + INDENT + "; type=" + attr.getName());
                         
                         addToUnresolvedTypes(typeName);
                         
@@ -4797,17 +4808,17 @@ public class UMLParsingIntegrator
     protected void processSymbols(INamespace space)
     {
         supervisor.log(ITaskSupervisor.SUMMARY);
-        supervisor.log(ITaskSupervisor.SUMMARY, 
-            getLocalMsg("IDS_INTEGRATING_ELEMENTS_SIZE", 
+        supervisor.log(ITaskSupervisor.SUMMARY,
+                getLocalMsg("IDS_INTEGRATING_ELEMENTS_SIZE",
                 new Integer(m_SymbolTable.size())));
-
+        
         try
         {
-            // Loop through all of our known symbols and analyze their 
-            // attributes. If the attributes resolve in our attribute types 
-            // table, we know we have an association to create and the 
-            // attribute will be removed from the class. If the type does not 
-            // resolve via our attribute types table, then we need to query 
+            // Loop through all of our known symbols and analyze their
+            // attributes. If the attributes resolve in our attribute types
+            // table, we know we have an association to create and the
+            // attribute will be removed from the class. If the type does not
+            // resolve via our attribute types table, then we need to query
             // the entire document looking for a type with that name.
             int size = getSymbolTableTotalSize();
             
@@ -4815,25 +4826,25 @@ public class UMLParsingIntegrator
             if (!supervisor.start(size))
                 onCancelled();
             
-//         adjustProgress(size);
+            //         adjustProgress(size);
             
-            String analyzeDependenciesMsg = 
-                REIntegrationMessages.getString("IDS_ANALYZE_DEPENDENCIES");
-            String analyzeAttributesMsg = 
-                REIntegrationMessages.getString("IDS_ANALYZE_ATTRIBUTES");
-            String analyzeOperationsMsg = 
-                REIntegrationMessages.getString("IDS_ANALYZE_OPERATIONS");
-            String analyzeGeneralizationsMsg = 
-                REIntegrationMessages.getString("IDS_ANALYZE_GENERALIZATIONS");
-            String analyzeInterfacesMsg = 
-                REIntegrationMessages.getString("IDS_ANALYZE_INTERFACES");
+            String analyzeDependenciesMsg =
+                    REIntegrationMessages.getString("IDS_ANALYZE_DEPENDENCIES");
+            String analyzeAttributesMsg =
+                    REIntegrationMessages.getString("IDS_ANALYZE_ATTRIBUTES");
+            String analyzeOperationsMsg =
+                    REIntegrationMessages.getString("IDS_ANALYZE_OPERATIONS");
+            String analyzeGeneralizationsMsg =
+                    REIntegrationMessages.getString("IDS_ANALYZE_GENERALIZATIONS");
+            String analyzeInterfacesMsg =
+                    REIntegrationMessages.getString("IDS_ANALYZE_INTERFACES");
             
             int index = 1;
             Iterator<String> keyValues = m_SymbolTable.keySet().iterator();
             Integer symbolTableSize = new Integer(size);
             
-            TypedFactoryRetriever<IClassifier> retreiver = 
-                new TypedFactoryRetriever<IClassifier>();
+            TypedFactoryRetriever<IClassifier> retreiver =
+                    new TypedFactoryRetriever<IClassifier>();
             
             while (keyValues.hasNext() && (!m_Cancelled))
             {
@@ -4845,35 +4856,35 @@ public class UMLParsingIntegrator
                 
                 if (!supervisor.proceed(1))
                     onCancelled();
-
+                
                 supervisor.log(ITaskSupervisor.VERBOSE, INDENT + INDENT + key);
-
+                
                 ArrayList<ETPairT<Node, String>> entry = m_SymbolTable.get(key);
-
+                
                 if (entry != null)
                 {
                     for (Iterator<ETPairT<Node, String>> iter = entry.iterator();
-                            (iter.hasNext() == true) && !m_Cancelled;)
+                    (iter.hasNext() == true) && !m_Cancelled;)
                     {
-                        Object[] params = new Object[] 
-                            {new Integer(index), symbolTableSize};
+                        Object[] params = new Object[]
+                        {new Integer(index), symbolTableSize};
                         
                         String groupMessage = REIntegrationMessages.getString(
-                            "IDS_INTEGRATING", params);
+                                "IDS_INTEGRATING", params);
                         
-                        supervisor.log(ITaskSupervisor.TERSE, 
-                            INDENT + groupMessage);
-
+                        supervisor.log(ITaskSupervisor.TERSE,
+                                INDENT + groupMessage);
+                        
                         ++index;
                         
                         ETPairT<Node, String> curEntry = iter.next();
                         Node clazz = curEntry.getParamOne();
                         
                         supervisor.log(ITaskSupervisor.VERBOSE, INDENT + INDENT
-                            + "paramOne=" + curEntry.getParamOne(), false);
+                                + "paramOne=" + curEntry.getParamOne(), false);
                         
                         supervisor.log(ITaskSupervisor.VERBOSE,
-                            "; paramTwo=" + curEntry.getParamTwo());
+                                "; paramTwo=" + curEntry.getParamTwo());
                         
                         try
                         {
@@ -4882,73 +4893,73 @@ public class UMLParsingIntegrator
                             // YET ANOTHER QUESTION
                             // Check AliasedType first
                             if ("AliasedType".equals(
-                                XMLManip.retrieveSimpleName(clazz)))
+                                    XMLManip.retrieveSimpleName(clazz)))
                             {
                                 checkAliasedType(clazz);
                                 continue;
                             }
                             
-//                     // Check Enumeration
-//                     if ("Enumeration".equals(XMLManip.retrieveSimpleName(clazz)))
-//                     {
-//                        analyzeEnumeration(clazz);
-//                        if (m_ProgDiag != null)
-//                           int pos = m_ProgDiag.increment();
-//
-//                        //continue;
-//                     }
+                            //                     // Check Enumeration
+                            //                     if ("Enumeration".equals(XMLManip.retrieveSimpleName(clazz)))
+                            //                     {
+                            //                        analyzeEnumeration(clazz);
+                            //                        if (m_ProgDiag != null)
+                            //                           int pos = m_ProgDiag.increment();
+                            //
+                            //                        //continue;
+                            //                     }
                             
                             // Regular class
-                            IClassifier clazzObj = 
-                                retreiver.createTypeAndFill(
+                            IClassifier clazzObj =
+                                    retreiver.createTypeAndFill(
                                     XMLManip.retrieveSimpleName(clazz), clazz);
                             
                             if (clazzObj != null)
                             {
                                 supervisor.log(ITaskSupervisor.VERBOSE,
-                                    INDENT + INDENT + clazzObj.getName());
-
+                                        INDENT + INDENT + clazzObj.getName());
+                                
                                 INamespace classSpace = clazzObj.getNamespace();
                                 
                                 // Check Enumeration
                                 if ("Enumeration".equals(
-                                    XMLManip.retrieveSimpleName(clazz)))
+                                        XMLManip.retrieveSimpleName(clazz)))
                                 {
                                     analyzeEnumeration(
-                                        clazz, clazzObj, classSpace);
+                                            clazz, clazzObj, classSpace);
                                     //continue;
                                 }
                                 
                                 supervisor.log(ITaskSupervisor.VERBOSE,
-                                    INDENT + INDENT + analyzeDependenciesMsg);
-
+                                        INDENT + INDENT + analyzeDependenciesMsg);
+                                
                                 analyzeForDependencies(
-                                    clazz, clazzObj, classSpace);
+                                        clazz, clazzObj, classSpace);
                                 
                                 supervisor.log(ITaskSupervisor.VERBOSE,
-                                    INDENT + INDENT + analyzeAttributesMsg);
-
+                                        INDENT + INDENT + analyzeAttributesMsg);
+                                
                                 analyzeAttributesForCollections(clazz, clazzObj);
                                 
                                 analyzeAttributesForAssociations(
-                                    clazz, clazzObj, classSpace);
+                                        clazz, clazzObj, classSpace);
                                 
                                 supervisor.log(ITaskSupervisor.VERBOSE,
-                                    INDENT + INDENT + analyzeOperationsMsg);
-
+                                        INDENT + INDENT + analyzeOperationsMsg);
+                                
                                 scrubOperations(clazz, clazzObj, classSpace);
-
-                                supervisor.log(ITaskSupervisor.VERBOSE,
-                                    INDENT + INDENT + analyzeGeneralizationsMsg);
-
-                                analyzeForGeneralizations(
-                                    clazz, clazzObj, classSpace);
                                 
                                 supervisor.log(ITaskSupervisor.VERBOSE,
-                                    INDENT + INDENT + analyzeInterfacesMsg);
-
+                                        INDENT + INDENT + analyzeGeneralizationsMsg);
+                                
+                                analyzeForGeneralizations(
+                                        clazz, clazzObj, classSpace);
+                                
+                                supervisor.log(ITaskSupervisor.VERBOSE,
+                                        INDENT + INDENT + analyzeInterfacesMsg);
+                                
                                 analyzeForInterfaces(
-                                    clazz, clazzObj, classSpace);
+                                        clazz, clazzObj, classSpace);
                                 
                                 //AnalyzeForDerivations( clazz, clazzObj, classSpace ));
                                 handleReplacementIssues(clazzObj);
@@ -4965,6 +4976,9 @@ public class UMLParsingIntegrator
                     }
                 }
             }
+            // 78782, 87773, 87836 process redefinition, it has to be done after
+            // all symbols are processed in the last pass.
+            analyzeOperationRedefinition();
             
             if (m_Namespace != null)
             {
@@ -4979,17 +4993,43 @@ public class UMLParsingIntegrator
         }
     }
     
+    
+    private void analyzeOperationRedefinition()
+    {
+        JavaChangeHandlerUtilities util = new JavaChangeHandlerUtilities();
+        IClassifier sub = null;
+        IClassifier sup = null;
+        
+        for (Iterator it = redef.iterator(); it.hasNext();)
+        {
+            Object obj = it.next();
+            if (obj instanceof IDependency)
+            {
+                sub = (IClassifier)((IDependency)obj).getClient();
+                sup = (IClassifier)((IDependency)obj).getSupplier();   
+                util.buildExistingRedefinitions2(sup, sub);  
+            }
+            else if (obj instanceof IGeneralization)
+            {
+                sub = (IClassifier)((IGeneralization)obj).getSpecific();
+                sup = (IClassifier)((IGeneralization)obj).getGeneral();
+                util.buildExistingRedefinitions2(sup, sub);  
+            }        
+        }
+    }
+    
+    
     protected int getSymbolTableTotalSize()
     {
         int retVal = 0;
         
         // This is really ugly.  But what can I do since current Java does not
         // have a way for me to alias collection types.
-        Collection<ArrayList<ETPairT<Node, String>>> values = 
-            m_SymbolTable.values();
+        Collection<ArrayList<ETPairT<Node, String>>> values =
+                m_SymbolTable.values();
         
-        for (Iterator<ArrayList<ETPairT<Node, String>>> iter = 
-            values.iterator(); iter.hasNext();)
+        for (Iterator<ArrayList<ETPairT<Node, String>>> iter =
+                values.iterator(); iter.hasNext();)
         {
             ArrayList<ETPairT<Node, String>> entry = iter.next();
             retVal += entry.size();
@@ -5026,8 +5066,8 @@ public class UMLParsingIntegrator
             
             else
             {
-                ArrayList<ETPairT<Node, String>> newEntry = 
-                    new ArrayList<ETPairT<Node, String>>();
+                ArrayList<ETPairT<Node, String>> newEntry =
+                        new ArrayList<ETPairT<Node, String>>();
                 
                 newEntry.add(new ETPairT<Node, String>(node, id));
                 m_SymbolTable.put(name, newEntry);
@@ -5287,8 +5327,8 @@ public class UMLParsingIntegrator
     {
         try
         {
-            // If this is an inner class, we do not want to create the package 
-            // structure.  The reason why we do not want to crete the package 
+            // If this is an inner class, we do not want to create the package
+            // structure.  The reason why we do not want to crete the package
             // structure, is because the name before the :: is the outer class.
             String fullName = resolveInnerClassName(name, node);
             if(fullName.equals(name) == true)
@@ -5320,10 +5360,10 @@ public class UMLParsingIntegrator
                         {
                             // Before we create a package, let's make sure that the current token is not a class
                             // rather than a package
-
+                            
                             if (m_SymbolTable.get(token) == null)
                             {
-
+                                
                                 Node newNode = XMLManip.createElement(document, "UML:Package");
                                 if (newNode != null)
                                 {
@@ -5526,27 +5566,27 @@ public class UMLParsingIntegrator
         if (pSpace == null || m_Project == null || m_Project == null)
             return false;
         
-        boolean prefVal = NbPreferences.forModule (UMLParsingIntegrator.class).getBoolean("UML_Prompt_to_Save_Project", false);
+        boolean prefVal = NbPreferences.forModule(UMLParsingIntegrator.class).getBoolean("UML_Prompt_to_Save_Project", false);
         
-
+        
         if (!m_Project.isDirty() || ! prefVal)
             return true;
-
+        
         // prompt user to save the target UML project
         
         Object result = SaveNotifier.getDefault().displayNotifier(
-            NbBundle.getMessage(UMLParsingIntegrator.class,
+                NbBundle.getMessage(UMLParsingIntegrator.class,
                 "MSG_DialogTitle_AuthorizeUMLProjectSave"), // NOI18N
-            NbBundle.getMessage(UMLParsingIntegrator.class,
+                NbBundle.getMessage(UMLParsingIntegrator.class,
                 "MSG_UMLProject"), // NOI18N
-            m_Project.getName());
-
+                m_Project.getName());
+        
         if (result == SaveNotifier.SAVE_ALWAYS_OPTION)
         {
             success = true;
-            NbPreferences.forModule (UMLParsingIntegrator.class).putBoolean("UML_Prompt_to_Save_Project", false); // NOI18N 
+            NbPreferences.forModule(UMLParsingIntegrator.class).putBoolean("UML_Prompt_to_Save_Project", false); // NOI18N
         }
-
+        
         else if (result == NotifyDescriptor.OK_OPTION)
             success = true;
         
@@ -5558,7 +5598,7 @@ public class UMLParsingIntegrator
         
         return success;
     }
-
+    
     protected INavigableEnd getNavigableEnd(IAssociation assoc, IClassifier to)
     {
         INavigableEnd pVal = null;
@@ -5627,25 +5667,25 @@ public class UMLParsingIntegrator
             sendExceptionMessage(e);
         }
     }
-
+    
     protected void setVisibility(INamedElement pElement, Node pAttr)
     {
         try
         {
-	    String visibility = XMLManip.getAttributeValue(pAttr, "visibility"); // NOI18N
-            if (visibility != null) 
-	    {
-		visibility = visibility.trim();
-		if (! visibility.equals("")) 
-		{
-		    Node pNode = pElement.getNode();
-		    if (pNode != null)
-		    {
-			XMLManip.setAttributeValue(pNode, "visibility", visibility) ; // NOI18N
-		    }
-		}
-	    }
-	}
+            String visibility = XMLManip.getAttributeValue(pAttr, "visibility"); // NOI18N
+            if (visibility != null)
+            {
+                visibility = visibility.trim();
+                if (! visibility.equals(""))
+                {
+                    Node pNode = pElement.getNode();
+                    if (pNode != null)
+                    {
+                        XMLManip.setAttributeValue(pNode, "visibility", visibility) ; // NOI18N
+                    }
+                }
+            }
+        }
         catch (Exception e)
         {
             // I just want to forward the error to the listener.
@@ -5758,11 +5798,11 @@ public class UMLParsingIntegrator
             {
                 String nodeName = pNode.getName();
                 IElement pClazzObj = new TypedFactoryRetriever<IElement>()
-                    .createTypeAndFill(XMLManip.retrieveSimpleName(pNode), pNode);
+                        .createTypeAndFill(XMLManip.retrieveSimpleName(pNode), pNode);
                 
                 retVal = isAbleToWrite(pClazzObj);
             }
-
+            
             catch (Exception e)
             {
                 sendExceptionMessage(e);
@@ -5779,8 +5819,8 @@ public class UMLParsingIntegrator
             if (!retVal)
             {
                 ICoreProduct pCoreProduct = ProductRetriever.retrieveProduct();
-                IProduct pProduct = (pCoreProduct instanceof IProduct) 
-                    ? (IProduct) pCoreProduct : null;
+                IProduct pProduct = (pCoreProduct instanceof IProduct)
+                        ? (IProduct) pCoreProduct : null;
                 
                 if (pProduct != null)
                 {
@@ -6235,7 +6275,7 @@ public class UMLParsingIntegrator
                 // Derivation parameters
                 List spDerivationParameters = pDerivationElement.selectNodes("./DerivationParameter");
                 int numDerivationParameters = spDerivationParameters.size();
-                                
+                
                 String params = "";
                 for (int y = 0; y < numDerivationParameters; y++)
                 {
@@ -6261,8 +6301,8 @@ public class UMLParsingIntegrator
     }
     
     protected IClassifier checkExistingDerivation(Node pDerivationElement,
-                                                  Node pClazz, IClassifier pClazzObj,
-                                                  INamespace pClassSpace)
+            Node pClazz, IClassifier pClazzObj,
+            INamespace pClassSpace)
     {
         IClassifier pDerivationClassifier = null;
         try
@@ -6276,28 +6316,28 @@ public class UMLParsingIntegrator
             if(pDerivationClassifier == null)
             {
                 // Basically the derivation classifier could already be present if
-                // we are doing an update model from source.  So, we need to 
+                // we are doing an update model from source.  So, we need to
                 // search the model, not just the elements that we have processed.
-                INamedElement spNamedElement = resolveType(pClazz, pClazzObj, 
-                                                           pClassSpace, 
-                                                           derivationElementStr, 
-                                                           false);
-		if (spNamedElement == null) 
-		{
-		    // lets try in the namespace of template element
-		    String tempStr = XMLManip.getAttributeValue(pDerivationElement, "name");
-		    INamedElement templateElement = resolveType(pClazz, pClazzObj, 
-								pClassSpace, 
-								tempStr, 
-								true);
-		    if (templateElement != null) 
-		    {
-			spNamedElement = resolveType(pClazz, pClazzObj, 
-						     templateElement.getNamespace(), 
-						     derivationElementStr, 
-						     false);
-		    }
-		}		
+                INamedElement spNamedElement = resolveType(pClazz, pClazzObj,
+                        pClassSpace,
+                        derivationElementStr,
+                        false);
+                if (spNamedElement == null)
+                {
+                    // lets try in the namespace of template element
+                    String tempStr = XMLManip.getAttributeValue(pDerivationElement, "name");
+                    INamedElement templateElement = resolveType(pClazz, pClazzObj,
+                            pClassSpace,
+                            tempStr,
+                            true);
+                    if (templateElement != null)
+                    {
+                        spNamedElement = resolveType(pClazz, pClazzObj,
+                                templateElement.getNamespace(),
+                                derivationElementStr,
+                                false);
+                    }
+                }
                 if(spNamedElement instanceof IDerivationClassifier)
                 {
                     pDerivationClassifier = (IDerivationClassifier)spNamedElement;
@@ -6312,20 +6352,20 @@ public class UMLParsingIntegrator
         return pDerivationClassifier;
     }
     
-    protected IClassifier ensureDerivation(Node pDerivationElement, 
-                                           Node pClazz, 
-                                           IClassifier pClazzObj, 
-                                           INamespace pClassSpace)
+    protected IClassifier ensureDerivation(Node pDerivationElement,
+            Node pClazz,
+            IClassifier pClazzObj,
+            INamespace pClassSpace)
     {
         IClassifier ppDerivationClassifier = null;
         try
         {
-            // When a template is used as the parameter of a template, then 
+            // When a template is used as the parameter of a template, then
             // the template instance, will have child template instances.
             handleChildDerivations(pDerivationElement, pClazz, pClazzObj, pClassSpace);
             
-            IClassifier spDerivationClassifier = this.checkExistingDerivation(pDerivationElement, pClazz, 
-                                                                              pClazzObj, pClassSpace);
+            IClassifier spDerivationClassifier = this.checkExistingDerivation(pDerivationElement, pClazz,
+                    pClazzObj, pClassSpace);
             // Check for existing match =============================
             if (spDerivationClassifier != null)
             {
@@ -6359,11 +6399,11 @@ public class UMLParsingIntegrator
                 }
                 else
                 {
-                    INamedElement spNamedElement = resolveType(pClazz, 
-                                                               pClazzObj, 
-                                                               pClassSpace, 
-                                                               supplierName,
-                                                               true);
+                    INamedElement spNamedElement = resolveType(pClazz,
+                            pClazzObj,
+                            pClassSpace,
+                            supplierName,
+                            true);
                     if (spNamedElement instanceof IClassifier)
                     {
                         templateClassifier = (IClassifier) spNamedElement;
@@ -6373,7 +6413,7 @@ public class UMLParsingIntegrator
                 // Create DerivationClassifier
                 ICreationFactory spCreationFactory = new CreationFactory();
                 spDerivationClassifier = (IClassifier) spCreationFactory.retrieveMetaType("DerivationClassifier", null);
-//                pClassSpace.addOwnedElement(spDerivationClassifier);
+                //                pClassSpace.addOwnedElement(spDerivationClassifier);
                 
                 // The derivation classifier should live in the same package that
                 // owns the template definition.  That way there would only
@@ -6407,11 +6447,11 @@ public class UMLParsingIntegrator
                     // Get actual parameters
                     List spDerivationParameterElements = pDerivationElement.selectNodes("./DerivationParameter");
                     int numDerivationParameterElements = spDerivationParameterElements.size();
-
+                    
                     if(templateClassifier instanceof IDataType)
                     {
                         ensureDefaultTemplateParameters((IDataType)templateClassifier,
-                                                        numDerivationParameterElements);
+                                numDerivationParameterElements);
                     }
                     
                     IDerivation spDerivation = m_Factory.createDerivation(spDerivationClassifier, templateClassifier);
@@ -6437,11 +6477,11 @@ public class UMLParsingIntegrator
                                 spNamedElement = m_unquieDerivations.get(paramenterValue);
                                 if(spNamedElement == null)
                                 {
-                                    spNamedElement = resolveType(pClazz, 
-                                                                 pClazzObj, 
-                                                                 pClassSpace, 
-                                                                 paramenterValue, 
-                                                                 true);
+                                    spNamedElement = resolveType(pClazz,
+                                            pClazzObj,
+                                            pClassSpace,
+                                            paramenterValue,
+                                            true);
                                 }
                                 
                                 if (spNamedElement != null)
@@ -6651,7 +6691,7 @@ public class UMLParsingIntegrator
                 String enumerationID = XMLManip.getAttributeValue(pClazz, "xmi.id");
                 
                 // Make sure UML:Enumeration.literal exists
-//            spLiteralsNode = XMLManip.ensureNodeExists(pClazz, "UML:Enumeration.literal", "UML:Enumeration.literal");
+                //            spLiteralsNode = XMLManip.ensureNodeExists(pClazz, "UML:Enumeration.literal", "UML:Enumeration.literal");
                 
                 // Get document
                 Document spDocument = m_Project.getDocument();
@@ -6663,38 +6703,38 @@ public class UMLParsingIntegrator
                     Element curElement = (Element)literals.get(y);
                     establishXMIID(curElement);
                     XMLManip.setAttributeValue(curElement, "enumeration", enumerationID);
-		    processComment(curElement);
+                    processComment(curElement);
                 }
                 
                 scrubOperations(pClazz, clazzObj, classSpace);
                 
-//            // Select Attribute nodesb
-//            //DEBUG_XML_NODE(pClazz, _T( "c:\\test.xml" ), false );
-//            // Get derivations from TokenDescriptors
-//            List spAttributes = pClazz.selectNodes("./UML:Element.ownedElement/UML:Attribute");
-//            if (spAttributes != null)
-//            {
-//
-//               // Process enumaration attribute
-//               long numAttributes = spAttributes.size();
-//               for (int y = 0; y < numAttributes; y++)
-//               {
-//                  // Get literal name
-//                  Node spAttribute;
-//                  String enumName;
-//                  spAttribute = (Node) spAttributes.get(y);
-//                  enumName = XMLManip.getAttributeValue(spAttribute, "name");
-//
-//                  // Create literal
-//                  Element spLiteralNode = XMLManip.createElement((Element)spLiteralsNode, "UML:EnumerationLiteral");
-//                  establishXMIID(spLiteralNode);
-//                  XMLManip.setAttributeValue(spLiteralNode, "name", enumName);
-//                  XMLManip.setAttributeValue(spLiteralNode, "enumeration", enumerationID);
-//
-//                   spAttribute.detach();
-//
-//               }
-//            }
+                //            // Select Attribute nodesb
+                //            //DEBUG_XML_NODE(pClazz, _T( "c:\\test.xml" ), false );
+                //            // Get derivations from TokenDescriptors
+                //            List spAttributes = pClazz.selectNodes("./UML:Element.ownedElement/UML:Attribute");
+                //            if (spAttributes != null)
+                //            {
+                //
+                //               // Process enumaration attribute
+                //               long numAttributes = spAttributes.size();
+                //               for (int y = 0; y < numAttributes; y++)
+                //               {
+                //                  // Get literal name
+                //                  Node spAttribute;
+                //                  String enumName;
+                //                  spAttribute = (Node) spAttributes.get(y);
+                //                  enumName = XMLManip.getAttributeValue(spAttribute, "name");
+                //
+                //                  // Create literal
+                //                  Element spLiteralNode = XMLManip.createElement((Element)spLiteralsNode, "UML:EnumerationLiteral");
+                //                  establishXMIID(spLiteralNode);
+                //                  XMLManip.setAttributeValue(spLiteralNode, "name", enumName);
+                //                  XMLManip.setAttributeValue(spLiteralNode, "enumeration", enumerationID);
+                //
+                //                   spAttribute.detach();
+                //
+                //               }
+                //            }
             }
         }
         catch (Exception e)
@@ -7045,9 +7085,9 @@ public class UMLParsingIntegrator
      * @return HRESULT
      */
     
-    public INamedElement findQualifiedType(String typeName, 
-                                           Node clazzNode,
-                                           INamespace classNamespace)
+    public INamedElement findQualifiedType(String typeName,
+            Node clazzNode,
+            INamespace classNamespace)
     {
         INamedElement newType = null;
         
@@ -7099,20 +7139,20 @@ public class UMLParsingIntegrator
                 {
                     String outerClass = resolvePackageFromUMLName(fullName);
                     
-                    // First make sure (or create) that the outer class exist 
+                    // First make sure (or create) that the outer class exist
                     // in the system.
                     INamedElement outer = retrieveType(clazzNode, classNamespace, outerClass, true);
                     
                     if(outer instanceof INamespace)
                     {
                         INamespace space = (INamespace)outer;
-//                        newType = resolveUnknownType(typeName, space);
+                        //                        newType = resolveUnknownType(typeName, space);
                         
                         newType = UMLXMLManip.createAndAddUnknownType(space, shortTypeName);
                         space.addOwnedElement(newType);
                         
                         // Then make sure (or create) the inner class.
-//                        newType = retrieveType(clazzNode, classNamespace, fullName, true);
+                        //                        newType = retrieveType(clazzNode, classNamespace, fullName, true);
                     }
                 }
             }
@@ -7637,7 +7677,7 @@ public class UMLParsingIntegrator
     {
         return supervisor;
     }
-
+    
     private String getLocalMsg(String key)
     {
         return NbBundle.getMessage(UMLParsingIntegrator.class, key);
@@ -7652,17 +7692,17 @@ public class UMLParsingIntegrator
     {
         return NbBundle.getMessage(UMLParsingIntegrator.class, key, params);
     }
-
+    
     /**
      * When we create a template is not know to the system, we create a datatype.
-     * The problem is that we do not create the parameters.  However, when we 
+     * The problem is that we do not create the parameters.  However, when we
      * add the derivation between the derivation classifer and the template, it
      * needs to have the template parameters set up.  Therefore create the
      * default set of template parameters.
      *
      */
-    private void ensureDefaultTemplateParameters(IDataType template, 
-                                                 int numOfParameters)
+    private void ensureDefaultTemplateParameters(IDataType template,
+            int numOfParameters)
     {
         ETList < IParameterableElement > curParams = template.getTemplateParameters();
         
@@ -7673,7 +7713,7 @@ public class UMLParsingIntegrator
         if(curParams.size() < numOfParameters)
         {
             ICreationFactory spCreationFactory = FactoryRetriever.instance().getCreationFactory();
-
+            
             for(int i = 0; i < numOfParameters; i++)
             {
                 // In case a template has a default parameter last time this
@@ -7690,11 +7730,11 @@ public class UMLParsingIntegrator
             }
         }
     }
-
-    private void handleChildDerivations(Node pDerivationElement, 
-                                        Node clazz, 
-                                        IClassifier clazzObj, 
-                                        INamespace classSpace)
+    
+    private void handleChildDerivations(Node pDerivationElement,
+            Node clazz,
+            IClassifier clazzObj,
+            INamespace classSpace)
     {
         Node derivationElement = isDerivationPresent(pDerivationElement, true);
         while(derivationElement != null)
@@ -7741,33 +7781,35 @@ public class UMLParsingIntegrator
     // This is an array of default template names.  This would be used when we
     // know template paramters are needed, but are not supplied.  For example
     // when dealing with classes in a library.
-    private String[] defaultTemplateNames = 
-    { 
-      "T",
-      "U", 
-      "V", 
-      "A", 
-      "B", 
-      "C", 
-      "D", 
-      "E", 
-      "F", 
-      "G", 
-      "H", 
-      "I", 
-      "J", 
-      "K", 
-      "L", 
-      "M", 
-      "N", 
-      "O", 
-      "P", 
-      "Q", 
-      "R", 
-      "S", 
-      "W", 
-      "X", 
-      "Y", 
-      "Z"
+    private String[] defaultTemplateNames =
+    {
+        "T",
+        "U",
+        "V",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "W",
+        "X",
+        "Y",
+        "Z"
     };
+    
+    private HashSet redef;
 }
