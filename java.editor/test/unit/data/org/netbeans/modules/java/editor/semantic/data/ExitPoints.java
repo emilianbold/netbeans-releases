@@ -101,4 +101,8 @@ public class ExitPoints {
     private java.util.List<String> testListString() {
         return null;
     }
+    
+    private String[] testArray() {
+        return new String[]{new String()};
+    }
 }
