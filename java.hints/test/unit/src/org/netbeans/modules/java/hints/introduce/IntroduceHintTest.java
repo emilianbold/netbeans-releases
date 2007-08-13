@@ -109,6 +109,11 @@ public class IntroduceHintTest extends NbTestCase {
     public void testCorrectSelection10() throws Exception {
         performSimpleSelectionVerificationTest("package test; public class Test {public void test() {String s = \"\"; int y = s.length();}}", 125 - 49, 135 - 49, true);
     }
+    
+    public void testCorrectSelection11() throws Exception {
+        performSimpleSelectionVerificationTest("package test; public class Test {public void test() {System.err.println();}}", 102 - 49, 120 - 49, false);
+    }
+    
     public void testFix1() throws Exception {
         performFixTest("package test; public class Test {public void test() {int y = 3; int x = y + 9;}}",
                        72, 77,
