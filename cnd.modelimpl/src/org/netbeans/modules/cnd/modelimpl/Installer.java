@@ -55,17 +55,7 @@ public class Installer extends ModuleInstall {
 	    ((Startupable) model).shutdown();
 	}
     }
-
-    public boolean closing() {
-	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.closing");
-	return super.closing();
-    }
-    
-    public void validate() throws IllegalStateException {
-	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.validate");
-	super.validate();
-    }
-
+   
     public void uninstalled() {
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.uninstalled");
 	CsmModel model = CsmModelAccessor.getModel();

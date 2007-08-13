@@ -38,14 +38,6 @@ public class HighlightInstaller extends ModuleInstall {
         HighlightProvider.getInstance().close();
     }
 
-    public boolean closing() {
-	return super.closing();
-    }
-    
-    public void validate() throws IllegalStateException {
-	super.validate();
-    }
-
     public void uninstalled() {
         HighlightProvider.getInstance().shutdown();
 	super.uninstalled();
