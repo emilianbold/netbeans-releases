@@ -260,6 +260,7 @@ class DragOperation {
         case INTER_MENU_DRAG: completeInterMenuDrag(pt); break ;
         }
         
+        menuEditLayer.glassLayer.requestFocusInWindow();
         payloadComponent = null;
         targetComponent = null;
         menuEditLayer.repaint();
@@ -288,7 +289,6 @@ class DragOperation {
         p("================\n\n\n\n==========\n\n========");
         p("complete inter menu drag: target comp = " + targetComponent);
         if(targetComponent == null) return;
-        //targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
         
         //check if it's still a valid target
         JComponent tcomp = (JComponent) getDeepestComponent(pt);
@@ -356,7 +356,6 @@ class DragOperation {
         
         if(targetComponent == null) return;
         
-        //targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
         
         //check if it's still a valid target
         JComponent tcomp = (JComponent) getDeepestComponent(pt);
