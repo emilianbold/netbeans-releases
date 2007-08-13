@@ -27,13 +27,15 @@ import org.openide.awt.Mnemonics;
 import javax.swing.*;
 import java.util.*;
 import java.awt.Dialog;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseEvent;
 
 /**
  * Provides chooser from list of strings.
  *
  * @author  Maros Sandor
  */
-public class StringSelector extends javax.swing.JPanel {
+public class StringSelector extends javax.swing.JPanel implements MouseListener {
 
     public static String select(String title, String prompt, List<String> strings) {
         StringSelector panel = new StringSelector();
@@ -47,6 +49,8 @@ public class StringSelector extends javax.swing.JPanel {
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(StringSelector.class, "ACSD_StringSelectorDialog"));  // NOI18N
+        panel.putClientProperty(Dialog.class, dialog);
+        panel.putClientProperty(DialogDescriptor.class, descriptor);
         dialog.setVisible(true);
         if (descriptor.getValue() != DialogDescriptor.OK_OPTION) return null;
         
@@ -72,6 +76,28 @@ public class StringSelector extends javax.swing.JPanel {
     /** Creates new form StringSelector */
     public StringSelector() {
         initComponents();
+        listValues.addMouseListener(this);
+    }
+    
+    public void mouseClicked(MouseEvent e) {
+        if (!e.isPopupTrigger() && e.getClickCount() == 2) {
+            Dialog dialog = (Dialog) getClientProperty(Dialog.class);
+            DialogDescriptor descriptor = (DialogDescriptor) getClientProperty(DialogDescriptor.class);
+            descriptor.setValue(DialogDescriptor.OK_OPTION);
+            dialog.dispose();
+        }
+    }
+
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
     }
     
     /** This method is called from within the constructor to
