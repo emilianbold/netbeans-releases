@@ -668,10 +668,12 @@ public class MenuEditLayer extends JPanel {
 
             for(RADComponent rad : selectedComponents) {
                 JComponent c = (JComponent) formDesigner.getComponent(rad);
-                c.setBackground(SELECTED_MENU_BACKGROUND);
-                makeSureShowingOnScreen(rad, c);
-                if (c instanceof JMenu) {
-                    showMenuPopup((JMenu) c);
+                if(c != null) {
+                    c.setBackground(SELECTED_MENU_BACKGROUND);
+                    makeSureShowingOnScreen(rad, c);
+                    if (c instanceof JMenu) {
+                        showMenuPopup((JMenu) c);
+                    }
                 }
             }
 
