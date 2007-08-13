@@ -38,6 +38,7 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -99,7 +100,8 @@ public class Utilities {
      * Close All Documents.
      */
     public static void closeAllDocuments(){
-        new CloseAllDocumentsAction().perform();
+	if ( new Action("Window|Close All Documents",null).isEnabled() )
+	        new CloseAllDocumentsAction().perform();
     }
     
     /**
