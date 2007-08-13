@@ -581,11 +581,17 @@ public class MenuEditLayer extends JPanel {
     
     
     // returns true if parent really is an ancestor of target
-    boolean isAncestor(JMenu target, JMenu parent) {
-        
+    boolean isAncestor(JComponent target, JComponent parent) {
+        if(!(parent instanceof JMenu)) {
+            return false;
+        }
         RADComponent targetRad = formDesigner.getMetaComponent(target);
         RADComponent parentRad = targetRad.getParentComponent();
         Object possibleParent = formDesigner.getComponent(parentRad);
+        RADComponent realParentRad = formDesigner.getMetaComponent(parent);
+        if(parentRad == realParentRad) {
+            return true;
+        }
         if(parent == possibleParent) {
             return true;
         } else {
@@ -853,10 +859,18 @@ public class MenuEditLayer extends JPanel {
     
     void moveRadComponentInto(JComponent payload, JComponent targetMenu) {
         try {
+            
+            //check if dragging onto self
             if(payload == targetMenu) {
                 p("can't move onto self");
                 return;
             }
+            
+            //check if dragging to a descendant node
+            if(isAncestor(targetMenu, payload)) {
+                return;
+            }
+            
             JComponent payloadParent = getMenuParent(payload);
             if(payloadParent == null) {
                 payloadParent = (JComponent) payload.getParent();
@@ -903,6 +917,10 @@ public class MenuEditLayer extends JPanel {
         try {
             if(payload == target) {
                 p("can't move onto self");
+                return;
+            }
+            //check if dragging to a descendant node
+            if(isAncestor(target, payload)) {
                 return;
             }
             JComponent payloadParent = getMenuParent(payload);
