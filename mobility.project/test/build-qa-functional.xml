@@ -56,6 +56,7 @@
             <fileset dir="${xtest.workdir}/sys/ide"/>
         </copy>
         
+        <antcall target="delete-wtk"/>
     </target>
 
     
@@ -70,7 +71,7 @@
         </executeTests>
         
         <delete dir="${xtest.tmpdir.createproject}"/>
-        
+        <antcall target="delete-wtk"/>
     </target>
     
     
@@ -89,6 +90,7 @@
             <property name="xtest.timeout" value="1200000" />
         </executeTests>
         
+        <antcall target="delete-wtk"/>
     </target>
     
     
@@ -122,7 +124,13 @@
         <fail unless="wtk.zipfile.name" message="Not supported platform."/>
         <property name="wtk.dir" location="${nbextra.dir}/qa/performance/mobility"/>
         <property name="emulators.mobility" value="${netbeans.dest.dir}/mobility8/emulators-inst"/>
+        <available file="${emulators.mobility}" type="dir" property="emulators.mobility.exist"/>
         <mkdir dir="${emulators.mobility}"/>
         <copy file="${wtk.dir}/${wtk.zipfile.name}" todir="${emulators.mobility}"/>
+    </target>
+    
+    <target name="delete-wtk" unless="emulators.mobility.exist">
+        <!-- Delete mobility8/emulators-inst only if it doesn't exist before tests. -->
+        <delete dir="${emulators.mobility}" failonerror="true"/>
     </target>
 </project>
