@@ -211,13 +211,17 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     public String getURL (String relativePath, boolean global) {    if (verbose) System.out.println ("SPPI: getURL " + relativePath + " global " + global);
         FileObject fo;
         relativePath = normalize(relativePath);
-        synchronized (this) {
-            if (!global) {
-                fo = smartSteppingSourcePath.findResource(relativePath);
+        if (originalSourcePath == null) {
+            fo = GlobalPathRegistry.getDefault().findResource(relativePath);
+        } else {
+            synchronized (this) {
+                if (!global) {
+                    fo = smartSteppingSourcePath.findResource(relativePath);
                                                                     if (verbose) System.out.println ("SPPI:   fo " + fo);
-            } else {
-                fo = originalSourcePath.findResource(relativePath);
+                } else {
+                    fo = originalSourcePath.findResource(relativePath);
                                                                     if (verbose) System.out.println ("SPPI:   fo " + fo);
+                }
             }
         }
         if (fo == null) return null;
@@ -239,13 +243,20 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     public String[] getAllURLs (String relativePath, boolean global) {      if (verbose) System.out.println ("SPPI: getURL " + relativePath + " global " + global);
         List<FileObject> fos;
         relativePath = normalize(relativePath);
-        synchronized (this) {
-            if (!global) {
-                fos = smartSteppingSourcePath.findAllResources(relativePath);
+        if (originalSourcePath == null) {
+            fos = new ArrayList<FileObject>();
+            for (ClassPath cp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+                fos.addAll(cp.findAllResources(relativePath));
+            }
+        } else {
+            synchronized (this) {
+                if (!global) {
+                    fos = smartSteppingSourcePath.findAllResources(relativePath);
                                                                             if (verbose) System.out.println ("SPPI:   fos " + fos);
-            } else {
-                fos = originalSourcePath.findAllResources(relativePath);
+                } else {
+                    fos = originalSourcePath.findAllResources(relativePath);
                                                                             if (verbose) System.out.println ("SPPI:   fos " + fos);
+                }
             }
         }
         List<String> urls = new ArrayList<String>(fos.size());
