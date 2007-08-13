@@ -224,8 +224,10 @@ class FoldingTaskListModel extends TaskListModel {
         
         public void add( List<Task> newTasks ) {
             boolean wasEmpty = isEmpty();
-            tasks.addAll( newTasks );
-            Collections.sort( tasks, getComparator() );
+            synchronized( tasks ) {
+                tasks.addAll( newTasks );
+                Collections.sort( tasks, getComparator() );
+            }
             
             int startingRow = getFoldingGroupStartingRow( this );
             
@@ -261,8 +263,9 @@ class FoldingTaskListModel extends TaskListModel {
                         lastRow = index;
                 }
             }
-            tasks.removeAll( removedTasks );
-            
+            synchronized( tasks ) {
+                tasks.removeAll( removedTasks );
+            }            
             int startingRow = getFoldingGroupStartingRow( this );
             if( isEmpty() ) {
                 fireTableRowsDeleted( startingRow, startingRow+rowCount );
@@ -280,13 +283,17 @@ class FoldingTaskListModel extends TaskListModel {
             
             int rowCount = getRowCount();
             int startingRow = getFoldingGroupStartingRow( this );
-            tasks.clear();
+            synchronized( tasks ) {
+                tasks.clear();
+            }
             
             fireTableRowsDeleted( startingRow, startingRow+rowCount );
         }
         
         public boolean isEmpty() {
-            return tasks.isEmpty();
+            synchronized( tasks ) {
+                return tasks.isEmpty();
+            }
         }
         
         public void setExpanded( boolean expand ) {
@@ -320,11 +327,15 @@ class FoldingTaskListModel extends TaskListModel {
         }
         
         public int getTaskCount() {
-            return tasks.size();
+            synchronized( tasks ) {
+                return tasks.size();
+            }
         }
         
         public Task getTaskAt( int index ) {
-            return tasks.get( index );
+            synchronized( tasks ) {
+                return tasks.get( index );
+            }
         }
     
         public int compareTo(org.netbeans.modules.tasklist.ui.FoldingTaskListModel.FoldingGroup other) {
@@ -352,18 +363,20 @@ class FoldingTaskListModel extends TaskListModel {
             if( getComparator().equals( newComparator ) )
                 return;
             comparator = newComparator;
-            if( !tasks.isEmpty() ) {
-                Collections.sort( tasks, getComparator() );
-                if( isExpanded() ) {
-                    int firstRow = 0;
-                    int groupIndex = groups.indexOf( this );
-                    for( int i=0; i<groupIndex; i++ ) {
-                        firstRow += groups.get( i ).getRowCount();
-                    }
-                    int lastRow = firstRow + getTaskCount();
-                    firstRow += 1;
+            synchronized( tasks ) {
+                if( !tasks.isEmpty() ) {
+                    Collections.sort( tasks, getComparator() );
+                    if( isExpanded() ) {
+                        int firstRow = 0;
+                        int groupIndex = groups.indexOf( this );
+                        for( int i=0; i<groupIndex; i++ ) {
+                            firstRow += groups.get( i ).getRowCount();
+                        }
+                        int lastRow = firstRow + getTaskCount();
+                        firstRow += 1;
 
-                    fireTableRowsUpdated( firstRow, lastRow );
+                        fireTableRowsUpdated( firstRow, lastRow );
+                    }
                 }
             }
         }
