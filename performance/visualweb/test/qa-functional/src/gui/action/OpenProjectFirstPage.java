@@ -86,7 +86,7 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
         long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
         pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
         try {
-            openNode = new Node(pto.getProjectRootNode(targetProject), gui.VWPUtilities.WEB_PAGES + '|' + "Page1.jsp");
+            openNode = new Node(pto.getProjectRootNode(targetProject), gui.VWPUtilities.WEB_PAGES + "|" + "Page1.jsp");
         } catch(TimeoutExpiredException tex) {
             pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout);
             throw new Error("Cannot find expected node because of Timeout");
