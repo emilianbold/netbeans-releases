@@ -63,7 +63,7 @@ public class XsltDesignViewOpenAction extends NodeAction {
     }
 
     protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes == null || activatedNodes[0] == null) {
+        if (activatedNodes == null || activatedNodes.length < 1 || activatedNodes[0] == null) {
             return false;
         }
         XSLTDataObject dObj = activatedNodes[0].getLookup().
