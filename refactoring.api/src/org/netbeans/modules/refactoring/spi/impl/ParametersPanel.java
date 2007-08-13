@@ -80,8 +80,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private final int PRE_CHECK = 0;
     private final int INPUT_PARAMETERS = 1;
     private final int POST_CHECK = 2;
-    private final int PROBLEM = 3;
-    private final int CHECK_PARAMETERS = 4;
+    private final int CHECK_PARAMETERS = 3;
     
     private transient int currentState = INPUT_PARAMETERS;
 
@@ -277,7 +276,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             return;
         }
         
-        if (currentState == PROBLEM && previewAll) {
+        if (currentState == POST_CHECK && previewAll) {
             Cancellable doCloseParent = new Cancellable() {
                 public boolean cancel() {
                     cancelActionPerformed(null);
@@ -296,7 +295,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         RequestProcessor rp = new RequestProcessor();
         final int inputState = currentState;
         
-        if (currentState != PRE_CHECK) {
+        if (currentState != PRE_CHECK && currentState != POST_CHECK) {
             if (rui instanceof RefactoringUIBypass && ((RefactoringUIBypass) rui).isRefactoringBypassRequired()) {
                 try{
                     ((RefactoringUIBypass)rui).doRefactoringBypass();
@@ -532,7 +531,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         } else {
             ProblemDetails details = getDetails(problem);
             if (details!=null) {
-                currentState=PROBLEM;
                 Mnemonics.setLocalizedText(previewButton, details.getDetailsHint());            
                 previewButton.setVisible(true);
                 previewButton.setEnabled(true);
@@ -714,7 +712,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         public void run() {
             if (currentState != POST_CHECK && currentState != CHECK_PARAMETERS) {
                 problem = rui.setParameters();
-                if (problem != null && currentState!=PROBLEM) {
+                if (problem != null && currentState!=POST_CHECK) {
                     currentState = CHECK_PARAMETERS;
                     try {
                         SwingUtilities.invokeAndWait(new Runnable() {
