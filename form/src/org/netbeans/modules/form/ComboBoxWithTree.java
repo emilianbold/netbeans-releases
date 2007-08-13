@@ -82,12 +82,13 @@ public class ComboBoxWithTree extends JComboBox {
         // Get rid of original popup
         setModel(new DefaultComboBoxModel(new Object[] {""})); // NOI18N
         setRenderer(new DefaultListCellRenderer() {
+            @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 if (index == -1) { // Make sure that the combo has a correct preferred size
                     return super.getListCellRendererComponent(list, "null", index, isSelected, cellHasFocus); // NOI18N
                 } else {
                     JLabel comp = new JLabel();
-                    comp.setPreferredSize(new Dimension(0,-1));
+                    comp.setPreferredSize(new Dimension(0,-10000));
                     return comp;
                 }
             }
@@ -109,6 +110,7 @@ public class ComboBoxWithTree extends JComboBox {
         tree.setSelectionModel(selectionModel);
         tree.setVisibleRowCount(10);
         tree.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyPressed(KeyEvent e) {
                 int code = e.getKeyCode();
                 if ((code == KeyEvent.VK_ENTER) || (code == KeyEvent.VK_ESCAPE)) {
@@ -117,6 +119,7 @@ public class ComboBoxWithTree extends JComboBox {
             }
         });
         tree.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() > 1) {
                     setPopupVisible(false);
@@ -147,6 +150,7 @@ public class ComboBoxWithTree extends JComboBox {
             scrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));
             JPopupMenu menu = new JPopupMenu() {
                 // Cannot use setVisible(true) on JDK 6 due to changes in isPopupMenu()
+                @Override
                 public boolean isVisible() {
                     return true;
                 }
