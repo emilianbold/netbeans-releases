@@ -3717,7 +3717,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (ts.move(offset) == 0 || !ts.moveNext())
                     ts.movePrevious();
                 int len = offset - ts.offset();
-                if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER || ts.token().id().primaryCategory().startsWith("keyword")) && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
+                if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
+                        (ts.token().id().primaryCategory().startsWith("keyword")) || ts.token().id().primaryCategory().equals("literal"))
+                        && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
                     prefix = ts.token().toString().substring(0, len);
                     offset = ts.offset();
                 }
