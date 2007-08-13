@@ -18,8 +18,6 @@
  */
 package org.netbeans.spi.project.libraries;
 
-import org.netbeans.spi.project.libraries.LibraryImplementation;
-
 import java.beans.PropertyChangeListener;
 
 /**
