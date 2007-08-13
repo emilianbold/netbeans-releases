@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeEvent;
@@ -41,10 +42,11 @@ import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationScanner;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.TypeAnnotationHandler;
 import org.openide.filesystems.FileObject;
 import org.xml.sax.SAXParseException;
 
@@ -332,8 +334,9 @@ public class WebservicesImpl implements Webservices {
         
         public List<WebserviceDescriptionImpl> createInitialObjects() throws InterruptedException {
             final List<WebserviceDescriptionImpl> result = new ArrayList<WebserviceDescriptionImpl>();
-            helper.getAnnotationScanner().findAnnotatedTypes("javax.jws.WebService",new TypeAnnotationHandler() { // NOI18N
-                public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
+            helper.getAnnotationScanner().findAnnotations("javax.jws.WebService", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                    // XXX should be called with another type kinds
                     // don't consider interfaces (SEI classes)
                     if (type.getKind() != ElementKind.INTERFACE)
                         result.add(new WebserviceDescriptionImpl(helper, type));

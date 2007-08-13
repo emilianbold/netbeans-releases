@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
@@ -32,8 +33,9 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.TypeAnnotationHandler;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationScanner;
 
 public class EnterpriseBeansImpl implements EnterpriseBeans {
 
@@ -57,14 +59,14 @@ public class EnterpriseBeansImpl implements EnterpriseBeans {
     public Session[] getSession() {
         final List<Session> result = new ArrayList<Session>();
         try {
-            helper.getAnnotationScanner().findAnnotatedTypes("javax.ejb.Stateless", new TypeAnnotationHandler() { // NOI18N
-                public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
-                    result.add(new SessionImpl(SessionImpl.Kind.STATELESS, helper, typeElement));
+            helper.getAnnotationScanner().findAnnotations("javax.ejb.Stateless", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                    result.add(new SessionImpl(SessionImpl.Kind.STATELESS, helper, type));
                 }
             });
-            helper.getAnnotationScanner().findAnnotatedTypes("javax.ejb.Stateful", new TypeAnnotationHandler() { // NOI18N
-                public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
-                    result.add(new SessionImpl(SessionImpl.Kind.STATEFUL, helper, typeElement));
+            helper.getAnnotationScanner().findAnnotations("javax.ejb.Stateful", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                    result.add(new SessionImpl(SessionImpl.Kind.STATEFUL, helper, type));
                 }
             });
         } catch (InterruptedException e) {
@@ -76,9 +78,9 @@ public class EnterpriseBeansImpl implements EnterpriseBeans {
     public MessageDriven[] getMessageDriven() {
         final List<MessageDriven> result = new ArrayList<MessageDriven>();
         try {
-            helper.getAnnotationScanner().findAnnotatedTypes("javax.ejb.MessageDriven", new TypeAnnotationHandler() { // NOI18N
-                public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
-                    result.add(new MessageDrivenImpl(helper, typeElement));
+            helper.getAnnotationScanner().findAnnotations("javax.ejb.MessageDriven", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                    result.add(new MessageDrivenImpl(helper, type));
                 }
             });
         } catch (InterruptedException e) {

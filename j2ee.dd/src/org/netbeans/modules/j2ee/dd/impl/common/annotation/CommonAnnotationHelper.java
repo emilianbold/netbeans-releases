@@ -46,7 +46,7 @@ import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.TypeAnnotationHandler;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationScanner;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
 
@@ -103,8 +103,8 @@ public class CommonAnnotationHelper {
             }
         }, null);
         try {
-            helper.getAnnotationScanner().findAnnotatedTypes("javax.annotation.security.DeclareRoles", new TypeAnnotationHandler() { // NOI18N
-                public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
+            helper.getAnnotationScanner().findAnnotations("javax.annotation.security.DeclareRoles", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
                     parser.parse(annotation);
                 }
             });

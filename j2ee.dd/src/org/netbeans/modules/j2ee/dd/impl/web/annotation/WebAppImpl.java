@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
@@ -62,9 +63,10 @@ import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonAnnotationHelper;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbRefHelper;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationScanner;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.JavaContextListener;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.TypeAnnotationHandler;
 import org.openide.filesystems.FileObject;
 import org.xml.sax.SAXParseException;
 
@@ -175,8 +177,8 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         assert ddRoot != null;
         final List<Servlet> servletList = new ArrayList<Servlet>();
         try {
-            helper.getAnnotationScanner().findAnnotatedTypes("javax.annotation.security.RunAs", new TypeAnnotationHandler() { // NOI18N
-                public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
+            helper.getAnnotationScanner().findAnnotations("javax.annotation.security.RunAs", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
                     for (Servlet servlet : ddRoot.getServlet()) {
                         if (type.getQualifiedName().contentEquals(servlet.getServletClass())) {
                             RunAs runAs = new RunAsImpl(helper, annotation);

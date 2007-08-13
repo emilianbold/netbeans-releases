@@ -28,8 +28,7 @@ import javax.lang.model.element.TypeElement;
  * interface are used by annotation scanners such as
  * {@link AnnotationScanner} to pass annotations back to the caller.
  *
- * @author Tomas Mysik
- * @see TypeAnnotationHandler
+ * @author Andrei Badea, Tomas Mysik
  */
 public interface AnnotationHandler {
 
@@ -41,7 +40,7 @@ public interface AnnotationHandler {
      * @param type        the type in which annotated element can be found. Never <code>null</code>.
      * @param element     the element annotated with the annotation specified
      *                    by the <code>annotation</code> parameter. Never <code>null</code>.
-     *                    The same as typeElement for class.
+     *                    The same as <code>type</code> param for class.
      * @param annotation  an annotation mirror.
      */
     void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation);

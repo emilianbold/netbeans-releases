@@ -24,11 +24,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationScanner;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.TypeAnnotationHandler;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 
 public class EntityMappingsImpl implements EntityMappings {
@@ -372,8 +374,8 @@ public class EntityMappingsImpl implements EntityMappings {
 
         public List<EntityImpl> createInitialObjects() throws InterruptedException {
             final List<EntityImpl> result = new ArrayList<EntityImpl>();
-            helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Entity", new TypeAnnotationHandler() { // NOI18N
-                public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
+            helper.getAnnotationScanner().findAnnotations("javax.persistence.Entity", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
                     result.add(new EntityImpl(helper, EntityMappingsImpl.this, type));
                 }
             });
@@ -402,8 +404,8 @@ public class EntityMappingsImpl implements EntityMappings {
 
         public List<EmbeddableImpl> createInitialObjects() throws InterruptedException {
             final List<EmbeddableImpl> result = new ArrayList<EmbeddableImpl>();
-            helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Embeddable", new TypeAnnotationHandler() { // NOI18N
-                public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
+            helper.getAnnotationScanner().findAnnotations("javax.persistence.Embeddable", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
                     result.add(new EmbeddableImpl(helper, EntityMappingsImpl.this, type));
                 }
             });
@@ -432,8 +434,8 @@ public class EntityMappingsImpl implements EntityMappings {
 
         public List<MappedSuperclassImpl> createInitialObjects() throws InterruptedException {
             final List<MappedSuperclassImpl> result = new ArrayList<MappedSuperclassImpl>();
-            helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.MappedSuperclass", new TypeAnnotationHandler() { // NOI18N
-                public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
+            helper.getAnnotationScanner().findAnnotations("javax.persistence.MappedSuperclass", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
                     result.add(new MappedSuperclassImpl(helper, EntityMappingsImpl.this, type));
                 }
             });

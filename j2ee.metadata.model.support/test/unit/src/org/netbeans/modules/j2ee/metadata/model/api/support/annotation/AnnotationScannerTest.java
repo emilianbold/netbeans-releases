@@ -36,7 +36,6 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.TypeAnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.util.MapFormat;
@@ -75,9 +74,9 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         final Set<String> types = new HashSet<String>();
         helper.runJavaSourceTask(new Callable<Void>() {
             public Void call() throws InterruptedException {
-                helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Entity", new TypeAnnotationHandler() {
-                    public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotationMirror) {
-                        types.add(typeElement.getQualifiedName().toString());
+                helper.getAnnotationScanner().findAnnotations("javax.persistence.Entity", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() {
+                    public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                        types.add(type.getQualifiedName().toString());
                     }
                 });
                 return null;
@@ -113,9 +112,9 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         final List<ElementHandle<TypeElement>> typeHandles  = new ArrayList<ElementHandle<TypeElement>>();
         helper.runJavaSourceTask(new Callable<Void>() {
             public Void call() throws InterruptedException {
-                helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Entity", new TypeAnnotationHandler() {
-                    public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotationMirror) {
-                        typeHandles.add(ElementHandle.create(typeElement));
+                helper.getAnnotationScanner().findAnnotations("javax.persistence.Entity", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() {
+                    public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                        typeHandles.add(ElementHandle.create(type));
                         entityCount[0]++;
                     }
                 });

@@ -29,7 +29,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.CompilationController;
@@ -45,10 +44,13 @@ import org.openide.util.Parameters;
 public class AnnotationScanner {
 
     // XXX perhaps should be merged with AnnotationModelHelper
-    // XXX method findAnnotatedTypes() should be removed
+    
+    /**
+     * Defines all the possible kinds for program element types.
+     */
+    public static final Set<ElementKind> TYPE_KINDS = EnumSet.of(ElementKind.CLASS, ElementKind.INTERFACE, ElementKind.ENUM, ElementKind.ANNOTATION_TYPE);
     
     private static final Logger LOGGER = Logger.getLogger(AnnotationScanner.class.getName());
-    private static final Set<ElementKind> TYPE_KINDS = EnumSet.of(ElementKind.CLASS, ElementKind.INTERFACE, ElementKind.ENUM, ElementKind.ANNOTATION_TYPE);
 
     private final AnnotationModelHelper helper;
 
@@ -57,66 +59,12 @@ public class AnnotationScanner {
     }
 
     /**
-     * Finds all types annotated with the given annotation. This methods gets
-     * the name of the searched annotation and an instance of the
-     * {@link TypeAnnotationHandler} interface which will be used to
-     * pass the found annotation types back to the caller.
-     *
-     * @param  searchedTypeName the fully-qualified name of the annotation
-     *         to be searched for. Cannot be null.
-     * @param  handler a {@link TypeAnnotationHandler}. Its <code>typeAnnotation</code>
-     *         method will be invoked once for each type annotated with the annotation
-     *         passed in the <code>searchedTypeName</code> parameter, with
-     *         the <code>type</code> parameter set to the annotated type, and the
-     *         <code>annotation</code> parameter set to an {@link AnnotationMirror}
-     *         (of type <code>searchedTypeName</code>) which that type is annotated with.
-     *         Cannot be null.
-     * @throws InterruptedException when the search was interrupted (for 
-     *         example because {@link org.netbeans.api.java.source.ClassIndex#getElements}
-     *         was interrupted).
-     */
-    public void findAnnotatedTypes(final String searchedTypeName, final TypeAnnotationHandler handler) throws InterruptedException {
-        Parameters.notNull("searchedTypeName", searchedTypeName); // NOI18N
-        Parameters.notNull("handler", handler); // NOI18N
-        LOGGER.log(Level.FINE, "findAnnotatedTypes called with {0}", searchedTypeName); // NOI18N
-        CompilationController controller = helper.getCompilationController();
-        TypeElement searchedType = controller.getElements().getTypeElement(searchedTypeName);
-        if (searchedType == null) {
-            LOGGER.log(Level.WARNING, "findAnnotatedTypes: could not find type {0}", searchedTypeName); // NOI18N
-            return;
-        }
-        ElementHandle<TypeElement> searchedTypeHandle = ElementHandle.create(searchedType);
-        final Set<ElementHandle<TypeElement>> elementHandles = helper.getClasspathInfo().getClassIndex().getElements(searchedTypeHandle, EnumSet.of(SearchKind.TYPE_REFERENCES), EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
-        if (elementHandles == null) {
-            throw new InterruptedException("ClassIndex.getElements() was interrupted"); // NOI18N
-        }
-        TypeMirror searchedTypeMirror = searchedType.asType();
-        for (ElementHandle<TypeElement> elementHandle : elementHandles) {
-            LOGGER.log(Level.FINE, "found element {0}", elementHandle.getQualifiedName()); // NOI18N
-            TypeElement element = elementHandle.resolve(controller);
-            if (element == null) {
-                continue;
-            }
-            List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
-            for (AnnotationMirror annotationMirror : annotationMirrors) {
-                DeclaredType annotationType = annotationMirror.getAnnotationType();
-                String annotationTypeName = helper.getAnnotationTypeName(annotationType);
-                // issue 110819: need to compare the real type names, since the annotation can be @<any>
-                if (searchedTypeName.equals(annotationTypeName)) {
-                    LOGGER.log(Level.FINE, "notifying element {0}, annotation {1}", new Object[] { element.getQualifiedName(), annotationMirror }); // NOI18N
-                    handler.typeAnnotation(element, annotationMirror);
-                } else {
-                    LOGGER.log(Level.FINE, "type name mismatch, ignoring element {0}, annotation {1}", new Object[] { element.getQualifiedName(), annotationMirror }); // NOI18N
-                }
-            }
-        }
-    }
-    
-    /**
      * Finds all elements annotated with the given annotation. This methods gets
      * the name of the searched annotation and an instance of the
      * {@link ElementAnnotationHandler} interface which will be used to
      * pass the found annotation elements back to the caller.
+     * <p>
+     * For finding annotated types {@link #TYPE_KINDS TYPE_KINDS} constant can be useful.
      *
      * @param  searchedTypeName the fully-qualified name of the annotation
      *         to be searched for. Cannot be <code>null</code>.
@@ -156,7 +104,6 @@ public class AnnotationScanner {
         if (elementHandles == null) {
             throw new InterruptedException("ClassIndex.getElements() was interrupted"); // NOI18N
         }
-        TypeMirror searchedTypeMirror = searchedType.asType();
         Set<ElementKind> nonTypeKinds = EnumSet.copyOf(kinds);
         nonTypeKinds.removeAll(TYPE_KINDS);
         Set<ElementKind> typeKinds = EnumSet.copyOf(kinds);

@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -367,8 +368,8 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
 
         public List<EntityImpl> createInitialObjects() throws InterruptedException {
             final List<EntityImpl> result = new ArrayList<EntityImpl>();
-            helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Entity", new TypeAnnotationHandler() {
-                public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
+            helper.getAnnotationScanner().findAnnotations("javax.persistence.Entity", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() {
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
                     result.add(new EntityImpl(helper, type));
                 }
             });
