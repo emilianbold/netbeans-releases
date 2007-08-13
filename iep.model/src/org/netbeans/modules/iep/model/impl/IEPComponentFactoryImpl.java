@@ -71,8 +71,7 @@ public class IEPComponentFactoryImpl implements IEPComponentFactory {
     }
     
     public LinkComponent createLink(IEPModel model) {
-    	// TODO Auto-generated method stub
-    	return null;
+    	return new LinkComponentImpl(model);
     }
     
     public Property createProperty(IEPModel model) {

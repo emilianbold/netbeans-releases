@@ -12,6 +12,12 @@ public class LinkComponentImpl extends ComponentImpl implements LinkComponent {
 	public LinkComponentImpl(IEPModel model,  Element e) {
     	super(model, e);
     }
+	
+	public LinkComponentImpl(IEPModel model) {
+    	super(model);
+    }
+	
+	
 
 	public OperatorComponent getFrom() {
 		Property fromProperty = getProperty(LinkComponent.PROP_FROM);
@@ -25,13 +31,14 @@ public class LinkComponentImpl extends ComponentImpl implements LinkComponent {
 	//TODO change it to Referenceable component
 	public void setFrom(OperatorComponent from) {
 		if(from != null) {
-			Property fromProperty = getProperty(LinkComponent.PROP_FROM);
-			if(fromProperty == null) {
-				fromProperty = getModel().getFactory().createProperty(getModel());
-				fromProperty.setName(LinkComponent.PROP_FROM);
+			Property p = getProperty(LinkComponent.PROP_FROM);
+			if(p == null) {
+				p = getModel().getFactory().createProperty(getModel());
+				p.setName(LinkComponent.PROP_FROM);
+				addProperty(p);
 			}
 			
-			fromProperty.setValue(from.getId());
+			p.setValue(from.getId());
 		}
 		
 	}
@@ -47,13 +54,14 @@ public class LinkComponentImpl extends ComponentImpl implements LinkComponent {
 	
 	public void setTo(OperatorComponent to) {
 		if(to != null) {
-			Property toProperty = getProperty(LinkComponent.PROP_TO);
-			if(toProperty == null) {
-				toProperty = getModel().getFactory().createProperty(getModel());
-				toProperty.setName(LinkComponent.PROP_TO);
+			Property p = getProperty(LinkComponent.PROP_TO);
+			if(p == null) {
+				p = getModel().getFactory().createProperty(getModel());
+				p.setName(LinkComponent.PROP_TO);
+				addProperty(p);
 			}
 			
-			toProperty.setValue(to.getId());
+			p.setValue(to.getId());
 		}
 		
 		

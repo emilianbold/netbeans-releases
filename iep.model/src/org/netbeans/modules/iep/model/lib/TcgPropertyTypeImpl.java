@@ -128,6 +128,7 @@ class TcgPropertyTypeImpl
         mAccess = access;
         mMultiple = ppt.isMultiple();
         mRequired = required;
+        mDefaultValueAsString = defaultValue != null ? defaultValue.toString() : null;
         mDefaultValue = defaultValue;
         mScript = script;
         mCategory = category;
