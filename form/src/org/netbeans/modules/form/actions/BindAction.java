@@ -28,6 +28,7 @@ import javax.swing.event.MenuListener;
 import org.netbeans.modules.form.*;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 public class BindAction extends CookieAction {
@@ -41,7 +42,7 @@ public class BindAction extends CookieAction {
     }
 
     public String getName() {
-        return "Bind";
+        return "Bind"; // NOI18N
     }
 
     public HelpCtx getHelpCtx() {
@@ -51,15 +52,16 @@ public class BindAction extends CookieAction {
     protected void performAction(Node[] activatedNodes) {
     }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
-        JMenu popupMenu = new JMenu("Bind");
+        JMenu popupMenu = new JMenu(NbBundle.getMessage(BindAction.class, "ACT_Bind")); // NOI18N
         
         popupMenu.setEnabled(isEnabled());
-//        HelpCtx.setHelpIDString(popupMenu, BindAction.class.getName());
         
         popupMenu.addMenuListener(new MenuListener() {
             public void menuSelected(MenuEvent e) {
@@ -82,8 +84,7 @@ public class BindAction extends CookieAction {
         if (nodes.length != 1)
             return;
 
-        RADComponentCookie radCookie =
-            (RADComponentCookie) nodes[0].getCookie(RADComponentCookie.class);
+        RADComponentCookie radCookie = nodes[0].getCookie(RADComponentCookie.class);
         if (radCookie == null)
             return;
 
@@ -96,7 +97,9 @@ public class BindAction extends CookieAction {
                 menu.add(mi);
             }
         } else {
-            menu.setEnabled(false);
+            JMenuItem item = new JMenuItem(NbBundle.getMessage(BindAction.class, "MSG_NoBinding")); // NOI18N
+            item.setEnabled(false);
+            menu.add(item);
         }
     }
 
@@ -120,7 +123,7 @@ public class BindAction extends CookieAction {
         }
 
         public void actionPerformed(ActionEvent ev) {
-            MetaBinding binding = (MetaBinding) bindingProperty.getValue();
+            MetaBinding binding = bindingProperty.getValue();
             final BindingCustomizer customizer = new BindingCustomizer(bindingProperty);
             customizer.setBinding(binding);
             customizer.getDialog(new ActionListener() {
