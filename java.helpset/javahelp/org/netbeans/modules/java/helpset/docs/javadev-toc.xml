@@ -45,17 +45,7 @@
     <tocitem text="Code Navigation: Quick Reference" target="editor.navigation"/>
     <tocitem text="Finding and Replacing Text" target="org.netbeans.modules.search.SearchPanel"/>
     <tocitem text="Regular Expressions For Finding and Replacing Text" target="editing.find_regexp"/>
-    <tocitem text="Internationalizing Source Code">
-    <tocitem text="About" target="internation.internation"/>
-    <tocitem text="Internationalizing a Single File" target="internation.singlefile" />
-    <tocitem text="Internationalizing a Set of Files With the Internationalization Wizard" target="internation.wizard" />
-    <tocitem text="Inserting an Internationalized String Into Source Code" target="internation.maninsert" />
-    <tocitem text="Internationalizing a String With the GUI Builder" target="internation.formed" />
-    <tocitem text="Testing a  Bundle for Internationalized Strings" target="internation.testing" />
-    <tocitem text="Code Formats for Internationalized Strings" target="internation.replformat" />
-    <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
-        <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
-        </tocitem>
+    
     </tocitem>
     <tocitem text="Refactoring Java Source">
     <tocitem text="About Refactoring Java Source" target="refactor.aboutRefactoring" /> 
@@ -157,7 +147,7 @@
     <tocitem text="Creating Accessible Forms" target="gui.accessibleform" />
     <tocitem text="Previewing a Form" target="gui.testing" />    
     <tocitem text="Deploying GUI Applications" target="gui.deploying" /> 
-        
+      
         
     </tocitem>    
     <tocitem text="Working with Layout Managers">    
@@ -170,7 +160,17 @@
     <tocitem text="Adding a Bean to the Palette Window" target="beans.adding" />
     <tocitem text="Configuring the GUI Builder" target="gui.config" />
     </tocitem>
-    
+<tocitem text="Internationalizing Source Code">
+    <tocitem text="About" target="internation.internation"/>
+    <tocitem text="Internationalizing a Single File" target="internation.singlefile" />
+    <tocitem text="Internationalizing a Set of Files With the Internationalization Wizard" target="internation.wizard" />
+    <tocitem text="Inserting an Internationalized String Into Source Code" target="internation.maninsert" />
+    <tocitem text="Internationalizing a String With the GUI Builder" target="internation.formed" />
+    <tocitem text="Testing a  Bundle for Internationalized Strings" target="internation.testing" />
+    <tocitem text="Code Formats for Internationalized Strings" target="internation.replformat" />
+    <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
+        <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
+        </tocitem>     
     
     <tocitem text="Working with Ant">
     <tocitem text="About Working with Ant" target="ant_intro" />
