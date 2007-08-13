@@ -74,11 +74,13 @@ public class AddExternalItemAction extends AbstractAction {
 		itemPath = files[i].getPath();
 	    itemPath = FilePathAdaptor.mapToRemote(itemPath);
 	    itemPath = FilePathAdaptor.normalize(itemPath);
-	    if (makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath) != null) {
-		continue;
+            Item item = makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath);
+	    if (item != null) {
+                items[i] = item;
 	    }
-	    
-	    makeProjectDescriptor.getExternalItemFolder().addItem(items[i] = new Item(itemPath));
+            else {
+                makeProjectDescriptor.getExternalItemFolder().addItem(items[i] = new Item(itemPath));
+            }
 	}
 	MakeLogicalViewProvider.setVisible(project, items);
     }
