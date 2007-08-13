@@ -988,7 +988,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	if (tree.def != null) {
 	    Name enclClassNamePrev = enclClassName;
 	    enclClassName = tree.def.name;
-	    printBlock(null, tree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace());
+	    printBlock(null, tree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace(), true);
 	    enclClassName = enclClassNamePrev;
 	}
     }
@@ -1566,13 +1566,19 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
 
-    private <T extends JCTree >void printStats(List < T > trees) {
+    private <T extends JCTree >void printStats(List < T > trees) {        
+        printStats(trees, false);
+    }
+    
+    private <T extends JCTree >void printStats(List < T > trees, boolean members) {
+        boolean first = true;
 	for (List < T > l = trees; l.nonEmpty(); l = l.tail) {
 	    T t = l.head;
 	    if (isSynthetic(t))
 		continue;
 	    toColExactly(out.leftMargin);
-	    printStat(t);
+	    printStat(t, members, first);
+            first = false;
 	}
     }
     
@@ -1590,6 +1596,10 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private void printBlock(JCTree tree, List<? extends JCTree> stats, BracePlacement bracePlacement, boolean spaceBeforeLeftBrace) {
+        printBlock(tree, stats, bracePlacement, spaceBeforeLeftBrace, false);
+    }
+
+    private void printBlock(JCTree tree, List<? extends JCTree> stats, BracePlacement bracePlacement, boolean spaceBeforeLeftBrace, boolean members) {
 	int old = indent();
 	int bcol = old;
         switch(bracePlacement) {
@@ -1611,11 +1621,21 @@ public final class VeryPretty extends JCTree.Visitor {
         if (spaceBeforeLeftBrace)
             needSpace();
 	print('{');
-	if (stats.nonEmpty()) {
-	    newline();
-	    printStats(stats);
+        boolean emptyBlock = true;
+        for (List<? extends JCTree> l = stats; l.nonEmpty(); l = l.tail) {
+            if (!isSynthetic(l.head)) {
+                emptyBlock = false;
+                break;
+            }
+        }
+	if (emptyBlock) {
+            printEmptyBlockComments(tree, members);
         } else {
-            printEmptyBlockComments(tree, true);
+            if (members)
+                blankLines(cs.getBlankLinesAfterClassHeader());
+            else
+                newline();
+	    printStats(stats, members);
         }
         toColExactly(bcol);
 	undent(old);
