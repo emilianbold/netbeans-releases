@@ -94,23 +94,23 @@ public abstract class ModelBridge implements ComponentListener, PropertyChangeLi
             XslModel xslModel = getMapper().getContext().getXSLModel();
             if (xslModel == null || xslModel.getState() != XslModel.State.VALID) {
                 errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_BadXSL"); // NOI18N
-            }
-
-            Stylesheet stylesheet = xslModel.getStylesheet();
-            if (stylesheet == null) {
-                errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_NoStylesheet"); // NOI18N
             } else {
-                List<Template> templates = stylesheet.getChildren(Template.class);
-                boolean templateFound = false;
-                for (Template t : templates) {
-                    if (t.getMatch().equals("/")) {
-                        templateFound = true;
-                        break;
+                Stylesheet stylesheet = xslModel.getStylesheet();
+                if (stylesheet == null) {
+                    errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_NoStylesheet"); // NOI18N
+                } else {
+                    List<Template> templates = stylesheet.getChildren(Template.class);
+                    boolean templateFound = false;
+                    for (Template t : templates) {
+                        if (t.getMatch().equals("/")) {
+                            templateFound = true;
+                            break;
+                        }
                     }
-                }
-                //
-                if (!templateFound) {
-                    errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_NoRootTemplate"); // NOI18N
+                    //
+                    if (!templateFound) {
+                        errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_NoRootTemplate"); // NOI18N
+                    }
                 }
             }
             //
@@ -119,7 +119,7 @@ public abstract class ModelBridge implements ComponentListener, PropertyChangeLi
                 errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_BadInputSchema"); // NOI18N
             }
             AXIComponent typeOut = getMapper().getContext().getTargetType();
-            if (typeOut == null || typeIn.getModel() == null || typeOut.getModel().getState() != XslModel.State.VALID) {
+            if (typeOut == null || typeOut.getModel() == null || typeOut.getModel().getState() != XslModel.State.VALID) {
                 errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_BadOutputSchema"); // NOI18N
             }
         } else {
