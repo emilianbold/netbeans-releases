@@ -8,7 +8,7 @@
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.metro.samples.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/metro/samples/descriptions/metroSamplesCategory.html"/>
                     <attr name="position" intvalue="250"/>
-                    <file name="SecureCalculator" url="SecureCalculator">
+                    <file name="SecureCalculator" url="SecureCalculator.txt">
                         <attr name="position" intvalue="300"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="files" stringvalue="SecureCalculatorApp.zip,SecureCalculatorClientApp.zip"/>
