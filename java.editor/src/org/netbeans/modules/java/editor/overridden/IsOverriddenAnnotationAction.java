@@ -35,6 +35,7 @@ import org.netbeans.editor.Utilities;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -43,6 +44,8 @@ import org.openide.loaders.DataObject;
 public final class IsOverriddenAnnotationAction extends AbstractAction {
     
     public IsOverriddenAnnotationAction() {
+        putValue(NAME, NbBundle.getMessage(IsOverriddenAnnotationAction.class,
+                                          "CTL_IsOverriddenAnnotationAction")); //NOI18N
         setEnabled(true);
     }
     
