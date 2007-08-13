@@ -24,7 +24,7 @@ import java.awt.event.ItemEvent;
 import java.io.File;
 
 import javax.swing.JPanel;
-import org.netbeans.modules.bpel.project.BpelProjectHelper;
+
 import org.netbeans.modules.bpel.project.ProjectConstants;
 
 import org.openide.filesystems.FileObject;

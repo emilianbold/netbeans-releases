@@ -109,7 +109,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private final BpelSourcesRegistryHelper sourcesRegistryHelper;
-    private BpelProjectHelper mProjectHelper = null;
+
     private ProjectCloseSupport projectCloseSupport;
     
     public BpelproProject(final AntProjectHelper helper) throws IOException {
@@ -120,7 +120,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         genFilesHelper = new GeneratedFilesHelper(helper);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
-        BpelProjectHelper.getInstance().setProject(this);
+
         sourcesRegistryHelper = new BpelSourcesRegistryHelper(this);
         projectCloseSupport = new ProjectCloseSupport();
     }
