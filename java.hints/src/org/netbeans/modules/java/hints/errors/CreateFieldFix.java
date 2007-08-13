@@ -25,6 +25,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -78,50 +79,49 @@ public final class CreateFieldFix implements Fix {
         //use the original cp-info so it is "sure" that the proposedType can be resolved:
         JavaSource js = JavaSource.create(cpInfo, targetFile);
         
-        js.runModificationTask(new Task<WorkingCopy>() {
-
+        ModificationResult diff = js.runModificationTask(new Task<WorkingCopy>() {
             public void run(final WorkingCopy working) throws IOException {
                 working.toPhase(Phase.RESOLVED);
                 TypeElement targetType = target.resolve(working);
-                
+
                 if (targetType == null) {
                     ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target."); // NOI18N
                     return;
                 }
-                
+
                 ClassTree targetTree = working.getTrees().getTree(targetType);
-                
+
                 if (targetTree == null) {
                     ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target tree: " + targetType.getQualifiedName() + "."); // NOI18N
                     return;
                 }
-                
+
                 TypeMirror proposedType = CreateFieldFix.this.proposedType.resolve(working);
-                
+
                 if (proposedType == null) {
                     ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve proposed type."); // NOI18N
                     return;
                 }
-                
+
                 TreeMaker make = working.getTreeMaker();
                 TypeMirror tm = proposedType;
                 VariableTree var = null;
-                
+
                 if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY) {
                     var = make.Variable(make.Modifiers(modifiers), name, make.Type(tm), null);
                 }
-                
+
                 if (tm.getKind().isPrimitive()) {
                     var = make.Variable(make.Modifiers(modifiers), name, make.Type(tm), null);
                 }
-                
+
                 assert var != null : tm.getKind();
                 ClassTree decl = GeneratorUtilities.get(working).insertClassMember(targetTree, var);
                 working.rewrite(targetTree, decl);
             }
-        }).commit();
+        });
         
-        return null;
+        return Utilities.commitAndComputeChangeInfo(targetFile, diff);
     }
     
     String toDebugString(CompilationInfo info) {

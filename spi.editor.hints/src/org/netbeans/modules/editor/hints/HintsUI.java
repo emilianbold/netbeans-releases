@@ -39,6 +39,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.JumpList;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.hints.borrowed.ListCompletionView;
 import org.netbeans.modules.editor.hints.borrowed.ScrollCompletionPane;
@@ -533,6 +534,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
         
         removePopups();
         final JTextComponent component = comp;
+        JumpList.checkAddEntry(component);
         final Cursor cur = component.getCursor();
         component.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
         Task t = null;

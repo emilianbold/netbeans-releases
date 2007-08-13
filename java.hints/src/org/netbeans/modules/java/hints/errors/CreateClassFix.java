@@ -46,6 +46,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TypeMirrorHandle;
@@ -306,7 +307,7 @@ public abstract class CreateClassFix implements Fix {
             //use the original cp-info so it is "sure" that the target can be resolved:
             JavaSource js = JavaSource.create(cpInfo, targetFile);
             
-            js.runModificationTask(new Task<WorkingCopy>() {
+            ModificationResult diff = js.runModificationTask(new Task<WorkingCopy>() {
 
                 public void run(final WorkingCopy working) throws IOException {
                     working.toPhase(Phase.RESOLVED);
@@ -332,9 +333,9 @@ public abstract class CreateClassFix implements Fix {
                     
                     working.rewrite(targetTree.getLeaf(), GeneratorUtils.insertClassMember(working, targetTree, innerClass));
                 }
-            }).commit();
+            });
             
-            return new ChangeInfo(targetFile, null, null);
+            return Utilities.commitAndComputeChangeInfo(targetFile, diff);
         }
         
         public String toDebugString(CompilationInfo info) {

@@ -43,6 +43,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TypeMirrorHandle;
@@ -127,8 +128,7 @@ public final class CreateMethodFix implements Fix {
         //use the original cp-info so it is "sure" that the proposedType can be resolved:
         JavaSource js = JavaSource.create(cpInfo, targetFile);
         
-        js.runModificationTask(new Task<WorkingCopy>() {
-
+        ModificationResult diff = js.runModificationTask(new Task<WorkingCopy>() {
             public void run(final WorkingCopy working) throws IOException {
                 working.toPhase(Phase.RESOLVED);
                 TypeElement targetType = target.resolve(working);
@@ -172,9 +172,9 @@ public final class CreateMethodFix implements Fix {
                 
                 working.rewrite(targetTree.getLeaf(), decl);
             }
-        }).commit();
+        });
         
-        return null;
+        return Utilities.commitAndComputeChangeInfo(targetFile, diff);
     }
     
     private void addArguments(CompilationInfo info, StringBuilder value) {
