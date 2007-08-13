@@ -83,7 +83,7 @@ public class PolicyTest extends NbTestCase {
 
         Definitions d = model.getDefinitions();
         ExtensibilityElement e = null;
-        Set<QName> qnames = new HashSet();
+        Set<QName> qnames = new HashSet<QName>();
         
         qnames.addAll(PolicyQName.getQNames());
         qnames.addAll(MtomQName.getQNames());
