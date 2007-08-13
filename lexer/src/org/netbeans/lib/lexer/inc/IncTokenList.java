@@ -65,8 +65,6 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     
     private final LanguagePath languagePath;
     
-    private final InputAttributes inputAttributes;
-    
     private CharSequence text;
     
     /**
@@ -85,7 +83,6 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         this.mutableTextInput = mutableTextInput;
         this.languagePath = LanguagePath.get(
                 LexerSpiPackageAccessor.get().language(mutableTextInput));
-        this.inputAttributes = LexerSpiPackageAccessor.get().inputAttributes(mutableTextInput);
         this.text = LexerSpiPackageAccessor.get().text(mutableTextInput);
         this.laState = LAState.empty();
         initLexing();
@@ -170,7 +167,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
 
     public InputAttributes inputAttributes() {
-        return inputAttributes;
+        return LexerSpiPackageAccessor.get().inputAttributes(mutableTextInput);
     }
     
     protected int elementRawOffset(Object elem) {
