@@ -251,9 +251,10 @@ public class ExportDiffAction extends AbstractSystemAction {
                 File file = setup.getBaseFile();
                 group.progress(file.getName());
 
-                String index = "Index: " + getIndexPath(file) + sep;   // NOI18N
+                String relativePath = getIndexPath(file);
+                String index = "Index: " + relativePath + sep;   // NOI18N
                     out.write(index.getBytes("utf8")); // NOI18N
-                exportDiff(group, setup, out);
+                exportDiff(group, setup, relativePath, out);
                 i++;
             }
 
@@ -294,7 +295,7 @@ public class ExportDiffAction extends AbstractSystemAction {
     }
 
     /** Writes contextual diff into given stream.*/
-    private void exportDiff(ExecutorGroup group, Setup setup, OutputStream out) throws IOException {
+    private void exportDiff(ExecutorGroup group, Setup setup, String relativePath, OutputStream out) throws IOException {
         setup.initSources(group);
         DiffProvider diff = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
 
@@ -314,7 +315,6 @@ public class ExportDiffAction extends AbstractSystemAction {
         }
 
         File file = setup.getBaseFile();
-        String name = file.getAbsolutePath();
         try {
             InputStream is;
             if (!CvsVersioningSystem.getInstance().isText(file) && differences.length == 0) {
@@ -326,8 +326,8 @@ public class ExportDiffAction extends AbstractSystemAction {
                 r2 = setup.getSecondSource().createReader();
                 if (r2 == null) r2 = new StringReader(""); // NOI18N
                 TextDiffVisualizer.TextDiffInfo info = new TextDiffVisualizer.TextDiffInfo(
-                    name + " " + setup.getFirstSource().getTitle(), // NOI18N
-                    name + " " + setup.getSecondSource().getTitle(),  // NOI18N
+                    relativePath + " " + setup.getFirstSource().getTitle(), // NOI18N
+                    relativePath + " " + setup.getSecondSource().getTitle(),  // NOI18N
                     null,
                     null,
                     r1,

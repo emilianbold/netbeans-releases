@@ -273,11 +273,13 @@ public class ExportDiffAction extends ContextAction {
                 String index = "Index: ";   // NOI18N
                 String rootPath = root.getAbsolutePath();
                 String filePath = file.getAbsolutePath();
+                String relativePath = filePath;
                 if (filePath.startsWith(rootPath)) {
-                    index += filePath.substring(rootPath.length() + 1).replace(File.separatorChar, '/') + sep;
+                    relativePath = filePath.substring(rootPath.length() + 1).replace(File.separatorChar, '/');
+                    index += relativePath + sep;
                     out.write(index.getBytes("utf8")); // NOI18N
                 }
-                exportDiff(setup, out);
+                exportDiff(setup, relativePath, out);
                 i++;
             }
 
@@ -318,7 +320,7 @@ public class ExportDiffAction extends ContextAction {
     }
 
     /** Writes contextual diff into given stream.*/
-    private void exportDiff(Setup setup, OutputStream out) throws IOException {
+    private void exportDiff(Setup setup, String relativePath, OutputStream out) throws IOException {
         setup.initSources();
         DiffProvider diff = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
 
@@ -338,7 +340,6 @@ public class ExportDiffAction extends ContextAction {
         }
 
         File file = setup.getBaseFile();
-        String name = file.getAbsolutePath();
         try {
             InputStream is;
             if (!Subversion.getInstance().getMimeType(file).startsWith("text/") && differences.length == 0) {
@@ -350,8 +351,8 @@ public class ExportDiffAction extends ContextAction {
                 r2 = setup.getSecondSource().createReader();
                 if (r2 == null) r2 = new StringReader(""); // NOI18N
                 TextDiffVisualizer.TextDiffInfo info = new TextDiffVisualizer.TextDiffInfo(
-                    name + " " + setup.getFirstSource().getTitle(), // NOI18N
-                    name + " " + setup.getSecondSource().getTitle(),  // NOI18N
+                    relativePath + " " + setup.getFirstSource().getTitle(), // NOI18N
+                    relativePath + " " + setup.getSecondSource().getTitle(),  // NOI18N
                     null,
                     null,
                     r1,
