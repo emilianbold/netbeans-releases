@@ -413,7 +413,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 }
             }
             if (newSteppingRoots.size() > 0 || removedSteppingRoots.size() > 0) {
-                for (String root : newOriginalRoots) {
+                for (String root : newSteppingRoots) {
                     FileObject fo = getFileObject(root);
                     if (fo != null) {
                         sourcePath.add(fo);
