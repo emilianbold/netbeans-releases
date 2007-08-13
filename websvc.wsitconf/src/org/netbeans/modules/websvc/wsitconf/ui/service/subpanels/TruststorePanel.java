@@ -301,21 +301,21 @@ public class TruststorePanel extends JPanel {
     public void storeState() {
         String peerAlias = getPeerAlias();
         if ((peerAlias != null) && (peerAlias.length() == 0)) {
-            ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(comp, null, false);
+            ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(comp, null, client);
         } else {
-            ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(comp, peerAlias, false);
+            ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(comp, peerAlias, client);
         }
         if (!Util.isGlassfish(project)) {
             String storePasswd = getStorePassword();
             if ((storePasswd != null) && (storePasswd.length() == 0)) {
-                ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, true, false);
+                ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, true, client);
             } else {
-                ProprietarySecurityPolicyModelHelper.setStorePassword(comp, storePasswd, true, false);
+                ProprietarySecurityPolicyModelHelper.setStorePassword(comp, storePasswd, true, client);
             }
 
-            ProprietarySecurityPolicyModelHelper.setStoreType(comp, storeType, true, false);
+            ProprietarySecurityPolicyModelHelper.setStoreType(comp, storeType, true, client);
 
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getStoreLocation(), true, false);
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getStoreLocation(), true, client);
         }
     }
     
