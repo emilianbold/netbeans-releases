@@ -22,6 +22,8 @@ package org.netbeans.modules.j2ee.metadata.model.support;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -68,7 +70,13 @@ public class TestUtilities {
      * @param content the contents to copy.
      */ 
     public static final void copyStringToFile(File file, String content) throws IOException {
-        copyStringToFileObject(FileUtil.toFileObject(file), content);
+        OutputStream os = new FileOutputStream(file);
+        try {
+            InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
+            FileUtil.copy(is, os);
+        } finally {
+            os.close();
+        }
     }
 
     /**
@@ -105,7 +113,12 @@ public class TestUtilities {
      * @return string representing the contents of the given <code>file</code>.
      */ 
     public static final String copyFileToString(File file) throws IOException {
-        return copyFileObjectToString(FileUtil.toFileObject(file));
+        InputStream stream = new FileInputStream(file);
+        try{
+            return copyStreamToString(stream);
+        } finally {
+            stream.close();
+        }
     }
 
 }
