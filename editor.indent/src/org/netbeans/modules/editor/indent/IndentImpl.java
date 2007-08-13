@@ -100,10 +100,11 @@ public final class IndentImpl {
         }
         if (indentHandler != null)
             throw new IllegalStateException("Already locked");
-        indentHandler = new TaskHandler(true, doc);
-        if (indentHandler.collectTasks()) {
-            indentHandler.lock();
+        TaskHandler handler = new TaskHandler(true, doc);
+        if (handler.collectTasks()) {
+            handler.lock();
         }
+        indentHandler = handler;
     }
     
     public synchronized void indentUnlock() {
@@ -126,10 +127,11 @@ public final class IndentImpl {
         }
         if (reformatHandler != null)
             throw new IllegalStateException("Already locked");
-        reformatHandler = new TaskHandler(false, doc);
-        if (reformatHandler.collectTasks()) {
-            reformatHandler.lock();
+        TaskHandler handler = new TaskHandler(false, doc);
+        if (handler.collectTasks()) {
+            handler.lock();
         }
+        reformatHandler = handler;
     }
     
     public synchronized void reformatUnlock() {

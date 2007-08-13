@@ -145,8 +145,21 @@ public final class TaskHandler {
 
     void lock() {
         if (items != null) {
-            for (MimeItem item : items) {
-                item.lock();
+            int i = 0;
+            try {
+                for (; i < items.size(); i++) {
+                    MimeItem item = items.get(i);
+                    item.lock();
+                }
+            } finally {
+                if (i < items.size()) { // Locking of i-th item has failed
+                    // Unlock the <0,i-1> items that are already locked
+                    // Assuming that the unlock() for already locked items will pass
+                    while (--i >= 0) {
+                        MimeItem item = items.get(i);
+                        item.unlock();
+                    }
+                }
             }
         }
     }
