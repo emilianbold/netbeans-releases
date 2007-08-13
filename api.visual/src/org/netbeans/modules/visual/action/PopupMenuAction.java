@@ -100,7 +100,7 @@ public final class PopupMenuAction extends WidgetAction.Adapter {
     }
 
     public State keyPressed (Widget widget, WidgetKeyEvent event) {
-        if ((event.getModifiers () & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK  &&  event.getKeyCode () == KeyEvent.VK_F10) {
+        if (event.getKeyCode () == KeyEvent.VK_CONTEXT_MENU  ||  ((event.getModifiers () & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK  &&  event.getKeyCode () == KeyEvent.VK_F10)) {
             JPopupMenu popupMenu = provider.getPopupMenu (widget, null);
             if (popupMenu != null) {
                 JComponent view = widget.getScene ().getView ();
