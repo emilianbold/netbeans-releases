@@ -19,9 +19,9 @@
 
 set -e
 
-chown -R root:admin "/Applications/NetBeans 6.0.app"
+chown -R root:admin "/Applications/NetBeans/NetBeans 6.0.app"
 
-cd "/Applications/NetBeans 6.0.app/Contents/Resources/NetBeans"
+cd "/Applications/NetBeans/NetBeans 6.0.app/Contents/Resources/NetBeans"
 for x in `find . -name \*.jar.pack` ; do
     jar=`echo $x | sed 's/jar.pack/jar/'`
     unpack200 -r $x $jar

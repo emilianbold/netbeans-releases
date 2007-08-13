@@ -19,7 +19,7 @@
 
 set -e
 
-instdir="/Applications/NetBeans 6.0.app"
+instdir="/Applications/NetBeans/NetBeans 6.0.app"
 
 if [ -d "$instdir" ] ; then
     rm -rf "$instdir"
