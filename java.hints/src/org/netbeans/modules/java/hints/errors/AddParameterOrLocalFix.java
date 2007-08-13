@@ -38,6 +38,8 @@ import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
@@ -111,14 +113,26 @@ public class AddParameterOrLocalFix implements Fix {
                     
                     assert tp.getLeaf().getKind() == Kind.IDENTIFIER;
                     
-                    MethodTree targetTree = findMethod(tp);
+                    TreePath targetPath = findMethod(tp);
+                    MethodTree targetTree = (MethodTree) targetPath.getLeaf();
                     
                     if (parameter) {
                         if (targetTree == null) {
                             Logger.getLogger("global").log(Level.WARNING, "Add parameter - cannot find the method."); // NOI18N
                         }
                         
-                        MethodTree result = make.addMethodParameter(targetTree, make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), null));
+                        Element el = working.getTrees().getElement(targetPath);
+                        int index = targetTree.getParameters().size();
+                        
+                        if (el != null && (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
+                            ExecutableElement ee = (ExecutableElement) el;
+                            
+                            if (ee.isVarArgs()) {
+                                index = ee.getParameters().size() - 1;
+                            }
+                        }
+                        
+                        MethodTree result = make.insertMethodParameter(targetTree, index, make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), null));
                         
                         working.rewrite(targetTree, result);
                     } else {
@@ -246,12 +260,12 @@ public class AddParameterOrLocalFix implements Fix {
         return null;
     }
     
-    private MethodTree findMethod(TreePath tp) {
+    private TreePath findMethod(TreePath tp) {
         TreePath method = tp;
         
         while (method.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
             if (method.getLeaf().getKind() == Kind.METHOD) {
-                return (MethodTree) method.getLeaf();
+                return method;
             }
             
             method = method.getParentPath();
@@ -269,4 +283,9 @@ public class AddParameterOrLocalFix implements Fix {
     String toDebugString(CompilationInfo info) {
         return "AddParameterOrLocalFix:" + name + ":" + type.resolve(info).toString() + ":" + parameter; // NOI18N
     }
+    
+    boolean isParameter() {
+        return parameter;
+    }
+    
 }
