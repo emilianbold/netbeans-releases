@@ -71,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
 
     Example of pluging an obfuscator after the compilation could look like 
 
-        <target name="post-compile">
+        <target name="-post-compile">
             <obfuscate>
                 <fileset dir="${build.classes.dir}"/>
             </obfuscate>

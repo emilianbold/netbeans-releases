@@ -173,7 +173,7 @@ introduced by support for multiple source roots. -jglick
                 </condition>
                 <available file="${{conf.dir}}/MANIFEST.MF" property="has.custom.manifest"/>
                 <available file="${{conf.dir}}/persistence.xml" property="has.persistence.xml"/>
-                
+
                 <condition property="do.war.package.with.custom.manifest">
                     <and>
                         <istrue value="${{war.package}}"/>
@@ -953,22 +953,33 @@ introduced by support for multiple source roots. -jglick
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
-            <target name="-do-dist-without-manifest" if="do.war.package.without.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
+            <!-- "real" jar building, in any case -->
+            <target name="-dist-without-custom-manifest" unless="has.custom.manifest">
+                <xsl:attribute name="depends">init,compile,compile-jsps</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
                     <fileset dir="${{build.web.dir.real}}"/>
                 </jar>
             </target>
-            
-            <target name="-do-dist-with-manifest" if="do.war.package.with.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
+            <target name="-dist-with-custom-manifest" if="has.custom.manifest">
+                <xsl:attribute name="depends">init,compile,compile-jsps</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar manifest="${{build.meta.inf.dir}}/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
                     <fileset dir="${{build.web.dir.real}}"/>
                 </jar>
+            </target>
+            
+            <!-- "dist" -->
+            <target name="-do-dist-without-manifest" if="do.war.package.without.custom.manifest">
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
+                <antcall target="-dist-without-custom-manifest" />
+            </target>
+            
+            <target name="-do-dist-with-manifest" if="do.war.package.with.custom.manifest">
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
+                <antcall target="-dist-with-custom-manifest" />
             </target>
             
             <!--
@@ -978,19 +989,11 @@ introduced by support for multiple source roots. -jglick
             -->
             <target name="-package-tmp-war-with-manifest" if="package.tmp.war.with.custom.manifest">
                 <xsl:attribute name="depends">init,compile,compile-jsps</xsl:attribute>
-                <dirname property="dist.jar.dir" file="${{dist.war}}"/>
-                <mkdir dir="${{dist.jar.dir}}"/>
-                <jar manifest="${{build.meta.inf.dir}}/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.web.dir.real}}"/>
-                </jar>
+                <antcall target="-dist-with-custom-manifest" />
             </target>
             <target name="-package-tmp-war-without-manifest" if="package.tmp.war.without.custom.manifest">
                 <xsl:attribute name="depends">init,compile,compile-jsps</xsl:attribute>
-                <dirname property="dist.jar.dir" file="${{dist.war}}"/>
-                <mkdir dir="${{dist.jar.dir}}"/>
-                <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.web.dir.real}}"/>
-                </jar>
+                <antcall target="-dist-without-custom-manifest" />
             </target>
 
             <target name="do-dist">
@@ -1266,7 +1269,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="verify">
-                <xsl:attribute name="depends">init,dist</xsl:attribute>
+                <xsl:attribute name="depends">init,-pre-dist,-dist-without-custom-manifest,-dist-with-custom-manifest,-post-dist</xsl:attribute>
                 <nbverify file="${{dist.war}}"/>
             </target>
             
