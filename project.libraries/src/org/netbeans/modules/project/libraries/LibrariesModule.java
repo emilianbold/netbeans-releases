@@ -31,7 +31,7 @@ import org.netbeans.spi.project.libraries.LibraryProvider;
  */
 public class LibrariesModule extends ModuleInstall {
 
-    public void restored() {
+    @Override public void restored() {
         super.restored();
         this.initProviders();
     }
