@@ -56,12 +56,14 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="ext-extra" depends="init">
+<!--    
         <mkdir dir="${cluster}/modules/ext/jbi"/>
         <copy todir="${cluster}/modules/ext/jbi">
             <fileset dir="${compapp.external}"
                      includes="*.jar"
                      excludes="castor-1.0.jar" />
         </copy>
+-->
     </target>
     
     <target name="netbeans-extra" depends="ant-extra,catd-extra,ext-extra"/>

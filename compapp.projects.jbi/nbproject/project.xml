@@ -24,6 +24,24 @@
             <code-name-base>org.netbeans.modules.compapp.projects.jbi</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.soa.libs.httpunit</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.10</specification-version>
+                    </run-dependency>
+                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.soa.libs.xmlunit</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.10</specification-version>
+                    </run-dependency>
+                 </dependency>
+                <dependency>
                     <code-name-base>javax.wsdl4j</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
