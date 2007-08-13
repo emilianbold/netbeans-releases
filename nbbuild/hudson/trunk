@@ -102,6 +102,8 @@ ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-uml -Dxtest.ins
 echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`
 
+# Clean up some stuff dumped in the build by tests:
+rm -rf nbbuild/netbeans/testtools
 # Check to see if any other unregistered files remain (if so, delete them now so the problem can be fixed in incremental builds) (cf. #111946):
 ant -f nbbuild/build.xml clean-untracked-files
 
