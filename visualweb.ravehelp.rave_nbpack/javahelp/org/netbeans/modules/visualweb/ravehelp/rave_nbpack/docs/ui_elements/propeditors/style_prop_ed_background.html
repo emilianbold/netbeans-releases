@@ -1,1 +1,169 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Style Editor: Background Panel</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Style Editor: Background Panel</h2><p><small><a href="#seealso">See Also</a></small></p><p>This panel of the the <a href="style_prop_ed_main.html">Style   Editor</a> enables you to set CSS declarations for the background of a JavaServer  Faces component. The background is the surface on which  the contents of the  component are displayed, such as black text on a white background in an Output  Text component. The declarations you add to the style property override corresponding  rules defined in the page's CSS file.</p><p>The Background panel enables you to set the following style   declarations:</p><ul>  <li><b>Background Color.</b> Sets the CSS property <code>background-color</code>. You can:      <ul>        <li> Choose one of the standard colors from the drop down list.</li>        <li>Click the color button <img src="../../images/color_btn.gif" alt="Color Button" width="20" height="21">&nbsp;on         the right side of the field and pick a color.</li>        <li>Enter a hexadecimal RGB color value prefixed with a hash mark (#)          or use the decimal notation <code>rgb(<i>red-value</i>,<i>green-value</i>,<i>blue-value</i>)</code>.          For example, the value for white is <code>rgb(255,255,255)</code>.</li>      </ul>      <p>The following table shows the standard colors:</p>     <table border=1 cellpadding=0 cellspacing=0 summary="Table of Color Names and Their sRGB Values">      <tr>        <th colspan="4" align="center">Color names and sRGB values</th>      </tr>      <tbody>        <tr>          <td width="20" height="20"  bgcolor="#000000">&nbsp;</td>          <td>&nbsp;black = &quot;#000000&quot;</td>          <td width="20" height="20"  bgcolor="#008000">&nbsp;</td>          <td>&nbsp;green = &quot;#008000&quot;</td>        </tr>        <tr>          <td width="20" height="20"  bgcolor="#C0C0C0">&nbsp;</td>          <td>&nbsp;silver = &quot;#C0C0C0&quot;</td>          <td width="20" height="20"  bgcolor="#00FF00">&nbsp;</td>          <td>&nbsp;lime = &quot;#00FF00&quot; </td>        </tr>        <tr>          <td width="20" height="20"  bgcolor="#808080">&nbsp;</td>          <td>&nbsp;gray = &quot;#808080&quot;</td>          <td width="20" height="20"  bgcolor="#808000">&nbsp;</td>          <td>&nbsp;olive = &quot;#808000&quot; </td>        </tr>        <tr>          <td width="20" height="20"  bgcolor="#FFFFFF">&nbsp;</td>          <td>&nbsp;white = &quot;#FFFFFF&quot;</td>          <td width="20" height="20"  bgcolor="#FFFF00">&nbsp;</td>          <td>&nbsp;yellow = &quot;#FFFF00&quot;</td>        </tr>        <tr>          <td width="20" height="20"  bgcolor="#800000">&nbsp;</td>          <td>&nbsp;maroon = &quot;#800000&quot;</td>          <td width="20"height="20"  bgcolor="#000080">&nbsp;</td>          <td>&nbsp;navy = &quot;#000080&quot; </td>        </tr>        <tr>          <td width="20" height="20"  bgcolor="#FF0000">&nbsp;</td>          <td>&nbsp;red = &quot;#FF0000&quot;</td>          <td width="20" height="20"  bgcolor="#0000FF">&nbsp;</td>          <td>&nbsp;blue = &quot;#0000FF&quot;</td>        </tr>        <tr>          <td width="20" height="20"   bgcolor="#800080">&nbsp;</td>          <td>&nbsp;purple = &quot;#800080&quot;</td>          <td width=16 height="16"  bgcolor="#008080">&nbsp;</td>          <td>&nbsp;teal = &quot;#008080&quot;</td>        </tr>        <tr>          <td width="20" height="20"  bgcolor="#FF00FF">&nbsp;</td>          <td>&nbsp;fuchsia = &quot;#FF00FF&quot;</td>          <td width="20" height="20"  bgcolor="#00FFFF">&nbsp;</td>          <td>&nbsp;aqua = &quot;#00FFFF&quot;</td>        </tr>      </tbody>    </table>  </li>  <li><b>Background Image.</b>  Sets the CSS property <code>background-image</code>,    an    image  to be used as the background for the component. You can type in a    URL to an image on a web site, or you can use the ellipsis button and navigate    to an image file. If you navigate to an image file, it is automatically added    to your project's resources directory, and the reference becomes <code>/resources/<i>image-file</i></code>.</li>  <li><b>Tile.</b> Sets the CSS property <code>background-repeat</code>, which specifies  whether a background image appears once or is repeated in various ways, as    follows:    <ul>      <li><b>repeat.</b> The image is <i>tiled</i>, or repeated, until it covers      the entire background. </li>      <li><b>repeat-x.</b> The image is repeated in a row that spans the width        of the background, by default across the top of the image or in whatever        position you set with Vertical Position.</li>      <li><b>repeat-y.</b> <b></b> The image is repeated in a column that spans        the height of the background, by default on the left side of the image        or in whatever position you set with Horizontal Position.</li>      <li><b>no-repeat.</b> The image is not repeated, but appears in its initial        location (top left corner or whatever you set with Horizontal Position      and Vertical Position).</li>    </ul>  </li>  <li><b>Scroll.</b > Sets the CSS property <code>background-attachment</code>, which  specifies whether a background image is fixed or moveable, as described below:    <ul>      <li><b>scroll.</b> This default setting causes the image to scroll with        the content of the component. In other words, the background image is        attached to the content and moves along with it if the user scrolls the        content. </li>      <li><b>fixed.</b> This setting causes the image to be fixed and not move        if the content moves. In other words, the background image is        not attached to the content and does not move along with it if the user        scrolls the content. For example, a watermark for the page background        might be set to fixed so it will remain visible as the page scrolls. </li>    </ul>  </li>  <li><b>Horizontal Position.</b> Sets the horizontal component of the CSS property <code>background-position</code>,    which you can use to specify the initial location of the image. You can choose    a value from the drop down list (left, center, or right) or you can specify    an absolute position (such as 20 px) or a relative position (such as 20%).    Numeric positions are measured from the left side of the component. </li>  <li><b>Vertical Position.</b>  Sets the vertical component of the CSS property  <code>background-position</code>,  which  you can use to specify the initial location of the image.  You can choose    a value from the drop down list (top, center, or bottom) or you can specify    an absolute position (such as 20 px) or a relative position (such as 20%).  Numeric positions are measured from the top of the component. </li></ul><ul class="note">  <li>The first time you  enter a numeric value in either of the Position fields,     press Enter  to enable the     drop down list showing the units of measure.</li></ul><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="../../components/aboutcomponents.html">About Components</a></dd>  <dd><a href="../../components/common_comp_props.html">Common     Component Properties</a></dd>  <dd><a href="../../components/howtocomponents/style_sheet.html">Using     Cascading Style Sheets</a></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Style Editor: Background Panel">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table> </body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Style Editor: Background Panel</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Style Editor: Background Panel</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>This panel of the the <a href="style_prop_ed_main.html">Style 
+  Editor</a> enables you to set CSS declarations for the background of a JavaServer
+  Faces component. The background is the surface on which  the contents of the
+  component are displayed, such as black text on a white background in an Output
+  Text component. The declarations you add to the style property override corresponding
+  rules defined in the page's CSS file.</p>
+<p>The Background panel enables you to set the following style 
+  declarations:</p>
+<ul>
+  <li><b>Background Color.</b> Sets the CSS property <code>background-color</code>. You can:
+      <ul>
+        <li> Choose one of the standard colors from the drop down list. </li>
+        <li>Click the color button <img src="../../images/color_btn.gif" alt="Color Button" width="20" height="21">&nbsp;on 
+        the right side of the field and pick a color.</li>
+        <li>Enter a hexadecimal RGB color value prefixed with a hash mark (#)
+          or use the decimal notation <code>rgb(<i>red-value</i>,<i>green-value</i>,<i>blue-value</i>)</code>.
+          For example, the value for white is <code>rgb(255,255,255)</code>.</li>
+      </ul>
+      <p>The following table shows the standard colors:</p>
+ 
+    <table border=1 cellpadding=0 cellspacing=0 summary="Table of Color Names and Their sRGB Values">
+      <tr>
+        <th colspan="4" align="center">Color names and sRGB values</th>
+      </tr>
+      <tbody>
+        <tr>
+          <td width="20" height="20"  bgcolor="#000000">&nbsp;</td>
+          <td>&nbsp;black = &quot;#000000&quot;</td>
+          <td width="20" height="20"  bgcolor="#008000">&nbsp;</td>
+          <td>&nbsp;green = &quot;#008000&quot;</td>
+        </tr>
+        <tr>
+          <td width="20" height="20"  bgcolor="#C0C0C0">&nbsp;</td>
+          <td>&nbsp;silver = &quot;#C0C0C0&quot;</td>
+          <td width="20" height="20"  bgcolor="#00FF00">&nbsp;</td>
+          <td>&nbsp;lime = &quot;#00FF00&quot; </td>
+        </tr>
+        <tr>
+          <td width="20" height="20"  bgcolor="#808080">&nbsp;</td>
+          <td>&nbsp;gray = &quot;#808080&quot;</td>
+          <td width="20" height="20"  bgcolor="#808000">&nbsp;</td>
+          <td>&nbsp;olive = &quot;#808000&quot; </td>
+        </tr>
+        <tr>
+          <td width="20" height="20"  bgcolor="#FFFFFF">&nbsp;</td>
+          <td>&nbsp;white = &quot;#FFFFFF&quot;</td>
+          <td width="20" height="20"  bgcolor="#FFFF00">&nbsp;</td>
+          <td>&nbsp;yellow = &quot;#FFFF00&quot;</td>
+        </tr>
+        <tr>
+          <td width="20" height="20"  bgcolor="#800000">&nbsp;</td>
+          <td>&nbsp;maroon = &quot;#800000&quot;</td>
+          <td width="20"height="20"  bgcolor="#000080">&nbsp;</td>
+          <td>&nbsp;navy = &quot;#000080&quot; </td>
+        </tr>
+        <tr>
+          <td width="20" height="20"  bgcolor="#FF0000">&nbsp;</td>
+          <td>&nbsp;red = &quot;#FF0000&quot;</td>
+          <td width="20" height="20"  bgcolor="#0000FF">&nbsp;</td>
+          <td>&nbsp;blue = &quot;#0000FF&quot;</td>
+        </tr>
+        <tr>
+          <td width="20" height="20"   bgcolor="#800080">&nbsp;</td>
+          <td>&nbsp;purple = &quot;#800080&quot;</td>
+          <td width=16 height="16"  bgcolor="#008080">&nbsp;</td>
+          <td>&nbsp;teal = &quot;#008080&quot;</td>
+        </tr>
+        <tr>
+          <td width="20" height="20"  bgcolor="#FF00FF">&nbsp;</td>
+          <td>&nbsp;fuchsia = &quot;#FF00FF&quot;</td>
+          <td width="20" height="20"  bgcolor="#00FFFF">&nbsp;</td>
+          <td>&nbsp;aqua = &quot;#00FFFF&quot;</td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+  <li><b>Background Image.</b>  Sets the CSS property <code>background-image</code>,
+    an
+    image  to be used as the background for the component. You can type in a
+    URL to an image on a web site, or you can use the ellipsis button and navigate
+    to an image file. If you navigate to an image file, it is automatically added
+    to your project's resources directory, and the reference becomes <code>/resources/<i>image-file</i></code>.</li>
+  <li><b>Tile.</b> Sets the CSS property <code>background-repeat</code>, which specifies
+  whether a background image appears once or is repeated in various ways, as
+    follows:
+    <ul>
+      <li><b>repeat.</b> The image is <i>tiled</i>, or repeated, until it covers
+      the entire background. </li>
+      <li><b>repeat-x.</b> The image is repeated in a row that spans the width
+        of the background, by default across the top of the image or in whatever
+        position you set with Vertical Position.</li>
+      <li><b>repeat-y.</b> <b></b> The image is repeated in a column that spans
+        the height of the background, by default on the left side of the image
+        or in whatever position you set with Horizontal Position.</li>
+      <li><b>no-repeat.</b> The image is not repeated, but appears in its initial
+        location (top left corner or whatever you set with Horizontal Position
+      and Vertical Position).</li>
+    </ul>
+  </li>
+  <li><b>Scroll.</b > Sets the CSS property <code>background-attachment</code>, which
+  specifies whether a background image is fixed or moveable, as described below:
+    <ul>
+      <li><b>scroll.</b> This default setting causes the image to scroll with
+        the content of the component. In other words, the background image is
+        attached to the content and moves along with it if the user scrolls the
+        content. </li>
+      <li><b>fixed.</b> This setting causes the image to be fixed and not move
+        if the content moves. In other words, the background image is
+        not attached to the content and does not move along with it if the user
+        scrolls the content. For example, a watermark for the page background
+        might be set to fixed so it will remain visible as the page scrolls. </li>
+    </ul>
+  </li>
+  <li><b>Horizontal Position.</b> Sets the horizontal component of the CSS property <code>background-position</code>,
+    which you can use to specify the initial location of the image. You can choose
+    a value from the drop down list (left, center, or right) or you can specify
+    an absolute position (such as 20 px) or a relative position (such as 20%).
+    Numeric positions are measured from the left side of the component. </li>
+  <li><b>Vertical Position.</b>  Sets the vertical component of the CSS property  <code>background-position</code>,
+  which  you can use to specify the initial location of the image.  You can choose
+    a value from the drop down list (top, center, or bottom) or you can specify
+    an absolute position (such as 20 px) or a relative position (such as 20%).
+  Numeric positions are measured from the top of the component. </li>
+</ul>
+<ul class="note">
+  <li>The first time you  enter a numeric value in either of the Position fields,
+     press Enter  to enable the 
+    drop down list showing the units of measure.</li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../../components/aboutcomponents.html">About Components</a></dd>
+  <dd><a href="../../components/common_comp_props.html">Common 
+    Component Properties</a></dd>
+  <dd><a href="../../components/howtocomponents/style_sheet.html">Using 
+    Cascading Style Sheets</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Style Editor: Background Panel">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+</body>
+</html>

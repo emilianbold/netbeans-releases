@@ -1,1 +1,150 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Working With Databases</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Working with Databases with Visual Web Applications</h2><p>The following table shows how to use databases with visual web development. Make sure the Java DB Database Server is running before you attempt any of these steps. </p><table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each process step. The right column contains detail information to accomplish that process.">    <tr valign="top">    <td align="center"><p><img src="../images/circle1.gif" alt="Number one"><br>        <b>Add database to the IDE </b></p>        <p><img src="../images/databasenodeicon.gif" alt="Databases node icon"></p></td>    <td>	<ul>      	<li>To add a Java DB database to the IDE:</li>			<ol>        	<li>In the         	  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../../ui_elements/server_nav/services_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="325,175">    <param name="text" value="Services window"></object>, right-click the Databases node and choose 			New Connection.</li>        	<li>Fill in the values for the database and click OK.</li>			</ol>	  	        <li>To add another type of datbase to the IDE  	          <ol>  	            <li><a href="nbdocs:/org.netbeans.modules/db/docs/adddriver.html">Add a JDBC driver</a> to the IDE</li>                 	           	        <li>In the            Services window, right-click the Databases node and choose New Connection.            	        <li>Fill in the values for the database and click OK.</li>      </ol></ul>   </td>  </tr>    <tr>    <td colspan="2">      <hr align="center" width="80%">    </td>  </tr><tr valign="top">    <td align="center"><p><img src="../images/circle2.gif" alt="Number two"><br>        <b>Connect database table to page </b></p>        <p><img src="../images/dbnodeicon.gif" alt="database-name node icon"></p></td>    <td>      <ol>        <li>In the Services window, expand the Databases node.</li>        <li>Expand the <i>database-name</i> node and the Tables Node.</li>        <li><a href="howtodata/add_table_to_page.html">Drag the database table</a> to the Visual Designer. </li>    </ol></td>  </tr>  <tr>    <td colspan="2">      <hr align="center" width="80%">    </td>  </tr><tr valign="top">    <td align="center"><p><img src="../images/circle3.gif" alt="Number three"><br>        <b>Define rowset content</b></p>        <p><img src="../images/rowset_process.gif" alt="rowset icon"></p></td>    <td>      <ol>        <li>In the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../ui_elements/navigator_win/navigator_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="385,450">    <param name="text" value="Navigator window"></object>, double-click 		the <i>table-name</i>RowSet item.</li>        <li>In the Visual SQL Editor, if the SQL query is not correct, edit it. </li>    </ol></td>  </tr> <tr>    <td colspan="2">      <hr align="center" width="80%">    </td>  </tr><tr valign="top">  <td align="center"><p><img src="../images/circle4.gif" alt="Number four"><br>        <b>Bind data to component</b></p>    <p><img src="../images/database_table_icon.gif" alt="database table icon">           </p></td>  <td>  	In the Visual Designer, add the component to the page, then:	  <ul>        <li><a href="howtodata/bind_data_to_comp.html">Bind data to a simple           component</a>, such as a Button.</li>        <li><a href="howtodata/binding_data_2_list_component.html">Bind data to a list 	  component</a>, such as a Listbox.</li>        <li><a href="howtodata/binding_data_2_table_component.html">Bind data to a  Table 	  component</a>.</li>    </ul></td></tr><tr>  <td colspan="2">    <hr align="center" width="80%">  </td></tr>    <tr valign="top">    <td align="center"><p><img src="../images/circle5.gif" alt="Number five"><br>        <b>Set event handling</b></p>        <p><img src="../images/visual_editor_icon.gif" alt="visual editor icon"></p></td>    <td>      <ul>        <li>Specify event 		handling for retrieving, updating, or deleting the data by double-clicking  		the component to open the <a href="nbdocs:/org/netbeans/modules/usersguide/editing/csh/about_source_editor.html">Java Editor</a>. </li>    </ul></td>  </tr></table><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Working With Databases">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Working With Databases</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Working with Databases with Visual Web Applications</h2>
+
+
+<p>The following table shows how to use databases with visual web development. Make sure the Java DB Database Server is running before you attempt any of these steps.</p>
+
+<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each process step. The right column contains detail information to accomplish that process.">
+  
+  <tr valign="top">
+    <td align="center"><p><img src="../images/circle1.gif" alt="Number one"><br>
+        <b>Add database to the IDE </b></p>
+        <p><img src="../images/databasenodeicon.gif" alt="Databases node icon"></p></td>
+    <td>
+	<ul>
+      	<li>To add a Java DB database to the IDE:</li>
+			<ol>
+        	<li>In the 
+        	  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../ui_elements/server_nav/services_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="325,175">
+    <param name="text" value="Services window"></object>, right-click the Databases node and choose 
+			New Connection.</li>
+        	<li>Fill in the values for the database and click OK.</li>
+			</ol>
+	
+  	        <li>To add another type of datbase to the IDE
+  	          <ol>
+  	            <li><a href="nbdocs:/org.netbeans.modules/db/docs/adddriver.html">Add a JDBC driver</a> to the IDE</li>
+               
+  	         
+  	        <li>In the
+            Services window, right-click the Databases node and choose New Connection.
+          
+  	        <li>Fill in the values for the database and click OK.</li>
+      </ol></ul>
+   </td>
+  </tr>
+  
+  <tr>
+    <td colspan="2">
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+<tr valign="top">
+    <td align="center"><p><img src="../images/circle2.gif" alt="Number two"><br>
+        <b>Connect database table to page </b></p>
+        <p><img src="../images/dbnodeicon.gif" alt="database-name node icon"></p></td>
+    <td>
+      <ol>
+        <li>In the Services window, expand the Databases node.</li>
+        <li>Expand the <i>database-name</i> node and the Tables Node.</li>
+        <li><a href="howtodata/add_table_to_page.html">Drag the database table</a> to the Visual Designer. </li>
+    </ol></td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+
+
+<tr valign="top">
+    <td align="center"><p><img src="../images/circle3.gif" alt="Number three"><br>
+        <b>Define rowset content</b></p>
+        <p><img src="../images/rowset_process.gif" alt="rowset icon"></p></td>
+    <td>
+      <ol>
+        <li>In the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../ui_elements/navigator_win/navigator_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window"></object>, double-click 
+		the <i>table-name</i>RowSet item.</li>
+        <li>In the Visual SQL Editor, if the SQL query is not correct, edit it. </li>
+    </ol></td>
+  </tr>
+ 
+<tr>
+    <td colspan="2">
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+<tr valign="top">
+  <td align="center"><p><img src="../images/circle4.gif" alt="Number four"><br>
+        <b>Bind data to component</b></p>
+    <p><img src="../images/database_table_icon.gif" alt="database table icon">     
+      </p></td>
+  <td>
+  
+	In the Visual Designer, add the component to the page, then:
+	  <ul>
+        <li><a href="howtodata/bind_data_to_comp.html">Bind data to a simple 
+          component</a>, such as a Button.</li>
+        <li><a href="howtodata/binding_data_2_list_component.html">Bind data to a list 
+	  component</a>, such as a Listbox.</li>
+        <li><a href="howtodata/binding_data_2_table_component.html">Bind data to a  Table 
+	  component</a>.</li>
+    </ul></td>
+</tr>
+<tr>
+  <td colspan="2">
+    <hr align="center" width="80%">
+  </td>
+</tr>
+  
+  <tr valign="top">
+    <td align="center"><p><img src="../images/circle5.gif" alt="Number five"><br>
+        <b>Set event handling</b></p>
+        <p><img src="../images/visual_editor_icon.gif" alt="visual editor icon"></p></td>
+    <td>
+      <ul>
+        <li>Specify event 
+		handling for retrieving, updating, or deleting the data by double-clicking  
+		the component to open the <a href="nbdocs:/org/netbeans/modules/usersguide/editing/csh/about_source_editor.html">Java Editor</a>. </li>
+    </ul></td>
+  </tr>
+</table>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Working With Databases">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

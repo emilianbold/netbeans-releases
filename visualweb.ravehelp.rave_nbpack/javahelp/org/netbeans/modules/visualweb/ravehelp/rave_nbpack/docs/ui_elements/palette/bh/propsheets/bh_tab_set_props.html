@@ -1,1 +1,122 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Tab Set Component Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Tab Set  Component Properties Window</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You see the Properties window for a  Tab Set component <img src="../../../../images/bh_tab_set_icon.gif" alt="tab set icon">&nbsp;when you select the component on a page you are editing in the Visual Designer, after you have added the component to the page.</p><p>This component has the following properties.</p><h3>General</h3><ul>	<li><b>id.</b><code> Type: String</code><br>		The name of the component in the page bean and the JSP file. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>TabSet</code> object.</li></ul><h3>Appearance</h3><ul>  <li><b>lite.</b> <code>Type: boolean</code><br>	  If selected, changes the style to make the tab set appear visually less heavy. You must also select the <code>mini</code> property to complete the effect. </li>	<li><b>mini.</b><code> Type: boolean</code><br>		If selected, makes the tabs and their labels smaller than normal. If the <code>lite</code> property is also selected, the tabs are even smaller and the overall effect is visually less heavy.</li><li><b>style.</b><code> Type: String</code><br>		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p><p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.          <ul class="note">          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>          </ul>	  <p>For a list of CSS2 style attributes, see the web page at<br>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>        </p>  </li>	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.      <ul class="note">        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>      <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.                <p>For the  <code>defaulttheme.jar</code> CSS style classes for this component, see <a href="bh_tab_set_css.html">Tab Set Component CSS Classes</a>.</p>               </li>     </ul></li></ul><h3>Data</h3><ul>  <li><b>selected.</b><code> Type: Object</code><br>	  Indicates the ID of the selected tab. If you click a tab in the Visual Designer, it becomes the selected tab. This property can be useful for a tab set used as a page navigator. With the current page's tab  selected, the tab is an indicator of which page the user is on. Also, the tab cannot be used as a link and has the same background color as the page. </li></ul><h3>Behavior</h3><ul><li><b>visible.</b><code> Type: boolean</code><br>  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered, the component can still be processed on form submissions, and users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component.     <ul class="note">      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>    </ul></li></ul>  <h3>Advanced</h3>  <ul>    <li><b>actionListener.</b><code> Type: MethodBinding </code><br>    A method binding representing  an action listener method that is notified when this component is activated by the user. The value must be a valid JSF method binding expression, such as <code>#{Page1.action_method}</code>,  and it must evaluate to the name of a public method that takes an <code>ActionEvent</code> parameter with a return type of void. </li>    <li><b>rendered.</b><code> Type: boolean</code><br>    If selected, the tab is to be rendered and processed on any subsequent page submission. If not selected, the tab does not appear on the page at all, not even as a hidden component. </li>  </ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../tab_set.html">Tab Set Component</a></dd>	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">      <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">      <param name="text" value="Understanding Scope and Managed Beans"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Tab Set Component Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Tab Set Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Tab Set  Component Properties Window</h2>
+<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+
+<p>You see the Properties window for a  Tab Set component <img src="../../../../images/bh_tab_set_icon.gif" alt="tab set icon">&nbsp;when you select the component on a page you are editing in the Visual Designer, after you have added the component to the page.</p>
+<p>This component has the following properties.</p>
+
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: String</code><br>
+		The name of the component in the page bean and the JSP file. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>TabSet</code> object.</li>
+</ul>
+
+<h3>Appearance</h3>
+<ul>
+  <li><b>lite.</b> <code>Type: boolean</code><br>
+	  If selected, changes the style to make the tab set appear visually less heavy. 
+You must also select the <code>mini</code> property to complete the effect.
+ </li>
+	<li><b>mini.</b><code> Type: boolean</code><br>
+		If selected, makes the tabs and their labels smaller than normal. 
+If the <code>lite</code> property is also selected, the tabs are even smaller 
+and the overall effect is visually less heavy.
+</li>
+<li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:
+		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p>
+<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.
+    <ul class="note">
+          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
+    </ul>
+
+	  <p>For a list of CSS2 style attributes, see the web page at<br>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>
+    </p>
+  </li>
+	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
+      <ul class="note">
+        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
+      <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.
+                <p>For the  <code>defaulttheme.jar</code> CSS style classes for this component, see <a href="bh_tab_set_css.html">Tab Set Component CSS Classes</a>.</p>
+       
+        </li>
+     </ul>
+</li>
+</ul>
+
+<h3>Data</h3>
+<ul>
+  <li><b>selected.</b><code> Type: Object</code><br>
+	  Indicates the ID of the selected tab. If you click a tab in the Visual Designer, it becomes the selected tab. This property can be useful for a tab set used as a page navigator. With the current page's tab  selected, the tab is an indicator of which page the user is on. Also, the tab cannot be used as a link and has the same background color as the page. </li>
+</ul>
+
+<h3>Behavior</h3>
+<ul>
+<li><b>visible.</b><code> Type: boolean</code><br>
+  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered, the component can still be processed on form submissions, and users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component. 
+    <ul class="note">
+      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>
+    </ul>
+</li>
+</ul>
+  <h3>Advanced</h3>
+  <ul>
+    <li><b>actionListener.</b><code> Type: MethodBinding </code><br>
+    A method binding representing  an action listener method that is notified when this component is activated by the user. The value must be a valid JSF method binding expression, such as <code>#{Page1.action_method}</code>,  and it must evaluate to the name of a public method that takes an <code>ActionEvent</code> parameter with a return type of void. </li>
+    <li><b>rendered.</b><code> Type: boolean</code><br>
+    If selected, the tab is to be rendered and processed on any subsequent page submission. If not selected, the tab does not appear on the page at all, not even as a hidden component. </li>
+  </ul>
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../tab_set.html">Tab Set Component</a></dd>
+	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+
+<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">
+      <param name="text" value="Understanding Scope and Managed Beans"></object>
+</dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Tab Set Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,1 +1,213 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Table Column Component Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Table Column Component Properties Window </h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You see the Properties window for a Table Column component <img src="../../../../images/bh_column_icon.gif" alt="Column Component Icon">&nbsp;when you select it under a Table component in the <a href="../../../navigator_win/about_navigator_win.html">Navigator window</a>. A Table Column component represents a column in a Table component and is part of a Table Row Group component, so you might have to expand a Table component's node and then a Table Row Group node to see the Table Column component.</p><ul class="note">  <li>You can use the Table Layout dialog box to set many of these properties. Not only is that dialog box easier to use in some respects than individual Properties windows for the Table, Table Column, and  Table Row Group components, but you can work more naturally with the table and all its columns there. To open the dialog box, right-click the table in the Visual Designer and choose Table Layout.</li></ul><h3>General</h3><ul>	<li><b>id.</b><code> Type: String</code><br>		The name of the Table Column component in the page bean and the JSP file.</li></ul><h3>Appearance</h3><ul>  <li><b>align.</b> <code>Type: String</code><br>	  Specifies the horizontal alignment for the cell. Possible values are left, center, right, and justify.</li>	<li>	  <p><b>alignKey.</b> <code>Type: Object </code><br> The <code>FieldKey</code> id or <code>FieldKey</code>  representing an identifier for a specific data element to be automatically aligned. If a <code>FieldKey</code> is provided, it is used as is; otherwise, a <code>FieldKey</code> is created using the provided id. Alignment is based on the object type of the data element. For example, <code>Date</code> and <code>Number</code> objects are aligned right; <code>Character</code> and <code>String</code> objects are aligned left, and <code>Boolean</code> objects are aligned center. All columns, including select columns, are aligned left by default. The <code>align</code> property overrides this value. </p>  </li>	<li><b>emptyCell.</b> <code>Type: boolean</code><br> Indicates that the table cell is inapplicable or unexpectedly empty and that an empty table cell icon (dash icon) should be rendered instead.</li>	<li><b>footerText.</b> <code>Type: String</code><br>  Text displayed for the column footer. For more information, see <a href="../column.html#columnlayoutelements">Column Layout Elements</a>.</li>	<li><b>headerText.</b> <code>Type: String</code><br>Text displayed for the column header. For more information, see <a href="../column.html#columnlayoutelements">Column Layout Elements</a>.</li>	<li> <b>noWrap.</b> <code>Type: boolean</code><br>Prevents word wrap for the cell, which can result in  horizontal scrolling depending on the user's browser window width and font size. This property is deprecated in HTML 4.0 and later in favor of style sheets. </li>	<li><b>severity.</b> <code>Type: String</code><br> Indicates alarm severity for  the current row. When severity is set, the  tool tips for the sort indicate that the column will be sorted by severity. Additionally, the table cell will provide a visual indication of the level of severity. This property is overridden by the <code>emptyCell</code> property. </li>  <li><b>sortIcon.</b> <code>Type: String</code><br>  The identifier of a an image from the theme files that you want to use for a sort icon. If you click the ellipsis buttons, you see a list of image names from which you can select the image you want.  For more information, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>	<li><b>sortImageURL.</b> <code>Type: String</code><br>      Absolute or relative URL to the image used for sorting. You can use this property to choose your own sort icon.  For more information, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li><li><b>style.</b><code> Type: String</code><br>		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.        <ul class="note">          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>        </ul>	  <p>For a list of CSS2 style attributes, see the web page at<br>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>        </p>  </li>	<li><b>styleClass.</b><code> Type: String</code><br>	  A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.      <ul class="note">        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li><li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.                <p>For the<b><a name="themecss"></a></b>  <code>defaulttheme.jar</code> CSS style classes for this component, see <a href="bh_table_css.html">Table Component CSS Classes</a>.</p>               </li>      </ul>  </li><li><b>tableFooterText.</b><code> Type: String</code><br>  The text displayed for the table column footer.  For more information, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>	<li>	    <b> valign.</b><code> Type: String</code><br>  Specifies the vertical position within the cell of the cell contents. Possible values are:    <ul>      <li> <b><code> top</code></b> - Positions the contents at the top of the cell.</li>        <li><code><b>middle</b></code> - The default value, which centers the contents vertically.</li>        <li><b><code> bottom</code></b> - Positions the contents at the bottom of the cell.</li>      </ul>	</li></ul><h3>Layout</h3><ul>  <li><b>colSpan.</b><code> Type: int </code><br>    The number of columns spanned by each cell in this column. The default value is 1. The value 0 is ignored by some web browsers, so it is best to enter an actual number of columns to span and not assume that a web browser will interpret 0 to mean all columns from this one to the end of the table.</li>  <li><b>height.</b><code> Type: String </code><br>    Deprecated in HTML 4.0 and later in favor of style sheets, the height property recommends a cell's height in pixels. </li>  <li><b>rowSpan.</b><code> Type: int </code><br>    The number of rows spanned by each cell in this column. The default value is 1. The value 0 is ignored by some web browsers, so it is best to enter an actual number of rows to span and not assume that a web browser will interpret 0 to mean all rows from this one to the end of the table.</li>  <li><b>spacerColumn.</b><code> Type: boolean </code><br>    Indicates that the column is used as a spacer for two and three column tables. Setting this property changes  the style used for the column to make it appear that the columns are justified. If a column header and footer are required, provide an empty string for the <code>headerText</code> and <code>footerText</code> properties. Set the <code>width</code> property to justify columns accordingly. </li>  <li><b>width.</b><code> Type: String </code><br>    This property is deprecated in HTML 4.0 and later in favor of style sheets. The value is the cell's width in pixels. </li></ul><h3>Data</h3><ul>	<li><b>descending.</b><code> Type: boolean</code><br> Indicates that  sort actions applied by the user are in descending order. If this property is not selected, the  order is ascending. This property does not affect the initial sort order of the column, but rather the sort order applied when the user first clicks  a sort button or column header text.  For more information, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>  <li><b>selectId.</b><code> Type: String</code><br> The component ID of a checkbox or radio button that is used to select or deselect rows of the table. When the component is rendered, a fully qualified ID is dynamically created based on the Table Column component ID and the current row. Setting this property identifies the column as a select column. </li>    <li> <b>sort.</b><code> Type: Object </code><br> The <code>FieldKey</code> ID or <code>SortCriteria</code> used to define criteria for sorting the contents of a <code>TableDataProvider</code>. This value is required if a column is to be shown as sortable. If you drop a database table on the component, this property is set for you. <p> If <code>SortCriteria</code> is provided, the object is simply used for sorting. If an ID is provided, a <code>FieldIdSortCriteria</code> is created for sorting. Alternatively, a value binding can  be used to sort on an object external to the <code>TableDataProvider</code>, such as the selected state of a checkbox or radiobutton. In this case, a <code>ValueBindingSortCriteria</code> object is created for sorting. All sorting is based on the object type associated with the data element, such as <code>Boolean</code>, <code>Character</code>, <code>Comparator</code>, <code>Date</code>, <code>Number</code>, or <code>String</code>. If the object type cannot be determined, the object is compared as a <code>String</code>.    </li></ul><h3>Behavior</h3><ul>  <li><b>toolTip.</b><code> Type: String</code><br>The value of the title attribute for the column. If the cell has no child component, the specified text displays as a tooltip when the mouse cursor hovers over a cell in the column.  <ul class="note">    <li>The tooltip does not appear if the cell has a child component, as it usually does. If there is a tooltip property for the child component of the cell, set that property instead. </li>  </ul>  </li>  <li><b>visible.</b><code> Type: boolean</code><br>  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered, the component can still be processed on form submissions, and users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component.     <ul class="note">      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>    </ul></li></ul><h3>JavaScript</h3><ul>  <li><b>onClick.</b><code> Type: String</code><br>  JavaScript to be executed when the user clicks the component.</li>  <li><b>onDblClick.</b> <code> Type: String</code><br>    JavaScript to be executed when the user double-clicks the component.</li>  <li><b>onKeyDown.</b><code> Type: String</code><br>    JavaScript to be executed when the component has focus and a key is pressed. </li>  <li><b>onKeyPress.</b><code> Type: String</code><br>    JavaScript to be executed when the component has focus and a key is pressed and released.</li>  <li><b>onKeyUp.</b><code> Type: String</code><br>    JavaScript to be executed when the component has focus and a key is released.</li>  <li><b>onMouseDown.</b><code> Type: String</code><br>    JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>  <li><b>onMouseMove.</b><code> Type: String</code><br>    JavaScript to be executed when the user moves the mouse cursor within the component.</li>  <li><b>onMouseOut.</b><code> Type: String</code><br>    JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>  <li><b>onMouseOver.</b><code> Type: String</code><br>    JavaScript to be executed when the user moves the mouse cursor onto the component.</li>  <li><b>onMouseUp.</b><code> Type: String</code><br>    JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li></ul><h3>Advanced</h3><ul>	<li><b>embeddedActions.</b><code> Type: boolean </code><br>	    Indicates that embedded table actions appear in this column. Causes a separator bar to appear between each child component. This property is overridden by the <code>emptyCell</code> property. </li>	<li><b>extraFooterHtml.</b><code> Type: String</code><br>  Extra HTML code to be appended to the <code>&lt;td&gt;</code> HTML element that is rendered for the column footer. Use only code that is valid in an HTML <code>&lt;td&gt;</code> element. The code you specify is inserted in the HTML element and is not checked for validity. For example, you might set this attribute to <code>nowrap='nowrap'</code>. For more information on the column footer, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>	<li><b>extraHeaderHtml.</b><code> Type: String</code><br>Extra HTML code to be appended to the <code>&lt;th&gt;</code> HTML element that is rendered for the column header. Use only code that is valid in an HTML <code>&lt;th&gt;</code> element. The code you specify is inserted in the HTML element and is not checked for validity. For example, you might set this attribute to <code>nowrap='nowrap'</code>. For more information on the column header, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>	<li><b>extraTableFooterHtml.</b><code> Type: String</code><br>Extra HTML code to be appended to the <code>&lt;td&gt;</code> HTML element that is rendered for the table column footer. Use only code that is valid in an HTML <code>&lt;td&gt;</code> element. The code you specify is inserted in the HTML element and is not checked for validity. For example, you might set this attribute to <code>nowrap='nowrap'</code>. For more information on the table column footer, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>  <li><b>rendered.</b><code> Type: boolean</code><br>	  If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the Table Column and its contents (child components of the Column) do not appear on the page at all, not even as hidden components. If this property is not selected (false), it overrides the rendered properties of any child components.	    <p>You can bind this property to a JavaBeans property that determines when the component does get rendered. For example, an airline reservation form might show a Table Column for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>  </li>    <li> <b>rowHeader.</b><code> Type: boolean</code><br> Indicates that the column's cells contain headers for each row. The equivalent HTML for each cell in the column is <code>&lt;th scope=&quot;row&quot;&gt;</code>. For example,  a table has a column containing user names. To the left of this column is a column of checkboxes, and to the right are columns containing attributes of those users. The contents of the cells in the user Name column are acting as row headers, so this property is selected for the Name column.  For more information, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>    <li><b>scope.</b><code> Type: String</code><br>Specifies the cells for which the column provides header information. Possible values are as follows:  <ul>    <li> <b><code>row</code></b> - The cell provides header information for the rest of the row.</li>    <li><code><b>col</b></code> - The cell provides header information for the rest of the column.</li>    <li><code><b> rowgroup</b></code> - The cell provides header information for the rest of the row group (that is, the remaining cells of the &lt;thead&gt;, &lt;tfoot&lt;, or &lt;tbody&gt;).</li>    <li><code><b>colgroup</b></code> - The cell provides header information for the rest of the column group, the remaining cells of the <code>colgroup</code>. </li>  </ul>    </li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../column.html">Table Column Component</a></dd>	<dd><a href="../table.html">Table Component</a></dd>	<dd><a href="../row_group.html">Table Row Group Component</a></dd>	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">      <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">      <param name="text" value="Understanding Scope and Managed Beans"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Table Column Component Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Table Column Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Table Column Component Properties Window </h2>
+<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+
+<p>You see the Properties window for a Table Column component <img src="../../../../images/bh_column_icon.gif" alt="Column Component Icon">&nbsp;when you select it under a Table component in the <a href="../../../navigator_win/about_navigator_win.html">Navigator window</a>. A Table Column component represents a column in a Table component and is part of a Table Row Group component, so you might have to expand a Table component's node and then a Table Row Group node to see the Table Column component.</p>
+<ul class="note">
+  <li>You can use the Table Layout dialog box to set many of these properties. Not only is that dialog box easier to use in some respects than individual Properties windows for the Table, Table Column, and  Table Row Group components, but you can work more naturally with the table and all its columns there. To open the dialog box, right-click the table in the Visual Designer and choose Table Layout.</li>
+</ul>
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: String</code><br>
+		The name of the Table Column component in the page bean and the JSP file.</li>
+</ul>
+
+<h3>Appearance</h3>
+<ul>
+  <li><b>align.</b> <code>Type: String</code><br>
+	  Specifies the horizontal alignment for the cell. Possible values are left, center, right, and justify.</li>
+	<li>
+	  <p><b>alignKey.</b> <code>Type: Object </code><br>
+ The <code>FieldKey</code> id or <code>FieldKey</code>  representing an identifier for a specific data element to be automatically aligned. If a <code>FieldKey</code> is provided, it is used as is; otherwise, a <code>FieldKey</code> is created using the provided id. Alignment is based on the object type of the data element. For example, <code>Date</code> and <code>Number</code> objects are aligned right; <code>Character</code> and <code>String</code> objects are aligned left, and <code>Boolean</code> objects are aligned center. All columns, including select columns, are aligned left by default. The <code>align</code> property overrides this value. </p>
+  </li>
+	<li><b>emptyCell.</b> <code>Type: boolean</code><br>
+ Indicates that the table cell is inapplicable or unexpectedly empty and that an empty table cell icon (dash icon) should be rendered instead.</li>
+	<li><b>footerText.</b> <code>Type: String</code><br>
+  Text displayed for the column footer. For more information, see <a href="../column.html#columnlayoutelements">Column Layout Elements</a>.</li>
+	<li><b>headerText.</b> <code>Type: String</code><br>
+Text displayed for the column header. For more information, see <a href="../column.html#columnlayoutelements">Column Layout Elements</a>.</li>
+	<li> <b>noWrap.</b> <code>Type: boolean</code><br>
+Prevents word wrap for the cell, which can result in  horizontal scrolling depending on the user's browser window width and font size. This property is deprecated in HTML 4.0 and later in favor of style sheets. </li>
+	<li><b>severity.</b> <code>Type: String</code><br>
+ Indicates alarm severity for  the current row. When severity is set, the  tool tips for the sort indicate that the column will be sorted by severity. Additionally, the table cell will provide a visual indication of the level of severity. This property is overridden by the <code>emptyCell</code> property. </li>
+  <li><b>sortIcon.</b> <code>Type: String</code><br>
+  The identifier of a an image from the theme files that you want to use for a sort icon. If you click the ellipsis buttons, you see a list of image names from which you can select the image you want.  For more information, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>
+	<li><b>sortImageURL.</b> <code>Type: String</code><br>
+      Absolute or relative URL to the image used for sorting. You can use this property to choose your own sort icon.  For more information, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li><li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.
+        <ul class="note">
+          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
+        </ul>
+
+	  <p>For a list of CSS2 style attributes, see the web page at<br>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>
+        </p>
+  </li>
+	<li><b>styleClass.</b><code> Type: String</code><br>
+	  A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
+      <ul class="note">
+        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
+<li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.
+                <p>For the<b><a name="themecss"></a></b>  <code>defaulttheme.jar</code> CSS style classes for this component, see <a href="bh_table_css.html">Table Component CSS Classes</a>.</p>
+       
+        </li>
+      </ul>
+  </li>
+
+<li><b>tableFooterText.</b><code> Type: String</code><br>
+  The text displayed for the table column footer.  For more information, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>
+	<li>	    <b> valign.</b><code> Type: String</code><br>
+  Specifies the vertical position within the cell of the cell contents. Possible values are:
+    <ul>
+      <li> <b><code> top</code></b> - Positions the contents at the top of the cell.</li>
+        <li><code><b>middle</b></code> - The default value, which centers the contents vertically.</li>
+        <li><b><code> bottom</code></b> - Positions the contents at the bottom of the cell.</li>
+      </ul>
+	</li>
+</ul>
+
+<h3>Layout</h3>
+<ul>
+  <li><b>colSpan.</b><code> Type: int </code><br>
+    The number of columns spanned by each cell in this column. The default value is 1. The value 0 is ignored by some web browsers, so it is best to enter an actual number of columns to span and not assume that a web browser will interpret 0 to mean all columns from this one to the end of the table.</li>
+  <li><b>height.</b><code> Type: String </code><br>
+    Deprecated in HTML 4.0 and later in favor of style sheets, the height property recommends a cell's height in pixels. </li>
+  <li><b>rowSpan.</b><code> Type: int </code><br>
+    The number of rows spanned by each cell in this column. The default value is 1. The value 0 is ignored by some web browsers, so it is best to enter an actual number of rows to span and not assume that a web browser will interpret 0 to mean all rows from this one to the end of the table.</li>
+  <li><b>spacerColumn.</b><code> Type: boolean </code><br>
+    Indicates that the column is used as a spacer for two and three column tables. Setting this property changes  the style used for the column to make it appear that the columns are justified. If a column header and footer are required, provide an empty string for the <code>headerText</code> and <code>footerText</code> properties. Set the <code>width</code> property to justify columns accordingly. </li>
+  <li><b>width.</b><code> Type: String </code><br>
+    This property is deprecated in HTML 4.0 and later in favor of style sheets. The value is the cell's width in pixels. </li>
+</ul>
+<h3>Data</h3>
+<ul>
+	<li><b>descending.</b><code> Type: boolean</code><br>
+ Indicates that  sort actions applied by the user are in descending order. If this property is not selected, the  order is ascending. This property does not affect the initial sort order of the column, but rather the sort order applied when the user first clicks  a sort button or column header text.  For more information, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>
+  <li><b>selectId.</b><code> Type: String</code><br>
+ The component ID of a checkbox or radio button that is used to select or deselect rows of the table. When the component is rendered, a fully qualified ID is dynamically created based on the Table Column component ID and the current row. Setting this property identifies the column as a select column. </li>
+    <li> <b>sort.</b><code> Type: Object </code><br>
+ The <code>FieldKey</code> ID or <code>SortCriteria</code> used to define criteria for sorting the contents of a <code>TableDataProvider</code>. This value is required if a column is to be shown as sortable. If you drop a database table on the component, this property is set for you.
+ <p>
+ If <code>SortCriteria</code> is provided, the object is simply used for sorting. If an ID is provided, a <code>FieldIdSortCriteria</code> is created for sorting. Alternatively, a value binding can  be used to sort on an object external to the <code>TableDataProvider</code>, such as the selected state of a checkbox or radiobutton. In this case, a <code>ValueBindingSortCriteria</code> object is created for sorting. All sorting is based on the object type associated with the data element, such as <code>Boolean</code>, <code>Character</code>, <code>Comparator</code>, <code>Date</code>, <code>Number</code>, or <code>String</code>. If the object type cannot be determined, the object is compared as a <code>String</code>.
+    </li>
+</ul>
+
+<h3>Behavior</h3>
+<ul>
+  <li><b>toolTip.</b><code> Type: String</code><br>
+The value of the title attribute for the column. If the cell has no child component, the specified text displays as a tooltip when the mouse cursor hovers over a cell in the column.
+  <ul class="note">
+    <li>The tooltip does not appear if the cell has a child component, as it usually does. If there is a tooltip property for the child component of the cell, set that property instead. </li>
+  </ul>
+  </li>
+  <li><b>visible.</b><code> Type: boolean</code><br>
+  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered, the component can still be processed on form submissions, and users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component. 
+    <ul class="note">
+      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>
+    </ul>
+</li>
+</ul>
+<h3>JavaScript</h3>
+<ul>
+  <li><b>onClick.</b><code> Type: String</code><br>
+  JavaScript to be executed when the user clicks the component.</li>
+  <li><b>onDblClick.</b> <code> Type: String</code><br>
+    JavaScript to be executed when the user double-clicks the component.</li>
+  <li><b>onKeyDown.</b><code> Type: String</code><br>
+    JavaScript to be executed when the component has focus and a key is pressed. </li>
+  <li><b>onKeyPress.</b><code> Type: String</code><br>
+    JavaScript to be executed when the component has focus and a key is pressed and released.</li>
+  <li><b>onKeyUp.</b><code> Type: String</code><br>
+    JavaScript to be executed when the component has focus and a key is released.</li>
+  <li><b>onMouseDown.</b><code> Type: String</code><br>
+    JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>
+  <li><b>onMouseMove.</b><code> Type: String</code><br>
+    JavaScript to be executed when the user moves the mouse cursor within the component.</li>
+  <li><b>onMouseOut.</b><code> Type: String</code><br>
+    JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>
+  <li><b>onMouseOver.</b><code> Type: String</code><br>
+    JavaScript to be executed when the user moves the mouse cursor onto the component.</li>
+  <li><b>onMouseUp.</b><code> Type: String</code><br>
+    JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li>
+</ul>
+<h3>Advanced</h3>
+<ul>
+	<li><b>embeddedActions.</b><code> Type: boolean </code><br>
+	    Indicates that embedded table actions appear in this column. Causes a separator bar to appear between each child component. This property is overridden by the <code>emptyCell</code> property. </li>
+	<li><b>extraFooterHtml.</b><code> Type: String</code><br>
+  Extra HTML code to be appended to the <code>&lt;td&gt;</code> HTML element that is rendered for the column footer. Use only code that is valid in an HTML <code>&lt;td&gt;</code> element. The code you specify is inserted in the HTML element and is not checked for validity. For example, you might set this attribute to <code>nowrap='nowrap'</code>. For more information on the column footer, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>
+	<li><b>extraHeaderHtml.</b><code> Type: String</code><br>
+Extra HTML code to be appended to the <code>&lt;th&gt;</code> HTML element that is rendered for the column header. Use only code that is valid in an HTML <code>&lt;th&gt;</code> element. The code you specify is inserted in the HTML element and is not checked for validity. For example, you might set this attribute to <code>nowrap='nowrap'</code>. For more information on the column header, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>
+	<li><b>extraTableFooterHtml.</b><code> Type: String</code><br>
+Extra HTML code to be appended to the <code>&lt;td&gt;</code> HTML element that is rendered for the table column footer. Use only code that is valid in an HTML <code>&lt;td&gt;</code> element. The code you specify is inserted in the HTML element and is not checked for validity. For example, you might set this attribute to <code>nowrap='nowrap'</code>. For more information on the table column footer, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>
+  <li><b>rendered.</b><code> Type: boolean</code><br>
+	  If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the Table Column and its contents (child components of the Column) do not appear on the page at all, not even as hidden components. If this property is not selected (false), it overrides the rendered properties of any child components.
+	    <p>You can bind this property to a JavaBeans property that determines when the component does get rendered. For example, an airline reservation form might show a Table Column for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>
+  </li>
+    <li> <b>rowHeader.</b><code> Type: boolean</code><br>
+ Indicates that the column's cells contain headers for each row. The equivalent HTML for each cell in the column is <code>&lt;th scope=&quot;row&quot;&gt;</code>. For example,  a table has a column containing user names. To the left of this column is a column of checkboxes, and to the right are columns containing attributes of those users. The contents of the cells in the user Name column are acting as row headers, so this property is selected for the Name column.  For more information, see <a href="../column.html#columnlayoutelements">Table Column Layout Elements</a>.</li>
+    <li><b>scope.</b><code> Type: String</code><br>
+Specifies the cells for which the column provides header information. Possible values are as follows:
+  <ul>
+    <li> <b><code>row</code></b> - The cell provides header information for the rest of the row.</li>
+    <li><code><b>col</b></code> - The cell provides header information for the rest of the column.</li>
+    <li><code><b> rowgroup</b></code> - The cell provides header information for the rest of the row group (that is, the remaining cells of the &lt;thead&gt;, &lt;tfoot&lt;, or &lt;tbody&gt;).</li>
+    <li><code><b>colgroup</b></code> - The cell provides header information for the rest of the column group, the remaining cells of the <code>colgroup</code>. </li>
+  </ul>
+    </li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../column.html">Table Column Component</a></dd>
+	<dd><a href="../table.html">Table Component</a></dd>
+	<dd><a href="../row_group.html">Table Row Group Component</a></dd>
+	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">
+      <param name="text" value="Understanding Scope and Managed Beans"></object>
+</dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Table Column Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

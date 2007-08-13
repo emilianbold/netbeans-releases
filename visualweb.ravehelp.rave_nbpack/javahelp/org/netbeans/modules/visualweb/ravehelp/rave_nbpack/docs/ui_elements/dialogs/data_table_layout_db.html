@@ -1,1 +1,149 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Table Layout Dialog Box</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2> Table Layout Dialog Box</h2><p><small><a href="#seealso">See Also</a></small></p><p>The  Table Layout dialog box enables you to specify the   layout and contents of a  Table component. You open the   dialog box by right-clicking a  Table component    in the Visual Designer and choosing Table Layout.</p><p>This dialog box is especially useful if you have added a database   table to the current page, as described in <a href="../../connect_data/howtodata/add_table_to_page.html">Adding   Tables  to a Page</a>. You can use the Get Data From drop down list in the Columns tab   to see a list of appropriate objects that are in scope, such as the data provider for a database table that you previously dropped on the page. </p><p>When the dialog box opens, the Columns tab is selected. If   you dropped a table directly on the  Table component, you   see the table's columns and fields in the dialog box, and you   see the name of the table's data provider  in the Get Data From field.   If you did not drop a table on the  Table component (for   example, you dropped it on the page), you can use the dialog box's   Get Data From drop down list to pick the data provider.</p><p>The dialog box has the following tabs and fields:</p><ul>  <li><b>Columns tab.</b> Use this tab to determine the object     that displays in the table. If you are using a database table,     you can determine the columns of the database table that are     displayed, the order in which the columns are displayed, and     the JavaServer Faces components that are available to the     user for viewing or working with the table.     <ul>      <li><b>Get Data From.</b> You can select any object listed.          <p>When you select a table data provider from the Get Data From drop down list, the  available columns appear in the Available           list. However, when you select an array or <code>List</code>,           the IDE does not know what kinds of objects will be           in that array or <code>List</code> at runtime, so nothing           appears in the Available list. Instead, you must use           the Value Expression field to specify a JavaServer Faces expression           for that column. The expression should be relative to           the currentRow (begins with <code>#{currentRow</code>),           but the IDE accepts any valid JavaServer Faces expression that can           be resolved at design time. You can add new columns           to the table with the New button.</p>      </li>      <li><b>Available.</b> Shows all the columns in the database         table. Select a column if you want to add it to the list         of displayed columns.</li>      <li><b>Selected.</b> Shows the columns to be displayed         in the Table component. Select a column if you want         to delete it or move it.         <ul>          <li>Use the &lt;, &gt;, and &lt;&lt; buttons to add             columns to and remove columns from this list. </li>          <li>Use the Up and Down buttons to change the display             order of the columns.</li>          <li>Use the New button to add a column, such as a special             column that is not a database table column.</li>        </ul>     </li>      <li><b>Column Details.</b> Shows properties of         the column selected in the Displayed list.         <ul>          <li><b>Header Text.</b> Text displayed at the top this             column. <i>For advanced users</i>: You can insert             a JavaServer Faces expression in the header.</li>          <li><b>Footer Text.</b> Text displayed at the bottom             of this column. <i>For advanced users</i>: You can             insert a JavaServer Faces expression in the footer.</li>          <li><b>Component Type.</b> The type of JavaServer Faces             component used in the column. You can choose any component from the            drop down list to display it in the selected column of the table.            The same component will display in every cell of the column. Another            way to display a component in a column of a table is to drag the            component from the Palette and drop it on the column. If you drop            a component on a column, you might want to delete the component            already in the column, which by default  is an Output Text component.</li>          <li><b>Value Expression.</b> A value expression used to get the             value for the column. This field is not enabled when             the table is bound to a database, but it does show             the value expression used with the database. If the             table is bound to an array, you use the value expression             to get the value to be used for the column. The expression             should be relative to the currentRow (begins with             <code>#{currentRow</code>), but the IDE accepts any valid           JavaServer Faces expression that can be resolved at design time.</li>          <li><b>Width.</b> The width of the column in pixels.</li>          <li><b>Horizontal Align.</b> Alignment of the column contents relative to the left and right sides of the cell. Equivalent to the <code>&lt;td&gt;</code> tag's <code>align</code> parameter. </li>          <li><b>Vertical Align.</b> Alignment of the column contents relative to the top and bottom of the cell. Equivalent to the <code>&lt;td&gt;</code> tag's <code>valign</code> parameter.</li>          <li><b>Sortable.</b> Indicates whether or not the user can sort the column. If selected, this property causes a sort button <img src="../../images/tablecolsortbtn.gif" alt="Table Column sort icon" width="22" height="20">&nbsp;to appear on the right side of the column header.</li>        </ul>	  </li>	</ul></li>	<li><b>Options tab.</b> Use this tab to set various display options for the table, such as its title, header, and footer text, buttons that do things like selecting and deselecting all rows, and determining if the table is paginated. <ul>  <li><b>Title.</b> Sets the table's <code> title</code> property, which determines the title displayed at the top of the table.</li>  <li><b>Summary.</b> Sets the table's <code> summary </code> property, which provides information about the Table's purpose or structure or both that is readable by a screen reader.</li>  <li><b>Footer.</b> Sets the table's <code> footerText</code> property, which determines the footer text displayed at the bottom of the table.</li>  <li><b>Empty Data Message.</b> The message displayed if the table is submitted without data.</li>  <li><b>Show Select All Rows Button. </b>Sets the table's  <code>selectMultipleButton</code> property, which displays a button that the user can click to check an entire column of checkboxes, selecting all rows in the table.</li>  <li><b>Show Deselect All Rows Button. </b>Sets the table's <code>deselectMultipleButton</code> property, which displays a button that the user can click to uncheck an entire column of checkboxes, deselecting all rows in the table.</li>  <li><b>Show Clear Sort  Button. </b>Sets the table's <code> clearSortButton </code> property, which displays a Clear Table Sort button that the user can click to remove all sorting currently applied to the table, returning the table items to the order they were in when the page was initially rendered.</li>  <li><b>Show Sort Panel Toggle Button.</b> Sets the table's <code> sortPanelToggleButton</code> property, which displays a button that the user can click to open and close the table's Sort panel.</li>  <li><b>Enable Pagination.</b> Makes it possible to display the table as a paginated table, useful for tables with many rows.Sets the following properties:    <ul>      <li><code>paginateButton</code> - Displays a button that enables users to switch between viewing all data on a single page, an unpaginated table, and seeing data in multiple pages, a paginated table.</li>      <li><code>paginationControls</code> - Displays table pagination controls that enable users to change which page is displayed. The controls include an input field for specifying the page number, a Go button to go to the specified page, and buttons for going to the first, last, previous, and next page</li>    </ul>  </li>  <li>          <b>Page Size.</b> Determines the number of rows that display on a paginated page.   </li></ul></li></ul><dl>  <dt><a name="seealso">See Also</a></dt><dd><a href="../palette/wdstk-jsf1_2/table.html">Table Component</a></dd>  <dd><a href="../../components/aboutcomponents.html">About Components</a></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Table Layout Dialog Box">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table> </body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Table Layout Dialog Box</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2> Table Layout Dialog Box</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The  Table Layout dialog box enables you to specify the 
+  layout and contents of a  Table component. You open the 
+  dialog box by right-clicking a  Table component  
+  in the Visual Designer and choosing Table Layout.</p>
+<p>This dialog box is especially useful if you have added a database 
+  table to the current page, as described in <a href="../../connect_data/howtodata/add_table_to_page.html">Adding 
+  Tables  to a Page</a>. You can use the Get Data From drop down list in the Columns tab 
+  to see a list of appropriate objects that are in scope, such as the data provider for a database table that you previously dropped on the page.</p>
+<p>When the dialog box opens, the Columns tab is selected. If 
+  you dropped a table directly on the  Table component, you 
+  see the table's columns and fields in the dialog box, and you 
+  see the name of the table's data provider  in the Get Data From field. 
+  If you did not drop a table on the  Table component (for 
+  example, you dropped it on the page), you can use the dialog box's 
+  Get Data From drop down list to pick the data provider.</p>
+<p>The dialog box has the following tabs and fields:</p>
+<ul>
+  <li><b>Columns tab.</b> Use this tab to determine the object 
+    that displays in the table. If you are using a database table, 
+    you can determine the columns of the database table that are 
+    displayed, the order in which the columns are displayed, and 
+    the JavaServer Faces components that are available to the 
+    user for viewing or working with the table. 
+    <ul>
+      <li><b>Get Data From.</b> You can select any object listed. 
+         <p>When you select a table data provider from the Get Data From drop down list, the  available columns appear in the Available 
+          list. However, when you select an array or <code>List</code>, 
+          the IDE does not know what kinds of objects will be 
+          in that array or <code>List</code> at runtime, so nothing 
+          appears in the Available list. Instead, you must use 
+          the Value Expression field to specify a JavaServer Faces expression 
+          for that column. The expression should be relative to 
+          the currentRow (begins with <code>#{currentRow</code>), 
+          but the IDE accepts any valid JavaServer Faces expression that can 
+          be resolved at design time. You can add new columns 
+          to the table with the New button.</p>
+      </li>
+      <li><b>Available.</b> Shows all the columns in the database 
+        table. Select a column if you want to add it to the list 
+        of displayed columns.</li>
+      <li><b>Selected.</b> Shows the columns to be displayed 
+        in the Table component. Select a column if you want 
+        to delete it or move it. 
+        <ul>
+          <li>Use the &lt;, &gt;, and &lt;&lt; buttons to add 
+            columns to and remove columns from this list. </li>
+          <li>Use the Up and Down buttons to change the display 
+            order of the columns.</li>
+          <li>Use the New button to add a column, such as a special 
+            column that is not a database table column.</li>
+        </ul>
+     </li>
+      <li><b>Column Details.</b> Shows properties of 
+        the column selected in the Displayed list. 
+        <ul>
+          <li><b>Header Text.</b> Text displayed at the top this 
+            column. <i>For advanced users</i>: You can insert 
+            a JavaServer Faces expression in the header.</li>
+          <li><b>Footer Text.</b> Text displayed at the bottom 
+            of this column. <i>For advanced users</i>: You can 
+            insert a JavaServer Faces expression in the footer.</li>
+          <li><b>Component Type.</b> The type of JavaServer Faces 
+            component used in the column. You can choose any component from the
+            drop down list to display it in the selected column of the table.
+            The same component will display in every cell of the column. Another
+            way to display a component in a column of a table is to drag the
+            component from the Palette and drop it on the column. If you drop
+            a component on a column, you might want to delete the component
+            already in the column, which by default  is an Output Text component.</li>
+          <li><b>Value Expression.</b> A value expression used to get the 
+            value for the column. This field is not enabled when 
+            the table is bound to a database, but it does show 
+            the value expression used with the database. If the 
+            table is bound to an array, you use the value expression 
+            to get the value to be used for the column. The expression 
+            should be relative to the currentRow (begins with 
+            <code>#{currentRow</code>), but the IDE accepts any valid 
+          JavaServer Faces expression that can be resolved at design time.</li>
+          <li><b>Width.</b> The width of the column in pixels.</li>
+          <li><b>Horizontal Align.</b> Alignment of the column contents relative to the left and right sides of the cell. Equivalent to the <code>&lt;td&gt;</code> tag's <code>align</code> parameter. </li>
+          <li><b>Vertical Align.</b> Alignment of the column contents relative to the top and bottom of the cell. Equivalent to the <code>&lt;td&gt;</code> tag's <code>valign</code> parameter.</li>
+          <li><b>Sortable.</b> Indicates whether or not the user can sort the column. If selected, this property causes a sort button <img src="../../images/tablecolsortbtn.gif" alt="Table Column sort icon" width="22" height="20">&nbsp;to appear on the right side of the column header.</li>
+        </ul>
+	  </li>
+	</ul>
+</li>	
+<li>
+<b>Options tab.</b> Use this tab to set various display options for the table, such as its title, header, and footer text, buttons that do things like selecting and deselecting all rows, and determining if the table is paginated. 
+<ul>
+  <li><b>Title.</b> Sets the table's <code> title</code> property, which determines the title displayed at the top of the table.</li>
+  <li><b>Summary.</b> Sets the table's <code> summary </code> property, which provides information about the Table's purpose or structure or both that is readable by a screen reader.</li>
+  <li><b>Footer.</b> Sets the table's <code> footerText</code> property, which determines the footer text displayed at the bottom of the table.</li>
+  <li><b>Empty Data Message.</b> The message displayed if the table is submitted without data.</li>
+  <li><b>Show Select All Rows Button. </b>Sets the table's  <code>selectMultipleButton</code> property, which displays a button that the user can click to check an entire column of checkboxes, selecting all rows in the table.</li>
+  <li><b>Show Deselect All Rows Button. </b>Sets the table's <code>deselectMultipleButton</code> property, which displays a button that the user can click to uncheck an entire column of checkboxes, deselecting all rows in the table.</li>
+  <li><b>Show Clear Sort  Button. </b>Sets the table's <code> clearSortButton </code> property, which displays a Clear Table Sort button that the user can click to remove all sorting currently applied to the table, returning the table items to the order they were in when the page was initially rendered.</li>
+  <li><b>Show Sort Panel Toggle Button.</b> Sets the table's <code> sortPanelToggleButton</code> property, which displays a button that the user can click to open and close the table's Sort panel.</li>
+  <li><b>Enable Pagination.</b> Makes it possible to display the table as a paginated table, useful for tables with many rows.
+Sets the following properties:
+    <ul>
+      <li><code>paginateButton</code> - Displays a button that enables users to switch between viewing all data on a single page, an unpaginated table, and seeing data in multiple pages, a paginated table.</li>
+      <li><code>paginationControls</code> - Displays table pagination controls that enable users to change which page is displayed. The controls include an input field for specifying the page number, a Go button to go to the specified page, and buttons for going to the first, last, previous, and next page</li>
+    </ul>
+  </li>
+  <li>      
+    <b>Page Size.</b> Determines the number of rows that display on a paginated page. 
+  </li>
+</ul>
+</li>
+</ul>
+
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+<dd><a href="../palette/wdstk-jsf1_2/table.html">Table Component</a></dd>
+  <dd><a href="../../components/aboutcomponents.html">About Components</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Table Layout Dialog Box">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+</body>
+</html>
+

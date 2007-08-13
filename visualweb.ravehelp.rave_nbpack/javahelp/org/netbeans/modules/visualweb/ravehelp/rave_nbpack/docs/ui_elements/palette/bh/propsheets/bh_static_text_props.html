@@ -1,1 +1,132 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Static Text Component Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Static Text Component Properties Window</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You see the Properties window for a Static Text component <img src="../../../../images/outputtexticon.gif" alt="Static Text icon">&nbsp;when you select the component on a page that you are editing in the Visual Designer or in the <a href="../../../navigator_win/about_navigator_win.html">Navigator window</a>. </p><p>Most of the Static Text component's properties are both JSP attributes and properties of the <code>StaticText</code> Java component in the page bean.</p><p>This  component has the following properties.</p><h3>General</h3><ul>	<li><b>id.</b><code> Type: String</code><br>		The name of the Static Text component in the page bean and the JSP file. </li></ul><h3>Appearance</h3><ul><li><b>style.</b><code> Type: String</code><br>		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p><p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.	        <ul class="note">          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>	        </ul>	  <p>For a list of CSS2 style attributes, see the web page at<br>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>        </p>  </li>	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.      <ul class="note">        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>      </ul>  </li><li><b>text.</b><code> Type: Object</code><br>The text that displays on the page. You can specify a value to be initially displayed, or you can click the ellipsis button and bind the property to a data provider or to an object so the property's value can be set dynamically.</li></ul><h3>Data</h3><ul>  <li><b>converter.</b><code> Type: Converter</code><br>	  A JavaServer Faces converter that converts the value of the <code>text</code> property to a <code>String</code> so it can be displayed. The component will pick the correct converter for the <code>text</code> property if one is available, making it unnecessary to set this property in most cases. If the <code>text</code> property is bound to a value whose type is not on the list of converters, you  have to supply your own converter and set this property. </li>	<li><b>escape.</b><code> Type: boolean</code><br>Selecting this property causes characters like '&lt;' that can cause problems with XML and HTML to be escaped. For example, with this property selected, '&lt;' is represented as <code>&amp;lt;</code>.</li></ul><h3>Behavior</h3><ul><li><b>toolTip.</b><code> Type: String</code><br>    Rendered as the HTML <code>title</code> attribute of the component, which is readable by a screen reader and can be displayed as a tool tip.  <ul class="note">  <li>If the component is disabled, the tooltip will not display in most browsers.     </li></ul></li><li><b>visible.</b><code> Type: boolean</code><br>  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered,  users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component.     <ul class="note">      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>    </ul></li></ul><h3>JavaScript</h3><ul>  <li><b>onClick.</b><code> Type: String</code><br>    JavaScript to be executed when the user clicks the component.</li>  <li><b>onDblClick.</b> <code> Type: String</code><br>    JavaScript to be executed when the user double-clicks the component.</li>  <li><b>onMouseDown.</b><code> Type: String</code><br>    JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>  <li><b>onMouseMove.</b><code> Type: String</code><br>    JavaScript to be executed when the user moves the mouse cursor within the component.</li>  <li><b>onMouseOut.</b><code> Type: String</code><br>    JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>  <li><b>onMouseOver.</b><code> Type: String</code><br>    JavaScript to be executed when the user moves the mouse cursor onto the component.</li>  <li><b>onMouseUp.</b><code> Type: String</code><br>    JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li></ul><h3>Advanced</h3><ul><li><b>rendered.</b><code> Type: boolean</code><br>    If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component doesn't appear on the page at all, not even as a hidden component. You can bind this property to a JavaBeans property that determines when the component does get rendered. For example, an airline reservation form might show a text field for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../static_text.html">Static Text Component</a></dd>	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">      <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">      <param name="text" value="Understanding Scope and Managed Beans"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Static Text Component Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Static Text Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Static Text Component Properties Window</h2>
+<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+
+<p>You see the Properties window for a Static Text component <img src="../../../../images/outputtexticon.gif" alt="Static Text icon">&nbsp;when you select the component on a page that you are editing in the Visual Designer or in the <a href="../../../navigator_win/about_navigator_win.html">Navigator window</a>. </p>
+<p>Most of the Static Text component's properties are both JSP attributes and properties of the <code>StaticText</code> Java component in the page bean.</p>
+<p>This  component has the following properties.</p>
+
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: String</code><br>
+		The name of the Static Text component in the page bean and the JSP file. </li>
+</ul>
+
+<h3>Appearance</h3>
+<ul><li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:
+		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p>
+<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.
+    <ul class="note">
+          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
+    </ul>
+
+	  <p>For a list of CSS2 style attributes, see the web page at<br>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>
+    </p>
+  </li>
+	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
+      <ul class="note">
+        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
+      </ul>
+  </li>
+
+<li><b>text.</b><code> Type: Object</code><br>
+The text that displays on the page. You can specify a value to be initially displayed, or you can click the ellipsis button and bind the property to a data provider or to an object so the property's value can be set dynamically.</li>
+</ul>
+
+<h3>Data</h3>
+<ul>
+  <li><b>converter.</b><code> Type: Converter</code><br>
+	  A JavaServer Faces converter that converts the value of the <code>text</code> property to a <code>String</code> so it can be displayed. The component will pick the correct converter for the <code>text</code> property if one is available, making it unnecessary to set this property in most cases. If the <code>text</code> property is bound to a value whose type is not on the list of converters, you  have to supply your own converter and set this property. </li>
+	<li><b>escape.</b><code> Type: boolean</code><br>
+Selecting this property causes characters like '&lt;' that can cause problems with XML and HTML to be escaped. For example, with this property selected, '&lt;' is represented as <code>&amp;lt;</code>.</li>
+</ul>
+
+<h3>Behavior</h3>
+<ul><li><b>toolTip.</b><code> Type: String</code><br>
+    Rendered as the HTML <code>title</code> attribute of the component, which is readable by a screen reader and can be displayed as a tool tip.
+  <ul class="note">
+  <li>If the component is disabled, the tooltip will not display in most browsers. 
+    </li>
+</ul>
+</li>
+<li><b>visible.</b><code> Type: boolean</code><br>
+  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered,  users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component. 
+    <ul class="note">
+      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>
+    </ul>
+</li>
+</ul>
+<h3>JavaScript</h3>
+<ul>
+  <li><b>onClick.</b><code> Type: String</code><br>
+    JavaScript to be executed when the user clicks the component.</li>
+  <li><b>onDblClick.</b> <code> Type: String</code><br>
+    JavaScript to be executed when the user double-clicks the component.</li>
+  <li><b>onMouseDown.</b><code> Type: String</code><br>
+    JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>
+  <li><b>onMouseMove.</b><code> Type: String</code><br>
+    JavaScript to be executed when the user moves the mouse cursor within the component.</li>
+  <li><b>onMouseOut.</b><code> Type: String</code><br>
+    JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>
+  <li><b>onMouseOver.</b><code> Type: String</code><br>
+    JavaScript to be executed when the user moves the mouse cursor onto the component.</li>
+  <li><b>onMouseUp.</b><code> Type: String</code><br>
+    JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li>
+</ul>
+<h3>Advanced</h3>
+<ul><li><b>rendered.</b><code> Type: boolean</code><br>
+    If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component doesn't appear on the page at all, not even as a hidden component. You can bind this property to a JavaBeans property that determines when the component does get rendered. For example, an airline reservation form might show a text field for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</li>
+</ul>
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../static_text.html">Static Text Component</a></dd>
+	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">
+      <param name="text" value="Understanding Scope and Managed Beans"></object>
+</dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Static Text Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

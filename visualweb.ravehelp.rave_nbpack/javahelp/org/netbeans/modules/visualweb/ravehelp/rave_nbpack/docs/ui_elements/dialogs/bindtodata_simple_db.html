@@ -1,1 +1,65 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Bind to Data Dialog Box: Simple Display Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Bind to Data Dialog Box: Simple Display Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>This dialog box enables you to associate a data provider or object with the default component property that displays information in the component, such as the <code>text</code> property of a Button component or the <code>url</code> property of an Image component. You can create this association if you want to change the appearance of the component at runtime. If the default display property can be used to send a value entered by the user to the server, then binding this property can also save that value on the server. For example, the <code>text</code> property of a Text Field picks up a value entered by the user and can also be used to display a default value to the user. </p><p>The dialog box opens when you right-click and choose Bind to Data with a  Basic or Composite component that has a default property, like the <code>text</code> property of a Button, that displays a single data item,  not a list or table. The  components that open this dialog box include  Alert, Breadcrumbs, Button, Calendar, Checkbox (single, not in a group), File Upload, Hidden Field, Hyperlink, Image, Image Hyperlink,  Inline Help, Label, Password Field, Radio Button (single, not in a group), Static Text, and Text Field.</p><p>You can tell which property is being set by looking above the top field of the dialog box at the  line of text that says &quot;Current <i>property-name</i> property setting&quot;. The top field itself shows you the current setting for the property, if any. </p><ul class="note">  <li>If you want to bind a different property of the component, close this dialog, and then right-click the component on the page and choose Property Bindings to open the <a href="property_binding_db.html">Property Bindings dialog box</a>. </li></ul><p>To set a binding, first choose the tab that does the kind of binding you want, Bind to Data Provider or Bind to Object.</p><h3>Bind to Data Provider</h3><p>This tab enables you to bind the component property   to a <a href="../../connect_data/howtodata/add_table_to_page.html">database column</a> that you added to the page prior to accessing this dialog box. </p><p>If the displayed data provider is not the one you want to use, select another data provider from the <b>Choose a Data Provider</b> drop down list. If you do not see the data provider listed, you must add a database table, as appropriate for your application. </p><p>When you have selected the data provider you want, the <b>Data Field</b> list is populated with items from the data provider. These items  represent database columns. Select  the item that will control what is displayed in your component. </p><p>When you select a data field item, the dialog box's top entry field is filled in for you with a JavaServer Faces expression that references the item you selected.</p><p>When you are satisfied with your selection, click OK to apply the binding to the component's property. </p><h3>Bind to Object </h3><p>This tab enables you to bind the component property to a JavaBeans property. For example, you might want to bind the component property to a property of SessionBean1 to persist a value across multiple web pages accessed by a single user, or you could bind the component property to a property of ApplicationBean1 to share a value with all users of an application. In the Bind to an Object tab, you can see a tree view of all managed beans and their properties. You  bind to a property by selecting the property and clicking OK. </p><dl>   <dt><a name="seealso">See Also</a></dt>  <dd><a href="../../connect_data/about_data_binding.html">About Binding Components to Data</a></dd>  <dd><a href="../../connect_data/aboutcompdata.html">About Components and Data</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt>  <dd>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Bind to Data Dialog Box: Simple Display Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Bind to Data Dialog Box: Simple Display Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Bind to Data Dialog Box: Simple Display Component</h2>
+<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+
+<p>This dialog box enables you to associate a data provider or object with the default component property that displays information in the component, such as the <code>text</code> property of a Button component or the <code>url</code> property of an Image component. You can create this association if you want to change the appearance of the component at runtime. If the default display property can be used to send a value entered by the user to the server, then binding this property can also save that value on the server. For example, the <code>text</code> property of a Text Field picks up a value entered by the user and can also be used to display a default value to the user. </p>
+<p>The dialog box opens when you right-click and choose Bind to Data with a  Basic or Composite component that has a default property, like the <code>text</code> property of a Button, that displays a single data item,  not a list or table. The  components that open this dialog box include  Alert, Breadcrumbs, Button, Calendar, Checkbox (single, not in a group), File Upload, Hidden Field, Hyperlink, Image, Image Hyperlink,  Inline Help, Label, Password Field, Radio Button (single, not in a group), Static Text, and Text Field.</p>
+<p>You can tell which property is being set by looking above the top field of the dialog box at the  line of text that says &quot;Current <i>property-name</i> property setting&quot;. The top field itself shows you the current setting for the property, if any. </p>
+<ul class="note">
+  <li>If you want to bind a different property of the component, close this dialog, and then right-click the component on the page and choose Property Bindings to open the <a href="property_binding_db.html">Property Bindings dialog box</a>. </li>
+</ul>
+<p>To set a binding, first choose the tab that does the kind of binding you want, Bind to Data Provider or Bind to Object.</p>
+<h3>Bind to Data Provider</h3>
+<p>This tab enables you to bind the component property   to a <a href="../../connect_data/howtodata/add_table_to_page.html">database column</a> that you added to the page prior to accessing this dialog box. </p>
+
+<p>If the displayed data provider is not the one you want to use, select another data provider from the <b>Choose a Data Provider</b> drop down list. If you do not see the data provider listed, you must add a database table, as appropriate for your application. </p>
+
+<p>When you have selected the data provider you want, the <b>Data Field</b> list is populated with items from the data provider. These items  represent database columns. Select  
+the item that will control what is displayed in your component. </p>
+<p>When you select a data field item, the dialog box's top entry field is filled in for you with a JavaServer Faces expression that references the item you selected.</p>
+<p>When you are satisfied with your selection, click OK to apply the binding to the component's property. </p>
+<h3>Bind to Object </h3>
+<p>This tab enables you to bind the component property to a JavaBeans property. For example, you might want to bind the component property to a property of SessionBean1 to persist a value across multiple web pages accessed by a single user, or you could bind the component property to a property of ApplicationBean1 to share a value with all users of an application. In the Bind to an Object tab, you can see a tree view of all managed beans and their properties. You  bind to a property by selecting the property and clicking OK. </p>
+<dl> 
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../../connect_data/about_data_binding.html">About Binding Components to Data</a></dd>
+  <dd><a href="../../connect_data/aboutcompdata.html">About Components and Data</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>  
+<dd>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Bind to Data Dialog Box: Simple Display Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

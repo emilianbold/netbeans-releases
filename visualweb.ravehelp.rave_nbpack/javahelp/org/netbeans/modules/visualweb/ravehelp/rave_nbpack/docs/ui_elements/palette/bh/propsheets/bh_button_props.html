@@ -1,1 +1,189 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Button Component Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Button Component Properties Window </h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p><i></i>You see the Properties window for a Button component <img src="../../../../images/bhbutnicon.gif" alt="Button icon" width="16" height="12">&nbsp;when you select the component on a page that you are editing in the Visual Designer. Most of the component's properties are both JSP attributes and properties of the <code>Button</code> Java component in the page bean.</p><p>This  component has the following properties.</p><h3>General</h3><ul>	<li><b>id.</b><code> Type: String</code><br>		The name of the button component in the page bean and the JSP file. </li></ul><h3>Appearance</h3><ul><li><b>escape.</b><code> Type: boolean</code><br>Indicates that the button label text should be escaped so that it is not interpreted by the browser. Selecting this property causes characters like '&lt;' that can cause problems with XML and HTML to be escaped. For example, with this property selected, '&lt;' is represented as <code>&amp;lt;</code>.</li>	<li><b>imageURL.</b><code> Type: String</code><br>	  The URL or file name for an image to be displayed instead of the standard button image. Click the ellipsis (...) button either to enter a URL or to navigate to the image file.	    <p>If you navigate to a file, select the file and click OK. You see the image displayed on your button. The image file is copied to the project, and you can see it in the  <a href="../../../../ui_elements/project_nav/projectlogical.html">Projects window</a> under <i>project-name</i> &gt; Web Pages &gt; resources. </p>	    <ul>		  <li>If this property is specified, the rendered HTML <code>&lt;input&gt;</code> element's <code>type</code> is <code>image</code> and the button is a submit button that uses the specified image. </li>		  <li>If this property is not specified, the button looks like a standard button, with the <code>type</code> specified in the Button Type property and the button's label (displayed text) specified in the value property.</li>        </ul>	</li>	<li><b>mini.</b><code> Type: String</code><br> 	Changes the appearance of the button, making it smaller than the standard button with the label in a smaller font size. </li>	<li><b>noTextPadding.</b><code> Type: String</code><br> 	No space is added around the label inside the button. </li>  <li><b>primary.</b><code> Type: boolean</code><br>	  Changes the appearance of the button to make it stand out  in a group of standard buttons. You might select this property if the button is the default button in a group of buttons. </li><li><b>style.</b><code> Type: String</code><br>		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p><p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.    <ul class="note">          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>    </ul>	  <p>For a list of CSS2 style attributes, see the web page at<br>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>    </p>  </li>	<li><b>styleClass.</b><code> Type: String</code><br>	  A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.      <ul class="note">        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li><li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.<p>For the <code>defaulttheme.jar</code> CSS style classes for this component, see <a href="bh_button_css.html">Button Component CSS Classes</a>.</p></li>     </ul>  </li>	<li><b>text.</b><code> Type: String</code><br>		The label that appears on the button. You can set the default value as text, or you can bind the value to a data provider or an object if you want the displayed button name updated dynamically. Equivalent to the <code>value</code> attribute of the HTML <code>&lt;input&gt;</code> tag.        <p>If you want the button to be a graphical submit button, you can set the <code>imageURL</code> property to point to an image file. This property is described above.</p>  </li></ul><h3>Events</h3><p>Set the event properties by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; <i>eventname</i>.</p><ul>	<li><b>action.</b> <code> Type: MethodBinding </code><br> Indicates the name of the button method that is called when the user clicks the button. If you enter a method name that doesn't exist in the page bean, such as <code>button1_action</code>, the IDE adds it to the page bean for you and updates the value of the Application Action property to point to that method.		<p>If all you want to do is have the button display another page when the user clicks it, you do not need an action method. The easiest thing to do is open the page in the Navigation Editor, click the page and then click the button, and then drag to the page you want the button to open. See <a href="../../../../multiple_forms/howtomultiforms/set_form_navigation.html">Setting Up Static Page Navigation</a> for more information.</p>		<p>If you want the button to be able to determine which page to open based on certain conditions, then you need an action method. The action method typically processes button clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). You typically define this method by right-clicking the button in the Visual Designer and choosing Edit Event Handler &gt; action. The default name for the method is <i><code>button-id</code></i><code>_action</code>, where <i>button-id</i> is the value of the button's <code>id</code> property. For more information, see <a href="../../../../multiple_forms/howtomultiforms/dynamic_form_navigation.html">Setting Up Dynamic Page Navigation</a>. </p>	</li></ul><h3>Behavior</h3><ul>  <li><b>disabled.</b><code> Type: boolean</code><br>    If selected, indicates that this button should never receive focus or be included in a submit. </li>  <li><b>reset.</b><code> Type: boolean</code><br>If selected, indicates that this button is an HTML reset button. </li>  <li><b>toolTip.</b><code> Type: String </code><br>Sets the HTML <code>title</code> attribute for the button, causing the text value of this property to display if the user hovers the mouse cursor over the button. <ul class="note">  <li>If the component is disabled, the tooltip will not display in most browsers.     </li></ul></li> <li><b>visible.</b><code> Type: boolean</code><br>  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered, the component can still be processed on form submissions, and users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component.     <ul class="note">      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>    </ul></li></ul><h3>Accessibility</h3><ul>  <li><b>alt.</b><code> type: String</code><br>The <code>alt</code> text for the button graphic. The alt text describes the graphic element in the HTML page, is readable by screen readers, can display as a tool tip, and displays when the user has display of images turned off in the web browser. </li>  <li><b>tabIndex.</b><code> Type: String</code><br>Optionally specifies the position of the button in the tab order of the document. Determines when the button will get focus if the user tabs through the document. The value must be an integer between 0 and 32767. Equivalent to the <code>tabindex</code> attribute of the HTML <code>&lt;input&gt;</code> tag.</li></ul><h3>JavaScript</h3><ul>	<li><b>onBlur.</b><code> Type: String</code><br>  JavaScript to be executed when the component loses focus. </li>  <li><b>onClick.</b><code> Type: String</code><br>  JavaScript to be executed when the user clicks the component.</li>	<li><b>onDblClick.</b> <code> Type: String</code><br>  JavaScript to be executed when the user double-clicks the component.</li>	<li><b>onFocus.</b><code> Type: String</code><br>  JavaScript to be executed when the component gains focus. </li>	<li><b>onKeyDown.</b><code> Type: String</code><br>  JavaScript to be executed when the component has focus and a key is pressed. </li>	<li><b>onKeyPress.</b><code> Type: String</code><br>  JavaScript to be executed when the component has focus and a key is pressed and released.</li>	<li><b>onKeyUp.</b><code> Type: String</code><br>  JavaScript to be executed when the component has focus and a key is released.</li>	<li><b>onMouseDown.</b><code> Type: String</code><br>  JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>	<li><b>onMouseMove.</b><code> Type: String</code><br>  JavaScript to be executed when the user moves the mouse cursor within the component.</li>	<li><b>onMouseOut.</b><code> Type: String</code><br>  JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>	<li><b>onMouseOver.</b><code> Type: String</code><br>  JavaScript to be executed when the user moves the mouse cursor onto the component.</li>	<li><b>onMouseUp.</b><code> Type: String</code><br>  JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li></ul><h3>Advanced</h3><ul>	<li><b>actionListener.</b><code> Type: MethodBinding</code><br>	   A method binding representing  an action listener method that is notified when this component is activated by the user. The value must be a valid JSF method binding expression, such as <code>#{Page1.action_method}</code>, and it must evaluate to the name of a public method that takes an <code>ActionEvent</code> parameter with a return type of void. </li>	<li><b>immediate.</b><code> Type: boolean</code><br>		If this property is selected, when the user activates the button, the action handler will be called before validation, updating of model values, and so on. Essentially, code execution happens right away on the server, which then returns the page.A simpler way of getting this functionality is to associate the component with a <a href="../../../../components/aboutvirtualforms.html">virtual form</a>, and then right-click the component and choose Auto-Submit on Change.  	<p>The most common example of an immediate action is a Cancel button. You make it immediate so that the normal validation and update steps can be skipped, but the action handler can still do whatever is necessary. Typically, the action handler will navigate back to some previous page. In some designs the action handler might also enqueue an informational message like &quot;Transaction cancelled&quot;. It is possible to do more: for example, an application might record the fact that the user cancelled the current operation.</p></li>	<li><b>rendered.</b><code> Type: boolean</code><br>		If selected, the button is to be rendered and processed on any subsequent page submission. If not selected, the button doesn't appear on the page at all, not even as a hidden component. You can bind this property to a JavaBeans property that determines when the button does get rendered. For example, an airline reservation form might show a button for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../button.html">Button Component</a></dd>	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">      <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">      <param name="text" value="Understanding Scope and Managed Beans"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Button Component Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Button Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Button Component Properties Window </h2>
+<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+
+<p><i></i>You see the Properties window for a Button component <img src="../../../../images/bhbutnicon.gif" alt="Button icon" width="16" height="12">&nbsp;when you select the component on a page that you are editing in the Visual Designer. Most of the component's properties are both JSP attributes and properties of the <code>Button</code> Java component in the page bean.</p>
+<p>This  component has the following properties.</p>
+
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: String</code><br>
+		The name of the button component in the page bean and the JSP file. </li>
+</ul>
+
+<h3>Appearance</h3>
+<ul><li><b>escape.</b><code> Type: boolean</code><br>
+Indicates that the button label text should be escaped so that it is not interpreted by the browser. Selecting this property causes characters like '&lt;' that can cause problems with XML and HTML to be escaped. For example, with this property selected, '&lt;' is represented as <code>&amp;lt;</code>.</li>
+	<li><b>imageURL.</b><code> Type: String</code><br>
+	  The URL or file name for an image to be displayed instead of the standard button image. Click the ellipsis (...) button either to enter a URL or to navigate to the image file.
+	    <p>If you navigate to a file, select the file and click OK. You see the image displayed on your button. The image file is copied to the project, and you can see it in the  <a href="../../../../ui_elements/project_nav/projectlogical.html">Projects window</a> under <i>project-name</i> &gt; Web Pages &gt; resources. </p>
+	    <ul>
+		  <li>If this property is specified, the rendered HTML <code>&lt;input&gt;</code> element's <code>type</code> is <code>image</code> and the button is a submit button that uses the specified image. </li>
+		  <li>If this property is not specified, the button looks like a standard button, with the <code>type</code> specified in the Button Type property and the button's label (displayed text) specified in the value property.</li>
+        </ul>
+	</li>
+	<li><b>mini.</b><code> Type: String</code><br> 
+	Changes the appearance of the button, making it smaller than the standard button with the label in a smaller font size. </li>
+	<li><b>noTextPadding.</b><code> Type: String</code><br> 
+	No space is added around the label inside the button. </li>
+  <li><b>primary.</b><code> Type: boolean</code><br>
+	  Changes the appearance of the button to make it stand out  in a group of standard buttons. You might select this property if the button is the default button in a group of buttons. </li>
+
+<li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:
+		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p>
+<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.
+    <ul class="note">
+          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
+    </ul>
+
+	  <p>For a list of CSS2 style attributes, see the web page at<br>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>
+    </p>
+  </li>
+	<li><b>styleClass.</b><code> Type: String</code><br>
+	  A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
+      <ul class="note">
+        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
+<li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.
+<p>For the
+ <code>defaulttheme.jar</code> CSS style classes for this component, see <a href="bh_button_css.html">Button Component CSS Classes</a>.</p>
+</li>
+     </ul>
+  </li>
+	<li><b>text.</b><code> Type: String</code><br>
+		The label that appears on the button. You can set the default value as text, or you can bind the value to a data provider or an object if you want the displayed button name updated dynamically. Equivalent to the <code>value</code> attribute of the HTML <code>&lt;input&gt;</code> tag.
+        <p>If you want the button to be a graphical submit button, you can set the <code>imageURL</code> property to point to an image file. This property is described above.</p>
+  </li>
+</ul>
+
+<h3>Events</h3>
+<p>Set the event properties by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; <i>eventname</i>.</p>
+<ul>
+	<li><b>action.</b> <code> Type: MethodBinding </code><br>
+ Indicates the name of the button method that is called when the user clicks the button. If you enter a method name that doesn't exist in the page bean, such as <code>button1_action</code>, the IDE adds it to the page bean for you and updates the value of the Application Action property to point to that method.
+		<p>If all you want to do is have the button display another page when the user clicks it, you do not need an action method. The easiest thing to do is open the page in the Navigation Editor, click the page and then click the button, and then drag to the page you want the button to open. See <a href="../../../../multiple_forms/howtomultiforms/set_form_navigation.html">Setting Up Static Page Navigation</a> for more information.</p>
+		<p>If you want the button to be able to determine which page to open based on certain conditions, then you need an action method. The action method typically processes button clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). You typically define this method by right-clicking the button in the Visual Designer and choosing Edit Event Handler &gt; action. The default name for the method is <i><code>button-id</code></i><code>_action</code>, where <i>button-id</i> is the value of the button's <code>id</code> property. For more information, see <a href="../../../../multiple_forms/howtomultiforms/dynamic_form_navigation.html">Setting Up Dynamic Page Navigation</a>. </p>
+	</li>
+</ul>
+
+<h3>Behavior</h3>
+<ul>
+  <li><b>disabled.</b><code> Type: boolean</code><br>
+    If selected, indicates that this button should never receive focus or be included in a submit. </li>
+  <li><b>reset.</b><code> Type: boolean</code><br>
+If selected, indicates that this button is an HTML reset button. </li>
+  <li><b>toolTip.</b><code> Type: String </code><br>
+Sets the HTML <code>title</code> attribute for the button, causing the text value of this property to display if the user hovers the mouse cursor over the button. 
+<ul class="note">
+  <li>If the component is disabled, the tooltip will not display in most browsers. 
+    </li>
+</ul>
+</li>
+ <li><b>visible.</b><code> Type: boolean</code><br>
+  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered, the component can still be processed on form submissions, and users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component. 
+    <ul class="note">
+      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>
+    </ul>
+</li>
+</ul>
+<h3>Accessibility</h3>
+<ul>
+  <li><b>alt.</b><code> type: String</code><br>
+The <code>alt</code> text for the button graphic. The alt text describes the graphic element in the HTML page, is readable by screen readers, can display as a tool tip, and displays when the user has display of images turned off in the web browser. </li>
+  <li><b>tabIndex.</b><code> Type: String</code><br>
+Optionally specifies the position of the button in the tab order of the document. Determines when the button will get focus if the user tabs through the document. The value must be an integer between 0 and 32767. Equivalent to the <code>tabindex</code> attribute of the HTML <code>&lt;input&gt;</code> tag.</li>
+</ul>
+<h3>JavaScript</h3>
+<ul>
+	<li><b>onBlur.</b><code> Type: String</code><br>
+  JavaScript to be executed when the component loses focus. </li>
+  <li><b>onClick.</b><code> Type: String</code><br>
+  JavaScript to be executed when the user clicks the component.</li>
+	<li><b>onDblClick.</b> <code> Type: String</code><br>
+  JavaScript to be executed when the user double-clicks the component.</li>
+	<li><b>onFocus.</b><code> Type: String</code><br>
+  JavaScript to be executed when the component gains focus. </li>
+	<li><b>onKeyDown.</b><code> Type: String</code><br>
+  JavaScript to be executed when the component has focus and a key is pressed. </li>
+	<li><b>onKeyPress.</b><code> Type: String</code><br>
+  JavaScript to be executed when the component has focus and a key is pressed and released.</li>
+	<li><b>onKeyUp.</b><code> Type: String</code><br>
+  JavaScript to be executed when the component has focus and a key is released.</li>
+	<li><b>onMouseDown.</b><code> Type: String</code><br>
+  JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>
+	<li><b>onMouseMove.</b><code> Type: String</code><br>
+  JavaScript to be executed when the user moves the mouse cursor within the component.</li>
+	<li><b>onMouseOut.</b><code> Type: String</code><br>
+  JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>
+	<li><b>onMouseOver.</b><code> Type: String</code><br>
+  JavaScript to be executed when the user moves the mouse cursor onto the component.</li>
+	<li><b>onMouseUp.</b><code> Type: String</code><br>
+  JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li>
+</ul>
+
+<h3>Advanced</h3>
+<ul>
+	<li><b>actionListener.</b><code> Type: MethodBinding</code><br>
+	   A method binding representing  an action listener method that is notified when this component is activated by the user. The value must be a valid JSF method binding expression, such as <code>#{Page1.action_method}</code>, and it must evaluate to the name of a public method that takes an <code>ActionEvent</code> parameter with a return type of void. </li>
+	<li><b>immediate.</b><code> Type: boolean</code><br>
+		If this property is selected, when the user activates the button, the action handler will be called before validation, updating of model values, and so on. Essentially, code execution happens right away on the server, which then returns the page.
+A simpler way of getting this functionality is to associate the component with a <a href="../../../../components/aboutvirtualforms.html">virtual form</a>, and then right-click the component and choose Auto-Submit on Change.  	
+<p>The most common example of an immediate action is a Cancel button. You make it immediate so that the normal validation and update steps can be skipped, but the action handler can still do whatever is necessary. Typically, the action handler will navigate back to some previous page. In some designs the action handler might also enqueue an informational message like &quot;Transaction cancelled&quot;. It is possible to do more: for example, an application might record the fact that the user cancelled the current operation.</p></li>
+	<li><b>rendered.</b><code> Type: boolean</code><br>
+		If selected, the button is to be rendered and processed on any subsequent page submission. If not selected, the button doesn't appear on the page at all, not even as a hidden component. You can bind this property to a JavaBeans property that determines when the button does get rendered. For example, an airline reservation form might show a button for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../button.html">Button Component</a></dd>
+	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+
+<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">
+      <param name="text" value="Understanding Scope and Managed Beans"></object>
+</dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Button Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

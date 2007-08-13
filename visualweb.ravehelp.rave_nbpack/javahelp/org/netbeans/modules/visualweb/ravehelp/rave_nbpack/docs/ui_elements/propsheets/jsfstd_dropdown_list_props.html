@@ -1,1 +1,183 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Standard Dropdown List Component Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Standard Dropdown List Component Properties Window</h2><p><small><a href="#seealso">See Also</a></small></p><p>You see the Properties window for a JavaServer Faces Dropdown List Component <img src="../../images/dropdownicon.gif" alt="dropdown list icon">&nbsp;when you select the component on a page that you are editing in the Visual Designer.</p><p>This component has the following properties.</p><h3>General</h3><ul>	<li><b>disabledClass.</b> <code>Type: String</code><br>  A CSS style class defined in the page's style sheet or in its <code>&lt;head&gt;</code> section that is to be applied to disabled options in the list.</li>	<li><b>enabledClass.</b> <code>Type: String</code><br>  A CSS style class defined in the page's style sheet or in its <code>&lt;head&gt;</code> section that is to be applied to enabled options in the list.</li>	<li><b>id.</b><code> Type: text</code><br>		The name of the component in the page bean and the JSP file. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>HtmlSelectOneMenu</code> object.</li></ul><h3>Appearance</h3><ul>	<li><b>disabled.</b><code> Type: boolean</code><br>		If selected, indicates that this component should never receive focus or be included in a submit. See the note under the readonly property concerning the effects of using the disabled property versus the effects of using the readonly property.</li>	<li><b>readonly.</b><code> Type: boolean</code><br>		If the property is selected, the Dropdown List cannot be changed by the user, but the selected value will be submitted.		<ul class="note">			<li>A readonly field is included when the page is submitted, in contrast to a disabled field, which is not. In nearly every case where you might think that you should use the disabled property to disallow the user from changing the value, you should be using the readonly property instead. If you use the disabled property, JavaServer Faces does not detect that any value at all was submitted.</li>		</ul></li>	<li><b>style.</b><code> Type: String</code><br>		Cascading Style Sheet rules (CSS level 2) to be applied to the component. This property overrides any settings in the project CSS file. For example: 		<p><code>position: absolute; left: 288px; top: 312px</code></p>		<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../propeditors/style_prop_ed_main.html">Style Editor</a>.</p>		<p>For a list of CSS2 style attributes, see the web page at<br>		<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">		<param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object></p></li>	<li><b>styleClass.</b><code> Type: String</code><br>		A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet.   If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../editors/about_css_editor.html">CSS Editor</a>.</li>	<li><b>title.</b><code> Type: String</code><br>		Advisory title information about the component, which is readable by a screen reader and can be displayed as a tool tip.  <ul class="note">  <li>If the component is disabled, the tooltip will not display in most browsers.     </li></ul></li></ul><h3>Data</h3><ul>	<li><b>converter.</b><code> Type: Converter</code><br>A JavaServer Faces converter that produces the correct type of value for the value property. If the user enters the wrong type of value, such as a word instead of a number for an <a href="../palette/jsf-val-conv/integer_converter.html">Integer converter</a>, the converter sends a message that you can display in an <a href="../palette/jsfstd/inline_message.html">Inline Message component</a>.</li>	<li><b>required.</b><code> Type: boolean</code><br>		If selected, the user is required to provide a value for the component. </li>	<li><b>validator.</b><code> Type: MethodBinding</code><br>Indicates the JavaServer Faces validator that is called when the value is submitted. Choose a validator from the drop down list. If you choose <code>(null)</code>, no validator is called. If the conditions defined by the validator are not met, the validator sends a message that you can display in an <a href="../palette/jsfstd/inline_message.html">Inline Message component</a>.<p> If you choose a validator, you can also select the <code>required</code> property to ensure that the validator receives a value.</p><ul class="note">  <li>If you define your own validate method, for example, by right-clicking the component and choosing Edit Event Handler &gt; validate, any validator you might have specified in this property is overridden by your validation method's name.</li></ul>	</li>	<li><b>value.</b><code> Type: Object</code><br>		Picks up the currently selected list element and sends it to the server when the page is submitted. This property does not control the display of list items. The list that displays in the component is controlled by the <code>dropdownSelectItems</code> part of the component, which you typically set by right-clicking the component in the Visual Designer and choosing either Bind List Items to Database or Property Bindings.</li></ul><h3>Events</h3><p>Set the event properties by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; <i>eventname</i>.</p><ul><li><b>validate.</b> Indicates the name of the method that is called to validate the value of the component. If you want to code a validator method rather than choosing a JavaServer Faces validator for the <code>validator</code> property, right-click the component and choose Edit Event Handler &gt; validate. The default name for the method is <code><i>component-id</i>_validate</code>, where <i>component-id</i> is the value of the component's <code>id</code> property. When you define this method in this way, the <code>validator</code> and <code>validate</code> properties are automatically set for you. If you define a validator, also select the <code>required</code> property to ensure that the validator is used.    <ul class="note">      <li>Setting this property also sets the value of the <code>validator</code> property. If you define your own validate method, do not separately change the value of the <code>validator</code> property, or you could lose the connection to your validate method.</li>    </ul></li>  <li><b>valueChange.</b> Indicates the name of the component value change listener method that is called when the value of the component changes. If this method is not defined, the value of this property is <code>null</code>. You typically define this method in the page bean by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; processValueChange. The default name for the method is <code><i>component-id</i>_processValueChange</code>, where <i>component-id</i> is the value of the component's <code>id</code> property.</li></ul><h3>JavaScript</h3><ul>	<li><b>onblur.</b><code> Type: String</code><br>		JavaScript to be executed when the component loses focus. </li>	<li><b>onchange.</b><code> Type: String</code><br>		JavaScript to be executed when the component loses focus and its value was modified after it gained focus. </li>	<li><b>onclick.</b><code> Type: String</code><br>		JavaScript to be executed when the user clicks the component.</li>	<li><b>ondblclick.</b> <code> Type: String</code><br>		JavaScript to be executed when the user double-clicks the component.</li>	<li><b>onfocus.</b><code> Type: String</code><br>		JavaScript to be executed when the component gains focus. </li>	<li><b>onkeydown.</b><code> Type: String</code><br>		JavaScript to be executed when the component has focus and a key is pressed. </li>	<li><b>onkeypress.</b><code> Type: String</code><br>		JavaScript to be executed when the component has focus and a key is pressed and released.</li>	<li><b>onkeyup.</b><code> Type: String</code><br>		JavaScript to be executed when the component has focus and a key is released.</li>	<li><b>onmousedown.</b><code> Type: String</code><br>		JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>	<li><b>onmousemove.</b><code> Type: String</code><br>		JavaScript to be executed when the user moves the mouse cursor within the component.</li>	<li><b>onmouseout.</b><code> Type: String</code><br>		JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>	<li><b>onmouseover.</b><code> Type: String</code><br>		JavaScript to be executed when the user moves the mouse cursor onto the component.</li>	<li><b>onmouseup.</b><code> Type: String</code><br>		JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li>	<li><b>onselect.</b><code> Type: String</code><br>		JavaScript to be executed when the user selects text in the component.</li></ul><h3>Advanced</h3><ul>	<li><b>accesskey.</b><code> Type: String</code><br>		A keyboard key, or keyboard shortcut, that activates this component. You can enter any valid character that can be pressed on the keyboard. Equivalent to the <code>accesskey</code> attribute of the HTML <code>&lt;input&gt;</code> tag.</li>	<li><b>dir.</b><code> Type: String</code><br>		An indicator of the directionality if the text does not inherit directionality (for example, because the text is English but the primary language for the page is Hebrew). Equivalent to the <code>dir</code> attribute of the HTML <code>&lt;input&gt;</code> tag.		<p>Values can be: </p>		<ul>			<li><b>LTR.</b> Left-to-right.</li>			<li><b>RTL.</b> Right-to-left.</li>		</ul></li>	<li><b>immediate.</b><code> Type: boolean</code><br>		If this property is selected, when the user activates the component, the code in the page bean is executed before the validation, updating of model values, and so on. Essentially, code execution happens right away on the server, which then returns the page.		<p>The most common example of an immediate action is a Cancel button. You make it immediate so that the normal validation and update steps can be skipped, but the action handler can still do whatever is necessary. Typically, the action handler will navigate back to some previous page. In some designs the action handler might also enqueue an informational message like &quot;Transaction cancelled&quot;. It is possible to do more: for example, an application might record the fact that the user got partially through a form and then cancelled it.</p></li>	<li><b>lang.</b><code> Type: String</code><br>		Code describing the language used in the generated markup for the component. Equivalent to the <code>lang</code> attribute of the HTML <code>&lt;input&gt;</code> tag. To choose a language code, you can click the ellipsis button (...) to open the property editor. Some examples:		<ul>			<li><code>ar</code> - Traditional Arabic</li>			<li><code>de</code> - German</li><li><code>en</code> - English</li><li><code>es</code> - Spanish</li>			<li><code>fr</code> - French</li>			<li><code>ja</code> - Japanese </li>		</ul>		<p>In addition to the codes available in the property editor, you can also enter additional codes using ISO standard names. Some examples:</p>		<ul>			<li><code>en-US</code> - United States English</li>			<li><code>ja-JP</code> - Japanese</li>			<li><code>zh-guoyu</code> - Mandarin or Standard Chinese </li>			<li><code>zh-Hans</code> - Simplified Chinese script</li>			<li><code>zh-HanT</code> - Traditional Chinese script</li>		</ul></li>	<li><b>rendered.</b><code> Type: boolean</code><br>		If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component.		<p>You can bind this property to a variable that determines when the component does get rendered. For example, an airline reservation form might show a component for frequent flyers and not show it for the general public. To bind this property, right-click the component in the Visual Designer and choose Property Bindings, and then select the All radio button to display all properties.</p></li>	<li><b>tabindex.</b><code> Type: String</code><br>		Optionally specifies the position of the component in the tab order of the document, determining when the component will get focus if the user tabs through the document. The value must be an integer between 0 and 32767. Equivalent to the <code>tabindex</code> attribute of the HTML <code>&lt;input&gt;</code> tag.</li>	<li><b>valueChangeListener.</b><code> Type: MethodBinding</code><br>		See the Event section's valueChange property above, which provides an easier way to set this property's value. The valueChangeListener property is the <code>MethodBinding</code> property that underlies the valueChange event property. The valueChangeListener property is updated when you set the method for the valueChange event property.		<p>If you click the ellipsis button next to the valueChange property, you can use that property's property editor to choose an existing method to bind to, or you can create a new method or unbind an existing method. If you are an expert, instead of using the valueChange property, you can type a <code>MethodBinding</code> expression directly into this valueChangeListener property, for example, if you want to call a method that is not in the page bean.</p></li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../palette/jsfstd/dropdown_list.html">Standard Dropdown List Component</a></dd>	<dd><a href="../../connect_data/howtodata/binding_data_2_list_component.html">Binding a List Component to a Database</a></dd>	<dd><a href="../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Dropdown List Component Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Standard Dropdown List Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Standard Dropdown List Component Properties Window</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>You see the Properties window for a JavaServer Faces Dropdown List Component <img src="../../images/dropdownicon.gif" alt="dropdown list icon">&nbsp;when you select the component on a page that you are editing in the Visual Designer. </p>
+<p>This component has the following properties.</p>
+
+<h3>General</h3>
+<ul>
+	<li><b>disabledClass.</b> <code>Type: String</code><br>
+  A CSS style class defined in the page's style sheet or in its <code>&lt;head&gt;</code> section that is to be applied to disabled options in the list.</li>
+	<li><b>enabledClass.</b> <code>Type: String</code><br>
+  A CSS style class defined in the page's style sheet or in its <code>&lt;head&gt;</code> section that is to be applied to enabled options in the list.</li>
+	<li><b>id.</b><code> Type: text</code><br>
+		The name of the component in the page bean and the JSP file. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>HtmlSelectOneMenu</code> object.</li>
+</ul>
+
+<h3>Appearance</h3>
+<ul>
+	<li><b>disabled.</b><code> Type: boolean</code><br>
+		If selected, indicates that this component should never receive focus or be included in a submit. See the note under the readonly property concerning the effects of using the disabled property versus the effects of using the readonly property.</li>
+	<li><b>readonly.</b><code> Type: boolean</code><br>
+		If the property is selected, the Dropdown List cannot be changed by the user, but the selected value will be submitted.
+		<ul class="note">
+			<li>A readonly field is included when the page is submitted, in contrast to a disabled field, which is not. In nearly every case where you might think that you should use the disabled property to disallow the user from changing the value, you should be using the readonly property instead. If you use the disabled property, JavaServer Faces does not detect that any value at all was submitted.</li>
+		</ul></li>
+	<li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the component. This property overrides any settings in the project CSS file. For example: 
+		<p><code>position: absolute; left: 288px; top: 312px</code></p>
+		<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../propeditors/style_prop_ed_main.html">Style Editor</a>.</p>
+		<p>For a list of CSS2 style attributes, see the web page at<br>
+		<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+		<param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object></p></li>
+	<li><b>styleClass.</b><code> Type: String</code><br>
+		A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet.   If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../editors/about_css_editor.html">CSS Editor</a>.</li>
+	<li><b>title.</b><code> Type: String</code><br>
+		Advisory title information about the component, which is readable by a screen reader and can be displayed as a tool tip.
+  <ul class="note">
+  <li>If the component is disabled, the tooltip will not display in most browsers. 
+    </li>
+</ul>
+
+</li>
+</ul>
+
+<h3>Data</h3>
+<ul>
+	<li><b>converter.</b><code> Type: Converter</code><br>
+A JavaServer Faces converter that produces the correct type of value for the value property. If the user enters the wrong type of value, such as a word instead of a number for an <a href="../palette/jsf-val-conv/integer_converter.html">Integer converter</a>, the converter sends a message that you can display in an <a href="../palette/jsfstd/inline_message.html">Inline Message component</a>.</li>
+	<li><b>required.</b><code> Type: boolean</code><br>
+		If selected, the user is required to provide a value for the component. </li>
+	<li><b>validator.</b><code> Type: MethodBinding</code><br>
+Indicates the JavaServer Faces validator that is called when the value is submitted. Choose a validator from the drop down list. If you choose <code>(null)</code>, no validator is called. If the conditions defined by the validator are not met, the validator sends a message that you can display in an <a href="../palette/jsfstd/inline_message.html">Inline Message component</a>.
+<p> If you choose a validator, you can also select the <code>required</code> property to ensure that the validator receives a value.</p>
+<ul class="note">
+  <li>If you define your own validate method, for example, by right-clicking the component and choosing Edit Event Handler &gt; validate, any validator you might have specified in this property is overridden by your validation method's name.</li>
+</ul>
+	</li>
+	<li><b>value.</b><code> Type: Object</code><br>
+		Picks up the currently selected list element and sends it to the server when the page is submitted. This property does not control the display of list items. The list that displays in the component is controlled by the <code>dropdownSelectItems</code> part of the component, which you typically set by right-clicking the component in the Visual Designer and choosing either Bind List Items to Database or Property Bindings.</li>
+</ul>
+
+<h3>Events</h3>
+<p>Set the event properties by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; <i>eventname</i>.</p>
+<ul><li><b>validate.</b> Indicates the name of the method that is called to validate the value of the component. If you want to code a validator method rather than choosing a JavaServer Faces validator for the <code>validator</code> property, right-click the component and choose Edit Event Handler &gt; validate. The default name for the method is <code><i>component-id</i>_validate</code>, where <i>component-id</i> is the value of the component's <code>id</code> property. When you define this method in this way, the <code>validator</code> and <code>validate</code> properties are automatically set for you. If you define a validator, also select the <code>required</code> property to ensure that the validator is used.
+    <ul class="note">
+      <li>Setting this property also sets the value of the <code>validator</code> property. If you define your own validate method, do not separately change the value of the <code>validator</code> property, or you could lose the connection to your validate method.</li>
+    </ul>
+</li>
+  <li><b>valueChange.</b> Indicates the name of the component value change listener method that is called when the value of the component changes. If this method is not defined, the value of this property is <code>null</code>. You typically define this method in the page bean by right-clicking the component in the Visual Designer and choosing Edit Event Handler &gt; processValueChange. The default name for the method is <code><i>component-id</i>_processValueChange</code>, where <i>component-id</i> is the value of the component's <code>id</code> property.</li>
+</ul>
+
+<h3>JavaScript</h3>
+<ul>
+	<li><b>onblur.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component loses focus. </li>
+	<li><b>onchange.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component loses focus and its value was modified after it gained focus. </li>
+	<li><b>onclick.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user clicks the component.</li>
+	<li><b>ondblclick.</b> <code> Type: String</code><br>
+		JavaScript to be executed when the user double-clicks the component.</li>
+	<li><b>onfocus.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component gains focus. </li>
+	<li><b>onkeydown.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component has focus and a key is pressed. </li>
+	<li><b>onkeypress.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component has focus and a key is pressed and released.</li>
+	<li><b>onkeyup.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component has focus and a key is released.</li>
+	<li><b>onmousedown.</b><code> Type: String</code><br>
+		JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>
+	<li><b>onmousemove.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user moves the mouse cursor within the component.</li>
+	<li><b>onmouseout.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>
+	<li><b>onmouseover.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user moves the mouse cursor onto the component.</li>
+	<li><b>onmouseup.</b><code> Type: String</code><br>
+		JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li>
+	<li><b>onselect.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user selects text in the component.</li>
+</ul>
+
+<h3>Advanced</h3>
+<ul>
+	<li><b>accesskey.</b><code> Type: String</code><br>
+		A keyboard key, or keyboard shortcut, that activates this component. You can enter any valid character that can be pressed on the keyboard. Equivalent to the <code>accesskey</code> attribute of the HTML <code>&lt;input&gt;</code> tag.</li>
+	<li><b>dir.</b><code> Type: String</code><br>
+		An indicator of the directionality if the text does not inherit directionality (for example, because the text is English but the primary language for the page is Hebrew). Equivalent to the <code>dir</code> attribute of the HTML <code>&lt;input&gt;</code> tag.
+		<p>Values can be: </p>
+		<ul>
+			<li><b>LTR.</b> Left-to-right.</li>
+			<li><b>RTL.</b> Right-to-left.</li>
+		</ul></li>
+	<li><b>immediate.</b><code> Type: boolean</code><br>
+		If this property is selected, when the user activates the component, the code in the page bean is executed before the validation, updating of model values, and so on. Essentially, code execution happens right away on the server, which then returns the page.
+		<p>The most common example of an immediate action is a Cancel button. You make it immediate so that the normal validation and update steps can be skipped, but the action handler can still do whatever is necessary. Typically, the action handler will navigate back to some previous page. In some designs the action handler might also enqueue an informational message like &quot;Transaction cancelled&quot;. It is possible to do more: for example, an application might record the fact that the user got partially through a form and then cancelled it.</p></li>
+	<li><b>lang.</b><code> Type: String</code><br>
+		Code describing the language used in the generated markup for the component. Equivalent to the <code>lang</code> attribute of the HTML <code>&lt;input&gt;</code> tag. To choose a language code, you can click the ellipsis button (...) to open the property editor. Some examples:
+		<ul>
+			<li><code>ar</code> - Traditional Arabic</li>
+			<li><code>de</code> - German</li><li><code>en</code> - English</li>
+<li><code>es</code> - Spanish</li>
+			<li><code>fr</code> - French</li>
+			<li><code>ja</code> - Japanese </li>
+		</ul>
+		<p>In addition to the codes available in the property editor, you can also enter additional codes using ISO standard names. Some examples:</p>
+		<ul>
+			<li><code>en-US</code> - United States English</li>
+			<li><code>ja-JP</code> - Japanese</li>
+			<li><code>zh-guoyu</code> - Mandarin or Standard Chinese </li>
+			<li><code>zh-Hans</code> - Simplified Chinese script</li>
+			<li><code>zh-HanT</code> - Traditional Chinese script</li>
+		</ul></li>
+	<li><b>rendered.</b><code> Type: boolean</code><br>
+		If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component.
+		<p>You can bind this property to a variable that determines when the component does get rendered. For example, an airline reservation form might show a component for frequent flyers and not show it for the general public. To bind this property, right-click the component in the Visual Designer and choose Property Bindings, and then select the All radio button to display all properties.</p></li>
+	<li><b>tabindex.</b><code> Type: String</code><br>
+		Optionally specifies the position of the component in the tab order of the document, determining when the component will get focus if the user tabs through the document. The value must be an integer between 0 and 32767. Equivalent to the <code>tabindex</code> attribute of the HTML <code>&lt;input&gt;</code> tag.</li>
+	<li><b>valueChangeListener.</b><code> Type: MethodBinding</code><br>
+		See the Event section's valueChange property above, which provides an easier way to set this property's value. The valueChangeListener property is the <code>MethodBinding</code> property that underlies the valueChange event property. The valueChangeListener property is updated when you set the method for the valueChange event property.
+		<p>If you click the ellipsis button next to the valueChange property, you can use that property's property editor to choose an existing method to bind to, or you can create a new method or unbind an existing method. If you are an expert, instead of using the valueChange property, you can type a <code>MethodBinding</code> expression directly into this valueChangeListener property, for example, if you want to call a method that is not in the page bean.</p></li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../palette/jsfstd/dropdown_list.html">Standard Dropdown List Component</a></dd>
+	<dd><a href="../../connect_data/howtodata/binding_data_2_list_component.html">Binding a List Component to a Database</a></dd>
+	<dd><a href="../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Dropdown List Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

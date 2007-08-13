@@ -1,1 +1,73 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>About Pages</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>About Pages</h2><p><small><a href="#seealso">See Also</a></small></p><p>A web application is made up of pages. A page consists of presentation elements and programming logic.</p><ul>  <li><b>Presentation elements (JSP Page).</b> The presentation     of a page is the definition of how it will appear when rendered in HTML. The presentation is coded in a JSP page. This page is the interface displayed to     the user and can include  components and static     text. The JSP page is stored in a <code>.jsp</code> file and is     called a page. </li>  <!--This topic needs work. Talk to Jim? -->  <li> <b>Programming logic (Java Class).</b>   The programming and business logic for your page is written in the Java language and is   typically stored in a <code>.java</code> file called a page bean. This file can include   event handling and initialization logic for the page. By default, the programming and   business logic are in a single Java file.</li></ul><p>The IDE automatically keeps the JSP page and the Java code in the page bean synchronized. For example, if you make a change in the page bean's <code>.java</code> file, the change is reflected in the page's <code>.jsp</code> file.</p><p>The following illustration shows the parts of a page: </p><p><img src="../images/webform.gif" alt="Figure showing that Page1.jsp and Page1.java compose a complete web page"> </p><h3>Viewing and Managing Pages <a name="edit_form"></a></h3><p>You can edit the visual representation of the page in the followingways:</p><ul>  <li><b>In  Design view</b>. When the IDE creates a new page, the Visual    Designer opens in  Design view. Drag components to the page in     Design view and work with them visually.</li>  <li><b>In JSP  view</b>. At the top of the Visual Designer, click the    JSP button to view or edit the JSP source file for the page. The IDE generates the JSP code and maintains it as you make changes to component properties in Design view. Unless you want to perform an advanced function not supported by the Visual Designer, it is not likely that you will need to edit the JSP page directly. </li></ul>For a page that is open the in the Visual designer, you can edit the page bean, the Java class that determines the page's behavior, as follows:<ul><li>Click the Java button at the top of the Visual Designer  to open the page bean in the <a href="nbdocs:/org/netbeans/modules/usersguide/editing/csh/about_source_editor.html">Java  Editor</a>. </li></ul><dl>   <dt><a name="seealso">See Also</a></dt>  <dd><a href="../web/about/webapps_quickref.html">Web Application  Tasks: Quick Reference</a></dd>  <dd><a href="../multiple_forms/howtomultiforms/multiforms_quickref.html">Page Navigation Tasks: Quick Reference</a></dd>  <dd><a href="howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>  <dd><a href="../ui_elements/editors/about_visual_editor.html">About the Visual Designer</a></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20About Pages">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>About Pages</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>About Pages</h2>
+<p><small><a href="#seealso">See Also</a> </small></p>
+<p>A web application is made up of pages. A page consists of presentation elements 
+and programming logic.</p>
+<ul>
+  <li><b>Presentation elements (JSP Page).</b> The presentation 
+    of a page is the definition of how it will appear when rendered in HTML. The presentation is coded in a JSP page. This page is the interface displayed to 
+    the user and can include  components and static 
+    text. The JSP page is stored in a <code>.jsp</code> file and is 
+    called a page. </li>
+  <!--This topic needs work. Talk to Jim? -->
+  <li> <b>Programming logic (Java Class).</b> 
+  The programming and business logic for your page is written in the Java language and is 
+  typically stored in a <code>.java</code> file called a page bean. This file can include 
+  event handling and initialization logic for the page. By default, the programming and 
+  business logic are in a single Java file.</li>
+</ul>
+<p>The IDE automatically keeps the JSP page and the Java code in the page bean synchronized. For example, if you 
+make a change in the page bean's <code>.java</code> file, the change is reflected in the page's <code>.jsp</code> file.</p>
+<p>The following illustration shows the parts of a page: </p>
+<p><img src="../images/webform.gif" alt="Figure showing that Page1.jsp and Page1.java compose a complete web page"> </p>
+<h3>Viewing and Managing Pages <a name="edit_form"></a></h3>
+<p>You can edit the visual representation of the page in the following
+ways:</p>
+<ul>
+  <li><b>In  Design view</b>. When the IDE creates a new page, the Visual
+    Designer opens in  Design view. Drag components to the page in 
+    Design view and work with them visually.</li>
+  <li><b>In JSP  view</b>. At the top of the Visual Designer, click the
+    JSP button to view or edit the JSP source file for the page. The IDE generates the JSP code and maintains it as you make changes to component properties in Design view. Unless you want to perform an advanced function not supported by the Visual Designer, it is not likely that you will need to edit the JSP page directly. </li>
+</ul>
+For a page that is open the in the Visual designer, you can edit the page bean, the Java class that determines the page's behavior, as follows:
+<ul>
+<li>Click the Java button at the top of the Visual Designer  to open the page bean in the <a href="nbdocs:/org/netbeans/modules/usersguide/editing/csh/about_source_editor.html">Java
+  Editor</a>. </li>
+</ul>
+<dl> 
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../web/about/webapps_quickref.html">Web Application  Tasks: Quick Reference</a></dd>
+  <dd><a href="../multiple_forms/howtomultiforms/multiforms_quickref.html">Page Navigation Tasks: Quick Reference</a></dd>
+  <dd><a href="howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+  <dd><a href="../ui_elements/editors/about_visual_editor.html">About the Visual Designer</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20About Pages">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

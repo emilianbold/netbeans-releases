@@ -1,1 +1,99 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Standard Output Text Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Standard Output Text Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You can drag the Standard JavaServer Faces Output Text component <img src="../../../images/outputtexticon.gif" alt="output text icon">&nbsp;from   the Palette to the Visual Designer to provide instructions, titles,   headings, and similar text information for your pages. </p><ul class="warning">  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/static_text.html">Static Text  component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li></ul><p>Use this     Standard component rather than the Standard <a href="component_label.html">Component     Label</a> component for simple text areas like headings and     information. The Standard Component Label component is used for attaching     a label to a component, like a text entry field (Text Field     component) or a checkbox.</p><p>After dragging the component to the Visual Designer, you can do a number of things   with it:</p><ul>  <li>Change the displayed text of the component by selecting the the component    and typing the new text. Press Enter to save the text in the component's    value property.    <ul class="note">      <li>The label <code>Text</code> initially displayed for this component             is a placeholder that goes away when the component is rendered.             If you want a default label to appear in your application,             you must add one either by typing in the component, editing             the value property, or binding the component to a database           or object that supplies the default value.</li>    </ul>  </li>  <li>Select the component and edit its properties in the Output     Text <a href="../../propsheets/jsfstd_output_text_props.html">Properties window</a>. Some typical properties you might set are:     <ul>      <li><b>id.</b> The name of the Output Text component.         In the JSP file, this name is the value of the component's         <code>id</code> attribute. In the page bean, this property's         value is the name of the <code>HtmlOutputText</code> object.</li>      <li><b>value.</b> The text that displays on the page.</li>      <li><b>converter.</b> A JavaServer Faces converter         that produces the correct type of value for the value         property.       </li>    </ul>  </li>  <li>Right-click the Output Text component and choose one of     the following options:    <ul>      <li><b>Bind to Data. </b>Opens a dialog box that enables you to bind the component's <code>value</code> property to a data provider or an object so your application can evaluate it when the page is submitted. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>.</li>      <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind the properties of the component to other objects or properties that supply data for the values of this component's properties.</li>      </ul>  </li></ul><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>    <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Output Text Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Standard Output Text Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Standard Output Text Component</h2>
+<p><small><a href="#seealso">See Also | Tutorials  </a></small><small><a href="#tutorials"></a></small></p>
+<p>You can drag the Standard JavaServer Faces Output Text component <img src="../../../images/outputtexticon.gif" alt="output text icon">&nbsp;from 
+  the Palette to the Visual Designer to provide instructions, titles, 
+  headings, and similar text information for your pages.</p>
+<ul class="warning">
+  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/static_text.html">Static Text  component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li>
+</ul>
+<p>Use this 
+    Standard component rather than the Standard <a href="component_label.html">Component 
+    Label</a> component for simple text areas like headings and 
+    information. The Standard Component Label component is used for attaching 
+    a label to a component, like a text entry field (Text Field 
+    component) or a checkbox.</p>
+<p>After dragging the component to the Visual Designer, you can do a number of things 
+  with it:</p>
+<ul>
+  <li>Change the displayed text of the component by selecting the the component
+    and typing the new text. Press Enter to save the text in the component's
+    value property.
+    <ul class="note">
+      <li>The label <code>Text</code> initially displayed for this component 
+            is a placeholder that goes away when the component is rendered. 
+            If you want a default label to appear in your application, 
+            you must add one either by typing in the component, editing 
+            the value property, or binding the component to a database 
+          or object that supplies the default value.</li>
+    </ul>
+  </li>
+  <li>Select the component and edit its properties in the Output 
+    Text <a href="../../propsheets/jsfstd_output_text_props.html">Properties window</a>. Some typical properties you might set are: 
+    <ul>
+      <li><b>id.</b> The name of the Output Text component. 
+        In the JSP file, this name is the value of the component's 
+        <code>id</code> attribute. In the page bean, this property's 
+        value is the name of the <code>HtmlOutputText</code> object.</li>
+      <li><b>value.</b> The text that displays on the page.</li>
+      <li><b>converter.</b> A JavaServer Faces converter 
+        that produces the correct type of value for the value 
+        property. 
+      </li>
+    </ul>
+  </li>
+  <li>Right-click the Output Text component and choose one of 
+    the following options:
+    <ul>
+      <li><b>Bind to Data. </b>Opens a dialog box that enables you to bind the component's <code>value</code> property to a data provider or an object so your application can evaluate it when the page is submitted. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>.</li>
+      <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind the properties of the component to other objects or properties that supply data for the values of this component's properties.</li>
+      </ul>
+  </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+  
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Output Text Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

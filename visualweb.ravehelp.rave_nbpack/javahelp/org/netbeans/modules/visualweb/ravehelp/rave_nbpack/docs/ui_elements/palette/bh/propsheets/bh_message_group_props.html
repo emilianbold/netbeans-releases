@@ -1,1 +1,158 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Message Group Component Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Message Group Component Properties Window </h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You see the Properties window for a  Message Group component <img src="../../../../images/bh_msg_group_icon.gif" alt="message group icon" width="16" height="14">&nbsp;when you select the component on a page that you are editing in the Visual Designer.</p><p>This  component has the following properties.</p><h3>General</h3><ul>	<li><b>id.</b><code> Type: String</code><br>		The name of the Message Group component in the page bean and the JSP file. </li></ul><h3>Appearance</h3><ul>	<li><b>showDetail.</b><code> Type: boolean</code><br>		Indicates if the detail portion of the message should be displayed. This property is false (unselected) by default.</li>	<li><b>showSummary.</b><code> Type: boolean</code><br>		Indicates if the summary portion of the message should be displayed. This property is true (selected) by default.</li><li><b>style.</b><code> Type: String</code><br>		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p><p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.	        <ul class="note">          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>	        </ul>	  <p>For a list of CSS2 style attributes, see the web page at<br>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>        </p>  </li>	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.      <ul class="note">        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>             <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.                <p>The defaulttheme CSS style classes for this component are: </p>                                  <pre><b><font size="-1">css_master.css</font></b><font size="-1">.MsgFldSumTxt {color:#C00;font-weight:bold}.MsgFldTxt {color:#C00}<br>.MsgGrpTbl    {border-left:solid 1px #C00;    border-right:solid 1px #C00;    border-bottom:solid 1px #C00;    border-top:none}<br>.MsgGrpTbl td    {background-color:#FAEDED;    padding: 4px 10px 4px 10px}<br>.MsgGrpTblTtl    {color:#000;background-color:#FAEDED;    border-top:solid 1px #C00;    border-left:solid 1px #C00;    border-right:solid 1px #C00;    text-align:left;    font-weight:bold;    padding:8px 10px 0px;    margin-top:15px;    font-size:14px}<br>.MsgGrpDiv ul    {color:#C00;    list-style-type:square;    padding:0px 10px 0px 18px;    margin:6px 0px}<br>.MsgGrpSumTxt {color:#000}<br>.MsgGrpTxt    {color:#333;display:block;    padding-bottom:3px}<br>.MsgGrpDiv {margin:0px}<br>.MsgGrpSumTxt    {display:block;font-weight:normal;    padding-bottom:2px}<br>.MsgInfo {color: black;}<br>.MsgWarn {color: orange;font-weight: bold;}<br>.MsgError {color: red;font-weight: bold;}<br>.MsgFatal    {color: red;font-style: italic;    font-weight: bold;}<br>.MsgGrpInfo {color: black;}<br>.MsgGrpWarn {color: orange;font-weight: bold;}<br>.MsgGrpError {color: red;font-weight: bold;}<br>.MsgGrpFatal    {color: red;font-style: italic;    font-weight: bold;}</font><font size="-1"><b>css_ie55up.css</b>/* ADDITIONAL CSS FOR IE5.5+ SUPPORT */.MsgGrpTbl {margin-top:15px}<br>.MsgGrpTbl td {padding: 4px 10px 10px 10px}<br>.MsgGrpTblTtl {margin-top:0px}<br>.MsgGrpDiv ul {padding:5px 3px 10px 18px;margin:0px}<br>.MsgGrpDiv ul li {padding:3px;margin-bottom:-12px}<br>.MsgGrpSumTxt {padding-bottom:1px}</font></pre>                        </li>     </ul>  </li></ul><h3>Behavior</h3><ul>    <li><b>showGlobalOnly.</b><code> Type: boolean</code><br>Indicates if global messages, messages not associated with any component, are the only messages to be displayed. By default, this property is false (not selected), and all messages from all components on the page are displayed.</li>    <li><b>tooltip.</b><code> Type: String</code><br>	    Information about the component that is readable by a screen reader and can be displayed as a tool tip.  <ul class="note">  <li>If the component is disabled, the tooltip will not display in most browsers.     </li></ul></li><li><b>visible.</b><code> Type: boolean</code><br>  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered, users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component.     <ul class="note">      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>    </ul></li></ul><h3>Advanced</h3><ul><li><b>rendered.</b><code> Type: boolean</code><br>	If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component doesn't appear on the page at all, not even as a hidden component.	<p>You can bind this property to a JavaBeans property that determines when the component does get rendered. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p></li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../message_group.html">Message Group Component</a></dd>	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">      <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">      <param name="text" value="Understanding Scope and Managed Beans"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Message Group Component Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Message Group Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Message Group Component Properties Window </h2>
+<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+
+<p>You see the Properties window for a  Message Group component <img src="../../../../images/bh_msg_group_icon.gif" alt="message group icon" width="16" height="14">&nbsp;when you select the component on a page that you are editing in the Visual Designer.</p>
+<p>This  component has the following properties.</p>
+
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: String</code><br>
+		The name of the Message Group component in the page bean and the JSP file. </li>
+</ul>
+
+<h3>Appearance</h3>
+<ul>
+	<li><b>showDetail.</b><code> Type: boolean</code><br>
+		Indicates if the detail portion of the message should be displayed. This property is false (unselected) by default.</li>
+	<li><b>showSummary.</b><code> Type: boolean</code><br>
+		Indicates if the summary portion of the message should be displayed. This property is true (selected) by default.</li>
+
+<li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:
+		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p>
+<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.
+    <ul class="note">
+          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
+    </ul>
+
+	  <p>For a list of CSS2 style attributes, see the web page at<br>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>
+    </p>
+  </li>
+	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
+      <ul class="note">
+        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
+             <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.
+                <p>The defaulttheme CSS style classes for this component are: </p>
+                
+                  <pre><b><font size="-1">css_master.css</font></b>
+<font size="-1">.MsgFldSumTxt {color:#C00;font-weight:bold}
+.MsgFldTxt {color:#C00}<br>.MsgGrpTbl 
+   {border-left:solid 1px #C00;
+    border-right:solid 1px #C00;
+    border-bottom:solid 1px #C00;
+    border-top:none}<br>.MsgGrpTbl td 
+   {background-color:#FAEDED;
+    padding: 4px 10px 4px 10px}<br>.MsgGrpTblTtl 
+   {color:#000;background-color:#FAEDED;
+    border-top:solid 1px #C00;
+    border-left:solid 1px #C00;
+    border-right:solid 1px #C00;
+    text-align:left;
+    font-weight:bold;
+    padding:8px 10px 0px;
+    margin-top:15px;
+    font-size:14px}<br>.MsgGrpDiv ul 
+   {color:#C00;
+    list-style-type:square;
+    padding:0px 10px 0px 18px;
+    margin:6px 0px}<br>.MsgGrpSumTxt {color:#000}<br>.MsgGrpTxt 
+   {color:#333;display:block;
+    padding-bottom:3px}<br>.MsgGrpDiv {margin:0px}<br>.MsgGrpSumTxt 
+   {display:block;font-weight:normal;
+    padding-bottom:2px}<br>.MsgInfo {color: black;}<br>.MsgWarn {color: orange;font-weight: bold;}<br>.MsgError {color: red;font-weight: bold;}<br>.MsgFatal 
+   {color: red;font-style: italic;
+    font-weight: bold;}<br>.MsgGrpInfo {color: black;}<br>.MsgGrpWarn {color: orange;font-weight: bold;}<br>.MsgGrpError {color: red;font-weight: bold;}<br>.MsgGrpFatal 
+   {color: red;font-style: italic;
+    font-weight: bold;}</font>
+
+<font size="-1"><b>css_ie55up.css</b>
+/* ADDITIONAL CSS FOR IE5.5+ SUPPORT */
+.MsgGrpTbl {margin-top:15px}<br>.MsgGrpTbl td {padding: 4px 10px 10px 10px}<br>.MsgGrpTblTtl {margin-top:0px}<br>.MsgGrpDiv ul {padding:5px 3px 10px 18px;margin:0px}<br>.MsgGrpDiv ul li {padding:3px;margin-bottom:-12px}<br>.MsgGrpSumTxt {padding-bottom:1px}</font></pre>
+                
+        </li>
+     </ul>
+  </li>
+</ul>
+
+<h3>Behavior</h3>
+<ul>
+    <li><b>showGlobalOnly.</b><code> Type: boolean</code><br>
+Indicates if global messages, messages not associated with any component, are the only messages to be displayed. By default, this property is false (not selected), and all messages from all components on the page are displayed.</li>
+    <li><b>tooltip.</b><code> Type: String</code><br>
+	    Information about the component that is readable by a screen reader and can be displayed as a tool tip.
+  <ul class="note">
+  <li>If the component is disabled, the tooltip will not display in most browsers. 
+    </li>
+</ul>
+</li>
+<li><b>visible.</b><code> Type: boolean</code><br>
+  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered, users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component. 
+    <ul class="note">
+      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>
+    </ul>
+</li>
+</ul>
+<h3>Advanced</h3>
+<ul>
+
+<li><b>rendered.</b><code> Type: boolean</code><br>
+	If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component doesn't appear on the page at all, not even as a hidden component.
+	<p>You can bind this property to a JavaBeans property that determines when the component does get rendered. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>
+</li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../message_group.html">Message Group Component</a></dd>
+	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+
+<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/kb/55/vwp-scopes.html">
+      <param name="text" value="Understanding Scope and Managed Beans"></object>
+</dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Message Group Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

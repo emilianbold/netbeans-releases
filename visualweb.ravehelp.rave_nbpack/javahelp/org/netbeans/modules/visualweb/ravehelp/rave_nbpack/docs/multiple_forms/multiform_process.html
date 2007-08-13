@@ -1,1 +1,84 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Working With  Multiple Pages</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Working With  Multiple Pages</h2>The following table shows how to connect multiple pages using the Page Flow editor. To open the Page Flow editor, right-click in the Visual Designer and choose Page Navigation. The table assumes that the page that you navigate from is called the source page. The page that you navigate to is called the destination page.<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each process step. The right column contains detail information to accomplish that process.">    <tr valign="top">     <td align="center"><p><img src="../images/circle1.gif" alt="Number one"><br>          <b>Create  pages and components </b></p>    </td>    <td>       <ul>        <li>If the destination page is already created, skip to the next step. Otherwise, in the 		Page Flow editor, right-click and choose New Page to 	    <a href="howtomultiforms/create_form.html">create the destination page</a>. </li>	  </ul>   </td>  </tr>    <tr>     <td colspan="2">       <hr align="center" width="80%">    </td>  </tr>  <tr valign="top">    <td align="center"><p><img src="../images/circle2.gif" alt="Number two"><br>          <b>Connect source and destination pages </b></p>    </td>    <td>      <ol>        <li>In the Page Flow editor, click the source page to display its components.</li>        <li>In the source page, click the component that triggers the navigation and drag the connector to the destination page. </li>    </ol></td>  </tr>  <tr>     <td colspan="2">       <hr align="center" width="80%">    </td>  </tr>  <tr valign="top">    <td align="center"><p><img src="../images/circle3.gif" alt="Number three"><br>        <b>(Optional)<br>        Connect source with multiple destinations</b></p>    </td>    <td>      <ol>        <li>In the Page Flow editor, click the source page to display its components.</li>        <li>Drag a new connector from the source page to each destination page. </li>        <li>Right-click the component that triggers the navigation and choose <a href="howtomultiforms/dynamic_form_navigation.html">Decide Case With Code</a>  to open the Java Editor with the cursor moved to the action method for the component.</li>        <li>In the Java Editor, set the <code>return</code> statement of the action method to a connector name. </li>      </ol>    </td>  </tr></table><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Working With  Multiple Pages">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Working With  Multiple Pages</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Working With  Multiple Pages</h2>
+
+The following table shows how to connect multiple pages using the Page Flow editor. To open the Page Flow editor, right-click in the Visual Designer and choose Page Navigation. The table assumes that the page that you navigate from is 
+called the source page. The page that you navigate to is called the destination page.
+<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each process step. The right column contains detail information to accomplish that process.">
+  
+  <tr valign="top"> 
+    <td align="center"><p><img src="../images/circle1.gif" alt="Number one"><br>
+          <b>Create  pages and components </b></p>
+    </td>
+    <td> 
+      <ul>
+        <li>If the destination page is already created, skip to the next step. Otherwise, in the 
+		Page Flow editor, right-click and choose New Page to 
+	    <a href="howtomultiforms/create_form.html">create the destination page</a>. </li>
+	  </ul>   </td>
+  </tr>
+  
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top">
+    <td align="center"><p><img src="../images/circle2.gif" alt="Number two"><br>
+          <b>Connect source and destination pages </b></p>
+    </td>
+    <td>
+      <ol>
+        <li>In the Page Flow editor, click the source page to display its components.</li>
+        <li>In the source page, click the component that triggers the navigation and drag the connector to the destination page. </li>
+    </ol></td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top">
+    <td align="center"><p><img src="../images/circle3.gif" alt="Number three"><br>
+        <b>(Optional)<br>
+        Connect source with multiple destinations</b></p>
+    </td>
+    <td>
+      <ol>
+        <li>In the Page Flow editor, click the source page to display its components.</li>
+        <li>Drag a new connector from the source page to each destination page. </li>
+        <li>Right-click the component that triggers the navigation and choose <a href="howtomultiforms/dynamic_form_navigation.html">Decide Case With Code</a>  to open the Java Editor with the cursor moved to the action method for the component.</li>
+        <li>In the Java Editor, set the <code>return</code> statement of the action method to a connector name. </li>
+      </ol>
+    </td>
+  </tr>
+</table>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Working With  Multiple Pages">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

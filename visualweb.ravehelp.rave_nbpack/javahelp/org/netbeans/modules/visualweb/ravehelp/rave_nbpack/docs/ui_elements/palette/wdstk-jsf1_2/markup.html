@@ -1,1 +1,75 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Markup Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Markup Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>The Markup component <img src="../../../images/bh_markup_icon.gif" alt=" Markup component icon"> enables you to insert HTML elements into the JSP page in places that HTML is not permitted by JavaServer Pages coding restrictions.</p>   <ul class="note">      <li>        This component is a JavaServer Faces 1.2 component. You see components that use this        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,        see:<br>         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value=          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>      </li>    </ul><p>When you drop this component on a page in the Visual Designer, you cannot see it on the page until you set the <code>tag</code> property. You can see it in the <a href="../../navigator_win/about_navigator_win.html">Navigator window</a> and you can select it there to edit its properties in the <a href="propsheets/markup_props.html">Properties window</a>. </p><p>Use the <code>tag</code> property to specify the type of HTML element to insert.&nbsp; For instance, to insert an <code>&lt;hr&gt;</code> tag, set the <code>tag</code> property to <code>hr</code> with no angle brackets and select the <code>singleton</code> property .</p><p>To provide compliance with XHTML, if the HTML element you are inserting is a singleton element, you must specify the <code>singleton</code> property, which causes a trailing <code>&nbsp;/&gt;</code> to be generated in the rendered HTML. For example, the&nbsp; <code>&lt;br&gt;</code> element is a singleton element that must be rendered as <code>&lt;br /&gt;</code> to make it XHTML compliant.</p><p>If you want to specify  HTML attributes in addition to <code>id</code> and <code>style</code> for the element you are inserting, use the <code>extraAttributes</code> property.</p><dl>  <dt><a name="seealso">See Also</a></dt>    <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>  <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl>     <dt>         <a name="tutorials">Tutorials</a>      </dt>      <dd>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">          <param name="text" value="Delving Into Components"></object>      </dd><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Markup Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table> </body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Markup Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Markup Component</h2>
+<p><small><a href="#seealso">See Also | Tutorials  </a></small><small><a href="#tutorials"></a></small></p>
+<p>The Markup component <img src="../../../images/bh_markup_icon.gif" alt=" Markup component icon"> enables you to insert HTML elements into the JSP page in places that HTML is not permitted by JavaServer Pages coding restrictions. </p>
+   <ul class="note">
+      <li>
+        This component is a JavaServer Faces 1.2 component. You see components that use this
+        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,
+        see:<br>
+         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value=
+          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">
+          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>
+      </li>
+    </ul>
+
+<p>When you drop this component on a page in the Visual Designer, you cannot see it on the page until you set the <code>tag</code> property. You can see it in the <a href="../../navigator_win/about_navigator_win.html">Navigator window</a> and you can select it there to edit its properties in the <a href="propsheets/markup_props.html">Properties window</a>. </p>
+<p>Use the <code>tag</code> property to specify the type of HTML element to insert.&nbsp; For instance, to insert an <code>&lt;hr&gt;</code> tag, set the <code>tag</code> property to <code>hr</code> with no angle brackets and select the <code>singleton</code> property .</p>
+<p>To provide compliance with XHTML, if the HTML element you are inserting is a singleton element, you must specify the <code>singleton</code> property, which causes a trailing <code>&nbsp;/&gt;</code> to be generated in the rendered HTML. For example, the&nbsp; <code>&lt;br&gt;</code> element is a singleton element that must be rendered as <code>&lt;br /&gt;</code> to make it XHTML compliant.</p>
+<p>If you want to specify  HTML attributes in addition to <code>id</code> and <code>style</code> for the element you are inserting, use the <code>extraAttributes</code> property.</p>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>  
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>     <dt>
+         <a name="tutorials">Tutorials</a>
+      </dt>
+      <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">
+          <param name="text" value="Delving Into Components"></object>
+      </dd>
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Markup Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+</body>
+</html>

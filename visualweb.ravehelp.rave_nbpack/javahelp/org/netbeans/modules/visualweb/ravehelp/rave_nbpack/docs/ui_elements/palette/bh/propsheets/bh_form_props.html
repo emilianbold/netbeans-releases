@@ -1,1 +1,141 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Form Component Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Form Component Properties Window </h2><p><small><a href="#seealso">See Also</a></small></p><p>You see the Properties window for a Form component <img src="../../../../images/bh_form_icon.gif" alt="form component icon">&nbsp;when you select the component in the <a href="../../../navigator_win/about_navigator_win.html">Navigator window</a> after you have added the component to the page.</p><p>The Form component has the following properties.</p><h3>General</h3><ul>	<li><b>id.</b><code> Type: String</code><br>		The name of the Form component in the page bean and the JSP file.</li></ul><h3>Appearance</h3><ul><li><b>style.</b><code> Type: String</code><br>		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p><p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.	        <ul class="note">          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>	        </ul>	  <p>For a list of CSS2 style attributes, see the web page at<br>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>        </p>  </li>	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.      <ul class="note">        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>      </ul>  </li></ul><h3>Behavior</h3><ul>    <li><b>autoComplete.</b><code> Type: boolean</code><br>This property enables the auto-completion feature of the Microsoft Internet Explorer and Firefox browsers. The property is selected by default. If the property is not selected, it disables auto-completion in those browsers.</li>    <li><b>target.</b><code> Type: String</code><br>	    The frame in which the form response should be rendered. If a frame with this name does not exist, the response is rendered in a new window unless overridden by the user. The following frame names have special meaning:        <ul>		    <li><code>_blank</code> - renders the response in a new, unnamed window </li>		    <li><code>_self</code> - renders the response in the current frame</li>		    <li><code>_parent</code> - renders the response in the immediate frameset parent </li>		    <li><code>_top</code> - renders the response in the full, unframed window </li>      </ul>    </li> <li><b>visible.</b><code> Type: boolean</code><br>  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered, the component can still be processed on form submissions, and users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component.     <ul class="note">      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>    </ul></li></ul><h3>JavaScript</h3><ul>	<li><b>onClick.</b><code> Type: String</code><br>		JavaScript to be executed when the user clicks the component.</li>	<li><b>onDblClick.</b> <code> Type: String</code><br>		JavaScript to be executed when the user double-clicks the component.</li>	<li><b>onKeyDown.</b><code> Type: String</code><br>		JavaScript to be executed when the component has focus and a key is pressed. </li>	<li><b>onKeyPress.</b><code> Type: String</code><br>		JavaScript to be executed when the component has focus and a key is pressed and released.</li>	<li><b>onKeyUp.</b><code> Type: String</code><br>		JavaScript to be executed when the component has focus and a key is released.</li>	<li><b>onMouseDown.</b><b></b><code> Type: String</code><br>		JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>	<li><b>onMouseMove.</b><code> Type: String</code><br>		JavaScript to be executed when the user moves the mouse cursor within the component.</li>	<li><b>onMouseOut.</b><code> Type: String</code><br>		JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>	<li><b>onMouseOver.</b><code> Type: String</code><br>		JavaScript to be executed when the user moves the mouse cursor onto the component.</li>	<li><b>onMouseUp.</b><code> Type: String</code><br>		JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li>	<li><b>onReset.</b><code> Type: String</code><br>		JavaScript to be executed when the user resets the form.</li>	<li><b>onSubmit.</b><code> Type: String</code><br>		JavaScript to be executed when the user submits the form.</li></ul><h3>Advanced</h3><ul><li><b>enctype.</b><code> Type: String</code><br>	  The content type used to submit form data to the server. If you click the ellipsis button, you see a dialog box from which you can select media types or add a new media type. You can see a list of registered media types at:<br>	  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.iana.org/assignments/media-types/">		<param name="text" value="http://www.iana.org/assignments/media-types/"></object>	  <p>The default media type for a form is <code>application/x-www-form-urlencoded</code>. In this media type, the form field names and values are escaped as follows:</p>	  <ul>		  <li>Space characters are replaced by '+'.</li>		  <li>Reserved characters are escaped by using a percent sign and two hexadecimal digits to represent the ASCII code of the character.</li>		  <li>Fields are listed in the order in which they appear in the form. The name is separated from the value with an equals sign (=) and each field name is prefaced by an ampersand (&amp;). Fields with null values, like unselected radio buttons and checkboxes, might be omitted. Hidden fields with value attributes present are included.</li>	  </ul></li>	<li><b>internalVirtualForms.</b><code> Type: Form$VirtualFormDescriptor</code><br>		The virtual forms used internally to components in the form, such as a table component. Component authors can manipulate this set of virtual forms independently of the set exposed to developers. This set is consulted only after consulting the set exposed to developers. To indicate descendants, use <code>:*</code> after the component ID. For example, <code>tabel1:*</code> indicates all descendants of the <code>table1</code> component. </li>	<li><b>rendered.</b><code> Type: boolean</code><br>	    If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component, and its Output Text component does not appear either. If this property is not selected (false), it overrides the rendered property of its child component.        <p>You can bind this property to a JavaBeans property that determines when the component gets rendered. For example, an airline reservation form might show a Form for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>  </li>    <li><b>virtualFormsConfig.</b><code> Type: String</code><br>The configuration of the <a href="../../../../components/aboutvirtualforms.html">virtual forms</a> in this form. Each virtual form is represented as a <code>String</code> and is described by three parts, separated with pipe (|) characters: the virtual form name, a space-separated list of component ids that participate in the virtual form, and a space-separated list of component ids that submit the virtual form. Multiple virtual forms are separated by commas. </li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../form.html">Form Component</a></dd>	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Form Component Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Form Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Form Component Properties Window </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>You see the Properties window for a Form component <img src="../../../../images/bh_form_icon.gif" alt="form component icon">&nbsp;when you select the component in the <a href="../../../navigator_win/about_navigator_win.html">Navigator window</a> after you have added the component to the page.</p>
+<p>The Form component has the following properties.</p>
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: String</code><br>
+		The name of the Form component in the page bean and the JSP file.</li>
+</ul>
+
+<h3>Appearance</h3>
+<ul><li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:
+		    <p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p>
+<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.
+	        <ul class="note">
+          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
+	        </ul>
+
+	  <p>For a list of CSS2 style attributes, see the web page at<br>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>
+        </p>
+  </li>
+	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
+      <ul class="note">
+        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
+      </ul>
+  </li>
+
+</ul>
+
+<h3>Behavior</h3>
+<ul>
+    <li><b>autoComplete.</b><code> Type: boolean</code><br>
+This property enables the auto-completion feature of the Microsoft Internet Explorer and Firefox browsers. The property is selected by default. If the property is not selected, it disables auto-completion in those browsers.</li>
+    <li><b>target.</b><code> Type: String</code><br>
+	    The frame in which the form response should be rendered. If a frame with this name does not exist, the response is rendered in a new window unless overridden by the user. The following frame names have special meaning:
+        <ul>
+		    <li><code>_blank</code> - renders the response in a new, unnamed window </li>
+		    <li><code>_self</code> - renders the response in the current frame</li>
+		    <li><code>_parent</code> - renders the response in the immediate frameset parent </li>
+		    <li><code>_top</code> - renders the response in the full, unframed window </li>
+      </ul>
+    </li>
+ <li><b>visible.</b><code> Type: boolean</code><br>
+  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered, the component can still be processed on form submissions, and users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component. 
+    <ul class="note">
+      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>
+    </ul>
+</li>
+</ul>
+<h3>JavaScript</h3>
+<ul>
+	<li><b>onClick.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user clicks the component.</li>
+	<li><b>onDblClick.</b> <code> Type: String</code><br>
+		JavaScript to be executed when the user double-clicks the component.</li>
+	<li><b>onKeyDown.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component has focus and a key is pressed. </li>
+	<li><b>onKeyPress.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component has focus and a key is pressed and released.</li>
+	<li><b>onKeyUp.</b><code> Type: String</code><br>
+		JavaScript to be executed when the component has focus and a key is released.</li>
+	<li><b>onMouseDown.</b><b></b><code> Type: String</code><br>
+		JavaScript to be executed when the mouse cursor is over the component and the user presses down on the mouse button.</li>
+	<li><b>onMouseMove.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user moves the mouse cursor within the component.</li>
+	<li><b>onMouseOut.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user moves the mouse cursor away from the component after it has been over the component.</li>
+	<li><b>onMouseOver.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user moves the mouse cursor onto the component.</li>
+	<li><b>onMouseUp.</b><code> Type: String</code><br>
+		JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li>
+	<li><b>onReset.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user resets the form.</li>
+	<li><b>onSubmit.</b><code> Type: String</code><br>
+		JavaScript to be executed when the user submits the form.</li>
+</ul>
+
+<h3>Advanced</h3>
+<ul><li><b>enctype.</b><code> Type: String</code><br>
+	  The content type used to submit form data to the server. If you click the ellipsis button, you see a dialog box from which you can select media types or add a new media type. You can see a list of registered media types at:<br>
+	  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.iana.org/assignments/media-types/">
+		<param name="text" value="http://www.iana.org/assignments/media-types/"></object>
+	  <p>The default media type for a form is <code>application/x-www-form-urlencoded</code>. In this media type, the form field names and values are escaped as follows:</p>
+	  <ul>
+		  <li>Space characters are replaced by '+'.</li>
+		  <li>Reserved characters are escaped by using a percent sign and two hexadecimal digits to represent the ASCII code of the character.</li>
+		  <li>Fields are listed in the order in which they appear in the form. The name is separated from the value with an equals sign (=) and each field name is prefaced by an ampersand (&amp;). Fields with null values, like unselected radio buttons and checkboxes, might be omitted. Hidden fields with value attributes present are included.</li>
+	  </ul></li>
+	<li><b>internalVirtualForms.</b><code> Type: Form$VirtualFormDescriptor</code><br>
+		The virtual forms used internally to components in the form, such as a table component. Component authors can manipulate this set of virtual forms independently of the set exposed to developers. This set is consulted only after consulting the set exposed to developers. To indicate descendants, use <code>:*</code> after the component ID. For example, <code>tabel1:*</code> indicates all descendants of the <code>table1</code> component. </li>
+	<li><b>rendered.</b><code> Type: boolean</code><br>
+	    If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component, and its Output Text component does not appear either. If this property is not selected (false), it overrides the rendered property of its child component.
+        <p>You can bind this property to a JavaBeans property that determines when the component gets rendered. For example, an airline reservation form might show a Form for frequent flyers and not show it for the general public. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>
+  </li>
+    <li><b>virtualFormsConfig.</b><code> Type: String</code><br>
+The configuration of the <a href="../../../../components/aboutvirtualforms.html">virtual forms</a> in this form. Each virtual form is represented as a <code>String</code> and is described by three parts, separated with pipe (|) characters: the virtual form name, a space-separated list of component ids that participate in the virtual form, and a space-separated list of component ids that submit the virtual form. Multiple virtual forms are separated by commas. </li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../form.html">Form Component</a></dd>
+	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Form Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

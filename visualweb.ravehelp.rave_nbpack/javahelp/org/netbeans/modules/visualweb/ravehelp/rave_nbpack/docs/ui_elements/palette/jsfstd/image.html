@@ -1,1 +1,95 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Standard Image Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Standard Image Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You can drag the Standard JavaServer Faces Image component <img src="../../../images/graphicimageicon.gif" alt="output text icon">&nbsp;from   the Palette to the Visual Designer to add an image, such as a   JPEG or GIF file, to a page. When you drop the image on your   page in the Visual Designer, you see a dialog box that you can use   either to locate the image file in your filesystem or to enter   a URL (if you click the URL tab at the top). If you navigate   to an image file and click OK, the image file is copied to the   project, and you can see it in the  <a href="../../project_nav/projectlogical.html">Projects window</a> under <i>project-name</i> &gt; Web Pages &gt; resources.</p><ul class="warning">  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/image.html">Image component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li></ul><p>After dragging the component to the Visual Designer, you can do a number of things   with it:</p><ul>  <li>Drag the component to another location on the page.</li>  <li>Select the component and edit its properties in the Image     <a href="../../propsheets/jsfstd_image_props.html">Properties window</a>. If necessary, right-click the component and choose     Properties to display the <a href="../../propsheets/propsheet_win.html">Properties window</a>. Some typical properties     you might set are:     <ul>      <li><b>id.</b> The name of the Image component. In the         JSP file, this name is the value of the component's <code>id</code>         attribute. In the page bean, this property's value is         the name of the <code>HtmlGraphicImage</code> object.</li>      <li><b>alt.</b> The alternate text for the image. The alt         text describes the graphic element in the HTML page, is         readable by screen readers, can display as a tool tip,         and displays when the user has display of images turned         off in the web browser. Same as the HTML attribute <code>alt</code>         of the <code>&lt;img&gt;</code> tag.</li>      <li><b>value.</b> The  path to the image file, such         as <code>/resources/image-file.gif</code>, or a URL that points         to an image, such as         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer"><param name="content" value="http://forum.java.sun.com/im/logo_java_grey.gif"><param name="text" value="http://forum.java.sun.com/im/logo_java_grey.gif"></object>.</li>    </ul>  </li>  <li>Right-click the Image component and choose one of     the following options:     <ul>      <li><b>Bind to Data. </b>Dynamically set the image that is displayed. You can bind the component's <code>value</code> property to an object or a data provider, as described in the topic <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>      <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>value</code> property to other objects or bean properties that update this component's properties automatically.</li>      </ul>  </li></ul><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>    <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Image Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Standard Image Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Standard Image Component</h2>
+<p><small><a href="#seealso">See Also | Tutorials  </a></small><small><a href="#tutorials"></a></small></p>
+<p>You can drag the Standard JavaServer Faces Image component <img src="../../../images/graphicimageicon.gif" alt="output text icon">&nbsp;from 
+  the Palette to the Visual Designer to add an image, such as a 
+  JPEG or GIF file, to a page. When you drop the image on your 
+  page in the Visual Designer, you see a dialog box that you can use 
+  either to locate the image file in your filesystem or to enter 
+  a URL (if you click the URL tab at the top). If you navigate 
+  to an image file and click OK, the image file is copied to the 
+  project, and you can see it in the  <a href="../../project_nav/projectlogical.html">Projects window</a> under <i>project-name</i> &gt; Web Pages &gt; resources. </p>
+<ul class="warning">
+  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/image.html">Image component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li>
+</ul>
+<p>After dragging the component to the Visual Designer, you can do a number of things 
+  with it:</p>
+<ul>
+  <li>Drag the component to another location on the page.</li>
+  <li>Select the component and edit its properties in the Image 
+    <a href="../../propsheets/jsfstd_image_props.html">Properties window</a>. If necessary, right-click the component and choose 
+    Properties to display the <a href="../../propsheets/propsheet_win.html">Properties window</a>. Some typical properties 
+    you might set are: 
+    <ul>
+      <li><b>id.</b> The name of the Image component. In the 
+        JSP file, this name is the value of the component's <code>id</code> 
+        attribute. In the page bean, this property's value is 
+        the name of the <code>HtmlGraphicImage</code> object.</li>
+      <li><b>alt.</b> The alternate text for the image. The alt 
+        text describes the graphic element in the HTML page, is 
+        readable by screen readers, can display as a tool tip, 
+        and displays when the user has display of images turned 
+        off in the web browser. Same as the HTML attribute <code>alt</code> 
+        of the <code>&lt;img&gt;</code> tag.</li>
+      <li><b>value.</b> The  path to the image file, such 
+        as <code>/resources/image-file.gif</code>, or a URL that points 
+        to an image, such as 
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://forum.java.sun.com/im/logo_java_grey.gif">
+<param name="text" value="http://forum.java.sun.com/im/logo_java_grey.gif"></object>.</li>
+    </ul>
+  </li>
+  <li>Right-click the Image component and choose one of 
+    the following options: 
+    <ul>
+      <li><b>Bind to Data. </b>Dynamically set the image that is displayed. You can bind the component's <code>value</code> property to an object or a data provider, as described in the topic <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>
+      <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>value</code> property to other objects or bean properties that update this component's properties automatically.</li>
+      </ul>
+  </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+    <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Image Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

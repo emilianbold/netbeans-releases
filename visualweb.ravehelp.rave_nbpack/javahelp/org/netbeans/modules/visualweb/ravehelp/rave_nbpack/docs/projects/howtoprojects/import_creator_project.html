@@ -1,1 +1,118 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Importing a Java Studio Creator Project</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Importing a Java Studio Creator Project</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You can import an existing project from Java Studio  Creator 2 , Java Studio  Creator 2 Update 1, or NetBeans Visual Web Pack 5.5 for use in NetBeans 6.0. If the project uses a data source, the IDE configures a data connection and shows it under the Drivers node <img src="../../images/drivers_node.gif" alt="Drivers node"> in the   <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../../ui_elements/server_nav/runtime_nav_driver_node_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="400,300"><param name="text" value="Services window."></object>  &nbsp;  You can simplify connecting to a Java DB database by installing and  <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">registering</a> an instance of the <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/aboutplugin.html">Sun Java<sup><small>TM</small></sup> System Application Server  9.1</a> on  your system. For more information about   supported servers and how to install them  in the NetBeans IDE,  see   <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="content" value="http://www.netbeans.org/community/releases/55/1/vwp-install.html#configinfo"><param name="text" value="Installation Instructions."></object></p><ul class="note">  <li>If you do not have the target server set correctly, the IDE prompts you to do so. Right-click the project in the Projects window and choose Resolve Missing Server Problem.</li></ul><b>To import a Java Studio Creator 2 or Visual Web Pack project:</b><ol>  <li>In the main toolbar, choose File &gt; Open Project and browse for the  project that you want to import.    </li><li>Click Open Project Folder to open the project in the IDE. <p>The IDE scans the project classpath.</p></li><li>In the Services Window, expand the Databases node <img src="../../images/databasenodeicon.gif" alt="database node icon">, and then right-click the node of the database you want to use and choose Connect.   <p>The IDE prompts you to enter a password for the database.</p></li>   <li>In the Projects window, the project node is red and displays a badge <img src="../../images/MigrationBadge.gif"> when there is a missing server and/or data source problem. To resolve missing server problems, right-click the node and chose Resolve Missing Serrver Problems. </li><li>If there are unresolved data sources, a red broken badge <img src="../../images/data_src_ref_node.gif" alt="data source reference node icon with broken badge">  is displayed on the Data Source References node.To resolve a data source,  right-click the Data Source References node and choose Update data Sources and click OK. </li><li>In the Resolve Data Source(s) dialog box, select the database name from the list and click Add Data Connection.<p>The <a href="../../ui_elements/dialogs/add_database_conn_db.html">Add Database Connection</a> dialog box opens.</p> <ul class="note">    <li>If the project you are importing uses a Java DB database, go to step 14.</li>  </ul>  <li>To add a new server type, in the Server Type drop down list, select Add Server Type.<p>The <a href="../../ui_elements/dialogs/edit_database_svr_types_db.html">Edit Database Server Types</a> dialog box opens</p></li>  <li>Click New and browse for the database driver JAR file. <p>The driver JAR file then appears in the JDBC Driver Jar File(s) pane. </p></li><li>If nothing appears in the Driver Class Name field, click Suggest.<p>The IDE suggests the best possible driver class name for the driver.</p></li><li>If nothing appears in the URL Template field, type the URL template for the database connection. Follow the example that is provided.    <ul class="note">    <li>For Java DB databases, the URL should look like this:        <code>jdbc:derby://localhost:1527/travel</code>.</li>    </ul>  </li>  <li>Click Close. <p>The Add Data Connection dialog box opens.</p></li>	            <li>Select the server type from the drop down list. </li>      <li>Enter a User ID and a Password.<ul class="note">        <li>For Java DB databases, the password is the same as the User ID. For example, for the Travel sample database the user name is <code>travel</code> and the password is <code>travel</code>. </li>      </ul><p></p></li>      <li>Enter the Database URL and click  Add to add the Data Source.</li>     </ol><ul class="note">  <li>For a database other than Java DB, if you plan to run the project on Sun Java<sup><small>TM</small></sup> System Application Server 9.1, you must copy the database driver libraries to the server's <code>lib</code> directory prior to running the project. Also, you must ensure that the port numbers used by the project match the port numbers required by your installation of Sun Application Server 9.1.</li></ul><dl><dt><a name="seealso">See Also</a></dt><dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/db/docs/connectdb.html">Adding a Database Connection</a></dd><dd><a href="../../connect_data/working_with_databases.html">Working with Databases with Visual Web Applications</a></dd><dd><a href="../../connect_data/howtodata/data_quickref.html">Visual Web Database Tasks: Quick Reference</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">      <param name="content" value="http://www.netbeans.org/kb/55/vwp-databoundcomponents.html">      <param name="text" value="Using Databound Components to Access a Database"></object></dd><dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">      <param name="content" value="http://www.netbeans.org/kb/55/using-netbeans/dbconn.html">      <param name="text" value="Connecting to Databases"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Importing a Java Studio Creator Project">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Importing a Java Studio Creator Project</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+<h2>Importing a Java Studio Creator Project</h2>
+<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+<p>You can import an existing project from Java Studio  Creator 2 , Java Studio  Creator 2 Update 1, or NetBeans Visual Web Pack 5.5 for use in NetBeans 6.0. If the project uses a data source, the IDE configures a data connection and shows it under the Drivers node <img src="../../images/drivers_node.gif" alt="Drivers node"> in the 
+  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../ui_elements/server_nav/runtime_nav_driver_node_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,300">
+<param name="text" value="Services window."></object>
+  &nbsp;
+  You can simplify connecting to a Java DB database by installing and  <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">registering</a> an instance of the <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/aboutplugin.html">Sun Java<sup><small>TM</small></sup> System Application Server  9.1</a> on  your system. For more information about   supported servers and how to install them  in the NetBeans IDE,  see 
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/community/releases/55/1/vwp-install.html#configinfo">
+<param name="text" value="Installation Instructions."></object></p>
+<ul class="note">
+  <li>If you do not have the target server set correctly, the IDE prompts you to do so. Right-click the project in the Projects window and choose Resolve Missing Server Problem.</li>
+</ul>
+<b>To import a Java Studio Creator 2 or Visual Web Pack project:</b>
+<ol>
+  <li>In the main toolbar, choose File &gt; Open Project and browse for the  project that you want to import.    </li>
+
+<li>Click Open Project Folder to open the project in the IDE. 
+<p>The IDE scans the project classpath.</p></li>
+
+<li>In the Services Window, expand the Databases node <img src="../../images/databasenodeicon.gif" alt="database node icon">, and then right-click the node of the database you want to use and choose Connect. 
+  <p>The IDE prompts you to enter a password for the database.</p>
+</li>
+   
+<li>In the Projects window, the project node is red and displays a badge <img src="../../images/MigrationBadge.gif"> when there is a missing server and/or data source problem. To resolve missing server problems, right-click the node and chose Resolve Missing Serrver Problems. </li>
+<li>If there are unresolved data sources, a red broken badge <img src="../../images/data_src_ref_node.gif" alt="data source reference node icon with broken badge">  is displayed on the Data Source References node.
+To resolve a data source,  right-click the Data Source References node and choose Update data Sources and click OK. </li>
+<li>In the Resolve Data Source(s) dialog box, select the database name from the list and click Add Data Connection.
+<p>The <a href="../../ui_elements/dialogs/add_database_conn_db.html">Add Database Connection</a> dialog box opens.</p> 
+<ul class="note">
+    <li>If the project you are importing uses a Java DB database, go to step 14.</li>
+  </ul>
+
+
+  <li>To add a new server type, in the Server Type drop down list, select Add Server Type.
+<p>The <a href="../../ui_elements/dialogs/edit_database_svr_types_db.html">Edit Database Server Types</a> dialog box opens</p></li>
+
+  <li>Click New and browse for the database driver JAR file. 
+<p>The driver JAR file then appears in the JDBC Driver Jar File(s) pane. </p></li>
+
+<li>If nothing appears in the Driver Class Name field, click Suggest.
+<p>The IDE suggests the best possible driver class name for the driver.</p></li>
+
+<li>If nothing appears in the URL Template field, type the URL template for the database connection. Follow the example that is provided.
+    <ul class="note">
+    <li>For Java DB databases, the URL should look like this:  
+      <code>jdbc:derby://localhost:1527/travel</code>.</li>  
+  </ul>
+  </li>
+
+  <li>Click Close. <p>The Add Data Connection dialog box opens.</p></li>
+	  
+    
+      <li>Select the server type from the drop down list. </li>
+      <li>Enter a User ID and a Password.<ul class="note">
+        <li>For Java DB databases, the password is the same as the User ID. For example, for the Travel sample database the user name is <code>travel</code> and the password is <code>travel</code>. </li>
+      </ul><p></p></li>
+      <li>Enter the Database URL and click  Add to add the Data Source.</li>
+     
+</ol>
+<ul class="note">
+  <li>For a database other than Java DB, if you plan to run the project on Sun Java<sup><small>TM</small></sup> System Application Server 9.1, you must copy the database driver libraries to the server's <code>lib</code> directory prior to running the project. Also, you must ensure that the port numbers used by the project match the port numbers required by your installation of Sun Application Server 9.1.</li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/db/docs/connectdb.html">Adding a Database Connection</a></dd>
+<dd><a href="../../connect_data/working_with_databases.html">Working with Databases with Visual Web Applications</a></dd>
+<dd><a href="../../connect_data/howtodata/data_quickref.html">Visual Web Database Tasks: Quick Reference</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+
+<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/kb/55/vwp-databoundcomponents.html">
+      <param name="text" value="Using Databound Components to Access a Database"></object>
+</dd>
+<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="content" value="http://www.netbeans.org/kb/55/using-netbeans/dbconn.html">
+      <param name="text" value="Connecting to Databases"></object>
+</dd>
+
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Importing a Java Studio Creator Project">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

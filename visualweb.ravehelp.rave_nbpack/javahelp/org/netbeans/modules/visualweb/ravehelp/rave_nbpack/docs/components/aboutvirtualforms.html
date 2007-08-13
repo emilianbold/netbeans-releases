@@ -1,1 +1,102 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>About Virtual Forms</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>About Virtual Forms</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>A virtual form is a technique you can use to limit the input fields that are processed when a web page is submitted. For example, you might have two input components, like a text field and a drop down list, that you want processed when the user clicks a certain button. However, you do not want anything else to be processed when the button is clicked. To get this behavior, you can create a virtual form and associate the text field, drop-down, and button with it.</p><ul>  <li><b>To create a virtual form</b>, you can right-click the page background and choose Virtual Forms, and then New in the Vitual Forms dialog box. </li>  <li><b>To add a component to a virtual form</b>, right-click the component. If the component can be added to the virtual form, you see Configure Virtual Forms as one of the pop-up menu choices. If you click Configure Virtual Forms, you see a list of virtual forms to which you can add the component. You can also add new virtual forms in this dialog. </li>  <li><b>To see which components are in  virtual forms</b>,  click the Virtual Form button <img src="../images/virtual_form_icon.gif" alt="Virtual Form icon" width="14" height="15">&nbsp;on the editor toolbar. The components you have added to virtual forms are outlined in the color associated with their virtual forms. Participants have a solid outline and submitters have a dashed outline. Components that are both submitter and participant have an outline that is half solid and half dashed, and components that participate in more than one form have more than one colored outline. There is also a legend at the bottom of the page showing which colors apply to which virtual forms. </li></ul><h3>Input and Submission Components </h3><p>A virtual form defines a group of input and submission components on a page. Input components, such as text fields, text areas, drop down lists, checkboxes, listboxes, and radio buttons, <i>participate</i> in the virtual form. Submission components, such as buttons and hyperlinks, <i>submit</i> the virtual form. Most input components can both participate in and submit the virtual form, as described below in &quot;Virtual Forms and Auto-submit On Change.&quot;</p><p> When a web site user submits a virtual form, only the virtual form's participants are processed. The remaining input components on the page are ignored,  as though the components in the virtual form were on their own page.</p><h3>Associating a Component With a Virtual Form </h3><p>You add a component to a virtual form by right-clicking the component and choosing Configure Virtual Forms. When the dialog box opens, you see a row for each virtual form to which you can add the component. Each row has the virtual form's color, name, and a Participate and Submit cell. If the component can participate in the form, clicking that cell shows you a drop down list that enables you to change the setting to <code>yes</code>. The same is true for the Submit cell. If the component cannot submit or cannot participate, nothing happens when you click the cell. </p>  <h3>Virtual Forms and Auto-Submit on Change</h3><p>While button and hyperlink components are the most common submission components, an input component such as a drop down list can also be a submission component. A <b></b> drop down list can both participate in and submit a virtual form. You configure the component's virtual form behavior  in the Configure Virtual Forms dialog box. However, to make the drop down list actually submit the web page, it is also necessary to right-click the component and turn on the Auto-Submit on Change feature. </p><ul class="note">  <li>There is no Auto-Submit On Change option for button and hyperlink components because they intrinsically submit the web page.</li></ul><h3>Retaining and Discarding Submitted Values </h3><p>As part of the default behavior of the virtual forms implementation, whenever the user submits a virtual form that causes the same page to be redisplayed, any input fields that do not participate in that virtual form retain and display their <i>submitted values</i> rather than  their <i>values</i>. The <i>submitted values</i> are the unconverted and unvalidated entries that are in the input fields when the user submits the web page. The <i>values</i> are the actual current values of the components. This default behavior of  virtual forms  prevents the unnecessary loss of any non-participating (and thus unprocessed) user entries when the page redisplays.</p><p>However, there are circumstances in which you must override the default behavior and explicitly discard the submitted values of non-participating input fields and instead display their values.  An example is  a master/detail scenario where the detail contains editable fields. When the user selects a new master, which in turn repopulates the data provider for the detail with new data, it is essential that the detail input fields show their <i>values</i>, the data for the new master, rather than their <i>submitted values</i>,  the data for the old master.</p><p>The Form component provides the following methods that discard submitted values of non-participating input fields:</p><p><code> &nbsp;&nbsp;&nbsp;public void discardSubmittedValues(String virtualFormName)<br>  &nbsp;&nbsp;&nbsp;public void discardSubmittedValue(EditableValueHolder inputField)</code></p><ul>  <li>The first method  accepts a virtual form name. The participants in the specified virtual form   discard their submitted values. The specified virtual form  cannot be the one that was submitted. This method throws an <code>IllegalArgumentException</code> if the specified virtual form  was submitted during the current request.</li>  <li>The second method  accepts a single input field as an <code>EditableValueHolder</code> object. The specified input field   discards its submitted value. The specified input field  must be non-participating. This method throws an <code>IllegalArgumentException</code> if a virtual form was submitted and the specified input field  participates in it.</li></ul><h3>General Guidelines </h3><ul>  <li>Only input components can be <i>participants</i> in a virtual form. Since a submission component is by definition any component that can submit the web page (including input components with their Auto-Submit on Change feature turned on), any input component can also be a virtual form submitter.</li>  <li> An input component can participate in more than one virtual     form, but a submitter can submit only one form.</li>  <li>A virtual form can have more than one submitter. </li>  <li>A virtual form can zero or more participants. </li>  <li>    When the web page is submitted, only the input components that     participate in the submitted virtual form are     processed.</li>  <li>Virtual forms are more flexible and easier to use than  the <code>immediate</code> property.    <ul>      <li>The <code>immediate</code> property can define only one group, but a page can make use of as many virtual forms as needed. </li>      <li>The <code>immediate</code> property requires that you understand  the JavaServer Faces lifecycle, while virtual forms do not affect this lifecycle and are therefore easier to use.</li>    </ul>  </li></ul><dl><dt><a name="seealso">See Also</a></dt>  <dd><a href="../ui_elements/dialogs/virtual_forms_db.html">Virtual Forms Dialog Box</a></dd>   <dd><a href="../ui_elements/dialogs/config_virtual_forms_db.html">Configure Virtual Forms Dialog Box</a></dd>   <dd><a href="component_process.html">Working With Components</a></dd>  <dd><a href="howtocomponents/components_quickref.html">Component Tasks: Quick      Reference</a></dd>  <dd><a href="webform.html">About Pages</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20About Virtual Forms">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../credits.html">Legal Notices</a></small><table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>About Virtual Forms</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>About Virtual Forms</h2>
+<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+<p>A virtual form is a technique you can use to limit the input fields that are processed when a web page is submitted. For example, you might have two input components, like a text field and a drop down list, that you want processed when the user clicks a certain button. However, you do not want anything else to be processed when the button is clicked. To get this behavior, you can create a virtual form and associate the text field, drop-down, and button with it.</p>
+<ul>
+  <li><b>To create a virtual form</b>, you can right-click the page background and choose Virtual Forms, and then New in the Vitual Forms dialog box. </li>
+  <li><b>To add a component to a virtual form</b>, right-click the component. If the component can be added to the virtual form, you see Configure Virtual Forms as one of the pop-up menu choices. If you click Configure Virtual Forms, you see a list of virtual forms to which you can add the component. You can also add new virtual forms in this dialog. </li>
+  <li><b>To see which components are in  virtual forms</b>,  click the Virtual Form button <img src="../images/virtual_form_icon.gif" alt="Virtual Form icon" width="14" height="15">&nbsp;on the editor toolbar. The components you have added to virtual forms are outlined in the color associated with their virtual forms. Participants have a solid outline and submitters have a dashed outline. Components that are both submitter and participant have an outline that is half solid and half dashed, and components that participate in more than one form have more than one colored outline. There is also a legend at the bottom of the page showing which colors apply to which virtual forms. </li>
+</ul>
+<h3>Input and Submission Components </h3>
+<p>A virtual form defines a group of input and submission components on a page. Input components, such as text fields, text areas, drop down lists, checkboxes, listboxes, and radio buttons, <i>participate</i> in the virtual form. Submission components, such as buttons and hyperlinks, <i>submit</i> the virtual form. Most input components can both participate in and submit the virtual form, as described below in &quot;Virtual Forms and Auto-submit On Change.&quot;</p>
+<p> When a web site user submits a virtual form, only the virtual form's participants are processed. The remaining input components on the page are ignored,  as though the components in the virtual form were on their own page.</p>
+<h3>Associating a Component With a Virtual Form </h3>
+<p>You add a component to a virtual form by right-clicking the component and choosing Configure Virtual Forms. When the dialog box opens, you see a row for each virtual form to which you can add the component. Each row has the virtual form's color, name, and a Participate and Submit cell. If the component can participate in the form, clicking that cell shows you a drop down list that enables you to change the setting to <code>yes</code>. The same is true for the Submit cell. If the component cannot submit or cannot participate, nothing happens when you click the cell. </p>
+
+  <h3>Virtual Forms and Auto-Submit on Change</h3>
+
+<p>While button and hyperlink components are the most common submission components, an input component such as a drop down list can also be a submission component. A <b></b> drop down list can both participate in and submit a virtual form. You configure the component's virtual form behavior  in the Configure Virtual Forms dialog box. However, to make the drop down list actually submit the web page, it is also necessary to right-click the component and turn on the Auto-Submit on Change feature. </p>
+<ul class="note">
+  <li>There is no Auto-Submit On Change option for button and hyperlink components because they intrinsically submit the web page.</li>
+</ul>
+<h3>Retaining and Discarding Submitted Values </h3>
+<p>As part of the default behavior of the virtual forms implementation, whenever the user submits a virtual form that causes the same page to be redisplayed, any input fields that do not participate in that virtual form retain and display their <i>submitted values</i> rather than  their <i>values</i>. The <i>submitted values</i> are the unconverted and unvalidated entries that are in the input fields when the user submits the web page. The <i>values</i> are the actual current values of the components. This default behavior of  virtual forms  prevents the unnecessary loss of any non-participating (and thus unprocessed) user entries when the page redisplays.</p>
+<p>However, there are circumstances in which you must override the default behavior and explicitly discard the submitted values of non-participating input fields and instead display their values.  An example is  a master/detail scenario where the detail contains editable fields. When the user selects a new master, which in turn repopulates the data provider for the detail with new data, it is essential that the detail input fields show their <i>values</i>, the data for the new master, rather than their <i>submitted values</i>,  the data for the old master.</p>
+<p>The Form component provides the following methods that discard submitted values of non-participating input fields:
+</p>
+<p><code> &nbsp;&nbsp;&nbsp;public void discardSubmittedValues(String virtualFormName)<br>
+  &nbsp;&nbsp;&nbsp;public void discardSubmittedValue(EditableValueHolder inputField)
+</code></p>
+<ul>
+  <li>The first method  accepts a virtual form name. The participants in the specified virtual form   discard their submitted values. The specified virtual form  cannot be the one that was submitted. This method throws an <code>IllegalArgumentException</code> if the specified virtual form  was submitted during the current request.</li>
+  <li>The second method  accepts a single input field as an <code>EditableValueHolder</code> object. The specified input field   discards its submitted value. The specified input field  must be non-participating. This method throws an <code>IllegalArgumentException</code> if a virtual form was submitted and the specified input field  participates in it.</li>
+</ul>
+
+<h3>General Guidelines </h3>
+<ul>
+  <li>Only input components can be <i>participants</i> in a virtual form. Since a submission component is by definition any component that can submit the web page (including input components with their Auto-Submit on Change feature turned on), any input component can also be a virtual form submitter.</li>
+  <li> An input component can participate in more than one virtual
+     form, but a submitter can submit only one form.</li>
+  <li>A virtual form can have more than one submitter. </li>
+  <li>A virtual form can zero or more participants. </li>
+  <li>    When the web page is submitted, only the input components that 
+    participate in the submitted virtual form are 
+    processed.</li>
+  <li>Virtual forms are more flexible and easier to use than  the <code>immediate</code> property.
+    <ul>
+      <li>The <code>immediate</code> property can define only one group, but a page can make use of as many virtual forms as needed. </li>
+      <li>The <code>immediate</code> property requires that you understand  the JavaServer Faces lifecycle, while virtual forms do not affect this lifecycle and are therefore easier to use.</li>
+    </ul>
+  </li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../ui_elements/dialogs/virtual_forms_db.html">Virtual Forms Dialog Box</a></dd>
+   <dd><a href="../ui_elements/dialogs/config_virtual_forms_db.html">Configure Virtual Forms Dialog Box</a></dd>
+   <dd><a href="component_process.html">Working With Components</a></dd>
+  <dd><a href="howtocomponents/components_quickref.html">Component Tasks: Quick
+      Reference</a></dd>
+  <dd><a href="webform.html">About Pages</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20About Virtual Forms">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,1 +1,287 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Table Component Structure</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Table Component Structure</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p><a href="table.html">Table components</a> are composed of severaldiscrete areas. You typically work with the layout of a table in the <a href="../../dialogs/data_table_layout_db.html">Table Layout Dialog</a>, which you can open by right-clicking a Table component that you have dropped on your page and choosing Table Layout. You can also set  Table properties to cause the table component tocreate the default layout for eacharea.  Descriptions ofthe table areas are listed below, followed by a <a href="#diagram">diagram</a>that shows the placement of the areas.</p><ul><li><p><b>Title.</b> Displays a title for the table,which you can also use to include information about paginated rows andappliedfilters. Use the <code>title</code> property to specify the titlecontent. Use the <code>itemsText</code> property to specify the textdisplayed for the table title for an unpaginated table.&nbsp;<spanstyle="font-weight: bold; color: rgb(255, 0, 0);"></span><spanstyle="color: rgb(255, 0, 0);"> </span>Usethe <code>filterText</code>property to specify text describing the filter that is to be included in the title.&nbsp;</p></li><li><p><b>Action Bar (top)</b>.  In the first row of the table, displayscontrols that operate on thetable and its data. This area contains the following sub areas:</p></li><ul><li><p><b>Actions.</b>  Displays local actions that apply tothe objects in the table. </p></li></ul><ul><li><p><b>View-ChangingControls.</b> Displays controls for changing the view of thetable data, such as custom filtering and sorting. This areacontains the following&nbsp; sub-areas: </p></li><ul><li><b>Filter.</b> Displays a drop down list of filter options that show criteria to be used to determine the itemsto display. The component provides a default implementation for addingoptions when the Custom filter becomes active, to display the filterpanel, and so on.</li><li><b>Clear Sort.</b> Displays a button that is used to removeall sorting of the table. Use the <code>clearTableSortButton</code>property to display the clear table sort button. </li><li><b>Sort.</b> Displays atoggle button for the sort panel. Clicking this buttonopens and closes an embedded panel with custom sortoptions. The panelopens inside the table below the Action Bar (top).&nbsp; Use the <code>sortPanelToggleButton</code>propertyto display the default sort button with a defaultlayout of the sort panel.<br></li></ul><li><b>Pagination.</b> The  Pagination area displays apaginate button, which allows users to switch between viewing the tableas multiple pages, or as a single scrolling page.&nbsp; You can specifythe <code>paginateButton</code>&nbsp; property to display thedefault paginate button.</li></ul><li><b>Action Bar (bottom)</b></li><ul><li><b>Actions.</b> Displays local actions that apply tothe objects in the table. You must provide the implementation for eachtable action. Thesame actions can exist for the Table both the "ActionBar(top)" and "Action Bar(bottom)" sections</li><li><b>Pagination Controls.</b> Displays controls for pagination, including thePaginate button, which allows users to switch between viewing the tableas multiple pages, or as a single scrolling page. The Pagination areaalso includes buttons for turning the pages in sequence, jumping to aspecific page, and jumping to the first or last page. You can specifythe <code>paginateButton</code> and <code>paginateControls</code>properties to display the default layout&nbsp; of the Pagination area.</li></ul><li><b>Footer.</b> Displays a footer across all columns at thebottom of the table. You can specify the <code>footerText</code>property to display footer content with a default layout.</li></ul><p><a name="diagram"></a>The  following table shows  the relative location of the table areas. The areas that are specified with Table component properties have a blue background. The gray areais controlled  by the RowGroup and Table Column components, but is shown here for context.<br>  <br></p><table style="text-align: left; width: 100%;" border="1" cellpadding="2"cellspacing="2"><tbody><tr><tdstyle="vertical-align: top; background-color: rgb(210, 224, 235);"rowspan="1" colspan="1"><span style="color: rgb(0, 0, 0);">TitleBar<br></span></td></tr><tr style="color: rgb(0, 0, 0);"><tdstyle="vertical-align: top; background-color: rgb(210, 224, 235);"rowspan="1" colspan="1">ActionBar (top) &nbsp;<table style="text-align: left; width: 100%;" border="1"cellpadding="2" cellspacing="2"><tbody><tr><td style="vertical-align: top;">Actions </td><td style="vertical-align: top;">View-Changing Controls<br><table style="text-align: left; width: 100%;" border="1"cellpadding="2" cellspacing="2"><tbody><tr><td style="vertical-align: top;">Filter<br></td><td style="vertical-align: top;">Sort<br></td><td style="vertical-align: top;">Clear Sort </td></tr></tbody></table></td><td style="vertical-align: top;">Pagination </td></tr><tr style="color: rgb(0, 0, 0);"><td style="vertical-align: top;" rowspan="1" colspan="3">EmbeddedPanels <code>(filter, sort)</code></td></tr></tbody></table> </td></tr><tr><tdstyle="vertical-align: top; background-color: rgb(210, 224, 235);"><table style="text-align: left; height: 223px; width: 100%;"border="1" cellpadding="2" cellspacing="2"><tbody><tr><tdstyle="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);">ColumnHeader <br></td><tdstyle="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);">ColumnHeader<br></td></tr><tr style="color: rgb(153, 153, 153);"><tdstyle="vertical-align: top; background-color: rgb(232, 232, 232);"rowspan="1" colspan="2">GroupHeader Bar&nbsp; </td></tr><tr><tdstyle="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);"><spanstyle="font-style: italic;">Tabledata</span> <br><code> <br><br><br></code></td><tdstyle="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);"><spanstyle="font-style: italic;">Tabledata </span><br></td></tr><tr><tdstyle="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);">ColumnFooter</td><tdstyle="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);">ColumnFooter <br></td></tr><tr style="color: rgb(153, 153, 153);"><tdstyle="vertical-align: top; background-color: rgb(232, 232, 232);"rowspan="1" colspan="2">GroupFooter Bar&nbsp; <br></td></tr><tr><tdstyle="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);">TableColumn Footer </td><tdstyle="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);">TableColumn Footer </td></tr><tr><td style="vertical-align: top;" rowspan="1" colspan="2">ActionBar (bottom)<br><table style="text-align: left; width: 100%;" border="1"cellpadding="2" cellspacing="2"><tbody><tr><td style="vertical-align: top;">Actions<br></td><td style="vertical-align: top;">Pagination Controls<br></td></tr></tbody></table></td></tr></tbody></table><big><span style="color: rgb(0, 0, 0);"> </span></big></td></tr><tr><tdstyle="vertical-align: top; background-color: rgb(210, 224, 235);"rowspan="1" colspan="1"><span style="color: rgb(0, 0, 0);">Footer</span></td></tr></tbody></table><dl>  <dt><a name="seealso">See Also</a></dt> <dd><a href="propsheets/bh_table_props.html">Table Component Properties Window</a></dd>   <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>    </dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Table Component Structure">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Table Component Structure</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Table Component Structure</h2>
+<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+
+<p><a href="table.html">Table components</a> are composed of several
+discrete areas. You typically work with the layout of a table in the <a href="../../dialogs/data_table_layout_db.html">Table Layout Dialog</a>, which you can open by right-clicking a Table component that you have dropped on your page and choosing Table Layout. You can also set  Table properties to cause the table component to
+create the default layout for each
+area.  Descriptions of
+the table areas are listed below, followed by a <a href="#diagram">diagram</a>
+that shows the placement of the areas.</p>
+<ul>
+<li>
+<p><b>Title.</b> Displays a title for the table,
+which you can also use to include information about paginated rows and
+applied
+filters. Use the <code>title</code> property to specify the title
+content. Use the <code>itemsText</code> property to specify the text
+displayed for the table title for an unpaginated table.&nbsp;<span
+style="font-weight: bold; color: rgb(255, 0, 0);"></span><span
+style="color: rgb(255, 0, 0);"> </span>Use
+the <code>filterText</code>
+property to specify text describing the filter that is to be included in the title.&nbsp;</p>
+</li>
+<li>
+<p><b>Action Bar (top)</b>.  In the first row of the table, displays
+controls that operate on the
+table and its data. This area contains the following sub areas:</p>
+</li>
+<ul>
+<li>
+<p><b>Actions.</b>  Displays local actions that apply to
+the objects in the table. </p>
+</li>
+</ul>
+<ul>
+<li>
+<p><b>View-Changing
+Controls.</b> Displays controls for changing the view of the
+table data, such as custom filtering and sorting. This area
+contains the following&nbsp; sub-areas: </p>
+</li>
+<ul>
+<li>
+<b>Filter.</b> Displays a drop down list of filter options that show criteria to be used to determine the items
+to display. The component provides a default implementation for adding
+options when the Custom filter becomes active, to display the filter
+panel, and so on.
+</li>
+<li><b>Clear Sort.</b> Displays a button that is used to remove
+all sorting of the table. Use the <code>clearTableSortButton</code>
+property to display the clear table sort button. </li>
+<li>
+<b>Sort.</b> Displays a
+toggle button for the sort panel. Clicking this button
+opens and closes an embedded panel with custom sort
+options. The panel
+opens inside the table below the Action Bar (top).&nbsp; Use the <code>sortPanelToggleButton
+</code>property
+to display the default sort button with a default
+layout of the sort panel.<br>
+
+</li>
+</ul>
+<li>
+<b>Pagination.</b> The  Pagination area displays a
+paginate button, which allows users to switch between viewing the table
+as multiple pages, or as a single scrolling page.&nbsp; You can specify
+the <code>paginateButton</code>&nbsp; property to display the
+default paginate button.
+</li>
+</ul>
+<li>
+<b>Action Bar (bottom)</b>
+</li>
+<ul>
+<li>
+<b>Actions.</b> Displays local actions that apply to
+the objects in the table. You must provide the implementation for each
+table action. The
+same actions can exist for the Table both the "Action
+Bar
+(top)" and "Action Bar
+(bottom)" sections
+</li>
+<li>
+<b>Pagination Controls.</b> Displays controls for pagination, including the
+Paginate button, which allows users to switch between viewing the table
+as multiple pages, or as a single scrolling page. The Pagination area
+also includes buttons for turning the pages in sequence, jumping to a
+specific page, and jumping to the first or last page. You can specify
+the <code>paginateButton</code> and <code>paginateControls</code>
+properties to display the default layout&nbsp; of the Pagination area.
+</li>
+</ul>
+<li>
+<b>Footer.</b> Displays a footer across all columns at the
+bottom of the table. You can specify the <code>footerText</code>
+property to display footer content with a default layout.
+</li>
+</ul>
+<p><a name="diagram"></a>The
+  following table shows
+  the relative location of the table areas. The areas that are specified with Table component properties have a blue background. The gray area
+is controlled  by the RowGroup and Table Column components, but is shown here for context.<br>
+  <br>
+</p>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+cellspacing="2">
+<tbody>
+<tr>
+<td
+style="vertical-align: top; background-color: rgb(210, 224, 235);"
+rowspan="1" colspan="1"><span style="color: rgb(0, 0, 0);">Title
+Bar<br>
+</span></td>
+</tr>
+<tr style="color: rgb(0, 0, 0);">
+<td
+style="vertical-align: top; background-color: rgb(210, 224, 235);"
+rowspan="1" colspan="1">Action
+Bar (top) &nbsp;
+<table style="text-align: left; width: 100%;" border="1"
+cellpadding="2" cellspacing="2">
+<tbody>
+<tr>
+<td style="vertical-align: top;">Actions </td>
+<td style="vertical-align: top;">View-Changing Controls<br>
+<table style="text-align: left; width: 100%;" border="1"
+cellpadding="2" cellspacing="2">
+<tbody>
+<tr>
+<td style="vertical-align: top;">Filter<br></td>
+<td style="vertical-align: top;">Sort<br>
+</td>
+<td style="vertical-align: top;">Clear Sort </td>
+</tr>
+</tbody>
+</table>
+</td>
+<td style="vertical-align: top;">Pagination </td>
+</tr>
+<tr style="color: rgb(0, 0, 0);">
+<td style="vertical-align: top;" rowspan="1" colspan="3">Embedded
+Panels <code>(filter, sort)</code></td>
+</tr>
+</tbody>
+</table>
+ </td>
+</tr>
+<tr>
+<td
+style="vertical-align: top; background-color: rgb(210, 224, 235);">
+<table style="text-align: left; height: 223px; width: 100%;"
+border="1" cellpadding="2" cellspacing="2">
+<tbody>
+<tr>
+<td
+style="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);">Column
+Header <br>
+</td>
+<td
+style="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);">Column
+Header<br>
+</td>
+</tr>
+<tr style="color: rgb(153, 153, 153);">
+<td
+style="vertical-align: top; background-color: rgb(232, 232, 232);"
+rowspan="1" colspan="2">Group
+Header Bar&nbsp; </td>
+</tr>
+<tr>
+<td
+style="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);"><span
+style="font-style: italic;">Table
+data</span> <br>
+<code> <br>
+<br>
+<br>
+</code></td>
+<td
+style="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);"><span
+style="font-style: italic;">Table
+data </span><br>
+</td>
+</tr>
+<tr>
+<td
+style="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);">Column
+Footer</td>
+<td
+style="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);">Column
+Footer <br>
+</td>
+</tr>
+<tr style="color: rgb(153, 153, 153);">
+<td
+style="vertical-align: top; background-color: rgb(232, 232, 232);"
+rowspan="1" colspan="2">Group
+Footer Bar&nbsp; <br>
+</td>
+</tr>
+<tr>
+<td
+style="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);">Table
+Column Footer </td>
+<td
+style="vertical-align: top; background-color: rgb(232, 232, 232); color: rgb(153, 153, 153);">Table
+Column Footer </td>
+</tr>
+<tr>
+<td style="vertical-align: top;" rowspan="1" colspan="2">Action
+Bar (bottom)<br>
+<table style="text-align: left; width: 100%;" border="1"
+cellpadding="2" cellspacing="2">
+<tbody>
+<tr>
+<td style="vertical-align: top;">Actions<br>
+</td>
+<td style="vertical-align: top;">Pagination Controls<br>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<big><span style="color: rgb(0, 0, 0);"> </span></big></td>
+</tr>
+<tr>
+<td
+style="vertical-align: top; background-color: rgb(210, 224, 235);"
+rowspan="1" colspan="1"><span style="color: rgb(0, 0, 0);">Footer</span></td>
+</tr>
+</tbody>
+</table>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+ <dd><a href="propsheets/bh_table_props.html">Table Component Properties Window</a></dd> 
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+  
+  
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Table Component Structure">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

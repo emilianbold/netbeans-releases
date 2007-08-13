@@ -1,1 +1,85 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Standard Button Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Standard Button Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You can drag the Standard JavaServer Faces Button component <img src="../../../images/jsf_button_icon.gif" alt="Button icon">&nbsp;from the Palette's Standard category to the Visual Designer to create a button that the user can click to perform an action like submitting or resetting a form. </p><p>When the web page is generated, the Button becomes an HTML <code>&lt;input type=&quot;<i>type</i>&quot;&gt;</code> element for which the <i>type</i> value can be <code>submit</code> or  <code>reset</code>.</p><ul class="warning">  <li>This component is  a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/button.html">Button component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li></ul><p>After dragging the button to the Visual Designer, you can:</p><ul>	<li>Select the button and either drag it to another location on the page or resize it by dragging its selection handles.</li>	<li>Select the button and edit its properties in the Button's <a href="../../propsheets/jsfstd_button_props.html">Properties window</a>. Some typical properties you might set are:		<ul>			<li><b>id.</b> The name of the button. In the JSP file, this name is the value of the <code>id</code> attribute. In the page bean, this property's value is the name of the <code>HTMLCommandButton</code> object.</li>			<li><b>value.</b> The text that appears on the button, also known as its label. You can set the default value as text, and you can bind the value to a data provider if you want the displayed button name updated dynamically.</li>			<li><b>alt. </b> The alternate text for the button graphic, text that describes the graphic element in the HTML page, is readable by screen readers, and displays when the user has display of images turned off in the web browser.</li>			<li><b>image. </b> The URL or file name for an image to be displayed instead of the standard button image. Click the ellipsis (...) button either to enter a URL or to navigate to the image file.				<p>If you navigate to a file, select the file and click OK. You see the image displayed on your button. The image file is copied to the project, and you can see it in the  <a href="../../project_nav/projectlogical.html">Projects window</a> under <i>project-name</i> &gt; Web Pages &gt; resources. </p>				<ul>					<li>If this property is specified, this <code>&lt;input&gt;</code> element's <code>type</code> is <code>image</code> and the button is a submit button that uses the specified image. </li>					<li>If this property is not specified, the button looks like a standard button, with the <code>type</code> specified in the Button Type property and the button's label (displayed text) specified in the value property.</li>				</ul></li>		</ul></li>	<li>Right-click the button and choose one of several actions:		<ul>			<li><b>Edit Event Handler.</b> Code one of the following event handlers:				<ul>					<li><b>action. </b>Indicates the name of the button method that is called when the user clicks the button. If you enter a method name that doesn't exist in the page bean, such as <code>button1_action</code>, the IDE adds it to the page bean for you and updates the value of the Application Action property to point to that method.						<p>If all you want to do is have the button display another page when the user clicks it, you do not need an action method. The easiest thing to do is open the page in the Navigation Editor, click the page and then click the button, and then drag to the page you want the button to open. See <a href="../../../multiple_forms/howtomultiforms/set_form_navigation.html">Setting Up Static Page Navigation</a> for more information.</p>						<p>If you want the button to be able to determine which page to open based on certain conditions, then you need an action method. The action method typically processes button clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). You typically define this method by right-clicking the button in the Visual Designer and choosing Edit Event Handler &gt; action. The default name for the method is <i><code>button-id</code></i><code>_action</code>, where <i>button-id</i> is the value of the button's <code>id</code> property. For more information, see <a href="../../../multiple_forms/howtomultiforms/dynamic_form_navigation.html">Setting Up Dynamic Page Navigation</a>. </p></li>					<li><b>processAction.</b> Opens the Java Editor with the cursor positioned in the button's <code>processAction</code> method so you can insert code that calls a method when the user clicks the button. The method must take an <code>ActionEvent</code> parameter and return <code>void</code>.</li>				</ul></li>			<li><b>Bind to Data. </b>Dynamically set the text that appears on the button. You can bind the component's <code>value</code> property to an object or a data provider, as described in the topic <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>			<li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>value</code> property to other objects or bean properties that update this component's properties automatically.</li>			</ul></li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>		<dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Button Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Standard Button Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Standard Button Component</h2>
+<p><small><a href="#seealso">See Also | Tutorials  </a></small><small><a href="#tutorials"></a></small></p>
+
+<p>You can drag the Standard JavaServer Faces Button component <img src="../../../images/jsf_button_icon.gif" alt="Button icon">&nbsp;from the Palette's Standard category to the Visual Designer to create a button that the user can click to perform an action like submitting or resetting a form.</p>
+<p>When the web page is generated, the Button becomes an HTML <code>&lt;input type=&quot;<i>type</i>&quot;&gt;</code> element for which the <i>type</i> value can be <code>submit</code> or  <code>reset</code>.</p>
+<ul class="warning">
+  <li>This component is  a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/button.html">Button component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li>
+</ul>
+<p>After dragging the button to the Visual Designer, you can:</p>
+<ul>
+	<li>Select the button and either drag it to another location on the page or resize it by dragging its selection handles.</li>
+	<li>Select the button and edit its properties in the Button's <a href="../../propsheets/jsfstd_button_props.html">Properties window</a>. Some typical properties you might set are:
+		<ul>
+			<li><b>id.</b> The name of the button. In the JSP file, this name is the value of the <code>id</code> attribute. In the page bean, this property's value is the name of the <code>HTMLCommandButton</code> object.</li>
+			<li><b>value.</b> The text that appears on the button, also known as its label. You can set the default value as text, and you can bind the value to a data provider if you want the displayed button name updated dynamically.</li>
+			<li><b>alt. </b> The alternate text for the button graphic, text that describes the graphic element in the HTML page, is readable by screen readers, and displays when the user has display of images turned off in the web browser.</li>
+			<li><b>image. </b> The URL or file name for an image to be displayed instead of the standard button image. Click the ellipsis (...) button either to enter a URL or to navigate to the image file.
+				<p>If you navigate to a file, select the file and click OK. You see the image displayed on your button. The image file is copied to the project, and you can see it in the  <a href="../../project_nav/projectlogical.html">Projects window</a> under <i>project-name</i> &gt; Web Pages &gt; resources. </p>
+				<ul>
+					<li>If this property is specified, this <code>&lt;input&gt;</code> element's <code>type</code> is <code>image</code> and the button is a submit button that uses the specified image. </li>
+					<li>If this property is not specified, the button looks like a standard button, with the <code>type</code> specified in the Button Type property and the button's label (displayed text) specified in the value property.</li>
+				</ul></li>
+		</ul></li>
+	<li>Right-click the button and choose one of several actions:
+		<ul>
+			<li><b>Edit Event Handler.</b> Code one of the following event handlers:
+				<ul>
+					<li><b>action. </b>Indicates the name of the button method that is called when the user clicks the button. If you enter a method name that doesn't exist in the page bean, such as <code>button1_action</code>, the IDE adds it to the page bean for you and updates the value of the Application Action property to point to that method.
+						<p>If all you want to do is have the button display another page when the user clicks it, you do not need an action method. The easiest thing to do is open the page in the Navigation Editor, click the page and then click the button, and then drag to the page you want the button to open. See <a href="../../../multiple_forms/howtomultiforms/set_form_navigation.html">Setting Up Static Page Navigation</a> for more information.</p>
+						<p>If you want the button to be able to determine which page to open based on certain conditions, then you need an action method. The action method typically processes button clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). You typically define this method by right-clicking the button in the Visual Designer and choosing Edit Event Handler &gt; action. The default name for the method is <i><code>button-id</code></i><code>_action</code>, where <i>button-id</i> is the value of the button's <code>id</code> property. For more information, see <a href="../../../multiple_forms/howtomultiforms/dynamic_form_navigation.html">Setting Up Dynamic Page Navigation</a>. </p></li>
+					<li><b>processAction.</b> Opens the Java Editor with the cursor positioned in the button's <code>processAction</code> method so you can insert code that calls a method when the user clicks the button. The method must take an <code>ActionEvent</code> parameter and return <code>void</code>.</li>
+				</ul></li>
+			<li><b>Bind to Data. </b>Dynamically set the text that appears on the button. You can bind the component's <code>value</code> property to an object or a data provider, as described in the topic <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>
+			<li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>value</code> property to other objects or bean properties that update this component's properties automatically.</li>
+			</ul></li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+		<dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Button Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

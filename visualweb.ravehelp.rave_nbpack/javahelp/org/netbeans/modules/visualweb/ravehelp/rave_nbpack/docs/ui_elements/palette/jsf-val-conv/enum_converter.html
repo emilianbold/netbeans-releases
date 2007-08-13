@@ -1,1 +1,88 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Enum Converter</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Enum Converter</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>Converts between <code>java.lang.String</code> values in your component properties  and data types of <code>java.lang.Enum</code> or the Java <code>enum</code> primitive  type. This converter is available  in JavaServer Faces 1.2 and later, so your project must use Java EE 5.   The conversion usually applies to the property a component uses to display values and to pick up values entered by users. For example, the Text Field component uses the <code>text</code> property for this purpose.</p><ul class="note"><li>When you add this converter to a component, by default the parameterless class constructor <code>EnumConverter()</code> is used to instantiate the converter. However,  you must ensure that the converter uses the following class constructor, which takes your Java <code>enum</code> class as a parameter:   <p>&nbsp;&nbsp;<code>&nbsp;EnumConverter(Class targetClass)</code></p>  <p>For example, your component binds to values of an <code>enum</code> type <code>Day</code> declared as follows:</p>  <p><code>&nbsp;&nbsp;public enum Day {Sunday, Monday, Tuesday,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    Wednesday, Thursday,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Friday, Saturday};</code></p><ol>    <li>In the Navigator window, find the node for the new Enum converter. For example, the following figure shows the Navigator window node with enumConverter1 selected:      <p>        <img src="../../../images/enum_in_navwin.gif" height="131" width="291" alt="Navigator window showing enumConvert1 node">      </p>    </li>  <li>Click the Java button in the  Visual Designer toolbar to switch to the Source Editor.</li>  <li>Make sure that all sections of the code are expenaded, then find the line of code that is similar to the following:      <p> <code>&nbsp;&nbsp;private EnumConverter enumConverter1 = new EnumConverter();</code></p>  </li>  <li>Add your <code>Day</code> class as a parameter to the <code>new EnumConverter()</code> statement as follows:   <p> <code>&nbsp;&nbsp;private EnumConverter enumConverter1 = new EnumConverter(Day.class);</code></p></li></ol></li></ul><ul class="note">  <li>There is an additional feature available for input components, such as the Basic Text Field component. This feature is similar to validation. If the user enters a value that cannot be converted and submits the page, the server changes the label of the component, if there is one, to indicate that an error occurred, and also returns an error message that you can display to the user in a <a href="../wdstk-jsf1_2/message.html">Message component</a>. The error message is:    <p>  &nbsp;&nbsp;&nbsp;<code><i>name</i>: '<i>entered-value'</i> must be a <i>converter-type</i>.</code> </p> <p> In this message, <i>name</i> is either the ID of the component or the contents of its label if the component has one, <i>entered-value</i> is the value that the user entered, and <i>converter-type</i> is the type of the converter. For example, if the converter is a Big Decimal converter, the <i>converter-type</i> is <code>signed decimal number</code>. </p>  </li></ul><dl>  <dt><a name="seealso">See Also</a></dt><dd><a href="../../../connect_data/jdbc_type_conversions.html">JDBC Type Conversions      for RowSets</a></dd>  <dd><a href="../../../components/common_comp_props.html">Common Component Properties</a></dd>  <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Enum Converter">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><!-- End Customer Feedback Link --><p><small><a href="../../../credits.html">Legal Notices</a></small> </p><table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Enum Converter</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Enum Converter</h2>
+<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+<p>Converts between <code>java.lang.String</code> values in your component properties
+  and data types of <code>java.lang.Enum</code> or the Java <code>enum</code> primitive
+  type. This converter is available  in JavaServer Faces 1.2 and later, so your project must use Java EE 5. 
+  The conversion usually applies to the property a component uses to display values and to pick up values entered by users. For example, the Text Field component uses the <code>text</code> property for this purpose.</p>
+<ul class="note">
+<li>When you add this converter to a component, by default the parameterless class constructor <code>EnumConverter()</code> is used to instantiate the converter. However,  you must ensure that the converter uses the following class constructor, which takes your Java <code>enum</code> class as a parameter: 
+  <p>
+&nbsp;&nbsp;<code>&nbsp;EnumConverter(Class targetClass)</code>
+</p>
+  <p>For example, your component binds to values of an <code>enum</code> type <code>Day</code> declared as follows:</p>
+  <p><code>&nbsp;&nbsp;public enum Day {Sunday, Monday, Tuesday,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    Wednesday, Thursday,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Friday, Saturday};</code>
+</p>
+<ol>
+    <li>In the Navigator window, find the node for the new Enum converter. For example, the following figure shows the Navigator window node with enumConverter1 selected:
+
+      <p>
+        <img src="../../../images/enum_in_navwin.gif" height="131" width="291" alt="Navigator window showing enumConvert1 node">
+      </p>
+    </li>
+  <li>Click the Java button in the  Visual Designer toolbar to switch to the Source Editor.</li>
+  <li>Make sure that all sections of the code are expenaded, then find the line of code that is similar to the following:
+      <p> <code>&nbsp;&nbsp;private EnumConverter enumConverter1 = new EnumConverter();</code></p>
+  </li>
+  <li>Add your <code>Day</code> class as a parameter to the <code>new EnumConverter()</code> statement as follows: 
+  <p> <code>&nbsp;&nbsp;private EnumConverter enumConverter1 = new EnumConverter(Day.class);</code></p>
+</li>
+</ol>
+</li>
+</ul>
+<ul class="note">
+  <li>There is an additional feature available for input components, such as the Basic Text Field component. This feature is similar to validation. If the user enters a value that cannot be converted and submits the page, the server changes the label of the component, if there is one, to indicate that an error occurred, and also returns an error message that you can display to the user in a <a href="../wdstk-jsf1_2/message.html">Message component</a>. The error message is:
+    <p>
+  &nbsp;&nbsp;&nbsp;<code><i>name</i>: '<i>entered-value'</i> must be a <i>converter-type</i>.</code> </p>
+ <p> In this message, <i>name</i> is either the ID of the component or the contents of its label if the component has one, <i>entered-value</i> is the value that the user entered, and <i>converter-type</i> is the type of the converter. For example, if the converter is a Big Decimal converter, the <i>converter-type</i> is <code>signed decimal number</code>. </p>
+  </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt><dd><a href="../../../connect_data/jdbc_type_conversions.html">JDBC Type Conversions
+      for RowSets</a></dd>
+  <dd><a href="../../../components/common_comp_props.html">Common Component Properties</a></dd>
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Enum Converter">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object>
+<!-- End Customer Feedback Link -->
+
+<p><small><a href="../../../credits.html">Legal Notices</a></small> </p>
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

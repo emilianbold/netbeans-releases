@@ -1,1 +1,79 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Faces Verbatim Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Faces Verbatim Component</h2><p><small><a href="#seealso">See Also</a></small></p><p>This advanced component is a custom <code>&lt;f:verbatim/&gt;</code> tag that enables you to add HTML elements   to certain components and have   the HTML elements act like components . Wrapping an HTML tag   in an <code>&lt;f:verbatim/&gt;</code> tag makes it behave   as though it were a JavaServer Faces component, solving some   problems with pages that have mixtures of JavaServer Faces components   and HTML elements.</p><ul class="note">  <li>The <a href="../bh/markup.html">Markup component</a> is easier to use for adding an HTML tag to your JSP page. </li></ul><p>If you put an HTML element or plain text inside a JavaServer   Faces component like <a href="../bh/table.html">  Table</a> or <a href="../jsfstd/grid_panel.html">Grid Panel</a>   and you do not use the Faces Verbatim component, the following happens: </p><ul>  <li>The HTML component does not appear at all at design time     because  Table and Grid Panel are set to render their     own children. However, HTML elements are not really children     of the JavaServer Faces component, so both the Visual Designer     and the component ignore the embedded elements.</li>  <li>At runtime, the tab order of the embedded HTML elements     will be different from that of any embedded JavaServer Faces     components. So if the user tries to tab through the components     embedded in the JavaServer Faces component, there is no guarantee     that the tab order will proceed in an orderly fashion. </li></ul><ul class="warning">  <li> If you use a Faces Verbatim component, be     sure to follow these guidelines:     <ul>      <li> The code in JSP pages used by the IDE must be balanced         and well formed XML, including the markup inside an <code>&lt;f:verbatim&gt;</code>         tag. For example, you cannot start a <code>&lt;table&gt;</code>         in an <code>&lt;f:verbatim&gt;</code> tag but put the ending         <code>&lt;/table&gt;</code> tag after the ending <code>&lt;/f:verbatim&gt;</code>         tag. </li>      <li> The <code>&lt;f:verbatim&gt;</code> component cannot have         other JavaServer Faces components embedded inside it. </li>    </ul>  </li></ul><dl>  <dt><a name="seealso">See Also</a></dt><dd><a href="../../../components/aboutcomponents.html">About     Components</a></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Faces Verbatim Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><!-- End Customer Feedback Link --><p><small><a href="../../../credits.html">Legal Notices</a></small> </p><table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Faces Verbatim Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Faces Verbatim Component</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>This advanced component is a custom <code>&lt;f:verbatim/&gt;</code> tag that enables you to add HTML elements 
+  to certain components and have 
+  the HTML elements act like components . Wrapping an HTML tag 
+  in an <code>&lt;f:verbatim/&gt;</code> tag makes it behave 
+  as though it were a JavaServer Faces component, solving some 
+  problems with pages that have mixtures of JavaServer Faces components 
+  and HTML elements.</p>
+<ul class="note">
+  <li>The <a href="../bh/markup.html">Markup component</a> is easier to use for adding an HTML tag to your JSP page.</li>
+</ul>
+<p>If you put an HTML element or plain text inside a JavaServer 
+  Faces component like <a href="../bh/table.html">  Table</a> or <a href="../jsfstd/grid_panel.html">Grid Panel</a> 
+  and you do not use the Faces Verbatim component, the following happens: 
+</p>
+<ul>
+  <li>The HTML component does not appear at all at design time 
+    because  Table and Grid Panel are set to render their 
+    own children. However, HTML elements are not really children 
+    of the JavaServer Faces component, so both the Visual Designer 
+    and the component ignore the embedded elements.</li>
+  <li>At runtime, the tab order of the embedded HTML elements 
+    will be different from that of any embedded JavaServer Faces 
+    components. So if the user tries to tab through the components 
+    embedded in the JavaServer Faces component, there is no guarantee 
+    that the tab order will proceed in an orderly fashion. </li>
+</ul>
+<ul class="warning">
+  <li> If you use a Faces Verbatim component, be 
+    sure to follow these guidelines: 
+    <ul>
+      <li> The code in JSP pages used by the IDE must be balanced 
+        and well formed XML, including the markup inside an <code>&lt;f:verbatim&gt;</code> 
+        tag. For example, you cannot start a <code>&lt;table&gt;</code> 
+        in an <code>&lt;f:verbatim&gt;</code> tag but put the ending 
+        <code>&lt;/table&gt;</code> tag after the ending <code>&lt;/f:verbatim&gt;</code> 
+        tag. </li>
+      <li> The <code>&lt;f:verbatim&gt;</code> component cannot have 
+        other JavaServer Faces components embedded inside it. </li>
+    </ul>
+  </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt><dd><a href="../../../components/aboutcomponents.html">About 
+    Components</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Faces Verbatim Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object>
+<!-- End Customer Feedback Link -->
+
+<p><small><a href="../../../credits.html">Legal Notices</a></small> 
+</p>
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

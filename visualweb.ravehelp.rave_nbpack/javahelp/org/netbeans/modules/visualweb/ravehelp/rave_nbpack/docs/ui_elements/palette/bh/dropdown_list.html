@@ -1,1 +1,113 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Drop Down List Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Drop Down List Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You can drag the Drop Down List  component   <img src="../../../images/bhdropdownlisticon.gif" alt="dropdown list icon">&nbsp;from   the Palette to the Visual Designer to create a Drop Down List (or combo   box) that enables the user to click a drop button and select items from a list.</p>    <ul class="note">      <li>        This component is a JavaServer Faces 1.1 component. You see components that use this        version of JavaServer Faces when your project uses J2EE 1.4 or J2EE 1.3.       </li>    </ul><p>A Drop Down List is a list of items that initially displays   as a single item and, when clicked, drops down into a list of   multiple items. Only one item can be selected at a time. Drop Down  Lists are similar to combo boxes in Java Swing and in Microsoft Windows,   and are called <i>select lists</i> in HTML.</p><p>You can set the <code>items</code> property to associate the component either with a database table or with an array, a <code>java.util.Collection</code>, or a <code>java.util.Map</code> of <code>com.sun.rave.web.ui.model.Option</code> objects to populate the list. Right-click the component and choose Bind to Data to set this property. In the <a href="../../navigator_win/about_navigator_win.html">Navigator window</a>, you can see the default object that populates the list, which has a name similar to <code>dropDown1DefaultOptions</code>. For  information on the default setting for this property, see <a href="#defaultdisplay">Default Display of Drop Down Items</a> later in this topic.</p><p>You use the <code>selected</code> property to associate the component with a model object that represents the current choice, by setting the value to an expression that corresponds to a property of a managed bean. You can right-click the component and choose Property Bindings to bind the <code>selected</code> property. </p><p>The first time the component is rendered, the option that corresponds to the value of the <code>selected</code> model object property is marked as selected by using the equals method on the model object. </p><p>Here are some things you can do with the component: </p><ul>  <li>      <div>In addition to <code>Option</code> objects, you can assign <code>OptionGroup</code> objects to create separated groups of options.</div>    <li>To optionally specify a label for the component, set the <code>label</code> property.     <ul class="note">			    <li>The <code>label</code> property is not as flexible as the <a href="label.html">Label component</a>. You can use the Label component if you want more control over the label's appearance, such as positioning of the label relative to the component.</li>    </ul>  <li>Right-click the component and choose one of the following pop-up menu items:    <ul>      <li><b>Edit Event Handler. </b>Write code for one of the following event handlers.          <ul>            <li><b>validate. </b>Opens the Java Editor with the cursor positioned in the component's <code>validate</code> method so you can insert code to validate the value of the component.</li>            <li><b>processValueChange.</b> Opens the Java Editor with the cursor positioned in the component's <code>processValueChange</code> method so you can insert code that executes when the value of this component changes. This method executes when you have selected Auto-Submit on Change from the component's pop-up menu, which submits the page when the value of the component changes. This technique is useful if the component is part of a virtual form.</li>          </ul>      </li>      <li><b>Set Initial Focus.</b> Gives this component focus when the user opens the page.</li>      <li><b>Auto-Submit on Change.</b> Causes the form to be automatically submitted if the value of the component changes. Sets the component's JavaScript onclick property to <code>common_timeoutSubmitForm(this.form, '<i>component-id</i>');</code>. At runtime, this code causes the form to be automatically submitted if the user changes the component value. Once the form is submitted, conversion and validation occur on the server and any value change listener methods execute, and then the page is redisplayed.        <p>If you have  code you want to execute when the page is submitted, put it in the <code>processValueChange</code> method described above.</p>        <p>A component configured to Auto-Submit on Change can use <a href="../../../components/aboutvirtualforms.html">virtual forms</a> to limit the input fields that are processed when the form is submitted. If the auto-submit component is defined to submit a virtual form, only the participants in that virtual form will be processed when the auto-submit occurs.</p>      </li>      <li><b>Bind to Data.</b> Bind the component's <code>items</code> property to an object or to a data provider, as described in <a href="../../dialogs/bindtodata_list_db.html">Bind to Data Dialog Box</a>.                <ul>            <li>To bind the <code>items</code> property to an object, select the Bind to Object tab and then select a bean property that will be used to populate the list. The bean property must be an <code>Object</code> array, map, or collection whose members are all subclasses of <code>com.sun.rave.web.ui.model.Option</code>.             </li>            <li>To bind the <code>items</code> property to a data provider for a database table, web service, or enterprise bean to be used to populate the list, select the Bind to Data Provider tab and choose a data provider.</li>        </ul>      </li>      <li><b>Property Bindings.</b> Bind the component's properties to an object or data provider. A typical property to bind is the <code>selected</code> property, which you can bind to an <code>Object</code> array, array of primitives, or <code>ArrayList</code>. You must have added the array to a managed bean, such as the <a href="../../navigator_win/session_bean_node.html">session bean</a>, as a property. You can use this  bean property to evaluate what the user chose after the page is submitted.</li>      <li><b>Configure Default Options.</b> Enables you to edit the default <code>dropDown#DefaultOptions</code> object and change the  list items' display and values and pick the item that is selected by default when the drop down list first displays. It is  likely that you will instead bind the <code>items</code> property to a database or object to use to set list items, as described above under Bind to Data. </li>      <li><b>Configure Virtual Forms.</b> Enables you to add the component to a <a href="../../../components/aboutvirtualforms.html">virtual form</a>. </li>    </ul>  </li></ul><h3>Default Display of Drop Down Items<a name="defaultdisplay"></a> </h3><p>By default, a Drop Down List displays its list items by using an object of type <code>SingleSelectOptionsList</code> with a name based on the default component ID. For example, the first drop down list you drop on a page is initially named <code>dropDown1</code> and has an associated <code>dropDown1DefaultOptions</code> array object associated with it that you can see in the <a href="../../navigator_win/about_navigator_win.html">Navigator window</a>. </p><p>You can set the values of this array object by right-clicking the drop down list component and choosing Configure Default Options to open the Options Customizer dialog box. In this dialog box you can add new items or delete existing ones, and for each item you can set the displayed value (Display) and the value of the item (Value), and you can select which item is displayed by default (Selected). The <code>dropDown#DefaultOptions</code> object is an array that stores its Display values in <code>label</code> fields and its Value values in <code>value</code> fields. </p><p>The following code sample shows how you might use this object and the <code>select</code> property of the drop down list to determine which item is currently selected, and then write its Display and Value values, its <code>label</code> and <code>value</code>, to two static text fields for display. If you add a drop down list and two static text components to the page, and then put this code in the drop down list's <code>processValueChange</code> method as described above and select Auto-Submit on Change for the component, when the user selects an item in the list, its Display and Value values display in  the two static text fields.</p><pre>   String myvalue = (String)dropDown1.getSelected();<br>   int numOptions = dropDown1DefaultOptions.getOptions().length;<br>   int i = 0;<br>   for (i = 0; i &lt; numOptions; i++) {<br>       if (myvalue.equals(dropDown1DefaultOptions.getOptions()[i].getValue()))<br>           break;<br>   }<br>   if (i &lt; numOptions) {<br>       staticText1.setText(dropDown1DefaultOptions.getOptions()[i].getLabel());<br>       staticText2.setText(dropDown1DefaultOptions.getOptions()[i].getValue());<br>   } else {<br>       staticText1.setText(&quot;not found&quot;);  // should not get here<br>   }</pre><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="propsheets/bh_dropdown_list_props.html">Drop Down List Properties Window</a></dd>  <dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>  <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Drop Down List Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Drop Down List Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Drop Down List Component</h2>
+<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+<p>You can drag the Drop Down List  component 
+  <img src="../../../images/bhdropdownlisticon.gif" alt="dropdown list icon">&nbsp;from 
+  the Palette to the Visual Designer to create a Drop Down List (or combo 
+  box) that enables the user to click a drop button and select 
+items from a list.</p>
+    <ul class="note">
+      <li>
+        This component is a JavaServer Faces 1.1 component. You see components that use this
+        version of JavaServer Faces when your project uses J2EE 1.4 or J2EE 1.3. 
+      </li>
+    </ul>
+
+<p>A Drop Down List is a list of items that initially displays 
+  as a single item and, when clicked, drops down into a list of 
+  multiple items. Only one item can be selected at a time. Drop Down
+  Lists are similar to combo boxes in Java Swing and in Microsoft Windows, 
+  and are called <i>select lists</i> in HTML.</p>
+<p>You can set the <code>items</code> property to associate the component either with a database table or with an array, a <code>java.util.Collection</code>, or a <code>java.util.Map</code> of <code>com.sun.rave.web.ui.model.Option</code> objects to populate the list. Right-click the component and choose Bind to Data to set this property. In the <a href="../../navigator_win/about_navigator_win.html">Navigator window</a>, you can see the default object that populates the list, which has a name similar to <code>dropDown1DefaultOptions</code>. For  information on the default setting for this property, see 
+<a href="#defaultdisplay">Default Display of Drop Down Items</a> later in this topic.</p>
+<p>You use the <code>selected</code> property to associate the component with a model object that represents the current choice, by setting the value to an expression that corresponds to a property of a managed bean. You can right-click the component and choose Property Bindings to bind the <code>selected</code> property. </p>
+<p>The first time the component is rendered, the option that corresponds to the value of the <code>selected</code> model object property is marked as selected by using the equals method on the model object. </p>
+<p>Here are some things you can do with the component: </p>
+<ul>
+  <li>  
+    <div>In addition to <code>Option</code> objects, you can assign <code>OptionGroup</code> objects to create separated groups of options.</div>
+  <li>To optionally specify a label for the component, set the <code>label</code> property. 
+    <ul class="note">
+			    <li>The <code>label</code> property is not as flexible as the <a href="label.html">Label component</a>. You can use the Label component if you want more control over the label's appearance, such as positioning of the label relative to the component.</li>
+    </ul>
+  <li>Right-click the component and choose one of the following pop-up menu items:
+    <ul>
+      <li><b>Edit Event Handler. </b>Write code for one of the following event handlers.
+          <ul>
+            <li><b>validate. </b>Opens the Java Editor with the cursor positioned in the component's <code>validate</code> method so you can insert code to validate the value of the component.</li>
+            <li><b>processValueChange.</b> Opens the Java Editor with the cursor positioned in the component's <code>processValueChange</code> method so you can insert code that executes when the value of this component changes. This method executes when you have selected Auto-Submit on Change from the component's pop-up menu, which submits the page when the value of the component changes. This technique is useful if the component is part of a virtual form.</li>
+          </ul>
+      </li>
+      <li><b>Set Initial Focus.</b> Gives this component focus when the user opens the page.</li>
+      <li><b>Auto-Submit on Change.</b> Causes the form to be automatically submitted if the value of the component changes. Sets the component's JavaScript onclick property to <code>common_timeoutSubmitForm(this.form, '<i>component-id</i>');</code>. At runtime, this code causes the form to be automatically submitted if the user changes the component value. Once the form is submitted, conversion and validation occur on the server and any value change listener methods execute, and then the page is redisplayed.
+        <p>If you have  code you want to execute when the page is submitted, put it in the <code>processValueChange</code> method described above.</p>
+        <p>A component configured to Auto-Submit on Change can use <a href="../../../components/aboutvirtualforms.html">virtual forms</a> to limit the input fields that are processed when the form is submitted. If the auto-submit component is defined to submit a virtual form, only the participants in that virtual form will be processed when the auto-submit occurs.</p>
+      </li>
+      <li><b>Bind to Data.</b> Bind the component's <code>items</code> property to an object or to a data provider, as described in <a href="../../dialogs/bindtodata_list_db.html">Bind to Data Dialog Box</a>.        
+        <ul>
+            <li>To bind the <code>items</code> property to an object, select the Bind to Object tab and then select a bean property that will be used to populate the list. The bean property must be an <code>Object</code> array, map, or collection whose members are all subclasses of <code>com.sun.rave.web.ui.model.Option</code>. 
+            </li>
+            <li>To bind the <code>items</code> property to a data provider for a database table, web service, or enterprise bean to be used to populate the list, select the Bind to Data Provider tab and choose a data provider.</li>
+        </ul>
+      </li>
+      <li><b>Property Bindings.</b> Bind the component's properties to an object or data provider. A typical property to bind is the <code>selected</code> property, which you can bind to an <code>Object</code> array, array of primitives, or <code>ArrayList</code>. You must have added the array to a managed bean, such as the <a href="../../navigator_win/session_bean_node.html">session bean</a>, as a property. You can use this  bean property to evaluate what the user chose after the page is submitted.</li>
+      <li><b>Configure Default Options.</b> Enables you to edit the default <code>dropDown#DefaultOptions</code> object and change the  list items' display and values and pick the item that is selected by default when the drop down list first displays. It is  likely that you will instead bind the <code>items</code> property to a database or object to use to set list items, as described above under Bind to Data. </li>
+      <li><b>Configure Virtual Forms.</b> Enables you to add the component to a <a href="../../../components/aboutvirtualforms.html">virtual form</a>. </li>
+    </ul>
+  </li>
+</ul>
+<h3>Default Display of Drop Down Items<a name="defaultdisplay"></a> </h3>
+<p>By default, a Drop Down List displays its list items by using an object of type <code>SingleSelectOptionsList</code> with a name based on the default component ID. For example, the first drop down list you drop on a page is initially named <code>dropDown1</code> and has an associated <code>dropDown1DefaultOptions</code> array object associated with it that you can see in the <a href="../../navigator_win/about_navigator_win.html">Navigator window</a>. </p>
+<p>You can set the values of this array object by right-clicking the drop down list component and choosing Configure Default Options to open the Options Customizer dialog box. In this dialog box you can add new items or delete existing ones, and for each item you can set the displayed value (Display) and the value of the item (Value), and you can select which item is displayed by default (Selected). The <code>dropDown#DefaultOptions</code> object is an array that stores its Display values in <code>label</code> fields and its Value values in <code>value</code> fields. </p>
+<p>The following code sample shows how you might use this object and the <code>select</code> property of the drop down list to determine which item is currently selected, and then write its Display and Value values, its <code>label</code> and <code>value</code>, to two static text fields for display. If you add a drop down list and two static text components to the page, and then put this code in the drop down list's <code>processValueChange</code> method as described above and select Auto-Submit on Change for the component, when the user selects an item in the list, its Display and Value values display in  the two static text fields.</p>
+<pre>   String myvalue = (String)dropDown1.getSelected();<br>   int numOptions = dropDown1DefaultOptions.getOptions().length;<br>   int i = 0;<br>   for (i = 0; i &lt; numOptions; i++) {<br>       if (myvalue.equals(dropDown1DefaultOptions.getOptions()[i].getValue()))<br>           break;<br>   }<br>   if (i &lt; numOptions) {<br>       staticText1.setText(dropDown1DefaultOptions.getOptions()[i].getLabel());<br>       staticText2.setText(dropDown1DefaultOptions.getOptions()[i].getValue());<br>   } else {<br>       staticText1.setText(&quot;not found&quot;);  // should not get here<br>   }</pre>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="propsheets/bh_dropdown_list_props.html">Drop Down List Properties Window</a></dd>  <dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd></dd>
+
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Drop Down List Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,1 +1,82 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Standard Checkbox Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Standard Checkbox Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You can drag the Standard JavaServer Faces Checkbox component <img src="../../../images/jsf_checkbox_icon.gif" alt="checkbox component icon">&nbsp;from the Palette's Standard category to the Visual Designer to create a single checkbox.The HTML equivalent for this component is <code>&lt;input type=&quot;checkbox&quot;&gt;</code>. The Checkbox component is just the checkbox itself. You have to add a <a href="component_label.html">Component Label</a> element to provide a descriptive label for the checkbox. </p><p>If you want a set of checkboxes that is preformatted with labels in a group, you can use a <a href="../bh/checkbox_group.html">Checkbox Group component</a> from the Basic category of the Palette instead.</p><ul class="warning">  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>.  The <a href="../bh/checkbox.html">Checkbox component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li></ul><p>After dragging the component to the Visual Designer, you can do a number of things with it:</p><ul>	<li>Select the component and drag it to another location on the page.</li>	<li>Select the component and edit its properties in the Checkbox <a href="../../propsheets/jsfstd_checkbox_props.html">Properties window</a>. Some typical properties you might set are:		<ul>			<li><b>id.</b> The name of the Checkbox component. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>HtmlSelectOneCheckbox</code> object.</li>			<li><b>value.</b> If set to <code>true</code>, the checkbox is rendered as a selected checkbox when it first displays on the user's HTML page.</li>  </ul></li>	<li>Right-click the component and choose one of the following pop-up menu items:		<ul>			<li><b>Edit Event Handler. </b>Write code for one of the following event handlers.				<ul>					<li><b>validate. </b>Opens the Java Editor with the cursor positioned in the component's <code>validate</code> method so you can insert code to validate the value of the component.</li>					<li><b>processValueChange.</b> Opens the Java Editor with the cursor positioned in the component's <code>processValueChange</code> method so you can insert code that executes when the value of this component changes (for example, the user           changes the value of another component that is controlling           the value of this component).</li>				</ul></li>			<li><b>Bind to Data. </b>Opens a dialog box that enables you to bind the component's <code>value</code> property to a data provider or an object so your application can evaluate it when the page is submitted. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>.</li>			<li><b>Auto-Submit on Change.</b> Causes the form to be automatically submitted if the value of the component changes. Sets the component's JavaScript onclick property to <code>common_timeoutSubmitForm(this.form, '<i>component-id</i>');</code>. At runtime, this code causes the form to be automatically submitted if the user changes the component value. Once the form is submitted, conversion and validation occur on the server and any value change listener methods execute, and then the page is redisplayed.              <p>A component configured to Auto-Submit on Change can use <a href="../../../components/aboutvirtualforms.html">virtual forms</a> to limit the input fields that are processed when the form is submitted. If the auto-submit component is defined to submit a virtual form, only the participants in that virtual form will be processed when the auto-submit occurs.</p>			</li>			<li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>value</code> property to other objects or bean properties that update this component's properties automatically.</li>		</ul></li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>	<dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Checkbox Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Standard Checkbox Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Standard Checkbox Component</h2>
+<p><small><a href="#seealso">See Also | Tutorials  </a></small><small><a href="#tutorials"></a></small></p>
+
+<p>You can drag the Standard JavaServer Faces Checkbox component <img src="../../../images/jsf_checkbox_icon.gif" alt="checkbox component icon">&nbsp;from the Palette's Standard category to the Visual Designer to create a single checkbox.The HTML equivalent for this component is <code>&lt;input type=&quot;checkbox&quot;&gt;</code>. The Checkbox component is just the checkbox itself. You have to add a <a href="component_label.html">Component Label</a> element to provide a descriptive label for the checkbox.</p>
+<p>If you want a set of checkboxes that is preformatted with labels in a group, you can use a <a href="../bh/checkbox_group.html">Checkbox Group component</a> from the Basic category of the Palette instead.</p>
+<ul class="warning">
+  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>.  The <a href="../bh/checkbox.html">Checkbox component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li>
+</ul>
+
+<p>After dragging the component to the Visual Designer, you can do a number of things with it:</p>
+<ul>
+	<li>Select the component and drag it to another location on the page.</li>
+	<li>Select the component and edit its properties in the Checkbox <a href="../../propsheets/jsfstd_checkbox_props.html">Properties window</a>. Some typical properties you might set are:
+		<ul>
+			<li><b>id.</b> The name of the Checkbox component. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>HtmlSelectOneCheckbox</code> object.</li>
+			<li><b>value.</b> If set to <code>true</code>, the checkbox is rendered as a selected checkbox when it first displays on the user's HTML page.</li>
+  </ul></li>
+	<li>Right-click the component and choose one of the following pop-up menu items:
+		<ul>
+			<li><b>Edit Event Handler. </b>Write code for one of the following event handlers.
+				<ul>
+					<li><b>validate. </b>Opens the Java Editor with the cursor positioned in the component's <code>validate</code> method so you can insert code to validate the value of the component.</li>
+					<li><b>processValueChange.</b> Opens the Java Editor with the cursor positioned in the component's <code>processValueChange</code> method so you can insert code that executes when the value of this component changes (for example, the user 
+          changes the value of another component that is controlling 
+          the value of this component).</li>
+				</ul></li>
+			<li><b>Bind to Data. </b>Opens a dialog box that enables you to bind the component's <code>value</code> property to a data provider or an object so your application can evaluate it when the page is submitted. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>.</li>
+			<li><b>Auto-Submit on Change.</b> Causes the form to be automatically submitted if the value of the component changes. Sets the component's JavaScript onclick property to <code>common_timeoutSubmitForm(this.form, '<i>component-id</i>');</code>. At runtime, this code causes the form to be automatically submitted if the user changes the component value. Once the form is submitted, conversion and validation occur on the server and any value change listener methods execute, and then the page is redisplayed.
+              <p>A component configured to Auto-Submit on Change can use <a href="../../../components/aboutvirtualforms.html">virtual forms</a> to limit the input fields that are processed when the form is submitted. If the auto-submit component is defined to submit a virtual form, only the participants in that virtual form will be processed when the auto-submit occurs.</p>
+			</li>
+			<li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>value</code> property to other objects or bean properties that update this component's properties automatically.</li>
+		</ul></li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+	<dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Checkbox Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,1 +1,95 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Message Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Message  Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>The Message component   <img src="../../../images/inlinemsgicon.gif" alt="inline message icon">&nbsp;provides a way to display error messages related to a single component. </p>  <ul class="note">      <li>        This component is a JavaServer Faces 1.2 component. You see components that use this        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,        see:<br>         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value=          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>      </li></ul><p>The two message     components, Message and <a href="message_group.html">Message Group</a>, display error messages for component rendering and     validation. The Message component displays error messages for a specific   component. </p><ul>  <li>Dragging a message component from the palette  to the page results in a message item with the <code>showSummary</code> property set to <code>true</code> and the <code>showDetail</code> property set to <code>false</code>.  <li>You can press Ctrl-Shift and drag the cursor from the Message component to another component to link the <code>for</code> property to the other component and display messages for that component.</ul><ul>  <li>Messages are automatically shown as the result of a validation error or other component related error. </li></ul><p>You can  write your own input validation methods, which can write text to the Message component by throwing <code>ValidatorException(new FacesMessage (String))</code>. To send your own validation message to a component, throw one of the following exceptions:</p><ul>  <li><code>ValidatorException(new FacesMessage(summary))</code></li>  <li><code>ValidatorException(new FacesMessage(summary, detail))</code></li>  <li><code>ValidatorException(new FacesMessage(severity, summary, detail))</code>    <p>For the severity argument, you can pass <code>FacesMessage.SEVERITY_INFO</code>, <code>FacesMessage.SEVERITY_WARN</code>, <code>FacesMessage.SEVERITY_ERROR</code>, or <code>FacesMessage.SEVERITY_FATAL</code>. </p></li></ul>With the JavaServer Faces 1.2 set of components, you can override the standard error messages by calling the component's <code>setRequiredMessage</code>, <code>setConverterMessage</code>, and <code>setValidatorMessage</code> methods to specify custom messages.<dl>  <dt><a name="seealso">See Also</a></dt><dd> <a href="propsheets/message_props.html">Message Component Properties     Window</a></dd>  <dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>    <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl>     <dt>         <a name="tutorials">Tutorials</a>      </dt>      <dd>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">          <param name="text" value="Delving Into Components"></object>      </dd><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Message Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Message Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Message  Component</h2>
+<p><small><a href="#seealso">See Also | Tutorials  </a></small><small><a href="#tutorials"></a></small></p>
+<p>The Message component 
+  <img src="../../../images/inlinemsgicon.gif" alt="inline message icon">&nbsp;provides a way to display error messages related to a single 
+component.</p>
+
+  <ul class="note">
+      <li>
+        This component is a JavaServer Faces 1.2 component. You see components that use this
+        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,
+        see:<br>
+         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value=
+          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">
+          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>
+      </li>
+</ul>
+
+<p>The two message 
+    components, Message and <a href="message_group.html">Message Group</a>, display error messages for component rendering and 
+    validation. The Message component displays error messages for a specific 
+  component. </p>
+<ul>
+  <li>Dragging a message component from the palette  to the page results in a message item with the <code>showSummary</code> property set to <code>true</code> and the <code>showDetail</code> property set to <code>false</code>.
+  <li>You can press Ctrl-Shift and drag the cursor from the Message component to another component to link the <code>for</code> property to the other component and display messages for that component.
+</ul>
+<ul>
+  <li>Messages are automatically shown as the result of a validation error or other component related error. </li>
+</ul>
+<p>You can  write your own input validation methods, which can write text to the Message component by throwing <code>ValidatorException(new FacesMessage (String))</code>. To send your own validation message to a component, throw one of the following exceptions:</p>
+<ul>
+  <li><code>ValidatorException(new FacesMessage(summary))</code></li>
+  <li><code>ValidatorException(new FacesMessage(summary, detail))</code></li>
+  <li><code>ValidatorException(new FacesMessage(severity, summary, detail))</code>
+    <p>For the severity argument, you can pass <code>FacesMessage.SEVERITY_INFO</code>, <code>FacesMessage.SEVERITY_WARN</code>, <code>FacesMessage.SEVERITY_ERROR</code>, or <code>FacesMessage.SEVERITY_FATAL</code>. </p></li>
+</ul>
+With the JavaServer Faces 1.2 set of components, you can override the standard error messages by calling the component's <code>setRequiredMessage</code>, <code>setConverterMessage</code>, and <code>setValidatorMessage</code> methods to specify custom messages.
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+<dd> <a href="propsheets/message_props.html">Message Component Properties 
+    Window</a></dd>  
+<dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+  
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>     <dt>
+         <a name="tutorials">Tutorials</a>
+      </dt>
+      <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">
+          <param name="text" value="Delving Into Components"></object>
+      </dd>
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Message Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

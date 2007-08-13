@@ -1,1 +1,115 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Standard Multi Line Text Area Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Standard Multi Line Text Area Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You can drag the Standard JavaServer Faces Multi Line Text Area component   <img src="../../../images/multilinetexticon.gif" alt="multi-line text icon">&nbsp;from   the Palette to the Visual Designer to provide a text input area   where users can type or paste multiple lines of text. The HTML equivalent for this component is <code>&lt;textarea&gt;</code>. </p><ul class="warning">  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/text_area.html">Text Area  component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li></ul><p>After dragging the component to the Visual Designer, you can do a number of things   with it:</p><ul>  <li>Change the displayed text of the component by selecting the the component  and typing the new text. Press Enter to save the text in the component's    value property.</li>  <li>Select the component and      drag it to another location on the page.</li>  <li>Select the component and edit its properties in the Multi     Line Text Area <a href="../../propsheets/jsfstd_multiline_textarea_props.html">Properties window</a>. Some typical properties you might set are:     <ul>      <li><b>id.</b> The name of the Multi Line Text Area component.         In the JSP file, this name is the value of the component's         <code>id</code> attribute. In the page bean, this property's         value is the name of the <code>HtmlInputTextarea</code> object.</li>      <li><b>value.</b> The text that the user enters. This text         is sent to the server when the page is submitted. You         can also specify a value to be initially displayed for         this property so the user knows what sort of text to enter,         or you can click the ellipsis button and bind the property         to a database table or object so the property's value         can be set dynamically.</li>      <li><b>cols.</b> The width in characters of the text area.         If the user types more characters than will fit, the characters         wrap around to the next row. </li>      <li><b>rows.</b> The number of rows of text to display at         one time in the component. The user can scroll up and         down through the text if there are more rows than the         component can display at one time. <ul class="note">          <li>Web browsers have different assumptions about the number of rows to render for this component. A workaround is to set the <code>height</code> in the <code>style</code> property. For example, <code>height: 100;</code> sets the height to 100 pixels.</li>        </ul></li>    </ul>  </li>  <li>Right-click the component and choose one of the following     pop-up menu items:     <ul>      <li><b>Edit Event Handler. </b>Write code for one of the following event handlers.          <ul>            <li><b>validate. </b>Opens the Java Editor with the cursor positioned in the component's <code>validate</code> method so you can insert code to validate the value of the component.</li>            <li><b>processValueChange.</b> Opens the Java Editor with the cursor positioned in the component's <code>processValueChange</code> method so you can insert code that executes when the value of this component changes (for example, the user           changes the value of another component that is controlling           the value of this component).</li>          </ul>      </li>      <li><b>Bind to Data. </b>Opens a dialog box that enables you to bind the component's <code>value</code> property to a data provider or an object so your application can evaluate it when the page is submitted. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>.</li>      <li><b>Auto-Submit on Change.</b> Causes the form to be automatically submitted if the value of the component changes. Sets the component's JavaScript onclick property to <code>common_timeoutSubmitForm(this.form, '<i>component-id</i>');</code>. At runtime, this code causes the form to be automatically submitted if the component value changes. Once the form is submitted, conversion and validation occur on the server and any value change listener methods execute, and then the page is redisplayed.          <p>A component configured to Auto-Submit on Change can use <a href="../../../components/aboutvirtualforms.html">virtual forms</a> to limit the input fields that are processed when the form is submitted. If the auto-submit component is defined to submit a virtual form, only the participants in that virtual form will be processed when the auto-submit occurs.</p>      </li>      <li><b>Configure Virtual Forms.</b> Enables you to add the component to a <a href="../../../components/aboutvirtualforms.html">virtual form</a>. </li>      <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind the properties of the component to other objects or properties that supply data for the values of this component's properties.</li>          </ul>  </li></ul><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>   <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Multi Line Text Area Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Standard Multi Line Text Area Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Standard Multi Line Text Area Component</h2>
+<p><small><a href="#seealso">See Also | Tutorials  </a></small><small><a href="#tutorials"></a></small></p>
+<p>You can drag the Standard JavaServer Faces Multi Line Text Area component 
+  <img src="../../../images/multilinetexticon.gif" alt="multi-line text icon">&nbsp;from 
+  the Palette to the Visual Designer to provide a text input area 
+  where users can type or paste multiple lines of text. The HTML 
+equivalent for this component is <code>&lt;textarea&gt;</code>.</p>
+<ul class="warning">
+  <li>This component is a JavaServer Faces reference implementation that cannot use <a href="../../../components/aboutthemes.html">themes</a>. The <a href="../bh/text_area.html">Text Area  component</a> in the Basic category of the Palette does support themes and provides other features that improve ease of use.</li>
+</ul>
+<p>After dragging the component to the Visual Designer, you can do a number of things 
+  with it:</p>
+<ul>
+  <li>Change the displayed text of the component by selecting the the component
+  and typing the new text. Press Enter to save the text in the component's
+    value property.</li>
+  <li>Select the component and
+      drag it to another location on the page.</li>
+  <li>Select the component and edit its properties in the Multi 
+    Line Text Area <a href="../../propsheets/jsfstd_multiline_textarea_props.html">Properties window</a>. Some typical properties you might set are: 
+    <ul>
+      <li><b>id.</b> The name of the Multi Line Text Area component. 
+        In the JSP file, this name is the value of the component's 
+        <code>id</code> attribute. In the page bean, this property's 
+        value is the name of the <code>HtmlInputTextarea</code> object.</li>
+      <li><b>value.</b> The text that the user enters. This text 
+        is sent to the server when the page is submitted. You 
+        can also specify a value to be initially displayed for 
+        this property so the user knows what sort of text to enter, 
+        or you can click the ellipsis button and bind the property 
+        to a database table or object so the property's value 
+        can be set dynamically.</li>
+      <li><b>cols.</b> The width in characters of the text area. 
+        If the user types more characters than will fit, the characters 
+        wrap around to the next row. </li>
+      <li><b>rows.</b> The number of rows of text to display at 
+        one time in the component. The user can scroll up and 
+        down through the text if there are more rows than the 
+        component can display at one time. 
+<ul class="note">
+          <li>Web browsers have different assumptions about the number of rows to render for this component. A workaround is to set the <code>height</code> in the <code>style</code> property. For example, <code>height: 100;</code> sets the height to 100 pixels.</li>
+        </ul>
+
+</li>
+    </ul>
+  </li>
+  <li>Right-click the component and choose one of the following 
+    pop-up menu items: 
+    <ul>
+      <li><b>Edit Event Handler. </b>Write code for one of the following event handlers.
+          <ul>
+            <li><b>validate. </b>Opens the Java Editor with the cursor positioned in the component's <code>validate</code> method so you can insert code to validate the value of the component.</li>
+            <li><b>processValueChange.</b> Opens the Java Editor with the cursor positioned in the component's <code>processValueChange</code> method so you can insert code that executes when the value of this component changes (for example, the user 
+          changes the value of another component that is controlling 
+          the value of this component).</li>
+          </ul>
+      </li>
+      <li><b>Bind to Data. </b>Opens a dialog box that enables you to bind the component's <code>value</code> property to a data provider or an object so your application can evaluate it when the page is submitted. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>.</li>
+      <li><b>Auto-Submit on Change.</b> Causes the form to be automatically submitted if the value of the component changes. Sets the component's JavaScript onclick property to <code>common_timeoutSubmitForm(this.form, '<i>component-id</i>');</code>. At runtime, this code causes the form to be automatically submitted if the component value changes. Once the form is submitted, conversion and validation occur on the server and any value change listener methods execute, and then the page is redisplayed.
+          <p>A component configured to Auto-Submit on Change can use <a href="../../../components/aboutvirtualforms.html">virtual forms</a> to limit the input fields that are processed when the form is submitted. If the auto-submit component is defined to submit a virtual form, only the participants in that virtual form will be processed when the auto-submit occurs.</p>
+      </li>
+      <li><b>Configure Virtual Forms.</b> Enables you to add the component to a <a href="../../../components/aboutvirtualforms.html">virtual form</a>. </li>
+      <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind the properties of the component to other objects or properties that supply data for the values of this component's properties.</li>
+      
+    </ul>
+  </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+ 
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Standard Multi Line Text Area Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

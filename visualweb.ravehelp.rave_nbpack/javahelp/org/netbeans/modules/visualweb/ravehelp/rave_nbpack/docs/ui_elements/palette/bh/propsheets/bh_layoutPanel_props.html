@@ -1,1 +1,98 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Layout Panel Component Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Layout Panel Component Properties Window</h2><p><small><a href="#seealso">See Also</a></small></p><p>You see the Properties window for a Layout Panel component <img src="../../../../images/bh_layoutpanel_icon.gif" alt="Group Panel icon">&nbsp;when you select the component on a page that you are editing in the Visual Designer, after adding the component to the page.</p><p>A Layout Panel component is typically part of a <a href="../tab.html">Tab Component</a>. You see it below the tab component when you add a new tab to your page, for example, by dropping a <a href="../tab_set.html">Tab Set component</a> on a page.</p><p>The Layout Panel component has the following properties.</p><h3>General</h3><ul>  <li><b>id.</b><code> Type: String</code><br>    The name of the Layout Panel component in the page bean and the JSP file. In the page bean, the Layout Panel component is represented by a <code>PanelLayout</code> object. </li></ul><h3>Appearance</h3><ul>  <li><b>panelLayout.</b><code> type: String</code><br>One of the following choices available in the drop down list for the property:  <ul>    <li><b>Grid Layout.</b> Aligns components at the location where they were created on the panel. This is often called absolute positioning. If you are using <a href="../../../../components/howtocomponents/snap2grid.html">snap to grid</a>, each component is snapped to the nearest grid corner when it is created.</li>    <li><b>Flow Layout.</b> Aligns components from left to right on the top line. When no more components fit, the components are lined up left to right on the next line, proceeding down the page.</li>  </ul>  </li><li><b>style.</b><code> Type: String</code><br>		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p><p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.	        <ul class="note">          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>	        </ul>	  <p>For a list of CSS2 style attributes, see the web page at<br>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>        </p>  </li>	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.      <ul class="note">        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>      </ul>  </li></ul><h3>Behavior</h3><ul><li><b>visible.</b><code> Type: boolean</code><br>  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered, the component can still be processed on form submissions, and users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component.     <ul class="note">      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>    </ul></li></ul><h3>Advanced</h3><ul><li><b>rendered.</b><code> Type: boolean</code><br>	If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component, and none of its child components appear either. If this property is not selected (false), it overrides the rendered properties of all child components.	  <p>You can bind this property to a JavaBeans property that determines when the component gets rendered. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p></li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="../layout_panel.html">Layout Panel Component</a></dd>	<dd><a href="../tab.html">Tab Component</a></dd>	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Layout Panel Component Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Layout Panel Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Layout Panel Component Properties Window</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>You see the Properties window for a Layout Panel component <img src="../../../../images/bh_layoutpanel_icon.gif" alt="Group Panel icon">&nbsp;when you select the component on a page that you are editing in the Visual Designer, after adding the component to the page.</p>
+<p>A Layout Panel component is typically part of a <a href="../tab.html">Tab Component</a>. You see it below the tab component when you add a new tab to your page, for example, by dropping a <a href="../tab_set.html">Tab Set component</a> on a page.</p>
+<p>The Layout Panel component has the following properties.</p>
+
+<h3>General</h3>
+<ul>
+  <li><b>id.</b><code> Type: String</code><br>
+    The name of the Layout Panel component in the page bean and the JSP file. In the page bean, the Layout Panel component is represented by a <code>PanelLayout</code> object.</li>
+</ul>
+<h3>Appearance</h3>
+<ul>
+  <li><b>panelLayout.</b><code> type: String</code><br>
+One of the following choices available in the drop down list for the property:
+  <ul>
+    <li><b>Grid Layout.</b> Aligns components at the location where they were created on the panel. This is often called absolute positioning. If you are using <a href="../../../../components/howtocomponents/snap2grid.html">snap to grid</a>, each component is snapped to the nearest grid corner when it is created.</li>
+    <li><b>Flow Layout.</b> Aligns components from left to right on the top line. When no more components fit, the components are lined up left to right on the next line, proceeding down the page.</li>
+  </ul>
+  </li><li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:
+		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p>
+<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.
+	        <ul class="note">
+          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
+	        </ul>
+
+	  <p>For a list of CSS2 style attributes, see the web page at<br>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>
+        </p>
+  </li>
+	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
+      <ul class="note">
+        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
+      </ul>
+  </li>
+
+</ul>
+
+<h3>Behavior</h3>
+<ul>
+<li><b>visible.</b><code> Type: boolean</code><br>
+  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. Because the HTML code is rendered, the component can still be processed on form submissions, and users who view source in the browser can see the HTML code. In addition, your web application can use client-side JavaScript to show or hide the component. 
+    <ul class="note">
+      <li>If you need to completely hide the component, for example, because it contains sensitive information that certain users should not see, deselect the <code>rendered</code> property.</li>
+    </ul>
+</li>
+</ul>
+<h3>Advanced</h3>
+<ul>
+<li><b>rendered.</b><code> Type: boolean</code><br>
+	If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component, and none of its child components appear either. If this property is not selected (false), it overrides the rendered properties of all child components.
+	  <p>You can bind this property to a JavaBeans property that determines when the component gets rendered. To bind this property, click the ellipsis button (...) to the right of the property and choose Use Binding in the dialog box.</p>
+</li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../layout_panel.html">Layout Panel Component</a></dd>
+
+	<dd><a href="../tab.html">Tab Component</a></dd>
+	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Layout Panel Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

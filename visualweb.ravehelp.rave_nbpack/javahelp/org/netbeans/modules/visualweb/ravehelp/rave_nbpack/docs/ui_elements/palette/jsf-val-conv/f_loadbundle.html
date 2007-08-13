@@ -1,1 +1,56 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Load Bundle Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Load Bundle Component </h2><p><small><a href="#seealso">See Also</a></small></p><p>This advanced component creates a custom <code>&lt;f:loadBundle&gt;</code> tag that exposes a resource bundle as a <code>Map</code>.</p><p>This tag enables you to create a localizable web application. Its use is best illustrated by the following example, which shows the end result in the JSP page:</p><p>You have a standard ResourceBundle named <code>com.foo.mypackage.resources</code>, and you want to use that resource bundle to localize the prompts on your JSP page. The following JSP code causes a local lookup of the locale to be performed on the value rendered by the <code>outputText</code> under the message key <code>my.message.key</code>. </p><pre>   &lt;f:view&gt;   ...   &lt;f:loadBundle basename=&quot;com.foo.mypackage.resources&quot; var=&quot;msgs&quot;/&gt;   ...   &lt;h:outputText value=&quot;#{msgs['my.message.key']}&quot;/&gt;   ...   &lt;/f:view&gt;</pre><p>This JSP code works because <code>&lt;f:loadBundle&gt;</code> synthesizes a <code>java.util.Map</code> object to wrap the resource bundle, and then stores the object as a request scope attribute under the key specified by the <code>var</code> attribute. Because value binding expressions know how to navigate a <code>Map</code>, this technique works well for localizing things like field prompts. </p><h3>Resource Bundles and Property Files</h3><p>In general, when you want to provide a resource bundle inside your application, you must create a properties file to contain the messages, as described in <a href="nbdocs:/org/netbeans/modules/usersguide/propfiles/creating_resourcebundles.html">Creating and Deleting a Resource Bundle</a>. </p><p>After you create a new properties file, it opens in the Property Editor. For each property you want to add, click New Property and, in the New Property dialog box, enter a key and a value. </p><p>When you deploy your application, the properties file is copied to the <code>WEB-INF/classes/<i>project-name</i></code> directory for you, so that it is available for the <code>&lt;f:loadBundle&gt;</code> tag to load. When you use the bundle file, you specify a value for the for the <code>basename</code> property of an <code>&lt;f:loadBundle&gt;</code> tag that is the combination of the project name (same as the package name) and the properties file base name separated by a period. For example, if your project name is <code>webapplication1</code> and the properties file is named <code>Bundle</code>, the code is:</p><p><code>&lt;f:loadBundle basename=&quot;webapplication1.Bundle&quot; var=&quot;<i>var-name</i>&quot;/&gt;</code></p><dl>  <dt><a name="seealso">See Also</a></dt><dd><a href="../../../components/aboutcomponents.html">About Components</a></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Load Bundle Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><!-- End Customer Feedback Link --><p><small><a href="../../../credits.html">Legal Notices</a></small></p><table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Load Bundle Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Load Bundle Component </h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>This advanced component creates a custom <code>&lt;f:loadBundle&gt;</code> tag that exposes a resource bundle as a <code>Map</code>.</p>
+<p>This tag enables you to create a localizable web application. Its use is best illustrated by the following example, which shows the end result in the JSP page:</p>
+<p>You have a standard ResourceBundle named <code>com.foo.mypackage.resources</code>, and you want to use that resource bundle to localize the prompts on your JSP page. The following JSP code causes a local lookup of the locale to be performed on the value rendered by the <code>outputText</code> under the message key <code>my.message.key</code>.</p>
+<pre>
+   &lt;f:view&gt;
+   ...
+   &lt;f:loadBundle basename=&quot;com.foo.mypackage.resources&quot; var=&quot;msgs&quot;/&gt;
+   ...
+   &lt;h:outputText value=&quot;#{msgs['my.message.key']}&quot;/&gt;
+   ...
+   &lt;/f:view&gt;
+</pre>
+<p>This JSP code works because <code>&lt;f:loadBundle&gt;</code> synthesizes a <code>java.util.Map</code> object to wrap the resource bundle, and then stores the object as a request scope attribute under the key specified by the <code>var</code> attribute. Because value binding expressions know how to navigate a <code>Map</code>, this technique works well for localizing things like field prompts. </p>
+<h3>Resource Bundles and Property Files</h3>
+<p>In general, when you want to provide a resource bundle inside your application, 
+you must create a properties file to contain the messages, as described in 
+<a href="nbdocs:/org/netbeans/modules/usersguide/propfiles/creating_resourcebundles.html">Creating and Deleting a Resource Bundle</a>. </p>
+<p>After you create a new properties file, it opens in the Property Editor. For each property you want to add, click New Property and, in the New Property dialog box, enter a key and a value. </p>
+<p>When you deploy your application, the properties file is copied to the <code>WEB-INF/classes/<i>project-name</i></code> directory for you, so that it is available for the <code>&lt;f:loadBundle&gt;</code> tag to load. When you use the bundle file, you specify a value for the for the <code>basename</code> property of an <code>&lt;f:loadBundle&gt;</code> tag that is the combination of the project name (same as the package name) and the properties file base name separated by a period. For example, if your project name is <code>webapplication1</code> and the properties file is named <code>Bundle</code>, the code is:</p>
+<p><code>&lt;f:loadBundle basename=&quot;webapplication1.Bundle&quot; var=&quot;<i>var-name</i>&quot;/&gt;</code></p>
+<dl>
+  <dt><a name="seealso">See Also</a></dt><dd><a href="../../../components/aboutcomponents.html">About Components</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Load Bundle Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object>
+<!-- End Customer Feedback Link -->
+
+<p><small><a href="../../../credits.html">Legal Notices</a></small></p>
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

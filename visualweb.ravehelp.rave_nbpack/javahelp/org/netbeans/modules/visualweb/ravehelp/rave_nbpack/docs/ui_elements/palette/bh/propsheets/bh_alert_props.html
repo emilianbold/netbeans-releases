@@ -1,1 +1,172 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Alert Component Properties Window</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Alert Component Properties Window </h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>You see the Properties window for an Alert Component <img src="../../../../images/bh_alert_icon.gif" alt="Alert Component icon">&nbsp;when you select the component on a page that you are editing in the Visual Designer. Most of the component's properties are both JSP attributes and properties of the <code>Alert</code> Java component in the page bean.</p><p>This  component has the following properties.</p><h3>General</h3><ul>	<li><b>id.</b><code> Type: String</code><br>	The name of the Alert Component in the page bean and the JSP file. </li></ul><h3>Appearance</h3><ul>  <li><b>detail.</b><code> Type: String</code><br>Text that provides more detailed information about the alert and possibly what to do about it. It appears below the summary text, which you can change in the <code>summary</code> property.</li>  <li><b>linkText.</b><code> Type: String</code><br>     Text for an optional link that is displayed in the detail section of the alert if you have also specified a value for the <code>detail</code> property. You can specify the action, target, or URL for the link in the <code>linkAction</code>, <code>linkTarget</code>, or <code>linkURL</code> property.  You might want to specify a link to more information, for example.</li>  <li><b>style.</b><code> Type: String</code><br>		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p><p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.    <ul class="note">          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>    </ul>	  <p>For a list of CSS2 style attributes, see the web page at<br>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>      </p>  </li>	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.      <ul class="note">        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>        <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.<p>The defaulttheme CSS style classes for this component are:<pre><b>css_master.css</b>.AlrtErrTxt, .AlrtWrnTxt, .AlrtInfTxt, .AlrtMsgTxt {color:#000}a.AlrtLnk:link, a.AlrtLnk:visited    {color:#035899;text-decoration:none}a.AlrtLnk:hover    {color:#035899;text-decoration:underline}.AlrtTbl, .logErr .AlrtTbl    {background-color:#FFF7D6;    border:solid 1px #F3D596}.AlrtErrTxt, .AlrtWrnTxt, .AlrtInfTxt    {font-weight:bold;vertical-align:middle;    font-size:14px;text-align:center}.AlrtLnkDiv {padding-top:3px;text-align:left}.AlrtTbl {margin-top:10px;padding:7px 15px}.AlrtErrTxt img, .AlrtWrnTxt img    {vertical-align:text-bottom;    margin-right:6px}.AlrtInfTxt img {vertical-align:middle;margin-right:6px}.AlrtMsgTxt {padding-top:6px;text-align:left}.logErr .AlrtTbl    {padding:7px 15px;    margin-left:15px;    text-align:left}<b>css_ie55up.css</b>/* ADDITIONAL CSS FOR IE5.5+ SUPPORT */.AlrtErrTxt img, .AlrtWrnTxt img, .AlrtInfTxt img {margin-right:5px}.AlrtInfTxt img {vertical-align:text-bottom}</pre></p></li>     </ul>  <li><b>summary.</b><code> Type: String</code><br>	  Brief text that tells the user why the alert was displayed. This text appears to the right of the alert icon. You can provide more information about the alert in the <code>detail</code> property.</li></ul><h3>Events</h3><ul>  <li><b>Link Action.</b><code> Type: MethodBinding </code><br>  The method that performs the action of the hyperlink component that is added to the detail section when you specify text for the <code>linkText</code> property. The  action method is called when  the user clicks the hyperlink.  If you set the <code>action</code> property, the page is submitted.You must not set a value for the <code>linkURL</code> property if you use this property to navigate to another page.<p>If you right-click the component, you can choose Edit action Event Handler to define an action method for the hyperlink and set this property's value automatically to this method. The action method determines which page to open based on certain conditions. The action method typically processes mouse clicks and returns a <code>String</code> indicating the name of a page navigation case (the page in your application to display next). The default name for the method is <i><code>alert-id</code></i><code>_action</code>, where <i>alert-id</i> is the value of the alert's <code>id</code> property. </p><ul class="note"><li>If you use the Page Flow editor to link the Alert to another page, you must also manually add the page navigation case to the <code>return</code> statement of the <i><code>alert-id</code></i><code>_action</code> method.  For example, if the page navigation case is <code>page2</code>, the method's return statement would be:<p><code>&nbsp;&nbsp;&nbsp;return &quot;page2&quot;; </code> </p> </li></ul>  </li></ul><h3>Navigation</h3><ul><li><b>linkTarget.</b><code> Type: String </code><br>A page in this project that is the target for the hyperlink component that is added to the detail section when you specify text for the <code>linkText</code> property. </li>  <li><b>linkURL.</b><code> Type: String </code><br>The URL of the target document or resource for the hyperlink component that is added to the detail section when you specify text for the <code>linkText</code> property.  Equivalent to the HTML attribute <code>href</code>. If the value of this property is set, the page is not submitted if the user clicks the hyperlink. If the value of this property is not specified, clicking the hyperlink submits the page. If you do not set this property and there is a hyperlink component in the detail section, use the <i><code>alert-id</code></i><code>_action</code> method to define what happens when the user clicks the hyperlink. See the <code>Link Action</code> property above for more information. </li></ul><h3>Behavior</h3><ul>  <li><b>linkToolTip.</b><code> Type: String </code><br>Sets the HTML <code>title</code> attribute for the hyperlink defined by the <code>linkText</code> and <code>linkAction</code>, <code>linkTarget</code>, or <code>linkURL</code> properties. The text value of this property displays if the user hovers the mouse cursor over the hyperlink. <ul class="note">  <li>If the component is disabled, the tooltip will not display in most browsers.     </li></ul></li>  <li><b>visible.</b><code> Type: boolean</code><br>  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. One common use for this property is to hide the Alert until it is needed on the page.  The Alert can be made visible either by the server or by a client-side JavaScript call.</li></ul><h3>Accessibility</h3><ul>  <li><b>alt.</b><code> type: String</code><br>The <code>alt</code> text for the alert's icon, which varies depending on the value of the type property. The alt text describes the graphic element in the HTML page, is readable by screen readers, can display as a tool tip, and displays when the user has display of images turned off in the web browser. </li>  <li><b>tabIndex.</b><code> Type: String</code><br>Optionally specifies the position of the alert component in the tab order of the document. Determines when the alert will get focus if the user tabs through the document. The value must be an integer between 0 and 32767.</li></ul><h3>Advanced</h3><ul>  <li><b>rendered.</b><code> Type: boolean</code><br>If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component. If you need the component to be hidden but still processed when the page is submitted, deselect the <code>visible</code> property instead of this property. </li>  <li><b>type.</b><code> Type: String </code><br>The category of the alert: error, warning, information, or success. The category determines the icon that displays with the alert.</li></ul><dl><dt><a name="seealso">See Also</a></dt><dd><a href="../alert.html">Alert Component</a></dd>	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd></dl><dl><dt><a name="tutorials">Tutorials</a></dt><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Alert Component Properties Window">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Alert Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Alert Component Properties Window </h2>
+<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
+
+<p>You see the Properties window for an Alert Component <img src="../../../../images/bh_alert_icon.gif" alt="Alert Component icon">&nbsp;when you select the component on a page that you are editing in the Visual Designer. Most of the component's properties are both JSP attributes and properties of the <code>Alert</code> Java component in the page bean.</p>
+<p>This  component has the following properties.</p>
+
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: String</code><br>
+	The name of the Alert Component in the page bean and the JSP file. </li>
+</ul>
+
+<h3>Appearance</h3>
+<ul>
+  <li><b>detail.</b><code> Type: String</code><br>
+Text that provides more detailed information about the alert and possibly what to do about it. It appears below the summary text, which you can change in the <code>summary</code> property.</li>
+  <li><b>linkText.</b><code> Type: String</code><br> 
+    Text for an optional link that is displayed in the detail section of the alert if you have also specified a value for the <code>detail</code> property. You can specify the action, target, or URL for the link in the <code>linkAction</code>, <code>linkTarget</code>, or <code>linkURL</code> property.  You might want to specify a link to more information, for example.</li>
+  <li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:
+		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p>
+<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.
+    <ul class="note">
+          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
+    </ul>
+
+	  <p>For a list of CSS2 style attributes, see the web page at<br>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>
+      </p>
+  </li>
+	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
+      <ul class="note">
+        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
+        <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.
+<p>
+The defaulttheme CSS style classes for this component are:
+<pre>
+<b>css_master.css</b>
+.AlrtErrTxt, .AlrtWrnTxt, 
+.AlrtInfTxt, .AlrtMsgTxt {color:#000}
+a.AlrtLnk:link, a.AlrtLnk:visited 
+   {color:#035899;text-decoration:none}
+a.AlrtLnk:hover 
+   {color:#035899;text-decoration:underline}
+.AlrtTbl, .logErr .AlrtTbl 
+   {background-color:#FFF7D6;
+    border:solid 1px #F3D596}
+.AlrtErrTxt, .AlrtWrnTxt, .AlrtInfTxt 
+   {font-weight:bold;vertical-align:middle;
+    font-size:14px;text-align:center}
+.AlrtLnkDiv {padding-top:3px;text-align:left}
+.AlrtTbl {margin-top:10px;padding:7px 15px}
+.AlrtErrTxt img, .AlrtWrnTxt img 
+   {vertical-align:text-bottom;
+    margin-right:6px}
+.AlrtInfTxt img {vertical-align:middle;margin-right:6px}
+.AlrtMsgTxt {padding-top:6px;text-align:left}
+.logErr .AlrtTbl 
+   {padding:7px 15px;
+    margin-left:15px;
+    text-align:left}
+
+<b>css_ie55up.css</b>
+/* ADDITIONAL CSS FOR IE5.5+ SUPPORT */
+.AlrtErrTxt img, .AlrtWrnTxt img, 
+.AlrtInfTxt img {margin-right:5px}
+.AlrtInfTxt img {vertical-align:text-bottom}</pre>
+</p>
+</li>
+     </ul>
+  <li><b>summary.</b><code> Type: String</code><br>
+	  Brief text that tells the user why the alert was displayed. This text appears to the right of the alert icon. You can provide more information about the alert in the <code>detail</code> property.</li>
+</ul>
+
+<h3>Events</h3>
+<ul>
+  <li><b>Link Action.</b><code> Type: MethodBinding </code><br>
+  The method that performs the action of the hyperlink component that is added to the detail section when you specify text for the <code>linkText</code> property. The  action method is called when  the user clicks the hyperlink.  If you set the <code>action</code> property, the page is submitted.
+You must not set a value for the <code>linkURL</code> property if you use this property to navigate to another page.
+<p>If you right-click the component, you can choose Edit action Event Handler to define an action method for the hyperlink and set this property's value automatically to this method. The action method determines which page to open based on certain conditions. The action method typically processes mouse clicks and returns a <code>String</code> indicating the name of a page navigation case (the page in your application to display next). The default name for the method is <i><code>alert-id</code></i><code>_action</code>, where <i>alert-id</i> is the value of the alert's <code>id</code> property. 
+</p>
+<ul class="note">
+<li>
+If you use the Page Flow editor to link the Alert to another page, you must also manually add the page navigation case to the <code>return</code> statement of the <i><code>alert-id</code></i><code>_action</code> method.  For example, if the page navigation case is <code>page2</code>, the method's return statement would be:<p>
+<code>&nbsp;&nbsp;&nbsp;return &quot;page2&quot;; </code> </p> </li>
+</ul>
+  </li>
+</ul>
+<h3>Navigation</h3>
+<ul><li><b>linkTarget.</b><code> Type: String </code><br>
+A page in this project that is the target for the hyperlink component that is added to the detail section when you specify text for the <code>linkText</code> property. </li>
+  <li><b>linkURL.</b><code> Type: String </code><br>
+The URL of the target document or resource for the hyperlink component that is added to the detail section when you specify text for the <code>linkText</code> property.  Equivalent to the HTML attribute <code>href</code>. If the value of this property is set, the page is not submitted if the user clicks the hyperlink. If the value of this property is not specified, clicking the hyperlink submits the page. If you do not set this property and there is a hyperlink component in the detail section, use the <i><code>alert-id</code></i><code>_action</code> method to define what happens when the user clicks the hyperlink. See the <code>Link Action</code> property above for more information. 
+</li>
+</ul>
+<h3>Behavior</h3>
+<ul>
+  <li><b>linkToolTip.</b><code> Type: String </code><br>
+Sets the HTML <code>title</code> attribute for the hyperlink defined by the <code>linkText</code> and <code>linkAction</code>, <code>linkTarget</code>, or <code>linkURL</code> properties. The text value of this property displays if the user hovers the mouse cursor over the hyperlink. 
+<ul class="note">
+  <li>If the component is disabled, the tooltip will not display in most browsers. 
+    </li>
+</ul>
+</li>
+  <li><b>visible.</b><code> Type: boolean</code><br>
+  Indicates whether or not the  component can be seen by the user on the rendered HTML page. This property is selected by default. If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. One common use for this property is to hide the Alert until it is needed on the page.  The Alert can be made visible either by the server or by a client-side JavaScript call.</li>
+</ul>
+<h3>Accessibility</h3>
+<ul>
+  <li><b>alt.</b><code> type: String</code><br>
+The <code>alt</code> text for the alert's icon, which varies depending on the value of the type property. The alt text describes the graphic element in the HTML page, is readable by screen readers, can display as a tool tip, and displays when the user has display of images turned off in the web browser. </li>
+  <li><b>tabIndex.</b><code> Type: String</code><br>
+Optionally specifies the position of the alert component in the tab order of the document. Determines when the alert will get focus if the user tabs through the document. The value must be an integer between 0 and 32767.</li>
+</ul>
+<h3>Advanced</h3>
+<ul>
+  <li><b>rendered.</b><code> Type: boolean</code><br>
+If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component. If you need the component to be hidden but still processed when the page is submitted, deselect the <code>visible</code> property instead of this property. </li>
+  <li><b>type.</b><code> Type: String </code><br>
+The category of the alert: error, warning, information, or success. The category determines the icon that displays with the alert.</li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../alert.html">Alert Component</a></dd>
+	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+<dl>
+<dt><a name="tutorials">Tutorials</a></dt>
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+
+
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Alert Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,1 +1,64 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright ©  2004 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Parameter Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Parameter Component</h2><p><small><a href="#seealso">See Also</a></small></p><p> This advanced component embeds a JavaServer Faces <code>UIParameter</code> component   in a JavaServer Faces component. </p><p>There are two common uses:</p><ul>  <li>If you embed <code>&lt;f:param&gt;</code> inside <code>&lt;h:outputLink&gt;</code>,     a Standard <a href="../jsfstd/hyperlink.html">Hyperlink</a> component, you can define a query parameter to be added to the URL. For     example:     <pre>  &lt;h:outputLink value=&quot;/mp3StreamerServlet&quot;&gt;     &lt;f:param name=&quot;album&quot; value=&quot;#{Page1.albumId.value}&quot;/&gt;     &lt;f:param name=&quot;track&quot; value=&quot;#{Page1.trackId.value}&quot;/&gt;  &lt;/h:outputLink&gt;</pre>  </li>  <li> By embedding <code>&lt;f:param&gt;</code> inside <code>&lt;h:outputFormat&gt;</code>,          a Standard <a href="../jsfstd/formatted_output.html">Formatted Output</a> component, you can specify substitution parameters for a <code>java.text.Message</code> object, as shown in the following example:<pre>  &lt;h:outputFormat value=&quot;You have {0} items in your shopping cart.&quot;&gt;     &lt;f:param value=&quot;#{SessionBean1.cart.itemCount}&quot;/&gt;  &lt;/h:outputFormat&gt;</pre>    <ul class="note">      <li> This example is simplified. You  normally get the message string from a           resource bundle.              </li>    </ul>  </li></ul><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="../../../components/aboutcomponents.html">About     Components</a></dd>  <dd><a href="../../../components/common_comp_props.html">Common     Component Properties</a></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Parameter Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><!-- End Customer Feedback Link --><br>  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- * Copyright ©  2004 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Parameter Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Parameter Component</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p> This advanced component embeds a JavaServer Faces <code>UIParameter</code> component 
+  in a JavaServer Faces component.</p>
+<p>There are two common uses:</p>
+<ul>
+  <li>If you embed <code>&lt;f:param&gt;</code> inside <code>&lt;h:outputLink&gt;</code>, 
+    a Standard <a href="../jsfstd/hyperlink.html">Hyperlink</a> component, you can define a query parameter to be added to the URL. For 
+    example: 
+    <pre>  &lt;h:outputLink value=&quot;/mp3StreamerServlet&quot;&gt;
+     &lt;f:param name=&quot;album&quot; value=&quot;#{Page1.albumId.value}&quot;/&gt;
+     &lt;f:param name=&quot;track&quot; value=&quot;#{Page1.trackId.value}&quot;/&gt;
+  &lt;/h:outputLink&gt;</pre>
+  </li>
+  <li> By embedding <code>&lt;f:param&gt;</code> inside <code>&lt;h:outputFormat&gt;</code>, 
+     
+    a Standard <a href="../jsfstd/formatted_output.html">Formatted Output</a> component, you can specify substitution parameters for a <code>java.text.Message</code> object, as shown in the following example:
+<pre>  &lt;h:outputFormat value=&quot;You have {0} items in your shopping cart.&quot;&gt;
+     &lt;f:param value=&quot;#{SessionBean1.cart.itemCount}&quot;/&gt;
+  &lt;/h:outputFormat&gt;</pre>
+    <ul class="note">
+      <li> This example is simplified. You  normally get the message string from a 
+          resource bundle.
+        
+      </li>
+    </ul>
+  </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../../../components/aboutcomponents.html">About 
+    Components</a></dd>
+  <dd><a href="../../../components/common_comp_props.html">Common 
+    Component Properties</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Parameter Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object>
+<!-- End Customer Feedback Link --><br>
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
