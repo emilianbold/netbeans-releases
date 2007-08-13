@@ -189,10 +189,10 @@ public class PageFlowController {
             pcl = null;
         }
 
-        FileObject webFolder = getWebFolder();
-        if (fcl != null && webFolder != null) {
+        FileObject myWebFolder = getWebFolder();
+        if (fcl != null && myWebFolder != null) {
             try {
-                webFolder.getFileSystem().removeFileChangeListener(fcl);
+                myWebFolder.getFileSystem().removeFileChangeListener(fcl);
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }

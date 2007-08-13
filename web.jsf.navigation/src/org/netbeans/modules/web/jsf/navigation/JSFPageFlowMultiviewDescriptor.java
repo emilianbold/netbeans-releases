@@ -40,6 +40,8 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -181,12 +183,14 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
                 DialogDescriptor dialog = new DialogDescriptor(
                         NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "MSG_NoFileToSave", storageFile),
                         NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "TLE_NoFileToSave"));
+                dialog.setOptions(new Object[]{DialogDescriptor.OK_OPTION});
                 java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
                 d.setVisible(true);
             } else {
                 DialogDescriptor dialog = new DialogDescriptor(
                         NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "MSG_NoProjectToSave"),
                         NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "TLE_NoFileToSave"));
+                dialog.setOptions(new Object[]{DialogDescriptor.OK_OPTION});               
                 java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
                 d.setVisible(true);                
             }
