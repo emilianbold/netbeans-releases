@@ -175,13 +175,13 @@ class DragOperation {
         p("starting drag op for : " + item.getComponentClassName() + " at " + pt);
         started = true;
         dragComponent = createDragFeedbackComponent(null, item.getComponentClass());
-        p("created drag component = " + dragComponent);
         dragComponent.setSize(dragComponent.getPreferredSize());
         p("created drag component = " + dragComponent);
         dragComponent.setLocation(pt);
         menuEditLayer.layers.add(dragComponent, JLayeredPane.DRAG_LAYER);
         menuEditLayer.repaint();
         currentItem = item;
+        menuEditLayer.glassLayer.requestFocusInWindow();
     }
     
     void move(Point pt) {
@@ -271,6 +271,7 @@ class DragOperation {
         started = false;
         if(dragComponent != null) {
             menuEditLayer.layers.remove(dragComponent);
+            menuEditLayer.repaint();
         }
     }
     

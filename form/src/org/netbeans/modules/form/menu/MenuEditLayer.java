@@ -32,6 +32,8 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -307,6 +309,21 @@ public class MenuEditLayer extends JPanel {
         if(keyboardMenuNavigator == null) {
             keyboardMenuNavigator = new KeyboardMenuNavigator(this);
             glassLayer.addKeyListener(keyboardMenuNavigator);
+            glassLayer.addKeyListener(new KeyListener() {
+
+                public void keyTyped(KeyEvent e) {
+                }
+
+                public void keyPressed(KeyEvent e) {
+                    if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                        dragop.fastEnd();
+                    }
+                }
+
+                public void keyReleased(KeyEvent e) {
+                }
+                
+            });
         }
     }
     
