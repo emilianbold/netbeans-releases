@@ -19,8 +19,7 @@
 
 set -e
 
-cd "/usr/local/glassfish-v2b55"
-chown -R root:wheel *
+cd "/Applications/NetBeans/glassfish-v2b58a"
+chown -R root:admin *
 sh lib/ant/bin/ant -f setup.xml
 cd ..
-ln -sf glassfish-v2b55 glassfish
