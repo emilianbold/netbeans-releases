@@ -200,7 +200,7 @@ public class AssignResultToVariable extends AbstractHint {
                 Difference found = null;
                 
                 for (Difference d : differences) {
-                    if (d.getNewText().contains(name[0])) {
+                    if (d.getNewText() != null && d.getNewText().contains(name[0])) {
                         if (found == null) {
                             found = d;
                         } else {
