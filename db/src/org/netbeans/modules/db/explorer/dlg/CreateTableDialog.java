@@ -24,6 +24,7 @@ import java.awt.event.*;
 import java.io.InputStream;
 import java.util.*;
 import java.text.MessageFormat;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
@@ -56,6 +57,8 @@ public class CreateTableDialog {
     private static Map dlgtab = null;
     private static final String filename = "org/netbeans/modules/db/resources/CreateTableDialog.plist"; // NOI18N
     private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
+    private static Logger LOGGER = Logger.getLogger(
+            CreateTableDialog.class.getName());
 
     public static final Map getProperties() {
         if (dlgtab == null) try {
@@ -255,73 +258,27 @@ public class CreateTableDialog {
                               CommandBuffer cbuff = new CommandBuffer();
                               Vector idxCommands = new Vector();
 
-                              if (result) {
+                              if (! result) {
+                                  String msg = bundle.getString("EXC_InsufficientCreateTableInfo");
+                                  DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                              }
                                   try {
                                       String tablename = getTableName();
                                       DataModel dataModel = (DataModel)table.getModel();
                                       Vector data = dataModel.getData();
-                                      CreateTable cmd = spec.createCommandCreateTable(tablename);
+                                      String owner = ((String)ownercombo.getSelectedItem()).trim();
+                                      
+                                      CreateTableDDL ddl = new CreateTableDDL(
+                                              spec, owner, tablename);
+                                      
+                                      boolean wasException =
+                                          ddl.execute(data, dataModel.getTablePrimaryKeys());
 
-                                      cmd.setObjectOwner(((String)ownercombo.getSelectedItem()).trim());
-
-                                      /* this variables and operation provide support for
-                                       * creating indexes for primary or unique keys,
-                                       * most of database are creating indexes by myself,
-                                       * support was removed */
-                                      org.netbeans.lib.ddl.impl.TableColumn cmdcol = null;
-                                      CreateIndex xcmd = null;
-                                      Enumeration enu = data.elements();
-                                      while (enu.hasMoreElements()) {
-                                          ColumnItem enuele = (ColumnItem)enu.nextElement();
-                                          String name = enuele.getName();
-                                          if (enuele.isPrimaryKey()&&!dataModel.isTablePrimaryKey())
-                                              cmdcol = cmd.createPrimaryKeyColumn(name);
-                                          else if (enuele.isUnique()&&!enuele.isPrimaryKey())
-                                              cmdcol = cmd.createUniqueColumn(name);
-                                          else cmdcol = cmd.createColumn(name);
-
-                                          //bugfix for #31064
-                                          combo.setSelectedItem(combo.getSelectedItem());
-
-                                          cmdcol.setColumnType(Specification.getType(enuele.getType().getType()));
-                                          cmdcol.setColumnSize(enuele.getSize());
-                                          cmdcol.setDecimalSize(enuele.getScale());
-                                          cmdcol.setNullAllowed(enuele.allowsNull());
-                                          String defval = enuele.getDefaultValue();
-                                          if (defval != null && defval.length() > 0)
-                                              cmdcol.setDefaultValue(defval);
-                                          if (enuele.hasCheckConstraint())
-                                              // add the TABLE check constraint
-                                              cmd.createCheckConstraint(name, enuele.getCheckConstraint());
-                                          if (enuele.isIndexed()&&!enuele.isPrimaryKey()&&!enuele.isUnique()) {
-                                              xcmd = spec.createCommandCreateIndex(tablename);
-                                              xcmd.setIndexName(tablename+ "_" + name + "_idx"); // NOI18N
-                                              xcmd.setIndexType(new String());
-                                              xcmd.setObjectOwner((String)ownercombo.getSelectedItem());
-                                              xcmd.specifyColumn(name);
-                                              idxCommands.add(xcmd);
-                                          }
-                                      }
-                                      if(dataModel.isTablePrimaryKey()) {
-                                          cmdcol = cmd.createPrimaryKeyConstraint(tablename);
-                                          cmdcol.setTableConstraintColumns(dataModel.getTablePrimaryKeys());
-                                          cmdcol.setColumnType(0);
-                                          cmdcol.setColumnSize(0);
-                                          cmdcol.setDecimalSize(0);
-                                          cmdcol.setNullAllowed(true);
-
-                                      }
-                                      cbuff.add(cmd);
-                                      for(int i=0;i<idxCommands.size();i++)
-                                          cbuff.add((CreateIndex)idxCommands.elementAt(i));
-                                      // index support removed!
-                                      //if (icmd.getColumns().size()>0) cbuff.add(icmd);
-
-                                      //execute DDL command
-                                      cbuff.execute();
+                                      //bugfix for #31064
+                                      combo.setSelectedItem(combo.getSelectedItem());
 
                                       // was execution of commands with or without exception?
-                                      if(!cbuff.wasException()) {
+                                      if(!wasException) {
                                           // dialog is closed after successfully create table
                                           dialog.setVisible(false);
                                           dialog.dispose();
@@ -333,11 +290,8 @@ public class CreateTableDialog {
 
                                   }
                               } else {
-                                  String msg = bundle.getString("EXC_InsufficientCreateTableInfo");
-                                  DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                               }
                           }
-                        }
                     }, 0);       
                }
             };

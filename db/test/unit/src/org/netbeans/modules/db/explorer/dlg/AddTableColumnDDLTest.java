@@ -41,7 +41,7 @@ public class AddTableColumnDDLTest extends DDLTestBase {
         addColumn(tablename, colname);
         
         // Now verify the column exists
-        assertTrue(columnExists(quote(tablename), quote(colname)));
+        assertTrue(columnExists(tablename, colname));
     }
 
     
@@ -82,8 +82,8 @@ public class AddTableColumnDDLTest extends DDLTestBase {
         ddl.execute(secondColname, col, indexName);
         
         // Now verify the column exists and is part of the index
-        assertTrue(columnInIndex(quote(tablename), quote(secondColname), 
-            quote(indexName)));        
+        assertTrue(columnInIndex(tablename, secondColname, 
+            indexName));        
         
     }    
 }
