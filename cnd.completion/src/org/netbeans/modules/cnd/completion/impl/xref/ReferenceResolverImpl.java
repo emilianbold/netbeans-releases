@@ -62,9 +62,9 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
     }
     
     public CsmReference findReference(Node activatedNode) {
-        EditorCookie cookie = (EditorCookie) activatedNode.getCookie(EditorCookie.class);
+        EditorCookie cookie = activatedNode.getCookie(EditorCookie.class);
         if (cookie != null) {
-            JEditorPane[] panes = cookie.getOpenedPanes();
+            JEditorPane[] panes = CsmUtilities.getOpenedPanesInEQ(cookie);
             if (panes != null && panes.length>0) {
                 int offset = panes[0].getCaret().getDot();
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);

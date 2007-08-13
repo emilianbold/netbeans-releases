@@ -73,9 +73,9 @@ public abstract class CsmReferenceResolver {
      * default implementation of method based on Node
      */
     public CsmReference findReference(Node activatedNode) {
-        EditorCookie c = (EditorCookie) activatedNode.getCookie(EditorCookie.class);
+        EditorCookie c = activatedNode.getCookie(EditorCookie.class);
         if (c != null) {
-            JEditorPane[] panes = c.getOpenedPanes();
+            JEditorPane[] panes = CsmUtilities.getOpenedPanesInEQ(c);
             if (panes != null && panes.length>0) {
                 int offset = panes[0].getCaret().getDot();
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
