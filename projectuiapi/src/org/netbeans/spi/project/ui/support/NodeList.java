@@ -57,13 +57,13 @@ public interface NodeList<K> {
      */
     Node node(K key);
     /**
-     * Called when the node list is to be active.
+     * Called when the node list is to be active. Equivalent to {@link org.openide.nodes.Children#addNotify}.
      * If there is any need to register listeners or begin caching of state, do it here.
      * @see org.openide.nodes.Children#addNotify
      */
     void addNotify();
     /**
-     * Called when the node list is to be deactivated.
+     * Called when the node list is no longer needed. Equivalent to {@link org.openide.nodes.Children#removeNotify}.
      * Unregister any listeners and perform any general cleanup.
      * @see org.openide.nodes.Children#removeNotify
      */
