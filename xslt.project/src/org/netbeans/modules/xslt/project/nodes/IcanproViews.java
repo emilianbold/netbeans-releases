@@ -254,7 +254,7 @@ public class IcanproViews {
         }
         
         public void fileChanged(org.openide.filesystems.FileEvent fe) {
-            createNodes();
+//            createNodes();
         }
         
         public void fileDataCreated(org.openide.filesystems.FileEvent fe) {
@@ -264,7 +264,7 @@ public class IcanproViews {
 //            if (!projectDir.isValid()){
 //                    org.netbeans.api.project.ui.OpenProjects.getDefault().close(new Project[] { project });
 //            }
-            createNodes();
+//            createNodes();
             // TODO m
 //            refreshKey(KEY_SOURCE_DIR);
         }
