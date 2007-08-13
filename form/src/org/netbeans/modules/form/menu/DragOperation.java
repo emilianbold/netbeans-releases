@@ -227,7 +227,16 @@ class DragOperation {
             
             if(child instanceof JMenu) {
                 Point pt2 = SwingUtilities.convertPoint(menuEditLayer.glassLayer, pt, child);
-                styleMenu((JMenu)child,pt2);
+                JMenu menu = (JMenu) child;
+                Point point = pt2;
+                menu.setBorderPainted(true);
+                if(DropTargetLayer.isSubMenuRightEdge(point, menu)) {
+                    menuEditLayer.dropTargetLayer.setDropTarget(menu, point, DropTargetLayer.DropTargetType.INTO_SUBMENU);
+                    menu.repaint();
+                } else {
+                    menuEditLayer.dropTargetLayer.setDropTarget(menu, point, DropTargetLayer.DropTargetType.INTER_MENU);
+                }
+                menuEditLayer.showMenuPopup(menu);
             }
             
         } else {
@@ -236,17 +245,6 @@ class DragOperation {
     }
     
     
-    private void styleMenu(JMenu menu, Point point) {
-        menu.setBorderPainted(true);
-        // if on the right side: 
-        if(DropTargetLayer.isMenuRightEdge(point, menu)) {
-            menuEditLayer.dropTargetLayer.setDropTarget(menu, point, DropTargetLayer.DropTargetType.INTO_SUBMENU);
-            menu.repaint(); // josh: is this line needed?
-        } else {
-            menuEditLayer.dropTargetLayer.setDropTarget(menu, point, DropTargetLayer.DropTargetType.INTER_MENU);
-        }
-        menuEditLayer.showMenuPopup(menu);
-    }
     
     void end(Point pt) {
         started = false;
