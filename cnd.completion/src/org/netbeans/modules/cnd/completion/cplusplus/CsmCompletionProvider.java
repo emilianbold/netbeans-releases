@@ -134,7 +134,8 @@ public class CsmCompletionProvider implements CompletionProvider {
                     queryAnchorOffset = res.getSubstituteOffset();
                     Collection items = res.getData();
                     resultSet.estimateItems(items.size(), -1);
-                    resultSet.setTitle(res.getTitle());
+                    // no more title in NB 6 in completion window
+                    //resultSet.setTitle(res.getTitle());
                     resultSet.setAnchorOffset(queryAnchorOffset);
                     resultSet.addAllItems(items);
                     queryResult = res;
@@ -168,7 +169,8 @@ public class CsmCompletionProvider implements CompletionProvider {
         
         protected void filter(CompletionResultSet resultSet) {
             if (filterPrefix != null && queryResult != null) {
-                resultSet.setTitle(getFilteredTitle(queryResult.getTitle(), filterPrefix));
+                // no more title in NB 6 in completion window
+                //resultSet.setTitle(getFilteredTitle(queryResult.getTitle(), filterPrefix));
                 resultSet.setAnchorOffset(queryAnchorOffset);
                 Collection items = getFilteredData(queryResult.getData(), filterPrefix);
                 resultSet.estimateItems(items.size(), -1);

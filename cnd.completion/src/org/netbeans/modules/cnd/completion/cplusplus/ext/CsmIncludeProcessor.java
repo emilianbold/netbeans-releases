@@ -144,7 +144,7 @@ public class CsmIncludeProcessor implements TokenProcessor {
                 try {
                     doc.getSyntaxSupport().tokenizeText(this, 0, scanLen, false);
                 } catch (BadLocationException e) {
-                    Utilities.annotateLoggable(e);
+                    // Can't update
                 }
                 scanLen *= 4; // increase the scanning size
             } while (!wholeDoc && eotReached);
