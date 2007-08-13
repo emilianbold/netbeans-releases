@@ -49,6 +49,10 @@ public class PredicatedAxiComponent {
         return myPredicateArr;
     }
     
+    public void setPredicates(XPathPredicateExpression[] newPArr) {
+        myPredicateArr = newPArr;
+    }
+    
     public String getPredicatesText() {
         return PredicateManager.toString(myPredicateArr);
     }

@@ -18,20 +18,11 @@
  */
 package org.netbeans.modules.xslt.mapper.model;
 
-import com.sun.org.apache.xerces.internal.dom.ParentNode;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Enumeration;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JTree;
-import javax.swing.Timer;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
-import javax.xml.namespace.QName;
 import org.netbeans.modules.soa.mapper.common.IMapperEvent;
 import org.netbeans.modules.soa.mapper.common.IMapperLink;
 import org.netbeans.modules.soa.mapper.common.IMapperListener;
@@ -40,39 +31,19 @@ import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IFieldNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IMethoid;
 import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IMethoidNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.tree.IMapperTreeNode;
-import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
-import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xml.axi.AXIType;
-import org.netbeans.modules.xml.axi.AbstractAttribute;
-import org.netbeans.modules.xml.axi.AbstractElement;
-import org.netbeans.modules.xml.xam.ComponentEvent;
-import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xpath.AbstractXPathModelHelper;
 import org.netbeans.modules.xml.xpath.XPathExpression;
 import org.netbeans.modules.xslt.mapper.methoid.Constants;
 import org.netbeans.modules.xslt.mapper.model.nodes.Node;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
-import org.netbeans.modules.xslt.mapper.model.targettree.AXIUtils;
 import org.netbeans.modules.xslt.mapper.model.targettree.SchemaNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.StylesheetNode;
-import org.netbeans.modules.xslt.mapper.model.targettree.TargetTreeModel;
 import org.netbeans.modules.xslt.mapper.view.NodeCreatorVisitor;
 import org.netbeans.modules.xslt.mapper.view.SetExpressionVisitor;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
-import org.netbeans.modules.xslt.model.AttrValueTamplateHolder;
-import org.netbeans.modules.xslt.model.Attribute;
-import org.netbeans.modules.xslt.model.AttributeValueTemplate;
-import org.netbeans.modules.xslt.model.Element;
-import org.netbeans.modules.xslt.model.NamespaceSpec;
-import org.netbeans.modules.xslt.model.SequenceConstructor;
-import org.netbeans.modules.xslt.model.SequenceElement;
-import org.netbeans.modules.xslt.model.Stylesheet;
-import org.netbeans.modules.xslt.model.StylesheetChild;
-import org.netbeans.modules.xslt.model.Template;
 import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -97,7 +68,7 @@ public class XsltModelBridge extends ModelBridge implements IMapperListener {
         if (IMapperEvent.LINK_ADDED.equals(e.getEventType()) || IMapperEvent.LINK_DEL.equals(e.getEventType())) {
             onGraphChanged(((IMapperLink) e.getTransferObject()).getEndNode());
         } else if (IMapperEvent.REQ_UPDATE_NODE.equals(e.getEventType())) {
-            onGraphChanged((IMethoidNode) e.getTransferObject());
+            onGraphChanged((IMapperNode) e.getTransferObject());
         } else if (IMapperEvent.REQ_NEW_NODE.equals(e.getEventType())) {
             onMethoidAdded((IMethoidNode) e.getTransferObject());
         }
@@ -122,56 +93,50 @@ public class XsltModelBridge extends ModelBridge implements IMapperListener {
         }
 
         //step 1. Walk downstream of mapper graph to find node owning the subtree was changes
-        Node owner = findOwnerNode(node);
-
-        if (owner == null) {
-            //current graph is not connected  to target tree, nothing to update
+        Collection<? extends Node> nodesList = findAffectedTargetNodes(node);
+        if (nodesList == null) {
             return;
         }
+        // 
+        // Rebuild expressions for each affected target node.
+        for (Node owner : nodesList) {
 
+            BuildExpressionVisitor visitor_ge = new BuildExpressionVisitor(getMapper().getContext());
 
-        BuildExpressionVisitor visitor_ge = new BuildExpressionVisitor(getMapper().getContext());
-
-        //check if owner node has graph connected
-        if (!owner.getPreviousNodes().isEmpty()) {
-            Node rootNode = owner.getPreviousNodes().get(0);
-            if (rootNode != null) {
-                /*
-                 * If yes, accept visitor on root element of this graph.
-                 * Visitor will perform recursion over the whole subtree and return
-                 * expression as result
-                 */
-                rootNode.accept(visitor_ge);
+            //check if owner node has graph connected
+            if (!owner.getPreviousNodes().isEmpty()) {
+                Node rootNode = owner.getPreviousNodes().get(0);
+                if (rootNode != null) {
+                    /*
+                     * If yes, accept visitor on root element of this graph.
+                     * Visitor will perform recursion over the whole subtree and return
+                     * expression as result
+                     */
+                    rootNode.accept(visitor_ge);
+                }
             }
-        }
 
-
-
-
-        XslComponent xslc = null;
-        if (owner instanceof SchemaNode && visitor_ge.getResult() != null && visitor_ge.getResult().getExpressionString() != null && visitor_ge.getResult().getExpressionString().length() > 0) {
-            XslModel model = getMapper().getContext().getXSLModel();
-            xslc = new BranchConstructor((SchemaNode) owner, getMapper()).construct();
-        } else {
-            xslc = (XslComponent) owner.getDataObject();
-        }
-
-
-
-        //push expression string to XSL model element
-        SetExpressionVisitor visitor_ue = new SetExpressionVisitor(visitor_ge.getResult());
-
-
-
-        if (xslc != null) {
-            xslc.getModel().startTransaction();
-            try {
-                xslc.accept(visitor_ue);
-            } finally {
-                xslc.getModel().endTransaction();
+            XslComponent xslc = null;
+            if (owner instanceof SchemaNode && visitor_ge.getResult() != null && visitor_ge.getResult().getExpressionString() != null && visitor_ge.getResult().getExpressionString().length() > 0) {
+                XslModel model = getMapper().getContext().getXSLModel();
+                xslc = new BranchConstructor((SchemaNode) owner, getMapper()).construct();
+            } else {
+                xslc = (XslComponent) owner.getDataObject();
             }
-        } else {
-            assert false : "Trying to assign expression to non-xslt node";
+
+            //push expression string to XSL model element
+            SetExpressionVisitor visitor_ue = new SetExpressionVisitor(visitor_ge.getResult());
+
+            if (xslc != null) {
+                xslc.getModel().startTransaction();
+                try {
+                    xslc.accept(visitor_ue);
+                } finally {
+                    xslc.getModel().endTransaction();
+                }
+            } else {
+                assert false : "Trying to assign expression to non-xslt node";
+            }
         }
     }
 
@@ -232,32 +197,63 @@ public class XsltModelBridge extends ModelBridge implements IMapperListener {
     }
 
 
-
-
-    private Node findOwnerNode(Node node) {
-        return findOwnerNode(node, new HashSet<Node>());
+    /* can return null */
+    private Collection<? extends Node> findAffectedTargetNodes(Node node) {
+        //
+        // Provide specific processing for the mapper tree nodes from the source tree
+        if (node instanceof TreeNode && ((TreeNode)node).isSourceViewNode()) {
+            //
+            // Take the target tree root element
+            TreeNode root = (TreeNode) getMapper().getMapperViewManager().
+                    getDestView().getTree().getModel().getRoot();
+            if (root == null) {
+                return null;
+            }
+            //
+            FindAffectedTargetNodesVisitor vis = 
+                    new FindAffectedTargetNodesVisitor((TreeNode)node);
+            root.accept(vis);
+            Collection<StylesheetNode> result = vis.getResultList();
+            return result;
+        } else {
+            ArrayList<Node> result = new ArrayList<Node>();
+            HashSet<Node> visited = new HashSet<Node>();
+            findOwnerNodes(node, visited, result);
+            return result;
+        }
     }
 
-    private Node findOwnerNode(Node node, Set<Node> visited) {
+    /**
+     * Looks for the nodes in the target tree, to which connection links can lead. 
+     * Results are added to the result list.
+     */
+    private void findOwnerNodes(Node node, Set<Node> visited, List<Node> result) {
 
+        if (node == null) {
+            return;
+        }
+        
         //mark node as visited to avoid hangups if circular links are on diagram
         if (visited.contains(node)) {
-            return null;
+            return;
         } else {
             visited.add(node);
         }
-
+        //
         IMapperNode mn = node.getMapperNode();
-        if (mn instanceof IMapperTreeNode && ((IMapperTreeNode) mn).isDestTreeNode()) {
-            return node;
-        }
-
-        for (Node n : node.getNextNodes()) {
-            Node result = findOwnerNode(n, visited);
-            if (result != null) {
-                return result;
+        if (mn instanceof IMapperTreeNode) {
+            if (((IMapperTreeNode) mn).isDestTreeNode()) {
+                if (!result.contains(node)) {
+                    result.add(node);
+                }
+                return;
             }
         }
-        return null;
+        //
+        for (Node n : node.getNextNodes()) {
+            findOwnerNodes(n, visited, result);
+        }
     }
+    
+    
 }

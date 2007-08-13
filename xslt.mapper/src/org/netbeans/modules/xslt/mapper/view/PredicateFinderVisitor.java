@@ -102,6 +102,9 @@ public class PredicateFinderVisitor extends AbstractXPathVisitor {
     
     //---------------------------------------------------
     
+    /**
+     * See the description of the method "processLocationPath"
+     */ 
     private class LocationPathConverter {
         // The list can contain objects of either AXIComponent
         // or PredicatedAxiComponent type.
@@ -116,6 +119,11 @@ public class PredicateFinderVisitor extends AbstractXPathVisitor {
             }
         }
         
+        
+        /**
+         * Resolves each LocationStep to object form and registers new 
+         * predicates in the PredicateManager. 
+         */ 
         public void processLocationPath(LocationStep[] stepArr) {
             processingAborted = false;
             //

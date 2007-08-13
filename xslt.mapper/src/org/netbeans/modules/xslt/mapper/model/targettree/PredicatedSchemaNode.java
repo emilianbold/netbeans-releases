@@ -26,6 +26,7 @@ import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.xpath.XPathPredicateExpression;
 import org.netbeans.modules.xslt.mapper.model.PredicatedAxiComponent;
 import org.netbeans.modules.xslt.mapper.model.nodes.actions.DeletePredicateAction;
+import org.netbeans.modules.xslt.mapper.model.nodes.actions.EditPredicateAction;
 import org.netbeans.modules.xslt.mapper.model.nodes.visitor.NodeVisitor;
 import org.netbeans.modules.xslt.mapper.view.PredicateManager;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
@@ -37,16 +38,13 @@ import org.netbeans.modules.xslt.mapper.view.XsltMapper;
  */
 public class PredicatedSchemaNode extends SchemaNode {
     
-    private PredicatedAxiComponent myPredicatedComponent;
-    
     /** Creates a new instance of PlaceholderNode */
     public PredicatedSchemaNode(PredicatedAxiComponent component,  XsltMapper mapper) {
-        super(component.getType(), mapper);
-        myPredicatedComponent = component;
+        super(component, mapper);
     }
     
     public PredicatedAxiComponent getPredicatedAxiComp() {
-        return myPredicatedComponent;
+        return (PredicatedAxiComponent)getDataObject();
     }
     
     public void accept(NodeVisitor visitor) {
@@ -54,11 +52,11 @@ public class PredicatedSchemaNode extends SchemaNode {
     }
     
     public AXIComponent getType() {
-        return (AXIComponent) getDataObject();
+        return ((PredicatedAxiComponent)getDataObject()).getType();
     }
     
     public String toString(){
-        XPathPredicateExpression[] predArr = myPredicatedComponent.getPredicates();
+        XPathPredicateExpression[] predArr = getPredicatedAxiComp().getPredicates();
         String predicatesText = PredicateManager.toString(predArr);
         if (predicatesText.length() == 0) {
             return super.toString();
@@ -73,7 +71,7 @@ public class PredicatedSchemaNode extends SchemaNode {
     }
     
     public String getName() {
-        XPathPredicateExpression[] predArr = myPredicatedComponent.getPredicates();
+        XPathPredicateExpression[] predArr = getPredicatedAxiComp().getPredicates();
         String predicatesText = PredicateManager.toString(predArr);
         if (predicatesText.length() == 0) {
             return super.getName();
@@ -83,7 +81,7 @@ public class PredicatedSchemaNode extends SchemaNode {
     }
     
     public String getTooltipText() {
-        XPathPredicateExpression[] predArr = myPredicatedComponent.getPredicates();
+        XPathPredicateExpression[] predArr = getPredicatedAxiComp().getPredicates();
         String predicatesText = PredicateManager.toString(predArr);
         if (predicatesText.length() == 0) {
             return super.getTooltipText();
@@ -101,6 +99,8 @@ public class PredicatedSchemaNode extends SchemaNode {
         if (isSourceViewNode()) {
             AXIComponent sc = getType();
             if (sc instanceof Element) {
+                newAction = new EditPredicateAction(getMapper(), this);
+                rootMenu.add(newAction);
                 newAction = new DeletePredicateAction(getMapper(), this);
                 rootMenu.add(newAction);
             }

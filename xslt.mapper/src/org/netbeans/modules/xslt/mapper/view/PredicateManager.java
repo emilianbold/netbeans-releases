@@ -20,12 +20,16 @@
 package org.netbeans.modules.xslt.mapper.view;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import javax.swing.JTree;
+import org.netbeans.modules.soa.mapper.basicmapper.util.MapperUtilities;
+import org.netbeans.modules.soa.mapper.common.basicmapper.IBasicMapperEvent;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.xpath.XPathPredicateExpression;
+import org.netbeans.modules.xslt.mapper.model.FindUsedPredicateNodesVisitor;
 import org.netbeans.modules.xslt.mapper.model.PredicatedAxiComponent;
 import org.netbeans.modules.xslt.mapper.model.SourceTreeModel;
 import org.netbeans.modules.xslt.mapper.model.nodes.Node;
@@ -154,6 +158,7 @@ public class PredicateManager {
     /**
      * Creates a new predicate and cache it.
      * Then creates a new predicated node and return it.
+     * This method is intended to be called, when a user creates a new predicate manually.
      */
     public PredicatedSchemaNode createPredicatedNode(TreeNode baseNode,
             XPathPredicateExpression[] predArr) {
@@ -165,6 +170,7 @@ public class PredicateManager {
                 type, predArr);
         //
         CachedPredicate newPredicate = new CachedPredicate(newPAxiComp, baseNode);
+        newPredicate.setPersistent(true);
         if (!addPredicate(newPredicate)) {
             return null;
         }
@@ -183,8 +189,13 @@ public class PredicateManager {
         return (PredicatedSchemaNode)newNode;
     }
     
+    /**
+     * This method is intended to be called after a new predicate is found
+     * in the XSLT during a parsing.
+     */ 
     public void addPredicate(List objLocationPath) {
         CachedPredicate newPredicate = new CachedPredicate(objLocationPath);
+        newPredicate.setPersistent(false);
         if (!addPredicate(newPredicate)) {
             return;
         }
@@ -213,6 +224,48 @@ public class PredicateManager {
         return true;
     }
     
+    /**
+     * This method is called when the predicate is modified manually.
+     */ 
+    public boolean modifyPredicate(PredicatedSchemaNode node, 
+            XPathPredicateExpression[] predArr) {
+        PredicatedAxiComponent pac = node.getPredicatedAxiComp();
+        //
+        for (CachedPredicate cp : myPredicates) {
+            if (cp.hasSameParams(pac) && cp.hasSameLocation(node)) {
+                String oldPredicatesText = cp.getPComponent().getPredicatesText();
+                //
+                cp.getPComponent().setPredicates(predArr);
+                cp.setPersistent(true); // because it was modified manually
+                String newPredicatesText = cp.getPComponent().getPredicatesText();
+                //
+                TreeNode parentNode = node.getParent();
+                parentNode.reload();
+                //
+                // Notify the tree
+                JTree sourceTree = myMapper.getMapperViewManager().getSourceView().getTree();
+                assert sourceTree != null;
+                SourceTreeModel sourceTreeModel = (SourceTreeModel)sourceTree.getModel();
+                sourceTreeModel.fireTreeChanged(TreeNode.getTreePath(parentNode));
+                //
+                // Post notification to update the XSLT sources
+                myMapper.getMapperViewManager().postMapperEvent(
+                        MapperUtilities.getMapperEvent(
+                        this,
+                        node.getMapperNode(),
+                        IBasicMapperEvent.REQ_UPDATE_NODE,
+                        "Predicate is modeified." +
+                        " Location: " + cp.locationToString() + 
+                        " Old: " + oldPredicatesText + 
+                        " New: " + newPredicatesText));
+                
+                return true;
+            }
+        }
+        //
+        return false;
+    }
+    
     public boolean deletePredicate(PredicatedSchemaNode node) {
         PredicatedAxiComponent pac = node.getPredicatedAxiComp();
         //
@@ -233,6 +286,51 @@ public class PredicateManager {
         }
         //
         return false;
+    }
+    
+    public void clearTemporaryPredicates() {
+        TreeNode root = (TreeNode) myMapper.getMapperViewManager().
+                getDestView().getTree().getModel().getRoot();
+        if (root == null) {
+            // impossible to understand if the predicated node is used or not.
+            return;
+        }
+        FindUsedPredicateNodesVisitor vis = new FindUsedPredicateNodesVisitor();
+        root.accept(vis);
+
+        
+        ListIterator<CachedPredicate> predItr = myPredicates.listIterator();
+        
+        
+        while (predItr.hasNext()) {
+            CachedPredicate predicate = predItr.next();
+            PredicatedSchemaNode node = predicate.findNode(myMapper);
+            if (node == null) {
+                // the corresponding node isn't found so the cached predicate 
+                // can be removed because its location path is corrupted. 
+                predItr.remove();
+            } else {
+                if (predicate.isPersistent()) {
+                    // the predicate is persistent
+                    continue;
+                }
+                if (vis.getResultList().contains(node)) {
+                    // the predicate is used
+                    continue;
+                }
+                //
+                predItr.remove();
+                //
+                TreeNode parentNode = node.getParent();
+                parentNode.reload();
+                //
+                // Notify the tree
+                JTree sourceTree = myMapper.getMapperViewManager().getSourceView().getTree();
+                assert sourceTree != null;
+                SourceTreeModel sourceTreeModel = (SourceTreeModel)sourceTree.getModel();
+                sourceTreeModel.fireTreeChanged(TreeNode.getTreePath(parentNode));
+            }
+        }
     }
     
     //-----------------------------------------------------------
@@ -482,7 +580,55 @@ public class PredicateManager {
             //
             return true;
         }
+        
+        public PredicatedSchemaNode findNode(XsltMapper myMapper) {
+            JTree sourceTree = myMapper.getMapperViewManager().getSourceView().getTree();
+            assert sourceTree != null;
+            //
+            TreeNode root = (TreeNode)sourceTree.getModel().getRoot();
+            if (root == null) {
+                return null;
+            }
+            //
+            TreeNode parentNode = null;
+            Iterator pathItr = myLocationPath.iterator();
+            if (pathItr.hasNext()) {
+                Object rootPathObject = pathItr.next();
+                if (root.getDataObject() == rootPathObject) {
+                    parentNode = root;
+                }
+            }
+            //
+            if (parentNode == null) {
+                return null;
+            }
+            //
+            TreeNode soughtChildNode = null;
+            while (pathItr.hasNext()) {
+                Object nextPathObject = pathItr.next();
+                //
+                // Look for the child node
+                soughtChildNode = null;
+                for (TreeNode childNode : parentNode.getChildren()) {
+                    if (childNode.getDataObject() == nextPathObject) {
+                        soughtChildNode = childNode;
+                        break;
+                    }
+                }
+                //
+                // Check if the sought child node is found 
+                if (soughtChildNode == null) {
+                    return null; 
+                } else {
+                    parentNode = soughtChildNode;
+                }
+            }
+            //
+            assert soughtChildNode instanceof PredicatedSchemaNode;
+            return (PredicatedSchemaNode)soughtChildNode;
+        }
+        
     }
     
 }
- 
+  

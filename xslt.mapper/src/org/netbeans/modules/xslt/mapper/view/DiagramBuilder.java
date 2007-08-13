@@ -32,7 +32,6 @@ import org.netbeans.modules.xslt.mapper.model.BuildExpressionVisitor;
 import org.netbeans.modules.xslt.mapper.model.nodes.LiteralCanvasNode;
 import org.netbeans.modules.xslt.mapper.model.nodes.Node;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
-import org.netbeans.modules.xslt.mapper.model.targettree.ElementDeclarationNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.StylesheetNode;
 import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslComponent;
@@ -73,6 +72,9 @@ public class DiagramBuilder {
                 mapper.getMapperViewManager().getCanvasView().getAutoLayout().autoLayout();
             }
         }
+        //
+        // Remove old automatically created predicates. 
+        mapper.getPredicateManager().clearTemporaryPredicates();
     }
 
     public boolean isUpdating() {

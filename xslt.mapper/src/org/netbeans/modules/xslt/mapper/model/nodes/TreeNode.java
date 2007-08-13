@@ -27,7 +27,6 @@ import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mapper.common.IMapperNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.tree.IMapperTreeNode;
 import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 
 /**
@@ -46,8 +45,8 @@ public abstract class TreeNode extends Node {
     
     public abstract AXIComponent getType();
     
-    public TreeNode(Component component, XsltMapper mapper){
-        super(component, mapper);
+    protected TreeNode(Object dataObject, XsltMapper mapper){
+        super(dataObject, mapper);
     }
     /**
      * Gets the parent node for this node.

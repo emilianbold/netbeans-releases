@@ -61,6 +61,10 @@ public class SchemaNode extends TreeNode implements TooltipTextProvider {
         super(component, mapper);
     }
     
+    protected SchemaNode(Object dataObject,  XsltMapper mapper) {
+        super(dataObject, mapper);
+    }
+    
     public void accept(NodeVisitor visitor) {
         visitor.visit(this);
     }
@@ -74,14 +78,13 @@ public class SchemaNode extends TreeNode implements TooltipTextProvider {
     }
     public String toString(){
         String name = ((AXIType) getType()).getName();
-        return ((getDataObject() instanceof Attribute) ? "@" : "")+ name;
+        return ((getType() instanceof Attribute) ? "@" : "")+ name;
     }
     
     protected List<TreeNode> loadChildren() {
         final ArrayList<TreeNode> result = new ArrayList<TreeNode>();
         
-        AXIComponent axic = (AXIComponent) getDataObject();
-        
+        AXIComponent axic = getType();
         if(axic instanceof Element){
             new AXIUtils.ElementVisitor(){
                 public void visit(AXIComponent c){
@@ -110,12 +113,12 @@ public class SchemaNode extends TreeNode implements TooltipTextProvider {
     }
     
     public Image getIcon() {
-        Object dataObject = getDataObject();
-        if (dataObject instanceof Element) {
-            BadgeModificator mult = AxiomUtils.getElementBadge((Element)dataObject);
+        AXIComponent axiComponent = getType();
+        if (axiComponent instanceof Element) {
+            BadgeModificator mult = AxiomUtils.getElementBadge((Element)axiComponent);
             return NodeType.ELEMENT.getImage(mult);
-        } else if (dataObject instanceof Attribute) {
-            Use attrUse = ((Attribute)dataObject).getUse();
+        } else if (axiComponent instanceof Attribute) {
+            Use attrUse = ((Attribute)axiComponent).getUse();
             if (attrUse == Use.OPTIONAL) {
                 return NodeType.ATTRIBUTE.getImage(BadgeModificator.OPTIONAL);
             }
@@ -126,13 +129,13 @@ public class SchemaNode extends TreeNode implements TooltipTextProvider {
     }
     
     public String getName() {
-        Object dataObject = getDataObject();
+        AXIComponent axiComponent = getType();
         //
         String result = null;
-        if (dataObject instanceof Element) {
-            result = ((Element)dataObject).getName();
-        } else if (dataObject instanceof Attribute) {
-            result = ((Attribute)dataObject).getName();
+        if (axiComponent instanceof Element) {
+            result = ((Element)axiComponent).getName();
+        } else if (axiComponent instanceof Attribute) {
+            result = ((Attribute)axiComponent).getName();
         }
         //
         return result;
@@ -150,19 +153,19 @@ public class SchemaNode extends TreeNode implements TooltipTextProvider {
     }
     
     public String getTooltipText() {
-        Object dataObject = getDataObject();
+        AXIComponent axiComponent = getType();
         //
-        if (dataObject instanceof Element) {
-            return AxiomUtils.getElementTooltip((Element)dataObject);
-        } else if (dataObject instanceof Attribute) {
-            return AxiomUtils.getAttributeTooltip((Attribute)dataObject);
+        if (axiComponent instanceof Element) {
+            return AxiomUtils.getElementTooltip((Element)axiComponent);
+        } else if (axiComponent instanceof Attribute) {
+            return AxiomUtils.getAttributeTooltip((Attribute)axiComponent);
         }
         //
         return null;
     }
     
     public JPopupMenu constructPopupMenu() {
-        JPopupMenu rootMenu = new JPopupMenu();
+        JPopupMenu rootMenu = null;
         Action newAction;
         //
         if (isSourceViewNode()) {
@@ -187,6 +190,7 @@ public class SchemaNode extends TreeNode implements TooltipTextProvider {
                 //
                 if (isRepeating) {
                     newAction = new AddPredicateAction(getMapper(), this);
+                    rootMenu = new JPopupMenu();
                     rootMenu.add(newAction);
                 }
             }
@@ -214,6 +218,7 @@ public class SchemaNode extends TreeNode implements TooltipTextProvider {
             }
             // Add menu is added only if it's not empty
             if (addMenu.getMenuComponentCount() != 0) {
+                rootMenu = new JPopupMenu();
                 rootMenu.add(addMenu);
             }
         }
