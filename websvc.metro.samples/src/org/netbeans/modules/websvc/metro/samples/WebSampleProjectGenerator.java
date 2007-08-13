@@ -92,7 +92,7 @@ public class WebSampleProjectGenerator {
                     String prjName = st.nextToken();
                     InputStream is = WebSampleProjectGenerator.class.getResourceAsStream(prjName);
                     try {
-                        FileObject prjLoc = createProjectFolder(new File(projectLocation, prjName.substring(0, prjName.indexOf("."))));
+                        FileObject prjLoc = createProjectFolder(new File(projectLocation, prjName.substring(0, prjName.indexOf('.'))));
                         unzip(is, prjLoc);
                         projects.add(prjLoc);
 //                        File projXml = FileUtil.toFile(prjLoc.getFileObject(prjName).getFileObject(AntProjectHelper.PROJECT_XML_PATH));
