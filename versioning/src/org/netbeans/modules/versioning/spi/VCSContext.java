@@ -231,6 +231,15 @@ public final class VCSContext {
         }
         if (projectOwners.size() == 1 && projectOwners.iterator().next() != null) {
             rootFiles.removeAll(unversionedFiles);
+            outter: for (Iterator<File> i = rootFilesExclusions.iterator(); i.hasNext(); ) {
+                File exclusion = i.next();
+                for (File rootFile : rootFiles) {
+                    if (Utils.isAncestorOrEqual(rootFile, exclusion)) {
+                        continue outter;
+                    }
+                }
+                i.remove();
+            }
         }
     }
     
