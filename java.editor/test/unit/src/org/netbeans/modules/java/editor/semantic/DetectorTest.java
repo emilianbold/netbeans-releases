@@ -298,6 +298,10 @@ public class DetectorTest extends TestBase {
         performTest("UnusedImport111113");
     }
     
+    public void test89356() throws Exception {
+        performTest("SerialVersionUID89356");
+    }
+    
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {
