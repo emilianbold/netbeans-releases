@@ -23,7 +23,7 @@ import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.Containe
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import java.io.File;
 import junit.framework.*;
-import org.netbeans.jackpot.test.TestUtilities;
+import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 

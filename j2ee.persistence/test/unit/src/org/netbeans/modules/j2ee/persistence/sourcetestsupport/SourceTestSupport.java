@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -86,12 +87,12 @@ public abstract class SourceTestSupport extends NbTestCase {
     private void initTemplates() throws Exception{
         RepositoryImpl.MultiFileSystemImpl systemFS = getSystemFs();
         FileObject interfaceTemplate = systemFS.getRoot().getFileObject("Templates/Classes/Interface.java");
-        copyStringToFileObject(interfaceTemplate,
+        TestUtilities.copyStringToFileObject(interfaceTemplate,
                 "package ${package};" +
                 "public interface ${name} {\n" +
                 "}");
         FileObject classTemplate = systemFS.getRoot().getFileObject("Templates/Classes/Class.java");
-        copyStringToFileObject(classTemplate,
+        TestUtilities.copyStringToFileObject(classTemplate,
                 "package ${package};" +
                 "public class ${name} {\n" +
                 "}");
@@ -115,17 +116,6 @@ public abstract class SourceTestSupport extends NbTestCase {
             out.println(str);
         }
         in.close();
-    }
-    
-    protected FileObject copyStringToFileObject(FileObject fo, String content) throws Exception {
-        OutputStream os = fo.getOutputStream();
-        try {
-            InputStream is = new ByteArrayInputStream(content.getBytes("UTF-8"));
-            FileUtil.copy(is, os);
-            return fo;
-        } finally {
-            os.close();
-        }
     }
     
     private static void setLookups(Object... lookups) {

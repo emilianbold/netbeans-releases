@@ -34,7 +34,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.jackpot.test.TestUtilities;
+import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.persistence.sourcetestsupport.RepositoryImpl;
 import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
 import org.openide.filesystems.FileObject;
@@ -74,7 +74,7 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
                 "public interface " + name + " {\n" +
                 "}\n";
         FileObject result = wizardIterator.createInterface(name, annotationType, FileUtil.toFileObject(getWorkDir()));
-        assertEquals(golden, TestUtilities.copyFileToString(FileUtil.toFile(result)));
+        assertEquals(golden, TestUtilities.copyFileObjectToString(result));
     }
     
     public void testAddMethodToInterface() throws Exception {
