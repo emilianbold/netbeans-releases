@@ -15,7 +15,7 @@
 <mapID target="pending" url="pending.html" />
 <mapID target="tbd" url="tbd.html" />
 <mapID target="gs.tour" url="getstart/idetour.html" />
-<mapID target="gs.key" url="getstart/keyconcepts.html" />
+
 
 <!--begin Projects section-->
 
@@ -114,7 +114,7 @@
 <mapID target="configure.tbcustomize" url="configure/workspace/toolbar_customize.html" />
 <mapID target="configure.tbcommands" url="configure/workspace/toolbar_commands.html" />
 
-<!-- TODO -- plugin manager TOC topics -->
+<!-- TODO - plugin manager TOC topics -->
 <mapID target="ide.autoupdate" url="configure/modules/autoupdate.html" />
 <mapID target="update.offline" url="configure/modules/updateoffline.html" />
 <mapID target="update.globally" url="configure/modules/updateglobally.html" />
@@ -123,7 +123,7 @@
 <mapID target="managing_a_module" url="configure/modules/managing_a_module.html" />
 <mapID target="managing_updatecenters" url="configure/modules/updatecenters.html" />
 
-<!-- TODO -- these plugin manager csh topics need to be mapped with help ids from plugin manager -->
+<!-- TODO - these plugin manager csh topics need to be mapped with help ids from plugin manager -->
 <!--
 <mapID target="" url="configure/modules/csh_plug_settings.html" />
 <mapID target="" url="configure/modules/csh_plug_updates.html" />
@@ -158,7 +158,8 @@
 
 <!-- Favorites window :-->
 <mapID target="org.netbeans.modules.favorites.Tab" url="project/csh/proj_fav_window.html" />
-
+<!-- Favorites window menu item:-->
+<mapID target="org.netbeans.modules.favorites.Actions$View" url="project/csh/proj_fav_window.html" />
 
 
 
@@ -206,11 +207,6 @@
 <mapID target="netbeans.optionsDialog.keymaps" url="configure/options-shortcuts.html" />
 
 
-<!--CSH - Whenever main window or a menu item is in focus when Help is clicked:-->
-<mapID target="org.netbeans.core.windows.view.ui.MainWindow" url="pending.html" />
-
-<!--CSH - Whenever F1 is clicked on property sheet and there is no help button activated:-->
-<mapID target="org.netbeans.core.NbSheet" url="files/files_properties.html" />
 
 
 <!--csh pages for Find and Find in Projects windows-->
@@ -322,7 +318,7 @@
    <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="files/files_runtime.html" /> 
    <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/workspace/toolbar_customize.html" /> 
 
-<!-- Database Explorer node; both general container and instance node for databases--> -->
+<!-- Database Explorer node; both general container and instance node for databases -->
 <mapID target="dbexpovew" url="files/files_runtime.html" />
 
  <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars:-->  
@@ -431,5 +427,57 @@
 <!-- CSH -->
 <mapID target="org.netbeans.modules.localhistory.ui.revert.RevertFileChanges" url="local-history/csh/hist_revert_dialog.html" />
 <mapID target="org.netbeans.modules.localhistory.options.LocalHistoryOptionsController" url="local-history/hist_settings.html" />
+
+
+<!--IDs for menu items-->
+<!--CSH - Whenever main window or a menu item is in focus when F1 is clicked. However, some menu items have unique IDs-->
+<mapID target="org.netbeans.core.windows.view.ui.MainWindow" url="pending.html" />
+
+<!--CSH - Whenever F1 is clicked on property sheet and there is no help button activated:-->
+<mapID target="org.netbeans.core.NbSheet" url="files/files_properties.html" />
+
+
+<!--IDs that are used for basic menu items-->
+<!--Help menu-->
+<mapID target="org.netbeans.modules.url.URLDataObject" url="pending.html" />
+<!--Project Groups menu-->
+<mapID target="org.netbeans.modules.project.ui.groups.GroupsMenu" url="pending.html" />
+
+<!--obvious menu items-->
+<mapID target="org.netbeans.modules.openfile.OpenFileAction" url="pending.html" />
+<mapID target="org.openide.actions.SaveAction" url="pending.html" />
+<mapID target="org.openide.actions.SaveAllAction" url="pending.html" />
+<mapID target="org.netbeans.core.actions.SystemExit" url="pending.html" />
+<mapID target="org.openide.actions.UndoAction" url="pending.html" />
+<mapID target="org.openide.actions.RedoAction" url="pending.html" />
+<mapID target="org.openide.actions.CutAction" url="pending.html" />
+<mapID target="org.openide.actions.CopyAction" url="pending.html" />
+<mapID target="org.openide.actions.PasteAction" url="pending.html" />
+<mapID target="org.openide.actions.DeleteAction" url="pending.html" />
+<mapID target="org.openide.actions.FindAction" url="pending.html" />
+<mapID target="org.openide.actions.ReplaceAction" url="pending.html" />
+<mapID target="org.netbeans.modules.search.FindInFilesAction" url="pending.html" />
+<mapID target="org.netbeans.modules.search.ReplaceInFilesAction" url="pending.html" />
+<mapID target="org.openide.actions.GotoAction" url="pending.html" />
+
+<!--next error and previous error-->
+<mapID target="org.netbeans.core.actions.JumpNextAction" url="pending.html" />
+<mapID target="org.netbeans.core.actions.JumpPrevAction" url="pending.html" />
+
+<!--local history-->
+<mapID target="org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction" url="pending.html" />
+<mapID target="org.netbeans.modules.localhistory.ui.revert.RevertToAction" url="pending.html" />
+
+<!--debugging, add watch-->
+<mapID target="org.netbeans.modules.debugger.ui.actions.AddWatchAction" url="pending.html" />
+
+<!--Output window menu item-->
+<mapID target="org.netbeans.core.output2.OutputWindowAction" url="pending.html" />
+<!--Task list menu item-->
+<mapID target="org.netbeans.modules.tasklist.ui.TaskListAction" url="pending.html" />
+<!--Properties window menu item-->
+<mapID target="org.netbeans.core.actions.GlobalPropertiesAction" url="pending.html" />
+<!--Services window menu item-->
+<mapID target="org.netbeans.core.actions.ViewRuntimeTabAction" url="pending.html" />
 
 </map>

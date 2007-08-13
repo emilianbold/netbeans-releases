@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * 
+ *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+-->
+<html>
+<head>
+    <title>Task List Window</title>
+    <link rel="StyleSheet" href="../ide.css" type="text/css">
+</head>
+<body>
+    <!--TODO complete this topic-->
+    <h2>Task List Window</h2>
+    <p>The Task List window (known as the To Do window in previous versions of the 
+        IDE) displays a unified list of things that you need to 
+    resolve in your various files.</p>
+    <p>You can click on an entries in 
+        the Task List window to jump to the line of the file where 
+    the task needs to be resolved.</p>
+    <p>Task List window entries are created by some types of errors and by 
+    the occurrence of specific character patterns in the file.</p>
+    <p>The following are some of the things that create task list entries:</p>
+    <ul>
+        <li>Code comments that contain the patterns <tt>TODO</tt>, <tt>XXX</tt>, or <tt>FIXME</tt></li>
+        <li>The pattern <tt>&lt;&lt;&lt;&lt;&lt;&lt;</tt>, which denotes merge conflicts in CVS and other 
+        version control systems</li>
+        <li>(For Java projects) Javadoc comments that contain the <tt>@todo</tt> keyword</li>
+        <li>(For Java projects) lines where compiler errors are registered</li>
+    </ul>
+    
+    <p>You can do the following in the Task List window:</p>
+    <ul>
+        <li>Jump to a To Do task in the Source Editor.</li>
+        <li>Sort and filter the list of To Do tasks displayed in the window.</li>
+        <li>Create and modify To Do task filters.</li>
+    </ul>
+    
+    <p>To open the To Do window, choose Window &gt; Task List (Ctrl-6) from the main menu.
+        The Task List displays found TODO tasks.
+        You can sort the list of tasks by clicking the column heading of the Task List.
+    The To Do toolbar above the Task List enables you to modify and work with the displayed TODO tasks.</p>
+
+
+
+    
+    <h3>Task List Window Toolbar</h3>
+    <p>Use the following items in the Task List window toolbar to specify which files are scanned for tasks.</p>
+    <ul>
+        <li><b>Current File.</b> When selected, the IDE scans the file that is currently selected in the Source Editor and displays the To Do tasks found in that file. When you open a new file in the editor, the file is scanned and only the To Do tasks in that file are displayed.</li>
+        <li><b>Main project and dependent projects.</b> When selected, the IDE scans all files open in the Source Editor and displays all To Do tasks in the open files. When you open a file in the editor, the file is scanned and the To Do tasks in that file are added to the list of displayed tasks.</li>
+        <li><b>All opened projects.</b> Choose a folder from the drop-down list to scan that folder for To Do tasks. Use the Refresh button (<img src="images/todo_refresh.png">) to refresh the list.</li>
+    </ul>
+    
+    <p>Use the following items in the To Do window toolbar to modify the list of displayed tasks and work with the listed To Do items.</p>
+    <table border="1" cellpadding="5" cellspacing="0" summary="The left column contains the graphic icon for the function in the To Do window toolbar. 
+    The right column contains a description of the function.">
+        <tr>
+            <td><b>Icon</b></td>
+            <td><b>Description</b></td>
+        </tr>     
+        <tr>
+            <td><img src="images/todo_gotosource.png" alt="Show Source button"></td>
+            <td><b>Show selected TODO in editor.</b> Select a TODO task from the task list and click this button to show the location of the task in the Source Editor.</td>
+        </tr>
+        <tr>
+            <td><img src="images/todo_refresh.png" alt="Show Source button"></td>
+            <td><b>Rescan tasks.</b> Click this button to rescan for TODO tasks.</td>
+        </tr>
+        <tr>
+            <td><img src="images/todo_filter.png" alt="Edit Filters"></td>
+            <td><b>Edit filters.</b> Click this button to open the Edit Filters dialog box.
+                The Edit Filters dialog box enables you to add and modify the filters used to filter the TODO tasks displayed in the To Do window.
+            Use the Filter drop-down list to activate that filter on the To Do tasks and limit the tasks displayed according to the filter criteria.</td>
+        </tr>
+    </table>
+    
+    
+    
+    <!--
+	<p><b>To create and modify To Do task filters:</b></p>
+	<ol>
+	<li>Click the Edit Filter button (<img src="images/todo_filter.png"> ) in the toolbar to open the Edit Filter dialog box.</li>
+	<li>Do one of the following:
+	<ul><li>To create a new filter, click New and enter a name for the filter.</li>
+	<li>To modify an existing filter, select the filter in the Filters pane.</li>
+	</ul></li>
+	<li>Specify the filter conditions. Use the More and Fewer buttons to add or remove conditions for the filter.</li>
+	<li>Click Preview to see the results when the filter is applied to the current list of To Do tasks in the To Do window.</li>
+	<li>Click OK.</li>
+	</ol>
+	-->
+	
+
+
+
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="tasks_viewing.html">Scanning for TODOs in Source Code</a></dd>
+        <dd><a href="../configure/options_todo_settings.html">Options Window: To Do Settings</a></dd>
+    </dl>
+    <hr>
+    <small><a href="../credits.html">Legal Notices</a></small>
+    <table cellpadding="50" border="0">
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+    </table>
+</body>

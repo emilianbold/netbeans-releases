@@ -16,7 +16,7 @@
 
   <tocitem text="Getting Started" >
     <tocitem text="IDE Overview" target="gs.tour" />
-    <tocitem text="Key Concepts" target="gs.key" />
+
   </tocitem>
   
 
@@ -30,13 +30,6 @@
     <tocitem text="Specifying Files to Ignore" target="files.ignore-files" />
     <tocitem text="Setting Character Encoding" target="files.encoding" />
   </tocitem>
-
-
-
-    
-
-
-
 
       <tocitem text="Version Control and File History">
       <tocitem text="Local History">
@@ -59,7 +52,7 @@
 
    </tocitem>
    
-<tocitem text="Managing Plugins" >
+<tocitem text="Plugins" >
       <tocitem text="About Managing Plugin" target="managing_a_module" />
       <tocitem text="Updating the IDE" target="ide.autoupdate" />
       <tocitem text="Managing IDE Update Centers" target="managing_updatecenters" />
@@ -75,6 +68,36 @@
     <tocitem text="Help Viewer Shortcuts" target="accessibility.jhshortcuts" />
     <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting" />
   </tocitem>
+  
+     <tocitem text="XML Documents" >
+      <tocitem text="About Editing XML Documents" target="xml_about" />
+      <tocitem text="Working with XML Documents" target="xml_overview" />
+      <tocitem text="XML Tasks: Quick Reference" target="xml_quickref" />
+      <tocitem text="Creating an XML Document" target="xml_createxml" />
+      <tocitem text="Editing an XML Document" target="xml_editxml" />
+      <tocitem text="Validating an XML Document" target="xml_validatexml" />
+      <tocitem text="Checking an XML Document for Well-Formedness" target="xml_checkxml" />
+      <tocitem text="Creating a DTD" target="xml_createdtd" />
+      <tocitem text="Generating DTD Documentation" target="xml_documentdtd" />
+      <tocitem text="Working With XML Schemas" target="xml_schemas" />
+      <tocitem text="Registering a Local DTD or XML Schema Resource" target="xml_mountcatalogs" />
+      <tocitem text="XML Catalogs" >
+        <tocitem text="About XML Catalogs" target="xml_catalogs" />
+        <tocitem text="XML Catalog Formats" target="xml_catalogformats" />
+        <tocitem text="Creating and Editing an XML Catalog" target="xml_editcatalogs" />
+      </tocitem>
+      <tocitem text="Generating a DOM Tree Scanner" target="xml_generatedom" />
+      <tocitem text="SAX Support in the IDE" target="xml_aboutsax" />
+      <tocitem text="Generating a SAX Document Handler" target="xml_generatesax" />
+      <tocitem text="Creating and Editing an XSL Stylesheet" target="xml_xslabout" />
+      <tocitem text="Performing an XSL Transformation" target="xml_xsltransform" />
+      <tocitem text="Cascading Style Sheets in the IDE">
+        <tocitem text="Creating a Cascading Style Sheet" target="css_createcss" />
+        <tocitem text="Editing a Cascading Style Sheet" target="css_editcss" />
+        <tocitem text="Checking a Cascading Style Sheet for Validity" target="css_checkcss" />
+        <tocitem text="Copying and Pasting CSS References" target="css_copypastecss" />
+      </tocitem>
+    </tocitem>
     <tocitem text="Configuring the IDE">
     <tocitem text="About Configuring the IDE" target="configure.about" />    
     <tocitem text="Working with IDE Configurations" target="configure.overview" />    
@@ -106,35 +129,7 @@
 
 
 
-    <tocitem text="XML Documents" >
-      <tocitem text="About Editing XML Documents" target="xml_about" />
-      <tocitem text="Working with XML Documents" target="xml_overview" />
-      <tocitem text="XML Tasks: Quick Reference" target="xml_quickref" />
-      <tocitem text="Creating an XML Document" target="xml_createxml" />
-      <tocitem text="Editing an XML Document" target="xml_editxml" />
-      <tocitem text="Validating an XML Document" target="xml_validatexml" />
-      <tocitem text="Checking an XML Document for Well-Formedness" target="xml_checkxml" />
-      <tocitem text="Creating a DTD" target="xml_createdtd" />
-      <tocitem text="Generating DTD Documentation" target="xml_documentdtd" />
-      <tocitem text="Working With XML Schemas" target="xml_schemas" />
-      <tocitem text="Registering a Local DTD or XML Schema Resource" target="xml_mountcatalogs" />
-      <tocitem text="XML Catalogs" >
-        <tocitem text="About XML Catalogs" target="xml_catalogs" />
-        <tocitem text="XML Catalog Formats" target="xml_catalogformats" />
-        <tocitem text="Creating and Editing an XML Catalog" target="xml_editcatalogs" />
-      </tocitem>
-      <tocitem text="Generating a DOM Tree Scanner" target="xml_generatedom" />
-      <tocitem text="SAX Support in the IDE" target="xml_aboutsax" />
-      <tocitem text="Generating a SAX Document Handler" target="xml_generatesax" />
-      <tocitem text="Creating and Editing an XSL Stylesheet" target="xml_xslabout" />
-      <tocitem text="Performing an XSL Transformation" target="xml_xsltransform" />
-      <tocitem text="Cascading Style Sheets in the IDE">
-        <tocitem text="Creating a Cascading Style Sheet" target="css_createcss" />
-        <tocitem text="Editing a Cascading Style Sheet" target="css_editcss" />
-        <tocitem text="Checking a Cascading Style Sheet for Validity" target="css_checkcss" />
-        <tocitem text="Copying and Pasting CSS References" target="css_copypastecss" />
-      </tocitem>
-    </tocitem>
+ 
 
   </tocitem>
     </tocitem>
