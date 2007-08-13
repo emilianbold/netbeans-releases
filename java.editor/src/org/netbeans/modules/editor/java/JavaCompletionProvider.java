@@ -74,12 +74,12 @@ public class JavaCompletionProvider implements CompletionProvider {
     
     public CompletionTask createTask(int type, JTextComponent component) {
         if ((type & COMPLETION_QUERY_TYPE) != 0 || type == TOOLTIP_QUERY_TYPE || type == DOCUMENTATION_QUERY_TYPE)
-            return new AsyncCompletionTask(new JavaCompletionQuery(type, component.getSelectionStart()), component);
+            return new AsyncCompletionTask(new JavaCompletionQuery(type, component.getSelectionStart(), true), component);
         return null;
     }
     
     static CompletionTask createDocTask(ElementHandle element) {
-        JavaCompletionQuery query = new JavaCompletionQuery(DOCUMENTATION_QUERY_TYPE, -1);
+        JavaCompletionQuery query = new JavaCompletionQuery(DOCUMENTATION_QUERY_TYPE, -1, true);
         query.element = element;
         return new AsyncCompletionTask(query, Registry.getMostActiveComponent());
     }
@@ -87,7 +87,7 @@ public class JavaCompletionProvider implements CompletionProvider {
     public static List<? extends CompletionItem> query(JavaSource source, int queryType, int offset, int substitutionOffset) throws IOException {
         assert source != null;
         assert (queryType & COMPLETION_QUERY_TYPE) != 0;
-        JavaCompletionQuery query = new JavaCompletionQuery(queryType, offset);
+        JavaCompletionQuery query = new JavaCompletionQuery(queryType, offset, false);
         source.runUserActionTask(query, false);
         if (offset != substitutionOffset) {
             for (JavaCompletionItem jci : query.results) {
@@ -198,10 +198,12 @@ public class JavaCompletionProvider implements CompletionProvider {
         private String filterPrefix;
         
         private ElementHandle element;
+        private boolean hasTask;
         
-        private JavaCompletionQuery(int queryType, int caretOffset) {
+        private JavaCompletionQuery(int queryType, int caretOffset, boolean hasTask) {
             this.queryType = queryType;
             this.caretOffset = caretOffset;
+            this.hasTask = hasTask;
         }
 
         @Override
@@ -324,7 +326,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         public void run(CompilationController controller) throws Exception {
-            if (!isTaskCancelled()) {
+            if (!hasTask || !isTaskCancelled()) {
                 if (component != null)
                     component.putClientProperty("completion-active", Boolean.TRUE); //NOI18N
                 if ((queryType & COMPLETION_QUERY_TYPE) != 0)
