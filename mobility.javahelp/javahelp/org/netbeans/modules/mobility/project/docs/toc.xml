@@ -4,13 +4,13 @@
 
 <toc version="2.0">
 	<tocitem text="Mobility Applications" expand="false">
+		<tocitem text="Importing Java ME Projects" target="me.importprojects" />
+		<tocitem text="Installing Mobility Sample Applications" target="me.installingexamples" />
+		<tocitem text="Mobile Application Tutorials and Guides" target="me.guides" />
 		<tocitem text="Java ME MIDP Development" expand="false">
 			<tocitem text="Getting Started">
 				<tocitem text="About Java ME CLDC/MIDP Applications" target="me.welcome" />
 				<tocitem text="How the IDE Supports Java ME MIDP Development" target="me.support" />
-				<tocitem text="Java ME MIDP Tutorials and Guides" target="me.guides" />
-				<tocitem text="Installing MIDP Examples" target="me.installingexamples" />
-				<tocitem text="Importing MIDP Projects" target="me.importprojects" />
 			</tocitem>
 			<tocitem text="Working with MIDP Projects">
 				<tocitem text="Working with Java ME MIDP Projects" target="me.proj_working" />
