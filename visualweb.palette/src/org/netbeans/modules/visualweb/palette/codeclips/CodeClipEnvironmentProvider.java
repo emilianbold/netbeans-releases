@@ -33,6 +33,8 @@
 package org.netbeans.modules.visualweb.palette.codeclips;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -142,7 +144,11 @@ public class CodeClipEnvironmentProvider implements Environment.Provider {
                 reader.setContentHandler(handler);
                 reader.setEntityResolver(EntityCatalog.getDefault());
                 String urlString = xmlDataObject.getPrimaryFile().getURL().toExternalForm();
-                InputSource is = new InputSource(xmlDataObject.getPrimaryFile().getInputStream());
+                InputStream inputStream = xmlDataObject.getPrimaryFile().getInputStream();
+                InputStreamReader in = new InputStreamReader(inputStream, "UTF8");
+                InputSource is =new InputSource(in);
+                //Force UTF8 Reading.
+                //InputSource is = new InputSource(xmlDataObject.getPrimaryFile().getInputStream());
                 is.setSystemId(urlString);
                 reader.parse(is);
             }

@@ -31,6 +31,7 @@ package org.netbeans.modules.visualweb.palette.codeclips;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -209,6 +210,7 @@ public class CodeClipUtilities {
 //        String displayName = fileName.replace('_',' ');
         
         StringBuffer buff = new StringBuffer(512);
+        
         buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); // NOI18N
         buff.append("<!DOCTYPE " + CodeClipHandler.XML_ROOT + " PUBLIC \"-//NetBeans//CodeClip Palette Item 1.0//EN\"\n"); // NOI18N
         buff.append("\"http://www.netbeans.org/dtds/codeclip-palette-item-1_0.dtd\">\n\n"); // NOI18N
@@ -233,8 +235,15 @@ public class CodeClipUtilities {
         buff.append("</" + CodeClipHandler.XML_ROOT + ">");
         
         FileLock lock = itemFile.lock();
+        
+        //OutputStreamWriter out = new OutputStreamWriter(new ByteArrayOutputStream(),"UTF-32");
+        
         OutputStream os = itemFile.getOutputStream(lock);
-        os.write(buff.toString().getBytes());
+        
+        OutputStreamWriter out = new OutputStreamWriter( os,"UTF8");
+        out.write(buff.toString());
+        out.close();
+        //os.write(buff.toString().getBytes());
         os.close();
         lock.releaseLock();
         
