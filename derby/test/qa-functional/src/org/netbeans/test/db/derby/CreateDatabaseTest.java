@@ -50,7 +50,7 @@ public class CreateDatabaseTest  extends DbJellyTestCase {
     
     public void testCreateDatabase(){
         debug("Creating Java DB Database");
-        new ActionNoBlock("Tools|Java DB Database|Create Java DB Database...", null).perform();
+        new ActionNoBlock("Tools|Java DB Database|Create Database...", null).perform();
         CreateDerbyDatabaseOperator operator=new CreateDerbyDatabaseOperator();
         operator.typeDatabaseName(DB);
         operator.typeUserName(USER);
