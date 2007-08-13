@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.modelutil;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -64,6 +65,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
@@ -208,9 +210,9 @@ public class CsmUtilities {
     //====================
 
     public static CsmFile getCsmFile(Node node, boolean waitParsing) {
-        EditorCookie ec = (EditorCookie) node.getCookie(EditorCookie.class);
+        EditorCookie ec = node.getCookie(EditorCookie.class);
         if (ec instanceof CppEditorSupport) {
-            JEditorPane[] panes = ec.getOpenedPanes();
+            JEditorPane[] panes = getOpenedPanesInEQ(ec);
             if (panes != null && panes.length>0) {
                 Document doc = panes[0].getDocument();
                 if (doc instanceof BaseDocument){
@@ -221,6 +223,27 @@ public class CsmUtilities {
         return null;
     }
 
+    public static JEditorPane[] getOpenedPanesInEQ(final EditorCookie ec) {
+        assert ec != null;
+        final JEditorPane[][] panes = {null};
+        if (SwingUtilities.isEventDispatchThread()) {
+            panes[0] = ec.getOpenedPanes();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        panes[0] = ec.getOpenedPanes();
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return panes[0];
+    }
+    
     public static CsmFile getCsmFile(BaseDocument bDoc, boolean waitParsing) {
 	CsmFile csmFile = null;
 	try {
@@ -243,7 +266,7 @@ public class CsmUtilities {
     
     public static CsmFile[] getCsmFiles(DataObject dobj) {
 	if( dobj != null ) {
-	    NativeFileItemSet set = (NativeFileItemSet) dobj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+	    NativeFileItemSet set = dobj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
 	    if( set == null ) {
 		FileObject fo = dobj.getPrimaryFile();
 		if( fo != null ) {
@@ -255,7 +278,7 @@ public class CsmUtilities {
 		}
 	    }
 	    else {
-		List<CsmFile> l = new ArrayList(set.size());
+		List<CsmFile> l = new ArrayList<CsmFile>(set.size());
 		for( NativeFileItem item : set ) {
 		    CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
 		    if( csmProject != null ) {
@@ -265,7 +288,7 @@ public class CsmUtilities {
 			}
 		    }
 		}
-		return (CsmFile[]) l.toArray(new CsmFile[l.size()]);
+		return l.toArray(new CsmFile[l.size()]);
 	    }
 	}
 	return new CsmFile[0];
@@ -471,7 +494,7 @@ public class CsmUtilities {
     private static boolean openAtElement(final CsmOffsetable element, final boolean jumpLineStart) {
         final DataObject dob = getDataObject(element.getContainingFile());
         if (dob != null) {
-            final EditorCookie.Observable ec = (EditorCookie.Observable)dob.getCookie(EditorCookie.Observable.class);
+            final EditorCookie.Observable ec = dob.getCookie(EditorCookie.Observable.class);
             if (ec != null) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
@@ -525,6 +548,7 @@ public class CsmUtilities {
             // [dafe] I don't know why, but editor guys are waiting for focus
             // in delay processing, so I will do the same
             pane.addFocusListener(new FocusAdapter() {
+                @Override
                 public void focusGained(FocusEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
