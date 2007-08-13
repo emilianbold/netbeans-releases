@@ -312,7 +312,7 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         return null;
     }
     
-    private static final Set<Kind> TYPE_PATH_ELEMENT = EnumSet.of(Kind.IDENTIFIER, Kind.PRIMITIVE_TYPE, Kind.PARAMETERIZED_TYPE, Kind.MEMBER_SELECT);
+    private static final Set<Kind> TYPE_PATH_ELEMENT = EnumSet.of(Kind.IDENTIFIER, Kind.PRIMITIVE_TYPE, Kind.PARAMETERIZED_TYPE, Kind.MEMBER_SELECT, Kind.ARRAY_TYPE);
     
     private static TreePath findTypePath(TreePath tp) {
         if (!TYPE_PATH_ELEMENT.contains(tp.getLeaf().getKind()))
