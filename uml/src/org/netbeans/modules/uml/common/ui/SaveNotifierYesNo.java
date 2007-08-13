@@ -81,36 +81,28 @@ public class SaveNotifierYesNo
             String dialogTitle, String saveType, String saveName) 
         {
             
-            JButton noButton = new JButton(NbBundle.getMessage(
-                SaveNotifierYesNo.class, "LBL_NoButton")); // NOI18N
+            JButton discardButton = new JButton(NbBundle.getMessage(
+                SaveNotifierYesNo.class, "LBL_DiscardButton")); // NOI18N
             
-            noButton.setActionCommand(NbBundle.getMessage(
-                    SaveNotifierYesNo.class, "LBL_NoButton")); // NOI18N
+            discardButton.setActionCommand(NbBundle.getMessage(
+                    SaveNotifierYesNo.class, "LBL_DiscardButton")); // NOI18N
             
             Mnemonics.setLocalizedText(
-                    noButton, NbBundle.getMessage(
-                        SaveNotifierYesNo.class, "LBL_NoButton")); // NOI18N
+                    discardButton, NbBundle.getMessage(
+                        SaveNotifierYesNo.class, "LBL_DiscardButton")); // NOI18N
 
-            JButton saveAlwaysButton = new JButton(NbBundle.getMessage(
-                SaveNotifierYesNo.class, "LBL_SaveAlwaysButton")); // NOI18N
+            JButton saveButton = new JButton(NbBundle.getMessage(
+                SaveNotifierYesNo.class, "LBL_SaveButton")); // NOI18N
             
-            saveAlwaysButton.setActionCommand(NbBundle.getMessage(
-                    SaveNotifierYesNo.class, "LBL_SaveAlwaysButton")); // NOI18N
-            
-            saveAlwaysButton.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage(
-                        SaveNotifierYesNo.class, "ACSD_SaveAlwaysButton")); // NOI18N
-            
-            Mnemonics.setLocalizedText(
-                    saveAlwaysButton, NbBundle.getMessage(
-                        SaveNotifierYesNo.class, "LBL_SaveAlwaysButton")); // NOI18N
+            saveButton.setActionCommand(NbBundle.getMessage(
+                    SaveNotifierYesNo.class, "LBL_SaveButton")); // NOI18N
 
             Object[] buttonOptions =
             {
-                DialogDescriptor.YES_OPTION,
-                noButton,
+                discardButton,
                 DialogDescriptor.CANCEL_OPTION,
-                saveAlwaysButton
+                saveButton
+                
             };
             
             dialogDesc = new DialogDescriptor(
@@ -137,22 +129,18 @@ public class SaveNotifierYesNo
         public void actionPerformed(ActionEvent actionEvent) 
         {
             if (actionEvent.getActionCommand().equalsIgnoreCase(
-                NbBundle.getMessage(SaveNotifierYesNo.class, "LBL_YesButton"))) // NOI18N
+                NbBundle.getMessage(SaveNotifierYesNo.class, "LBL_SaveButton"))) // NOI18N
             {
                 result = DialogDescriptor.YES_OPTION;
             }
             
             else if (actionEvent.getActionCommand().equalsIgnoreCase(
-                NbBundle.getMessage(SaveNotifierYesNo.class, "LBL_NoButton"))) // NOI18N))
+                NbBundle.getMessage(SaveNotifierYesNo.class, "LBL_DiscardButton"))) // NOI18N))
             {
                 result = DialogDescriptor.NO_OPTION;
             }
             
-            else if (actionEvent.getActionCommand().equalsIgnoreCase(
-                NbBundle.getMessage(SaveNotifierYesNo.class, "LBL_SaveAlwaysButton"))) // NOI18N))
-            {
-                result = SAVE_ALWAYS_OPTION;
-            }
+            
             
             else // Cancel or 'x' box close
                 result = DialogDescriptor.CANCEL_OPTION;
