@@ -19,12 +19,17 @@
 
 package org.netbeans.modules.apisupport.project.queries;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -37,11 +42,14 @@ import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
 
 public final class ClassPathProviderImpl implements ClassPathProvider {
@@ -237,23 +245,53 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         extraCompilationUnitsCompile = new HashMap<FileObject,ClassPath>();
         extraCompilationUnitsExecute = new HashMap<FileObject,ClassPath>();
         for (Map.Entry<FileObject,Element> entry : project.getExtraCompilationUnits().entrySet()) {
-            FileObject pkgroot = entry.getKey();
+            final FileObject pkgroot = entry.getKey();
             Element pkgrootEl = entry.getValue();
             Element classpathEl = Util.findElement(pkgrootEl, "classpath", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
             assert classpathEl != null : "no <classpath> in " + pkgrootEl;
-            String classpathS = Util.findText(classpathEl);
+            final String classpathS = Util.findText(classpathEl);
             if (classpathS == null) {
                 extraCompilationUnitsCompile.put(pkgroot, ClassPathSupport.createClassPath(new URL[0]));
                 extraCompilationUnitsExecute.put(pkgroot, ClassPathSupport.createClassPath(new URL[0]));
             } else {
-                List<String> relevantProperties = new ArrayList<String>();
-                Matcher m = Pattern.compile("\\$\\{([^{}]+)\\}").matcher(classpathS);
-                while (m.find()) {
-                    relevantProperties.add(m.group(1));
+                class CPI implements ClassPathImplementation, PropertyChangeListener, AntProjectListener {
+                    final Set<String> relevantProperties = new HashSet<String>();
+                    final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+                    String cpS = classpathS;
+                    CPI() {
+                        project.evaluator().addPropertyChangeListener(WeakListeners.propertyChange(this, project.evaluator()));
+                        project.getHelper().addAntProjectListener(WeakListeners.create(AntProjectListener.class, this, project.getHelper()));
+                        Matcher m = Pattern.compile("\\$\\{([^{}]+)\\}").matcher(cpS);
+                        while (m.find()) {
+                            relevantProperties.add(m.group(1));
+                        }
+                    }
+                    public List<? extends PathResourceImplementation> getResources() {
+                        List<PathResourceImplementation> resources = new ArrayList<PathResourceImplementation>();
+                        addPathFromProjectEvaluated(resources, project.evaluator().evaluate(cpS));
+                        return resources;
+                    }
+                    public void addPropertyChangeListener(PropertyChangeListener listener) {
+                        pcs.addPropertyChangeListener(listener);
+                    }
+                    public void removePropertyChangeListener(PropertyChangeListener listener) {
+                        pcs.removePropertyChangeListener(listener);
+                    }
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (relevantProperties.contains(evt.getPropertyName())) {
+                            pcs.firePropertyChange(PROP_RESOURCES, null, null);
+                        }
+                    }
+                    public void configurationXmlChanged(AntProjectEvent ev) {
+                        Element pkgrootEl = project.getExtraCompilationUnits().get(pkgroot);
+                        Element classpathEl = Util.findElement(pkgrootEl, "classpath", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                        assert classpathEl != null : "no <classpath> in " + pkgrootEl;
+                        cpS = Util.findText(classpathEl);
+                        pcs.firePropertyChange(PROP_RESOURCES, null, null);
+                    }
+                    public void propertiesChanged(AntProjectEvent ev) {}
                 }
-                ClassPathImplementation ecuCompile = ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                        project.getProjectDirectoryFile(), project.evaluator(),
-                        relevantProperties.toArray(new String[relevantProperties.size()]));
+                ClassPathImplementation ecuCompile = new CPI();
                 extraCompilationUnitsCompile.put(pkgroot, ClassPathFactory.createClassPath(ecuCompile));
                 // Add <built-to> dirs and JARs for ClassPath.EXECUTE.
                 List<PathResourceImplementation> extraEntries = new ArrayList<PathResourceImplementation>();
