@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.metadata.model.support;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,8 +31,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
- * @author Andrei Badea
+ * 
+ * @author Andrei Badea, Erno Mononen
  */
 public class TestUtilities {
 
@@ -44,6 +45,12 @@ public class TestUtilities {
         return fo;
     }
 
+    /**
+     * Copies the given <code>content</code> to the given <code>fo</code>.
+     * 
+     * @param file the file object to which the given content is copied.
+     * @param content the contents to copy.
+     */ 
     public static final void copyStringToFileObject(FileObject fo, String contents) throws IOException {
         OutputStream os = fo.getOutputStream();
         try {
@@ -54,13 +61,35 @@ public class TestUtilities {
         }
     }
 
+    /**
+     * Copies the given <code>content</code> to the given <code>file</code>.
+     * 
+     * @param file the file to which the given content is copied.
+     * @param content the contents to copy.
+     */ 
+    public static final void copyStringToFile(File file, String content) throws IOException {
+        copyStringToFileObject(FileUtil.toFileObject(file), content);
+    }
+
+    /**
+     * Copies the given stream to a String.
+     * 
+     * @param input the stream to copy.
+     * @return string representing the contents of the given stream.
+     */ 
     public static final String copyStreamToString(InputStream input) throws IOException {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         FileUtil.copy(input, output);
         return Charset.forName("UTF-8").newDecoder().decode(ByteBuffer.wrap(output.toByteArray())).toString();
     }
 
-    public static final String copyFileObjectToString (FileObject fo) throws IOException {
+    /**
+     * Copies the given <code>fo</code> to a String.
+     * 
+     * @param fo the file objects to copy.
+     * @return string representing the contents of the given <code>fo</code>.
+     */ 
+    public static final String copyFileObjectToString(FileObject fo) throws IOException {
         InputStream stream = fo.getInputStream();
         try {
             return copyStreamToString(stream);
@@ -68,4 +97,15 @@ public class TestUtilities {
             stream.close();
         }
     }
+
+    /**
+     * Copies the given <code>file</code> to a String.
+     * 
+     * @param fo the file to copy.
+     * @return string representing the contents of the given <code>file</code>.
+     */ 
+    public static final String copyFileToString(File file) throws IOException {
+        return copyFileObjectToString(FileUtil.toFileObject(file));
+    }
+
 }
