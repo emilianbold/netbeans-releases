@@ -110,12 +110,15 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
      * Close All Documents.
      */
     public void closeAllDocuments(){
-        try {
-            new CloseAllDocumentsAction().perform();
-        }catch(Exception exc){
-            test_failed = true;
-            fail(exc);
-        }
+
+	if ( new Action("Window|Close All Documents",null).isEnabled() )
+	        try {
+        	    new CloseAllDocumentsAction().perform();
+	        }catch(Exception exc){
+	            test_failed = true;
+        	    fail(exc);
+	        }
+
     }
     
     /**
