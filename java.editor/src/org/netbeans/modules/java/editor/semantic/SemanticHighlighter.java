@@ -83,6 +83,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -270,13 +271,13 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                     continue;
                 
                 if (u.type.contains(UseTypes.DECLARATION) && org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(decl)) {
-                    if (decl.getKind().isField() || isLocalVariableClosure(decl)) {
+                    if ((decl.getKind().isField() && !isSerialVersionUID(info, decl)) || isLocalVariableClosure(decl)) {
                         if (!hasAllTypes(uses, EnumSet.of(UseTypes.READ, UseTypes.WRITE))) {
                             u.spec.add(ColoringAttributes.UNUSED);
                         }
                     }
                     
-                    if (decl.getKind() == ElementKind.CONSTRUCTOR || decl.getKind() == ElementKind.METHOD) {
+                    if ((decl.getKind() == ElementKind.CONSTRUCTOR && !decl.getModifiers().contains(Modifier.PRIVATE)) || decl.getKind() == ElementKind.METHOD) {
                         if (!hasAllTypes(uses, EnumSet.of(UseTypes.EXECUTE))) {
                             u.spec.add(ColoringAttributes.UNUSED);
                         }
@@ -335,6 +336,19 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
     
     private static boolean isLocalVariableClosure(Element el) {
         return el.getKind() == ElementKind.PARAMETER || el.getKind() == ElementKind.LOCAL_VARIABLE || el.getKind() == ElementKind.EXCEPTION_PARAMETER;
+    }
+    
+    /** Detects static final long SerialVersionUID 
+     * @return true if element is final static long serialVersionUID
+     */
+    private static boolean isSerialVersionUID(CompilationInfo info, Element el) {
+        if (el.getKind().isField() && el.getModifiers().contains(Modifier.FINAL) 
+                && el.getModifiers().contains(Modifier.STATIC)
+                && info.getTypes().getPrimitiveType(TypeKind.LONG).equals(el.asType())
+                && el.getSimpleName().toString().equals("serialVersionUID"))
+            return true;
+        else
+            return false;
     }
         
     private static class Use {
