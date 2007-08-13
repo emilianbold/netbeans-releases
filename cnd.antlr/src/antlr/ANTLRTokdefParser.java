@@ -63,7 +63,7 @@ public class ANTLRTokdefParser extends antlr.LLkParser       implements ANTLRTok
      */
     public void reportError(RecognitionException e) {
         if (getTool() != null) {
-            getTool().error(e.getErrorMessage(), e.getFilename(), e.getLine(), e.getColumn());
+            getTool().error(e.getMessage(), e.getFilename(), e.getLine(), e.getColumn());
 		}
         else {
             super.reportError(e);

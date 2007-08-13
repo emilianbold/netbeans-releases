@@ -708,7 +708,7 @@ public class DefineGrammarSymbols implements ANTLRGrammarParseBehavior {
     /** Start a new lexer */
     public void startLexer(String file, Token name, String superClass, String doc) {
         if (numLexers > 0) {
-            tool.panic("You may only have one lexer per grammar file: class " + name.getText());
+            tool.fatalError("You may only have one lexer per grammar file: class " + name.getText());
         }
         numLexers++;
         reset();
@@ -717,10 +717,10 @@ public class DefineGrammarSymbols implements ANTLRGrammarParseBehavior {
         Grammar g = (Grammar)grammars.get(name);
         if (g != null) {
             if (!(g instanceof LexerGrammar)) {
-                tool.panic("'" + name.getText() + "' is already defined as a non-lexer");
+                tool.fatalError("'" + name.getText() + "' is already defined as a non-lexer");
             }
             else {
-                tool.panic("Lexer '" + name.getText() + "' is already defined");
+                tool.fatalError("Lexer '" + name.getText() + "' is already defined");
             }
         }
         else {
@@ -741,7 +741,7 @@ public class DefineGrammarSymbols implements ANTLRGrammarParseBehavior {
     /** Start a new parser */
     public void startParser(String file, Token name, String superClass, String doc) {
         if (numParsers > 0) {
-            tool.panic("You may only have one parser per grammar file: class " + name.getText());
+            tool.fatalError("You may only have one parser per grammar file: class " + name.getText());
         }
         numParsers++;
         reset();
@@ -750,10 +750,10 @@ public class DefineGrammarSymbols implements ANTLRGrammarParseBehavior {
         Grammar g = (Grammar)grammars.get(name);
         if (g != null) {
             if (!(g instanceof ParserGrammar)) {
-                tool.panic("'" + name.getText() + "' is already defined as a non-parser");
+                tool.fatalError("'" + name.getText() + "' is already defined as a non-parser");
             }
             else {
-                tool.panic("Parser '" + name.getText() + "' is already defined");
+                tool.fatalError("Parser '" + name.getText() + "' is already defined");
             }
         }
         else {
@@ -772,7 +772,7 @@ public class DefineGrammarSymbols implements ANTLRGrammarParseBehavior {
     /** Start a new tree-walker */
     public void startTreeWalker(String file, Token name, String superClass, String doc) {
         if (numTreeParsers > 0) {
-            tool.panic("You may only have one tree parser per grammar file: class " + name.getText());
+            tool.fatalError("You may only have one tree parser per grammar file: class " + name.getText());
         }
         numTreeParsers++;
         reset();
@@ -781,10 +781,10 @@ public class DefineGrammarSymbols implements ANTLRGrammarParseBehavior {
         Grammar g = (Grammar)grammars.get(name);
         if (g != null) {
             if (!(g instanceof TreeWalkerGrammar)) {
-                tool.panic("'" + name.getText() + "' is already defined as a non-tree-walker");
+                tool.fatalError("'" + name.getText() + "' is already defined as a non-tree-walker");
             }
             else {
-                tool.panic("Tree-walker '" + name.getText() + "' is already defined");
+                tool.fatalError("Tree-walker '" + name.getText() + "' is already defined");
             }
         }
         else {

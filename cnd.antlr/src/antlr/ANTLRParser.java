@@ -47,7 +47,7 @@ public class ANTLRParser extends antlr.LLkParser       implements ANTLRTokenType
         }
 
         public void reportError(RecognitionException e) {
-            reportError(e, e.getErrorMessage());
+            reportError(e, e.getMessage());
         }
 
         public void reportError(RecognitionException e, String s) {

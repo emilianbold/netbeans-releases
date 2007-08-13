@@ -318,7 +318,7 @@ public abstract class Parser extends MatchExceptionState {
     }
 
     public void setASTNodeClass(String cl) {
-        astFactory.setASTNodeType(cl);
+        astFactory.setASTNodeClass(cl);
     }
 
     /** Specify the type of node to create during tree building; use setASTNodeClass now

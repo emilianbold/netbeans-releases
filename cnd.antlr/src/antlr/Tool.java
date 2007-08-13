@@ -273,16 +273,16 @@ public class Tool {
                 codeGen.gen();
             }
             catch (ClassNotFoundException cnfe) {
-                panic("Cannot instantiate code-generator: " + codeGenClassName);
+                fatalError("Cannot instantiate code-generator: " + codeGenClassName);
             }
             catch (InstantiationException ie) {
-                panic("Cannot instantiate code-generator: " + codeGenClassName);
+                fatalError("Cannot instantiate code-generator: " + codeGenClassName);
             }
             catch (IllegalArgumentException ie) {
-                panic("Cannot instantiate code-generator: " + codeGenClassName);
+                fatalError("Cannot instantiate code-generator: " + codeGenClassName);
             }
             catch (IllegalAccessException iae) {
-                panic("code-generator class '" + codeGenClassName + "' is not accessible");
+                fatalError("code-generator class '" + codeGenClassName + "' is not accessible");
             }
         }
         catch (RecognitionException pe) {
@@ -607,7 +607,7 @@ public class Tool {
      */
     public void warning(String[] s, String file, int line, int column) {
         if (s == null || s.length == 0) {
-            panic("bad multi-line message to Tool.warning");
+            fatalError("Bad multi-line message to Tool.warning");
         }
         System.err.println(FileLineFormatter.getFormatter().
                            getFormatString(file, line, column) + "warning:" + s[0]);

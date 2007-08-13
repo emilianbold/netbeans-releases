@@ -372,7 +372,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	
 	        setGrammar(g);
 	        if (!(grammar instanceof LexerGrammar)) {
-	            antlrTool.panic("Internal error generating lexer");
+	            antlrTool.fatalError("Internal error generating lexer");
 	        }
 	
 	        // SAS: moved output creation to method so a subclass can change
@@ -697,7 +697,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	
 	        setGrammar(g);
 	        if (!(grammar instanceof ParserGrammar)) {
-	            antlrTool.panic("Internal error generating parser");
+	            antlrTool.fatalError("Internal error generating parser");
 	        }
 	
 	        // Open the output stream for the parser and set the currentOutput
@@ -1103,7 +1103,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     public void gen(TokenRefElement atom, Context context) {
         if (DEBUG_CODE_GENERATOR) System.out.println("genTokenRef(" + atom + ") breakLabel =" + context.breakLabel);
         if (grammar instanceof LexerGrammar) {
-            antlrTool.panic("Token reference found in lexer");
+            antlrTool.fatalError("Token reference found in lexer");
         }
         genErrorTryForElement(atom);
         // Assign Token value to token label variable
@@ -1229,7 +1229,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	        // SAS: debugging stuff removed for now...
 	        setGrammar(g);
 	        if (!(grammar instanceof TreeWalkerGrammar)) {
-	            antlrTool.panic("Internal error generating tree-walker");
+	            antlrTool.fatalError("Internal error generating tree-walker");
 	        }
 	        // Open the output stream for the parser and set the currentOutput
 	        // SAS: move file open to method so subclass can override it
@@ -2356,7 +2356,7 @@ public class JavaCodeGenerator extends CodeGenerator {
         }
         RuleSymbol rs = (RuleSymbol)grammar.getSymbol(r);
         if (rs == null) {
-            antlrTool.panic("Enclosing rule not found!");
+            antlrTool.fatalError("Enclosing rule not found!");
         }
         ExceptionSpec ex = rs.block.findExceptionSpec(el.getLabel());
         if (ex != null) {
@@ -2431,7 +2431,7 @@ public class JavaCodeGenerator extends CodeGenerator {
         }
         RuleSymbol rs = (RuleSymbol)grammar.getSymbol(r);
         if (rs == null) {
-            antlrTool.panic("Enclosing rule not found!");
+            antlrTool.fatalError("Enclosing rule not found!");
         }
         ExceptionSpec ex = rs.block.findExceptionSpec(el.getLabel());
         if ((ex != null) && (MatchExceptionState.throwRecExceptions)) {
@@ -3729,7 +3729,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 	                    // a string literal
 	                    StringLiteralSymbol sl = (StringLiteralSymbol)tm.getTokenSymbol(s);
 	                    if (sl == null) {
-	                        antlrTool.panic("String literal " + s + " not in symbol table");
+	                        antlrTool.fatalError("String literal " + s + " not in symbol table");
 	                    }
 	                    else if (sl.label != null) {
 	                        println("int " + sl.label + " = " + i + ";");
@@ -3957,7 +3957,7 @@ public class JavaCodeGenerator extends CodeGenerator {
      */
     public String getRangeExpression(int k, int[] elems, int gr) {
         if (!elementsAreRange(elems)) {
-            antlrTool.panic("getRangeExpression called with non-range");
+            antlrTool.fatalError("getRangeExpression called with non-range");
         }
         int begin = elems[0];
         int end = elems[elems.length - 1];
@@ -4204,11 +4204,11 @@ public class JavaCodeGenerator extends CodeGenerator {
                 return actionStr;
             }
             catch (TokenStreamException tex) {
-                antlrTool.panic("Error reading action:" + actionStr);
+                antlrTool.fatalError("Error reading action:" + actionStr);
                 return actionStr;
             }
             catch (CharStreamException io) {
-                antlrTool.panic("Error reading action:" + actionStr);
+                antlrTool.fatalError("Error reading action:" + actionStr);
                 return actionStr;
             }
         }
@@ -4289,7 +4289,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             throwNoViable = "throw new NoViableAltException(_t);";
         }
         else {
-            antlrTool.panic("Unknown grammar type");
+            antlrTool.fatalError("Unknown grammar type");
         }
     }
     

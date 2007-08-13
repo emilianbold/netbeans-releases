@@ -50,7 +50,7 @@ public class DiagnosticCodeGenerator extends CodeGenerator {
                 g.generate();
 
                 if (antlrTool.hasError()) {
-                    antlrTool.panic("Exiting due to errors.");
+                    antlrTool.fatalError("Exiting due to errors.");
                 }
 
             }

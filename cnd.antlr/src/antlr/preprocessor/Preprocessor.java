@@ -65,12 +65,11 @@ public class Preprocessor extends antlr.LLkParser       implements PreprocessorT
      *  @since 2.7.2
      */
     public void reportError(RecognitionException e) {
-        if (getTool() != null) {
-            getTool().error(e.getErrorMessage(), e.getFilename(), e.getLine(), e.getColumn());
-		}
-        else {
-            super.reportError(e);
-		}
+	if (getTool() != null) {
+	    getTool().error(e.getMessage(), e.getFilename(), e.getLine(), e.getColumn());
+	} else {
+	    super.reportError(e);
+	}
     }
 
     /** Delegates the warning message to the tool if any was registered via
