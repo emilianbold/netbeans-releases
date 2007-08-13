@@ -4,7 +4,7 @@
  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
- name="NewWebServiceService" targetNamespace="http://policy/" xmlns:tns="http://policy/" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy" xmlns:tc="http://schemas.sun.com/ws/2006/05/trust/server" xmlns:wsat="http://schemas.xmlsoap.org/ws/2004/10/wsat" xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm/policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:sc="http://schemas.sun.com/2006/03/wss/client" xmlns:scc="http://schemas.sun.com/ws/2006/05/sc/server" xmlns:sc1="http://schemas.sun.com/2006/03/wss/server" xmlns:t="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:wsaw="http://www.w3.org/2005/08/addressing" xmlns:sunrmc="http://sun.com/2006/03/rm/client" xmlns:scc1="http://schemas.sun.com/ws/2006/05/sc/client" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:sunrm="http://sun.com/2006/03/rm" xmlns:net="http://schemas.microsoft.com/net/2005/02/rm/policy" xmlns:fi="http://java.sun.com/xml/ns/wsit/2006/09/policy/fastinfoset/service" xmlns:wsoma="http://schemas.xmlsoap.org/ws/2004/09/policy/optimizedmimeserialization" xmlns:tcp="http://java.sun.com/xml/ns/wsit/2006/09/policy/transport/client" xmlns:wspp="http://java.sun.com/xml/ns/wsit/policy" xmlns:tcp1="http://java.sun.com/xml/ns/wsit/2006/09/policy/soaptcp/service" xmlns:tc1="http://schemas.sun.com/ws/2006/05/trust/client" xmlns:wsaws="http://www.w3.org/2006/05/addressing/wsdl" xmlns:fi1="http://java.sun.com/xml/ns/wsit/2006/09/policy/encoding/client"
+ name="NewWebServiceService" targetNamespace="http://policy/" xmlns:tns="http://policy/" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy" xmlns:tc="http://schemas.sun.com/ws/2006/05/trust/server" xmlns:wsat="http://schemas.xmlsoap.org/ws/2004/10/wsat" xmlns:sc="http://schemas.sun.com/2006/03/wss/server" xmlns:wsrm="http://schemas.xmlsoap.org/ws/2005/02/rm/policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:sc1="http://schemas.sun.com/2006/03/wss/client" xmlns:scc="http://schemas.sun.com/ws/2006/05/sc/server" xmlns:t="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:wsaw="http://www.w3.org/2005/08/addressing" xmlns:sunrmc="http://sun.com/2006/03/rm/client" xmlns:scc1="http://schemas.sun.com/ws/2006/05/sc/client" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:sunrm="http://sun.com/2006/03/rm" xmlns:net="http://schemas.microsoft.com/net/2005/02/rm/policy" xmlns:fi="http://java.sun.com/xml/ns/wsit/2006/09/policy/fastinfoset/service" xmlns:wsoma="http://schemas.xmlsoap.org/ws/2004/09/policy/optimizedmimeserialization" xmlns:tcp="http://java.sun.com/xml/ns/wsit/2006/09/policy/transport/client" xmlns:wspp="http://java.sun.com/xml/ns/wsit/policy" xmlns:tcp1="http://java.sun.com/xml/ns/wsit/2006/09/policy/soaptcp/service" xmlns:tc1="http://schemas.sun.com/ws/2006/05/trust/client" xmlns:wsaws="http://www.w3.org/2006/05/addressing/wsdl" xmlns:fi1="http://java.sun.com/xml/ns/wsit/2006/09/policy/encoding/client"
  >
     <message name="sample_operation"/>
     <message name="sample_operationResponse"/>
@@ -34,6 +34,7 @@
     <sp:WssUsernameToken11/>
     <wsp:PolicyReference/>
     <tc:ServiceProvider/>
+    <tc:DisableStreamingSecurity/>
     <wsrm:RMAssertion/>
     <sp:Basic128/>
     <wsu:Id/>
@@ -43,15 +44,15 @@
     <wsat:ATAssertion/>
     <sp:WssGssKerberosV5ApReqToken11/>
     <sp:Basic256Sha256Rsa15/>
-    <sc:Validator/>
+    <sc1:Validator/>
     <sp:EncryptBeforeSigning/>
     <sp:WssX509V3Token10/>
     <scc:LifeTime/>
-    <sc1:TrustStore/>
+    <sc:TrustStore/>
     <sp:SpnegoContextToken/>
     <wsrm:AcknowledgementInterval/>
     <sp:EncryptSignature/>
-    <sc:TrustStore/>
+    <sc1:TrustStore/>
     <sp:SignedParts/>
     <t:KeyType/>
     <sp:IncludeToken/>
@@ -59,7 +60,7 @@
     <sp:WssX509PkiPathV1Token10/>
     <sp:MustSupportRefEncryptedKey/>
     <sp:MustSupportIssuedTokens/>
-    <sc:Timestamp/>
+    <sc1:Timestamp/>
     <sp:RequiredElements/>
     <sp:SOAPNormalization10/>
     <wsp:Policy/>
@@ -79,7 +80,7 @@
     <sp:MustSupportClientChallenge/>
     <sp:SignedEndorsingSupportingTokens/>
     <t:TokenType/>
-    <sc:CallbackHandlerConfiguration/>
+    <sc1:CallbackHandlerConfiguration/>
     <sp:WssKerberosV5ApReqToken11/>
     <scc1:LifeTime/>
     <wsaw:Address/>
@@ -105,7 +106,7 @@
     <sp:SignedElements/>
     <sp:WssX509Pkcs7Token10/>
     <t:KeySize/>
-    <sc1:Timestamp/>
+    <sc:Timestamp/>
     <wsrm:InactivityTimeout/>
     <sp:Wss10/>
     <sp:TransportToken/>
@@ -142,22 +143,22 @@
     <sp:LaxTsLast/>
     <tc:Issuer/>
     <sp:RequireServerEntropy/>
-    <sc1:CallbackHandlerConfiguration/>
+    <sc:CallbackHandlerConfiguration/>
     <wsp:All/>
     <sp:RequireExternalReference/>
     <sp:RequireSignatureConfirmation/>
     <wsa:ReferenceProperties/>
-    <sc1:ValidatorConfiguration/>
-    <fi:OptimizedFastInfosetSerialization/>
-    <sc:CallbackHandler/>
     <sc:ValidatorConfiguration/>
+    <fi:OptimizedFastInfosetSerialization/>
+    <sc1:CallbackHandler/>
+    <sc1:ValidatorConfiguration/>
     <sp:AsymmetricBinding/>
     <sp:Basic128Rsa15/>
     <wsoma:OptimizedMimeSerialization/>
     <sp:IncludeTimestamp/>
     <sp:RequireEmbeddedTokenReference/>
     <sp:MustSupportRefThumbprint/>
-    <sc1:KeyStore/>
+    <sc:KeyStore/>
     <sp:Basic192/>
     <sp:WssX509Pkcs7Token11/>
     <sp:WssSamlV10Token10/>
@@ -178,13 +179,13 @@
     <wsaw:Anonymous/>
     <wspp:visibility/>
     <scc1:SCClientConfiguration/>
-    <sc:KeyStore/>
+    <sc1:KeyStore/>
     <tcp1:OptimizedTCPTransport/>
     <wsrm:ExponentialBackoff/>
     <tc1:PreconfiguredSTS/>
     <wsaw:UsingAddressing/>
     <sp:Basic192Sha256/>
-    <sc1:Validator/>
+    <sc:Validator/>
     <sp:WssRelV20Token11/>
     <sp:AlgorithmSuite/>
     <wsaw:EndpointReference/>
@@ -195,7 +196,7 @@
     <sp:WssX509V1Token10/>
     <sp:RecipientToken/>
     <sp:WssX509V3Token11/>
-    <sc1:CallbackHandler/>
+    <sc:CallbackHandler/>
     <sp:XPath10/>
     <sp:EncryptionToken/>
     <sp:Lax/>
