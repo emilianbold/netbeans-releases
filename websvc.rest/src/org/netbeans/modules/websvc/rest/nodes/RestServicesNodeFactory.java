@@ -37,6 +37,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -58,6 +59,12 @@ public class RestServicesNodeFactory implements NodeFactory {
         private Project project;
         private MetadataModel<RestServicesMetadata> model;
         
+        private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                fireChange();
+            }
+        });
+        
         private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         private final RestServicesChangeListener restServicesListener;
         
@@ -71,11 +78,11 @@ public class RestServicesNodeFactory implements NodeFactory {
             final List<String> result = new ArrayList<String>();
             MetadataModel<RestServicesMetadata> model = RestUtils.getRestServicesMetadataModel(project);
             
-           try {
+            try {
                 model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {
                         RestServices root = metadata.getRoot();
-                   
+                        
                         if (root.sizeRestServiceDescription() > 0) {
                             result.add(KEY_SERVICES);
                         }
@@ -86,7 +93,7 @@ public class RestServicesNodeFactory implements NodeFactory {
             } catch (IOException ex) {
                 
             }
-        
+            
             return result;
         }
         
@@ -122,21 +129,7 @@ public class RestServicesNodeFactory implements NodeFactory {
                 model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {
                         metadata.getRoot().addPropertyChangeListener(restServicesListener);
-    
-                        return null;
-                    }
-                });
-            } catch (IOException ex) {
-                
-            }      
-        }
-        
-        public void removeNotify() {
-            try {
-                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                    public Void run(RestServicesMetadata metadata) throws IOException {
-                        metadata.getRoot().removePropertyChangeListener(restServicesListener);
-    
+                        
                         return null;
                     }
                 });
@@ -145,14 +138,24 @@ public class RestServicesNodeFactory implements NodeFactory {
             }
         }
         
-       
-        private final class RestServicesChangeListener implements PropertyChangeListener {
-            public void propertyChange(PropertyChangeEvent evt) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        fireChange();
+        public void removeNotify() {
+            try {
+                model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
+                    public Void run(RestServicesMetadata metadata) throws IOException {
+                        metadata.getRoot().removePropertyChangeListener(restServicesListener);
+                        
+                        return null;
                     }
                 });
+            } catch (IOException ex) {
+                
+            }
+        }
+        
+        
+        private final class RestServicesChangeListener implements PropertyChangeListener {
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateNodeTask.schedule(2000);
             }
         }
     }
