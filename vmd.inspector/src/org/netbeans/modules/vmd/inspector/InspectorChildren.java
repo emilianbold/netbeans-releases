@@ -18,23 +18,23 @@
  */
 package org.netbeans.modules.vmd.inspector;
 
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.AbstractNode;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-
 /**
  * @author Karol Harezlak
  */
-final class InspectorChildren extends Children.Keys {
+final class InspectorChildren extends Children.Keys<AbstractNode> {
 
     private List<AbstractNode> keys = new ArrayList<AbstractNode>();
 
-    protected Node[] createNodes(Object key) {
-        return new Node[] { (Node) key  };
+    protected Node[] createNodes (AbstractNode key) {
+        return new Node[] { key };
     }
 
     void setKeys(List<AbstractNode> keys){
@@ -52,7 +52,8 @@ final class InspectorChildren extends Children.Keys {
     }
     
     protected void removeNotify() {
-        keys = Collections.EMPTY_LIST;
+        keys = Collections.emptyList ();
         super.removeNotify();
     }
+
 }

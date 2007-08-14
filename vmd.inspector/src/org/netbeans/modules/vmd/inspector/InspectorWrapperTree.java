@@ -19,20 +19,7 @@
 
 package org.netbeans.modules.vmd.inspector;
 
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.image.ImageObserver;
-import java.awt.image.ImageProducer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPath;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
-import org.netbeans.modules.vmd.api.inspector.InspectorRegistry;
+import org.netbeans.modules.vmd.api.inspector.*;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.DesignEvent;
@@ -41,6 +28,15 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.openide.nodes.Node;
 import org.openide.util.WeakSet;
 import org.openide.util.datatransfer.NewType;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.ImageObserver;
+import java.awt.image.ImageProducer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  *
@@ -89,7 +85,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
                     updateChangedDescriptors(markAllComponentsAsToAdd(), null);
                     dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
                     updateTreeStructureView();
-                    Collection foldersToExpand = rootFolderWrapper.getChildren();
+                    Collection<InspectorFolderWrapper> foldersToExpand = rootFolderWrapper.getChildren();
                     if (foldersToExpand != null) {
                         ui.expandNodes(foldersToExpand);
                     }
