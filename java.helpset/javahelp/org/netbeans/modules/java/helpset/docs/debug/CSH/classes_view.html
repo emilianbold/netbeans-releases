@@ -15,13 +15,43 @@
 <h2>Classes Window</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>You can open the Classes window by choosing Window &gt; Debugging &gt; Classes. If you open the Classes window when a debugging session is running, it closes automatically when you end the debugging session. If you open the window when no debugging session is running, it stays open until you close it.</p>
-<p>The Classes window displays the hierarchy of all classes that have been loaded into the virtual machine hosting the program that is being debugged. 
-The contents of the Classes window is dependent on the current context. 
+<p>You can open the Classes window by choosing Window &gt; Debugging &gt; Classes. 
+If you open the Classes window when a debugging session is running, it closes automatically when you end the debugging session.
+If you open the window when no debugging session is running, it stays open until you close it.</p>
+
+<p>The contents of the Classes window is dependent on the current context. 
 When you change the current session, the Classes window is updated to show the classes for that session.</p>
-<p>You can click the turner control to the left of the class name to expand or collapse the class loader or class. </p>
-<p>The following table describes the icons used in the Classes window.</p>
+
+<p>The Classes window displays the classes loaded on the heap and the percentage and number of object instances.
+You can sort the classes by class name or the number or percentage of instances.
+You can also use the filter box at the bottom of the window to filter the list by class name.</p>
+
+<p>You can right-click a class name to view additional details about the class.</p>
 <table border="1" cellpadding="5" cellspacing="0">
+  <tr align="left" valign="top">
+    <th scope="col" nowrap>Menu Item</th>
+    <th scope="col">Description</th>
+  </tr>
+  <tr valign="top">
+    <td>Show in Instances View</td>
+    <td>Opens the Instances window displaying the object instances allocated by the constructor of the selected class.
+    The Instances window enables you to browse the instances of each class, the fields of each instance and the references to each instance.</td>
+    </tr>
+    <tr>
+        <td>Show Only Subclasses</td>
+        <td>Enables you to limit the classes displayed to the subclasses of the selected class. 
+        This functions by using the selected class as the filter criteria. 
+    To restore the full list of classes, click the Clear Filter button to the right of the filter class box.</td>
+    </tr>
+</table>
+
+
+<ul class="note">
+    <li>If you are running the IDE on JDK 1.5, the Classes window is limited to displaying the classes that have been loaded into the 
+virtual machine hosting the program that is being debugged. The Instances view is not available.
+ 
+<p>The following table describes the icons used in the Classes window.</p>
+    <table border="1" cellpadding="5" cellspacing="0">
 	<tr align="left" valign="top">
 		<th scope="col">Icon</th>
 		<th scope="col">Description</th>
@@ -38,123 +68,28 @@ When you change the current session, the Classes window is updated to show the c
 		<td align="center"><img src="../images/interface.gif" alt="Interface icon"></td>
 		<td>Interface.</td>
 	</tr>
-	<!-- <tr>
-		<td align="center"><img src="../images/constructorPackage.gif" alt="Constructor package icon "></td>
-		<td>Constructor with default access.</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/constructorPrivate.gif" alt="Private constructor icon"></td>
-		<td>Private constructor.</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/constructorPublic.gif" alt="Public constructor icon"></td>
-		<td>Public constructor or nonstatic initializer.</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/constructorProtected.gif" alt="Protected constructor icon"></td>
-		<td>Constructor with protected access.</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/initializerSt.gif" alt="Static initializer icon"></td>
-		<td>Static initializer.</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/methods.gif" alt="Method icon"></td>
-		<td>Category node for methods.</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/methodPackage.gif" alt="Method package icon"></td>
-		<td>Method with default access (nonstatic).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/methodPrivate.gif" alt="Private method icon"></td>
-		<td>Private method (nonstatic).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/methodPublic.gif" alt="Public method icon"></td>
-		<td>Public method (nonstatic).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/methodProtected.gif" alt="Protected access method icon"></td>
-		<td>Method with protected access (nonstatic).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../../files/images/methodStPackage.gif" alt="Default access method icon"></td>
-		<td>Method with default access (static).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../../files/images/methodStPrivate.gif" alt="Static private method icon"></td>
-		<td>Private method (static).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../../files/images/methodStPublic.gif" alt="Static public method icon"></td>
-		<td>Public method (static).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../../files/images/methodStProtected.gif" alt="Static protected access method icon"></td>
-		<td>Method with protected access (static).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/variables.gif" alt="Field icon"></td>
-		<td>Category node for fields.</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/variablePackage.gif" alt="Nonstatic field icon"></td>
-		<td>Field with default access (nonstatic).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/variablePrivate.gif" alt="Private nonstatic field icon"></td>
-		<td>Private field (nonstatic).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/variablePublic.gif" alt="Public nonstatic field icon"></td>
-		<td>Public field (nonstatic).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/variableProtected.gif" alt="Protected access, nonstatic field icon"></td>
-		<td>Field with protected access (nonstatic).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/variableStPackage.gif" alt=" Default access, static field icon"></td>
-		<td>Field with default access (static).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/variableStPrivate.gif" alt="Static private field icon"></td>
-		<td>Private field (static).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/variableStPublic.gif" alt="Static public field icon"></td>
-		<td>Public field (static).</td>
-	</tr>
-	<tr>
-		<td align="center"><img src="../images/variableStProtected.gif" alt="Static protected access field icon"></td>
-		<td>Field with protected access (static).</td>
-	</tr> -->
-</table>
+    </table>
+    <p>You can expand the class loader node to view the class.
+    You can use the pop-up menu in the Classes window to access the following items.</p>
+    
+    <ul>
+        <li><b>List Options.</b>
+        Enables you to customize the Classes window by choosing how classes are sorted in the display.
+        See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
+        </li>
+        <li><b>View Packages As</b>
+        Enables you to customize how packages are displayed in the window. 
+        You can choose to display packages in List or Tree view.</li>
+    </ul>
 
-<h3>Actions</h3>
-<p>The pop-up menu in the Classes window includes the following items.</p>
-<table border="1" cellpadding="5" cellspacing="0">
-  <tr align="left" valign="top">
-    <th scope="col" nowrap>Menu Item</th>
-    <th scope="col">Description</th>
-  </tr>
-  <tr valign="top">
-    <td>List Options</td>
-    <td>Enables you to customize the Classes window by choosing how classes are sorted in the display.
-See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
-  </tr>
-    <tr>
-        <td>View Packages As</td>
-        <td>Enables you to customize how packages are displayed in the window. 
-        You can choose to display packages in List or Tree view.</td>
-    </tr>
-</table>
+</li>
+</ul>
 
-<dl>
+    <dl>
 	<dt><a name="seealso">See Also</a></dt>
-	<dd><a href="../debug_customize_views.html">Customizing a Debugger Window</a></dd>
-	<dd><a href="../debug_context.html">Current Context in the Debugger</a></dd>
+	<dd><a href="instances_view.html">Class Instances Window</a></dd>
+        <dd><a href="../debug_customize_views.html">Customizing a Debugger Window</a></dd>
+        <dd><a href="../debug_context.html">Current Context in the Debugger</a></dd>
 	<dd><a href="debug_window.html">Debugger Windows</a></dd>
 </dl>
 <hr>

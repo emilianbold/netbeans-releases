@@ -53,7 +53,8 @@
 <mapID target="debug.remote" url="debug/debug_remote.html" /> 
 <mapID target="debug.expression" url="debug/debug_expression.html" /> 
 <mapID target="debug.window" url="debug/CSH/debug_window.html" /> 
-
+<!-- Topic for Debugger Instances view - need help id -->
+<!-- <mapID target="" url="debug/CSH/instances_view.html" /> --> 
 
 
 <!--Start of Projects section -->
