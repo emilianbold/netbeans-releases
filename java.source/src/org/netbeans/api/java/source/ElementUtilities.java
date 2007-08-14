@@ -248,32 +248,34 @@ public final class ElementUtilities {
         Elements elements = JavacElements.instance(ctx);
         Types types = JavacTypes.instance(ctx);
         TypeElement cls;
-        while(scope != null && (cls = scope.getEnclosingClass()) != null) {
-            for (Element local : scope.getLocalElements())
-                if (acceptor == null || acceptor.accept(local, null)) {
-                    String name = local.getSimpleName().toString();
-                    ArrayList<Element> h = hiders.get(name);
-                    if (!isHidden(local, h, elements, types)) {
-                        members.add(local);
-                        if (h == null) {
-                            h = new ArrayList<Element>();
-                            hiders.put(name, h);
+        while(scope != null) {
+            if ((cls = scope.getEnclosingClass()) != null) {
+                for (Element local : scope.getLocalElements())
+                    if (acceptor == null || acceptor.accept(local, null)) {
+                        String name = local.getSimpleName().toString();
+                        ArrayList<Element> h = hiders.get(name);
+                        if (!isHidden(local, h, elements, types)) {
+                            members.add(local);
+                            if (h == null) {
+                                h = new ArrayList<Element>();
+                                hiders.put(name, h);
+                            }
+                            h.add(local);
                         }
-                        h.add(local);
                     }
-                }
-            TypeMirror type = cls.asType();
-            for (Element member : elements.getAllMembers(cls)) {
-                if (acceptor == null || acceptor.accept(member, type)) {
-                    String name = member.getSimpleName().toString();
-                    ArrayList<Element> h = hiders.get(name);
-                    if (!isHidden(member, h, elements, types)) {
-                        members.add(member);
-                        if (h == null) {
-                            h = new ArrayList<Element>();
-                            hiders.put(name, h);
+                TypeMirror type = cls.asType();
+                for (Element member : elements.getAllMembers(cls)) {
+                    if (acceptor == null || acceptor.accept(member, type)) {
+                        String name = member.getSimpleName().toString();
+                        ArrayList<Element> h = hiders.get(name);
+                        if (!isHidden(member, h, elements, types)) {
+                            members.add(member);
+                            if (h == null) {
+                                h = new ArrayList<Element>();
+                                hiders.put(name, h);
+                            }
+                            h.add(member);
                         }
-                        h.add(member);
                     }
                 }
             }

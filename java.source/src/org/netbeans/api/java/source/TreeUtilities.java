@@ -367,7 +367,26 @@ public final class TreeUtilities {
             if (tree != null)
                 path = new TreePath(path, tree);
         }
-        return info.getTrees().getScope(path);
+        Scope scope = info.getTrees().getScope(path);
+        if (path.getLeaf().getKind() == Tree.Kind.CLASS) {
+            TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            ts.move(pos);
+            while(ts.movePrevious()) {
+                switch (ts.token().id()) {
+                    case WHITESPACE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case JAVADOC_COMMENT:
+                        break;
+                    case EXTENDS:
+                    case IMPLEMENTS:
+                        ((JavacScope)scope).getEnv().baseClause = true;
+                    default:
+                        return scope;
+                }
+            }
+        }
+        return scope;
     }
     
     //XXX dbalek:
