@@ -64,8 +64,8 @@ public final class WSITConfigProvider extends Object {
      * This method only returns dialog - there are no OK/Cancel buttons provided - thus it's required that a 
      * caller of this method makes sure appropriate actions are taken on wsdlModel and undomanager for Cancel/Save actions
      */
-    public final JComponent getWSITServiceConfig(WSDLModel wsdlModel, UndoManager undoManager, Collection<Binding> bindings) {      
-        final ServiceTopComponent stc = new ServiceTopComponent(wsdlModel, undoManager, bindings);
+    public final JComponent getWSITServiceConfig(WSDLModel wsdlModel, UndoManager undoManager, Collection<Binding> bindings, Node node) {
+        final ServiceTopComponent stc = new ServiceTopComponent(wsdlModel, undoManager, bindings, node);
         return stc;
     }
     
