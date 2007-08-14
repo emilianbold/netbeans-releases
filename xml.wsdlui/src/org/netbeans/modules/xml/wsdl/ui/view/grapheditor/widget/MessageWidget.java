@@ -43,6 +43,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.Collection;
@@ -64,12 +65,12 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.TextFieldInplaceEditorProvider;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
@@ -98,6 +99,8 @@ public class MessageWidget extends AbstractWidget<Message>
     private Object draggedObject;
     
     private ExpanderWidget expanderWidget;
+	private WidgetAction editorAction;
+	private Widget labelWidget;
     
     
     public MessageWidget(Scene scene, Message message, Lookup lookup) {
@@ -136,6 +139,15 @@ public class MessageWidget extends AbstractWidget<Message>
         contentWidget.setVisible(expanded);
         
         getActions().addAction(((PartnerScene) scene).getDnDAction());
+        PartnerScene pScene = (PartnerScene) scene;
+        String weight = pScene.getWeight(getWSDLComponent()) + "_AddPartButton";
+        if (!pScene.getObjects().contains(weight)) {
+        	pScene.addObject(weight, addPartButton);
+        }
+        weight = pScene.getWeight(getWSDLComponent()) + "_RemovePartButton";
+        if (!pScene.getObjects().contains(weight)) {
+            pScene.addObject(weight, removePartButton);
+        }
     }
     
     private void removeContent() {
@@ -160,6 +172,23 @@ public class MessageWidget extends AbstractWidget<Message>
         
         contentWidget.addChild(buttons);
 
+        getActions().addAction(ActionFactory.createForwardKeyEventsAction(header, null));
+        getActions().addAction(new WidgetAction.Adapter() {
+
+        	@Override
+        	public State keyPressed (Widget widget, WidgetKeyEvent event) {
+        		if (event.getKeyCode() == KeyEvent.VK_F2) {
+        			InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+        			if (inplaceEditorController.openEditor (labelWidget)) {
+        				return State.createLocked (widget, this);
+        			}
+        			return State.CONSUMED;
+        		}
+        		return State.REJECTED;
+        	}
+
+        });
+        
         updateButtonState();
     }
 
@@ -182,10 +211,10 @@ public class MessageWidget extends AbstractWidget<Message>
         if (event.getSource() == addPartButton) {
             Message message = getWSDLComponent();
             WSDLModel model = message.getModel();
-            
+            Part newPart = null;
             try {
                 if (model.startTransaction()) {
-                    Part newPart = model.getFactory().createPart();
+                    newPart = model.getFactory().createPart();
                     newPart.setName(MessagesUtils.createNewPartName(message));
                     newPart.setType(MessagesUtils.getDefaultTypeReference(model));
 
@@ -193,6 +222,9 @@ public class MessageWidget extends AbstractWidget<Message>
                 }
             } finally {
                 model.endTransaction();
+            }
+            if (newPart != null) {
+            	ActionHelper.selectNode(newPart);
             }
         } else if (event.getSource() == removePartButton) {
             for (Widget w : table.getChildren()) {
@@ -360,19 +392,66 @@ public class MessageWidget extends AbstractWidget<Message>
             name = NbBundle.getMessage(MessageWidget.class, "LBL_Empty"); // NOI18N
         }
         
-        ImageLabelWidget result = new ImageLabelWidget(scene, IMAGE, name, 
+        Widget result = new ImageLabelWidget(scene, IMAGE, name, 
                 getPartCount(message));
-        result.getActions().addAction(ActionFactory
-                .createInplaceEditorAction((InplaceEditorProvider<JTextField>) 
-                new MessageNameInplaceEditorProvider()));
+        editorAction = ActionFactory
+        .createInplaceEditorAction(new TextFieldInplaceEditor() {
+		
+        	public boolean isEnabled(Widget widget) {
+                Message message = getMessage(widget);
+                if (message != null) {
+                    return XAMUtils.isWritable(message.getModel());
+                }
+                return false;
+            }
+
+            
+            public String getText(Widget widget) {
+                Message message = getMessage(widget);
+                String name = (message != null) ? message.getName() : null;
+                return (name != null) ? name : ""; // NOI18N
+            }
+
+            
+            public void setText(Widget widget, String text) {
+                Message message = getMessage(widget);
+                if (message != null && !message.getName().equals(text)) {
+                    // try rename silent and locally
+                    SharedUtils.locallyRenameRefactor(message, text);
+                 }
+            }
+            
+            
+            private Message getMessage(Widget widget) {
+                MessageWidget messageWidget = getMessageWidget(widget);
+                return (messageWidget != null) 
+                        ? messageWidget.getWSDLComponent() 
+                        : null;
+            }
+            
+            
+            private MessageWidget getMessageWidget(Widget widget) {
+                for (Widget w = widget; w != null; w = w.getParentWidget()) {
+                    if (w instanceof MessageWidget) {
+                        return (MessageWidget) w;
+                    }
+                }
+                return null;
+            }
+		
+		}, null);
+        result.getActions().addAction(editorAction);
+//        result.getActions().addAction(ActionFactory
+//        		.createInplaceEditorAction((InplaceEditorProvider<JTextField>) 
+//        				new MessageNameInplaceEditorProvider()));
         
         return result;
     }
 
     private Widget createHeader(Scene scene, Message message) {
         Widget result = new HeaderWidget(scene, expanderWidget);
-
-        result.addChild(createHeaderLabel(scene, message));
+        labelWidget = createHeaderLabel(scene, message);
+        result.addChild(labelWidget);
         
         if (expanderWidget.getParentWidget() != null) {
             expanderWidget.getParentWidget().removeChild(expanderWidget);
@@ -381,7 +460,7 @@ public class MessageWidget extends AbstractWidget<Message>
         result.addChild(expanderWidget);
         result.setLayout(new LeftRightLayout(32));
         result.setBorder(WidgetConstants.GRADIENT_BLUE_WHITE_BORDER);
-        
+        getActions().addAction(ActionFactory.createForwardKeyEventsAction(result, null));
         return result;
     }
 
@@ -678,151 +757,6 @@ public class MessageWidget extends AbstractWidget<Message>
             return true;
         }
     }
-    
-    
-    private static class MessageNameInplaceEditorProvider implements 
-            InplaceEditorProvider<JTextField>, 
-            TextFieldInplaceEditor 
-    {
-        private TextFieldInplaceEditorProvider editorProvider;
-        
-        public MessageNameInplaceEditorProvider() {
-            this.editorProvider = new TextFieldInplaceEditorProvider(this, 
-                    EnumSet.of(InplaceEditorProvider.ExpansionDirection.RIGHT));
-        }
-        
-        
-        public boolean isEnabled(Widget widget) {
-            Message message = getMessage(widget);
-            if (message != null) {
-                return XAMUtils.isWritable(message.getModel());
-            }
-            return false;
-        }
-
-        
-        public String getText(Widget widget) {
-            Message message = getMessage(widget);
-            String name = (message != null) ? message.getName() : null;
-            return (name != null) ? name : ""; // NOI18N
-        }
-
-        
-        public void setText(Widget widget, String text) {
-            Message message = getMessage(widget);
-            if (message != null && !message.getName().equals(text)) {
-                // try rename silent and locally
-                SharedUtils.locallyRenameRefactor(message, text);
-             }
-        }
-        
-        
-        private Message getMessage(Widget widget) {
-            MessageWidget messageWidget = getMessageWidget(widget);
-            return (messageWidget != null) 
-                    ? messageWidget.getWSDLComponent() 
-                    : null;
-        }
-        
-        
-        private MessageWidget getMessageWidget(Widget widget) {
-            for (Widget w = widget; w != null; w = w.getParentWidget()) {
-                if (w instanceof MessageWidget) {
-                    return (MessageWidget) w;
-                }
-            }
-            return null;
-        }
-        
-        
-        public void notifyOpened(
-                InplaceEditorProvider.EditorController controller, 
-                Widget widget, JTextField component) 
-        {
-            editorProvider.notifyOpened(controller, widget, component);
-            
-            double k = widget.getScene().getZoomFactor();
-            
-            Dimension minimumSize = component.getMinimumSize();
-            
-            if (minimumSize == null) {
-                minimumSize = new Dimension(64, 19);
-            }
-            
-            minimumSize.width = (int) Math.ceil(widget.getBounds().getWidth() 
-                    * k);
-            
-            component.setMinimumSize(minimumSize);
-        }
-
-        
-        public void notifyClosing(
-                InplaceEditorProvider.EditorController controller, 
-                Widget widget, 
-                JTextField component, 
-                boolean commit) 
-        {
-            editorProvider.notifyClosing(controller, widget, component, commit);
-        }
-
-        
-        public JTextField createEditorComponent(
-                InplaceEditorProvider.EditorController controller, 
-                Widget widget) 
-        {
-            return editorProvider.createEditorComponent(controller, widget);
-        }
-        
-
-        public Rectangle getInitialEditorComponentBounds(
-                InplaceEditorProvider.EditorController controller, 
-                Widget widget, 
-                JTextField component, 
-                Rectangle bounds) 
-        {
-            double k = widget.getScene().getZoomFactor();
-            
-            Widget parent = widget.getParentWidget();
-            
-            Rectangle widgetBounds = widget.convertLocalToScene(widget.getBounds());
-            Rectangle parentBounds = parent.convertLocalToScene(parent.getBounds());
-            Insets parentInsets = parent.getBorder().getInsets();
-            
-            int x1 = widgetBounds.x + 24;
-            int y1 = parentBounds.y + 24 + parentInsets.top;
-            
-            int x2 = x1 + widgetBounds.width;
-            int y2 = y1 + parentBounds.height 
-                    - parentInsets.top - parentInsets.bottom;
-            
-            int x = (int) Math.floor(k * x1);
-            int y = (int) Math.floor(k * y1);
-            
-            int w = (int) Math.ceil(k * x2) - x;
-            int h = (int) Math.ceil(k * y2) - y;
-            
-            Dimension preferredSize = component.getPreferredSize();
-            
-            if (preferredSize.height > h) {
-                y -= (preferredSize.height - h) / 2;
-                h = preferredSize.height;
-            }
-            
-            return new Rectangle(x, y, w, h);
-        }
-
-        
-        public EnumSet<InplaceEditorProvider.ExpansionDirection> 
-                getExpansionDirections(
-                        InplaceEditorProvider.EditorController controller, 
-                        Widget widget, 
-                        JTextField component) 
-        {
-            return editorProvider.getExpansionDirections(controller, widget,
-                    component);
-        }
-    }
-    
     
     private static class PartHitPointPosition {
         public final int row;

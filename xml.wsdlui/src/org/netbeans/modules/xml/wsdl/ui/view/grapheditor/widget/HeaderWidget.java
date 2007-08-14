@@ -63,10 +63,10 @@ public class HeaderWidget extends Widget {
         // Intercept keyPressed() to avoid conflict with the inplace editor.
         public WidgetAction.State keyPressed(Widget widget,
                 WidgetAction.WidgetKeyEvent event) {
-            if (event.getKeyCode() == KeyEvent.VK_ENTER) {
-                toggleState();
-                return WidgetAction.State.CONSUMED;
-            }
+        	if (event.getKeyChar() == KeyEvent.VK_ENTER && (event.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0){
+        		toggleState();
+        		return WidgetAction.State.CONSUMED;
+        	}
             return WidgetAction.State.REJECTED;
         }
 

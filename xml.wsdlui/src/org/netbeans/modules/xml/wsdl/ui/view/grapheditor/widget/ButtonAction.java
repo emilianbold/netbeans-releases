@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
+import java.awt.event.KeyEvent;
+
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -149,8 +151,18 @@ public class ButtonAction extends WidgetAction.Adapter {
         return State.REJECTED;
     }
 
-
-    
+    @Override
+    public State keyPressed(Widget widget, WidgetKeyEvent event) {
+        boolean state = false;
+        if (event.getKeyCode () == KeyEvent.VK_ENTER || event.getKeyCode() == KeyEvent.VK_SPACE) {
+            Widget w = widget.getScene().getFocusedWidget();
+            if (w instanceof ButtonWidget) {
+                ((ButtonWidget) w).mouseReleased(true);
+                state = true;
+            }
+        }
+        return state ? State.CONSUMED : State.REJECTED;
+    }
     
     
 }

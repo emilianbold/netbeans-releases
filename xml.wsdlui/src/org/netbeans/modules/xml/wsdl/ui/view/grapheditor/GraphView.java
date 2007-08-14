@@ -260,7 +260,7 @@ public class GraphView extends JPanel {
             // will make the widget visible within the scroll pane).
             // Reset whatever the current selection is first.
             scene.setSelectedObjects(Collections.emptySet());
-            scene.getSelectProvider().select(widget, widget.getLocation(), true);
+            scene.getSelectProvider().select(widget, widget.getLocation(), false);
         }
     }
 

@@ -40,6 +40,7 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.ElementOrTypeChooserEditorPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.ElementOrTypeChooserPanel;
@@ -81,6 +82,12 @@ public class PartTypeChooserWidget extends Widget implements ActionListener {
         
         setLayout(new LeftRightLayout(8));
         setBorder(BORDER);
+        
+        PartnerScene pScene = (PartnerScene) getScene();
+        String weight = pScene.getWeight(part) + "showPartTypeChooserButton";
+        if (!pScene.getObjects().contains(weight)) {
+        	pScene.addObject(pScene.getWeight(part) + "showPartTypeChooserButton", showPartTypeChooserButton);
+        }
     }
     
     
@@ -157,6 +164,7 @@ public class PartTypeChooserWidget extends Widget implements ActionListener {
                                     model.endTransaction();
                                 }
                             }
+                            ActionHelper.selectNode(part);
 
                         }
                     }

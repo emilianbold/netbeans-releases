@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -29,16 +30,18 @@ import javax.swing.Action;
 import javax.swing.border.EmptyBorder;
 
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.Utils;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.DialogDisplayer;
@@ -62,6 +65,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
 
     private Widget mHeaderWidget;
     private ExpanderWidget expander;
+	private WidgetAction editorAction;
 
     private static final Image IMAGE = Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/treeeditor/extension/bpel/resources/partnerlinktype.png");
 
@@ -84,6 +88,23 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
         mLabelWidget = createLabelWidget();
         mHeaderWidget.setBorder(WidgetConstants.GRADIENT_BLUE_WHITE_BORDER);
         mHeaderWidget.addChild(mLabelWidget);
+        getActions().addAction(ActionFactory.createForwardKeyEventsAction(mHeaderWidget, null));
+        
+        getActions().addAction(new WidgetAction.Adapter() {
+    		
+        	@Override
+			public State keyPressed (Widget widget, WidgetKeyEvent event) {
+				if (event.getKeyCode() == KeyEvent.VK_F2) {
+			        InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+			        if (inplaceEditorController.openEditor (mLabelWidget)) {
+			        	return State.createLocked (widget, this);
+			        }
+			        return State.CONSUMED;
+				}
+				return State.REJECTED;
+			}
+		
+		});
         
         setMinimumSize(new Dimension(WidgetConstants.PARTNERLLINKTYPE_MINIMUM_WIDTH, 0));
         mHeaderWidget.addChild(actionsWidget);
@@ -101,31 +122,31 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     private Widget createLabelWidget() {
         Widget labelWidget = new ImageLabelWidget(getScene(), IMAGE, mPartnerLinkType.getName());
         labelWidget.setBorder(new EmptyBorder(4, 4, 1, 1));
-        labelWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(
+        editorAction = ActionFactory.createInplaceEditorAction(
                 new TextFieldInplaceEditor() {
 
             public void setText(Widget widget, String text) {
-                String errorMessage = null;
-                if (text == null || text.trim().length() == 0) {
-                    errorMessage = NbBundle.getMessage(PartnerLinkTypeWidget.class, "MSG_BlankPartnerLinkTypeName", text);
-                } else if (!Utils.isValidNCName(text)) { 
-                    errorMessage = NbBundle.getMessage(PartnerLinkTypeWidget.class, "MSG_InvalidPartnerLinkTypeName", text);
-                }
-                
-                if (errorMessage != null) {
-                    NotifyDescriptor desc = new NotifyDescriptor.Message(errorMessage, NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notify(desc);
-                    return;
-                }
-                
-                Model model = mPartnerLinkType.getModel();
-                try {
-                    if (model.startTransaction()) {
-                        mPartnerLinkType.setName(text);
-                    }
-                } finally {
-                    model.endTransaction();
-                }
+            	String errorMessage = null;
+            	if (text == null || text.trim().length() == 0) {
+            		errorMessage = NbBundle.getMessage(PartnerLinkTypeWidget.class, "MSG_BlankPartnerLinkTypeName", text);
+            	} else if (!Utils.isValidNCName(text)) { 
+            		errorMessage = NbBundle.getMessage(PartnerLinkTypeWidget.class, "MSG_InvalidPartnerLinkTypeName", text);
+            	}
+
+            	if (errorMessage != null) {
+            		NotifyDescriptor desc = new NotifyDescriptor.Message(errorMessage, NotifyDescriptor.ERROR_MESSAGE);
+            		DialogDisplayer.getDefault().notify(desc);
+            		return;
+            	}
+
+            	WSDLModel model = mPartnerLinkType.getModel();
+            	try {
+            		if (model.startTransaction()) {
+            			mPartnerLinkType.setName(text);
+            		}
+            	} finally {
+            		model.endTransaction();
+            	}
             }
 
             public boolean isEnabled(Widget widget) {
@@ -139,7 +160,9 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
                 return mPartnerLinkType.getName();
             }
 
-        }, null));
+        }, null);
+        labelWidget.getActions().addAction(editorAction);
+        
         return labelWidget;
     }
 
@@ -149,6 +172,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
             mHeaderWidget.removeChild(mLabelWidget);
         }
         mLabelWidget = createLabelWidget();
+        
         mHeaderWidget.addChild(0, mLabelWidget);
         
         mContentWidget.updateContent();
@@ -182,30 +206,6 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     }
     
     
-    /*@Override
-    protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
-        super.notifyStateChanged(previousState, state);
-        
-        if (state.isSelected()) {
-            CollaborationsWidget collaborationsWidget = getCollaborationWidget();
-            if (collaborationsWidget != null) {
-                collaborationsWidget.childPartnerLinkTypeSelected(this);
-            }
-        } else {
-            CollaborationsWidget collaborationsWidget = getCollaborationWidget();
-            if (collaborationsWidget != null) {
-                collaborationsWidget.childPartnerLinkTypeUnSelected(this);
-            }
-        }
-    }*/
-    
-    private CollaborationsWidget getCollaborationWidget() {
-        for (Widget w = this; w != null; w = w.getParentWidget()) {
-            if (w instanceof CollaborationsWidget) return (CollaborationsWidget) w;
-        }
-        return null;
-    }
-
     public void dragExit() {
         
     }

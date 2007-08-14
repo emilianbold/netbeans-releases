@@ -66,7 +66,6 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.ButtonBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.ExtensibilityElementsFolderNode;
@@ -94,6 +93,7 @@ public class CollaborationsWidget extends Widget
     private Widget stubWidget;
     /** The Node for the WSDLComponent, if it has been created. */
     private Node componentNode;
+	private ButtonWidget addButtonWidget;
     
     public CollaborationsWidget(Scene scene, WSDLModel model) {
         super(scene);
@@ -126,6 +126,7 @@ public class CollaborationsWidget extends Widget
         createContent();
         //initially all plt widgets should be collapsed
         collapsePartnerLinkTypeWidgets();
+        
     }
 
     private Widget createActionWidget(Scene scene) {
@@ -176,7 +177,7 @@ public class CollaborationsWidget extends Widget
         actionWidget.addChild(createButtonWidget);
 
         // Add partnerLinkType button.
-        ButtonWidget addButtonWidget = new ButtonWidget(scene,
+        addButtonWidget = new ButtonWidget(scene,
                 NbBundle.getMessage(CollaborationsWidget.class,
                 "LBL_CollaborationsWidget_AddPartnerLinkType"));
         addButtonWidget.setActionListener(new ActionListener() {
@@ -205,6 +206,16 @@ public class CollaborationsWidget extends Widget
             }
         });
         actionWidget.addChild(addButtonWidget);
+        
+        PartnerScene pScene = (PartnerScene) getScene();
+        String weight = "AA_AutoCreatePartnerLinkTypesButton";
+        if (!pScene.getObjects().contains(weight)) {
+        	pScene.addObject(weight, createButtonWidget);
+        }
+        weight = "AB_AddPartnerLinkTypesButton";
+        if (!pScene.getObjects().contains(weight)) {
+        	pScene.addObject(weight, addButtonWidget);
+        }
 
         return actionWidget;
     }

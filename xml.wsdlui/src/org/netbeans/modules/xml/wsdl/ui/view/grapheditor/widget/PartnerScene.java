@@ -23,22 +23,47 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
 
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.CycleFocusProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.model.ObjectSceneEvent;
+import org.netbeans.api.visual.model.ObjectSceneEventType;
+import org.netbeans.api.visual.model.ObjectSceneListener;
+import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.widget.EventProcessingType;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Fault;
+import org.netbeans.modules.xml.wsdl.model.Input;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.Output;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.DragOverSceneLayer;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
@@ -51,6 +76,7 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
     private ButtonAction buttonAction;
     private WidgetAction selectAction;
     private DnDAction dndAction;
+    private WidgetAction focusAction;
     
     private WSDLModel model;
     private MessagesWidget messagesWidget;
@@ -58,21 +84,58 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
     private DragOverSceneLayer dragOverLayer;
     private Font defaultFont = new JLabel().getFont();
     private SelectProvider selectProvider;
+    private PartnerSceneCycleFocusProviderAndSceneListener cycleFocusProviderAndSceneListener;
 
     public PartnerScene(WSDLModel model) {
         super();
-        
+
         this.model = model;
         model.addComponentListener(this);
-
+        setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS);
+        cycleFocusProviderAndSceneListener = new PartnerSceneCycleFocusProviderAndSceneListener(this);
+        
         buttonAction = new ButtonAction();
         selectProvider = new ObjectSelectProvider();
         selectAction = ActionFactory.createSelectAction(selectProvider);
         dndAction = new DnDAction();
+        focusAction = ActionFactory.createCycleFocusAction(cycleFocusProviderAndSceneListener);
+
+        getPriorActions().addAction(focusAction);
+        getActions().addAction(new WidgetAction.Adapter() {
+
+            @Override
+            public State keyPressed(Widget widget, WidgetKeyEvent event) {
+                Widget w = getFocusedWidget();
+                if (w == null) return State.REJECTED;
+
+                if (w instanceof AbstractWidget) {
+                	if ((event.getKeyCode() == KeyEvent.VK_F10 && (event.getModifiers () & InputEvent.SHIFT_DOWN_MASK) != 0) || event.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
+                		JPopupMenu popupMenu = ((AbstractWidget)w).getPopupMenu(w, null);
+                		if (popupMenu != null) {
+                			Scene scene = w.getScene ();
+                			JComponent view = scene.getView ();
+                			if (view != null) {
+                				Point widgetPoint = new Point(w.getLocation ().x + w.getBounds().getLocation ().x,  w.getLocation ().y + w.getBounds().getLocation ().y);
+                				Point visibleRect = scene.convertSceneToView (w.convertLocalToScene(widgetPoint));
+                				popupMenu.show (view, visibleRect.x + 10, visibleRect.y + 10);
+                			}
+                		}
+                		return State.CONSUMED;
+                	}
+                }
+//                } 
+                return State.REJECTED;
+            }
+        });
 
         getActions().addAction(selectAction);
         getActions().addAction(buttonAction);
         getActions().addAction(dndAction);
+        
+        this.addObjectSceneListener(cycleFocusProviderAndSceneListener, ObjectSceneEventType.OBJECT_SELECTION_CHANGED, 
+                                                                        ObjectSceneEventType.OBJECT_FOCUS_CHANGED, 
+                                                                        ObjectSceneEventType.OBJECT_ADDED, 
+                                                                        ObjectSceneEventType.OBJECT_REMOVED);
     }
 
     public WSDLModel getModel() {
@@ -204,7 +267,7 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
     }
 
     @Override
-	public Font getDefaultFont() {
+    public Font getDefaultFont() {
         return defaultFont;
     }
 
@@ -219,28 +282,15 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
                 boolean invertSelection) 
         {
             return true;
-//            Object object = findObject(widget);
-//            return object != null && (invertSelection  
-//                    || ! getSelectedObjects().contains(object));
         }
         
 
         public void select(Widget widget, Point localLocation, 
                 boolean invertSelection) 
         {
-            if (widget instanceof ButtonWidget) {
-                if (!((ButtonWidget) widget).isParenSelectionAllowed()) {
-                    // do nothing
-                    return;
-                }
-            }
             
             Object object = findObject(widget);
             
-//            System.out.println("Object=" + object);
-//            System.out.println("getFocusedObject=" + getFocusedObject());
-            
-            // setFocusedObject(object);
             if (object != null) {
                 if (getSelectedObjects().contains(object)) {
                     return;
@@ -258,20 +308,15 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
                     }
                     parent = parent.getParentWidget();
                 }
-                
-                // Make the widget visible when it is selected.
-                Rectangle bounds = widget.getClientArea();
-                if (bounds != null) {
-                    bounds = widget.convertLocalToScene(bounds);
-                    getView().scrollRectToVisible(bounds);
-                }
+                setFocusedObject (object);
             } else {
                 userSelectionSuggested(Collections.emptySet(),
                         invertSelection);
             }
+            
         }
     }
-
+    
     public void dragExit() {
         collaborationsWidget.dragExit();
         messagesWidget.dragExit();
@@ -327,6 +372,182 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
 
     public boolean isCollapsed() {
         return false;
+    }
+    
+    static public class PartnerSceneCycleFocusProviderAndSceneListener implements CycleFocusProvider, ObjectSceneListener {
+            
+            TreeSet<Object> set;
+            Set<String> strSet;
+            PartnerScene partnerScene;
+            public PartnerSceneCycleFocusProviderAndSceneListener(PartnerScene scene) {
+                partnerScene = scene;
+                strSet = new TreeSet<String>();
+                set = new TreeSet<Object>(new Comparator<Object>() {
+                
+                    @SuppressWarnings("unchecked")
+                    public int compare(Object o1, Object o2) {
+                        return partnerScene.getWeight(o1).compareTo(partnerScene.getWeight(o2));
+                    }
+                
+                });
+            }
+            
+            public boolean switchPreviousFocus (Widget widget) {
+                Scene scene = widget.getScene ();
+                return scene instanceof PartnerScene  &&  switchFocus ((PartnerScene) scene, false);
+            }
+
+            public boolean switchNextFocus (Widget widget) {
+                Scene scene = widget.getScene ();
+                return scene instanceof PartnerScene  &&  switchFocus ((PartnerScene) scene, true);
+            }
+            
+            private boolean switchFocus (PartnerScene scene, boolean forwardDirection) {
+                Object object = scene.getFocusedObject();
+                
+                scene.setFocusedObject(findNextVisibleObject(object, forwardDirection));
+                
+                return true;
+            }
+            
+            @SuppressWarnings ("unchecked")
+            private Object findNextVisibleObject(Object object, boolean forwardDirection) {
+                if (!set.isEmpty()) {
+                    Object next = object;
+                    if (next == null) {
+                        next = set.first();
+                    } else {
+                        SortedSet newSet = set;//set.headSet("someNonWSDLComponent");
+                        if (forwardDirection) {
+                            SortedSet tSet = newSet.tailSet(object);
+                            //this set also includes the "object" that we searched for.
+                            // so ignore the first element.
+                            Iterator iter = null;
+                            if (tSet.size() > 1) {
+                                iter = tSet.iterator();
+                                iter.next();
+                                if (iter.hasNext()) next = iter.next();
+                            } else {
+                                if (tSet.size() == 1) {
+                                    next = set.first();
+                                }
+                            }
+                        } else {
+                            SortedSet tSet = newSet.headSet(object);
+                            if (tSet.isEmpty()) {
+                                next = newSet.last();
+                            } else {
+                                next = tSet.last();
+                            }
+                        }
+                    }
+                    List<Widget> ws = partnerScene.findWidgets(next);
+                    if (ws != null && !ws.isEmpty()) {
+                        for (Widget w : ws) {
+                            Widget temp = w;
+                            do {
+                                if (!temp.isVisible())  break;
+                                if (temp instanceof ButtonWidget) {
+                                    if (!((ButtonWidget) temp).isButtonEnabled()) break;
+                                }
+                            } while ((temp = temp.getParentWidget()) != null);
+
+                            if (temp == null) {
+                                return next;
+                            } else {
+                                return findNextVisibleObject(next, forwardDirection);
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+
+            @SuppressWarnings("unchecked")
+            public void focusChanged(ObjectSceneEvent event,
+                    Object previousFocusedObject, Object newFocusedObject) {
+                if (newFocusedObject == null) return;
+                ObjectScene scene = event.getObjectScene();
+                if (!scene.getSelectedObjects().contains(newFocusedObject)) {
+                    Set set = new HashSet();
+                    set.add(newFocusedObject);
+                    scene.setSelectedObjects(set);
+                }
+            }
+
+            public void objectAdded(ObjectSceneEvent event, Object addedObject) {
+                set.add(addedObject);
+                strSet.add(partnerScene.getWeight(addedObject));
+            }
+            
+            public void objectRemoved(ObjectSceneEvent event,
+                    Object removedObject) {
+                set.remove(removedObject);
+                strSet.remove(partnerScene.getWeight(removedObject));
+            }
+            
+            public void highlightingChanged(ObjectSceneEvent event,
+                    Set<Object> previousHighlighting,
+                    Set<Object> newHighlighting) {
+                
+            }
+
+            public void hoverChanged(ObjectSceneEvent event,
+                    Object previousHoveredObject, Object newHoveredObject) {
+                
+            }
+
+            public void objectStateChanged(ObjectSceneEvent event,
+                    Object changedObject, ObjectState previousState,
+                    ObjectState newState) {
+                
+            }
+
+            public void selectionChanged(ObjectSceneEvent event,
+                    Set<Object> previousSelection, Set<Object> newSelection) {
+                if (newSelection == null || newSelection.isEmpty()) return;
+                
+                Object obj = newSelection.iterator().next();
+                Widget widget = partnerScene.findWidget(obj);
+                Rectangle bounds = widget.getClientArea();
+                if (bounds != null) {
+                    bounds = partnerScene.convertSceneToView(widget.convertLocalToScene(bounds));
+                    partnerScene.getView().scrollRectToVisible(bounds);
+                }
+            }
+    }
+    
+    public String getWeight(Object obj) {
+        if (obj instanceof WSDLComponent) {
+            return getWeight((WSDLComponent) obj);
+        } else if (obj instanceof String) {
+            return (String) obj;
+        }
+        return "Z";
+    }
+    
+    public String getWeight(WSDLComponent comp) {
+        String zeroPaddedNumber = String.format("%010d", comp.findPosition());
+        if (comp instanceof PartnerLinkType) {
+            return "AZ" + zeroPaddedNumber;
+        } else if (comp instanceof Role) {
+            return getWeight(comp.getParent()) + "BZ" + zeroPaddedNumber;
+        } else if (comp instanceof PortType) {
+            return "CZ" + zeroPaddedNumber;
+        } else if (comp instanceof Operation) {
+            return getWeight(comp.getParent()) + "DZ" + zeroPaddedNumber;
+        } else if (comp instanceof Input) {
+            return getWeight(comp.getParent()) + "EZ" + zeroPaddedNumber;
+        } else if (comp instanceof Output) {
+            return getWeight(comp.getParent()) + "EZ" + zeroPaddedNumber;
+        } else if (comp instanceof Fault) {
+            return getWeight(comp.getParent()) + "EZ" +  zeroPaddedNumber;
+        } else if (comp instanceof Message) {
+            return "FZ" + zeroPaddedNumber;
+        } else if (comp instanceof Part) {
+            return getWeight(comp.getParent()) + "GZ" + zeroPaddedNumber;
+        }
+        return "Z";
     }
 
 }

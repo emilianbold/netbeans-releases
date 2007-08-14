@@ -32,6 +32,7 @@ import java.awt.geom.RoundRectangle2D;
 
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
@@ -53,6 +54,7 @@ public class ButtonWidget extends Widget {
     private boolean rollover = false;
     private boolean pressed = false;
     private boolean enabled = true;
+    private boolean focused = false;
     private boolean parentSelectionAllowed = false;
     
     
@@ -199,14 +201,16 @@ public class ButtonWidget extends Widget {
     
     
     public void mouseEntered() {
-        rollover = true;
+    	if (!getState().isFocused()) {
+    		rollover = true;
+    	}
         repaint();
     }
     
     
     public void mouseExited() {
-        rollover = false;
-        repaint();
+    	rollover = false;
+    	repaint();
     }
     
     
@@ -218,6 +222,7 @@ public class ButtonWidget extends Widget {
     
     public void mouseReleased(boolean inside) {
         pressed = false;
+        focused = false;
         repaint();
         
         if (inside) {
@@ -249,6 +254,21 @@ public class ButtonWidget extends Widget {
     }
     
     
+    @Override
+    protected void notifyStateChanged(ObjectState previousState,
+    		ObjectState state) {
+    	if (!enabled) return;
+    	
+    	if (!previousState.isFocused() && state.isFocused()) {
+    		focused = true;
+    		repaint();
+    	} else if (previousState.isFocused() && !state.isFocused()){
+    		focused = false;
+    		repaint();
+    	}
+    }
+    
+    
     private class ButtonBorder implements Border {
         public ButtonBorder() {}
         
@@ -277,9 +297,13 @@ public class ButtonWidget extends Widget {
                 if (rollover) {
                     g2.fill(new RoundRectangle2D.Double(rect.x + 1.5, rect.y + 1.5,
                             rect.width - 3, rect.height - 3, 3, 3));
-                } else {
+                } else if (focused){
+                	g2.setPaint(WidgetConstants.SELECTION_COLOR);
                     g2.fill(new RoundRectangle2D.Double(rect.x + 1, rect.y + 1,
                             rect.width - 2, rect.height - 2, 4, 4));
+                } else {
+                	g2.fill(new RoundRectangle2D.Double(rect.x + 1, rect.y + 1,
+                			rect.width - 2, rect.height - 2, 4, 4));
                 }
             } else {
                 g2.setPaint(grayFilter(BORDER_COLOR));
