@@ -44,6 +44,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     }
     
     // Cloning
+    @Override
     public Object clone() {
         CCCompilerConfiguration clone = new CCCompilerConfiguration(getBaseDir(), (CCCompilerConfiguration)getMaster());
         // BasicCompilerConfiguration
@@ -68,6 +69,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     }
     
     // Interface OptionsProvider
+    @Override
     public String getOptions(BasicCompiler compiler) {
         String options = "$(COMPILE.cc) "; // NOI18N
         options += getAllOptions2(compiler) + " "; // NOI18N

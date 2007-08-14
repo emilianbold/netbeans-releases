@@ -45,10 +45,12 @@ public class SunFortranCompiler extends BasicCompiler {
         super(flavor, kind, name, displayName, path);
     }
     
+    @Override
     public String getDevelopmentModeOptions(int value) {
         return DEVELOPMENT_MODE_OPTIONS[value];
     }
     
+    @Override
     public String getWarningLevelOptions(int value) {
         if (value < WARNING_LEVEL_OPTIONS.length)
             return WARNING_LEVEL_OPTIONS[value];
@@ -56,6 +58,7 @@ public class SunFortranCompiler extends BasicCompiler {
             return ""; // NOI18N
     }
     
+    @Override
     public String getSixtyfourBitsOption(int value) {
         if (getFlavor() == CompilerFlavor.Sun12) {
             if (value == BasicCompilerConfiguration.BITS_DEFAULT)
@@ -79,6 +82,7 @@ public class SunFortranCompiler extends BasicCompiler {
         }
     }
     
+    @Override
     public String getStripOption(boolean value) {
         return value ? "-s" : ""; // NOI18N
     }

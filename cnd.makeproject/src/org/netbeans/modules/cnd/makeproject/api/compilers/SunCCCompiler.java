@@ -90,10 +90,12 @@ public class SunCCCompiler extends CCCCompiler {
         super(flavor, kind, name, displayName, path);
     }
     
+    @Override
     public String getDevelopmentModeOptions(int value) {
         return DEVELOPMENT_MODE_OPTIONS[value];
     }
     
+    @Override
     public String getWarningLevelOptions(int value) {
         if (value < WARNING_LEVEL_OPTIONS.length)
             return WARNING_LEVEL_OPTIONS[value];
@@ -101,6 +103,7 @@ public class SunCCCompiler extends CCCCompiler {
             return ""; // NOI18N
     }
     
+    @Override
     public String getSixtyfourBitsOption(int value) {
         if (getFlavor() == CompilerFlavor.Sun12) {
             if (value == BasicCompilerConfiguration.BITS_DEFAULT)
@@ -123,10 +126,12 @@ public class SunCCCompiler extends CCCCompiler {
         }
     }
     
+    @Override
     public String getStripOption(boolean value) {
         return value ? "-s" : ""; // NOI18N
     }
     
+    @Override
     public boolean setSystemIncludeDirectories(Platform platform, List values) {
         assert values != null;
         if (values.equals(systemIncludeDirectoriesList)) {
@@ -136,6 +141,7 @@ public class SunCCCompiler extends CCCCompiler {
         return true;
     }
     
+    @Override
     public boolean setSystemPreprocessorSymbols(Platform platform, List values) {
         assert values != null;
         if (values.equals(systemPreprocessorSymbolsList)) {
@@ -145,6 +151,7 @@ public class SunCCCompiler extends CCCCompiler {
         return true;
     }
     
+    @Override
     public List getSystemPreprocessorSymbols(Platform platform) {
         if (systemPreprocessorSymbolsList != null)
             return systemPreprocessorSymbolsList;
@@ -153,6 +160,7 @@ public class SunCCCompiler extends CCCCompiler {
         return systemPreprocessorSymbolsList;
     }
     
+    @Override
     public List getSystemIncludeDirectories(Platform platform) {
         if (systemIncludeDirectoriesList != null)
             return systemIncludeDirectoriesList;
@@ -163,25 +171,30 @@ public class SunCCCompiler extends CCCCompiler {
     }
     
     // To be overridden
+    @Override
     public String getMTLevelOptions(int value) {
         return MT_LEVEL_OPTIONS[value];
     }
     
     // To be overridden
+    @Override
     public String getLibraryLevelOptions(int value) {
         return LIBRARY_LEVEL_OPTIONS[value];
     }
     
     // To be overridden
+    @Override
     public String getStandardsEvolutionOptions(int value) {
         return STANDARD_OPTIONS[value];
     }
     
     // To be overridden
+    @Override
     public String getLanguageExtOptions(int value) {
         return LANGUAGE_EXT_OPTIONS[value];
     }
     
+    @Override
     public void saveSystemIncludesAndDefines() {
         if (systemIncludeDirectoriesList != null && saveOK)
             systemIncludeDirectoriesList.saveList(getClass().getName() + "." + "systemIncludeDirectoriesList"); // NOI18N
@@ -221,10 +234,12 @@ public class SunCCCompiler extends CCCCompiler {
         }
     }
     
+    @Override
     public void resetSystemIncludesAndDefines(Platform platform) {
         getFreshSystemIncludesAndDefines(platform);
     }
     
+    @Override
     protected void parseCompilerOutput(Platform platform, InputStream is) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         try {

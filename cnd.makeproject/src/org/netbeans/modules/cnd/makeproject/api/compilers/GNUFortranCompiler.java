@@ -40,6 +40,7 @@ public class GNUFortranCompiler extends BasicCompiler {
 	"-Werror", // Convert Warnings to Errors // NOI18N
     }; // FIXUP: from Bundle
     
+    @Override
     public String getDevelopmentModeOptions(int value) {
         return DEVELOPMENT_MODE_OPTIONS[value];
     }
@@ -49,6 +50,7 @@ public class GNUFortranCompiler extends BasicCompiler {
         super(flavor, kind, name, displayName, path); // NOI18N
     }
     
+    @Override
     public String getWarningLevelOptions(int value) {
         if (value < WARNING_LEVEL_OPTIONS.length)
             return WARNING_LEVEL_OPTIONS[value];
@@ -56,6 +58,7 @@ public class GNUFortranCompiler extends BasicCompiler {
             return ""; // NOI18N
     }
     
+    @Override
     public String getSixtyfourBitsOption(int value) {
         if (value == BasicCompilerConfiguration.BITS_DEFAULT)
             return ""; // NOI18N
@@ -67,6 +70,7 @@ public class GNUFortranCompiler extends BasicCompiler {
             return ""; // NOI18N
     }
     
+    @Override
     public String getStripOption(boolean value) {
         return value ? "-s" : ""; // NOI18N
     }

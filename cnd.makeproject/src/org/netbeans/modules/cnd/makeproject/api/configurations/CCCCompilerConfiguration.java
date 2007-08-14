@@ -99,6 +99,7 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
 	inheritPreprocessor = new BooleanConfiguration(null, true, null, null);
     }
     
+    @Override
     public boolean getModified() {
         return super.getModified() ||
                 mpLevel.getModified() ||
@@ -216,6 +217,7 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
 	getInheritPreprocessor().assign(conf.getInheritPreprocessor());
     }
 
+    @Override
     public Object clone() {
 	CCCCompilerConfiguration clone = new CCCCompilerConfiguration(getBaseDir(), (CCCCompilerConfiguration)getMaster());
 	// BasicCompilerConfiguration

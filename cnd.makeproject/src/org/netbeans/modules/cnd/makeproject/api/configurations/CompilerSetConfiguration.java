@@ -27,8 +27,8 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 
 public class CompilerSetConfiguration extends IntConfiguration implements CompilerSetChangeListener {
     
-    private ArrayList<String> displayNames = new ArrayList();
-    private ArrayList<String> names = new ArrayList();
+    private ArrayList<String> displayNames = new ArrayList<String>();
+    private ArrayList<String> names = new ArrayList<String>();
     private CompilerSetConfiguration master;
     private int def;
     private int value;
@@ -44,7 +44,7 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
      * @param optoins An array of compiler set names
      */
     public CompilerSetConfiguration(CompilerSetConfiguration master, int def, String[] displayNames, String[] names) {
-        CompilerSetManager.getDefault().addCompilerSetChangeListener(this);
+        CompilerSetManager.addCompilerSetChangeListener(this);
         
         for (int i = 0; i < displayNames.length; i++) {
             this.displayNames.add(displayNames[i]);
@@ -57,6 +57,7 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
         oldname = null;
     }
     
+    @Override
     public void setValue(int value) {
         if (value >= 0 && value <= displayNames.size()) {
             this.value = value;
@@ -68,6 +69,7 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
         }
     }
 
+    @Override
     public void setValue(String s) {
 	if (s != null) {
             int i = 0;
@@ -90,6 +92,7 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
 	}
     }
     
+    @Override
     public int getValue() {
         if (master != null && !getModified()) {
             return master.getValue();
@@ -98,23 +101,28 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
         }
     }
     
+    @Override
     public void setModified(boolean modified) {
         this.modified = modified;
     }
     
+    @Override
     public boolean getModified() {
         return modified;
     }
     
+    @Override
     public int getDefault() {
         return def;
     }
     
+    @Override
     public void reset() {
         value = getDefault();
         setModified(false);
     }
 
+    @Override
     public String getName() {
         if (getValue() >= 0 && getValue() < displayNames.size()) {
 	    return displayNames.get(getValue());
@@ -123,10 +131,12 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
         }
     }
     
+    @Override
     public String[] getNames() {
         return displayNames.toArray(new String[0]);
     }
 
+    @Override
     public String getOption() {
         if (getValue() >= 0 && getValue() <= names.size()) {
             return names.get(getValue());
@@ -145,6 +155,7 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
         setModified(conf.getModified());
     }
 
+    @Override
     public Object clone() {
 	CompilerSetConfiguration clone = new CompilerSetConfiguration(master, 
                 def, displayNames.toArray(new String[0]), names.toArray(new String[0]));
@@ -158,8 +169,8 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
         String defdname = displayNames.get(def);
         String curdname = value >= 0 ? displayNames.get(value) : "xxx"; // NOI18N - want non-matching string
         String savename = names.get(value);
-        ArrayList<String> newNames = new ArrayList();
-        ArrayList<String> newDisplayNames = new ArrayList();
+        ArrayList<String> newNames = new ArrayList<String>();
+        ArrayList<String> newDisplayNames = new ArrayList<String>();
         def = value = -1;
         
         int i = 0;

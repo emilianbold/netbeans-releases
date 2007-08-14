@@ -140,6 +140,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         getTool().assign(conf.getTool());
     }
     
+    @Override
     public Object clone() {
         ArchiverConfiguration clone = new ArchiverConfiguration(getMakeConfiguration());
         // ArchiverConfiguration
@@ -248,6 +249,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
             super(stringConfiguration, def, txt1, txt2, txt3);
         }
         
+        @Override
         public void setValue(Object v) {
             if (IpeUtils.hasMakeSpecialCharacters((String)v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));

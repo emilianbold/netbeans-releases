@@ -43,6 +43,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         super.assign(conf);
     }
     
+    @Override
     public Object clone() {
         CCompilerConfiguration clone = new CCompilerConfiguration(getBaseDir(), (CCompilerConfiguration)getMaster());
         // BasicCompilerConfiguration
@@ -67,6 +68,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     }
     
     // Interface OptionsProvider
+    @Override
     public String getOptions(BasicCompiler compiler) {
         String options = "$(COMPILE.c) "; // NOI18N
         options += getAllOptions2(compiler) + " "; // NOI18N

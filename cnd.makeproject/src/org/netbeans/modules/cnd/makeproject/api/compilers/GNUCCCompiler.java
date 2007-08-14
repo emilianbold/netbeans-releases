@@ -66,10 +66,12 @@ public class GNUCCCompiler extends CCCCompiler {
         super(flavor, kind, name, displayName, path);
     }
     
+    @Override
     public String getDevelopmentModeOptions(int value) {
         return DEVELOPMENT_MODE_OPTIONS[value];
     }
     
+    @Override
     public String getWarningLevelOptions(int value) {
         if (value < WARNING_LEVEL_OPTIONS.length)
             return WARNING_LEVEL_OPTIONS[value];
@@ -77,6 +79,7 @@ public class GNUCCCompiler extends CCCCompiler {
             return ""; // NOI18N
     }
     
+    @Override
     public String getSixtyfourBitsOption(int value) {
         if (value == BasicCompilerConfiguration.BITS_DEFAULT)
             return ""; // NOI18N
@@ -88,10 +91,12 @@ public class GNUCCCompiler extends CCCCompiler {
             return ""; // NOI18N
     }
     
+    @Override
     public String getStripOption(boolean value) {
         return value ? "-s" : ""; // NOI18N
     }
     
+    @Override
     public boolean setSystemIncludeDirectories(Platform platform, List values) {
         assert values != null;
         if (values.equals(systemIncludeDirectoriesList)) {
@@ -101,6 +106,7 @@ public class GNUCCCompiler extends CCCCompiler {
         return true;
     }
     
+    @Override
     public boolean setSystemPreprocessorSymbols(Platform platform, List values) {
         assert values != null;
         if (values.equals(systemPreprocessorSymbolsList)) {
@@ -110,6 +116,7 @@ public class GNUCCCompiler extends CCCCompiler {
         return true;
     }
     
+    @Override
     public List getSystemPreprocessorSymbols(Platform platform) {
         if (systemPreprocessorSymbolsList != null)
             return systemPreprocessorSymbolsList;
@@ -118,6 +125,7 @@ public class GNUCCCompiler extends CCCCompiler {
         return systemPreprocessorSymbolsList;
     }
     
+    @Override
     public List getSystemIncludeDirectories(Platform platform) {
         if (systemIncludeDirectoriesList != null)
             return systemIncludeDirectoriesList;
