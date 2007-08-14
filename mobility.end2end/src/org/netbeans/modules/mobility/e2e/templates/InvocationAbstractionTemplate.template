@@ -22,5 +22,7 @@ public interface InvocationAbstraction {
      * @throws java.lang.Exception Thrown when a protocol error occurs
      */
     public Object invoke(HttpSession session, DataInput input) throws Exception;
+
+    public static int[] getIds();
 }
 //GEN-END:Client

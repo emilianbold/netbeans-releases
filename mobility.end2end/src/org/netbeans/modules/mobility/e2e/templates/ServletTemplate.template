@@ -119,15 +119,10 @@ public class ${mapping.getServerMapping().getClassName()} extends HttpServlet {
             short commandCode = in.readShort();
             
             if ( commandCode == INVOCATION_CODE ) {
-                // read the number of invocations that are grouped within this call
-                short groupCount = in.readShort();
-                Object[] returnValues = new Object[groupCount];
-                for ( short iter = 0; iter < groupCount; iter++ ) {
-                    int requestID = in.readInt();
-                    returnValues[iter] = invokeMethod(session, requestID, in);
-                }
+                int requestID = in.readInt();
+                Object returnValue = invokeMethod(session,requestID,in);
                 out.writeShort(resultCode);
-                Utility.writeResults(out, returnValues);
+                Utility.writeResults(out, returnValue, ((InvocationAbstraction)METHODS.get(new Integer(requestID))).getIds());
             }
             
             in.close();

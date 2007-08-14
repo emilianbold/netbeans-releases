@@ -34,12 +34,12 @@ public class Utility {
      * Sends return values to the client output stream.
      *
      * @param output The output stream into which all the data should be written
-     * @param  returnValues The values which we should write into the stream
+     * @param  returnValue The value which we should write into the stream
      * @throws IOException If an error occured while writing the results
      */
-    public static void writeResults( DataOutput output, Object[] returnValues) throws IOException {
-        for ( int i = 0; i < returnValues.length; i++ ) {
-            writeObject(output, returnValues[i]);
+    public static void writeResults( DataOutput output, Object returnValue, int[] paramIDs) throws IOException {
+        for ( int i = 0; i < paramIDs.length; i++ ) {
+            writeObject(output, returnValue, paramIDs[i]);
         }
     }
     
@@ -65,7 +65,7 @@ public class Utility {
             return;
         }
         switch( id ) {
-        <#list utils.getParameterTypeInstances( service ) as type>
+        <#list returnInstanceTypes as type>
             case ${registry.getRegisteredTypeId( type )}:
                 <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
                 output.writeShort(${serializer.instanceOf( type )?upper_case?replace( "[]", "_ARRAY" )?replace( ".", "_" ) }_TYPE);                    
@@ -95,9 +95,16 @@ public class Utility {
         <#list parameterInstanceTypes as type>
             <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
             <#if type.getName() != "void">
-                case ${serializer.instanceOf( type )?upper_case?replace( "[]", "_ARRAY" )?replace( ".", "_" ) }_TYPE:
-                    ${serializer.fromStream( mapping, type, "in", "result" )}
-                    return result;
+                case ${registry.getRegisteredTypeId( type )}:
+                    <#if type.isPrimitive() && !type.isArray()>
+                        <#assign typeFromStream = serializer.fromStream( mapping, type, "in", null )/>
+                        // Primitive
+                        return ${serializer.toObject( type, typeFromStream )};
+                    <#else>
+                        // COmplex
+                        ${serializer.fromStream( mapping, type, "in", "result" )}
+                        return result;
+                    </#if>
             </#if>
         </#list>
             case NULL_TYPE: /* null */

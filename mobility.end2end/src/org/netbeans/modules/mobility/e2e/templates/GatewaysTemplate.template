@@ -25,6 +25,14 @@ public class JavonGateways {
      *  This class implements the application server connectivity specific to the needs.
      */
     public static class ${packageName?replace( ".", "_" )}_${className}${method.getName()}${method.getRequestID()}Gateway implements InvocationAbstraction {
+
+        public static int[] getIds() {
+            return new int[] {
+                <#list method.getParameters() as parameter>
+                    ${registry.getRegisteredTypeId( parameter.getType())}<#if parameter_has_next>, </#if>
+                </#list>
+                };
+        };
         /**
          *  This method performs the actual invocation of server functionality. It is
          *  used by the servlet to delegate functionality to external classes.
