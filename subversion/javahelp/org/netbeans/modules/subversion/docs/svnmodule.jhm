@@ -44,7 +44,7 @@
     <mapID target="org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep" url="svnmodule/csh/svn_chkout_wizard_p2.html" />
 
     <!--Commit dialog-->
-    <mapID target="org.netbeans.modules.subversion.ui.commit.CommitAction" url="svnmodule/csh/svn_commit.html" />
+    <mapID target="org.netbeans.modules.subversion.ui.commit.CommitAction" url="svnmodule/csh/svn_commit_dialog.html" />
 
     <!--Create Copy dialog-->
     <mapID target="org.netbeans.modules.subversion.ui.copy.CreateCopy" url="svnmodule/csh/svn_copyto_dialog.html" />
