@@ -1,0 +1,5 @@
+#
+# Mapping of legacy classes to new ones
+# 
+
+org.netbeans.modules.web.core.syntax.JspIndentEngine=org.netbeans.modules.web.core.syntax.formatting.JspIndentEngine
