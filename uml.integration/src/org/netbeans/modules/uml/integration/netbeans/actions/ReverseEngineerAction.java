@@ -62,6 +62,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
+import org.openide.cookies.SaveCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -198,6 +199,7 @@ public final class ReverseEngineerAction extends AbstractAction
         
         if (doRE)
         {
+            saveSourceFiles(sourceProject);
             if (projectSelected)
                 sourceFiles = findJavaFiles(rePanel);
             else
@@ -206,6 +208,27 @@ public final class ReverseEngineerAction extends AbstractAction
         }
     }
     
+    // save modified java source files before RE
+    private void saveSourceFiles(Project p)
+    {
+        try
+        {
+            DataObject[] modified = DataObject.getRegistry().getModified();
+            for (int i=0; i<modified.length; i++)
+            {
+                if (FileOwnerQuery.getOwner(modified[i].getPrimaryFile()) == p)
+                {
+                    SaveCookie cookie = modified[i].getCookie(SaveCookie.class);
+                    if (cookie != null)
+                        cookie.save();
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            ErrorManager.getDefault().notify(e);
+        }
+    }
     
     private final class ContextAction extends AbstractAction implements Presenter.Popup
     {
@@ -414,22 +437,22 @@ public final class ReverseEngineerAction extends AbstractAction
     //                    return false;
     //                }
     
-//    protected String iconResource()
-//    {
-//        return ImageUtil.IMAGE_FOLDER + "reverse-engineer.png"; // NOI18N
-//    }
-//    
+    //    protected String iconResource()
+    //    {
+    //        return ImageUtil.IMAGE_FOLDER + "reverse-engineer.png"; // NOI18N
+    //    }
+    //
     
-//    public HelpCtx getHelpCtx()
-//    {
-//        return HelpCtx.DEFAULT_HELP;
-//    }
-//    
-//    
-//    protected boolean asynchronous()
-//    {
-//        return false;
-//    }
+    //    public HelpCtx getHelpCtx()
+    //    {
+    //        return HelpCtx.DEFAULT_HELP;
+    //    }
+    //
+    //
+    //    protected boolean asynchronous()
+    //    {
+    //        return false;
+    //    }
     
     
     // Helper Methods
