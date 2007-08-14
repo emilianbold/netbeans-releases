@@ -18,21 +18,26 @@
 <p>You use the New Breakpoint dialog box to set a breakpoint on a thread.</p>
 <p>To open the dialog box, from the main menu, choose Run &gt; New Breakpoint, then select Thread from the Breakpoint Type drop-down list.</p>
 <p>You can set the following values:</p>
-<ul>
-	<li><b>Settings: Set Breakpoint On. </b> Defines when to trigger the breakpoint:
-		<ul>
-			<li><b>Thread Start.</b> When a thread starts. </li>
-			<li><b>Thread Death.</b> When a thread stops. </li>
-			<li><b>Thread Start or Death.</b> Both when a thread starts and when a thread stops. </li>
-		</ul></li>
+    <ul>
+	<li><b>Settings:</b>
+            <ul>
+                <li><b>Stop On.</b> Defines when to trigger the breakpoint:
+                <ul>
+                    <li><b>Thread Start.</b> When a thread starts. </li>
+                    <li><b>Thread Death.</b> When a thread stops. </li>
+                    <li><b>Thread Start or Death.</b> Both when a thread starts and when a thread stops. </li>
+		</ul>
+                </li>
+            </ul>
+                
         <li><b>Conditions</b>
             <ul>
-            <li><b>Break when hit count.</b> When selected, enables you to specify how frequently the breakpoint is triggered. 
-            Choose a criteria in the drop-down list and then specify a numerical value.</li>
+                <li><b>Break when hit count.</b> When selected, enables you to specify how frequently the breakpoint is triggered. 
+                Choose a criteria in the drop-down list and then specify a numerical value.</li>
             </ul>
         </li>
-	<li><b>Actions.</b> The actions to take when the breakpoint is triggered.
-        <ul>
+	<li><b>Actions.</b> 
+            <ul>
                 <li><b>Suspend.</b> Specifies which threads in the program 
                 being debugged are suspended when the breakpoint is reached. 
                 You can specify no threads, all threads, or the breakpoint 
@@ -40,9 +45,9 @@
                 when the breakpoint is reached.</li>
                 <li><b>Print Text.</b> The specified message is printed in the Debugger Console view of the Output window. For information on the tags you can include in the message, see 
                 <a href="../debug_print_breakpoint_message.html">Printing a Breakpoint Message</a>.</li>
-        </ul>
-  </li>
-</ul>
+            </ul>
+         </li>
+    </ul>
 
 <dl>
 	<dt><a name="seealso">See Also</a></dt>

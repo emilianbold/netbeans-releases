@@ -25,30 +25,35 @@
 
         <p>You can set the following values:</p>
         <ul>
-            <li><b>Settings. </b>
+            <li><b>Settings.</b>
             <ul>
-                <li><b>Package Name.</b> The name of the package you want the 
-                debugger to stop on. You can use an asterisk (*) for the package name 
-                if you do not want to specify a single package. </li>
                 <li><b>Class Name.</b> The name of the class file you want the 
                 debugger to stop on. You can use an asterisk for the class name 
                 if you do not want to specify just one class. For example, 
                 if you specify <tt>java.lang</tt> as the package name and * for the class name, the 
                 breakpoint applies to any class from the package <tt>java.lang</tt>. </li>
-                <li><b>Exclusion Filter.</b> If selected, the breakpoint applies to 
-                classes whose names do not match the specified class name.</li>
-                <li><b>Breakpoint Set On.</b> When to trigger the breakpoint.
+                <li><b>Stop On.</b> Select which of the following triggers the breakpoint.
                 <ul>
-                    <li><b>Class Prepare.</b> Triggers the breakpoint when the 
+                    <li><b>Class Load.</b> Triggers the breakpoint when the 
                     class is loaded into the virtual machine. </li>
                     <li><b>Class Unload. </b>Triggers the breakpoint when the 
                     class is unloaded from the virtual machine. </li>
-                    <li><b>Class Prepare or Unload.</b> <b> </b>Triggers 
+                    <li><b>Class Load or Unload.</b> <b> </b>Triggers 
                     the breakpoint both when the class is loaded and when it is 
                     unloaded from the virtual machine.</li>
-                </ul></li>
-            </ul></li>
-            <li><b>Actions.</b> The actions to take when the breakpoint is triggered.
+                </ul>
+            </li>
+            </ul>
+        </li>
+        <li><b>Conditions</b>
+            <ul>
+            <li><b>Exclude Classes.</b> When selected, enables you to specify classes to exclude. 
+            Excluded classes do not trigger the breakpoint.</li>
+            <li><b>Break when hit count.</b> When selected, enables you to specify how frequently the breakpoint is triggered. 
+            Choose a criteria in the drop-down list and then specify a numerical value.</li>
+            </ul>
+        </li>
+        <li><b>Actions.</b> The actions to take when the breakpoint is triggered.
             <ul>
                 <li><b>Suspend.</b> Specifies which threads in the program 
                 being debugged are suspended when the breakpoint is reached. 
