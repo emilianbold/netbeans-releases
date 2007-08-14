@@ -226,7 +226,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 }
                 
                 String libProperty = 
-                        (wsMetadataDesc.getWsType() == wsMetadataDesc.JAX_WS_TYPE) ? "libs.jaxws20.classpath" : "libs.jaxrpc16.classpath";
+                        (wsMetadataDesc.getWsType() == wsMetadataDesc.JAX_WS_TYPE) ? "libs.jaxws21.classpath" : "libs.jaxrpc16.classpath";
                 
                 // Create a temporary jar so the proxy jar is not locked (for further updates + deletions)
                 File tmpProxy = createTempCopy(proxyJar);
