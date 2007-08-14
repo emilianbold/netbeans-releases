@@ -230,7 +230,7 @@ public class J2eeProjectHelper {
         try {
             ServerProperties.getInstance(getServerID());
             return true;
-        } catch (ConfiguratorException ex){
+        } catch (Exception ex){
             return false;
         }
     }
