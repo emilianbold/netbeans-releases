@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="validation" executor="ide" name="testbag_refactoring">
+    <testbag testattribs="jv,validation" executor="ide" name="testbag_refactoring">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="validation" executor="ide" name="testbag_binding">
+    <testbag testattribs="_jv" executor="ide" name="testbag_binding">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
