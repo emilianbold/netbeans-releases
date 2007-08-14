@@ -235,6 +235,11 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         ExplorerUtils.activateActions(manager, true);
         mObj.getWSDLEditorSupport().syncModel();
         updateGroupVisibility();
+        // Ensure the graph widgets have the focus.
+        // Also helps to make F1 open the correct help topic.
+        if (categoryPane != null) {
+            categoryPane.getComponent().requestFocusInWindow();
+        }
     }
     
     @Override

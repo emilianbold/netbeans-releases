@@ -199,6 +199,8 @@ public class WSDLNavigatorContent extends JPanel
         treeView.expandNode(rootNode);
         Utility.expandNodes(treeView, 1, rootNode);
         selectActivatedNodes();
+        revalidate();
+        repaint();
     }
 
     public void propertyChange(PropertyChangeEvent event) {
@@ -223,12 +225,14 @@ public class WSDLNavigatorContent extends JPanel
                 if (filteredNodes != null && filteredNodes.length >= 1) {
                     // Set the active nodes for the parent TopComponent.
                     tc.setActivatedNodes(filteredNodes);
+                    repaint();
                 }
             } else if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(property) &&
                     !isActivatedTC) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         selectActivatedNodes();
+                        repaint();
                     }
                 });
             } else if (TopComponent.Registry.PROP_ACTIVATED.equals(property) &&
@@ -284,8 +288,6 @@ public class WSDLNavigatorContent extends JPanel
         rootNode = factory.create(model.getDefinitions());
         getExplorerManager().setRootContext(rootNode);
         EventQueue.invokeLater(this);
-        revalidate();
-        repaint();
     }
 
     public void release() {

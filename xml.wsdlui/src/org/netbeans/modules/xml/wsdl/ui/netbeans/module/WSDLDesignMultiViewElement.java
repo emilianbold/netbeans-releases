@@ -213,13 +213,18 @@ public class WSDLDesignMultiViewElement extends TopComponent
     @Override
     public void componentActivated() {
         super.componentActivated();
-    ExplorerUtils.activateActions(explorerManager, true);
+        ExplorerUtils.activateActions(explorerManager, true);
         wsdlDataObject.getWSDLEditorSupport().syncModel();
+        // Ensure the graph widgets have the focus.
+        // Also helps to make F1 open the correct help topic.
+        if (graphComponent != null) {
+            graphComponent.requestFocusInWindow();
+        }
     }
     
     @Override
     public void componentDeactivated() {
-    ExplorerUtils.activateActions(explorerManager, false);
+        ExplorerUtils.activateActions(explorerManager, false);
         super.componentDeactivated();
     }
     
