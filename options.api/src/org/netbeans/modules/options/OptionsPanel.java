@@ -404,6 +404,7 @@ public class OptionsPanel extends JPanel {
             super (category.getIcon());
             this.category = category;
             Mnemonics.setLocalizedText (this, category.getCategoryName());
+            setDisplayedMnemonic(0);            
             setOpaque (true);
             setVerticalTextPosition (BOTTOM);
             setHorizontalTextPosition (CENTER);
