@@ -40,6 +40,7 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -129,11 +130,7 @@ public abstract class RefactoringGlobalAction extends NodeAction {
 
         public ContextAction(Lookup context) {
             if (context.lookup(Dictionary.class)==null) {
-                Object[] values = context.lookupAll(Object.class).toArray();
-                Object[] newValues = new Object[values.length+1];
-                System.arraycopy(values, 0, newValues, 0, values.length);
-                newValues[values.length]=new Hashtable();
-                this.context = Lookups.fixed(newValues);
+                this.context = new ProxyLookup(context, Lookups.singleton(new Hashtable()));
             } else {
                 this.context=context;
             }
