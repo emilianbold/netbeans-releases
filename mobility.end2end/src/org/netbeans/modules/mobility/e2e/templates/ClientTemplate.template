@@ -155,6 +155,11 @@ public class ${service.getClassName()} {
      * @param id idetification code of the serialized object
      */
     private void writeObject( DataOutputStream out, Object o, int id ) throws IOException {
+        if( o == null ) {
+            // write null type to the stream
+            out.writeShort( -1 );
+            return;
+        }
         switch( id ) {
         <#list utils.getParameterTypeInstances( service ) as type>
             case ${registry.getRegisteredTypeId( type )}:
@@ -178,8 +183,6 @@ public class ${service.getClassName()} {
         int length;
         Object result;
         switch (type) {
-        <#assign arrayTypeID = 0/>
-        <#assign hasArrays = false/>
         <#list utils.getReturnTypeInstances( service ) as type>
             <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
             <#if type.getName() != "void">

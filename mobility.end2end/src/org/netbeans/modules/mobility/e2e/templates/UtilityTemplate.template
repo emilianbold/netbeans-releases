@@ -58,46 +58,28 @@ public class Utility {
      * @param o 
      * @throws java.io.IOException 
      */
-    public static void writeObject(DataOutput output, Object o) throws IOException {
-        if (o == null) { // return null
-            output.writeShort(NULL_TYPE);
-        <#assign arrayTypeID = 0/>
-        <#assign hasArrays = false/>
-        <#list returnInstanceTypes as type>
-            <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
-            <#if type.getName() != "void" && !type.isArray()>                
-                } else if(o instanceof ${serializer.instanceOf( type )}) {
-                    output.writeShort(${serializer.instanceOf( type )?upper_case?replace( "[]", "_ARRAY" )?replace( ".", "_" ) }_TYPE);                    
-                    <#if type.isPrimitive()>
-                        ${serializer.toStream( mapping, type, "output", serializer.fromObject( type, "o" ))}
-                    <#else>
-                        ${serializer.toStream( mapping, type, "output", "o" )}
-                    </#if>
-                    return;
-            </#if>
-            <#if type.isArray()>
-                <#assign hasArrays = true/>
-                <#assign arrayTypeID = registry.getRegisteredTypeId( type )/>
-                <#assign arrayType = type/>
-            </#if>
-        </#list>
-        <#if hasArrays>
-            } else if(o.getClass().isArray()) {
-            output.writeShort(${mapping.getRegistry().getTypeSerializer( arrayType ).instanceOf( arrayType )?upper_case?replace( "[]", "_ARRAY" ) }_TYPE);
-            <#list returnTypes as type>
-                <#if type.isArray() && type.getName() != "void">
-                    if( o instanceof ${type.getName()}) {
-                        ${type.getName()} array = (${type.getName()}) o;
-                        output.writeShort(${mapping.getRegistry().getTypeSerializer( type.getComponentType()).instanceOf( type.getComponentType())?upper_case?replace( "[]", "_ARRAY" )?replace( ".", "_" ) }_TYPE);
-                        output.writeInt(array.length);
-                        for(int i = 0; i < array.length; i++) {
-                            ${registry.getTypeSerializer( type.getComponentType()).toStream( mapping, type.getComponentType(), "output", "array[i]" )}
-                        }
-                    }
+    public static void writeObject(DataOutput output, Object o, int id) throws IOException {
+        if( o == null ) {
+            // write null type to the stream
+            output.writeShort( NULL_TYPE );
+            return;
+        }
+        switch( id ) {
+        <#list utils.getParameterTypeInstances( service ) as type>
+            case ${registry.getRegisteredTypeId( type )}:
+                <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
+                output.writeShort(${serializer.instanceOf( type )?upper_case?replace( "[]", "_ARRAY" )?replace( ".", "_" ) }_TYPE);                    
+                <#if type.isPrimitive()>
+                    ${serializer.toStream( mapping, type, "output", serializer.fromObject( type, "o" ))}
+                <#else>
+                    ${serializer.toStream( mapping, type, "output", "o" )}
                 </#if>
-            </#list>
-        </#if>
-        }   
+                break;
+        </#list>
+            default:
+                // default if a data type is not supported
+                throw new IllegalArgumentException("Unsupported parameter type: " + o.getClass());
+        }
     }
 
     /**
@@ -110,38 +92,14 @@ public class Utility {
         short type = in.readShort();        
         Object result;
         switch (type) {
-        <#assign arrayTypeID = 0/>
-        <#assign hasArrays = false/>
         <#list parameterInstanceTypes as type>
             <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
-            <#if type.getName() != "void" && !type.isArray()>
+            <#if type.getName() != "void">
                 case ${serializer.instanceOf( type )?upper_case?replace( "[]", "_ARRAY" )?replace( ".", "_" ) }_TYPE:
                     ${serializer.fromStream( mapping, type, "in", "result" )}
                     return result;
             </#if>
-            <#if type.isArray()>
-                <#assign hasArrays = true/>
-                <#assign arrayTypeID = registry.getRegisteredTypeId( type )/>
-            </#if>
         </#list>
-        <#if hasArrays>
-            case ${mapping.getRegistry().getTypeSerializer( arrayType ).instanceOf( arrayType )?upper_case?replace( "[]", "_ARRAY" ) }_TYPE:
-                short elementType = in.readShort();
-                int length = in.readInt();
-                switch (elementType) {
-                <#list returnTypes as type>
-                    <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
-                    <#if type.isArray() && type.getName() != "void">
-                        case ${serializer.instanceOf( type )?upper_case?replace( "[]", "_ARRAY" )?replace( ".", "_" ) }_TYPE:
-                            ${type.getName()} data = new ${type.getComponentType().getName()}[length];
-                            for (int i = 0; i < length; i++) {
-                                ${registry.getTypeSerializer( type.getComponentType()).fromStream( mapping, type.getComponentType(), "in", "data[i]" )}
-                            }
-                            return data;
-                    </#if>
-                </#list>
-                }
-        </#if>
             case NULL_TYPE: /* null */
                 return null;
             default:

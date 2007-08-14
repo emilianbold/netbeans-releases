@@ -75,7 +75,7 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
                     types.put( type.getFullyQualifiedName(), type);
                 }
             }
-            ph.start( types.keySet().size());
+//            ph.start( types.keySet().size());
             int progress = 0;
             for( String typeName : types.keySet()) {
                 progress++;
