@@ -77,7 +77,7 @@ public class SubmitStatus implements StatusLineElementProvider {
             
             tacho = new ImageIcon(Utilities.loadImage("org/netbeans/modules/uihandler/tachometer24.png"));
             tachoOk = new ImageIcon(Utilities.loadImage("org/netbeans/modules/uihandler/tachometer-ok.png"));
-            hints = new ImageIcon(Utilities.loadImage("org/netbeans/modules/uihandler/def.png"));
+            hints = new ImageIcon(Utilities.loadImage("org/netbeans/lib/uihandler/def.png"));
             setIcon(tacho);
             setToolTipText(NbBundle.getMessage(SubmitAction.class, "CTL_SubmitAction"));
 
