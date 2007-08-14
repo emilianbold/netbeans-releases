@@ -123,9 +123,41 @@
             <tocitem text="About Web Applications in Enterprise Applications" target="about_entwebapps" />
         </tocitem>
     
-
+        <tocitem text="Using Java Persistence" >
+            <tocitem text="About Java Persistence" target="persist_about" />
+            <tocitem text="Java Persistence Tasks: Quick Reference" target="persist_quickref" />
+            <tocitem text="About Persistence Units" target="persist_unitabout" />
+            <tocitem text="About Entity Managers" target="persist_entitymanagerabout" />
+            <tocitem text="Creating a Persistence Unit" target="persist_unit" />
+            <tocitem text="Creating an Entity Class" target="persist_entityclass" />
+            <tocitem text="Mapping Entity Classes" target="persist_mapping" />
+            <tocitem text="Generating Entity Classes from a Database" target="persist_fromdb" />
+            <tocitem text="Generating Session Beans for Entity Classes" target="persist_session" />
+            <tocitem text="Obtaining an Entity Manager" target="persist_entitymanager" />
+            <tocitem text="Adding Support for Java Persistence" target="persist_support" />
+        </tocitem>
         
-        <tocitem text="Developing Web Services"  expand="false">
+        <tocitem text="Developing Application Clients">
+            <tocitem text="About Enterprise Application Clients" target="appclient_about"></tocitem>
+            <tocitem text="Working with Java EE Application Clients" target="appclient_process"></tocitem>
+            <tocitem text="Java EE Application Clients Tasks: Quick Reference" target="appclient_quickref"></tocitem>
+            <tocitem text="Creating an Enterprise Application Client" target="appclient_create" />
+            <tocitem text="Editing an Enterprise Application Client's Deployment Descriptors" target="appclient_edit_dd" />
+            <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
+        </tocitem>
+        
+        <tocitem text="Building and Running Enterprise Applications" >
+            <tocitem text="Building an Enterprise Application" target="ent_app_build" />
+            <tocitem text="Verifying an Enterprise Application" target="ent_app_verify" />
+            <tocitem text="Deploying an Enterprise Application" target="ent_app_deploy" /> 
+            <tocitem text="Repackaging an Archive for a Different Server">
+                <tocitem text="About Packaged Archive Projects" target="archiveproject_about" />
+                <tocitem text="Redeploying an Application to a Different Server" target="archiveproject-deploying" />
+            </tocitem>
+        </tocitem>
+    </tocitem> 
+    
+        <tocitem text="Web Services"  expand="false">
             <tocitem text="About Web Services" >
                 <tocitem text="About Web Services" target="about_ws" />
                 <tocitem text="Working with Web Services" target="ws_process" />
@@ -202,38 +234,5 @@
                    </tocitem>
                </tocitem>
         </tocitem>
-        <tocitem text="Using Java Persistence" >
-            <tocitem text="About Java Persistence" target="persist_about" />
-            <tocitem text="Java Persistence Tasks: Quick Reference" target="persist_quickref" />
-            <tocitem text="About Persistence Units" target="persist_unitabout" />
-            <tocitem text="About Entity Managers" target="persist_entitymanagerabout" />
-            <tocitem text="Creating a Persistence Unit" target="persist_unit" />
-            <tocitem text="Creating an Entity Class" target="persist_entityclass" />
-            <tocitem text="Mapping Entity Classes" target="persist_mapping" />
-            <tocitem text="Generating Entity Classes from a Database" target="persist_fromdb" />
-            <tocitem text="Generating Session Beans for Entity Classes" target="persist_session" />
-            <tocitem text="Obtaining an Entity Manager" target="persist_entitymanager" />
-            <tocitem text="Adding Support for Java Persistence" target="persist_support" />
-        </tocitem>
-        
-        <tocitem text="Developing Application Clients">
-            <tocitem text="About Enterprise Application Clients" target="appclient_about"></tocitem>
-            <tocitem text="Working with Java EE Application Clients" target="appclient_process"></tocitem>
-            <tocitem text="Java EE Application Clients Tasks: Quick Reference" target="appclient_quickref"></tocitem>
-            <tocitem text="Creating an Enterprise Application Client" target="appclient_create" />
-            <tocitem text="Editing an Enterprise Application Client's Deployment Descriptors" target="appclient_edit_dd" />
-            <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
-        </tocitem>
-        
-        <tocitem text="Building and Running Enterprise Applications" >
-            <tocitem text="Building an Enterprise Application" target="ent_app_build" />
-            <tocitem text="Verifying an Enterprise Application" target="ent_app_verify" />
-            <tocitem text="Deploying an Enterprise Application" target="ent_app_deploy" /> 
-            <tocitem text="Repackaging an Archive for a Different Server">
-                <tocitem text="About Packaged Archive Projects" target="archiveproject_about" />
-                <tocitem text="Redeploying an Application to a Different Server" target="archiveproject-deploying" />
-            </tocitem>
-        </tocitem>
-    </tocitem> 
 </toc>
 
