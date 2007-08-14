@@ -119,17 +119,43 @@ class DiffFacility {
             
             // change
             else { // type == 'c'
-                StringBuilder builder = new StringBuilder();
-                for (int i = delStart; i <= delEnd; i++) {
-                    builder.append(lines1[i].data);
+                if (addEnd-addStart>delEnd-delStart) {
+                    //change will be performed in 2 steps:
+                    //1. change lines
+                    //2. add lines
+                    StringBuilder builder = new StringBuilder();
+                    for (int i = delStart; i <= delEnd; i++) {
+                        builder.append(lines1[i].data);
+                    }
+                    String match1 = builder.toString();
+                    builder = new StringBuilder();
+                    for (int i = addStart; i <= addStart + delEnd - delStart; i++) {
+                        builder.append(lines2[i].data);
+                    }
+                    String match2 = builder.toString();
+                    makeTokenListMatch(match1, match2, lines1[delStart].start);
+                    builder = new StringBuilder();
+                    for (int i = addStart + delEnd - delStart + 1; i <= addEnd; i++) {
+                        builder.append(lines2[i].data);
+                    }
+                    String s = builder.toString();
+                    if (!"".equals(s)) {
+                        gdiff.append(Diff.insert(lines1[delEnd].end, s));
+                    }
+                } else {
+                    //one step change
+                    StringBuilder builder = new StringBuilder();
+                    for (int i = delStart; i <= delEnd; i++) {
+                        builder.append(lines1[i].data);
+                    }
+                    String match1 = builder.toString();
+                    builder = new StringBuilder();
+                    for (int i = addStart; i <= addEnd; i++) {
+                        builder.append(lines2[i].data);
+                    }
+                    String match2 = builder.toString();
+                    makeTokenListMatch(match1, match2, lines1[delStart].start);
                 }
-                String match1 = builder.toString();
-                builder = new StringBuilder();
-                for (int i = addStart; i <= addEnd; i++) {
-                    builder.append(lines2[i].data);
-                }
-                String match2 = builder.toString();
-                makeTokenListMatch(match1, match2, lines1[delStart].start);
             }
         }
         return null;
