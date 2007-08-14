@@ -711,7 +711,7 @@ public final class EarProjectProperties {
     }
     
     boolean isAppClientUri(String uri) {
-        return Arrays.binarySearch(getAppClientUris(), uri) >= 0;
+        return uri != null && Arrays.binarySearch(getAppClientUris(), uri) >= 0;
     }
     
      /** XXX to be deleted when introduced in AntPropertyHeleper API
@@ -938,7 +938,10 @@ public final class EarProjectProperties {
             PropertyDescriptor pd = pi.getPropertyDescriptor();
             String newValueEncoded = pi.getNewValueEncoded();
 
-            if (newValueEncoded != null && pd.dest != null) {
+            if (CLIENT_MODULE_URI.equals(pd.name) && pd.dest != null) {
+                // #109006 - special case when adding CAR, newValueEncoded is null
+                updateClientModuleUri(eProps.get(pd.dest), newValueEncoded);
+            } else if (newValueEncoded != null && pd.dest != null) {
                 // Standard properties
                 EditableProperties ep = eProps.get(pd.dest);
                 //                  if (PATH_PARSER.equals(pd.parser)) {
@@ -953,8 +956,6 @@ public final class EarProjectProperties {
                     ep.setProperty(pd.name, items);
                 } else if (NO_DEPENDENCIES.equals(pd.name) && newValueEncoded.equals("false")) { // NOI18N
                     ep.remove(pd.name);
-                } else if (CLIENT_MODULE_URI.equals(pd.name)) {
-                    updateClientModuleUri(ep, newValueEncoded);
                 } else {
                     if (JAVA_PLATFORM.equals(pd.name)) { // update javac.source and javac.target
                         assert defaultPlatform != null;
