@@ -77,10 +77,12 @@
     <mapID target="org.netbeans.modules.subversion.ui.copy.SwitchTo" url="svnmodule/csh/svn_switch_dialog.html" />
 
     <!--Subversion Versioning window-->
-    <mapID target="org.netbeans.modules.subversion.ui.status.SvnVersioningTopComponent" url="svn_versioning_window.html" />
+    <mapID target="org.netbeans.modules.subversion.ui.status.SvnVersioningTopComponent" url="svnmodule/csh/svn_versioning_window.html" />
 
     <!--Subversion Property Editor-->
     <mapID target="org.netbeans.modules.subversion.options.SvnOptionsController" url="svnmodule/csh/svn_prop_editor.html" />
 
+    <!--Subversion menu-->
+    <mapID target="org.netbeans.modules.subversion.ui.status.OpenVersioningAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
 </map>
 
