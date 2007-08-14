@@ -46,4 +46,9 @@ public interface TabWidget {
      */ 
     Widget getComponentWidget();
     
+    /**
+     * Returns the object that can be used as a hashtable key.
+     * @return  hashtable key.
+     */
+    Object hashKey();
 }

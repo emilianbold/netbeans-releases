@@ -40,6 +40,7 @@ import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookie;
 import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
+import org.netbeans.modules.websvc.design.view.layout.BorderLayout;
 import org.netbeans.modules.websvc.design.view.widget.AbstractTitledWidget;
 import org.netbeans.modules.websvc.design.view.widget.ButtonWidget;
 import org.netbeans.modules.websvc.design.view.widget.ImageLabelWidget;
@@ -63,6 +64,7 @@ public class WsitWidget extends AbstractTitledWidget {
     private transient ImageLabelWidget headerLabelWidget;
     private Service service;
     private PropertyChangeListener configListener;
+    private Object key = new Object();
     
     /**
      * Creates a new instance of OperationWidget
@@ -84,7 +86,7 @@ public class WsitWidget extends AbstractTitledWidget {
         headerLabelWidget = new ImageLabelWidget(getScene(), null,
                 NbBundle.getMessage(WsitWidget.class, "LBL_Wsit"));
         headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
-        getHeaderWidget().addChild(headerLabelWidget);
+        BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.WEST);
         
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
@@ -92,7 +94,7 @@ public class WsitWidget extends AbstractTitledWidget {
         
         buttons.addChild(getExpanderWidget());
         
-        getHeaderWidget().addChild(buttons);
+        BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
 
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(RADIUS));
 
@@ -162,7 +164,7 @@ public class WsitWidget extends AbstractTitledWidget {
     
     @Override
     public Object hashKey() {
-        return service==null?null:service.getServiceName()+"_wsit";
+        return key;
     }
     
     private Set<WSConfigurationProvider> getConfigProviders(){

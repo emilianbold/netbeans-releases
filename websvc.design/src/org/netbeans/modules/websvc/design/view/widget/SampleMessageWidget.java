@@ -22,22 +22,16 @@ package org.netbeans.modules.websvc.design.view.widget;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.xml.soap.SOAPMessage;
-import org.netbeans.api.visual.action.ActionFactory;
-import org.netbeans.api.visual.action.ResizeProvider.ControlPoint;
-import org.netbeans.api.visual.action.ResizeStrategy;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.javamodel.Utils;
-import org.netbeans.modules.websvc.design.view.layout.CenterRightLayout;
-import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
+import org.netbeans.modules.websvc.design.view.layout.BorderLayout;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -136,18 +130,16 @@ public class SampleMessageWidget extends AbstractTitledWidget {
         this.operation = operation;
         this.type = type;
 
-        getHeaderWidget().setLayout(new CenterRightLayout(32));
-        getHeaderWidget().setBorder(BorderFactory.createEmptyBorder(12, 6));
 
         headerLabelWidget = new ImageLabelWidget(scene, null, operation.getOperationName()+": ",type.getTitle());
         headerLabelWidget.getLabelWidget().setFont(scene.getFont().deriveFont(Font.BOLD));
         headerLabelWidget.getCommentWidget().setPaintAsDisabled(false);
         headerLabelWidget.setLabelForeground(type.getBorderColor());
-        getHeaderWidget().addChild(headerLabelWidget);
+        BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.CENTER);
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
-        getHeaderWidget().addChild(buttons);
+        BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
         final ButtonWidget closeButton = new ButtonWidget(getScene(), "x");
         closeButton.setLabelForeground(new Color(255,95,95));
         closeButton.getLabelWidget().setFont(scene.getFont().deriveFont(Font.BOLD));

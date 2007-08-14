@@ -27,10 +27,9 @@ import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
-import org.netbeans.modules.websvc.design.view.layout.CenterRightLayout;
+import org.netbeans.modules.websvc.design.view.layout.BorderLayout;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -71,11 +70,10 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
         model = new FaultsTableModel(method);
         populateContentWidget(getContentWidget());
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(0,1,1,1));
-        getHeaderWidget().setLayout(new CenterRightLayout(8));
         headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle(), 
                 "("+method.getFaults().size()+")");
         headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
-        getHeaderWidget().addChild(headerLabelWidget);
+        BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.CENTER);
 
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
@@ -83,7 +81,7 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
 
         buttons.addChild(getExpanderWidget());
 
-        getHeaderWidget().addChild(buttons);
+        BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
 
     }
 

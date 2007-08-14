@@ -40,6 +40,7 @@ import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.actions.AddOperationAction;
 import org.netbeans.modules.websvc.design.view.actions.RemoveOperationAction;
+import org.netbeans.modules.websvc.design.view.layout.BorderLayout;
 import org.openide.util.NbBundle;
 
 /**
@@ -110,7 +111,7 @@ public class OperationsWidget extends AbstractTitledWidget {
         headerLabelWidget = new ImageLabelWidget(getScene(), null,
                 NbBundle.getMessage(OperationWidget.class, "LBL_Operations"));
         headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
-        getHeaderWidget().addChild(headerLabelWidget);
+        BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.WEST);
         updateHeaderLabel();
         
         buttons = new Widget(getScene());
@@ -130,7 +131,7 @@ public class OperationsWidget extends AbstractTitledWidget {
         buttons.addChild(removeButton);
         buttons.addChild(getExpanderWidget());
         
-        getHeaderWidget().addChild(buttons);
+        BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
         
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(RADIUS));
         if(serviceModel.getOperations()!=null) {

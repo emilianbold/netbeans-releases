@@ -26,10 +26,9 @@ import java.awt.Rectangle;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
-import org.netbeans.modules.websvc.design.view.layout.CenterRightLayout;
+import org.netbeans.modules.websvc.design.view.layout.BorderLayout;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -62,16 +61,15 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
     }
     
     private void createContent() {
-        getHeaderWidget().setLayout(new CenterRightLayout(8));
         headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle());
         headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
-        getHeaderWidget().addChild(headerLabelWidget);
+        BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.CENTER);
         
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
         buttons.addChild(getExpanderWidget());
-        getHeaderWidget().addChild(buttons);
+        BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
         
         LabelWidget returnWidget = new LabelWidget(getScene(), method.isOneWay()?
             NbBundle.getMessage(OperationWidget.class, "LBL_ReturnTypeNone"):

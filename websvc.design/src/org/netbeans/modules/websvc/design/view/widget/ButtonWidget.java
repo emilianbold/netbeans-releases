@@ -87,8 +87,6 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
     public ButtonWidget(Scene scene, Image image, String text) {
         super(scene, image ,text);
         setRoundedBorder(BORDER_RADIUS,0,0,null);
-        setLayout(LayoutFactory.createHorizontalFlowLayout(
-                LayoutFactory.SerialAlignment.CENTER, 4));
         getActions().addAction(ActionFactory.createSelectAction(ButtonSelectProvider.DEFAULT));
         getActions().addAction(scene.createWidgetHoverAction());
     }

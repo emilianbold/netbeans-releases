@@ -43,6 +43,7 @@ import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.actions.RemoveOperationAction;
+import org.netbeans.modules.websvc.design.view.layout.BorderLayout;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -140,20 +141,34 @@ public class OperationWidget extends AbstractTitledWidget {
             }
         }));
         headerLabelWidget.setToolTipText(typeOfOperation);
-        getHeaderWidget().addChild(headerLabelWidget);
+        BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.WEST);
 
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
+        viewButton = new ButtonWidget(getScene(),"");
+        viewButton.setAction(new AbstractAction() {
+            public void actionPerformed(ActionEvent arg0) {
+                setTabbedView(!isTabbedView());
+            }
+        });
+        buttons.addChild(viewButton);
+
         for(final SampleMessageWidget.Type type:SampleMessageWidget.Type.values()) {
             final ButtonWidget sampleButton = new ButtonWidget(getScene(), type.getIcon());
             sampleButton.setAction(new AbstractAction() {
+                SampleMessageWidget messageWidget;
                 public void actionPerformed(ActionEvent arg0) {
                     Widget messageLayer = getObjectScene().findWidget(DesignView.messageLayerKey);
-                    messageLayer.removeChildren();
-                    SampleMessageWidget messageWidget = new SampleMessageWidget(
-                            getObjectScene(), operation, type);
-                    messageLayer.addChild(messageWidget);
+                    if(messageWidget != null && messageLayer.getChildren().contains(messageWidget)) {
+                        messageLayer.removeChild(messageWidget);
+                        messageWidget = null;
+                    } else {
+                        messageLayer.removeChildren();
+                        messageWidget = new SampleMessageWidget(
+                                getObjectScene(), operation, type);
+                        messageLayer.addChild(messageWidget);
+                    }
                 }
             });
             sampleButton.setToolTipText(type.getDescription());
@@ -161,7 +176,7 @@ public class OperationWidget extends AbstractTitledWidget {
         }
         buttons.addChild(getExpanderWidget());
 
-        getHeaderWidget().addChild(buttons);
+        BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
 
         getContentWidget().setLayout(LayoutFactory.createCardLayout(getContentWidget()));
 
@@ -184,14 +199,6 @@ public class OperationWidget extends AbstractTitledWidget {
         
         getContentWidget().addChild(listWidget);
         getContentWidget().addChild(tabbedWidget);
-        viewButton = new ButtonWidget(getScene(),"");
-        viewButton.setAction(new AbstractAction() {
-            public void actionPerformed(ActionEvent arg0) {
-                setTabbedView(!isTabbedView());
-            }
-        });
-        buttons.addChild(0,viewButton);
-//        getObjectScene().addObject(new Object(), viewButton);
         tabbedView = false;
         setTabbedView(!tabbedView);
     }
@@ -201,7 +208,7 @@ public class OperationWidget extends AbstractTitledWidget {
         if(buttons!=null && buttons.getParentWidget()!=null) {
             getHeaderWidget().removeChild(buttons);
             buttons.removeChild(getExpanderWidget());
-            getHeaderWidget().addChild(getExpanderWidget());
+            BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
         }
     }
 
@@ -210,7 +217,7 @@ public class OperationWidget extends AbstractTitledWidget {
         if(buttons!=null && buttons.getParentWidget()==null) {
             getHeaderWidget().removeChild(getExpanderWidget());
             buttons.addChild(getExpanderWidget());
-            getHeaderWidget().addChild(buttons);
+            BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
         }
     }
 
