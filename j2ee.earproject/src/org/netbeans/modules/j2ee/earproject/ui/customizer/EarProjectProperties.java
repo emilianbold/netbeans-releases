@@ -707,11 +707,11 @@ public final class EarProjectProperties {
     }
     
     boolean isWebUri(String uri) {
-        return uri != null && Arrays.binarySearch(getWebUris(), uri) >= 0;
+        return EarProjectUtil.hasLength(uri) && Arrays.binarySearch(getWebUris(), uri) >= 0;
     }
     
     boolean isAppClientUri(String uri) {
-        return uri != null && Arrays.binarySearch(getAppClientUris(), uri) >= 0;
+        return EarProjectUtil.hasLength(uri) && Arrays.binarySearch(getAppClientUris(), uri) >= 0;
     }
     
      /** XXX to be deleted when introduced in AntPropertyHeleper API
@@ -1016,18 +1016,23 @@ public final class EarProjectProperties {
         
         // check current module uri
         String clientModuleUri = ep.getProperty(CLIENT_MODULE_URI);
-        if (clientModuleUri != null
-                && clientModuleUri.length() != 0) {
+        if (EarProjectUtil.hasLength(clientModuleUri)) {
             // uri exists -> is still valid?
-            if (isWebUri(clientModuleUri)
-                    || isAppClientUri(clientModuleUri)) {
-                // is valid => keep it
+            if (isWebUri(clientModuleUri)) {
+                // web module is valid => keep it
                 return;
+            } else if (getClientModuleUriForAppClient().equals(clientModuleUri)) {
+                // could be app client
+                String appClient = ep.get(APPLICATION_CLIENT);
+                if (isAppClientUri(appClient)) {
+                    // app client module is valid => keep it
+                    return;
+                }
             }
         }
         
         // uri doesn't exist or is not valid
-        //  => so remove it and try to set any valid module
+        //  => so remove it and try to set any valid module (because there's no '<none>' option for client module in customizer)
         ep.remove(APPLICATION_CLIENT);
         ep.remove(CLIENT_MODULE_URI);
         

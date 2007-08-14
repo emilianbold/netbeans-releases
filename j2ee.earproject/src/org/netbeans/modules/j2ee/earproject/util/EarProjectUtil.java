@@ -77,4 +77,13 @@ public final class EarProjectUtil {
     public static boolean isDDWritable(EarProject earProject) {
         return (earProject.getAppModule().getDeploymentDescriptor() != null);
     }
+    
+    /**
+     * Check that the given String is neither <code>null</code> nor of length 0.
+     * @param str input String.
+     * @return <code>true</code> if input string contains any characters.
+     */
+    public static boolean hasLength(String str) {
+        return str != null && str.length() > 0;
+    }
 }
