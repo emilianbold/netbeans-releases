@@ -21,8 +21,8 @@ If you open the Breakpoints window when a debugging session is running,
 it closes automatically when you end the debugging session. If you open the 
 window when no debugging session is running, it stays open until you close it.</p>
 <p>By default, each entry contains a short text description of the breakpoint 
-and a boolean flag indicating whether the breakpoint is enabled or disabled. 
-You can enable or disable a breakpoint directly in the Breakpoints window by changing the Enabled property.</p>
+and a checkbox indicating whether the breakpoint is enabled or disabled. 
+You can enable or disable a breakpoint directly in the Breakpoints window by selecting or deselecting the checkbox.</p>
 
 <h3>Icons</h3>
 <p>The icon to the left of the breakpoint summary indicates the type of the breakpoint. </p>
@@ -38,10 +38,26 @@ You can enable or disable a breakpoint directly in the Breakpoints window by cha
 	<tr>
 		<td align="center"><img src="../images/NonLineBreakpoint.gif" alt="Icon for breakpoint other than a line breakpoint"></td>
 		<td>Breakpoint other than a line breakpoint (for example, a 
-                method breakpoint or a variable breakpoint). The set of breakpoint 
+                method breakpoint or a field breakpoint). The set of breakpoint 
                 types that are available depends on the debugger that you are using. </td>
 	</tr>
-</table>
+        <tr>
+		<td align="center"><img src="../images/Breakpoint_broken.png" alt="Invalid breakpoint icon group"></td>
+		<td>Invalid line breakpoint.</td>
+	</tr>
+        <tr>
+		<td align="center"><img src="../images/Breakpoint_nonline_broken.png" alt="Invalid method or field breakpoint"></td>
+		<td>Invalid method or field breakpoint.</td>
+	</tr>
+        <tr>
+		<td align="center"><img src="../images/DisabledBreakpoint.gif" alt="Disabled breakpoint icon group"></td>
+		<td>Disabled breakpoint.</td>
+	</tr>
+        <tr>
+		<td align="center"><img src="../images/DisabledBreakpoint_nonline.png" alt="Disabled method or field breakpoint"></td>
+		<td>Disabled method or field breakpoint.</td>
+	</tr>
+    </table>
 
 <h3>Actions</h3>
 <p>The pop-up menu in the Breakpoints window includes the following items.</p>
