@@ -276,10 +276,13 @@ public final class CreateElementUtilities {
     private static List<? extends TypeMirror> computeMemberSelect(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
         //class or field:
         MemberSelectTree ms = (MemberSelectTree) parent.getLeaf();
-        if (!"class".equals(ms.getIdentifier().toString())) {//we obviously should not propose "Create Field" for unknown.class:
+        final TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");
+        
+        if (   jlObject != null //may happen if the platform is broken
+            && !"class".equals(ms.getIdentifier().toString())) {//we obviously should not propose "Create Field" for unknown.class:
             types.add(ElementKind.FIELD);
             types.add(ElementKind.CLASS);
-            return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType());
+            return Collections.singletonList(jlObject.asType());
         }
         
         return null;
