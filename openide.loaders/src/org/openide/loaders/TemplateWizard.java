@@ -136,6 +136,7 @@ public class TemplateWizard extends WizardDescriptor {
     
     /** Initializes important settings.
      */
+    @Override
     protected void initialize () {
         if (iterator != null) {
             iterator.initialize(this);
@@ -167,11 +168,11 @@ public class TemplateWizard extends WizardDescriptor {
                 if (newIt instanceof WizardDescriptor.ProgressInstantiatingIterator) {
                     TemplateWizardIteratorWrapper newIterImplWrapper = new TemplateWizardIteratorWrapper.ProgressInstantiatingIterator (this.iterator.getOriginalIterImpl ());
                     this.iterator = newIterImplWrapper;
-                    this.setPanels (newIterImplWrapper);
+                    this.setPanelsAndSettings(newIterImplWrapper, this);
                 } else if (newIt instanceof WizardDescriptor.AsynchronousInstantiatingIterator) {
                     TemplateWizardIteratorWrapper newIterImplWrapper = new TemplateWizardIteratorWrapper.AsynchronousInstantiatingIterator (this.iterator.getOriginalIterImpl ());
                     this.iterator = newIterImplWrapper;
-                    this.setPanels (newIterImplWrapper);
+                    this.setPanelsAndSettings(newIterImplWrapper, this);
                 }
             }
             this.iterator.setIterator (it, notify);
@@ -462,7 +463,7 @@ public class TemplateWizard extends WizardDescriptor {
                 final Throwable t = thrownMessage;
                 thrownMessage = null;
                 d.addComponentListener(new java.awt.event.ComponentAdapter() {
-
+                                       @Override
                                            public void componentShown(java.awt.event.ComponentEvent e) {
                                                if (t.getMessage() != null) {
                                                    // this is only for backward compatitility (plus bugfix #15618, using errMan to log stack trace)
@@ -710,6 +711,7 @@ public class TemplateWizard extends WizardDescriptor {
     /** Overriden to add/remove listener to/from displayed component. Also make recreation
      * of steps and content.
      */
+    @Override
     protected void updateState() {
         super.updateState();
         
@@ -863,7 +865,12 @@ public class TemplateWizard extends WizardDescriptor {
             String n = wiz.getTargetName ();
             DataFolder folder = wiz.getTargetFolder ();
             DataObject template = wiz.getTemplate ();
-            DataObject obj = template.createFromTemplate (folder, n, wiz.getProperties());
+            Map<String,Object> wizardProps = new HashMap<String, Object>();
+            for (Map.Entry<String, ? extends Object> entry : wiz.getProperties().entrySet()) {
+                wizardProps.put("wizard." + entry.getKey(), entry.getValue()); // NOI18N
+            }
+            
+            DataObject obj = template.createFromTemplate (folder, n, wizardProps);
 
             // run default action (hopefully should be here)
             final Node node = obj.getNodeDelegate ();

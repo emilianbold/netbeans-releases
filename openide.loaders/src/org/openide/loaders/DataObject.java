@@ -35,7 +35,7 @@ import org.openide.util.*;
 
 /** Object that represents one or more file objects, with added behavior 
 * accessible though {@link #getLookup} lookup pattern. Since version 6.0
-* this class implements {@link Lookup.Provider}.
+* this class implements {@link org.openide.util.Lookup.Provider}.
 *
 * @author Jaroslav Tulach, Petr Hamernik, Jan Jancura, Ian Formanek
 */

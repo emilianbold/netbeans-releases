@@ -173,7 +173,7 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
         assertEquals("The right destiny folder", folder.getPrimaryFile(), Hand.fileObject.get(0));
         assertEquals("The right name", "simpleObject", Hand.name);
         assertTrue("At least two elements: " + Hand.parameters, 2 <= Hand.parameters.size());
-        assertEquals("empty", Hand.parameters.get("type"));
+        assertEquals("empty", Hand.parameters.get("wizard.type"));
         assertEquals("There was no name, just default", null, Hand.parameters.get("name"));
         assertTrue("the argument is there", Hand.parameters.containsKey("name"));
         Object date = Hand.parameters.get("date");
