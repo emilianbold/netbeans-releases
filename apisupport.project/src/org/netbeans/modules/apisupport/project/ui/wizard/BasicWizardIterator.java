@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,14 +27,13 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.Position;
+import org.netbeans.api.editor.indent.Reformat;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -316,50 +315,32 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
     private static void formatFile(final FileObject fo) {
         assert fo != null;
         BaseDocument doc = null;
-        boolean saved = false;
+        boolean reformatted = false;
         try {
             doc = BasicWizardIterator.getDocument(fo);
             if (doc == null) {
                 return;
             }
-            GuardedDocument gdoc = (doc instanceof GuardedDocument) ? (GuardedDocument) doc : null;
-            doc.atomicLock();
-            int startPos = 0;
-            Position endPosition = doc.createPosition(doc.getLength());
-            int pos = startPos;
-            if (gdoc != null) {
-                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-            }
-            
-            while (pos < endPosition.getOffset()) {
-                int stopPos = endPosition.getOffset();
-                if (gdoc != null) { // adjust to start of the next guarded block
-                    stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
-                    if (stopPos == -1) {
-                        stopPos = endPosition.getOffset();
-                    }
+            Reformat reformat = Reformat.get(doc);
+            reformat.lock();
+            try {
+                doc.atomicLock();
+                try {
+                    reformat.reformat(0, doc.getLength());
+                } finally {
+                    doc.atomicUnlock();
                 }
-                int reformattedLen = doc.getFormatter().reformat(doc, pos, stopPos);
-                pos = pos + reformattedLen;
-                if (gdoc != null) { // adjust to end of current block
-                    pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                }
+            } finally {
+                reformat.unlock();
             }
-            saved = true;
+            try {
+                DataObject.find(fo).getCookie(EditorCookie.class).saveDocument();
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
         } catch (Exception ex) {
             // no disaster
             ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot reformat the file: " + fo.getPath()); // NOI18N
-        } finally {
-            if (doc != null) {
-                doc.atomicUnlock();
-                if (saved) {
-                    try {
-                        DataObject.find(fo).getCookie(EditorCookie.class).saveDocument();
-                    } catch (IOException e) {
-                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                    }
-                }
-            }
         }
     }
     
