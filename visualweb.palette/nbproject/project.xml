@@ -17,7 +17,6 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
@@ -25,12 +24,12 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.visualweb.palette</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.visualweb.designtime</code-name-base>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -40,6 +39,15 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.9.2.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.visualweb.designtime</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

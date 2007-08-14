@@ -70,6 +70,7 @@ public final class CodeClipHandler extends DefaultHandler {
     public String getDisplayNameKey() { return displayNameKey; }
     public String getTooltipKey() { return tooltipKey; }
 
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes)
         throws SAXException
     {

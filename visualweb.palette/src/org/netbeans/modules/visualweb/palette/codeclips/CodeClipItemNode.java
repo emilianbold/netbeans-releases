@@ -73,25 +73,17 @@ public final class CodeClipItemNode extends FilterNode implements EditCookie {
      *
      * @param
      */
-    CodeClipItemNode(DataNode dataNode,
-            String name,
-            String bundleName,
-            String displayNameKey,
-            String tooltipKey,
-            String icon16URL,
-            String icon32URL,
-            String body,
-            InstanceContent content) {
+    CodeClipItemNode(DataNode dataNode, String name, String bundleName, String displayNameKey, String tooltipKey, String icon16URL, String icon32URL, String body, InstanceContent content) {
 
 
         super(dataNode, Children.LEAF, new AbstractLookup(content));
 
 
 //        DataObject dataObj = dataNode.getDataObject();
-        fileObj  = (dataNode.getDataObject()).getPrimaryFile();
+        fileObj = (dataNode.getDataObject()).getPrimaryFile();
 
         this.dataNode = dataNode;
-        content.add( this );
+        content.add(this);
         this.name = name;
         this.bundleName = bundleName;
         this.displayNameKey = displayNameKey;
@@ -99,7 +91,6 @@ public final class CodeClipItemNode extends FilterNode implements EditCookie {
         this.icon16URL = icon16URL;
         this.icon32URL = icon32URL;
         this.body = body;
-
     }
 
     public String getName() {
@@ -108,7 +99,7 @@ public final class CodeClipItemNode extends FilterNode implements EditCookie {
 
     public void setName(String s) {
 
-        if ( !fileObj.canWrite() ) {
+        if (!fileObj.canWrite()) {
             System.out.println("Cannot write to file.");
             return;
         }
@@ -126,98 +117,92 @@ public final class CodeClipItemNode extends FilterNode implements EditCookie {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-
     }
 
     public String getDisplayName() {
-        if (displayName == null)
+        if (displayName == null) {
             displayName = _getDisplayName(bundleName, displayNameKey);
-
+        }
         return displayName;
     }
 
     public String getShortDescription() {
-        if (description == null && bundleName !=  null)
+        if (description == null && bundleName != null) {
             description = _getShortDescription(bundleName, tooltipKey, displayNameKey);
-
+        }
         return description;
     }
 
-
-
     public Image getIcon(int type) {
-        
+
         Image icon = null;
-        
+
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
             if (icon16 == null) {
                 icon16 = _getIcon(icon16URL);
-                if (icon16 == null)
+                if (icon16 == null) {
                     icon16 = Utilities.loadImage("org/netbeans/modules/palette/resources/unknown16.gif"); // NOI18N
+                }
             }
             icon = icon16;
         } else if (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32) {
             if (icon32 == null) {
                 icon32 = _getIcon(icon32URL);
-                if (icon32 == null)
+                if (icon32 == null) {
                     icon32 = Utilities.loadImage("org/netbeans/modules/palette/resources/unknown32.gif"); // NOI18N
+                }
             }
             icon = icon32;
         }
-        
+
         return icon;
     }
-    
+
     public boolean canRename() {
         return true;
     }
-    
-    
     // TODO properties
 //    public Node.PropertySet[] getPropertySets() {
 //        return NO_PROPERTIES;
 //    }
-    
+
     public Transferable clipboardCopy() throws IOException {
-        
-        ExTransferable t = ExTransferable.create( super.clipboardCopy() );
-        
+
+        ExTransferable t = ExTransferable.create(super.clipboardCopy());
+
         Lookup lookup = getLookup();
-        
+
         // Can we create our own version of Active Editor Drop here?
         ActiveEditorDrop drop = (ActiveEditorDrop) lookup.lookup(ActiveEditorDrop.class);
         ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(drop);
         t.put(s);
-        
+
         return t;
     }
-    
+
     public Transferable drag() throws IOException {
         Transferable t = clipboardCopy();
         return t;
     }
-    
+
     private static class ActiveEditorDropTransferable extends ExTransferable.Single {
-        
+
         private ActiveEditorDrop drop;
-        
+
         ActiveEditorDropTransferable(ActiveEditorDrop drop) {
             super(ActiveEditorDrop.FLAVOR);
-            
+
             this.drop = drop;
         }
-        
+
         public Object getData() {
             return drop;
         }
-        
     }
-    
-    public String _getDisplayName(
-            String bundleName,
-            String displayNameKey) {
+
+    public String _getDisplayName(String bundleName, String displayNameKey) {
         String displayName = null;
-        if( bundleName != null ) {
+        if (bundleName != null) {
             try {
                 displayName = NbBundle.getBundle(bundleName).getString(displayNameKey);
             } catch (MissingResourceException mre) {
@@ -227,24 +212,21 @@ public final class CodeClipItemNode extends FilterNode implements EditCookie {
         } else {
             displayName = displayNameKey;
         }
-        
-        return (displayName);
+
+        return displayName;
     }
-    
-    public String _getShortDescription(
-            String bundleName,
-            String tooltipKey,
-            String displayNameKey) {
-        
+
+    public String _getShortDescription(String bundleName, String tooltipKey, String displayNameKey) {
+
         String tooltip = null;
-        if ( tooltipKey != null ) {
+        if (tooltipKey != null) {
             try {
                 tooltip = NbBundle.getBundle(bundleName).getString(tooltipKey);
             } catch (Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         } else if (body != null) {
-            
+
             /* This will make sure the tooltips.  I chose to do this here even
              * thou it means that sometimes it may happen twice due to
              * performance.  I prefer that the palette not be dependent on loading
@@ -257,88 +239,92 @@ public final class CodeClipItemNode extends FilterNode implements EditCookie {
             if (tooltip.length() > 200) {
                 tooltip = tooltip.substring(0, 200);
             }
-            
+
             tooltip = tooltip.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>");
-            
+
             /*
              * This is a temporary workaround.
              * For some reason if the tooltip bigs with / the first line
              * is removed altogether form the tooltip.  Not sure where this is
              * happening.
              */
-            if( tooltip.startsWith("//")) {
+            if (tooltip.startsWith("//")) {
                 tooltip = " <br>" + tooltip;
             }
-            
+
             tooltip = "<html>".concat(tooltip).concat("</html>");
-            
         } else {
             // no tooltip derived from the item
             tooltip = _getDisplayName(bundleName, displayNameKey);
         }
-        
+
         return tooltip;
-        
     }
-    
+
     public Image _getIcon(String iconURL) {
-        
+
         Image icon = null;
         try {
             icon = Utilities.loadImage(iconURL);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        
-        
+
+
         return icon;
     }
-    
+
     public String getBody() {
         return body;
     }
-    
-    public void setBody( String body ) {
+
+    public void setBody(String body) {
         this.body = body;
     }
-    
-    
-    /* 
+
+    /*
      * Edit this codeclip
      * @param none
-     */    
+     */
     public void edit() {
-        
-        CodeSnippetViewer snippetViewer = new CodeSnippetViewer(this.body, this.getDisplayName());
+        String oldDisplayName = this.getDisplayName();
+        CodeClipViewerPanel snippetViewer = new CodeClipViewerPanel( this.getDisplayName(), this.body);
         snippetViewer.setVisible(true);
-        String text = snippetViewer.getDispText();
-        try {
-            CodeClipUtilities.createCodeClipFile(fileObj.getParent(), text, displayNameKey, this.bundleName, tooltipKey);
-            this.destroy();
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }        
+        if (!snippetViewer.isCancelled()) {
+            String newDisplayName = displayNameKey; /* Store the bundle key */
+            String myBundleName = this.bundleName;
+            String text = snippetViewer.getContentText();
+            String title = snippetViewer.getClipName();
+            String myToolTip = tooltipKey;
+            
+            /* If the name has changed then we will stop worry about keys, etc. */
+            if( !oldDisplayName.equals(title)) {
+                newDisplayName = title;
+                myBundleName = null; /* If the title has changed, we no longer need the bundle. */
+                myToolTip = title;   /* Let's modify the tooltip to the title once it has ben removed */
+            }
+            try {
+                CodeClipUtilities.createCodeClipFile(fileObj.getParent(), text, newDisplayName, myBundleName, tooltipKey);
+                this.destroy();
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
 //        this.setBody(text);
-        
     }
-    
-    /* 
-     * Drop the codeclip on the given text component target 
+
+    /*
+     * Drop the codeclip on the given text component target
      * @param target JTextComponent or the targeted editor component
      */
-    public void drop(JTextComponent target){
+    public void drop(JTextComponent target) {
 
 //        if (target == null) {
 //            String msg = NbBundle.getMessage(CodeClipItemNode.class, "MSG_ErrorNoFocusedDocument");
 //            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
 //            return;
 //        }
-
         ActiveEditorDrop drop = (ActiveEditorDrop) getLookup().lookup(ActiveEditorDrop.class);
         drop.handleTransfer(target);
-
     }
-    
-    
-    
 }
