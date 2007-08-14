@@ -41,6 +41,11 @@ public class JavaCompletionProviderElementCreatingTest extends CompletionTestBas
     public void testOverridePrivateMethod() throws Exception {
         performTest("OverridePrivateMethod", 123, "cl", "OverridePrivateMethod.pass");
     }
+    
+    /** CC should not offer overriding package private method from superclass in a different package */
+    public void testOverridePackagePrivateMethod() throws Exception {
+        performTest("OverridePackagePrivateMethod", 156, "add", "OverridePackagePrivateMethod.pass");
+    }
 
     public void testOverrideAbstractListWithPrefix() throws Exception {
         performTest("OverrideAbstractList", 146, "to", "OverrideAbstractListWithPrefix.pass", "toSt.*override", "OverrideAbstractListWithPrefix.pass2");
