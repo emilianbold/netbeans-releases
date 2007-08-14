@@ -471,7 +471,7 @@ public class GeneratorUtils {
                 if (e.getKind() == ElementKind.METHOD && e.getModifiers().contains(Modifier.ABSTRACT)) {
                     ExecutableElement ee = (ExecutableElement)e;
                     Element eeImpl = eu.getImplementationOf(ee, impl);
-                    if (eeImpl == null || eeImpl == ee)
+                    if (eeImpl == null || (eeImpl == ee && impl != element))                        
                         undef.add(ee);
                 }
             }

@@ -82,6 +82,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="org/netbeans/test/java/editor/codegeneration/CreateConstructor.class"/>
                 <include name="org/netbeans/test/java/editor/codegeneration/CreateGetterSetter.class"/>
+                <include name="org/netbeans/test/java/editor/codegeneration/ImplementMethod.class"/>
             </patternset>
         </testset>
     </testbag>
