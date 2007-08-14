@@ -55,16 +55,68 @@ introduced by support for multiple source roots. -jglick
                 <fail unless="sjsas.root">Must set Sun app server root</fail>
             </target>
 
-            <target name="-post-run-deploy" depends="-wsit-init">
-                <echo file="nbproject/wsit.properties" >AS_ADMIN_USERPASSWORD=changeit</echo>
-                <exec executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false">
+            <target name="-create-wsit-prop" unless="do.not.create.wsit.prop">  
+                <echo file="nbproject/wsit.properties">AS_ADMIN_USERPASSWORD=changeit</echo>
+            </target>
+
+            <target name="-delete-create-wsit-file" if="user.created">
+                <delete file="nbproject/wsit.createuser"/>
+            </target>
+
+            <target name="create-user" unless="user.exists">  
+                <exec timeout="10000" outputproperty="creation.out" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
                     <arg value="create-file-user"/>
                     <arg value="--passwordfile"/>
                     <arg value="nbproject/wsit.properties"/>
                     <arg value="wsitUser"/>
                 </exec>
+                <exec timeout="10000" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
+                    <arg value="create-file-user"/>
+                    <arg value="--passwordfile"/>
+                    <arg value="nbproject/wsit.properties"/>
+                    <arg value="wsitUser"/>
+                </exec>
+                <exec timeout="10000" executable="${{sjsas.root}}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
+                    <arg value="create-file-user"/>
+                    <arg value="--passwordfile"/>
+                    <arg value="nbproject/wsit.properties"/>
+                    <arg value="wsitUser"/>
+                </exec>
+                <condition property="user.created">
+                    <and>
+                        <contains string="${{creation.out}}" substring="create-file-user"/>
+                        <contains string="${{creation.out}}" substring="success"/>
+                    </and>
+                </condition>
+                <antcall target="-delete-create-wsit-file"/>
             </target>
-            
+
+            <target name="-do-create-user" if="do-create-user">
+                <available property="do.not.create.wsit.prop" file="nbproject/wsit.properties"/>
+                <antcall target="-create-wsit-prop"/>
+
+                <exec timeout="10000" outputproperty="as.users" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="unix">
+                    <arg value="list-file-users"/>
+                </exec>
+                <exec timeout="10000" outputproperty="as.users" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
+                    <arg value="list-file-users"/>
+                </exec>
+                <exec timeout="10000" outputproperty="as.users" executable="${{sjsas.root}}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
+                    <arg value="list-file-users"/>
+                </exec>
+
+                <condition property="user.exists">
+                    <contains string="${{as.users}}" substring="wsitUser"/>
+                </condition>
+
+                <antcall target="create-user"/>
+            </target>
+
+            <target name="-post-run-deploy" depends="-wsit-init">
+                <available property="do-create-user" file="nbproject/wsit.createuser"/>
+                <antcall target="-do-create-user"/>        
+            </target>
+
         </project>
     </xsl:template>
 </xsl:stylesheet>

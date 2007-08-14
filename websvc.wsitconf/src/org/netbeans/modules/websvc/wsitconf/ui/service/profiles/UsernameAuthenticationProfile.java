@@ -21,6 +21,9 @@ package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
 import java.awt.Dialog;
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
@@ -52,6 +55,8 @@ public class UsernameAuthenticationProfile extends SecurityProfile {
     public static final String DEFAULT_PASSWORD = "changeit";
     private static final String CERTS_DIR = "certs";
 
+    private static final Logger logger = Logger.getLogger(UsernameAuthenticationProfile.class.getName());
+    
     public int getId() {
         return 10;
     }
@@ -101,7 +106,7 @@ public class UsernameAuthenticationProfile extends SecurityProfile {
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
 
         dlg.setVisible(true); 
-        if (dlgDesc.getValue() == dlgDesc.CANCEL_OPTION) {
+        if (dlgDesc.getValue() == DialogDescriptor.CANCEL_OPTION) {
             for (int i=0; i<undoCounter.getCounter();i++) {
                 if (undoManager.canUndo()) {
                     undoManager.undo();
@@ -138,6 +143,12 @@ public class UsernameAuthenticationProfile extends SecurityProfile {
                     tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks", false, false);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
+        } else {
+            try {
+                p.getProjectDirectory().getFileObject("nbproject").createData("wsit.createuser");
+            } catch (IOException ex) {
+                logger.log(Level.FINE, null, ex);            
+            }
         }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);

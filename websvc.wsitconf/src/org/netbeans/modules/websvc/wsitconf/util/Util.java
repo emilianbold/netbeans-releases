@@ -82,6 +82,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -881,6 +882,15 @@ public class Util {
     
     public static void unfillDefaults(Project p) {
         String buildScript = FileUtil.toFile(p.getProjectDirectory()).getPath() + BUILD_SCRIPT;
+    
+        FileObject createUserFile = p.getProjectDirectory().getFileObject("nbproject/wsit.createuser");
+        if ((createUserFile != null) && (createUserFile.isValid()) && !(createUserFile.isVirtual())) {
+            try {
+                createUserFile.delete();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         
         BufferedReader reader = null;
         BufferedWriter writer = null;

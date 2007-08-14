@@ -80,7 +80,7 @@ public class ServicePanel extends SectionInnerPanel {
     private boolean isFromJava = true;
 
     private final Color RED = new java.awt.Color(255, 0, 0);
-    private Color REGULAR = new java.awt.Color(0, 0, 0);
+    private final Color REGULAR;
             
     public ServicePanel(SectionView view, Node node, Project p, Binding binding, UndoManager undoManager, JaxWsModel jaxwsmodel) {
         super(view);
@@ -774,7 +774,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
         
         dlg.setVisible(true); 
         
-        if (dlgDesc.getValue() == dlgDesc.OK_OPTION) {
+        if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
             vPanel.storeState();
         }
 
@@ -796,7 +796,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
         
         dlg.setVisible(true); 
-        if (dlgDesc.getValue() == dlgDesc.CANCEL_OPTION) {
+        if (dlgDesc.getValue() == DialogDescriptor.CANCEL_OPTION) {
             for (int i=0; i<undoCounter.getCounter();i++) {
                 if (undoManager.canUndo()) {
                     undoManager.undo();
@@ -816,7 +816,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
         
         dlg.setVisible(true); 
-        if (dlgDesc.getValue() == dlgDesc.OK_OPTION) {
+        if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
             storePanel.storeState();
         }
     }//GEN-LAST:event_trustButtonActionPerformed
@@ -830,7 +830,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
         
         dlg.setVisible(true); 
         
-        if (dlgDesc.getValue() == dlgDesc.OK_OPTION) {
+        if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
             storePanel.storeState();
         }
     }//GEN-LAST:event_keyButtonActionPerformed
@@ -843,7 +843,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
         
         dlg.setVisible(true); 
 
-        if (dlgDesc.getValue() == dlgDesc.OK_OPTION) {
+        if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
             advancedRMPanel.storeState();
         }
     }//GEN-LAST:event_rmAdvancedActionPerformed
