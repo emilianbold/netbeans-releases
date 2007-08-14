@@ -70,13 +70,13 @@ introduced by support for multiple source roots. -jglick
                     <arg value="nbproject/wsit.properties"/>
                     <arg value="wsitUser"/>
                 </exec>
-                <exec timeout="10000" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
+                <exec timeout="10000" outputproperty="creation.out" executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false" osfamily="mac">
                     <arg value="create-file-user"/>
                     <arg value="--passwordfile"/>
                     <arg value="nbproject/wsit.properties"/>
                     <arg value="wsitUser"/>
                 </exec>
-                <exec timeout="10000" executable="${{sjsas.root}}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
+                <exec timeout="10000" outputproperty="creation.out" executable="${{sjsas.root}}/bin/asadmin.bat" failonerror="false" failifexecutionfails="false" osfamily="windows">
                     <arg value="create-file-user"/>
                     <arg value="--passwordfile"/>
                     <arg value="nbproject/wsit.properties"/>
