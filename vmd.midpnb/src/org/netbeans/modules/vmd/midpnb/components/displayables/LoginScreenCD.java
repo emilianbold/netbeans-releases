@@ -65,7 +65,7 @@ public final class LoginScreenCD extends ComponentDescriptor {
     public static final String PROP_USERNAME = "username"; //NOI18N
     public static final String PROP_PASSWORD = "password"; //NOI18N
     public static final String PROP_USE_LOGIN_BUTTON = "useButton"; //NOI18N
-    public static final String PROP_LOGIN_TITLE = "loginLabel"; //NOI18N
+    public static final String PROP_LOGIN_TITLE = "loginTitle"; //NOI18N
     public static final String PROP_USERNAME_LABEL = "usernameLabel"; //NOI18N
     public static final String PROP_PASSWORD_LABEL = "passwordLabel"; //NOI18N
     public static final String PROP_BGK_COLOR = "backgroundColor"; //NOI18N
@@ -116,7 +116,7 @@ public final class LoginScreenCD extends ComponentDescriptor {
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ()
             .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter ())
-            .addParameters(MidpParameter.create(PROP_BGK_COLOR, PROP_FRG_COLOR, PROP_USERNAME, PROP_PASSWORD,PROP_LOGIN_TITLE,
+            .addParameters(MidpParameter.create(PROP_BGK_COLOR, PROP_FRG_COLOR, PROP_USERNAME, PROP_PASSWORD, PROP_LOGIN_TITLE,
                                                 PROP_USE_LOGIN_BUTTON, PROP_USERNAME_LABEL, PROP_PASSWORD_LABEL))
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2)
             .addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY))
@@ -124,7 +124,7 @@ public final class LoginScreenCD extends ComponentDescriptor {
             .addSetters(MidpSetter.createSetter("setFGColor", MidpVersionable.MIDP).addParameters(PROP_FRG_COLOR)) //NOI18N
             .addSetters(MidpSetter.createSetter("setPassword", MidpVersionable.MIDP).addParameters(PROP_PASSWORD)) //NOI18N
             .addSetters(MidpSetter.createSetter("setUsername", MidpVersionable.MIDP).addParameters(PROP_USERNAME)) //NOI18N
-            .addSetters(MidpSetter.createSetter("setLoginTitle", MidpVersionable.MIDP).addParameters(PROP_PASSWORD)) //NOI18N
+            .addSetters(MidpSetter.createSetter("setLoginTitle", MidpVersionable.MIDP).addParameters(PROP_LOGIN_TITLE)) //NOI18N
             .addSetters(MidpSetter.createSetter("setUseLoginButton", MidpVersionable.MIDP).addParameters(PROP_USE_LOGIN_BUTTON)) //NOI18N
             .addSetters(MidpSetter.createSetter("setLabelTexts", MidpVersionable.MIDP).addParameters(PROP_USERNAME_LABEL, PROP_PASSWORD_LABEL)); //NOI18N
     }
