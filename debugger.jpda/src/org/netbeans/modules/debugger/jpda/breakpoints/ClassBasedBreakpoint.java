@@ -124,6 +124,20 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         }
     }
     
+    /** Check whether the breakpoint belongs to the first matched source root. */
+    protected boolean isEnabled(String sourcePath, String[] preferredSourceRoot) {
+        synchronized (SOURCE_ROOT_LOCK) {
+            String sourceRoot = getSourceRoot();
+            if (sourceRoot == null) {
+                return true;
+            }
+            String url = getDebugger().getEngineContext().getURL(sourcePath, true);
+            String urlRoot = getDebugger().getEngineContext().getSourceRoot(url);
+            preferredSourceRoot[0] = urlRoot;
+            return sourceRoot.equals(urlRoot);
+        }
+    }
+    
     protected void setClassRequests (
         String[] classFilters,
         String[] classExclusionFilters,

@@ -96,6 +96,18 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     protected void setRequests () {
         LineBreakpoint breakpoint = getBreakpoint();
         lineNumber = breakpoint.getLineNumber ();
+        String[] preferredSourceRoot = new String[] { null };
+        String sourcePath = getDebugger().getEngineContext().getRelativePath(breakpoint.getURL(), '/', true);
+        if (!isEnabled(sourcePath, preferredSourceRoot)) {
+            String reason = NbBundle.getMessage(LineBreakpointImpl.class,
+                                                "MSG_DifferentPrefferedSourceRoot",
+                                                preferredSourceRoot[0]);
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "Unable to submit line breakpoint to "+breakpoint.getURL()+
+                    " at line "+lineNumber+", reason: "+reason);
+            setValidity(Breakpoint.VALIDITY.INVALID, reason);
+            return;
+        }
         String className = breakpoint.getPreferredClassName();
         if (className == null) {
             className = reader.findCachedClassName(breakpoint);
