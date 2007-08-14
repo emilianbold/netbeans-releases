@@ -194,7 +194,7 @@
                 <tocitem text="Testing a JAX-WS Web Service" target="glassfish_tester-ws" />
                 <tocitem text="Viewing the Published WSDL File" target="test_ws" /> 
             </tocitem>
-            <tocitem text="Consuming Web Services" >
+            <tocitem text="Web Service Clients" >
                 <tocitem text="About Web Service Clients" target="about_wsc" />
                 <tocitem text="Working with Web Service Clients" target="wsc_process" />
                 <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 
@@ -207,7 +207,7 @@
                 <tocitem text="Building a Web Service Client" target="wsc_build" />
                 <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
             </tocitem>
-            <tocitem text="Configuring Handlers" >
+            <tocitem text="Handlers" >
                 <tocitem text="About Handlers" target="about_ws_soap_message" />
                 <tocitem text="Creating a Handler" target="create_ws_soap_message" />
                 <tocitem text="Configuring a Handler" target="configure_ws_soap_message" />
