@@ -32,6 +32,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="position" intvalue="1300"/>
             </file>
             
+            <file name="org-netbeans-modules-editor-MainMenuAction$SelectAllAction.instance">
+                <attr name="position" intvalue="1430"/>
+            </file>
+            
             <file name="org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance">
                 <attr name="position" intvalue="1600"/>
             </file>

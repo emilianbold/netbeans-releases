@@ -808,6 +808,34 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         }
         
     } // end of StartMacroRecordingAction
+    
+   
+    /** Start Macro Recording action in View main menu, wrapper for BaseKit.startMacroRecordingAction
+     */ 
+    public static final class SelectAllAction extends MainMenuAction {
+        
+        private JMenuItem menuItem;
+
+        public SelectAllAction() {
+            super(true, BLANK_ICON);
+            menuItem = new JMenuItem(getMenuItemText());
+            setMenu();
+        }
+        
+        protected String getMenuItemText () {
+            return NbBundle.getBundle(StartMacroRecordingAction.class).getString(
+                "select_all_main_menu_item"); //NOI18N
+        }
+
+        public JMenuItem getMenuPresenter () {
+            return menuItem;
+        }
+
+        protected String getActionName () {
+            return BaseKit.selectAllAction;
+        }
+        
+    } // end of SelectAll
 
     /** Stop Macro Recording action in View main menu, wrapper for BaseKit.stopMacroRecordingAction
      */ 
