@@ -168,30 +168,6 @@ public class KdpDebugTask extends Task {
             }
         }
         
-        //parse midlet class names, parse midlet sources, and add breakpoints when "step into" invoked
-        // but the breakpoints are not attached yet
-        final HashSet<MethodBreakpoint> breakpoints = new HashSet();
-        if (Boolean.parseBoolean(project.getProperty("debug.step.into"))) { //NOI18N
-            String manifestMidlets = this.getProject().getProperty("manifest.midlets"); //NOI18N
-            BufferedReader reader = new BufferedReader(new StringReader(manifestMidlets));
-            String line;
-            try {
-                while ((line = reader.readLine()) != null) {
-                    String[] lineData = line.split(","); // NOI18N
-                    if (lineData.length != 3) {
-                        err.log("line \"" + line + "\" doesn't contain valid MIDlet data."); //NOI18N
-                    } else {
-                        err.log("Adding STOP MIDlet class: " + lineData[2].trim()); //NOI18N
-                        MethodBreakpoint breakpoint = MethodBreakpoint.create(lineData[2].trim(), "*"); //NOI18N
-                        breakpoint.setHidden(true);
-                        breakpoints.add(breakpoint);
-                    }
-                }
-            } catch (IOException e) {
-                throw new BuildException(e, getLocation());
-            }
-        }
-        
         //get platform source path
         ClassPath  jdkSourcePath = JavaPlatformManager.getDefault().getDefaultPlatform().getSourceFolders();
         String platform = project.getProperty("platform.active"); //NOI18N
@@ -254,9 +230,6 @@ public class KdpDebugTask extends Task {
                 
                 if (host == null) log(NbBundle.getMessage(KdpDebugTask.class, "LBL_ANT_Debugger_attached", address)); //NOI18N
                 else log(NbBundle.getMessage(KdpDebugTask.class, "LBL_ANT_Debugger_attached_with_host", host, address)); //NOI18N
-                
-                //attach breakpoints and their removal listener only when debugger connected
-                if (!breakpoints.isEmpty()) new BreakManager(breakpoints);
                 
                 debuggerConnected = true;
             } catch (DebuggerStartException e) {

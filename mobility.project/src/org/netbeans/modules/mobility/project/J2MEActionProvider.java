@@ -78,7 +78,6 @@ public class J2MEActionProvider implements ActionProvider {
         COMMAND_RUN_WITH,
         COMMAND_DEBUG,
         //commenting out the next line disables the step into action in the IDE
-        COMMAND_DEBUG_STEP_INTO,
         COMMAND_JAVADOC,
         COMMAND_DEPLOY,
         COMMAND_BUILD_ALL,
@@ -115,7 +114,6 @@ public class J2MEActionProvider implements ActionProvider {
         commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
         commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
         commands.put(COMMAND_RUN_WITH, new String[] {"run-no-build"}); // NOI18N
-        commands.put(COMMAND_DEBUG_STEP_INTO, new String[] {"debug"}); // NOI18N
         commands.put(COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
         commands.put(COMMAND_DEPLOY, new String[] {"deploy"}); // NOI18N
         commands.put(COMMAND_BUILD_ALL, new String[] {"build-all"}); // NOI18N
@@ -125,7 +123,6 @@ public class J2MEActionProvider implements ActionProvider {
         commands.put(COMMAND_DEPLOY_ALL, new String[] {"deploy-all"}); // NOI18N
         this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(new String[] {
             COMMAND_DEBUG,
-            COMMAND_DEBUG_STEP_INTO
         }));
         this.project = project;
         this.helper = helper;
@@ -209,12 +206,8 @@ public class J2MEActionProvider implements ActionProvider {
                 } else if (COMMAND_DEBUG.equals(command)) {
                     p.put(DefaultPropertiesDescriptor.OBFUSCATION_LEVEL, "0"); //NOI18N
                     p.put("app.codename", project.getName()); // NOI18N
-                } else if (COMMAND_DEBUG_STEP_INTO.equals(command)) {
-                    p.put("debug.step.into", "true"); //NOI18N
-                    p.put(DefaultPropertiesDescriptor.OBFUSCATION_LEVEL, "0"); //NOI18N
-                    p.put("app.codename", project.getName()); // NOI18N
                 }
-                if (COMMAND_RUN.equals(command) || COMMAND_RUN_WITH.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command)) {
+                if (COMMAND_RUN.equals(command) || COMMAND_RUN_WITH.equals(command) || COMMAND_DEBUG.equals(command))  {
                     String url = getJadURL();
                     if (url != null)
                         p.put("dist.jad.url", url); //NOI18N
