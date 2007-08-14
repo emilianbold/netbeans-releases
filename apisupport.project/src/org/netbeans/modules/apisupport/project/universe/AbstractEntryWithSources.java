@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,6 +38,11 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
     
     private LocalizedBundleInfo bundleInfo;
     private Set<String> allPackageNames;
+    private final String src;
+    
+    protected AbstractEntryWithSources(final String src) {
+        this.src = src;
+    }
     
     protected LocalizedBundleInfo getBundleInfo() {
         if (bundleInfo == null) {
@@ -48,10 +53,10 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
     
     protected Set<String> computePublicClassNamesInMainModule() throws IOException {
         Set<String> result = new HashSet<String>();
-        File src = new File(getSourceLocation(), "src"); // XXX hardcoding src.dir // NOI18N
+        File srcF = new File(getSourceLocation(), src);
         for (ManifestManager.PackageExport p : getPublicPackages()) {
             String pkg = p.getPackage();
-            scanForClasses(result, pkg, new File(src, pkg.replace('.', File.separatorChar)), p.isRecursive());
+            scanForClasses(result, pkg, new File(srcF, pkg.replace('.', File.separatorChar)), p.isRecursive());
         }
         return result;
     }

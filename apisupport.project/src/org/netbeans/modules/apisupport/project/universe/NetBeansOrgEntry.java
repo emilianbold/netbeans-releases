@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -40,7 +40,8 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     public NetBeansOrgEntry(File nball, String cnb, String path, File cluster,
             String module, String cpext, String releaseVersion,
             String[] providedTokens, ManifestManager.PackageExport[] publicPackages,
-            String[] friends, boolean deprecated) {
+            String[] friends, boolean deprecated, String src) {
+        super(src);
         this.nball = nball;
         this.cnb = cnb;
         this.path = path;
@@ -101,8 +102,8 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     public boolean isDeprecated() {
         return deprecated;
     }
-    
-    public String toString() {
+
+    public @Override String toString() {
         return "NetBeansOrgEntry[" + getSourceLocation() + "]"; // NOI18N
     }
     

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -331,14 +331,18 @@ public final class ModuleList {
         ModuleEntry entry;
         ManifestManager.PackageExport[] publicPackages = ProjectXMLManager.findPublicPackages(data);
         String[] friends = ProjectXMLManager.findFriends(data);
+        String src = eval.getProperty("src.dir"); // NOI18N
+        if (src == null) {
+            src = "src"; // NOI18N
+        }
         if (!suiteComponent && !standalone) {
             entry = new NetBeansOrgEntry(root, cnb, path, clusterDir, module, cpextra.toString(),
                     mm.getReleaseVersion(), mm.getProvidedTokens(),
-                    publicPackages, friends, mm.isDeprecated());
+                    publicPackages, friends, mm.isDeprecated(), src);
         } else {
             entry = new ExternalEntry(basedir, cnb, clusterDir, PropertyUtils.resolveFile(clusterDir, module),
                     cpextra.toString(), nbdestdir, mm.getReleaseVersion(),
-                    mm.getProvidedTokens(), publicPackages, friends, mm.isDeprecated());
+                    mm.getProvidedTokens(), publicPackages, friends, mm.isDeprecated(), src);
         }
         if (entries.containsKey(cnb)) {
             if (warnReDuplicates) {

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,7 +39,8 @@ final class ExternalEntry extends AbstractEntryWithSources {
     public ExternalEntry(File basedir, String cnb, File clusterDir, File jar,
             String cpext, File nbdestdir, String releaseVersion,
             String[] providedTokens, ManifestManager.PackageExport[] publicPackages,
-            String[] friends, boolean deprecated) {
+            String[] friends, boolean deprecated, String src) {
+        super(src);
         this.basedir = basedir;
         this.cnb = cnb;
         this.clusterDir = clusterDir;
