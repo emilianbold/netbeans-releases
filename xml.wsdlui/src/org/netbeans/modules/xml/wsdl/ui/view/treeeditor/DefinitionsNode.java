@@ -60,7 +60,9 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ServiceNewType;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.TypesNewType;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.NewAction;
@@ -174,6 +176,7 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
         setDisplayName(name);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void refreshAttributesSheetSet(Sheet sheet) {
         Sheet.Set ss = sheet.get(Sheet.PROPERTIES);
@@ -226,6 +229,7 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private void refreshPrefixesSheetSet(Sheet sheet) {
         
         Sheet.Set prefixesSheetSet = sheet.get(NbBundle.getMessage(DefinitionsNode.class, "PROP_SHEET_CATEGORY_PREFIXES"));
@@ -294,6 +298,7 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
             return this.mPrefix;
         }
         
+        @SuppressWarnings("unchecked")
         public void setPrefix(String prefix) {
             
             String namespace = getNamespace();
@@ -304,6 +309,7 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
             mPrefix = prefix;
         }
         
+        @SuppressWarnings("unchecked")
         public void setNamespace(String namespace) {
             mWSDLConstruct.getModel().startTransaction();
             ((AbstractDocumentComponent) mWSDLConstruct).addPrefix(mPrefix, namespace);
@@ -375,6 +381,7 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
             return null;
         }
         
+        @SuppressWarnings("unchecked")
         @Override
         public Collection getKeys() {
             Collection<Object> keys = new ArrayList<Object>();
@@ -444,13 +451,13 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
                 name = null;
             }
             
-            if (name != null && org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(name)) {
-                ErrorManager.getDefault().notify(new Exception(NbBundle.getMessage(DefinitionsNode.class, "ERR_MSG_INVALID_NMTOKEN")));
+            if (name == null || !org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(name)) {
+            	DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(DefinitionsNode.class, "ERR_MSG_INVALID_NCNAME", name == null ? "" : name)));
                 return;
             }
             getWSDLComponent().getModel().startTransaction();
             getWSDLComponent().setName(name);
-            getWSDLComponent().getModel().endTransaction();
+            getWSDLComponent().getModel().endTransaction(); 
         }
         
         public String getName() {
@@ -465,7 +472,7 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
         public void setTargetNamespace(String targetNamespace) {
             getWSDLComponent().getModel().startTransaction();
             getWSDLComponent().setTargetNamespace(targetNamespace);
-                getWSDLComponent().getModel().endTransaction();
+            getWSDLComponent().getModel().endTransaction();
         }
         
         public String getTargetNamespace() {
@@ -477,6 +484,7 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
             return tns;
         }
         
+        @SuppressWarnings("unchecked")
         public void setDefaultNamespace(String defaultNamespace) {
             WSDLModel model = getWSDLComponent().getModel();
             model.startTransaction();
@@ -484,6 +492,7 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
                 model.endTransaction();
         }
         
+        @SuppressWarnings("unchecked")
         public String getDefaultNamespace() {
             String dns = (String) ((AbstractDocumentComponent) getWSDLComponent()).getPrefixes().get(XMLConstants.DEFAULT_NS_PREFIX);
             if(dns == null) {
