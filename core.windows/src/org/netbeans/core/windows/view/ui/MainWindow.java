@@ -165,19 +165,9 @@ public final class MainWindow extends JFrame {
                 }
             }
         }
-        
-        // initialize desktop panel
-        desktopPanel = new JPanel();
-    
-        desktopPanel.setBorder(getDesktopBorder());
-        desktopPanel.setLayout(new BorderLayout());
-        
-//        Color fillC = (Color)UIManager.get("nb_workplace_fill"); //NOI18N
-//        if (fillC != null) {
-//            desktopPanel.setBackground(fillC);
-//        }
 
-        getContentPane().add(desktopPanel, BorderLayout.CENTER);
+        getContentPane().add(getDesktopPanel(), BorderLayout.CENTER);
+        
         //#38810 start - focusing the main window in case it's not active and the menu is
         // selected..
         MenuSelectionManager.defaultManager().addChangeListener(new ChangeListener(){
@@ -427,20 +417,20 @@ public final class MainWindow extends JFrame {
             // XXX PENDING revise how to better manipulate with components
             // so there don't happen unneeded removals.
             if(desktop != null
-            && !Arrays.asList(desktopPanel.getComponents()).contains(desktop)) {
-                desktopPanel.add(desktop, BorderLayout.CENTER);
+            && !Arrays.asList(getDesktopPanel().getComponents()).contains(desktop)) {
+                getDesktopPanel().add(desktop, BorderLayout.CENTER);
             }
             return;
         }
 
         if(desktop != null) {
-            desktopPanel.remove(desktop);
+            getDesktopPanel().remove(desktop);
         }
         
         desktop = comp;
         
         if(desktop != null) {
-            desktopPanel.add(desktop, BorderLayout.CENTER);
+            getDesktopPanel().add(desktop, BorderLayout.CENTER);
         } 
         invalidate();
         validate();
@@ -459,6 +449,17 @@ public final class MainWindow extends JFrame {
     
     public boolean hasDesktop() {
         return desktop != null;
+    }
+    
+    /** #112408: Single access point for desktopPanel to ensure it's never null */
+    private JPanel getDesktopPanel () {
+        if (desktopPanel == null) {
+            // initialize desktop panel
+            desktopPanel = new JPanel();
+            desktopPanel.setBorder(getDesktopBorder());
+            desktopPanel.setLayout(new BorderLayout());
+        }
+        return desktopPanel;
     }
 
     // XXX
