@@ -72,6 +72,7 @@ class DiffContentPanel extends JComponent implements HighlightsContainer {
         editorPane.putClientProperty(DiffHighlightsLayerFactory.HIGHLITING_LAYER_ID, this);
         if (!isFirst) {
             editorPane.putClientProperty("errorStripeOnly", Boolean.TRUE);
+            editorPane.putClientProperty("code-folding-enable", false);
         }
     }
     

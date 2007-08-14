@@ -659,6 +659,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
                 public void propertyChange(PropertyChangeEvent evt) {
                     String propName = evt.getPropertyName();
                     if ("document".equals(propName)) { //NOI18N
+                        foldingEnabled = getFoldingEnabledSetting();
                         rebuild();
                     } else if (PROPERTY_FOLDING_ENABLED.equals(propName)) {
                         foldingEnabledSettingChange();
