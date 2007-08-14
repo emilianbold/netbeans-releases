@@ -3,7 +3,7 @@
 <Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/core/windows/view/ui/toolbars/Bundle.properties" key="ACSD_PaletteCustomizer" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/palette/Bundle.properties" key="ACSD_PaletteCustomizer" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
     </Property>
   </AccessibilityProperties>
   <AuxValues>
@@ -69,7 +69,7 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/core/windows/view/ui/toolbars/Bundle.properties" key="ACSD_MoveUp" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/palette/Bundle.properties" key="ACSD_MoveUp" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -92,7 +92,7 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/core/windows/view/ui/toolbars/Bundle.properties" key="ACSD_MoveDown" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/palette/Bundle.properties" key="ACSD_MoveDown" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -115,7 +115,7 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/core/windows/view/ui/toolbars/Bundle.properties" key="ACSD_Remove" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/palette/Bundle.properties" key="ACSD_Remove" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -138,7 +138,7 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/core/windows/view/ui/toolbars/Bundle.properties" key="ACSD_NewCategory" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/palette/Bundle.properties" key="ACSD_NewCategory" replaceFormat="Utils.getBundleString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>

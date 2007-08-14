@@ -104,7 +104,6 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
             Utils.getBundleString("ACSN_PaletteContentsTree")); // NOI18N
         treeView.getAccessibleContext().setAccessibleDescription(
             Utils.getBundleString("ACSD_PaletteContentsTree")); // NOI18N
-        infoLabel.setLabelFor( treeView );
         treePanel.add(treeView, java.awt.BorderLayout.CENTER);
         captionLabel.setLabelFor(treeView);
 
@@ -183,7 +182,6 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
 
         setLayout(new java.awt.GridBagLayout());
 
-        getAccessibleContext().setAccessibleDescription(null); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(captionLabel, Utils.getBundleString("CTL_Caption")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
@@ -192,10 +190,9 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 10);
         add(captionLabel, gridBagConstraints);
 
-        treePanel.setLayout(new java.awt.BorderLayout());
-
         treePanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         treePanel.setPreferredSize(new java.awt.Dimension(288, 336));
+        treePanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -222,14 +219,13 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
                 moveUpButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(28, 12, 0, 10);
         add(moveUpButton, gridBagConstraints);
-        moveUpButton.getAccessibleContext().setAccessibleDescription(null); // NOI18N
+        moveUpButton.getAccessibleContext().setAccessibleDescription(Utils.getBundleString("ACSD_MoveUp")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(moveDownButton, Utils.getBundleString("CTL_MoveDown_Button")); // NOI18N
         moveDownButton.addActionListener(new java.awt.event.ActionListener() {
@@ -237,14 +233,13 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
                 moveDownButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 10);
         add(moveDownButton, gridBagConstraints);
-        moveDownButton.getAccessibleContext().setAccessibleDescription(null); // NOI18N
+        moveDownButton.getAccessibleContext().setAccessibleDescription(Utils.getBundleString("ACSD_MoveDown")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, Utils.getBundleString("CTL_Remove_Button")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -252,14 +247,13 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
                 removeButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 10);
         add(removeButton, gridBagConstraints);
-        removeButton.getAccessibleContext().setAccessibleDescription(null); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(Utils.getBundleString("ACSD_Remove")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(newCategoryButton, Utils.getBundleString("CTL_NewCategory_Button")); // NOI18N
         newCategoryButton.addActionListener(new java.awt.event.ActionListener() {
@@ -267,18 +261,16 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
                 newCategoryButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 10);
         add(newCategoryButton, gridBagConstraints);
-        newCategoryButton.getAccessibleContext().setAccessibleDescription(null); // NOI18N
-
-        customActionsPanel.setLayout(new java.awt.GridBagLayout());
+        newCategoryButton.getAccessibleContext().setAccessibleDescription(Utils.getBundleString("ACSD_NewCategory")); // NOI18N
 
         createCustomButtons();
+        customActionsPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -292,7 +284,6 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
                 resetButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -302,6 +293,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         resetButton.getAccessibleContext().setAccessibleName(Utils.getBundleString("ASCN_ResetPalette")); // NOI18N
         resetButton.getAccessibleContext().setAccessibleDescription(Utils.getBundleString("ASCD_ResetPalette")); // NOI18N
 
+        getAccessibleContext().setAccessibleDescription(Utils.getBundleString("ACSD_PaletteCustomizer")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
@@ -372,7 +364,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         if (parent == null)
             return;
 
-        Index indexCookie = (Index) parent.getCookie(Index.class);
+        Index indexCookie = parent.getCookie(Index.class);
         if (indexCookie == null)
             return;
 
@@ -409,7 +401,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
     }
     
     private void createCustomButtons() {
-        PaletteActions customActions = (PaletteActions)root.getLookup().lookup( PaletteActions.class );
+        PaletteActions customActions = root.getLookup().lookup( PaletteActions.class );
         if( null == customActions )
             return;
         
