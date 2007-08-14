@@ -303,7 +303,7 @@ public class ClassData extends ElementDataObject
         {
             op = ops[i];
             buff.append("<A NAME=\"" + op.getName() + "\"></A><H3>" + op.getName() + "</H3>\r\n");
-            buff.append("\r\n");
+            buff.append("<PRE>\r\n");
             buff.append(formatOperation(op) + " " + "<B>" + op.getName() + "</B>(");
             
             ETList<IParameter> params = op.getParameters();
@@ -326,7 +326,7 @@ public class ClassData extends ElementDataObject
                         buff.append(",&nbsp;"); // NOI18N
                 }
             }
-            buff.append(")\r\n");
+            buff.append(")</PRE>\r\n");
             buff.append("<DL>\r\n");
             
             buff.append("<DD>" + op.getDocumentation() + "\r\n");
@@ -619,7 +619,7 @@ public class ClassData extends ElementDataObject
             
             out.write("<HR>\r\n");
             out.write("<DL>\r\n");
-            out.write("<DT>" + getVisibility(getElement()) + " " + getElementType().toLowerCase() + " <B>" + getElementName() + "</B></DT>");
+            out.write("<DT><PRE>" + getVisibility(getElement()) + " " + getElementType().toLowerCase() + " <B>" + getElementName() + "</B></DT>");
             if (superClasses.length>0)
             {
                 out.write("<DT>extends ");
@@ -647,7 +647,7 @@ public class ClassData extends ElementDataObject
                         out.write(", ");
                 }
             }
-            out.write("</DL>\r\n\r\n\r\n");
+            out.write("</DL>\r\n</PRE>\r\n\r\n");
             
             out.write(getDocumentation());
             
@@ -768,10 +768,11 @@ public class ClassData extends ElementDataObject
                     type = attr.getType();
                     
                     out.write("<A NAME=\"" + attr.getName() + "\"></A><H3>" + attr.getName() + "</H3>\r\n");
-                    out.write("" + formatAttribute(attr) + "<B>" + attr.getName() + "</B>");
+                    out.write("<PRE>" + formatAttribute(attr) + "<B>" + attr.getName() + "</B>");
                     IMultiplicity mul = attr.getMultiplicity();
                     if (mul != null)
                         out.write(mul.getRangeAsString(true));
+                    out.write("</PRE>");
                     out.write("<DL>\r\n");
                     
                     out.write("<DD>" + attr.getDocumentation()

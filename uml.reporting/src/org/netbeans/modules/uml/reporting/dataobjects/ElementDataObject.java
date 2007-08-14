@@ -503,7 +503,7 @@ public class ElementDataObject implements Report
                 String imageName = ImageUtil.instance()
                     .getDiagramTypeImageName(diagram.getDiagramKind());
 
-                buff.append("<TD WIDTH=\"15%\"><IMG src=\"" +  // NOI18N
+                buff.append("<TD WIDTH=\"25%\"><IMG src=\"" +  // NOI18N
                     ReportTask.getPathToReportRoot(getElement()) +
                     "images/" + imageName + "\" border=n>&nbsp;<B><A HREF=\"" + // NOI18N
                     getLinkToDiagram(diagrams[i].getData().getDiagram()) +
