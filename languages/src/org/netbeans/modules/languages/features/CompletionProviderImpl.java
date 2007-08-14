@@ -155,21 +155,35 @@ public class CompletionProviderImpl implements CompletionProvider {
 
         public void refresh (CompletionResultSet resultSet) {
             if (resultSet == null) return;
-            compute (new CompletionResult (resultSet));
-//            doc = component.getDocument ();
-//            fileObject = NbEditorUtilities.getFileObject (doc);
-//            TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
-//            if (doc instanceof NbEditorDocument)
-//                ((NbEditorDocument) doc).readLock ();
-//            try {
-//                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
-//                int offset = component.getCaret ().getDot ();
-//                refresh (tokenSequence, offset, resultSet);
-//                resultSet.finish();
-//            } finally {
-//                if (doc instanceof NbEditorDocument)
-//                    ((NbEditorDocument) doc).readUnlock ();
-//            }
+            doc = component.getDocument ();
+            fileObject = NbEditorUtilities.getFileObject (doc);
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
+            if (doc instanceof NbEditorDocument)
+                ((NbEditorDocument) doc).readLock ();
+            try {
+                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+                int offset = component.getCaret ().getDot ();
+                tokenSequence.move (offset - 1);
+                while (tokenSequence.moveNext ()) {
+                    TokenSequence ts = tokenSequence.embedded ();
+                    if (ts == null) break;
+                    tokenSequence = ts;
+                }
+                Token token = tokenSequence.token ();
+                String start = token.text ().toString ();
+                
+                Iterator<CompletionItem> it = items.iterator ();
+                while (it.hasNext ()) {
+                    CompletionItem completionItem = it.next ();
+                    String text = completionItem.getInsertPrefix ().toString ();
+                    if (text.startsWith (start))
+                        resultSet.addItem (completionItem);
+                }
+                resultSet.finish ();
+            } finally {
+                if (doc instanceof NbEditorDocument)
+                    ((NbEditorDocument) doc).readUnlock ();
+            }
         }
 
         public void cancel () {
@@ -214,52 +228,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                 return COMPLETION_APPEND;
             return COMPLETION_COMPLETE;
         }
-        
-        private void refresh (TokenSequence tokenSequence, int offset, CompletionResultSet resultSet) {
-            try {
-                if (tokenSequence == null) {
-                    return;
-                }
                 
-                tokenSequence.move (offset - 1);
-                if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
-                    return;
-                }
-                String mimeType = tokenSequence.language ().mimeType ();
-                Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
-                Token token = tokenSequence.token ();
-                int tokenOffset = tokenSequence.offset();
-                String tokenType = token.id ().name ();
-                List<Feature> features = language.getFeatures (COMPLETION, tokenType);
-                Iterator<Feature> it = features.iterator ();
-                while (it.hasNext ()) {
-                    Feature feature = it.next ();
-                    String completionType = getCompletionType (feature, tokenType);
-                    if (completionType == null) continue;
-                    if (COMPLETION_APPEND.equals (completionType) && 
-                        offset < tokenOffset + token.length ()
-                    )
-                        continue;
-                    String start = COMPLETION_COMPLETE.equals (completionType) ? 
-                        token.text ().toString ().substring (0, offset - tokenOffset).trim () :
-                        "";
-                    if (ignoreCase) start = start.toLowerCase ();
-
-                    Iterator<CompletionItem> it2 = items.iterator ();
-                    while (it2.hasNext ()) {
-                        CompletionItem item = it2.next ();
-                        CharSequence chs = item.getInsertPrefix ();
-                        String s = chs instanceof String ? (String) chs : chs.toString ();
-                        if (s.startsWith (start))
-                            resultSet.addItem (item);
-                    }
-                }
-                refresh (tokenSequence.embedded(), offset, resultSet);
-                //compute (resultSet);
-            } catch (ParseException e) {
-            }
-        }
-        
         private void compute (
             TokenSequence       tokenSequence, 
             int                 offset, 
@@ -289,7 +258,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                     String completionType = getCompletionType (feature, tokenType);
                     int tokenOffset = tokenSequence.offset();
                     if (completionType == null) continue;
-                    if (completionType == COMPLETION_APPEND && 
+                    if (COMPLETION_APPEND.equals (completionType) && 
                         offset < tokenOffset + token.length ()
                     ) 
                         continue;
@@ -371,7 +340,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                         Feature feature =  it2.next ();
                         String completionType = getCompletionType (feature, tokenType);
                         if (completionType == null) continue;
-                        if (completionType == COMPLETION_APPEND && 
+                        if (COMPLETION_APPEND.equals (completionType) && 
                             offset < tokenOffset + token.getLength ()
                         ) continue;
                         String start = COMPLETION_COMPLETE.equals (completionType) ? 
