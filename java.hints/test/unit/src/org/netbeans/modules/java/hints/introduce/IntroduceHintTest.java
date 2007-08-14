@@ -651,6 +651,27 @@ public class IntroduceHintTest extends NbTestCase {
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
     }
     
+    public void testIntroduceMethod111896a() throws Exception {
+        performFixTest("package test; public class Test {public static void t() {new Runnable() { private  int i; public void run() {}};}}",
+                       82 - 25, 137 - 25,
+                       "package test; public class Test {public static void t() { name();} private static void name() { new Runnable() { private int i; public void run() { } }; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+    
+    public void testIntroduceMethod111896b() throws Exception {
+        performFixTest("package test; public class Test {public static void t() {final int a = 0; new Runnable() { private  int i; public void run() {i = a;}};}}",
+                       99 - 25, 160 - 25,
+                       "package test; public class Test {public static void t() {final int a = 0; name(a);} private static void name(final int a) { new Runnable() { private int i; public void run() { i = a; } }; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+    
+    public void testIntroduceMethod111896c() throws Exception {
+        performFixTest("package test; public class Test {public static void t() {final int a = 0; new Runnable() { private  int i; public void run() {int a = i;}}; int b = a;}}",
+                       99 - 25, 164 - 25,
+                       "package test; public class Test {public static void t() {final int a = 0; name(); int b = a;} private static void name() { new Runnable() { private int i; public void run() { int a = i; } }; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         

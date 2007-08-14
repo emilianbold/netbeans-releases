@@ -406,7 +406,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         
         for (VariableElement ve : scanner.usedLocalVariables) {
             paramTypes.add(TypeMirrorHandle.create(ve.asType()));
-            paramNames.add(ve.getSimpleName().toString());
+            if (ve.getModifiers().contains(Modifier.FINAL))
+                paramNames.add("!" + ve.getSimpleName().toString());
+            else
+                paramNames.add(ve.getSimpleName().toString());
         }
         
         List<VariableElement> additionalLocalVariables = new LinkedList<VariableElement>(scanner.selectionWrittenLocalVariables);
@@ -738,9 +741,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         public Void visitVariable(VariableTree node, Void p) {
             Element e = info.getTrees().getElement(getCurrentPath());
             
-            if (e != null) {
-                assert LOCAL_VARIABLES.contains(e.getKind());
-
+            if (e != null && LOCAL_VARIABLES.contains(e.getKind())) {
                 switch (phase) {
                     case PHASE_BEFORE_SELECTION:
                         localVariables.add((VariableElement) e);
@@ -1415,6 +1416,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     final TreeMaker make = copy.getTreeMaker();
                     
                     for (String name : parameterNames) {
+                        name = name.startsWith("!") ? name.substring(1) : name;
                         realArguments.add(make.Identifier(name));
                     }
                     
@@ -1542,8 +1544,15 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         }
                         
                         Tree type = make.Type(tm);
+                        String formalArgName = argName.next();
+                        Set<Modifier> formalArgMods = EnumSet.noneOf(Modifier.class);
                         
-                        formalArguments.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), argName.next(), type, null));
+                        if (formalArgName.startsWith("!")) {
+                            formalArgName = formalArgName.substring(1);
+                            formalArgMods.add(Modifier.FINAL);
+                        }
+                        
+                        formalArguments.add(make.Variable(make.Modifiers(formalArgMods), formalArgName, type, null));
                     }
                     
                     List<ExpressionTree> thrown = new LinkedList<ExpressionTree>();
