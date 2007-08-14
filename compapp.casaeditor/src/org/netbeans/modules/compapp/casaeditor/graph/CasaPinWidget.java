@@ -216,7 +216,4 @@ public abstract class CasaPinWidget extends Widget {
         return buffImage;
     }
     
-    public void setToolTip(String strValue) {
-        //setToolTipText(strValue);
-    }
 }

@@ -57,11 +57,7 @@ public class CasaPinWidgetBinding extends CasaPinWidget {
     protected void setPinName(String name) {
         // do nothing
     }
-    
-    public void setToolTip(String strValue) {
-        mImageWidget.setToolTipText(strValue);
-    }
-    
+   
     public Anchor getAnchor() {
         return RegionUtilities.createFixedDirectionalAnchor(this, Directions.RIGHT, 0);
     }

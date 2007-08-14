@@ -233,7 +233,7 @@ public class CasaDesignModelListener implements PropertyChangeListener {
             CasaPinWidget pinWidget = (CasaPinWidget) widget;
             CasaEndpointRef endpointRef = (CasaEndpointRef) component;
             pinWidget.setProperties(endpointRef.getEndpointName());
-            pinWidget.setToolTip(CasaModelGraphUtilities.getToolTipName(endpointRef.getParent(), endpointRef, mScene.getModel()));
+            pinWidget.setToolTipText(CasaModelGraphUtilities.getToolTipName(endpointRef.getParent(), endpointRef, mScene.getModel()));
             
         } else if (widget instanceof CasaNodeWidgetBinding) {
             CasaNodeWidgetBinding portWidget = (CasaNodeWidgetBinding) widget;
@@ -248,7 +248,7 @@ public class CasaDesignModelListener implements PropertyChangeListener {
         if (widget instanceof CasaPinWidget) {
             CasaPinWidget pinWidget = (CasaPinWidget) widget;
             CasaEndpointRef endpointRef = (CasaEndpointRef) component;
-            pinWidget.setToolTip(CasaModelGraphUtilities.getToolTipName(endpointRef.getParent(), endpointRef, mScene.getModel()));
+            pinWidget.setToolTipText(CasaModelGraphUtilities.getToolTipName(endpointRef.getParent(), endpointRef, mScene.getModel()));
         }
     }
     

@@ -329,7 +329,7 @@ public class CasaModelGraphUtilities {
     {
         CasaPinWidget pinWidget = (CasaPinWidget) scene.addPin(node, pin);
         pinWidget.setProperties(name);
-        pinWidget.setToolTip(getToolTipName(node, pin, scene.getModel()));
+        pinWidget.setToolTipText(getToolTipName(node, pin, scene.getModel()));
 
         if (doUpdate) {
             scene.validate();
