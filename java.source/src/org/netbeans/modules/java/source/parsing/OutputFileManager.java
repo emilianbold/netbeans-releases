@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.JavaFileObject;
@@ -36,6 +37,14 @@ import org.openide.filesystems.FileUtil;
  * @author Tomas Zezula
  */
 public class OutputFileManager extends CachingFileManager {
+    
+    
+    /**
+     * Exception used to signal that the sourcepath is broken (project is deleted)
+     */
+    public class InvalidSourcePath extends IllegalStateException {
+        
+    }
 
     private static boolean debug = Boolean.getBoolean("org.netbeans.modules.java.source.parsing.OutputFileManager.debug");      //NOI18N
 
@@ -56,13 +65,17 @@ public class OutputFileManager extends CachingFileManager {
         if (kind != JavaFileObject.Kind.CLASS) {
             throw new IllegalArgumentException ();
         }
-        else {	                            
+        else { 
             int index;
             if (sibling != null) {
                 index = getActiveRoot (sibling);
             }
             else {
                 index = getActiveRoot (FileObjects.convertPackage2Folder(className));
+            }            
+            if (index == -1) {
+                //Deleted project
+                throw new InvalidSourcePath ();
             }
             assert index >= 0 : "class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: "  + this.cp;
             assert index < this.cp.entries().size() : "index "+ index +" class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: " + this.cp;
@@ -90,6 +103,10 @@ public class OutputFileManager extends CachingFileManager {
             throw new IllegalArgumentException ("sibling == null");
         }        
         final int index = getActiveRoot (sibling);
+        if (index == -1) {
+            //Deleted project
+            throw new InvalidSourcePath ();
+        }
         assert index >= 0 && index < this.cp.entries().size();
         File activeRoot = new File (URI.create(this.cp.entries().get(index).getURL().toExternalForm()));
         File folder;
@@ -111,17 +128,22 @@ public class OutputFileManager extends CachingFileManager {
         
     
     private int getActiveRoot (final javax.tools.FileObject file) throws IOException {
-        if (this.scp.entries().size() == 1) {
+        List<ClassPath.Entry> entries = this.scp.entries();
+        int eSize = entries.size();
+        if ( eSize == 1) {
             return 0;
+        }        
+        if (eSize == 0) {
+            return -1;
         }
-        Iterator<ClassPath.Entry> it = this.scp.entries().iterator();
+        Iterator<ClassPath.Entry> it = entries.iterator();
         for (int i = 0; it.hasNext(); i++) {
             URL rootUrl = it.next().getURL();
             if (isParentOf(rootUrl, file.toUri().toURL())) {
                 return i;
             }
         }
-        return -1;
+        return -2;
     }
     
     private boolean isParentOf (URL folder, final URL file) throws IOException {
@@ -130,8 +152,13 @@ public class OutputFileManager extends CachingFileManager {
     }
     
     private int getActiveRoot (String baseName) {
-        if (this.scp.entries().size() == 1) {
+        List<ClassPath.Entry> entries = this.scp.entries();
+        int eSize = entries.size();
+        if (eSize == 1) {
             return 0;
+        }
+        if (eSize == 0) {
+            return -1;
         }
         String name, parent = null;
 	int index = baseName.lastIndexOf('/');              //NOI18N        
@@ -146,7 +173,7 @@ public class OutputFileManager extends CachingFileManager {
 	if (index > 0) {
 	    name = name.substring(0,index);
 	}
-        Iterator<ClassPath.Entry> it = this.scp.entries().iterator();
+        Iterator<ClassPath.Entry> it = entries.iterator();
         for (int i=0; it.hasNext(); i++) {            
             FileObject root = it.next().getRoot();
             if (root != null) {
@@ -158,7 +185,7 @@ public class OutputFileManager extends CachingFileManager {
                 }
             }
         }        
-	return -1;
+	return -2;
     }
     
     private static boolean debug (String message) {

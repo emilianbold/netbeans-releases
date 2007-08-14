@@ -70,6 +70,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -160,6 +161,8 @@ public class SourceAnalyser {
                 }            
             }
             this.index.store(this.references, topLevels);
+        } catch (OutputFileManager.InvalidSourcePath e) {
+            //Deleted project, ignore
         } finally {
             this.references.clear();
         }
