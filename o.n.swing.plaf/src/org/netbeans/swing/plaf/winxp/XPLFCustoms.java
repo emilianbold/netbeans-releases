@@ -78,6 +78,11 @@ public final class XPLFCustoms extends LFCustoms {
             
         tahomaWarning();    
             
+        String version = System.getProperty("java.version");
+        if( version.startsWith("1.5") ) {
+            //#112473 - wrong password text field height
+            UIManager.put("PasswordField.font", UIManager.get("TextField.font") );
+        }
         return result;
     }
 

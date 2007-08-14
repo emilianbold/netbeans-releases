@@ -46,6 +46,12 @@ public final class WindowsLFCustoms extends LFCustoms {
             fontsize = in.intValue();
         }
         
+        String version = System.getProperty("java.version");
+        if( version.startsWith("1.5") ) {
+            //#112473 - wrong password text field height
+            UIManager.put("PasswordField.font", UIManager.get("TextField.font") );
+        }
+        
         return new Object[] {
             //Workaround for help window selection color
             "EditorPane.selectionBackground", new Color(157, 157, 255), //NOI18N
