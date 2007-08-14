@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
                         <mkdir dir="${{build.generated.dir}}/wsimport/binaries"/>
                     </xsl:if>
                     <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-                        <classpath path="${{libs.jaxws20.classpath}}"/>
+                        <classpath path="${{libs.jaxws21.classpath}}"/>
                     </taskdef>
                 </target>
             </xsl:if>
@@ -129,8 +129,8 @@ Microsystems, Inc. All Rights Reserved.
                 </target>
                 
                 <target name="wsimport-client-compile" depends="-pre-pre-compile">
-                    <j2seproject3:depend srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws20.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
-                    <j2seproject3:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws20.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
+                    <j2seproject3:depend srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws21.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
+                    <j2seproject3:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws21.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
                 </target>
                 
             </xsl:if>

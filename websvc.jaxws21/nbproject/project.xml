@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.netbeans.modules.websvc.jaxws21</code-name-base>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.jaxws21api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <friend-packages>
+                <friend>org.netbeans.modules.aspect.editor</friend>
+                <friend>org.netbeans.modules.compapp.projects.jbi</friend>
+                <friend>org.netbeans.modules.deployment.deviceanywhere</friend>
+                <friend>org.netbeans.modules.identity.profile.api</friend>
+                <friend>org.netbeans.modules.jaxb.project</friend>
+                <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
+                <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
+                <package>com.sun.tools.ws.processor</package>
+                <package>com.sun.tools.ws.processor.generator</package>
+                <package>com.sun.tools.ws.processor.model</package>
+                <package>com.sun.tools.ws.processor.model.exporter</package>
+                <package>com.sun.tools.ws.processor.model.java</package>
+                <package>com.sun.tools.ws.processor.model.jaxb</package>
+                <package>com.sun.tools.ws.processor.modeler</package>
+                <package>com.sun.tools.ws.processor.modeler.annotation</package>
+                <package>com.sun.tools.ws.processor.modeler.wsdl</package>
+                <package>com.sun.tools.ws.processor.util</package>
+                <package>com.sun.tools.ws.util.xml</package>
+                <package>com.sun.tools.ws.wscompile</package>
+                <package>com.sun.tools.ws.wsdl.document.soap</package>
+                <package>com.sun.tools.xjc</package>
+                <package>com.sun.tools.xjc.addon.at_generated</package>
+                <package>com.sun.tools.xjc.addon.code_injector</package>
+                <package>com.sun.tools.xjc.addon.locator</package>
+                <package>com.sun.tools.xjc.addon.sync</package>
+                <package>com.sun.tools.xjc.api</package>
+                <package>com.sun.tools.xjc.api.impl.j2s</package>
+                <package>com.sun.tools.xjc.api.impl.s2j</package>
+                <package>com.sun.tools.xjc.api.util</package>
+                <package>com.sun.tools.xjc.generator.annotation.ri</package>
+                <package>com.sun.tools.xjc.generator.annotation.spec</package>
+                <package>com.sun.tools.xjc.generator.bean</package>
+                <package>com.sun.tools.xjc.generator.bean.field</package>
+                <package>com.sun.tools.xjc.generator.util</package>
+                <package>com.sun.tools.xjc.model</package>
+                <package>com.sun.tools.xjc.model.nav</package>
+                <package>com.sun.tools.xjc.outline</package>
+                <package>com.sun.tools.xjc.reader</package>
+                <package>com.sun.tools.xjc.reader.dtd</package>
+                <package>com.sun.tools.xjc.reader.dtd.bindinfo</package>
+                <package>com.sun.tools.xjc.reader.internalizer</package>
+                <package>com.sun.tools.xjc.reader.relaxng</package>
+                <package>com.sun.tools.xjc.reader.xmlschema</package>
+                <package>com.sun.tools.xjc.reader.xmlschema.bindinfo</package>
+                <package>com.sun.tools.xjc.reader.xmlschema.ct</package>
+                <package>com.sun.tools.xjc.reader.xmlschema.parser</package>
+                <package>com.sun.tools.xjc.runtime</package>
+                <package>com.sun.tools.xjc.util</package>
+                <package>com.sun.tools.xjc.writer</package>
+                <package>com.sun.xml.bind</package>
+                <package>com.sun.xml.bind.annotation</package>
+                <package>com.sun.xml.bind.api</package>
+                <package>com.sun.xml.bind.api.impl</package>
+                <package>com.sun.xml.bind.marshaller</package>
+                <package>com.sun.xml.bind.unmarshaller</package>
+                <package>com.sun.xml.bind.util</package>
+                <package>com.sun.xml.bind.v2</package>
+                <package>com.sun.xml.bind.v2.bytecode</package>
+                <package>com.sun.xml.bind.v2.model.annotation</package>
+                <package>com.sun.xml.bind.v2.model.core</package>
+                <package>com.sun.xml.bind.v2.model.impl</package>
+                <package>com.sun.xml.bind.v2.model.nav</package>
+                <package>com.sun.xml.bind.v2.model.runtime</package>
+                <package>com.sun.xml.bind.v2.runtime</package>
+                <package>com.sun.xml.bind.v2.runtime.output</package>
+                <package>com.sun.xml.bind.v2.runtime.property</package>
+                <package>com.sun.xml.bind.v2.runtime.reflect</package>
+                <package>com.sun.xml.bind.v2.runtime.reflect.opt</package>
+                <package>com.sun.xml.bind.v2.runtime.unmarshaller</package>
+                <package>com.sun.xml.bind.v2.schemagen</package>
+                <package>com.sun.xml.bind.v2.schemagen.episode</package>
+                <package>com.sun.xml.bind.v2.schemagen.xmlschema</package>
+                <package>com.sun.xml.bind.v2.util</package>
+                <package>com.sun.xml.messaging.saaj.soap</package>
+                <package>com.sun.xml.stream</package>
+                <package>com.sun.xml.ws</package>
+                <package>com.sun.xml.ws.api</package>
+                <package>com.sun.xml.ws.api.addressing</package>
+                <package>com.sun.xml.ws.api.message</package>
+                <package>com.sun.xml.ws.developer</package>
+                <package>com.sun.xml.ws.encoding.soap</package>
+                <package>com.sun.xml.ws.encoding.soap.streaming</package>
+                <package>com.sun.xml.ws.spi</package>
+                <package>com.sun.xml.ws.util</package>
+                <package>com.sun.xml.ws.util.exception</package>
+                <package>com.sun.xml.ws.util.localization</package>
+                <package>com.sun.xml.ws.util.xml</package>
+                <package>javax.activation</package>
+            </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxws21/jaxws-tools.jar</runtime-relative-path>
+                <binary-origin>build/external/jaxws21/jaxws-tools.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxws21/jaxws-rt.jar</runtime-relative-path>
+                <binary-origin>build/external/jaxws21/jaxws-rt.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxws21/jaxb-xjc.jar</runtime-relative-path>
+                <binary-origin>build/external/jaxws21/jaxb-xjc.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxws21/jaxb-impl.jar</runtime-relative-path>
+                <binary-origin>build/external/jaxws21/jaxb-impl.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxws21/activation.jar</runtime-relative-path>
+                <binary-origin>build/external/jaxws21/activation.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxws21/sjsxp.jar</runtime-relative-path>
+                <binary-origin>build/external/jaxws21/sjsxp.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxws21/streambuffer.jar</runtime-relative-path>
+                <binary-origin>build/external/jaxws21/streambuffer.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxws21/stax-ex.jar</runtime-relative-path>
+                <binary-origin>build/external/jaxws21/stax-ex.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxws21/saaj-impl.jar</runtime-relative-path>
+                <binary-origin>build/external/jaxws21/saaj-impl.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

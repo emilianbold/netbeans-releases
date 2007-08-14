@@ -71,17 +71,17 @@ public class WebProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*im
         FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); // NOI18N
         
         if (wsimportFO == null) {
-            //Add the jaxws20 library to the project to be packed with the archive
+            //Add the jaxws21 library to the project to be packed with the archive
             ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
-            Library jaxws20_ext = LibraryManager.getDefault().getLibrary("jaxws20"); //NOI18N
-            if ((pce!=null) && (jaxws20_ext != null)) {
+            Library jaxws21_ext = LibraryManager.getDefault().getLibrary("jaxws21"); //NOI18N
+            if ((pce!=null) && (jaxws21_ext != null)) {
                 try{
-                pce.addLibrary(jaxws20_ext);
+                pce.addLibrary(jaxws21_ext);
                 }catch(IOException e){
-                    throw new Exception("Unable to add JAXWS 2.0 library", e.getCause());
+                    throw new Exception("Unable to add JAXWS 2.1 library", e.getCause());
                 } 
             } else {
-                throw new Exception("Unable to add JAXWS 2.0 Library. " +
+                throw new Exception("Unable to add JAXWS 2.1 Library. " +
                         "ProjectClassPathExtender or library not found");
             }
         }

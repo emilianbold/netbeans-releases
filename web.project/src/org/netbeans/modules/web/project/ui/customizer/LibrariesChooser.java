@@ -177,8 +177,8 @@ public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Prov
             filter13.add(LibraryManager.getDefault().getLibrary("jaxrpc16"));
             filter13.add(LibraryManager.getDefault().getLibrary("toplink"));
             filter13.add(LibraryManager.getDefault().getLibrary("Spring"));
-            filter13.add(LibraryManager.getDefault().getLibrary("jaxws20"));
-            filter13.add(LibraryManager.getDefault().getLibrary("jaxb20"));
+            filter13.add(LibraryManager.getDefault().getLibrary("jaxws21"));
+            filter13.add(LibraryManager.getDefault().getLibrary("jaxb21"));
             filter13.add(LibraryManager.getDefault().getLibrary("struts"));
             filter13.add(LibraryManager.getDefault().getLibrary("jsf"));
         }

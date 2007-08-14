@@ -769,7 +769,7 @@ introduced by support for multiple source roots. -jglick
                          sourcedestdir="${{build.generated.dir}}/rest-gen">
                     <classpath>
                         <path path="${{javac.classpath}}"/>
-                        <path path="${{libs.jaxws20.classpath}}"/>
+                        <path path="${{libs.jaxws21.classpath}}"/>
                         <path path="${{j2ee.platform.classpath}}"/>
                         <pathelement location="${{build.web.dir}}/WEB-INF/classes"/>
                     </classpath>

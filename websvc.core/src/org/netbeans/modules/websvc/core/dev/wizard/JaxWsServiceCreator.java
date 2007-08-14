@@ -192,7 +192,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 wsName = getUniqueJaxwsName(jaxWsSupport, wsName);
                 handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_WS"), 50); //NOI18N
                 //add the JAXWS 2.0 library, if not already added
-                if (addJaxWsLib) addJaxws20Library(projectInfo.getProject());
+                if (addJaxWsLib) addJaxws21Library(projectInfo.getProject());
                 generateJaxWSImplFromTemplate(pkg, wsName, projectType);
                 handle.finish();
                 return;
@@ -268,7 +268,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         return truename;
     }
     
-    private void addJaxws20Library(Project project) throws Exception {
+    private void addJaxws21Library(Project project) throws Exception {
         
         // check if the wsimport class is already present - this means we don't need to add the library
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -279,15 +279,15 @@ public class JaxWsServiceCreator implements ServiceCreator {
         }
         
         ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
-        Library jaxws20_ext = LibraryManager.getDefault().getLibrary("jaxws20"); //NOI18N
-        if (pce != null && jaxws20_ext != null) {
+        Library jaxws21_ext = LibraryManager.getDefault().getLibrary("jaxws21"); //NOI18N
+        if (pce != null && jaxws21_ext != null) {
             try{
-                pce.addLibrary(jaxws20_ext);
+                pce.addLibrary(jaxws21_ext);
             } catch(IOException e){
-                throw new Exception("Unable to add JAXWS 2.0 Library. " + e.getMessage());
+                throw new Exception("Unable to add JAXWS 21 Library. " + e.getMessage());
             }
         } else{
-            throw new Exception("Unable to add JAXWS 2.0 Library. " +
+            throw new Exception("Unable to add JAXWS 2.1 Library. " +
                     "ProjectClassPathExtender or library not found");
         }
     }

@@ -91,9 +91,6 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
 
     public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
         
-        // add JAX-WS 2.0 library - now being called from the base class
-        //addJaxWs20Library();
-        
         // call the super.addServiceClient();
         String serviceIdeName = super.addServiceClient(clientName, wsdlUrl, packageName, false);
         
@@ -120,7 +117,7 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
         if (webServiceClass==null) {
             // add JAX-WS 2.0 if WsImport is not on classpath
             ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
-            Library jaxwslib = LibraryManager.getDefault().getLibrary("jaxws20"); //NOI18N
+            Library jaxwslib = LibraryManager.getDefault().getLibrary("jaxws21"); //NOI18N
             if ((pce!=null) && (jaxwslib != null)) {
                 try {
                     pce.addLibrary(jaxwslib);
