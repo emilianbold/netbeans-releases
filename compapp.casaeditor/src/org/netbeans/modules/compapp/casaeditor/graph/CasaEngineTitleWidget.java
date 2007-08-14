@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -39,6 +38,8 @@ import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.graph.actions.EditablePropertiesAction;
 import org.openide.util.Utilities;
 
 /**
@@ -95,6 +96,7 @@ public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
 
         mDeleteWidget = new ImageWidget(scene);
         mEditWidget = new ImageWidget(scene);
+        mEditWidget.getActions().addAction(new EditablePropertiesAction());
         mHideWidget= new ImageWidget(scene);
 
         mTitleWidget.addChild(mEditWidget);
