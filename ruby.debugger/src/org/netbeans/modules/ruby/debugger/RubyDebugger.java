@@ -55,10 +55,12 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     private static final String PATH_TO_CLASSIC_DEBUG_DIR;
     
     static {
+        String path = "ruby/debug-commons-0.9.4/classic-debug.rb"; // NOI18N
         File classicDebug = InstalledFileLocator.getDefault().locate(
-                "ruby/debug-commons-0.9.4/classic-debug.rb", "org.netbeans.modules.ruby.debugger", false); // NOI18N
-        assert classicDebug != null : "classic-debug.rb was found";
-        assert classicDebug.isFile() : "classic-debug.rb is regular file";
+                path, "org.netbeans.modules.ruby.debugger", false); // NOI18N
+        if (classicDebug == null || !classicDebug.isFile()) {
+            throw new IllegalStateException("Cannot locate classic debugger in NetBeans Ruby cluster (" + path + ')'); // NOI18N
+        }
         PATH_TO_CLASSIC_DEBUG_DIR = classicDebug.getParentFile().getAbsolutePath();
     }
     
