@@ -105,8 +105,13 @@ public final class PopupMenuAction extends WidgetAction.Adapter {
             if (popupMenu != null) {
                 JComponent view = widget.getScene ().getView ();
                 if (view != null) {
-                    Rectangle visibleRect = view.getVisibleRect ();
-                    popupMenu.show (view, visibleRect.x + 10, visibleRect.y + 10);
+//                    Rectangle visibleRect = view.getVisibleRect ();
+//                    popupMenu.show (view, visibleRect.x + 10, visibleRect.y + 10);
+                    Rectangle bounds = widget.getBounds ();
+                    Point location = new Point (bounds.x + 5, bounds.y + 5);
+                    location = widget.convertLocalToScene (location);
+                    location = widget.getScene ().convertSceneToView (location);
+                    popupMenu.show (view, location.x, location.y);
                 }
             }
             return State.CONSUMED;
