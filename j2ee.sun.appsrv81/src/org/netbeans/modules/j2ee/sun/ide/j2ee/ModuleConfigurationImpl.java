@@ -48,7 +48,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanCon
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -320,14 +319,13 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
                 DeploymentManager dm = getDeploymentManager(p);
                 if (null == dm) {
                     addExtension = false;
-                }
-                if (dm instanceof SunDeploymentManagerInterface) {
+                } else if (dm instanceof SunDeploymentManagerInterface) {
                     SunDeploymentManagerInterface sdmi =
                             (SunDeploymentManagerInterface) dm;
                     if (ServerLocationManager.getAppServerPlatformVersion(sdmi.getPlatformRoot()) < ServerLocationManager.GF_V2) {
                         addExtension = false;
                     }
-                } else {
+                } else { // null != dm && ! (dm instanceof SunDeploymentManagerInterface) 
                     // remove the extension  -- the project isn't targeted
                     // for us anymore
                     addExtension = false;
@@ -359,10 +357,10 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
                 if(ip != null) {
                     dm = ip.getDeploymentManager();
                 } else {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null Server InstanceProperties"));
+                    Logger.getLogger(ModuleConfigurationImpl.class.getName()).finer("Null Server InstanceProperties");
                 }
             } else {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("Null J2eeModuleProvider"));
+                Logger.getLogger(ModuleConfigurationImpl.class.getName()).finer("Null J2eeModuleProvider");
             }
             return dm;
         }
