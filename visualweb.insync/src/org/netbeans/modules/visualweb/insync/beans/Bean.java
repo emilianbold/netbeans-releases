@@ -32,7 +32,6 @@ import com.sun.rave.designtime.DesignBean;
 import org.netbeans.modules.visualweb.insync.java.Method;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
-import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.filesystems.FileObject;
 
@@ -282,14 +281,23 @@ public class Bean extends BeansNode {
             //System.err.println("B.setName " + oldname + "=>" + name);
             name = newname;
             List<FileObject> fObjs = new ArrayList<FileObject>();
-            FileObject currentFObj = ((FacesModel)unit.getModel()).getJavaFile();
-            fObjs.add(currentFObj);
-            FacesModel[] models = ((FacesModelSet)unit.getModel().getOwner()).getFacesModels();
-            for (int i=0; i < models.length; i++) {
-                if(currentFObj != models[i].getJavaFile()) {
-                    fObjs.add(models[i].getJavaFile());
+            FacesModel currentModel = (FacesModel)unit.getModel();
+            fObjs.add(currentModel.getJavaFile());
+            if (!currentModel.isPageBean()) {
+                //In case of non-page beans, it is necessary to update the property 
+                //binding expression and accessor methods in lesser scoped beans
+                FacesModel[] models = ((FacesModelSet) currentModel.getOwner()).getFacesModels();
+                for (int i = 0; i < models.length; i++) {
+                    FileObject fObj = models[i].getJavaFile();
+                    //If the faces model is not yet synced(because it may not be open), then
+                    //get the file object for java file via its corresponding jsp file
+                    if (fObj == null && (models[i].getFile() == models[i].getMarkupFile())) {
+                        fObj = FacesModel.getJavaForJsp(models[i].getFile());
+                    }
+                    fObjs.add(fObj);
                 }
             }
+
             unit.getThisClass().renameProperty(oldname, newname, fObjs);
         }
         return newname;
