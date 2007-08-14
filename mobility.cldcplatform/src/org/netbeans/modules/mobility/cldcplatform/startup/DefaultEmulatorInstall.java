@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -63,6 +64,47 @@ public class DefaultEmulatorInstall extends ModuleInstall {
     public void restored() {
         new LibraryConverter();
         installEmulators();
+        installDescriptors();
+    }
+
+    //new way of WTK2.5.2 installation - the old way should be removed after WTK 2.5.2 binaries integration
+    private void installDescriptors() {
+        FileObject descRoot = Repository.getDefault().getDefaultFileSystem().findResource("emulator-descriptor-inst"); //NOI18N
+        FileObject platformsFolder;
+        try {
+            platformsFolder = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot(), "Services/Platforms/org-netbeans-api-java-Platform"); // NOI18N
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+            return;
+        }
+        byte[] data = new byte[256];
+        if (descRoot != null) for (FileObject desc : descRoot.getChildren()) {
+            InputStream is = null;
+            OutputStreamWriter os = null;
+            FileLock fl = null;
+            File installRoot = FileUtil.toFile(desc);
+            if (installRoot.isFile() && (installRoot = installRoot.getParentFile()) != null && (installRoot = installRoot.getParentFile()) != null && (installRoot = installRoot.getParentFile()) != null && desc.getExt().equals("xml")) {
+                if (platformsFolder.getFileObject(desc.getNameExt()) != null) {
+                    ErrorManager.getDefault().log("Emulator description file already installed: " + installRoot.getAbsolutePath()); // NOI18N
+                } else try {    
+                    is = desc.getInputStream();
+                    StringBuffer sb = new StringBuffer(1024);
+                    int len;
+                    while ((len = is.read(data)) != -1) sb.append(new String(data, 0, len, "UTF-8")); //NOI18N
+                    FileObject fo = platformsFolder.createData(desc.getNameExt());
+                    fl = fo.lock();
+                    os = new OutputStreamWriter(fo.getOutputStream(fl), "UTF8"); //NOI18N
+                    os.write(MessageFormat.format(sb.toString(), new Object[]{XMLUtil.toAttributeValue(installRoot.getAbsolutePath())}));
+                    desc.delete();
+                } catch (Exception e) {
+                    ErrorManager.getDefault().notify(e);
+                } finally {
+                    if (is != null) try {is.close();} catch (IOException ioe) {}
+                    if (os != null) try {os.close();} catch (IOException ioe) {}
+                    if (fl != null && fl.isValid()) fl.releaseLock();
+                }
+            }
+        }
     }
     
     public void installEmulators() {
