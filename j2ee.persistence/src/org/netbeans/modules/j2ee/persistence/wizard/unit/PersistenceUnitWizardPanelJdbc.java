@@ -29,14 +29,9 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
-import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
-import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
@@ -48,22 +43,24 @@ import org.openide.util.NbBundle;
  */
 public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
     
-    private Project project;
-    
     public PersistenceUnitWizardPanelJdbc(Project project, ChangeListener changeListener,  boolean editName) {
         this(project, changeListener, editName, TableGeneration.CREATE);
     }
     
     public PersistenceUnitWizardPanelJdbc(Project project, ChangeListener changeListener,
             boolean editName, TableGeneration tg) {
+            
+        super(project);
         initComponents();
         setTableGeneration(tg);
-        this.project = project;
         
         PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
         comboHelper.connect(libraryCombo);
         
-        unitNameTextField.setText(ProjectUtils.getInformation(project).getName() + "PU"); //NOI18N
+        String name = getCandidateName();
+        unitNameTextField.setText(name);
+        unitNameTextField.setSelectionStart(0);
+        unitNameTextField.setSelectionEnd(name.length());
         // unit name editing is not available when adding first PU
         unitNameTextField.setVisible(editName);
         unitNameLabel.setVisible(editName);
@@ -172,26 +169,6 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
      */
     private boolean isNameValid() throws InvalidPersistenceXmlException{
         return isEmptyOrNull(getPersistenceUnitName()) ? false : isNameUnique();
-    }
-    
-    /**
-     * @see PersistenceUnitWizardPanel#isNameUnique
-     */
-    public boolean isNameUnique() throws InvalidPersistenceXmlException{
-        if (!ProviderUtil.persistenceExists(project)){
-            return true;
-        }
-        Persistence persistence = null;
-        PUDataObject pud = ProviderUtil.getPUDataObject(project);
-        persistence = pud.getPersistence();
-        
-        PersistenceUnit[] punits = persistence.getPersistenceUnit();
-        for (int i = 0; i < punits.length; i++) {
-            if (punits[i].getName().equals(getPersistenceUnitName())){
-                return false;
-            }
-        }
-        return true;
     }
     
     /**
