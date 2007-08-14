@@ -206,9 +206,9 @@ public class OperationWidget extends AbstractTitledWidget {
     protected void collapseWidget() {
         super.collapseWidget();
         if(buttons!=null && buttons.getParentWidget()!=null) {
-            getHeaderWidget().removeChild(buttons);
             buttons.removeChild(getExpanderWidget());
-            BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
+            getHeaderWidget().removeChild(buttons);
+            BorderLayout.addLayoutComponent(getHeaderWidget(), getExpanderWidget(), BorderLayout.Constraint.EAST);
         }
     }
 
