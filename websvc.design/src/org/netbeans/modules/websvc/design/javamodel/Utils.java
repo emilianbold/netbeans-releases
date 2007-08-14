@@ -66,7 +66,6 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.design.util.SourceUtils;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
@@ -672,7 +671,7 @@ public class Utils {
     
     public  static void invokeWsImport(Project project, final String serviceName) {
         if (project!=null) {
-            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+            FileObject buildImplFo = project.getProjectDirectory().getFileObject("nbproject/build-impl.xml");
             try {
                 ExecutorTask wsimportTask =
                         ActionUtils.runTarget(buildImplFo,
