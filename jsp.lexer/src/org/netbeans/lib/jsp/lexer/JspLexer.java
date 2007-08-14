@@ -180,7 +180,7 @@ public class JspLexer implements Lexer<JspTokenId> {
             int colonIndex = indexOf(tagName, ':');//NOI18N
             if(colonIndex != -1) {
                 CharSequence prefix = tagName.subSequence(0, colonIndex);
-                return jspParseData.isTagLibRegistered(prefix);
+                return jspParseData.isTagLibRegistered(prefix.toString());
             }
         }
         
