@@ -27,12 +27,14 @@
             <tocitem text="About Connection Pools" target="server_aboutdbconnect"/>
             <tocitem text="Registering a Server" target="server_register" />
             <tocitem text="Starting and Stopping a Server" target="server_start" />
+
+<!-- Commenting out deploying and removing topics, since web deploy topic is no longer in this help set
             <tocitem text="Deploying a Web Application" target="deploy_webapp" />
             <tocitem text="Deploying a Web Service" target="expose_ws" />
             <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
             <tocitem text="Deploying an EJB Module" target="deploy_ejb" />
             <tocitem text="Deploying an Enterprise Application" target="ent_app_deploy" />
-            <tocitem text="Removing an Application from a Server" target="server_remove" />
+            <tocitem text="Removing an Application from a Server" target="server_remove" />-->
             <tocitem text="Sun Java System Application Server Platform Edition" />
             <tocitem text="JBoss Application Server" >
                 <tocitem text="About the JBoss Application Server" target="about_jboss" />
@@ -41,7 +43,7 @@
                 <tocitem text="Registering a JBoss Application Server" target="registering_app_server_jboss" />
                 <tocitem text="Accessing the JBoss Application Server Utilities" target="management_console_app_server_jboss" />
                 <tocitem text="Setting Up a Connection Pool on the JBoss Application Server" target="datasource_app_server_jboss" />
-                <tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcat"/>
+              <!--  <tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcat"/>-->
             </tocitem>
             <tocitem text="BEA WebLogic Application Server">
                 <tocitem text="Registering a BEA WebLogic Server" target="registering_app_server_weblogic" />
