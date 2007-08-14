@@ -31,8 +31,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
-
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.xml.xam.Model;
@@ -113,7 +111,10 @@ public final class SearchAction extends NodeAction {
     return null;
   }
 
-  private static SchemaColumnsView getColumnView(Container container, String indent) {
+  private static SchemaColumnsView getColumnView(
+    Container container,
+    String indent)
+  {
 //out(indent + container.getClass().getName());
     if (container instanceof SchemaColumnsView) {
       return (SchemaColumnsView) container;
