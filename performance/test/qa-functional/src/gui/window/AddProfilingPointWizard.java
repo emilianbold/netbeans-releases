@@ -64,22 +64,26 @@ public class AddProfilingPointWizard  extends org.netbeans.performance.test.util
         new Action(menuPrefix+commandName,null).performMenu(); // NOI18N  
         ppointsPane = new TopComponentOperator(windowName);
         
-        
         addPointButton = new JButtonOperator(ppointsPane,new ComponentChooser() {
 
             public boolean checkComponent(Component component) {
-                if( ((JButton)component).getToolTipText() == "Add Profiling Point" ) //NOI18N
-                { 
-                    return true; 
-                }
-                    return false;
+
+	try{
+                if ( (((JButton)component).getToolTipText()).equals("Add Profiling Point") ) //NOI18N
+                      return true; 
+                else  return false;
+	} catch (java.lang.NullPointerException npe) {}
+
+             return false;
             }
 
             public String getDescription() {
                 return "Selecting button by tooltip";
             }
         });
+
     }
+
     public void prepare() {
         log(":: prepare");        
         
