@@ -94,7 +94,8 @@ public class MeasureDialogs  {
 //TODO failing after retouche integration        suite.addTest(new GotoClassDialog("measureTime", "Go To Class dialog open"));
         suite.addTest(new GotoLineDialog("measureTime", "Go to Line dialog open"));
 //TODO failing after retouche integration        suite.addTest(new AutoCommentWindow("measureTime", "Auto Comment Tool open"));
-        suite.addTest(new FindInSourceEditor("measureTime", "Find in Source Editor dialog open"));
+
+// no more find dialog        suite.addTest(new FindInSourceEditor("measureTime", "Find in Source Editor dialog open"));
         suite.addTest(new InternationalizeDialog("measureTime", "Internationalize dialog open"));
         
         suite.addTest(new AddServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
