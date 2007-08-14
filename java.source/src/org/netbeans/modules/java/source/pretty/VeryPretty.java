@@ -997,7 +997,7 @@ public final class VeryPretty extends JCTree.Visitor {
     public void visitNewArray(JCNewArray tree) {
 	if (tree.elemtype != null) {
 	    print("new ");
-	    int n = 1;
+	    int n = tree.elems != null ? 1 : 0;
 	    JCTree elemtype = tree.elemtype;
 	    while (elemtype.tag == JCTree.TYPEARRAY) {
 		n++;
@@ -1008,7 +1008,6 @@ public final class VeryPretty extends JCTree.Visitor {
 		print(cs.spaceWithinArrayInitBrackets() ? "[ " : "[");
 		printNoParenExpr(l.head);
 		print(cs.spaceWithinArrayInitBrackets() ? " ]" : "]");
-		n--;
 	    }
 	    while(--n >= 0) 
                 print(cs.spaceWithinArrayInitBrackets() ? "[ ]" : "[]");
