@@ -50,6 +50,7 @@ import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceMa
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.ProjectContextManager;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -523,20 +524,17 @@ public class DesignTimeDataSourceHelper {
             DatabaseSettingsImporter.getInstance().updateWebXml(currentProj, jdbcResources);
             
             // Support for Creator 2 projects and a hack - serverplugin not detecting datasources in project
-            if (jdbcResource == null && dynamicDataSources.length > 0) {
-                RequestedJdbcResource[] resources = null;
-                ArrayList <DataSourceInfo> dataSourcesInfo = DatabaseSettingsImporter.getInstance().getDataSourcesInfo();
-                Iterator it = dataSourcesInfo.iterator();
+            if ((JsfProjectUtils.getProjectVersion(currentProj).equals("2.0") || JsfProjectUtils.getProjectVersion(currentProj).equals("3.0")) && dynamicDataSources.length > 0) {
+                RequestedJdbcResource[] resources = null;                
                 DataSourceInfo dsInfo = null;
                 DesignTimeDataSourceService dataSourceService = null;
                 
                 for (String name : dynamicDataSources) {
+                    ArrayList<DataSourceInfo> dataSourcesInfo = DatabaseSettingsImporter.getInstance().getDataSourcesInfo();
+                    Iterator it = dataSourcesInfo.iterator();
                     while (it.hasNext()) {
                         dsInfo = (DataSourceInfo)it.next();
-                        if (name.equals(DS_SUBCTX + "/" + dsInfo.getName())) { // NOI18N
-                            
-                            
-                            
+                        if (name.equals(DS_SUBCTX + "/" + dsInfo.getName())) { // NOI18N                                                                                    
                             binding.put(name, new DesignTimeDataSource(null, false, dsInfo.getDriverClassName(),
                                     dsInfo.getUrl(), null, dsInfo.getUsername(), dsInfo.getPassword())) ;
                             
