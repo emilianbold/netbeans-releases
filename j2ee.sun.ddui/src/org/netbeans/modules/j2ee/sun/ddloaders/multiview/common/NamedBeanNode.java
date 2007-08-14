@@ -31,11 +31,9 @@ import org.netbeans.modules.j2ee.sun.ddloaders.multiview.CustomSectionNodePanel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
-import org.netbeans.modules.xml.multiview.ui.BoxPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -47,9 +45,19 @@ import org.openide.util.NbBundle;
  */
 public abstract class NamedBeanNode extends BaseSectionNode {
 
+    private static final String BOUND_ANNOTATION_ICON = 
+            "org/netbeans/modules/j2ee/sun/ddloaders/resources/BoundAnnotation.png"; // NOI18N
+    private static final String BOUND_STANDARD_ICON = 
+            "org/netbeans/modules/j2ee/sun/ddloaders/resources/BoundStandardDD.png"; // NOI18N
+    private static final String UNBOUND_DD_ICON = 
+            "org/netbeans/modules/j2ee/sun/ddloaders/resources/UnBoundDD.png"; // NOI18N
+    private static final String VIRTUAL_DD_ICON = 
+            "org/netbeans/modules/j2ee/sun/ddloaders/resources/VirtualDD.png"; // NOI18N
+            
     private DDBinding binding;
     private String beanNameProperty;
     private RemoveBeanAction removeBeanAction;
+    private CustomSectionNodePanel customSectionNodePanel;
 
     protected NamedBeanNode(final SectionNodeView sectionNodeView, final DDBinding binding, 
             final String beanNameProperty, final String iconBase, final ASDDVersion version) {
@@ -92,7 +100,33 @@ public abstract class NamedBeanNode extends BaseSectionNode {
         if(removeBeanAction != null && nodePanel.getHeaderButtons() == null) {
             nodePanel.setHeaderActions(new Action [] { removeBeanAction });
         }
+        if(nodePanel instanceof CustomSectionNodePanel) {
+            customSectionNodePanel = (CustomSectionNodePanel) nodePanel;
+            updateIcon();
+        }
         return nodePanel;
+    }
+    
+    public void updateIcon() {
+        if(customSectionNodePanel != null) {
+            String bindingIcon;
+            if(binding.isVirtual()) {
+                bindingIcon = VIRTUAL_DD_ICON;
+            } else if(binding.isBound()) {
+                if(binding.isAnnotated()) {
+                    bindingIcon = BOUND_ANNOTATION_ICON;
+                } else {
+                    bindingIcon = BOUND_STANDARD_ICON;
+                }
+            } else {
+                bindingIcon = UNBOUND_DD_ICON;
+            }
+
+            customSectionNodePanel.setTitleIcon(bindingIcon);
+        } else {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                    "CustomSectionNodePanel is null for " + this.getClass().getSimpleName()); // NOI18N
+        }
     }
     
     public DDBinding getBinding() {
@@ -105,6 +139,7 @@ public abstract class NamedBeanNode extends BaseSectionNode {
             if(parentNode instanceof NamedBeanGroupNode) {
                 NamedBeanGroupNode groupNode = (NamedBeanGroupNode) parentNode;
                 binding.clearVirtual();
+                updateIcon();
                 groupNode.addBean(binding.getSunBean());
                 
                 // If parent of this group is it's own named bean (ie EjbNode),

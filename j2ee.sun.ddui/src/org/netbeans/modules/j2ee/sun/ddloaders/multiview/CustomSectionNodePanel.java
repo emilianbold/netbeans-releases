@@ -19,6 +19,8 @@
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview;
 
 import java.awt.Dimension;
+import java.awt.Image;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 
@@ -35,6 +37,11 @@ public class CustomSectionNodePanel extends SectionNodePanel {
 
         setAlignmentX(LEFT_ALIGNMENT);
 //        setBorder(javax.swing.BorderFactory.createTitledBorder("custom section node panel"));
+    }
+    
+    public void setTitleIcon(String iconBase) {
+        Image iconImage = org.openide.util.Utilities.loadImage(iconBase, true);
+        getTitleButton().setIcon(iconImage != null ? new ImageIcon(iconImage) : null);
     }
 
 //    @Override
