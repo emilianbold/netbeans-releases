@@ -1568,8 +1568,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append(super.toString());
-            sb.append(" - generate");
+            sb.append("public "); //NOI18N
+            sb.append(setter ? "void" : typeName); //NOI18N
+            sb.append(' ');
+            sb.append(name);
+            sb.append('(');
+            if (setter) {
+                sb.append(typeName);
+                sb.append(' ');
+                sb.append(simpleName);
+            }
+            sb.append(") - generate"); //NOI18N
             return sb.toString();
         }
 
