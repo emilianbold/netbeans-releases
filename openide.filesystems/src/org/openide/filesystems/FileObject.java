@@ -36,6 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /** This is the base for all implementations of file objects on a filesystem.
@@ -541,7 +542,10 @@ public abstract class FileObject extends Object implements Serializable {
         FileLock fLock = null;
         try {
             fLock = lock();
+        } catch (FileAlreadyLockedException fax) {
+            return true;
         } catch (IOException ex) {
+            return false;
         } finally {
             if (fLock != null) {
                 fLock.releaseLock();
