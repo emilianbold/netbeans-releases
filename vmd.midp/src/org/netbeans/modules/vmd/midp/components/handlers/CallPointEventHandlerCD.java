@@ -76,6 +76,7 @@ public final class CallPointEventHandlerCD extends ComponentDescriptor {
                     section.getWriter ().write ("\n"); // NOI18N
                 }
             },
+                
             // delete
             DeleteDependencyPresenter.createDependentOnPropertyPresenter (PROP_CALL_POINT)
         );

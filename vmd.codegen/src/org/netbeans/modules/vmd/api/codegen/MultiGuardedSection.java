@@ -216,6 +216,11 @@ public final class MultiGuardedSection {
         return multiGuardedID.equals (objects[0])  &&  index == (Integer) objects[1];
     }
 
+    public static boolean matches (GuardedSection section, String multiGuardedID, String editableID) {
+        Object[] objects = parsePartOfMultiGuardedSection (section);
+        return multiGuardedID.equals (objects[0])  &&  editableID.equals (objects[2]);
+    }
+
     static GuardedSection findNextPartOfMultiGuardedSectionAfter (StyledDocument document, Object[] info) {
         GuardedSectionManager instance = GuardedSectionManager.getInstance (document);
         return CodeUtils.findSectionByPrefix (instance.getGuardedSections (), createSectionID ((String) info[0], (Integer) info[1] + 1, null));

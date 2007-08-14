@@ -19,17 +19,21 @@
 package org.netbeans.modules.vmd.midp.flow;
 
 import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDFactory;
+import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.vmd.api.flow.FlowEdgePresenter;
 import org.netbeans.modules.vmd.api.flow.visual.*;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
+import org.netbeans.modules.vmd.midp.actions.GoToSourceAction;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerCD;
 
+import javax.swing.*;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -168,7 +172,7 @@ public abstract class FlowEventHandlerEdgePresenter extends FlowEdgePresenter {
 
     }
 
-    public class EventHandlerEdgeDecoratorBehaviour implements FlowEdgeDescriptor.EdgeDecorator, FlowEdgeDescriptor.EdgeBehaviour {
+    public class EventHandlerEdgeDecoratorBehaviour implements FlowEdgeDescriptor.EdgeDecorator, FlowEdgeDescriptor.EdgeBehaviour, FlowDescriptor.EditActionBehaviour {
 
         public Widget create (FlowEdgeDescriptor descriptor, FlowScene scene) {
             VMDConnectionWidget widget = new VMDConnectionWidget (scene, VMDFactory.getNetBeans60Scheme ());
@@ -212,6 +216,19 @@ public abstract class FlowEventHandlerEdgePresenter extends FlowEdgePresenter {
                 DesignComponent eventSource = getSourceComponent ();
                 if (eventSource != null)
                     MidpDocumentSupport.updateEventHandlerFromTarget (eventSource, replacementDescriptor != null ? replacementDescriptor.getRepresentedComponent () : null);
+            }
+        }
+
+        public void edit (FlowDescriptor descriptor) {
+            Collection<? extends ActionsPresenter> presenters = descriptor.getRepresentedComponent ().getPresenters (ActionsPresenter.class);
+            for (ActionsPresenter presenter : presenters) {
+                for (Action action : presenter.getActions ()) {
+                    if (action instanceof GoToSourceAction) {
+                        if (action.isEnabled ())
+                            action.actionPerformed (null);
+                        return;
+                    }
+                }
             }
         }
 

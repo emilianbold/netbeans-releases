@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.midp.components.handlers;
 
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
@@ -25,6 +26,7 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPre
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.properties.PropertiesPresenterForwarder;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
+import org.netbeans.modules.vmd.midp.actions.SecondaryGoToSourcePresenter;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
@@ -32,7 +34,6 @@ import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 /**
  * @author David Kaspar
@@ -78,7 +79,9 @@ public final class EventHandlerCD extends ComponentDescriptor {
                     DesignComponent eventSource = getComponent ().readProperty (PROP_EVENT_SOURCE).getComponent ();
                     MidpDocumentSupport.updateEventHandlerWithNew (eventSource, null);
                 }
-            }
+            },
+            // general
+            SecondaryGoToSourcePresenter.createGoToSourceForwarderToSecondaryGoToSourceOfParent ()
         );
     }
 

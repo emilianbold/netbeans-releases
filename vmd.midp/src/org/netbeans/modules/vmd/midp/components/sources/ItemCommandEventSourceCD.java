@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.vmd.midp.components.sources;
 
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
@@ -25,18 +27,21 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.PropertiesPresenterForwarder;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
+import org.netbeans.modules.vmd.midp.actions.SecondaryGoToSourcePresenter;
+import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
+import org.netbeans.modules.vmd.midp.components.listeners.ItemCommandListenerCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowItemCommandPinOrderPresenter;
+import org.netbeans.modules.vmd.midp.screen.ItemCommandSRItemPresenter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.screen.ItemCommandSRItemPresenter;
 
 /**
  * @author David Kaspar
@@ -90,6 +95,12 @@ public final class ItemCommandEventSourceCD extends ComponentDescriptor {
             InfoPresenter.create(EventSourceSupport.createItemCommandEventSourceInfoResolver()),
             // general
             GoToSourcePresenter.createForwarder (PROP_COMMAND),
+            new SecondaryGoToSourcePresenter() {
+                protected boolean matches (GuardedSection section) {
+                    DesignComponent listener = MidpDocumentSupport.getCommandListener (getComponent ().getDocument (), ItemCommandListenerCD.TYPEID);
+                    return MultiGuardedSection.matches (section, listener.getComponentID () + "-itemCommandAction", getComponent ().getComponentID () + "-postAction"); // NOI18N
+                }
+            },
             //properties
             PropertiesPresenterForwarder.createByReference(PROP_COMMAND),
             //screen
