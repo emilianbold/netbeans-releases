@@ -34,12 +34,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
-
 import org.netbeans.modules.uml.reporting.dataobjects.DataObjectFactory;
 import org.netbeans.modules.uml.reporting.dataobjects.ElementDataObject;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -47,6 +45,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
@@ -60,7 +59,6 @@ import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeBuilderImpl;
-
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
@@ -487,102 +485,6 @@ public class ReportTask extends Thread implements Cancellable
     }
     
     
-//    private void copyImages()
-//    {
-//        File images = new File(getReportDir() + File.separator + "images");
-//        images.mkdirs();
-//        IConfigManager configMgr = ProductHelper.getConfigManager();
-//        if (configMgr != null)
-//        {
-//            String fromDir = configMgr.getDefaultConfigLocation();
-//            fromDir = fromDir + File.separator + "WebReportSupport" + File.separator + "Gif";
-//            
-//            File from = new File(fromDir);
-//            // Check that the from directory exists
-//            if (from.exists())
-//            {
-//                File[] gifFiles = from.listFiles();
-//                if (gifFiles != null)
-//                {
-//                    for (int x = 0; x < gifFiles.length; x++)
-//                    {
-//                        File gifFile = gifFiles[x];
-//                        if (gifFile != null)
-//                        {
-//                            UMLXMLManip.copyFile(gifFile.getAbsolutePath(),
-//                                    images+File.separator+gifFile.getName());
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-    
-    
-//    private void copyImages()
-//    {
-//        FileInputStream sourceFIS = null;
-//        FileOutputStream destFOS = null;
-//        
-//        String imagesFolder = 
-//            getReportDir() + File.separator + "images" + File.separator; // NOI18N
-//        
-//        File images = new File(imagesFolder);
-//        images.mkdirs();
-//        
-//        try
-//        {
-//            ImageUtil imageUtil = ImageUtil.instance();
-//            
-//            for (String filename: imageFilenames)
-//            {
-//                File imageFile = imageUtil.getImageFile(filename);
-//                
-//                if (imageFile != null)
-//                {
-//                    sourceFIS = new FileInputStream(imageFile);
-//                    
-//                    destFOS = new FileOutputStream(
-//                        new File(imagesFolder + filename));
-//                    
-//                    FileUtil.copy(sourceFIS, destFOS);
-//
-//                    sourceFIS.close();
-//                    destFOS.close();
-//                }
-//            }
-//        }
-//
-//
-//        catch (FileNotFoundException ex)
-//        {
-//            Exceptions.printStackTrace(ex);
-//        }
-//        
-//        catch (IOException ex)
-//        {
-//            Exceptions.printStackTrace(ex);
-//        }
-//
-//        
-//        finally
-//        {
-//            try
-//            {
-//                if (sourceFIS != null)
-//                    sourceFIS.close();
-//                
-//                if (destFOS != null)
-//                    destFOS.close();
-//            }
-//            
-//            catch (IOException ex2)
-//            {
-//                Exceptions.printStackTrace(ex2);
-//            }
-//        }
-//    }
-    
     public static void addToImageList(String imageFilename)
     {
         if (!imageFilenames.contains(imageFilename))
@@ -694,6 +596,10 @@ public class ReportTask extends Thread implements Cancellable
     
     public static String getPathToReportRoot(IElement element)
     {
+        // workaround for 100686, but association end should have its owner set to association object
+        if (element instanceof IAssociationEnd)
+            return getPathToReportRoot(((IAssociationEnd)element).getAssociation());
+        
         String path ="..";
         IPackage pkg = element.getOwningPackage();
         if (pkg == null)
@@ -706,7 +612,7 @@ public class ReportTask extends Thread implements Cancellable
         return path+"/";
     }
     
-    
+   
     public void processSummaryPages()
     {
         String projectName = m_CurrentProject.getName();
@@ -1031,7 +937,7 @@ public class ReportTask extends Thread implements Cancellable
     }
     
     
-    private class DisplayNameComparator implements Comparator
+    private static class DisplayNameComparator implements Comparator
     {
         
         private Comparator COLLATOR = Collator.getInstance();
