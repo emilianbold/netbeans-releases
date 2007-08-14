@@ -86,6 +86,7 @@ public final class RetrieveXMLResourceVisualPanel1 extends JPanel implements Doc
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         sourceTypeRadioButtonGroup = new javax.swing.ButtonGroup();
         sourceLabel = new javax.swing.JLabel();
         fromURLButton = new javax.swing.JRadioButton();
@@ -100,13 +101,14 @@ public final class RetrieveXMLResourceVisualPanel1 extends JPanel implements Doc
         tpLocationBrowseButton = new javax.swing.JButton();
         overwriteFiles = new javax.swing.JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(sourceLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("LBL_select_source"));
-        sourceLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("LBL_select_source"));
-        sourceLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("LBL_select_source"));
+        setName(org.openide.util.NbBundle.getMessage(RetrieveXMLResourceVisualPanel1.class, "LBL_step_description")); // NOI18N
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sourceLabel, bundle.getString("LBL_select_source")); // NOI18N
 
         sourceTypeRadioButtonGroup.add(fromURLButton);
         fromURLButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(fromURLButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("TXT_FromURLResource"));
+        org.openide.awt.Mnemonics.setLocalizedText(fromURLButton, bundle.getString("TXT_FromURLResource")); // NOI18N
         fromURLButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         fromURLButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         fromURLButton.addActionListener(new java.awt.event.ActionListener() {
@@ -114,9 +116,6 @@ public final class RetrieveXMLResourceVisualPanel1 extends JPanel implements Doc
                 fromURLButtonPressed(evt);
             }
         });
-
-        fromURLButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("TXT_FromURLResource"));
-        fromURLButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("TXT_FromURLResource"));
 
         URLFileLocationTextField.setText("http://");
         URLFileLocationTextField.setToolTipText(lfsSourceFileLocationTextField.getText());
@@ -127,12 +126,9 @@ public final class RetrieveXMLResourceVisualPanel1 extends JPanel implements Doc
             }
         });
 
-        URLFileLocationTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("TXT_FromURLResource"));
-        URLFileLocationTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("TXT_FromURLResource"));
-
         closureCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(closureCheckBox, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("LBL_closure_checkbox_label"));
-        closureCheckBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("TIP_retrieve_closure_tool_tip"));
+        org.openide.awt.Mnemonics.setLocalizedText(closureCheckBox, bundle.getString("LBL_closure_checkbox_label")); // NOI18N
+        closureCheckBox.setToolTipText(bundle.getString("TIP_retrieve_closure_tool_tip")); // NOI18N
         closureCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         closureCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         closureCheckBox.setVisible(false);
@@ -142,10 +138,8 @@ public final class RetrieveXMLResourceVisualPanel1 extends JPanel implements Doc
             }
         });
 
-        closureCheckBox.getAccessibleContext().setAccessibleDescription("Retrieve dependent files");
-
         sourceTypeRadioButtonGroup.add(fromLocalFileButton);
-        org.openide.awt.Mnemonics.setLocalizedText(fromLocalFileButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("TXT_FromLocalFileResource"));
+        org.openide.awt.Mnemonics.setLocalizedText(fromLocalFileButton, bundle.getString("TXT_FromLocalFileResource")); // NOI18N
         fromLocalFileButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         fromLocalFileButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         fromLocalFileButton.addActionListener(new java.awt.event.ActionListener() {
@@ -154,14 +148,9 @@ public final class RetrieveXMLResourceVisualPanel1 extends JPanel implements Doc
             }
         });
 
-        fromLocalFileButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("TXT_FromLocalFileResource"));
-        fromLocalFileButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("TXT_FromLocalFileResource"));
-
         lfsSourceFileLocationTextField.setEnabled(false);
-        lfsSourceFileLocationTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("TXT_FromLocalFileResource"));
-        lfsSourceFileLocationTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("TXT_FromLocalFileResource"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(lfsBrowseButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("LBL_source_browse"));
+        org.openide.awt.Mnemonics.setLocalizedText(lfsBrowseButton, bundle.getString("LBL_source_browse")); // NOI18N
         lfsBrowseButton.setEnabled(false);
         lfsBrowseButton.setNextFocusableComponent(tpLocationTextField);
         lfsBrowseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -170,13 +159,10 @@ public final class RetrieveXMLResourceVisualPanel1 extends JPanel implements Doc
             }
         });
 
-        lfsBrowseButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("A11Y_target_browse"));
-        lfsBrowseButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("A11Y_target_browse"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(targetLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("LBL_select_target"));
+        org.openide.awt.Mnemonics.setLocalizedText(targetLabel, bundle.getString("LBL_select_target")); // NOI18N
 
         tpLocationLabel.setLabelFor(tpLocationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(tpLocationLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("LBL_save_file_location"));
+        org.openide.awt.Mnemonics.setLocalizedText(tpLocationLabel, bundle.getString("LBL_save_file_location")); // NOI18N
 
         tpLocationTextField.setEditable(false);
         tpLocationTextField.setToolTipText(tpLocationTextField.getText());
@@ -187,24 +173,16 @@ public final class RetrieveXMLResourceVisualPanel1 extends JPanel implements Doc
             }
         });
 
-        tpLocationTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("LBL_save_file_location"));
-        tpLocationTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("LBL_save_file_location"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(tpLocationBrowseButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("LBL_target_browse"));
+        org.openide.awt.Mnemonics.setLocalizedText(tpLocationBrowseButton, bundle.getString("LBL_target_browse")); // NOI18N
         tpLocationBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 invokeFileChooserForTarget(evt);
             }
         });
 
-        tpLocationBrowseButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("A11Y_target_browse"));
-        tpLocationBrowseButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("A11Y_target_browse"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(overwriteFiles, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/schema/wizard/Bundle").getString("LBL_OVERWIRITE_FILES"));
+        org.openide.awt.Mnemonics.setLocalizedText(overwriteFiles, bundle.getString("LBL_OVERWIRITE_FILES")); // NOI18N
         overwriteFiles.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         overwriteFiles.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        overwriteFiles.getAccessibleContext().setAccessibleName("Overwrite files with same name.");
-        overwriteFiles.getAccessibleContext().setAccessibleDescription("Overwrite files with same name.");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -230,12 +208,12 @@ public final class RetrieveXMLResourceVisualPanel1 extends JPanel implements Doc
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(tpLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE))
                             .add(lfsSourceFileLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lfsBrowseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(tpLocationBrowseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(lfsBrowseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, Short.MAX_VALUE)
+                            .add(tpLocationBrowseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, Short.MAX_VALUE)))
                     .add(fromLocalFileButton))
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -264,6 +242,26 @@ public final class RetrieveXMLResourceVisualPanel1 extends JPanel implements Doc
                 .add(overwriteFiles)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        sourceLabel.getAccessibleContext().setAccessibleName(bundle.getString("LBL_select_source")); // NOI18N
+        sourceLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_select_source")); // NOI18N
+        fromURLButton.getAccessibleContext().setAccessibleName(bundle.getString("TXT_FromURLResource")); // NOI18N
+        fromURLButton.getAccessibleContext().setAccessibleDescription(bundle.getString("TXT_FromURLResource")); // NOI18N
+        URLFileLocationTextField.getAccessibleContext().setAccessibleName(bundle.getString("TXT_FromURLResource")); // NOI18N
+        URLFileLocationTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("TXT_FromURLResource")); // NOI18N
+        closureCheckBox.getAccessibleContext().setAccessibleDescription("Retrieve dependent files");
+        fromLocalFileButton.getAccessibleContext().setAccessibleName(bundle.getString("TXT_FromLocalFileResource")); // NOI18N
+        fromLocalFileButton.getAccessibleContext().setAccessibleDescription(bundle.getString("TXT_FromLocalFileResource")); // NOI18N
+        lfsSourceFileLocationTextField.getAccessibleContext().setAccessibleName(bundle.getString("TXT_FromLocalFileResource")); // NOI18N
+        lfsSourceFileLocationTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("TXT_FromLocalFileResource")); // NOI18N
+        lfsBrowseButton.getAccessibleContext().setAccessibleName(bundle.getString("A11Y_target_browse")); // NOI18N
+        lfsBrowseButton.getAccessibleContext().setAccessibleDescription(bundle.getString("A11Y_target_browse")); // NOI18N
+        tpLocationTextField.getAccessibleContext().setAccessibleName(bundle.getString("LBL_save_file_location")); // NOI18N
+        tpLocationTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_save_file_location")); // NOI18N
+        tpLocationBrowseButton.getAccessibleContext().setAccessibleName(bundle.getString("A11Y_target_browse")); // NOI18N
+        tpLocationBrowseButton.getAccessibleContext().setAccessibleDescription(bundle.getString("A11Y_target_browse")); // NOI18N
+        overwriteFiles.getAccessibleContext().setAccessibleName("Overwrite files with same name.");
+        overwriteFiles.getAccessibleContext().setAccessibleDescription("Overwrite files with same name.");
     }// </editor-fold>//GEN-END:initComponents
     
     private void fromURLButtonPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fromURLButtonPressed
