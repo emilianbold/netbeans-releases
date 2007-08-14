@@ -276,6 +276,9 @@ public final class StandardLogger extends AntLogger {
         event.consume();
         AntSession session = event.getSession();
         String line = event.getMessage();
+        if (line.equals("Trying to override old definition of task java") && event.getLogLevel() == AntEvent.LOG_WARN) { // NOI18N
+            return; // #56341
+        }
         ERR.log(Level.FINE, "Received message: {0}", line);
         if (line.indexOf('\n') != -1) {
             // Multiline message. Should be split into blocks and redelivered,

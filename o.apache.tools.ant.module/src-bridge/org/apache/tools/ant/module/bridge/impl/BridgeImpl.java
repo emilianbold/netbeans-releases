@@ -52,8 +52,6 @@ import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.bridge.BridgeInterface;
 import org.apache.tools.ant.module.bridge.IntrospectionHelperProxy;
-import org.apache.tools.ant.module.bridge.impl.NbBuildLogger;
-import org.apache.tools.ant.module.bridge.impl.NbInputHandler;
 import org.apache.tools.ant.types.EnumeratedAttribute;
 import org.apache.tools.ant.types.Path;
 import org.netbeans.api.progress.ProgressHandle;
@@ -174,6 +172,7 @@ public class BridgeImpl implements BridgeInterface {
             project = new Project();
             project.addBuildListener(logger);
             project.init();
+            project.addTaskDefinition("java", ForkedJavaOverride.class); // #56341
             try {
                 addCustomDefs(project);
             } catch (IOException e) {

@@ -733,7 +733,27 @@ public final class AntBridge {
         assert suspendedDelegationTasks.contains(t) : "Have not suspended delegation in " + t;
         suspendedDelegationTasks.remove(t);
     }
-    
+
+    public static synchronized InputStream delegateInputStream() {
+        Thread t = Thread.currentThread();
+        ThreadGroup tg = t.getThreadGroup();
+        while (tg != null && !delegateIns.containsKey(tg)) {
+            tg = tg.getParent();
+        }
+        InputStream is = delegateIns.get(tg);
+        return is != null ? is : origIn;
+    }
+
+    public static synchronized PrintStream delegateOutputStream(boolean err) {
+        Thread t = Thread.currentThread();
+        ThreadGroup tg = t.getThreadGroup();
+        while (tg != null && !delegateIns.containsKey(tg)) {
+            tg = tg.getParent();
+        }
+        PrintStream ps = (err ? delegateErrs : delegateOuts).get(tg);
+        return ps != null ? ps : (err ? origErr : origOut);
+    }
+
     private static final class MultiplexInputStream extends InputStream {
         
         public MultiplexInputStream() {}
