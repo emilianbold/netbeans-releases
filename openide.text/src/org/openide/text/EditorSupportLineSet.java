@@ -89,7 +89,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
                 editor = support.openAt(pos, column);
                 if (kind == SHOW_TOFRONT) editor.getComponent().toFront();
             }
-            if (kind != SHOW_TRY_SHOW) {
+            if (kind != SHOW_TRY_SHOW && kind != SHOW_SHOW) {
                 editor.getComponent().requestActive();
             }
         }
