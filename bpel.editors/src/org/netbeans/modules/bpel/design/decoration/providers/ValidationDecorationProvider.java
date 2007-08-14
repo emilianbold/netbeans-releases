@@ -134,9 +134,6 @@ public class ValidationDecorationProvider extends DecorationProvider
                             ComponentsDescriptor cd = new ComponentsDescriptor();
                             cd.add(showGlassPaneButton, ComponentsDescriptor.RIGHT_TB);
 
-                            // vlv
-                            cd.add(new javax.swing.JButton("!"), ComponentsDescriptor.RIGHT_TB);
-                            
                             StripeDescriptor sd = StripeDescriptor
                                     .createValidation(new_results);
                             
