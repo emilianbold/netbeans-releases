@@ -238,6 +238,7 @@ public class WSDLNavigatorContent extends JPanel
             } else if (TopComponent.Registry.PROP_ACTIVATED.equals(property) &&
                     isActivatedTC) {
                 tc.setActivatedNodes(getExplorerManager().getSelectedNodes());
+                repaint();
             }
         }
     }
