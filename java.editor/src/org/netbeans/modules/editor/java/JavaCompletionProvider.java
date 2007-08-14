@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.element.*;
+import org.netbeans.api.editor.EditorRegistry;
 import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.type.*;
@@ -46,7 +47,6 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.Registry;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -81,7 +81,7 @@ public class JavaCompletionProvider implements CompletionProvider {
     static CompletionTask createDocTask(ElementHandle element) {
         JavaCompletionQuery query = new JavaCompletionQuery(DOCUMENTATION_QUERY_TYPE, -1, true);
         query.element = element;
-        return new AsyncCompletionTask(query, Registry.getMostActiveComponent());
+        return new AsyncCompletionTask(query, EditorRegistry.lastFocusedComponent());
     }
     
     public static List<? extends CompletionItem> query(JavaSource source, int queryType, int offset, int substitutionOffset) throws IOException {
