@@ -213,12 +213,12 @@
                 <tocitem text="Configuring a Handler" target="configure_ws_soap_message" />
                 <tocitem text="Testing and Using a Handler" target="test_and_use_ws_soap_message" />
             </tocitem>
-             <tocitem text="Using JAXB" >
+             <tocitem text="JAXB" >
                 <tocitem text="About JAXB" target="about_jaxb" />
                 <tocitem text="Using the JAXB Wizard" target="jaxb_wizard" />
             </tocitem>
-               <tocitem text="Configuring WSIT">
-                   <tocitem text="About WSIT" target="org.netbeans.modules.websvc.wsitconf.about"/>
+               <tocitem text="Web Service Policies">
+                   <tocitem text="About Web Service Policies" target="org.netbeans.modules.websvc.wsitconf.about"/>
                    <tocitem text="Message Security">
                        <tocitem text="About Security for Web Services" target="org.netbeans.modules.websvc.wsitconf.about.security"/>
                        <tocitem text="About Security Policy for Web Services" target="org.netbeans.modules.websvc.wsitconf.about.security-policy"/> 
