@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -53,5 +53,9 @@ Microsystems, Inc. All Rights Reserved.
 <!--CSH nodes in Runtime window for DB drivers-->
 <mapID target="org.netbeans.modules.db.explorer.nodes.DriverNode" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
 <mapID target="org.netbeans.modules.db.explorer.nodes.DriverListNode" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
+
+<!--menu items-->
+<mapID target="org.netbeans.modules.derby.CreateDatabaseAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+<mapID target="org.netbeans.modules.derby.DerbySettingsAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
 
 </map>
