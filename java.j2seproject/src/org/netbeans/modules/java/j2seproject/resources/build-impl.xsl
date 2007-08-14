@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet version="1.0"
@@ -163,7 +163,10 @@ is divided into following sections:
                     </and>
                 </condition>
                 <condition property="no.javadoc.preview">
-                    <isfalse value="${{javadoc.preview}}"/>
+                    <and>
+                        <isset property="javadoc.preview"/>
+                        <isfalse value="${{javadoc.preview}}"/>
+                    </and>
                 </condition>
                 <property name="run.jvmargs" value=""/>
                 <property name="javac.compilerargs" value=""/>
