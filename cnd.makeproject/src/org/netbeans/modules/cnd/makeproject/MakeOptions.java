@@ -59,7 +59,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     
     static public MakeOptions getInstance() {
         if (instance == null) {
-            instance = (MakeOptions) SharedClassObject.findObject(MakeOptions.class, true);
+            instance = SharedClassObject.findObject(MakeOptions.class, true);
         }
         return instance;
     }
