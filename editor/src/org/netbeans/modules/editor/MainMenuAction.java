@@ -34,6 +34,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
@@ -770,6 +771,14 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         protected String getActionName () {
             return BaseKit.findSelectionAction;
         }
+
+        @Override
+        public boolean isEnabled() {
+            JTextComponent focused = EditorRegistry.focusedComponent();
+            return focused != null;
+        }
+        
+        
         
     } // end of FindSelectionAction
 
