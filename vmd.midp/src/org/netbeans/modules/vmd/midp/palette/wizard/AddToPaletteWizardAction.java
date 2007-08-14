@@ -44,6 +44,12 @@ public final class AddToPaletteWizardAction extends CallableSystemAction {
 
     private WizardDescriptor.Panel[] panels;
 
+
+    public AddToPaletteWizardAction () {
+        putValue (Action.NAME, NbBundle.getMessage (AddToPaletteWizardAction.class, "NAME_AddToPaletteWizard")); // NOI18N
+        putValue (Action.LONG_DESCRIPTION, NbBundle.getMessage (AddToPaletteWizardAction.class, "DESC_AddToPaletteWizard")); // NOI18N
+    }
+
     public void performAction() {
         DesignDocument document = ActiveDocumentSupport.getDefault ().getActiveDocument ();
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (document.getDocumentInterface ().getProjectType ()))
