@@ -510,7 +510,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
      */
     public final CountDownLatch scheduleCompilationAndWait (final FileObject folder, final FileObject root) throws IOException {
         CountDownLatch[] latch = new CountDownLatch[1];
-        submit(Work.compile (folder,root.getURL(),latch));
+        submit(Work.compile (folder,root.getURL(),latch,folder.equals(root)));
         open();
         return latch[0];
     }
@@ -796,19 +796,19 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         public static Work compile (final URL file, final URL root, boolean isFolder) {
             assert file != null && root != null;
-            return new SingleRootWork (WorkType.COMPILE, file, root, isFolder, null);
+            return new SingleRootWork (WorkType.COMPILE, file, root, isFolder, null,false);
         }
         
         public static Work compile (final URL file, final URL root, boolean isFolder, WorkType type) {
             assert file != null && root != null;
-            return new SingleRootWork (type, file, root, isFolder, null);
+            return new SingleRootWork (type, file, root, isFolder, null,false);
         }
         
-        public static Work compile (final FileObject file, final URL root, CountDownLatch[] latch) throws FileStateInvalidException {
+        public static Work compile (final FileObject file, final URL root, CountDownLatch[] latch, boolean isInitialCompilation) throws FileStateInvalidException {
             assert file != null && root != null;
             assert latch != null && latch.length == 1 && latch[0] == null;
             latch[0] = new CountDownLatch (1);
-            return new SingleRootWork (WorkType.COMPILE, file.getURL(), root, file.isFolder(),latch[0]);
+            return new SingleRootWork (WorkType.COMPILE, file.getURL(), root, file.isFolder(),latch[0], isInitialCompilation);
         }
         
         public static Work delete (final FileObject file, final URL root, final boolean isFolder) throws FileStateInvalidException {
@@ -817,7 +817,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         public static Work delete (final URL file, final URL root, final boolean isFolder) {
             assert file != null && root != null;
-            return new SingleRootWork (WorkType.DELETE, file, root, isFolder,null);
+            return new SingleRootWork (WorkType.DELETE, file, root, isFolder,null,false);
         }
         
         public static Work binary (final FileObject file, final URL root) throws FileStateInvalidException {
@@ -826,7 +826,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         public static Work binary (final URL file, final URL root, boolean isFolder) {
             assert file != null && root != null;
-            return new SingleRootWork (WorkType.UPDATE_BINARY, file, root, isFolder, null);
+            return new SingleRootWork (WorkType.UPDATE_BINARY, file, root, isFolder, null,false);
         }
         
         public static Work filterChange (final List<URL> roots, boolean forceClean) {
@@ -842,16 +842,18 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
     private static class SingleRootWork extends Work {
         
-        private URL file;
-        private URL root;
-        private boolean isFolder;
+        private final URL file;
+        private final URL root;
+        private final boolean isFolder;
+        private final boolean isInitialCompilation;
         
                 
-        public SingleRootWork (WorkType type, URL file, URL root, boolean isFolder, CountDownLatch latch) {
+        public SingleRootWork (WorkType type, URL file, URL root, boolean isFolder, CountDownLatch latch, boolean isInitialCompilation) {
             super (type, latch);           
             this.file = file;            
             this.root = root;
             this.isFolder = isFolder;
+            this.isInitialCompilation = isInitialCompilation;
         }
         
         public URL getFile () {
@@ -864,6 +866,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         public boolean isFolder () {            
             return this.isFolder;            
+        }
+        
+        public boolean isInitialCompilation () {
+            return this.isInitialCompilation;
         }
         
     }
@@ -1115,7 +1121,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Updating"));
                                     handle.start();
                                     try {
-                                        updateFolder (file, root, false, false, handle);
+                                        updateFolder (file, root, sw.isInitialCompilation(), false, handle);
                                     } finally {
                                         handle.finish();
                                     }
