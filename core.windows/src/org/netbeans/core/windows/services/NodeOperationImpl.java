@@ -193,7 +193,12 @@ public final class NodeOperationImpl extends NodeOperation {
         } else {
             d.setVisible( true );
             d.toFront();
-            d.requestFocusInWindow();
+            FocusTraversalPolicy ftp = d.getFocusTraversalPolicy();
+            if( null != ftp && null != ftp.getDefaultComponent(d) ) {
+                ftp.getDefaultComponent(d).requestFocusInWindow();
+            } else {
+                d.requestFocusInWindow();
+            }
         }
     }
 
@@ -209,7 +214,12 @@ public final class NodeOperationImpl extends NodeOperation {
         } else {
             d.setVisible( true );
             d.toFront();
-            d.requestFocusInWindow();
+            FocusTraversalPolicy ftp = d.getFocusTraversalPolicy();
+            if( null != ftp && null != ftp.getDefaultComponent(d) ) {
+                ftp.getDefaultComponent(d).requestFocusInWindow();
+            } else {
+                d.requestFocusInWindow();
+            }
         }
     }
     
