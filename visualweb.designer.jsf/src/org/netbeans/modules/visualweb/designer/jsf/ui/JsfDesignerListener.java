@@ -100,7 +100,6 @@ class JsfDesignerListener implements DesignerListener {
 //                    box = webform.getMapper().findBox(bean);
 //                    box = ModelViewMapper.findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
                     box = jsfTopComponent.getDesigner().findBoxForComponentRootElement(componentRootElement);
-
                     if (box != null) {
                         break;
                     }

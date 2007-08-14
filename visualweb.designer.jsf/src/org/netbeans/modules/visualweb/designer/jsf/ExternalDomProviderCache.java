@@ -99,6 +99,10 @@ class ExternalDomProviderCache {
     public void put(URL url, JsfForm page) {
         externals.put(url, page);
     }
+    
+    public void remove(URL url) {
+        externals.remove(url);
+    }
 
 //    /** Clear out the cache */
 //    public void flush() {

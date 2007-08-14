@@ -981,6 +981,11 @@ FacesDndSupport.UpdateSuspender {
             return false;
         }
         
+        // XXX #110845 It doesn't work for elements pointing to external forms (fragments, frames, etc.).
+        if (originalNode instanceof Element && isExternalElement((Element)originalNode)) {
+            return false;
+        }
+        
         if (originalNode.isEqualNode(newNode)) {
             return true;
         }
@@ -1069,6 +1074,17 @@ FacesDndSupport.UpdateSuspender {
         }
         
         return true;
+    }
+    
+    /** Determines whether the element represents external form (fragment, frame etc.). */
+    private static boolean isExternalElement(Element element) {
+        String tagName = element.getTagName();
+        if (HtmlTag.FSUBVIEW.name.equals(tagName)
+        || HtmlTag.JSPINCLUDE.name.equals(tagName)
+        || HtmlTag.IFRAME.name.equals(tagName)) {
+            return true;
+        }
+        return false;
     }
     
     private static Map<String, Attr> getAttributesMap(Element element) {

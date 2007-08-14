@@ -20,6 +20,7 @@
 package org.netbeans.modules.visualweb.css2;
 
 
+import java.awt.EventQueue;
 import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JViewport;
@@ -55,7 +56,7 @@ import org.w3c.dom.NodeList;
 public abstract class ExternalDocumentBox extends DocumentBox implements ExternalBox {
     /** Flag which indicates that this page wants to load the resource
      * via a url, and that we don't support it*/
-    protected boolean external;
+//    protected boolean external;
     private boolean haveCreatedChildren;
     private WebForm frameForm;
 
@@ -65,10 +66,11 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
      */
     private boolean layoutRoot;
 
-    protected ExternalDocumentBox(DesignerPane pane, WebForm frameForm, WebForm webform,
-        Element element, URL url, BoxType boxType, boolean inline, boolean replaced) {
+    protected ExternalDocumentBox(DesignerPane pane, /*WebForm frameForm,*/ WebForm webform,
+    Element element, /*URL url,*/ BoxType boxType, boolean inline, boolean replaced) {
         super(pane, webform, element, boxType, inline, replaced);
-        this.frameForm = frameForm;
+//        this.frameForm = frameForm;
+        this.frameForm = findExternalForm(webform, element);
     }
 
     // XXX Moved to designer/jsf/../JsfForm.
@@ -218,6 +220,7 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
 //    }
 
     protected void initializeBackgroundColor() {
+        WebForm frameForm = getExternalForm();
 //        if ((frameForm != null) && !frameForm.getModel().isBusted()) {
         if (frameForm != null && !frameForm.isModelBusted()) {
             // Use the pointed-to document's background colors
@@ -232,6 +235,7 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
     }
 
     protected void initializeBackgroundImage() {
+        WebForm frameForm = getExternalForm();
 //        if ((frameForm != null) && !frameForm.getModel().isBusted()) {
         if (frameForm != null && !frameForm.isModelBusted()) {
             // Use the pointed-to document's background colors
@@ -285,7 +289,9 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
         haveCreatedChildren = true;
 
         Element element = getElement();
-        if (external) {
+        WebForm frameForm = getExternalForm();
+//        if (external) {
+        if (frameForm == null) {
             String desc =
                 NbBundle.getMessage(ExternalDocumentBox.class, "UrlNotSupported", // NOI18N
                     getUrlString());
@@ -302,9 +308,9 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
             return;
         }
 
-        if (frameForm == null) {
-            return;
-        }
+//        if (frameForm == null) {
+//            return;
+//        }
 
         // We allow invalid forms to be shown when included in say <iframes>
         // But should I include some note about parsing errors???
@@ -490,14 +496,20 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
      * model for the included/referenced external document. May be null.
      */
     public WebForm getExternalForm() {
+        if (frameForm == null || !frameForm.isModelValid()) {
+            frameForm = findExternalForm(super.getWebForm(), getElement());
+        }
         return frameForm;
     }
 
     /** Redefine to return the <code>WebForm</code> for the content being shown
      * in the external document. That way JSF rendering etc. will use
      * the correct form.
+     * XXX This looks suspicious.
      */
+    @Override
     public WebForm getWebForm() {
+        WebForm frameForm = getExternalForm();
         if (frameForm != null) {
             return frameForm;
         }
@@ -509,4 +521,11 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
         WebForm externalForm = getExternalForm();
         return externalForm == null ? null : externalForm.getDomProvider();
     }
+    
+    protected WebForm findExternalForm(WebForm webform, Element element) {
+        URL src = getContentURL(webform, element); // TODO - check for null here!
+        return webform.findExternalForm(src);
+    }
+    
+    protected abstract URL getContentURL(WebForm webform, Element element);    
 }

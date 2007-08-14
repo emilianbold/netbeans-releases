@@ -45,9 +45,9 @@ import org.netbeans.modules.visualweb.designer.html.HtmlTag;
  */
 public class FrameBox extends ExternalDocumentBox {
     /** Use the "getFrameBox" factory method instead */
-    private FrameBox(WebForm frameForm, WebForm webform, Element element, URL url, BoxType boxType,
+    private FrameBox(/*WebForm frameForm,*/ WebForm webform, Element element, /*URL url,*/ BoxType boxType,
         boolean inline, boolean replaced) {
-        super(webform.getPane(), frameForm, webform, element, url, boxType, inline, replaced);
+        super(webform.getPane(), /*frameForm,*/ webform, element, /*url,*/ boxType, inline, replaced);
     }
 
     //private Element body;
@@ -55,21 +55,27 @@ public class FrameBox extends ExternalDocumentBox {
     /** Create a new framebox, or provide one from a cache */
     public static ContainerBox getFrameBox(CreateContext context, WebForm webform, Element element,
         BoxType boxType, HtmlTag tag, boolean inline) {
-        URL src = getContentURL(webform, element);
-        WebForm frameForm = null;
-
-        if (src != null) {
-//            frameForm = findForm(webform, src);
-            frameForm = webform.findExternalForm(src);
-        }
+//        URL src = getContentURL(webform, element);
+//        WebForm frameForm = null;
+//
+//        if (src != null) {
+////            frameForm = findForm(webform, src);
+//            frameForm = webform.findExternalForm(src);
+//        }
 
 //        boolean external = frameForm == WebForm.EXTERNAL;
-        boolean external = frameForm == null;
+//        boolean external = frameForm == null;
 
 //        if (frameForm == WebForm.EXTERNAL) {
 //            frameForm = null;
 //        }
 
+
+        FrameBox box =
+            new FrameBox(/*frameForm,*/ webform, element, /*src,*/ boxType, inline, tag.isReplacedTag());
+//        box.external = external;
+        
+        WebForm frameForm = box.getExternalForm();
         if (frameForm != null) {
             if (context.isVisitedForm(frameForm)) {
                 return new StringBox(webform, element, boxType,
@@ -80,10 +86,6 @@ public class FrameBox extends ExternalDocumentBox {
 //            //context.visitForm(frameForm);
 //            frameForm.setContextPage(webform);
         }
-
-        FrameBox box =
-            new FrameBox(frameForm, webform, element, src, boxType, inline, tag.isReplacedTag());
-        box.external = external;
 
         return box;
     }
@@ -97,7 +99,8 @@ public class FrameBox extends ExternalDocumentBox {
      * Return a URL for the frame content,
      * or null if it could not be determined.
      */
-    private static URL getContentURL(WebForm webform, Element element) {
+    @Override
+    protected URL getContentURL(WebForm webform, Element element) {
         String src = element.getAttribute(HtmlAttribute.SRC);
 
         if ((src == null) || (src.length() == 0)) {

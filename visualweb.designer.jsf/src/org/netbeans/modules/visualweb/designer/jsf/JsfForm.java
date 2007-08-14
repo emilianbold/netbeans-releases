@@ -2351,7 +2351,13 @@ public class JsfForm {
 
         JsfForm frameForm = cache.get(url);
         if (frameForm != null) {
-            return frameForm;
+            // XXX #110845 Retrieve valid forms only!
+            if (frameForm.isModelValid()) {
+                return frameForm;
+            } else {
+                // FIXME This means the kept invalid forms are memory leaks.
+                cache.remove(url);
+            }
         }
 
         // According to HTML4.01 section 16.5: "The contents of the

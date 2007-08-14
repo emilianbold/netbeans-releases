@@ -48,9 +48,9 @@ public class JspIncludeBox extends ExternalDocumentBox {
     private Element styleElement;
 
     /** Use the "getJspIncludeBox" factory method instead */
-    private JspIncludeBox(WebForm frameForm, WebForm webform, Element element, URL url,
+    private JspIncludeBox(/*WebForm frameForm,*/ WebForm webform, Element element, /*URL url,*/
         BoxType boxType, boolean inline, boolean replaced) {
-        super(webform.getPane(), frameForm, webform, element, url, boxType,
+        super(webform.getPane(), /*frameForm,*/ webform, element, /*url,*/ boxType,
         // The jsp:directive.include directive should be block formatted.
         // However, it's not easy to include a
         // jsp:directive.include { display : block } rule in the default
@@ -59,29 +59,27 @@ public class JspIncludeBox extends ExternalDocumentBox {
         // just hardcode the block formatting knowledge here
         //inline,
         false, replaced);
-
-        // XXX #110849 This is bad. The layout depends on whether the CSS was computed. Bad architecture.
-        // This needs to be cleared, because otherwise when used in fragment it would yield bad result for context page.
-        if (frameForm != null) {
-            CssProvider.getEngineService().clearComputedStylesForElement(frameForm.getHtmlBody());
-        }
     }
 
     /** Create a new framebox, or provide one from a cache */
     public static CssBox getJspIncludeBox(CreateContext context, WebForm webform, Element element,
         BoxType boxType, HtmlTag tag, boolean inline) {
-        URL src = getContentURL(webform, element); // TODO - check for null here!
-        WebForm frameForm = null;
-
-        if (src != null) {
-//            frameForm = findForm(webform, src);
-            frameForm = webform.findExternalForm(src);
-        }
+//        URL src = getContentURL(webform, element); // TODO - check for null here!
+//        WebForm frameForm = null;
+//
+//        if (src != null) {
+////            frameForm = findForm(webform, src);
+//            frameForm = webform.findExternalForm(src);
+//        }
 
 //        if (frameForm == WebForm.EXTERNAL) {
 //            frameForm = null;
 //        }
 
+        JspIncludeBox box =
+            new JspIncludeBox(/*frameForm,*/ webform, element, /*src,*/ boxType, inline, tag.isReplacedTag());
+        
+        WebForm frameForm = box.getExternalForm();
         if (frameForm != null) {
             if (context.isVisitedForm(frameForm)) {
                 return new StringBox(webform, element, boxType,
@@ -91,11 +89,15 @@ public class JspIncludeBox extends ExternalDocumentBox {
             // XXX Moved to designer/jsf/../JsfForm.
 //            //context.visitForm(frameForm);
 //            frameForm.setContextPage(webform);
+            
+            // XXX #110849 This is bad. The layout depends on whether the CSS was computed. Bad architecture.
+            // This needs to be cleared, because otherwise when used in fragment it would yield bad result for context page.
+            if (frameForm != null) {
+                CssProvider.getEngineService().clearComputedStylesForElement(frameForm.getHtmlBody());
+            }
         }
 
-        JspIncludeBox box =
-            new JspIncludeBox(frameForm, webform, element, src, boxType, inline, tag.isReplacedTag());
-
+        
         if ((frameForm != null) && (frameForm.getHtmlBody() != null)) {
             box.styleElement = frameForm.getHtmlBody();
         }
@@ -150,7 +152,8 @@ public class JspIncludeBox extends ExternalDocumentBox {
     /**
      * Return a URL for the included content, or null if it could not be determined.
      */
-    private static URL getContentURL(WebForm webform, Element element) {
+    @Override
+    protected URL getContentURL(WebForm webform, Element element) {
         String src = getFile(element, webform);
 
         if ((src == null) || (src.length() == 0)) {

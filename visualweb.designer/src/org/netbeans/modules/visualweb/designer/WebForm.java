@@ -2072,7 +2072,7 @@ public class WebForm implements Designer {
 //        domProvider.writeUnlock(writeLock);
 //    }
 
-    boolean isModelValid() {
+    public boolean isModelValid() {
         return domProvider.isModelValid();
     }
 
