@@ -461,7 +461,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             }
             String bootcp = null;
             if (home != null) {
-                FileObject homeFO = FileUtil.toFileObject(new File(home));
+                FileObject homeFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(home)));
                 if (homeFO != null) {
                     for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
                         if (new HashSet<FileObject>(platform.getInstallFolders()).equals(Collections.singleton(homeFO))) {
