@@ -13,7 +13,7 @@
 <body>
 <h2>Binding a Simple Component to a Web Service Method</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>A simple component displays one value. Examples of simple components include Button, Checkbox, Hyperlink, 
+<p>If you are using Visual Web JSF framework, you can bind a component to a web service method. A simple component displays one value. Examples of simple components include Button, Checkbox, Hyperlink, 
 Text Field, or Static Text. For easiest data binding, use components from the Basic category of the Palette.</p>
 <p>After you add a web service to the IDE and to a page, you can call a web service method by using either of the following techniques:</p>
 <ul>
@@ -34,18 +34,7 @@ Text Field, or Static Text. For easiest data binding, use components from the Ba
   <li>In the Bind to Data dialog box, click the Data Provider tab.</li>
   	
   <li>Choose the method's data provider.</li>
-
   <li>Select the data field to display in the component.
-	<p> For example, consider the following scenario. You want to use 
-	the <tt>getPersons</tt> method of the <tt>TravelWS</tt> web service to 
-	display the first person's name in a static text field. </p>
-	<ol>
-	<li><a href="accessing_websvc.html">Add the <tt>TravelWS.wsdl</tt> file </a> shipped with the IDE. </li>
-	<li>Drag the Basic &gt; Static Text component to the page.</li>
-	<li>Drag the <tt>getPersons</tt> method onto the static text field.</li>
-	<li>Right-click the static text and choose Bind to Data.</li>
-	<li>Select  name from the  data field list.</li>
-  </ol>
 </ol>
   
 <p><b>To call a method in your Java code:</b></p>
@@ -68,26 +57,7 @@ Text Field, or Static Text. For easiest data binding, use components from the Ba
   		</ol></li>
   
   <li>Call the methods in your Java code.
-	<p> For example, consider the following scenario. You want to 
-	use the <tt>getPersons</tt> method of the <tt>TravelWS</tt> web service to 
-	display the first person's name in a static text field. </p>
-		<ol>
-      	<li><a href="accessing_websvc.html">Add the <tt>TravelWS.wsdl</tt> file </a> 
-			shipped with the IDE.</li>
-		<li>Drag <tt>TravelWS</tt> to the Visual Designer.</li>
-		<li>Drag the Basic &gt; Static Text component to the Visual Designer.</li>
-		<li>Go to the <tt>Page1.java</tt> source code by selecting the Java tab.</li>
-		<li>In the <tt>prerender()</tt> method, enter the following code.</li>
-<pre>
-      try {
-           staticText1.setValue( travelWSClient1.getPersons()[0].getName() );
-      } catch (Exception e) {
-           log("Page1 Initialization Failure", e);
-           throw e instanceof FacesException ? (FacesException) e: new FacesException(e);
-       } 
-</pre>
-
-</ol>
+	
   </li>
 </ol>
 <dl> 
@@ -97,7 +67,7 @@ Text Field, or Static Text. For easiest data binding, use components from the Ba
   <dd><a href="ws_bind_list.html">Binding a List Component to a Web Service Method</a></dd>
   <dd><a href="ws_bind_table.html">Binding a Table Component to a Web Service Method</a></dd>
   <dd><a href="../../ui_elements/project_nav/about_project_nav.html">About the Projects and Files Windows</a></dd>
-  <dd><a href="../../ui_elements/editors/about_java_editor.html">About the Java Editor</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/editing_about.html">Editing Source Files</a></dd>
 </dl>
 <hr>
 <small><a href="../../credits.html">Legal Notices</a></small> 

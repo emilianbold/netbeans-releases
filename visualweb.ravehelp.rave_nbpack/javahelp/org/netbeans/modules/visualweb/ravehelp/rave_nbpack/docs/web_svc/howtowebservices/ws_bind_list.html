@@ -13,7 +13,7 @@
 <body>
 <h2>Binding a List Component to a Web Service Method </h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>When you bind a list component to a web service, you create a connection between them. List components display one or more values at a time. For easiest data binding, use components from the Basic category of the Palette, such as Listbox, Drop Down List, Checkbox Group, or Radio Button Group. </p>
+<p>If you are using the Visual Web JSF framework, you can bind a component to a web service method. When you bind a list component to a web service, you create a connection between them. List components display one or more values at a time. For easiest data binding, use components from the Basic category of the Palette, such as Listbox, Drop Down List, Checkbox Group, or Radio Button Group. </p>
 <p>After you add a web service to the IDE and to a page, you can call a web service's method by using either of the following techniques:</p>
 <ul>
   <li>Bind a  method to a component. You can use this technique to view the results of the method, but you cannot update it. You do not need to write any Java code. </li>
@@ -35,14 +35,7 @@
   <li>Choose the method's data provider.</li>
 
   <li>Select the  value field and display field for  the component.
-    <p> For example, consider the following scenario. You want to use the <code>getPersons</code> method of the <code>TravelWS</code> to display names in a drop-down list. </p>
-	<ol>
-	<li><a href="accessing_websvc.html">Add the <code>TravelWS.wsdl</code> file </a> shipped with the IDE. </li>
-	<li>Drag the Basic &gt; Dropdown List  component to the page.</li>
-	<li>Drag the <code>getPersons</code> method onto the drop-down list.</li>
-	<li>Right-click the drop-down list and choose Bind to Data.</li>
-	<li>Select personId for the value field and name for the display field.</li>
-	</ol>
+    
 </ol>
   
 <p><b>To call a method in your Java code:</b></p>
@@ -63,44 +56,7 @@
     	<li>View the results and click Close.</li>
   </ol></li>
   
-  <li>Call the method in your Java code.
-	<p> For example, consider the following scenario. You want to 
-	use the <code>getPersons</code> method of the <code>TravelWS</code> web service to 
-	display names in a drop-down list. </p>
-		<ol>
-      	<li><a href="accessing_websvc.html">Add the <code>TravelWS.wsdl</code> file </a> 
-			shipped with the IDE.</li>
-		<li>Drag the Basic &gt; Dropdown List component to the Visual Designer.</li>
-		<li>Drag the <code>getPersons</code> method of <code>TravelWS</code> to the Visual Designer. </li>
-		<li>In the Projects window, add a property named personOptions with the type ArrayList.</li>
-		<ul>
-          <li>In the Projects window, expand <i>project-name</i> &gt; Source Packages &gt; <i>web application-name</i>.</li>
-          <li>Right-click Page1.java and choose Add &gt; Property.</li>
-          <li>In the New Property Pattern dialog box, enter personOptions in the Name field and enter ArrayList in the Type drop-down list.</li>
-		  </ul>
-		<li>Go to the <code>Page1.java</code> source code by selecting the Java tab.</li>
-		<li>In the <code>init()</code> method, enter the following code:</li>
-		<pre>personOptions = new ArrayList();
-        
- try {
-     PersonDTO[] persons = travelWSClient1.getPersons();
-     for( int i = 0; i &lt; persons.length; i ++ ) 
-         personOptions.add( new Option(new Integer(persons[i].getPersonId()), persons[i].getName() ) );
-     
- }catch (Exception e) {
-     log("Page1 Initialization Failure", e);
-     throw e instanceof FacesException ? (FacesException) e: new FacesException(e);
- }</pre>
-        <li>Right-click in the Java Editor and choose Fix Imports. </li>
-        <li>In the Fix Imports dialog box, choose com.sun.rave.web.ui.model.Option.</li>
-        <li>Bind the new property to the drop-down list. </li>
-        <ul>
-          <li>In the Visual Designer, right-click the drop-down list and choose Property Bindings.</li>
-          <li>In the right list in the Property Bindings dialog box, select Page 1 &gt; personOptions.</li>
-          <li>Click Apply, then click Close. </li>
-        </ul>
-    </ol>
-  </li>
+  <li>Call the method in your Java code. </li>
 </ol>
 <dl> 
   <dt><a name="seealso">See Also</a></dt>
@@ -110,7 +66,7 @@
   <dd><a href="ws_bind_table.html">Binding a Table Component to a Web Service Method</a></dd>
 
   <dd><a href="../../ui_elements/project_nav/about_project_nav.html">About the Projects and Files Windows</a></dd>
-  <dd><a href="../../ui_elements/editors/about_java_editor.html">About the Java Editor</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/editing_about.html">Editing Source Files</a></dd>
 </dl>
 <hr>
 <small><a href="../../credits.html">Legal Notices</a></small> 

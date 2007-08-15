@@ -13,7 +13,7 @@
 <body>
 <h2>Binding a Simple Component to an Enterprise JavaBean Method</h2>
 <p><small><a href="#seealso">See Also</a> </small></p>
-<p>When you bind a simple component to an Enterprise JavaBean component (enterprise bean), you create a connection between the component and the enterprise bean method. Simple components display one value at a time. For easiest data binding, use components from the Basic category of the Palette, such as Button or Hyperlink. </p>
+<p>If you are using the Visual Web JSF framework, when you bind a simple component to an Enterprise JavaBean component (enterprise bean), you create a connection between the component and the enterprise bean method. Simple components display one value at a time. For easiest data binding, use components from the Basic category of the Palette, such as Button or Hyperlink. </p>
 <p>After you add the Enterprise JavaBean component (enterprise bean) to the IDE and to the page, you can call an enterprise bean method by
   using either of the following techniques:</p>
 <ul>
@@ -36,14 +36,8 @@ method using both techniques. </p>
       <li>In the Bind to Data dialog box, click the Bind to Data Provider tab.</li>
       <li>Choose the method's data provider.</li>
       <li>Select the data field to display in the component.
-          <p>For example, consider the following scenario. You want to use the <code>getPersons</code> method of the <code>TravelEJB</code>  to display the first person's name in a static text field. </p>
-          <ol>
-            <li><a href="ejb_add_to_IDE.html">Add the <code>TravelEJB</code> </a> shipped with the IDE. </li>
-            <li>Drag the Basic &gt; Static Text component to the page.</li>
-            <li>Drag the <code>getPersons</code> method onto the static text field.</li>
-            <li>Right-click the static text and choose Bind to Data.</li>
-            <li>Select name from the data field list.</li>
-          </ol>
+         
+          
       </li>
 </ol>
 	
@@ -54,21 +48,8 @@ method using both techniques. </p>
       <li>If the enterprise bean has not been added to the page, drag it to the Visual Designer.</li>
       <li>If desired, select a method to see its properties in the <a href="../../ui_elements/propsheets/propsheet_win.html">Properties window.</a> </li>
       <li>Call the method in your Java code.
-	  <p>For example, consider the following scenario. You want to use the 
-	  <code>getPersons</code> method of <code>TravelEJB</code> to display the first person's name in a static text field. </p>
+	  
       </li>
-	  	<ol>
-		<li>Drag the Basic &gt; Static Text component to the page.</li>
-	  	<li>Drag the <code>getPersons</code> method of <code>TravelEJB</code> to the page. </li>
-	  	<li>Go to the <code>Page1.java</code> source code by selecting the Java tab.</li>
-	  	<li>In the <code>prerender()</code> method, enter the following code:</li> 	  
-<pre>try {
-      staticText1.setValue( travelClient1.getPersons()[0].getName() );
- } catch (Exception e) {
-     log("Page1 Initialization Failure", e);
-     throw e instanceof FacesException ? (FacesException) e: new FacesException(e);
- }</pre> 	
-	  	</ol>
 </ol>
 
 <dl> 
@@ -76,7 +57,7 @@ method using both techniques. </p>
   <dd><a href="../aboutejbs.html">About Enteprise JavaBean Components</a></dd>
   <dd><a href="ejb_add_to_IDE.html">Adding a Set of Enterprise JavaBean Components to the IDE</a></dd>
   <dd><a href="../../ui_elements/project_nav/about_project_nav.html">About the Projects and Files Windows</a></dd>
-  <dd><a href="../../ui_elements/editors/about_java_editor.html">About the Java Editor</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/editing_about.html">Editing Source Files</a></dd>
 </dl>
 <hr>
 <small><a href="../../credits.html">Legal Notices</a></small> 

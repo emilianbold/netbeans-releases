@@ -13,7 +13,7 @@
 <body>
 <h2>Binding a List Component to an Enterprise JavaBean Method</h2>
 <p><small><a href="#seealso">See Also</a> </small></p>
-<p>When you bind a list component to an Enterprise JavaBean component (enterprise bean), you create a connection between them. List components display one or more values at a time. For easiest data binding, use components from the Basic category of the Palette, such as  Listbox, Drop Down List, Checkbox Group, or Radio Button Group.</p>
+<p>If you are using the Visual Web JSF framework, when you bind a list component to an Enterprise JavaBean component (enterprise bean), you create a connection between them. List components display one or more values at a time. For easiest data binding, use components from the Basic category of the Palette, such as  Listbox, Drop Down List, Checkbox Group, or Radio Button Group.</p>
 <p>After you add the Enterprise JavaBean component to the IDE and to the page, you can call an enterprise bean method by
   using either of the following techniques:</p>
 <ul>
@@ -36,14 +36,7 @@ method using both techniques. </p>
       <li>In the Bind to Data dialog box, click the Bind to Data Provider tab.</li>
       <li>Choose the method's data provider.</li>
       <li>Select the  value field and display field for  the component.
-          <p>For example, consider the following scenario. You want to use the <tt>getPersons</tt> method of the <tt>TravelEJB</tt>  to display  names in a drop-down list. </p>
-          <ol>
-            <li><a href="ejb_add_to_IDE.html">Add the <tt>TravelEJB</tt> </a> shipped with the IDE. </li>
-            <li>Drag the Basic &gt; Dropdown List component to the page.</li>
-            <li>Drag the <tt>getPersons</tt> method onto the drop-down list.</li>
-            <li>Right-click the drop-down list and choose Bind to Data.</li>
-            <li>Select  personid for the value field and name for the display field.</li>
-          </ol>
+          
       </li>
 </ol>
 	
@@ -54,42 +47,8 @@ method using both techniques. </p>
       <li>If the enterprise bean has not been added to the page, drag it to the Visual Designer.</li>
       <li>If desired, select a method to see its properties in the <a href="../../ui_elements/propsheets/propsheet_win.html">Properties window.</a> </li>
       <li>Call the method in your Java code.
-	  <p>For example, consider the following scenario. You want to use the 
-	  <tt>getPersons</tt> method of <tt>TravelEJB</tt> to display names in a drop-down list. </p>
+	  
       </li>
-	  	<ol>
-		<li>Drag the Basic &gt; Dropdown List component to the page.</li>
-	  	<li>Drag the <tt>getPersons</tt> method of <tt>TravelEJB</tt> to the page. </li>
-	  	<li>In the Projects window, add a property named personOptions with the type ArrayList.</li>
-	  	<ul>
-		  <li>In the Projects window, expand <i>project-name</i> &gt; Source Packages &gt; <i>web application-name</i>.</li>
-		  <li>Right-click Page1.java and choose Add &gt; Property.</li>
-		  <li>In the New Property Pattern dialog box, enter personOptions in the Name field and enter ArrayList in the Type drop-down list.</li>
-	  	  </ul>
-	  	<li>Go to the <tt>Page1.java</tt> source code by selecting the Java tab.</li>
-	  	<li>In the <tt>init()</tt> method, enter the following code:</li> 	  
-        <pre>personOptions = new ArrayList();
-        
- try {
-     PersonDTO[] persons = travelClient1.getPersons();
-     for( int i = 0; i &lt; persons.length; i ++ ) 
-         personOptions.add( new Option(new Integer(persons[i].getPersonId()), persons[i].getName() ) );
-     
- }catch (Exception e) {
-     log("Page1 Initialization Failure", e);
-     throw e instanceof FacesException ? (FacesException) e: new FacesException(e);
- }</pre>
- 	<li>Right-click in the Java Editor and choose Fix Imports. </li>
-    <li>In the Fix Imports dialog box, choose com.sun.rave.web.ui.model.Option.</li>
-    <li>Bind the new property to the drop-down list. </li>
-    <ul>
-		<li>In the Visual Designer, right-click the drop-down list and choose 
-		Property Bindings.</li>
-   	  <li>In the right list in the Property Bindings dialog box, select 
-	  Page 1 &gt; personOptions.</li>
-    	<li>Click Apply, then click Close. </li>
-	</ul>
-  </ol>
 </ol>
 
 <dl> 
@@ -97,7 +56,7 @@ method using both techniques. </p>
   <dd><a href="../aboutejbs.html">About Enteprise JavaBean Components</a></dd>
   <dd><a href="ejb_add_to_IDE.html">Adding a Set of Enterprise JavaBean Components to the IDE</a></dd>
   <dd><a href="../../ui_elements/project_nav/about_project_nav.html">About the Projects and Files Windows</a></dd>
-  <dd><a href="../../ui_elements/editors/about_java_editor.html">About the Java Editor</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/editing_about.html">Editing Source Files</a></dd>
 </dl>
 <hr>
 <small><a href="../../credits.html">Legal Notices</a></small> 
