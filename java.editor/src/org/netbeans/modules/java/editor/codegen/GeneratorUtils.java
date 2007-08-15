@@ -90,7 +90,7 @@ public class GeneratorUtils {
     private static final String ERROR = "<error>"; //NOI18N
     public static final int GETTERS_ONLY = 1;
     public static final int SETTERS_ONLY = 2;
-    
+
     private GeneratorUtils() {
     }
     
@@ -131,7 +131,11 @@ public class GeneratorUtils {
                 if (set.size() != NOT_OVERRIDABLE.size())
                     continue;
                 
-                //TODO: cannot override a package private method outside the package
+                if(ee.getModifiers().contains(Modifier.PRIVATE)) //do not offer overriding of private methods
+                    continue;
+                    
+                if(overridesPackagePrivateOutsidePackage(ee, impl)) //do not offer package private methods in case they're from different package
+                    continue;
                 
                 int thisElement = classes.indexOf(te);
                 
@@ -642,6 +646,21 @@ public class GeneratorUtils {
         buttons[1] = new JButton(NbBundle.getMessage(GeneratorUtils.class, "LBL_cancel_button") );
         return new DialogDescriptor(content, label, true, buttons, buttons[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
         
+    }
+    
+    /**
+     * Detects if this element overrides package private element from superclass
+     * outside package
+     * @param ee elememt to test
+     * @return true if it does
+     */ 
+    private static boolean overridesPackagePrivateOutsidePackage(ExecutableElement ee, TypeElement impl) {
+        String elemPackageName = ee.getEnclosingElement().getEnclosingElement().getSimpleName().toString();
+        String currentPackageName = impl.getEnclosingElement().getSimpleName().toString();
+        if(!ee.getModifiers().contains(Modifier.PRIVATE) && !ee.getModifiers().contains(Modifier.PUBLIC) && !ee.getModifiers().contains(Modifier.PROTECTED) && !currentPackageName.equals(elemPackageName))
+            return true;
+        else
+            return false;
     }
     
     private static class ClassMemberComparator {
