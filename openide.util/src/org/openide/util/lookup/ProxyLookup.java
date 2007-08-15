@@ -539,8 +539,6 @@ public class ProxyLookup extends Lookup {
                 }
             }
             
-            assert cache != null;
-
             if (modified) {
                 LookupEvent ev = new LookupEvent(this);
                 AbstractLookup.notifyListeners(listeners.getListenerList(), ev, evAndListeners);
