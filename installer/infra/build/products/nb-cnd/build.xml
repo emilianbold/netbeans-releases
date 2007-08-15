@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance
+  with the License.
+  
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+  http://www.netbeans.org/cddl.txt.
+  
+  When distributing Covered Code, include this CDDL Header Notice in each file and
+  include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+  the following below the CDDL Header, with the fields enclosed by brackets []
+  replaced by your own identifying information:
+  
+      "Portions Copyrighted [year] [name of copyright owner]"
+  
+  The Original Software is NetBeans. The Initial Developer of the Original Software
+  is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+  Rights Reserved.
+-->
+
+<!--
+  This is the build script for the NetBeans CND Pack nbi product 
+  package.
+    
+  It inherits most of the functionality from the base script for building nbi 
+  product packages, while providing this instance-specific values for several
+  core properties. For more details on the values of these properties see
+  the build.properties file.
+-->
+<project name="nb-cnd" default="usage" basedir=".">
+    <!-- import the properties that are specific to this environment -->
+    <property file="${environment.properties}"/>
+    
+    <!-- import the properties that are specific to this product package -->
+    <property file="build.properties"/>
+    
+    <!-- import the base script for building product packages -->
+    <import file="${common.dir}/product.xml" optional="false"/>
+    
+    <!--
+      Corrects the layout of the incoming installation data files. 
+      
+      Overrides the '-pre-package' target in product.xml.
+    -->
+    <target name="-pre-package">
+        <if property="instrument.jars" value="true">
+            <exec executable="${bash.executable}" failonerror="true" dir="${data.directory}">
+                <arg value="${emma.sh.file}"/>
+                <arg value="."/>
+                <arg value="${emma.txt.file}"/>
+                <arg value="${emma.jar.file}"/>
+            </exec>
+        </if>
+    </target>
+    
+    <!-- ============================================================================
+      Default
+    ============================================================================= -->
+    
+    <!--
+      The default target. 
+      
+      Does nothing except printing the usage information.
+    -->
+    <target name="usage">
+        <echo>
+            In order to 'clean', 'checkout' and 'build' the group use the 
+            'build-all' target. To 'clean', 'checkout', 'build' and 
+            'release' - use 'release-all'.
+            
+            For more details, please see the source of this build script.
+        </echo>
+    </target>
+</project>
