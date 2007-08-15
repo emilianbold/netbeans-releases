@@ -3,82 +3,56 @@
 Inc.  All rights reserved.  
 Use is subject to license terms.  *--> 
 <html> 
-    <head> 
-        <title>Generating a RESTful Web Service from Scratch</title>
-        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-    </head> 
-    <body>
-        <h2>Generating a RESTful Web Service from Scratch</h2>
-        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-        <ol>
-        <li>Depending on the <a href="about_implement_ws.html">implementation form</a>, create a web application 
-        project or create an EJB module project.</li>
-        <li>In the Projects window or Files window, right-click the project node
-        and choose New &gt; Web Service.</li>
-        <p>The New Web Service wizard opens.</li>
-        <li>Type the web service name and specify a package to house the web service.</li>
-        <li>Select the creation type:
-            <ul><li><b>Create an Empty Web Service.</b> Use this when you have no existing code to expose.</li>
-            <li><b>Delegate to Existing Session Enterprise Bean.</b> Use this when you have a session bean
-            in an EJB module.
-            Click Browse to select the session bean to which you want to delegate.</li></ul>
-            </ul>
-        </li>
-        <li>Click Finish.
-            <p>For JAX-WS web services (Java EE 5 specification), the IDE 
-            creates an implementation class. The
-            implementation class is created with the required web 
-            service annotations and import statements.
-        
-            <p>For JAX-RPC web services (J2EE 1.4 specification), the IDE runs the <tt>wscompile</tt> tool.
-            The IDE provides the following:
+<head> 
+    <title>Generating a RESTful Web Service from Scratch</title>
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head> 
+<body>
+<h2>Generating a RESTful Web Service from Scratch</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<ol>
+<li>Use the Plugin Manager under the Tools menu
+    to install the following modules:
+    <ul>
+        <li>RESTful Web Service Libraries</li>
+        <li>RESTful Web Service Support</li>
+    </ul>
+</li>
+<li>Create a web application project.
+<li>In the Projects window or Files window, right-click the web application project node
+and choose New. Then choose one of the following:
 
-            <ul>
-            <li>The Service Endpoint Interface (the "interface"), which declares the web service's operations. 
-            In the IDE, the interface is identified by the suffix "SEI". For example, if you named your 
-            web service <tt>CalculatorWS</tt>, its interface is named <tt>CalculatorWSSEI</tt>.
-            The IDE automatically populates the interface with a declaration for each web service operation
-            added by means of the <a href="add_ws_operation.html">Add Operation dialog box</a>.</li>
-            <li>The class for the implementation of the interface. 
-            In the IDE, an implementation class is identified by the suffix "Impl" (for web applications)
-            or "Bean" (for EJB modules). For example, if your 
-            web service is named <tt>CalculatorWS</tt>, its implementation class is named <tt>CalculatorWSImpl</tt>
-            or <tt>CalculatorWSBean</tt>.</li></ul>
-            By default, both files are housed in a package within your project's <tt>src</tt> folder (in the Files window)
-            and you can access it in the Source Packages node (in the Projects window).
-            </ul>
-        </li>
-        <li>Use the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/editing_about.html">Source Editor</a> to develop the
-            web service. 
-
-            <ul class="note">
-                <li>For help on designing and developing your web services,
-                    go to Help &gt; Java BluePrints Solutions Catalog.
-                    Select topics under the "Web Service Design" item.
-                </li>
-            </ul>
-
-        </li>
-
+<ul>
+    <li><b>RESTful Web Services from Entity Classes.</b> Creates RESTful web services from a set of entity classes.</li>
+    <li><b>RESTful Web Services from Patterns.</b>
+      Creates generic RESTful web services, stand-alone web services,
+      or web services that are part of the Container pattern.</li>
+  <li><b>RESTful Web Service from Client Stubs.</b>
+  Creates Javascript client stubs for RESTful web services.</li>
+</ul>    
+<p>Alternatively, you can choose the above templates
+ by right-clicking the project node, choosing New &gt; Other
+ and then selecting them from the Web Services category.
     
-        </ul>
-   
-        <dl>
-            <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="../about/about_ws.html">About Web Services</a></dd>
-            <dd><a href="about_implement_ws.html">About Implementing Web Services</a></dd>
-            <dd><a href="create_ws_from_wsdl.html">Creating a Web Service from a WSDL File</a></dd>
-            <dd><a href="create_wsdl_file.html">Creating a WSDL File</a></dd>
-        </dl>
+</li>
+
+</ol>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+    <dd><a href="about_implement_ws.html">About Implementing Web Services</a></dd>
+    <dd><a href="create_ws_from_wsdl.html">Creating a Web Service from a WSDL File</a></dd>
+    <dd><a href="create_wsdl_file.html">Creating a WSDL File</a></dd>
+</dl>
 
 
-        <hr>
-        <small><a href="../../credits.html">Legal Notices</a></small> 
-        <table cellpadding="20" border="0"> 
-            <tr><td>&nbsp;</td></tr> 
-            <tr><td>&nbsp;</td></tr> 
-            <tr><td>&nbsp;</td></tr> 
-        </table> 
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="20" border="0"> 
+    <tr><td>&nbsp;</td></tr> 
+    <tr><td>&nbsp;</td></tr> 
+    <tr><td>&nbsp;</td></tr> 
+</table> 
 
-    </body>
+</body>
 </html>
