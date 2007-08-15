@@ -125,6 +125,31 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         return true;
     }
     
+    // create a JNDI name for resource reference name
+    public boolean updateResourceReference(Project project, RequestedJdbcResource req) {
+        J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
+        Set dss = null;
+        try {
+            dss = jmp.getModuleDatasources();
+        } catch (ConfigurationException e) {
+            dss = new HashSet();
+            // TODO: give some feedback to the user
+        }
+        
+        Iterator it = dss.iterator();        
+
+        while (it.hasNext()) {
+            Datasource ds = (Datasource) it.next();
+            try {
+                jmp.getConfigSupport().bindDatasourceReference(req.getResourceName(), ds.getJndiName());
+            } catch (ConfigurationException e) {
+                return false;
+            }
+        } 
+        
+        return true;
+    }
+    
     public Set<RequestedJdbcResource> getServerDataSources(Project p) {
         J2eeModuleProvider jmp =
                 (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);

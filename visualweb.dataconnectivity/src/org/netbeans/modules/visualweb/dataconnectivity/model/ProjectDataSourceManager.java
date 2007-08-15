@@ -99,6 +99,9 @@ public class ProjectDataSourceManager  {
             if (!dataSourceService.updateProjectDataSource(project, reqResource)) {
                 return false;
             }
+            
+            // create a JNDI name for resource reference name
+            dataSourceService.updateResourceReference(project, reqResource); 
         }
 
 

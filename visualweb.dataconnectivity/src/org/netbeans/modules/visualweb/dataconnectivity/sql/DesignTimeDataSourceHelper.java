@@ -543,6 +543,8 @@ public class DesignTimeDataSourceHelper {
                                     dsInfo.getName(),
                                     dsInfo.getDriverClassName(), dsInfo.getUrl(), null, dsInfo.getUsername(),
                                     dsInfo.getPassword(), null));
+                            // create a JNDI name for resource reference name
+                            dataSourceService.updateResourceReference(currentProj, jdbcResource);
                         }
                     }
                 }
