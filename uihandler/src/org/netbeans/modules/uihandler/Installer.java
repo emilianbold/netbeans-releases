@@ -43,6 +43,7 @@ import java.net.NoRouteToHostException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -688,7 +689,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             
             synchronized (this) {
-                RequestProcessor.getDefault().post(this);
+                RP.post(this);
                 while (!dialogCreated) {
                     try {
                         wait();
@@ -778,6 +779,12 @@ public class Installer extends ModuleInstall implements Runnable {
                         enc = m.group(1);
                         text = new String(arr, 0, len, enc);
                     }
+                }
+                
+                if (first && !text.startsWith("<?xml")) {
+                    text = "<?xml version='1.0' encoding='" + 
+                        Charset.defaultCharset().name() + 
+                        "'?>" + text;
                 }
                 os.write(text.getBytes());
             }
