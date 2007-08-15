@@ -36,7 +36,6 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.aspect.editor</friend>
                 <friend>org.netbeans.modules.compapp.projects.jbi</friend>
-                <friend>org.netbeans.modules.deployment.deviceanywhere</friend>
                 <friend>org.netbeans.modules.jaxb.project</friend>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
