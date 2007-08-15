@@ -95,6 +95,8 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         }
         switch (p) {
             case PRECHECK:
+            case FASTCHECKPARAMETERS:
+                return JavaSource.forFileObject(treePathHandle.getFileObject());
             case CHECKPARAMETERS:    
                 if (treePathHandle==null) {
                     return null;
@@ -102,8 +104,6 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 ClasspathInfo cpInfo = getClasspathInfo(refactoring);
                 JavaSource source = JavaSource.create(cpInfo, treePathHandle.getFileObject());
                 return source;
-            case FASTCHECKPARAMETERS:
-                return JavaSource.forFileObject(treePathHandle.getFileObject());
 
         }
         throw new IllegalStateException();
@@ -120,12 +120,12 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             return preCheckProblem;
         }
         FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
-        if (FileUtil.getArchiveFile(file)!= null) { //NOI18N
+        if (file!=null && FileUtil.getArchiveFile(file)!= null) { //NOI18N
             preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(file));
             return preCheckProblem;
         }
         
-        if (!RetoucheUtils.isElementInOpenProject(file)) {
+        if (file==null || !RetoucheUtils.isElementInOpenProject(file)) {
             preCheckProblem = new Problem(true, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_ProjectNotOpened"));
             return preCheckProblem;
         }

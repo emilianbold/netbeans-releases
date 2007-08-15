@@ -103,7 +103,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         return new RenameRefactoringUI(folder);
                     } else if (selected instanceof TypeElement && !((TypeElement)selected).getNestingKind().isNested()) {
                         FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
-                        if (selected.getSimpleName().toString().equals(f.getName())) {
+                        if (f!=null && selected.getSimpleName().toString().equals(f.getName())) {
                             return new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info);
                         } else {
                             return new RenameRefactoringUI(selectedElement, info);
