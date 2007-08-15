@@ -78,7 +78,7 @@ public class MenuEditLayer extends JPanel {
     
     /* === public constants === */
     
-        
+
     /* === constants for the look of the designer === */
     public static final Border DRAG_MENU_BORDER = BorderFactory.createLineBorder(Color.BLACK,1);
     public static final Border DRAG_SEPARATOR_BORDER = BorderFactory.createLineBorder(Color.RED,1);
@@ -300,6 +300,7 @@ public class MenuEditLayer extends JPanel {
             keyboardMenuNavigator.unconfigure();
             keyboardMenuNavigator = null;
         }
+        backgroundMap.clear();
         //hackedPopupFactory.containerMap.clear();
     }
     
@@ -687,7 +688,7 @@ public class MenuEditLayer extends JPanel {
             for(RADComponent rad : selectedComponents) {
                 JComponent c = (JComponent) formDesigner.getComponent(rad);
                 if(c != null) {
-                    c.setBackground(SELECTED_MENU_BACKGROUND);
+                c.setBackground(getSelectedBackground(c));
                     makeSureShowingOnScreen(rad, c);
                     if (c instanceof JMenu) {
                         showMenuPopup((JMenu) c);
@@ -721,10 +722,17 @@ public class MenuEditLayer extends JPanel {
     private Color getNormalBackground(JComponent c) {
         String prefix = getComponentDefaultsPrefix(c);
         Color color = UIManager.getDefaults().getColor(prefix+".background");
+        color = backgroundMap.get(c);
         if(color == null) {
             color = Color.WHITE;
         }
         return color;
+    }
+    
+    private Map<JComponent, Color> backgroundMap = new HashMap<JComponent,Color>();
+    private Color getSelectedBackground(JComponent c) {
+        backgroundMap.put(c,c.getBackground());
+        return SELECTED_MENU_BACKGROUND;
     }
     
     private Color getNormalForeground(JComponent c) {
