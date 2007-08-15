@@ -14,6 +14,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.tomcat5.progress;
 
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -22,7 +23,7 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author sickboy
+ * @author Petr Hejl
  */
 public class ProgressListenerImpl implements ProgressListener {
 
