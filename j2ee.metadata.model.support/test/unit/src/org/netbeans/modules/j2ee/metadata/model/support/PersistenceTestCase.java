@@ -20,7 +20,8 @@
 package org.netbeans.modules.j2ee.metadata.model.support;
 
 import java.net.URL;
-import java.util.Collections;
+import java.util.Arrays;
+import javax.annotation.Resource;
 import javax.persistence.spi.PersistenceProvider;
 import org.openide.filesystems.FileUtil;
 
@@ -34,9 +35,11 @@ public class PersistenceTestCase extends JavaSourceTestCase {
         super(name);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
-        URL root = FileUtil.getArchiveRoot(PersistenceProvider.class.getProtectionDomain().getCodeSource().getLocation());
-        addCompileRoots(Collections.singletonList(root));
+        URL persistenceProviderUrl = FileUtil.getArchiveRoot(PersistenceProvider.class.getProtectionDomain().getCodeSource().getLocation());
+        URL resourceUrl = FileUtil.getArchiveRoot(Resource.class.getProtectionDomain().getCodeSource().getLocation());
+        addCompileRoots(Arrays.asList(persistenceProviderUrl, resourceUrl));
     }
 }
