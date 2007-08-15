@@ -127,7 +127,7 @@ public class WebServicePanel extends BaseSectionNodeInnerPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
