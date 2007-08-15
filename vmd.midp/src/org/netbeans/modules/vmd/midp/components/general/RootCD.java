@@ -27,27 +27,38 @@ import org.netbeans.modules.vmd.api.inspector.InspectorOrderingPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.DefaultOrderingController;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.palette.PaletteSupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfoPresenter;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
+import org.netbeans.modules.vmd.midp.actions.ExportFlowAsImageAction;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.categories.*;
+import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
+import org.netbeans.modules.vmd.midp.components.points.PointCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.RootPC;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorVersion;
 import org.netbeans.modules.vmd.midp.screen.MidpScreenDeviceInfo;
 import org.netbeans.spi.palette.PaletteController;
+import org.openide.actions.RedoAction;
+import org.openide.actions.UndoAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 import java.awt.datatransfer.Transferable;
 import java.awt.event.InputEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -102,6 +113,15 @@ public final class RootCD extends ComponentDescriptor {
                                              };
     }
 
+
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        MidpActionsSupport.addCommonActionsPresenters (presenters, false, false, false, false, true);
+        MidpActionsSupport.addNewActionPresenter(presenters, DisplayableCD.TYPEID, PointCD.TYPEID);
+        presenters.add(ActionsPresenter.create(53, SystemAction.get(ExportFlowAsImageAction.class)));
+        presenters.add(ActionsPresenter.create(57, SystemAction.get(UndoAction.class), SystemAction.get(RedoAction.class)));
+        super.gatherPresenters (presenters);
+    }
+
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // general
@@ -129,7 +149,35 @@ public final class RootCD extends ComponentDescriptor {
             // delete
             DeletePresenter.createIndeliblePresenter (),
             // screen
-            ScreenDeviceInfoPresenter.create(new MidpScreenDeviceInfo())
+            ScreenDeviceInfoPresenter.create(new MidpScreenDeviceInfo()),
+            // accept
+            new AcceptPresenter(AcceptPresenter.Kind.COMPONENT_PRODUCER) {
+                public boolean isAcceptable (ComponentProducer producer, AcceptSuggestion suggestion) {
+                    DesignComponent categoryComponent = MidpDocumentSupport.getCategoryComponent (getComponent ().getDocument (), DisplayablesCategoryCD.TYPEID);
+                    if (AcceptSupport.isAcceptable (categoryComponent, producer, null))
+                        return true;
+                    categoryComponent = MidpDocumentSupport.getCategoryComponent (getComponent ().getDocument (), PointsCategoryCD.TYPEID);
+                    return AcceptSupport.isAcceptable (categoryComponent, producer, null);
+               }
+
+                public ComponentProducer.Result accept (ComponentProducer producer, AcceptSuggestion suggestion) {
+                    DesignComponent categoryComponent = MidpDocumentSupport.getCategoryComponent (getComponent ().getDocument (), DisplayablesCategoryCD.TYPEID);
+                    if (AcceptSupport.isAcceptable (categoryComponent, producer, null)) {
+                        ComponentProducer.Result result = AcceptSupport.accept (categoryComponent, producer, null);
+                        AcceptSupport.selectComponentProducerResult (result);
+                        return result;
+                    }
+
+                    categoryComponent = MidpDocumentSupport.getCategoryComponent (getComponent ().getDocument (), PointsCategoryCD.TYPEID);
+                    if (AcceptSupport.isAcceptable (categoryComponent, producer, null)) {
+                        ComponentProducer.Result result = AcceptSupport.accept (categoryComponent, producer, null);
+                        AcceptSupport.selectComponentProducerResult (result);
+                        return result;
+                    }
+
+                    return null;
+                }
+            }
         );
     }
 

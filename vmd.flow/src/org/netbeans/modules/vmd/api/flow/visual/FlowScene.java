@@ -38,12 +38,9 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.palette.PaletteSupport;
-import org.netbeans.modules.vmd.flow.FlowViewController;
 import org.netbeans.modules.vmd.flow.FlowAccessController;
-import org.openide.actions.RedoAction;
-import org.openide.actions.UndoAction;
+import org.netbeans.modules.vmd.flow.FlowViewController;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
 import java.awt.*;
@@ -814,11 +811,19 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         public JPopupMenu getPopupMenu (Widget widget, Point localLocation) {
             JComponent component = FlowScene.this.getView ();
 
-            if (widget == FlowScene.this)
-                return Utilities.actionsToPopup (new Action[]{
-                    SystemAction.get (UndoAction.class),
-                    SystemAction.get (RedoAction.class)
-                }, component);
+            if (widget == FlowScene.this) {
+                final DesignComponent[] ret = new DesignComponent[1];
+                document.getTransactionManager ().readAccess (new Runnable() {
+                    public void run () {
+                        ret[0] = document.getRootComponent ();
+                    }
+                });
+
+                if (! getSelectedObjects ().isEmpty ())
+                    userSelectionSuggested (Collections.emptySet (), false);
+
+                return Utilities.actionsToPopup (ActionsSupport.createActionsArray (ret[0]), component);
+            }
 
             FlowDescriptor descriptor = (FlowDescriptor) findObject (widget);
             if (descriptor == null)
