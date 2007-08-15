@@ -75,6 +75,7 @@ import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
+import org.netbeans.spi.lexer.MutableTextInput;
 
 /**
  * Editor kit implementation for JSP content type
@@ -185,9 +186,9 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
         private void recolor() {
             jspParseData.updateParseData((Map<String,String>)data.getPrefixMapper(), data.isELIgnored(), data.isXMLSyntax());
 
-            TokenHierarchyControl thc = (TokenHierarchyControl)doc.getProperty(TokenHierarchyControl.class);            
-            if(thc != null) {
-                thc.rebuild();
+            MutableTextInput mti = (MutableTextInput)doc.getProperty(MutableTextInput.class);
+            if(mti != null) {
+                mti.tokenHierarchyControl().rebuild();
             }
         }
         
