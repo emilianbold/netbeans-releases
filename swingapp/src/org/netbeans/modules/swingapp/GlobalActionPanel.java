@@ -77,7 +77,7 @@ import org.openide.windows.WindowManager;
  * @author  joshua.marinacci@sun.com
  */
 public class GlobalActionPanel extends javax.swing.JPanel {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private ActionManager actionManager;
     
     private ActionManager.ActionChangedListener actChangeListener = new ActionManager.ActionChangedListener() {
