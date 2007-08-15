@@ -318,7 +318,7 @@ public final class CreateElement implements ErrorRule<Void> {
 
             if ((ee != null) && type != null) {
                 int identifierPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf());
-                if (ee != null && fixTypes.contains(ElementKind.PARAMETER))
+                if (ee != null && fixTypes.contains(ElementKind.PARAMETER) && !Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) firstMethod.getLeaf()))
                     result.add(new AddParameterOrLocalFix(info, type, simpleName, true, identifierPos));
                 if (fixTypes.contains(ElementKind.LOCAL_VARIABLE))
                     result.add(new AddParameterOrLocalFix(info, type, simpleName, false, identifierPos));

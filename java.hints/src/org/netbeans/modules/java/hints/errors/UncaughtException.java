@@ -161,9 +161,13 @@ public final class UncaughtException implements ErrorRule<Void> {
             ExecutableElement method = pathRec != null ? (ExecutableElement) info.getTrees().getElement(pathRec)  : null;
             
             if (method != null) {
-                for (TypeMirror tm : uncauched) {
-                    if (tm.getKind() != TypeKind.ERROR)
-                        result.add(new AddThrowsClauseHintImpl(info.getJavaSource(), Utilities.getTypeName(tm, true).toString(), TypeMirrorHandle.create(tm), ElementHandle.create(method)));
+                //if the method header is inside a guarded block, do nothing:
+                if (!org.netbeans.modules.java.hints.errors.Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) pathRec.getLeaf())) {
+                    for (TypeMirror tm : uncauched) {
+                        if (tm.getKind() != TypeKind.ERROR) {
+                            result.add(new AddThrowsClauseHintImpl(info.getJavaSource(), Utilities.getTypeName(tm, true).toString(), TypeMirrorHandle.create(tm), ElementHandle.create(method)));
+                        }
+                    }
                 }
             }
             

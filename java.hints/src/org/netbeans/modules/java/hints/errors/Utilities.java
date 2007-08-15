@@ -22,6 +22,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -41,6 +42,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.editor.GuardedDocument;
+import org.netbeans.editor.MarkBlock;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
@@ -215,4 +218,22 @@ public class Utilities {
         return result;
     }
     
+    public static boolean isMethodHeaderInsideGuardedBlock(CompilationInfo info, MethodTree method) {
+        try {
+            Document doc = info.getDocument();
+
+            if (doc instanceof GuardedDocument) {
+                GuardedDocument bdoc = (GuardedDocument) doc;
+                int methodStart = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), method);
+                int methodEnd = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), method);
+
+                return (bdoc.getGuardedBlockChain().compareBlock(methodStart, methodEnd) & MarkBlock.OVERLAP) != 0;
+            }
+
+            return false;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
+        }
+    }
 }
