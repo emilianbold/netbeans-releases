@@ -522,8 +522,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         private ClassItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean smartType) {
             super(substitutionOffset);
-            this.elementHandle = ElementHandle.create(elem);
-            this.typeHandle = TypeMirrorHandle.create(type);
+            TypeMirror elemType = elem.asType();
+            if (elemType.getKind() == TypeKind.ERROR) {
+                this.elementHandle = null;
+                this.typeHandle = TypeMirrorHandle.create((DeclaredType)elemType);
+            } else {
+                this.elementHandle = ElementHandle.create(elem);
+                this.typeHandle = TypeMirrorHandle.create(type);
+            }
             this.dim = dim;
             this.isDeprecated = isDeprecated;
             this.smartType = smartType;
@@ -639,8 +645,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.RESOLVED);
-                        TypeElement elem = elementHandle.resolve(controller);
                         DeclaredType type = typeHandle.resolve(controller);
+                        TypeElement elem = elementHandle != null ? elementHandle.resolve(controller) : (TypeElement)type.asElement();
                         boolean asTemplate = false;
                         StringBuilder sb = new StringBuilder();
                         int cnt = 1;
