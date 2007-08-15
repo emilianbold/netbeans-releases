@@ -84,13 +84,9 @@ public class clear_JFrame extends javax.swing.JFrame {
         getContentPane().add(jToggleButton1);
 
         jCheckBox1.setText("jCheckBox1");
-        jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         getContentPane().add(jCheckBox1);
 
         jRadioButton1.setText("jRadioButton1");
-        jRadioButton1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         getContentPane().add(jRadioButton1);
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
