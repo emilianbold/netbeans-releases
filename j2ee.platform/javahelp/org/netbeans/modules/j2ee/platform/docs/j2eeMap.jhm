@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE map
@@ -93,6 +93,7 @@
 	<!-- End of "About" section -->
 	<!-- Start of "Create" section -->
 	<mapID target="about_implement_ws" url="webservice/create/about_implement_ws.html" />
+        <mapID target="create_rest_from_scratch" url="webservice/create/create_rest_from_scratch.html" />
 	<mapID target="create_ws_from_scratch" url="webservice/create/create_ws_from_scratch.html" />
 	<mapID target="create_ws_from_wsdl" url="webservice/create/create_ws_from_wsdl.html" />
 	<mapID target="create_wsdl_file" url="webservice/create/create_wsdl_file.html" />
