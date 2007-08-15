@@ -2108,7 +2108,21 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         }
         
 //        public void propertyChange(PropertyChangeEvent evt) {
-        public void preferenceChange(PreferenceChangeEvent evt) {
+        public void preferenceChange(final PreferenceChangeEvent evt) {
+            // XXX #112708 Prefernce change seems to be fired incorrectly
+            // from other than event dispatch thread.
+            if (EventQueue.isDispatchThread()) {
+                doPreferenceChange(evt);
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        doPreferenceChange(evt);
+                    }
+                });
+            }
+        }
+        
+        private void doPreferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
             // XXX #6488437 Workaround for the cases the component is still held in the memory.
 //            if (!designerTC.isOpened()) {
