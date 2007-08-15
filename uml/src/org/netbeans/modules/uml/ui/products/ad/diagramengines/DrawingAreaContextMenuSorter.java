@@ -200,15 +200,15 @@ public class DrawingAreaContextMenuSorter extends SorterHelper implements IProdu
 			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_ALIGN_VCENTER", new Integer(IMenuKind.MK_BUTTON)));
 			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_ALIGN_BOTTOM", new Integer(IMenuKind.MK_BUTTON)));
 
+// disabled - feature to be added with Meteora
                         // horizontal distribution
-			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_LEFT_EDGE", new Integer(IMenuKind.MK_BUTTON)));
-			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_HCENTER", new Integer(IMenuKind.MK_BUTTON)));
-			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_RIGHT_EDGE", new Integer(IMenuKind.MK_BUTTON)));
-
+//                        m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_LEFT_EDGE", new Integer(IMenuKind.MK_BUTTON)));
+//                        m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_HCENTER", new Integer(IMenuKind.MK_BUTTON)));
+//                        m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_RIGHT_EDGE", new Integer(IMenuKind.MK_BUTTON)));
                         // vertical distribution
-                        m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_TOP_EDGE", new Integer(IMenuKind.MK_BUTTON)));
-			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_VCENTER", new Integer(IMenuKind.MK_BUTTON)));
-                        m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_BOTTOM_EDGE", new Integer(IMenuKind.MK_BUTTON)));
+//                        m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_TOP_EDGE", new Integer(IMenuKind.MK_BUTTON)));
+//                        m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_VCENTER", new Integer(IMenuKind.MK_BUTTON)));
+//                        m_TopSortItems.add(new ETPairT<String, Integer>("MBK_DISTRIBUTE_BOTTOM_EDGE", new Integer(IMenuKind.MK_BUTTON)));
                         
 			m_TopSortItems.add(new ETPairT<String, Integer>("MBK_SYNCH_ELEMENT_WITH_DATA", new Integer(IMenuKind.MK_BUTTON)));
 			m_TopSortItems.add(new ETPairT<String, Integer>("", new Integer(IMenuKind.MK_SEPARATOR)));

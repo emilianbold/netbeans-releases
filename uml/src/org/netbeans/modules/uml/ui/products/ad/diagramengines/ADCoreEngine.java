@@ -2176,8 +2176,10 @@ public class ADCoreEngine extends DiagramEngine
 
                         addSeparatorMenuItem(manager);
                         createNodeAlignmentPullright(manager);
-                        createNodeDistributionPullright(manager);
-                        addSeparatorMenuItem(manager);
+
+                        // disabled - feature to be added with Meteora
+                        // createNodeDistributionPullright(manager);
+                        //  addSeparatorMenuItem(manager);
                         
                         addSeparatorMenuItem(manager);
 
@@ -3025,43 +3027,45 @@ public class ADCoreEngine extends DiagramEngine
             manager.add(alignMenu);
         }
     }
-        
-    private void createNodeDistributionPullright(IMenuManager manager)
-    {
-        IMenuManager distributeMenu = manager.createSubMenu(loadString(
-            "IDS_DISTRIBUTE_POPUP_TITLE"), 
-            "org.netbeans.modules.uml.view.drawingarea.edit.popup");
-        
-        if (distributeMenu != null)
-        {
-            // Add horizontal distribute menu actions
-            distributeMenu.add(createMenuAction(
-                loadString("IDS_DISTRIBUTE_LEFT_EDGE"),
-                "MBK_DISTRIBUTE_LEFT_EDGE"));
-            
-            distributeMenu.add(createMenuAction(
-                loadString("IDS_DISTRIBUTE_HORIZONTAL_CENTER"),
-                "MBK_DISTRIBUTE_HCENTER"));
-            
-            distributeMenu.add(createMenuAction(
-                loadString("IDS_DISTRIBUTE_RIGHT_EDGE"),
-                "MBK_DISTRIBUTE_RIGHT_EDGE"));
-            
-            distributeMenu.add(createMenuAction(
-                loadString("IDS_DISTRIBUTE_TOP_EDGE"),
-                "MBK_DISTRIBUTE_TOP_EDGE"));
-            
-            distributeMenu.add(createMenuAction(
-                loadString("IDS_DISTRIBUTE_VERTICAL_CENTER"), 
-                "MBK_DISTRIBUTE_VCENTER"));
 
-            distributeMenu.add(createMenuAction(
-                loadString("IDS_DISTRIBUTE_BOTTOM_EDGE"),
-                "MBK_DISTRIBUTE_BOTTOM_EDGE"));
-            
-            manager.add(distributeMenu);
-        }
-    }
+    
+// disabled - feature to be added with Meteora
+//    private void createNodeDistributionPullright(IMenuManager manager)
+//    {
+//        IMenuManager distributeMenu = manager.createSubMenu(loadString(
+//            "IDS_DISTRIBUTE_POPUP_TITLE"), 
+//            "org.netbeans.modules.uml.view.drawingarea.edit.popup");
+//        
+//        if (distributeMenu != null)
+//        {
+//            // Add horizontal distribute menu actions
+//            distributeMenu.add(createMenuAction(
+//                loadString("IDS_DISTRIBUTE_LEFT_EDGE"),
+//                "MBK_DISTRIBUTE_LEFT_EDGE"));
+//            
+//            distributeMenu.add(createMenuAction(
+//                loadString("IDS_DISTRIBUTE_HORIZONTAL_CENTER"),
+//                "MBK_DISTRIBUTE_HCENTER"));
+//            
+//            distributeMenu.add(createMenuAction(
+//                loadString("IDS_DISTRIBUTE_RIGHT_EDGE"),
+//                "MBK_DISTRIBUTE_RIGHT_EDGE"));
+//            
+//            distributeMenu.add(createMenuAction(
+//                loadString("IDS_DISTRIBUTE_TOP_EDGE"),
+//                "MBK_DISTRIBUTE_TOP_EDGE"));
+//            
+//            distributeMenu.add(createMenuAction(
+//                loadString("IDS_DISTRIBUTE_VERTICAL_CENTER"), 
+//                "MBK_DISTRIBUTE_VCENTER"));
+//
+//            distributeMenu.add(createMenuAction(
+//                loadString("IDS_DISTRIBUTE_BOTTOM_EDGE"),
+//                "MBK_DISTRIBUTE_BOTTOM_EDGE"));
+//            
+//            manager.add(distributeMenu);
+//        }
+//    }
         
 	private String loadString(String key) {
 		try {
@@ -4375,53 +4379,54 @@ public class ADCoreEngine extends DiagramEngine
             bHandled = true;
         }
         
-        else if (id.equals("MBK_DISTRIBUTE_LEFT_EDGE"))
-        {
-            if (control.distributeLeftEdge())
-                control.setIsDirty(true);
-            
-            bHandled = true;
-        }
-        
-        else if (id.equals("MBK_DISTRIBUTE_HCENTER"))
-        {
-            if (control.distributeHorizontalCenter())
-                control.setIsDirty(true);
-            
-            bHandled = true;
-        }
-        
-        else if (id.equals("MBK_DISTRIBUTE_RIGHT_EDGE"))
-        {
-            if (control.distributeRightEdge())
-                control.setIsDirty(true);
-            
-            bHandled = true;
-        }
-        
-        else if (id.equals("MBK_DISTRIBUTE_TOP_EDGE"))
-        {
-            if (control.distributeTopEdge())
-                control.setIsDirty(true);
-            
-            bHandled = true;
-        }
-        
-        else if (id.equals("MBK_DISTRIBUTE_VCENTER"))
-        {
-            if (control.distributeVerticalCenter())
-                control.setIsDirty(true);
-            
-            bHandled = true;
-        }
-        
-        else if (id.equals("MBK_DISTRIBUTE_BOTTOM_EDGE"))
-        {
-            if (control.distributeBottomEdge())
-                control.setIsDirty(true);
-            
-            bHandled = true;
-        }
+// disabled - feature to be added with Meteora
+//        else if (id.equals("MBK_DISTRIBUTE_LEFT_EDGE"))
+//        {
+//            if (control.distributeLeftEdge())
+//                control.setIsDirty(true);
+//            
+//            bHandled = true;
+//        }
+//        
+//        else if (id.equals("MBK_DISTRIBUTE_HCENTER"))
+//        {
+//            if (control.distributeHorizontalCenter())
+//                control.setIsDirty(true);
+//            
+//            bHandled = true;
+//        }
+//        
+//        else if (id.equals("MBK_DISTRIBUTE_RIGHT_EDGE"))
+//        {
+//            if (control.distributeRightEdge())
+//                control.setIsDirty(true);
+//            
+//            bHandled = true;
+//        }
+//        
+//        else if (id.equals("MBK_DISTRIBUTE_TOP_EDGE"))
+//        {
+//            if (control.distributeTopEdge())
+//                control.setIsDirty(true);
+//            
+//            bHandled = true;
+//        }
+//        
+//        else if (id.equals("MBK_DISTRIBUTE_VCENTER"))
+//        {
+//            if (control.distributeVerticalCenter())
+//                control.setIsDirty(true);
+//            
+//            bHandled = true;
+//        }
+//        
+//        else if (id.equals("MBK_DISTRIBUTE_BOTTOM_EDGE"))
+//        {
+//            if (control.distributeBottomEdge())
+//                control.setIsDirty(true);
+//            
+//            bHandled = true;
+//        }
         
         else if (id.equals("MBK_RESET_LABELS"))
         { 

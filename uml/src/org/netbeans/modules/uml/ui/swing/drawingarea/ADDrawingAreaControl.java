@@ -12800,174 +12800,176 @@ public class ADDrawingAreaControl extends ApplicationView
         return alignNode.getCenter();
     }
 
-    public final static int DISTRIBUTE_LEFT_EDGE = 0;
-    public final static int DISTRIBUTE_HCENTER = 1;
-    public final static int DISTRIBUTE_RIGHT_EDGE = 2;
-    public final static int DISTRIBUTE_TOP_EDGE = 3;
-    public final static int DISTRIBUTE_VCENTER = 4;
-    public final static int DISTRIBUTE_BOTTOM_EDGE = 5;
-
-    public boolean distributeLeftEdge()
-    {
-        return distribute(DISTRIBUTE_LEFT_EDGE);
-    }
-
-    public boolean distributeHorizontalCenter()
-    {
-        return distribute(DISTRIBUTE_HCENTER);
-    }
     
-    public boolean distributeRightEdge()
-    {
-        return distribute(DISTRIBUTE_RIGHT_EDGE);
-    }
-
-    public boolean distributeTopEdge()
-    {
-        return distribute(DISTRIBUTE_TOP_EDGE);
-    }
-
-    public boolean distributeVerticalCenter()
-    {
-        return distribute(DISTRIBUTE_VCENTER);
-    }
-    
-    public boolean distributeBottomEdge()
-    {
-        return distribute(DISTRIBUTE_BOTTOM_EDGE);
-    }
-
-    
-    private boolean distribute(int distributeHow)
-    {
-       ETList<IPresentationElement> presElements = null;
-       presElements = getSelectedPresentionNodes();
-       
-       if (presElements == null || presElements.size() < 3)
-           return false;
-
-       List<Double> sortedCoords = new ArrayList<Double>(presElements.size());
-       List<INodePresentation> distributeThese = 
-           new ArrayList<INodePresentation>(presElements.size());
-
-       // loop through selected elements and align them
-       for (IPresentationElement presElem: presElements)
-       {
-           if (presElem != null && presElem instanceof INodePresentation)
-           {
-               INodePresentation nodePres = (INodePresentation)presElem;
-               TSENode tsNode = nodePres.getTSNode();
-               
-               double coord = getDistributeCoord(distributeHow, tsNode);
-               int i = 0;
-
-               // put the X coords in sorted order, at the same time
-               // use that sorting to sort the distributeThese list
-               // in the same order
-               for (Double curX: sortedCoords)
-               {
-                   if (coord < coord)
-                       break;
-
-                   i++;
-               }
-
-               sortedCoords.add(i, coord);
-               distributeThese.add(i, nodePres);
-           } // if instanceof INodePresentation
-       } // for
-
-       // after filtering out non-nodes, do we still have 
-       // 3 nodes to do distribution
-       if (sortedCoords.size() < 3)
-           return false;
-       
-       // calculate the width of the two outermost node centers
-       double spread = 
-           sortedCoords.get(0) - sortedCoords.get(distributeThese.size()-1);
-
-       // calculate the inteval distance to distribute the nodes
-       double intervalDist = Math.abs(spread / (distributeThese.size() - 1));
-       
-       // move node 2 through n-1 to their new distributed intervals
-       // node 1 and n are already in the right location
-       double baseCoord = sortedCoords.get(0);
-       
-       for (int j=1; j < distributeThese.size()-1; j++)
-       {
-           distributeNode(
-               distributeHow, 
-               distributeThese.get(j), 
-               (baseCoord + j * intervalDist));
-       }
-
-       // need to call refresh here because the drawing area does not refresh
-       // properly when elements are moved
-       refresh(true);
-       
-       requestFocus();
-       return true;
-    }
-    
-    private double getDistributeCoord(int distribType, TSENode node)
-    {
-        switch(distribType)
-        {
-            case DISTRIBUTE_LEFT_EDGE:
-                return node.getCenterX() - node.getWidth()/2;
-                
-            case DISTRIBUTE_HCENTER:
-                return node.getCenterX();
-                
-            case DISTRIBUTE_RIGHT_EDGE:
-                return node.getCenterX() + node.getWidth()/2;
-        
-            case DISTRIBUTE_TOP_EDGE:
-                return node.getCenterY() - node.getHeight()/2;
-
-            case DISTRIBUTE_VCENTER:
-                return node.getCenterY();
-
-            case DISTRIBUTE_BOTTOM_EDGE:
-                return node.getCenterY() + node.getHeight()/2;
-        }
-        
-        return 0D;
-    }
-    
-    private void distributeNode(
-        int distribType, INodePresentation node, double distributeTo)
-    {
-        node.invalidate();
-        
-        switch(distribType)
-        {
-            case DISTRIBUTE_LEFT_EDGE:
-                node.getTSNode().setCenterX(distributeTo + (node.getWidth()/2));
-                break;
-                
-            case DISTRIBUTE_HCENTER:
-                node.getTSNode().setCenterX(distributeTo);
-                break;
-                
-            case DISTRIBUTE_RIGHT_EDGE:
-                node.getTSNode().setCenterX(distributeTo - (node.getWidth()/2));
-                break;
-        
-            case DISTRIBUTE_TOP_EDGE:
-                node.getTSNode().setCenterY(distributeTo + (node.getHeight()/2));
-                break;
-
-            case DISTRIBUTE_VCENTER:
-                node.getTSNode().setCenterY(distributeTo);
-                break;
-
-            case DISTRIBUTE_BOTTOM_EDGE:
-                node.getTSNode().setCenterY(distributeTo - (node.getHeight()/2));
-                break;
-        }
-        
-        node.invalidate();
-    }
+// disabled - feature to be added with Meteora
+//    public final static int DISTRIBUTE_LEFT_EDGE = 0;
+//    public final static int DISTRIBUTE_HCENTER = 1;
+//    public final static int DISTRIBUTE_RIGHT_EDGE = 2;
+//    public final static int DISTRIBUTE_TOP_EDGE = 3;
+//    public final static int DISTRIBUTE_VCENTER = 4;
+//    public final static int DISTRIBUTE_BOTTOM_EDGE = 5;
+//
+//    public boolean distributeLeftEdge()
+//    {
+//        return distribute(DISTRIBUTE_LEFT_EDGE);
+//    }
+//
+//    public boolean distributeHorizontalCenter()
+//    {
+//        return distribute(DISTRIBUTE_HCENTER);
+//    }
+//    
+//    public boolean distributeRightEdge()
+//    {
+//        return distribute(DISTRIBUTE_RIGHT_EDGE);
+//    }
+//
+//    public boolean distributeTopEdge()
+//    {
+//        return distribute(DISTRIBUTE_TOP_EDGE);
+//    }
+//
+//    public boolean distributeVerticalCenter()
+//    {
+//        return distribute(DISTRIBUTE_VCENTER);
+//    }
+//    
+//    public boolean distributeBottomEdge()
+//    {
+//        return distribute(DISTRIBUTE_BOTTOM_EDGE);
+//    }
+//
+//    
+//    private boolean distribute(int distributeHow)
+//    {
+//       ETList<IPresentationElement> presElements = null;
+//       presElements = getSelectedPresentionNodes();
+//       
+//       if (presElements == null || presElements.size() < 3)
+//           return false;
+//
+//       List<Double> sortedCoords = new ArrayList<Double>(presElements.size());
+//       List<INodePresentation> distributeThese = 
+//           new ArrayList<INodePresentation>(presElements.size());
+//
+//       // loop through selected elements and align them
+//       for (IPresentationElement presElem: presElements)
+//       {
+//           if (presElem != null && presElem instanceof INodePresentation)
+//           {
+//               INodePresentation nodePres = (INodePresentation)presElem;
+//               TSENode tsNode = nodePres.getTSNode();
+//               
+//               double coord = getDistributeCoord(distributeHow, tsNode);
+//               int i = 0;
+//
+//               // put the X coords in sorted order, at the same time
+//               // use that sorting to sort the distributeThese list
+//               // in the same order
+//               for (Double curX: sortedCoords)
+//               {
+//                   if (coord < coord)
+//                       break;
+//
+//                   i++;
+//               }
+//
+//               sortedCoords.add(i, coord);
+//               distributeThese.add(i, nodePres);
+//           } // if instanceof INodePresentation
+//       } // for
+//
+//       // after filtering out non-nodes, do we still have 
+//       // 3 nodes to do distribution
+//       if (sortedCoords.size() < 3)
+//           return false;
+//       
+//       // calculate the width of the two outermost node centers
+//       double spread = 
+//           sortedCoords.get(0) - sortedCoords.get(distributeThese.size()-1);
+//
+//       // calculate the inteval distance to distribute the nodes
+//       double intervalDist = Math.abs(spread / (distributeThese.size() - 1));
+//       
+//       // move node 2 through n-1 to their new distributed intervals
+//       // node 1 and n are already in the right location
+//       double baseCoord = sortedCoords.get(0);
+//       
+//       for (int j=1; j < distributeThese.size()-1; j++)
+//       {
+//           distributeNode(
+//               distributeHow, 
+//               distributeThese.get(j), 
+//               (baseCoord + j * intervalDist));
+//       }
+//
+//       // need to call refresh here because the drawing area does not refresh
+//       // properly when elements are moved
+//       refresh(true);
+//       
+//       requestFocus();
+//       return true;
+//    }
+//    
+//    private double getDistributeCoord(int distribType, TSENode node)
+//    {
+//        switch(distribType)
+//        {
+//            case DISTRIBUTE_LEFT_EDGE:
+//                return node.getCenterX() - node.getWidth()/2;
+//                
+//            case DISTRIBUTE_HCENTER:
+//                return node.getCenterX();
+//                
+//            case DISTRIBUTE_RIGHT_EDGE:
+//                return node.getCenterX() + node.getWidth()/2;
+//        
+//            case DISTRIBUTE_TOP_EDGE:
+//                return node.getCenterY() - node.getHeight()/2;
+//
+//            case DISTRIBUTE_VCENTER:
+//                return node.getCenterY();
+//
+//            case DISTRIBUTE_BOTTOM_EDGE:
+//                return node.getCenterY() + node.getHeight()/2;
+//        }
+//        
+//        return 0D;
+//    }
+//    
+//    private void distributeNode(
+//        int distribType, INodePresentation node, double distributeTo)
+//    {
+//        node.invalidate();
+//        
+//        switch(distribType)
+//        {
+//            case DISTRIBUTE_LEFT_EDGE:
+//                node.getTSNode().setCenterX(distributeTo + (node.getWidth()/2));
+//                break;
+//                
+//            case DISTRIBUTE_HCENTER:
+//                node.getTSNode().setCenterX(distributeTo);
+//                break;
+//                
+//            case DISTRIBUTE_RIGHT_EDGE:
+//                node.getTSNode().setCenterX(distributeTo - (node.getWidth()/2));
+//                break;
+//        
+//            case DISTRIBUTE_TOP_EDGE:
+//                node.getTSNode().setCenterY(distributeTo + (node.getHeight()/2));
+//                break;
+//
+//            case DISTRIBUTE_VCENTER:
+//                node.getTSNode().setCenterY(distributeTo);
+//                break;
+//
+//            case DISTRIBUTE_BOTTOM_EDGE:
+//                node.getTSNode().setCenterY(distributeTo - (node.getHeight()/2));
+//                break;
+//        }
+//        
+//        node.invalidate();
+//    }
 
 }

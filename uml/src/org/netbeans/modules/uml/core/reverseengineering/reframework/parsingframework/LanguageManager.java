@@ -53,6 +53,7 @@ import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  * @author sumitabhk
@@ -1144,6 +1145,9 @@ public class LanguageManager implements ILanguageManager
         {
             List pNodeList = pLanguageNode.selectNodes("Libraries/Library");
             String home = getConfigLocation();
+//            home = InstalledFileLocator.getDefault().locate(
+//                "modules/languagedefs", "org.netbeans.modules.uml", false).getAbsolutePath();
+            
             if (pNodeList != null) 
             {
                 int count = pNodeList.size();
