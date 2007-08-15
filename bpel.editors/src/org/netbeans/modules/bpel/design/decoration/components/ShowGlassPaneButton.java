@@ -49,10 +49,8 @@ public class ShowGlassPaneButton extends AbstractGlassPaneButton {
     
     public ShowGlassPaneButton(List<ResultItem> resultItems) {
         super(ERROR_ICON);
-        
         fillGlassPaneHeader(resultItems);
         fillGlassPaneContent(resultItems);
-        
         updatePreferredSize();
     }
 
@@ -126,9 +124,9 @@ public class ShowGlassPaneButton extends AbstractGlassPaneButton {
     }
     
     private void fillGlassPaneContent(List<ResultItem> resultItems) {
-        addToGlassPane(resultItems, ResultType.ERROR); // NOI18N
-        addToGlassPane(resultItems, ResultType.ADVICE); // NOI18N
-        addToGlassPane(resultItems, ResultType.WARNING); // NOI18N
+        addToGlassPane(resultItems, ResultType.ERROR);
+        addToGlassPane(resultItems, ResultType.ADVICE);
+        addToGlassPane(resultItems, ResultType.WARNING);
         getGlassPane().updateHTML();
     }
     

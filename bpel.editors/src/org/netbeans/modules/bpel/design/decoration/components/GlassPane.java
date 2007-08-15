@@ -95,7 +95,10 @@ public class GlassPane extends JPanel implements ActionListener,
             }
         };
         
-        editorPane.setEditable(false);
+//        editorPane.setEditable(false);
+        //vlv
+        editorPane.setEditable(true);
+
         editorPane.setEditorKitForContentType("text/html", new HTMLEditorKit());
         editorPane.setContentType("text/html");
         editorPane.setBackground(null);
