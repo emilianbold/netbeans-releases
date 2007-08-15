@@ -524,11 +524,20 @@ public class ListView extends JScrollPane implements Externalizable {
         }
 
         model.removeListDataListener(managerListener);
-        // #109123: clear the model, as it may become invalid, because we stopped 
-        // tracking ExplorerManager changes through listeners
-        model.setNode(Node.EMPTY);
-        
         list.removeMouseListener(popupSupport);
+
+        // #112536: [dafe] I wasn't able to find out real reason for #112536
+        // Following delaying works, but is hacky a bit and we have to check
+        // if ListView is reused - addNotify called again, which we check through isDisplayable
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run() {
+                if (!isDisplayable()) {
+                    // #109123: clear the model, as it may become invalid, because we stopped 
+                    // tracking ExplorerManager changes through listeners
+                    model.setNode(Node.EMPTY);
+                }
+            }
+        });
     }
 
     /* Requests focus for the list component. Overrides superclass method. */
