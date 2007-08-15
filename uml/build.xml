@@ -45,6 +45,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <antcall target="clean-javahelp-images"/>       
         <antcall target="javahelp-images"/>                
         <antcall target="unzip-doors"/>
+        <antcall target="languagedefs"/>
 
         <!-- Add our cluster name in etc/netbeans.clusters -->
         <!--
@@ -58,7 +59,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     </target>
     
     <property name="doors.integration.files" value="${basedir}/lib/DoorsIntegrationFiles.zip"/>
-
     <!-- Following target creates platform specific zip files -->
     <target name="unzip-doors" description="unzip doors for windows.">
         <unzip src="${doors.integration.files}"
@@ -68,50 +68,20 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <copy file="${basedir}/lib/JNI/DOORSIntegration/bin/configDoors.vbs" todir="${cluster}/modules/DoorsIntegrationFiles"/>
     </target>
     
-    <target name="javahelp-images" depends="clean-javahelp-images">
-        <echo message="[UML] copying UML images to javahelp resource directory"/>
-        
-        <property name="src.images.dir" value="${basedir}/src/org/netbeans/modules/uml/"/>
-        <property name="dest.images.dir" value="${basedir}/javahelp/org/netbeans/modules/uml/docs/images"/>
-
-        <mkdir dir="${dest.images.dir}/resources"/>
-
-        <!-- copy core images to javahelp resources dir 
-        <copy todir="${dest.images.dir}/resources" overwrite="true">
-            <fileset dir="${src.images.dir}/resources" casesensitive="yes"/>
-        </copy>
-        -->
-        
-        <!-- copy core toolbar images to javahelp toolbar_images dir
-        <mkdir dir="${dest.images.dir}/resources/toolbar_images"/>
-     
-        <copy todir="${dest.images.dir}/resources/toolbar_images" overwrite="true">
-            <fileset dir="${src.images.dir}/resources/toolbar_images" casesensitive="yes"/>
-        </copy>
-        -->
-        
-        <!-- copy new core images to javahelp resources/images dir -->
-        <mkdir dir="${dest.images.dir}/resources/images"/>
-     
-        <copy todir="${dest.images.dir}/resources/images" overwrite="true">
-            <fileset dir="${src.images.dir}/resources/images" casesensitive="yes"/>
-        </copy>
-        
-        <!-- copy toolbar images from palette module to core javahelp toolbar_images dir -->
-        <!--
-        <property name="src.palette.images.dir" value="${basedir}/../modelingpalette/src/org/netbeans/modules/uml/palette/ui/images/toolbar_images"/>
-        <copy todir="${dest.images.dir}/resources/toolbar_images" overwrite="true">
-            <fileset dir="${src.palette.images.dir}" casesensitive="yes"/>
-        </copy>
-        -->
+    <property name="language.definition.dir" value="${basedir}/lib/languagedefs"/>
+    <target name="languagedefs" description="language definition files for RE Operation">
+        <copydir src="${language.definition.dir}" dest="${cluster}/modules/languagedefs"/>
     </target>
     
-    <target name="clean-javahelp-images">
-        <echo message="[UML] deleting UML images in javahelp resource directory"/>
-        
-        <!-- delete javahelp resource dir and fail quietly if the dir DNE -->
-        <delete includeEmptyDirs="true" quiet="true" failonerror="false">
-            <fileset dir="${basedir}/javahelp/org/netbeans/modules/uml/docs/images"/>
-        </delete>
+    <property name="src.images.dir" value="${basedir}/src/org/netbeans/modules/uml/"/>
+    <property name="dest.images.dir" value="${basedir}/javahelp/org/netbeans/modules/uml/docs/images"/>
+
+    <target name="javahelp-images">
+        <echo message="[UML] copying UML images to javahelp resource directory"/>
+        <!-- copy new core images to javahelp resources/images dir -->
+        <mkdir dir="${dest.images.dir}/resources/images"/>
+        <copy todir="${dest.images.dir}/resources/images">
+            <fileset dir="${src.images.dir}/resources/images" includes="**/*.png **/*.gif" casesensitive="yes"/>
+        </copy>
     </target>
 </project>
