@@ -273,6 +273,7 @@ class DragOperation {
             menuEditLayer.layers.remove(dragComponent);
             menuEditLayer.repaint();
         }
+        menuEditLayer.dropTargetLayer.clearDropTarget();
     }
     
     // only looks at JMenu and JMenubar RADComponents as well as anything in the popups

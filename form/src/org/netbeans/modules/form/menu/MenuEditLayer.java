@@ -66,6 +66,7 @@ import org.netbeans.modules.form.assistant.AssistantMessages;
 import org.netbeans.modules.form.editors.IconEditor.NbImageIcon;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
 
@@ -343,6 +344,7 @@ public class MenuEditLayer extends JPanel {
         }
     }
     
+    PropertyChangeListener paletteListener = null;
     private void configureFormListeners() {
         
         if(menuBarFormListener == null) {
@@ -373,13 +375,33 @@ public class MenuEditLayer extends JPanel {
             };
             formDesigner.getFormModel().addFormModelListener(menuBarFormListener);
         }
+        if(paletteListener == null) {
+            paletteListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if(PaletteUtils.getSelectedItem() == null || 
+                            !isMenuRelatedComponentClass(PaletteUtils.getSelectedItem().getComponentClass())) {
+                        if(dragop != null && dragop.isStarted()) {
+                            dragop.fastEnd();
+                        }
+                    }     
+                }
+            };
+            paletteContext = formDesigner.getFormEditor().getFormDataObject().getFormFile();
+            PaletteUtils.addPaletteListener(paletteListener, paletteContext);
+        }
     }    
     
+    FileObject paletteContext = null;
     private void unconfigureFormListeners() {
         if(menuBarFormListener != null) {
             if(formDesigner != null && formDesigner.getFormModel() != null) {
                 formDesigner.getFormModel().removeFormModelListener(menuBarFormListener);
             }
+        }
+        if(paletteListener != null) {
+            PaletteUtils.removePaletteListener(paletteListener, paletteContext);
+            paletteContext = null;
+            paletteListener = null;
         }
         menuBarFormListener = null;
     }    

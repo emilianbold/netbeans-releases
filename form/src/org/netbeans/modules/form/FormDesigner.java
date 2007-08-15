@@ -386,7 +386,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return layoutDesigner;
     }
     
-    FormEditor getFormEditor() {
+    public FormEditor getFormEditor() {
         return formEditor;
     }
     
