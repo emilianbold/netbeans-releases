@@ -264,7 +264,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
                         continue;
                     }
                     if (wrapperChildren == null) {
-                        wrapperChildren = wrapperChildren = new ArrayList<InspectorFolderWrapper>();
+                        wrapperChildren = new ArrayList<InspectorFolderWrapper>();
                     }
                     InspectorFolderWrapper wrapper = new InspectorFolderWrapper(document, presenter.getFolder());
                     wrapperChildren.add(wrapper);
@@ -292,7 +292,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
                     continue;
                 }
                 if (wrapperChildren == null) {
-                    wrapperChildren = wrapperChildren = new ArrayList<InspectorFolderWrapper>();
+                    wrapperChildren = new ArrayList<InspectorFolderWrapper>();
                 }
                 InspectorFolderWrapper wrapper = new InspectorFolderWrapper(document, folder);
                 wrapperChildren.add(wrapper);
@@ -382,7 +382,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
     private void updateChangedDescriptors(final Collection<DesignComponent> createdComponents, final Collection<DesignComponent> affectedComponents) {
         if (createdComponents != null) {
             for (DesignComponent component : createdComponents) {
-                for (InspectorFolderPresenter presenter : component.getPresenters(InspectorFolderPresenter.class)) {
+                if(!component.getPresenters(InspectorFolderPresenter.class).isEmpty()) {
                     componentsToAdd.add(component);
                 }
             }
