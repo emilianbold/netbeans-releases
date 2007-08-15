@@ -43,6 +43,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,7 +77,7 @@ public class WSDesignViewNavigatorContent extends JPanel
     public void navigate(DataObject implClass){
         add(treeView, BorderLayout.CENTER);
         AbstractNode root = new AbstractNode(new WSChildren(implClass));
-        root.setName("Operations");
+        root.setName(NbBundle.getMessage(WSDesignViewNavigatorContent.class, "LBL_Operations"));
         getExplorerManager().setRootContext(root);
         revalidate();
         repaint();
