@@ -27,7 +27,9 @@ import org.netbeans.jellytools.modules.db.nodes.ConnectionNode;
 import org.netbeans.jellytools.modules.db.nodes.DatabasesNode;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.derby.DerbyOptions;
+import org.netbeans.modules.derby.StartAction;
 import org.netbeans.test.db.derby.lib.CreateDerbyDatabaseOperator;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -49,6 +51,10 @@ public class CreateDatabaseTest  extends DbJellyTestCase {
     }
     
     public void testCreateDatabase(){
+        // <workaround for #112788>
+        SystemAction.get(StartAction.class).performAction();
+        sleep(2000);
+        // </workaround>
         debug("Creating Java DB Database");
         new ActionNoBlock("Tools|Java DB Database|Create Database...", null).perform();
         CreateDerbyDatabaseOperator operator=new CreateDerbyDatabaseOperator();
