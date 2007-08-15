@@ -153,7 +153,7 @@ public class VcsAdvancedOptions extends AdvancedOption {
         
         
         public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
+            return new HelpCtx(VcsAdvancedOptions.class);
         }
     }
 }
