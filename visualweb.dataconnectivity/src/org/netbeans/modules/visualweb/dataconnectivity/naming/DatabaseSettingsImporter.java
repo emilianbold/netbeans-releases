@@ -598,7 +598,7 @@ public class DatabaseSettingsImporter {
                         "ResAuth" }, // NOI18N
                         new Object[] {
                         jr.getResourceName(),
-                        "Creator generated DataSource Reference", // NOI18N
+                        "Visual Web generated DataSource Reference", // NOI18N
                         "javax.sql.DataSource", // NOI18N
                         "Container" }, // NOI18N
                         "ResRefName"); // NOI18N
