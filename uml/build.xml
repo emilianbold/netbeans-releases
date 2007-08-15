@@ -44,7 +44,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <target name="netbeans-extra">      
         <antcall target="javahelp-images"/>                
         <antcall target="unzip-doors"/>
-        <antcall target="languagedefs"/>
+        <!-- antcall target="languagedefs"/ -->
 
         <!-- Add our cluster name in etc/netbeans.clusters -->
         <!--
