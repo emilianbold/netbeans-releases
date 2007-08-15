@@ -292,7 +292,7 @@ RegularExpression = <js_regularExpression>;
 #PARSE:RegularExpression:org.netbeans.modules.languages.javascript.JavaScript.parseRegularExpression
 
 AST {
-    removeSimple:"!FunctionBody,Statement,VariableDeclaration,Parameter,VariableName,PropertyName,Initializer,Error,FunctionName";
+    removeSimple:"!FormalParameterList,FunctionBody,FunctionDeclaration,Statement,VariableDeclaration,Parameter,VariableName,PropertyName,PropertyNameAndValue,Initializer,Error,FunctionName,AssignmentExpressionInitial,AssignmentOperator";
     #process:org.netbeans.modules.languages.javascript.Semantic.process;
 }
 
@@ -351,19 +351,14 @@ NAVIGATOR:FunctionDeclaration: {
 }
 
 NAVIGATOR:VariableDeclaration: {
-    display_name: "$VariableName$";
+    display_name: org.netbeans.modules.languages.javascript.JavaScript.variableName;
     tooltip: "$VariableName$ $Initializer$";
-    icon: "/org/netbeans/modules/languages/resources/variable.gif";
-}
-
-NAVIGATOR:ObjectLiteral: {
-    display_name: org.netbeans.modules.languages.javascript.JavaScript.objectName;
-    icon: "/org/netbeans/modules/languages/resources/class.gif";
+    icon: org.netbeans.modules.languages.javascript.JavaScript.variableIcon;
 }
 
 NAVIGATOR:PropertyNameAndValue: {
-    display_name: "$PropertyName$";
-    icon: "/org/netbeans/modules/languages/resources/variable.gif";
+    display_name: org.netbeans.modules.languages.javascript.JavaScript.propertyName;
+    icon: org.netbeans.modules.languages.javascript.JavaScript.propertyIcon;
 }
 
 

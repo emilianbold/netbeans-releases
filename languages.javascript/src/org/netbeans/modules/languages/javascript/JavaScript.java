@@ -19,9 +19,7 @@
 
 package org.netbeans.modules.languages.javascript;
 
-import java.io.File;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ListIterator;
@@ -37,11 +35,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.CharInput;
@@ -50,7 +45,6 @@ import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.LibrarySupport;
@@ -65,7 +59,6 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
-import org.openide.text.NbDocument;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.netbeans.api.languages.CompletionItem;
@@ -85,7 +78,7 @@ public class JavaScript {
     private static final String DOM2 = "org/netbeans/modules/languages/javascript/DOM2.xml";
     private static final String MIME_TYPE = "text/javascript";
     
-    private static Set regExp = new HashSet ();
+    private static Set<Integer> regExp = new HashSet<Integer> ();
     static {
         regExp.add (new Integer (','));
         regExp.add (new Integer (')'));
@@ -140,7 +133,6 @@ public class JavaScript {
             !input.eof () && 
             input.next () == '.'
         ) {
-            int h = input.getIndex ();
             input.read ();
             if (input.next () >= '0' &&
                 input.next () <= '9'
@@ -174,76 +166,105 @@ public class JavaScript {
         };
     }
 
-    public static String functionName (SyntaxContext context) {
+    public static String variableName (SyntaxContext context) {
+        ASTPath path = context.getASTPath ();
+        ListIterator<ASTItem> it = path.listIterator ();
+        while (it.hasNext ()) {
+            ASTItem item = it.next ();
+            if ((item instanceof ASTNode) &&
+                ((ASTNode) item).getNT ().equals ("FunctionDeclaration")
+            )
+                return null;
+        }
+        return ((ASTNode) path.getLeaf ()).getNode ("VariableName").getAsText ();
+    }
+    
+    public static String variableIcon (SyntaxContext context) {
+        ASTPath path = context.getASTPath ();
+        ASTNode node = (ASTNode) path.getLeaf ();
+        node = node.getNode ("Initializer.ObjectLiteral");
+        if (node != null) {
+            return "/org/netbeans/modules/languages/resources/class.gif";
+        }
+        return "/org/netbeans/modules/languages/resources/variable.gif";
+    }
+    
+    private static Set<String> objectNTs = new HashSet<String> ();
+    static {
+        objectNTs.add ("VariableDeclaration");
+        objectNTs.add ("Initializer");
+        objectNTs.add ("ObjectLiteral");
+        objectNTs.add ("PropertyNameAndValue");
+    }
+    
+    public static String propertyName (SyntaxContext context) {
+        ASTPath path = context.getASTPath ();
+        boolean in = false;
+        for (int i = 0; i < path.size (); i++) {
+            if (!(path.get (i) instanceof ASTNode)) continue;
+            ASTNode node = (ASTNode) path.get (i);
+            if (node.getNT ().equals ("FunctionDeclaration")
+            )
+                return null;
+            if (in && !objectNTs.contains (node.getNT ()))
+                return null;
+            if (node.getNT ().equals ("VariableStatement"))
+                in = true;
+        }
+        if (!in) return null;
+        ASTNode node = (ASTNode) path.getLeaf ();
+        String name = node.getNode ("PropertyName").getAsText ();
+        node = node.getNode ("FunctionDeclaration.FormalParameterList");
+        if (node != null) {
+            name += " (" + getParametersAsText (node) + ")";
+        }
+        return name;
+    }
+    
+    public static String propertyIcon (SyntaxContext context) {
         ASTPath path = context.getASTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
-        String name = null;
-        ASTNode nameNode = n.getNode ("FunctionName");
-        if (nameNode != null)
-            name = nameNode.getAsText ();
-        ASTNode parametersNode = n.getNode ("FormalParameterList");
-        if (parametersNode == null) {
-            parametersNode = n.getNode ("Parameter");
-        }
-        if (name != null) {
-            return name + " (" + getParametersAsText(parametersNode) + ")";
-        }
-        
-        ListIterator<ASTItem> it = path.listIterator (path.size () - 1);
-        while (it.hasPrevious ()) {
-            ASTItem item = it.previous ();
-            if (item instanceof ASTToken) break;
-            ASTNode p = (ASTNode) item;
-            if (p.getNT ().equals ("AssignmentExpressionInitial") &&
-                p.getNode ("AssignmentOperator") != null
-            ) {
-                return ((ASTNode) p.getChildren ().get (0)).getAsText () + 
-                    " (" + getParametersAsText (n.getNode ("FormalParameterList")) + ")";
-            }
-            if (p.getNT ().equals ("PropertyNameAndValue")) {
-                return p.getNode ("PropertyName").getAsText () + 
-                    " (" + getParametersAsText (n.getNode ("FormalParameterList")) + ")";
-            }
-        }
-        return "?";
+        if (n.getNode ("FunctionDeclaration") != null)
+            return "/org/netbeans/modules/languages/resources/method.gif";
+        if (n.getNode ("ObjectLiteral") != null)
+            return "/org/netbeans/modules/languages/resources/class.gif";
+        return "/org/netbeans/modules/languages/resources/variable.gif";
     }
 
-    public static String objectName (SyntaxContext context) {
+    public static String functionName (SyntaxContext context) {
         ASTPath path = context.getASTPath ();
-        ASTNode n = (ASTNode) path.getLeaf ();
-        ListIterator<ASTItem> it = path.listIterator (path.size ());
-        while (it.hasPrevious ()) {
-            ASTItem item = it.previous ();
-            if (item instanceof ASTToken) break;
-            ASTNode p = (ASTNode) item;
-            if (p.getNT ().equals ("AssignmentExpressionInitial") &&
-                p.getNode ("AssignmentOperator") != null
-            ) {
-                return ((ASTNode) p.getChildren ().get (0)).getAsText ();
-            }
-            if (p.getNT ().equals ("PropertyNameAndValue")) {
-                return p.getNode ("PropertyName").getAsText ();
-            }
+        ListIterator<ASTItem> it = path.listIterator ();
+        while (it.hasNext ()) {
+            ASTItem item = it.next ();
+            if (!(item instanceof ASTNode)) continue;
+            ASTNode n = (ASTNode) item;
+            if (n.getNT ().equals ("ObjectLiteral"))
+                return null;
+            if (n.getNT ().equals ("FunctionDeclaration") &&
+                n != path.getLeaf ()
+            )
+                return null;
         }
-        return "?";
+        
+        ASTNode node = (ASTNode) path.getLeaf ();
+        String name = null;
+        ASTNode nameNode = node.getNode ("FunctionName");
+        if (nameNode == null) return null;
+        name = nameNode.getAsText ();
+        ASTNode parametersNode = node.getNode ("FormalParameterList");
+        return name + " (" + getParametersAsText (parametersNode) + ")";
     }
     
     
     // code completion .........................................................
     
-    public static List completionItems (Context context) {
+    public static List<CompletionItem> completionItems (Context context) {
         if (context instanceof SyntaxContext) {
-            SyntaxContext syntaxContext = (SyntaxContext) context;
-            ASTPath path = ((SyntaxContext) context).getASTPath ();
-            Document doc = syntaxContext.getDocument ();
             List<CompletionItem> result = new ArrayList<CompletionItem> ();
-            FileObject fo = NbEditorUtilities.getFileObject (doc);
-            //Collection<CompletionItem> globals = Index.getGlobalItems (fo, members.keySet ());
-            //result.addAll (globals);
             return merge (result);
         }
         
-        List result = new ArrayList ();
+        List<CompletionItem> result = new ArrayList<CompletionItem> ();
         TokenSequence ts = context.getTokenSequence ();
         Token token = previousToken (ts);
         String tokenText = token.text ().toString ();
@@ -341,7 +362,6 @@ public class JavaScript {
     }
      
     public static boolean enabledDeleteCurrentMethod (ASTNode node, JTextComponent comp) {
-        NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
         int position = comp.getCaretPosition();
         ASTPath path = node.findPath(position);
         if (path == null) return false;
@@ -375,7 +395,7 @@ public class JavaScript {
                     DataObject dob = NbEditorUtilities.getDataObject (doc);
                     String name = dob.getPrimaryFile ().getNameExt ();
                     fo = dob.getPrimaryFile();
-                    SaveCookie saveCookie = (SaveCookie) dob.getLookup ().lookup (SaveCookie.class);
+                    SaveCookie saveCookie = dob.getLookup ().lookup (SaveCookie.class);
                     if (saveCookie != null)
                         try {
                             saveCookie.save ();
@@ -468,41 +488,6 @@ public class JavaScript {
                 Arrays.asList (new String[] {DOC, DOM0, DOM1, DOM2})
             );
         return library;
-    }
-
-    private static TokenSequence getTokenSequence (Document doc, Caret caret) {
-        int ln = NbDocument.findLineNumber ((StyledDocument) doc, caret.getDot ()) - 1;
-        int start = NbDocument.findLineOffset ((StyledDocument) doc, ln);
-        TokenHierarchy th = TokenHierarchy.get (doc);
-        TokenSequence ts = th.tokenSequence ();
-        ts.move (start);
-        return ts;
-    }
-    
-    private static void indent (Document doc, Caret caret, int i) {
-        StringBuilder sb = new StringBuilder ();
-        while (i > 0) {
-            sb.append (' ');i--;
-        }
-        try {
-            doc.insertString (caret.getDot (), sb.toString (), null);
-        } catch (BadLocationException ex) {
-            ErrorManager.getDefault ().notify (ex);
-        }
-    }
-    
-    private static int getIndent (TokenSequence ts) {
-        if (ts.token ().id ().name ().equals ("js_whitespace")) {
-            String w = ts.token ().text ().toString ();
-            int i = w.lastIndexOf ('\n');
-            if (i >= 0)
-                w = w.substring (i + 1);
-            i = w.lastIndexOf ('\r');
-            if (i >= 0)
-                w = w.substring (i + 1);
-            return w.length ();
-        }
-        return 0;
     }
     
     private static String getParametersAsText (ASTNode params) {
