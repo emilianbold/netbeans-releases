@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -57,6 +58,10 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
     private HotKeyAction mnemAction;
     public static int BORDER_RADIUS = 3;
     private Object key = new Object();
+    
+    private Image image;
+    private Image selectedImage;
+    private boolean selected;
 
     /**
      *
@@ -157,8 +162,7 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
     public void setButtonEnabled(boolean v) {
         setEnabled(v);
         setPaintAsDisabled(!v);
-        revalidate();
-        repaint();
+        revalidate(true);
     }
     
     /**
@@ -169,6 +173,29 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
         return isEnabled();
     }
     
+    public boolean isSelected() {
+        return selected;
+    }
+    
+    public void setSelected(boolean flag) {
+        if(selected!=flag) {
+            selected=flag;
+            if(selectedImage!=null) 
+                super.setImage(selected ? image : selectedImage);
+            revalidate(true);
+        }
+    }
+    
+    @Override
+    public final void setImage(Image image) {
+        super.setImage(image);
+        this.image = image;
+    }
+
+    public final void setSelectedImage(Image selectedImage) {
+        this.selectedImage = selectedImage;
+    }
+
     /**
      * Called when mouse is clicked on the widget.
      */
@@ -176,8 +203,6 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
         //simply delegate to swing action
         if(isButtonEnabled() && action!=null) {
             action.actionPerformed(new ActionEvent(this,0, getActionCommand()));
-            //validate scene as called from ActionListeners
-            getScene().validate();
         }
     }
     
@@ -284,6 +309,10 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
                     g2.setPaint(BACKGROUND_COLOR_PRESSED);
                     g2.fill(buttonRect);
                 } else {
+                    if(button.isSelected()) {
+                        g2.setPaint(BACKGROUND_COLOR_PRESSED);
+                        g2.fill(buttonRect);
+                    }
                     Area s = new Area(buttonRect);
                     Area inner = new Area(new RoundRectangle2D.Double(rect.x + 2.5f, rect.y + 2.5f,
                                 rect.width - 5f, rect.height - 5f, radius*2, radius*2));

@@ -72,21 +72,10 @@ public class CheckBoxWidget extends ButtonWidget {
      */
     public CheckBoxWidget(Scene scene, String text) {
         super(scene, IMAGE_CHECKBOX, text);
+        setSelectedImage(IMAGE_CHECKBOX_SELECTED);
         setBorder(BorderFactory.createEmptyBorder(1));
     }
-    
-    
-    public boolean isSelected() {
-        return isSelected;
-    }
-    
-    public void setSelected(boolean flag) {
-        if(isSelected!=flag) {
-            isSelected=flag;
-            setImage(isSelected ? IMAGE_CHECKBOX_SELECTED : IMAGE_CHECKBOX);
-        }
-    }
-    
+
     public void performAction() {
         setSelected(!isSelected());
         super.performAction();

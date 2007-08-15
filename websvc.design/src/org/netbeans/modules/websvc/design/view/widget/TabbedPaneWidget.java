@@ -113,7 +113,7 @@ public class TabbedPaneWidget extends Widget {
                     selectedTab = tab;
                     selectedTab.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
                     LayoutFactory.setActiveCard(contentWidget, tabComponent);
-                    getScene().validate();
+                    contentWidget.revalidate(true);
                 }
             }
         });

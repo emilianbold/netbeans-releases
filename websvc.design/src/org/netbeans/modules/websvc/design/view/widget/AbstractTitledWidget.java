@@ -192,11 +192,13 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         if(!isExpandable()) return;
         if(this.expanded != expanded) {
             this.expanded = expanded;
+            revalidate(true);
             if(expanded) {
                 expandWidget();
             } else {
                 collapseWidget();
             }
+            getScene().validate();
             expander.setExpanded(expanded);
         }
     }

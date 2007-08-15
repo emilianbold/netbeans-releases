@@ -166,7 +166,16 @@ public class OperationWidget extends AbstractTitledWidget {
                     } else {
                         messageLayer.removeChildren();
                         messageWidget = new SampleMessageWidget(
-                                getObjectScene(), operation, type);
+                                getObjectScene(), operation, type) {
+                            public void notifyAdded() {
+                                super.notifyAdded();
+                                sampleButton.setSelected(true);
+                            }
+                            public void notifyRemoved() {
+                                super.notifyRemoved();
+                                sampleButton.setSelected(false);
+                            }
+                        };
                         messageLayer.addChild(messageWidget);
                     }
                 }
@@ -204,21 +213,23 @@ public class OperationWidget extends AbstractTitledWidget {
     }
 
     protected void collapseWidget() {
-        super.collapseWidget();
         if(buttons!=null && buttons.getParentWidget()!=null) {
+            getHeaderWidget().revalidate(true);
             buttons.removeChild(getExpanderWidget());
             getHeaderWidget().removeChild(buttons);
             BorderLayout.addLayoutComponent(getHeaderWidget(), getExpanderWidget(), BorderLayout.Constraint.EAST);
         }
+        super.collapseWidget();
     }
 
     protected void expandWidget() {
-        super.expandWidget();
         if(buttons!=null && buttons.getParentWidget()==null) {
+            getHeaderWidget().revalidate(true);
             getHeaderWidget().removeChild(getExpanderWidget());
             buttons.addChild(getExpanderWidget());
             BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
         }
+        super.expandWidget();
     }
 
     public Object hashKey() {
