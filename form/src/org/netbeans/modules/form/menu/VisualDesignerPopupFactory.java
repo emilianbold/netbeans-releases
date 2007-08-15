@@ -33,9 +33,7 @@ import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.form.RADComponent;
-import org.netbeans.modules.form.RADContainer;
 import org.netbeans.modules.form.RADVisualContainer;
-import org.netbeans.modules.form.menu.VisualDesignerJPanelPopup;
 
 /** A PopupFactory which returns VisualDesignerJPanelPopup's
  *

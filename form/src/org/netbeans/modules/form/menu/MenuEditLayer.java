@@ -218,7 +218,6 @@ public class MenuEditLayer extends JPanel {
     
     
     public void startNewMenuComponentPickAndPlop(PaletteItem item, Point pt) {
-        p("starting a new menu component pick and plop");
         this.setVisible(true);
         this.requestFocus();
         dragop = new DragOperation(this);
@@ -226,7 +225,6 @@ public class MenuEditLayer extends JPanel {
     }
     
     public void startNewMenuComponentDragAndDrop(PaletteItem item) {
-        p("starting a new menu component drag and drop");
         this.setVisible(true);
         this.requestFocus();
         configureGlassLayer();
@@ -255,7 +253,7 @@ public class MenuEditLayer extends JPanel {
     // the public method for non-menu parts of the form editor to
     // start menu editing
     public void openAndShowMenu(RADComponent metacomp, Component comp) {
-        p("making sure the menu is open: " + metacomp +  " " + metacomp.getName());
+        //p("making sure the menu is open: " + metacomp +  " " + metacomp.getName());
         if(hackedPopupFactory == null) {
             this.hackedPopupFactory = new VisualDesignerPopupFactory(this);
         }
@@ -439,29 +437,21 @@ public class MenuEditLayer extends JPanel {
     }
 
     void showMenuPopup(final JMenu menu) {
-        p("showing the popup for menu: " + menu.getName());
         getPopupFactory();
         // if already created then just make it visible
         if(hackedPopupFactory.containerMap.containsKey(menu)) {
-            p("there is already be a popup view. just making it visible " + menu.getName());
             JPanel view = hackedPopupFactory.containerMap.get(menu);
             view.setVisible(true);
         } else {
-            p("there is not already a popup view " + menu.getName());
             if(!isConfigured(menu)) {
-                p("configureing again! " + menu.getName());
                 configureMenu(null, menu);
             }
             final JPopupMenu popup = menu.getPopupMenu();
-            p("got the popup: " + popup + "\n for menu " + menu.getName());
             
             if(!(popup.getUI() instanceof VisualDesignerPopupMenuUI)) {
-                p("setting the right ui. why wasn't this already done! " + menu.getName());
                 popup.setUI(new VisualDesignerPopupMenuUI(this, popup.getUI()));
             }
             if(menu.isVisible()) {
-                p("the menu *is* visible "  + menu.getName());
-                p("triggering the creation of the popup");
                 //force popup view creation
                 hackedPopupFactory.getPopup(menu, null, 0, 0);
                 
@@ -469,7 +459,6 @@ public class MenuEditLayer extends JPanel {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         try {
-                            p("doing the real show later " + menu.getName());
                             popup.show(menu,0,menu.getHeight());
                         } catch (Exception ex) {
                             ex.printStackTrace();
@@ -499,7 +488,7 @@ public class MenuEditLayer extends JPanel {
     
     
     void configureMenu(final JComponent parent, final JMenu menu) {
-        p("configuring the menu: " + menu.getText());
+        //p("configuring the menu: " + menu.getText());
         // make sure it will draw it's border so we can have rollovers and selection
         menu.setBorderPainted(true);
         //install the wrapper icon if not a toplevel JMenu
@@ -511,15 +500,15 @@ public class MenuEditLayer extends JPanel {
         
         // configure the maps and popups
         JPopupMenu popup = menu.getPopupMenu();
-        p("got a popup: " + popup);
+        //p("got a popup: " + popup);
         menuPopupUIMap.put(menu, popup.getUI());
         popup.setUI(new VisualDesignerPopupMenuUI(this, popup.getUI()));
         
         // get all of the components in this menu
         Component[] subComps = menu.getMenuComponents();
-        p("the current subcomps of the menu are:");
+        //p("the current subcomps of the menu are:");
         for(Component c : subComps) {
-            p("   comp: " + c);
+            //p("   comp: " + c);
         }
         // if this isn't the first time this menu has been opened then the sub components
         // will have been moved to the popupPanel already, so we will find them there instead.
@@ -852,17 +841,17 @@ public class MenuEditLayer extends JPanel {
             if(target.getParent() instanceof JMenuBar) {
                 targetParent = (JComponent) target.getParent();
             }
-            p("target parent = " + targetParent);
+            //p("target parent = " + targetParent);
             RADVisualComponent targetRad = (RADVisualComponent) formDesigner.getMetaComponent(target);
-            p("target rad = " + targetRad);
+            //p("target rad = " + targetRad);
             RADVisualContainer targetParentRad = (RADVisualContainer) formDesigner.getMetaComponent(targetParent);
-            p("target parent rad = " + targetParentRad);
+            //p("target parent rad = " + targetParentRad);
             
             assert targetParentRad != null;
             
-            p("=== inserting before drop target component ===");
+            //p("=== inserting before drop target component ===");
             int index2 = targetParentRad.getIndexOf(targetRad) + offset;
-            p("inserting at index: " + index2);
+            //p("inserting at index: " + index2);
             FormModelEvent fme2 = formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
             formDesigner.getFormModel().addVisualComponent(payloadRad, targetParentRad, new Integer(index2), true);
         } catch (Exception ex) {
@@ -873,10 +862,10 @@ public class MenuEditLayer extends JPanel {
     
     boolean addRadComponentToEnd(JComponent targetComponent, MetaComponentCreator creator) {
         RADVisualContainer targetContainer = (RADVisualContainer) formDesigner.getMetaComponent(targetComponent);
-        p("target container = " + targetContainer);
+        //p("target container = " + targetContainer);
         Object constraints = null;
         boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
-        p("added comp: " + creator.getPrecreatedMetaComponent());
+        //p("added comp: " + creator.getPrecreatedMetaComponent());
         return added;
     }
     
@@ -885,7 +874,6 @@ public class MenuEditLayer extends JPanel {
             
             //check if dragging onto self
             if(payload == targetMenu) {
-                p("can't move onto self");
                 return;
             }
             
@@ -898,11 +886,11 @@ public class MenuEditLayer extends JPanel {
             if(payloadParent == null) {
                 payloadParent = (JComponent) payload.getParent();
             }
-            p("payload parent = " + payloadParent);
+            //p("payload parent = " + payloadParent);
             RADVisualComponent payloadRad = (RADVisualComponent) formDesigner.getMetaComponent(payload);
-            p("payload rad = " + payloadRad);
+            //p("payload rad = " + payloadRad);
             RADVisualContainer payloadParentRad = (RADVisualContainer) formDesigner.getMetaComponent(payloadParent);
-            p("payload parent rad = " + payloadParentRad);
+            //p("payload parent rad = " + payloadParentRad);
             
             if(payloadRad != null && payloadParentRad == null) {
                 p("MenuDesigner: WARNING! their is a payload rad without a parent! how did we get here!");
@@ -917,9 +905,9 @@ public class MenuEditLayer extends JPanel {
             }
             
             RADVisualContainer targetMenuRad = (RADVisualContainer) formDesigner.getMetaComponent(targetMenu);
-            p("target menu rad = " + targetMenuRad);
+            //p("target menu rad = " + targetMenuRad);
             //add inside the target menu
-            p("=== inserting at end of a menu ===");
+            //p("=== inserting at end of a menu ===");
             //add to end of the toplevel menu
             targetMenuRad.add(payloadRad, -1);
             targetMenuRad.getLayoutSupport().addComponents(new RADVisualComponent[] { payloadRad }, null, -1);
@@ -939,7 +927,6 @@ public class MenuEditLayer extends JPanel {
     private void moveRadComponentTo(JComponent payload, JComponent target, int offset) {
         try {
             if(payload == target) {
-                p("can't move onto self");
                 return;
             }
             //check if dragging to a descendant node
@@ -951,23 +938,23 @@ public class MenuEditLayer extends JPanel {
             if(payloadParent == null) {
                 payloadParent = (JComponent) payload.getParent();
             }*/
-            p("payload parent = " + payloadParent);
+            //p("payload parent = " + payloadParent);
             
             JComponent targetParent = getMenuParent(target);
             
             if(targetParent == null) {
                 targetParent = (JComponent) target.getParent();
             }
-            p("target parent = " + targetParent);
+            //p("target parent = " + targetParent);
             
             RADVisualComponent payloadRad = (RADVisualComponent) formDesigner.getMetaComponent(payload);
-            p("payload rad = " + payloadRad);
+            //p("payload rad = " + payloadRad);
             RADVisualComponent targetRad = (RADVisualComponent) formDesigner.getMetaComponent(target);
-            p("target rad = " + targetRad);
+            //p("target rad = " + targetRad);
             RADVisualContainer payloadParentRad = (RADVisualContainer) formDesigner.getMetaComponent(payloadParent);
-            p("payload parent rad = " + payloadParentRad);
+            //p("payload parent rad = " + payloadParentRad);
             RADVisualContainer targetParentRad = (RADVisualContainer) formDesigner.getMetaComponent(targetParent);
-            p("target parent rad = " + targetParentRad);
+            //p("target parent rad = " + targetParentRad);
             
 
             //if a toplevel menu dragged next to another toplevel menu
@@ -978,13 +965,13 @@ public class MenuEditLayer extends JPanel {
                 payloadParent = (JComponent) payload.getParent();
                 payloadParentRad = (RADVisualContainer) formDesigner.getMetaComponent(payloadParent);
                 targetParentRad = (RADVisualContainer) formDesigner.getMetaComponent(targetParent);
-                p("new payload parent rad = " + payloadParentRad);
+                //p("new payload parent rad = " + payloadParentRad);
             }
             
-            p("=== removing ===");
+            //p("=== removing ===");
             //skip if no payload rad, which probably means this is a new component from the palette
             if(payloadRad != null && payloadParentRad != null) {
-                p("=== did a remove ===");
+                //p("=== did a remove ===");
                 int index = payloadParentRad.getIndexOf(payloadRad);
                 payloadParentRad.remove(payloadRad);
                 FormModelEvent fme = formDesigner.getFormModel().fireComponentRemoved(payloadRad, payloadParentRad, index, false);
@@ -993,7 +980,7 @@ public class MenuEditLayer extends JPanel {
                 
             //if dragged component into a toplevel menu
             if(targetParent == null && target instanceof JMenu && target.getParent() instanceof JMenuBar) {
-                p("=== inserting at end of a toplevel menu ===");
+                //p("=== inserting at end of a toplevel menu ===");
                 targetParentRad = (RADVisualContainer) targetRad;
                 //add to end of the toplevel menu
                 targetParentRad.add(payloadRad, -1);
@@ -1004,9 +991,9 @@ public class MenuEditLayer extends JPanel {
             
             // insert if target exists, else the item was removed by dragging out of the menu
             if(targetParentRad != null) {
-                p("=== inserting before drop target component ===");
+                //p("=== inserting before drop target component ===");
                 int index2 = targetParentRad.getIndexOf(targetRad) + offset;
-                p("index of target = " + index2);
+                //p("index of target = " + index2);
                 targetParentRad.add(payloadRad, index2);
                 targetParentRad.getLayoutSupport().addComponents(new RADVisualComponent[] { payloadRad }, 
                         null, index2);
@@ -1097,6 +1084,10 @@ public class MenuEditLayer extends JPanel {
                                 updateIcon(evt.getComponent());
                             }
                             
+                            if(evt.getChangeType() == evt.COMPONENT_ADDED) {
+                                updateIcon(evt.getComponent());
+                            }
+                            
                             // if this menu was deleted then make sure it's popup is hidden and removed
                             if(evt.getChangeType() == evt.COMPONENT_REMOVED) {
                                 if(evt.getComponent() == metacomp) {
@@ -1144,16 +1135,16 @@ public class MenuEditLayer extends JPanel {
         JMenu menu = (JMenu) formDesigner.getComponent(menuRAD);
         if(hackedPopupFactory.containerMap.containsKey(menu)) {
             JPanel popupContainer = hackedPopupFactory.containerMap.get(menu);
-            p("looking over components left");
+            //p("looking over components left");
             for(Component c : popupContainer.getComponents()) {
-                p("found comp: " + c);
+                //p("found comp: " + c);
                 if(c instanceof JMenu) {
                     unconfigureMenu((JMenu)c);
                 } else {
                     unconfigureMenuItem((JComponent)c);
                 }
             }
-            p("removing all from container");
+            //p("removing all from container");;
             popupContainer.removeAll();
             // rebuild it
             for(RADVisualComponent child : menuRAD.getSubComponents()) {
@@ -1182,6 +1173,7 @@ public class MenuEditLayer extends JPanel {
     }
     
     private void updateIcon(RADComponent rad) {
+        p("updating icon for rad: " + rad);
         try {
             Component comp = (Component) formDesigner.getComponent(rad);
             if(comp instanceof JMenuItem) {
@@ -1212,10 +1204,13 @@ public class MenuEditLayer extends JPanel {
                     }
                 }
                 // do the actual update
-                //p("updating the real icon with the new value of: "+ icon);
+                if(!(item.getIcon() instanceof WrapperIcon)) {
+                    item.setIcon(new WrapperIcon(item.getIcon()));
+                }
+                
                 if(item.getIcon() instanceof WrapperIcon) {
                     ((WrapperIcon)item.getIcon()).setIcon(icon);
-                } else {
+                } else { // we should never get here
                     item.setIcon(icon);
                 }
             }
