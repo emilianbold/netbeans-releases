@@ -178,18 +178,7 @@ public abstract class AbstractRefactoring {
         }
         if (p != null && p.isFatal())
             return p;
-        
-        try {
-            p = pluginsPrepare(checkCalled?p:null, session);
-        } catch (RuntimeException ex) {
-            Throwable cause = ex.getCause();
-            if (cause!=null && cause.getClass().getName().equals("org.netbeans.api.java.source.JavaSource$InsufficientMemoryException")) {
-                return new Problem(true, NbBundle.getMessage(Util.class, "ERR_OutOfMemory"));
-            } else {
-                throw ex;
-            }
-        }
-        return p;
+        return pluginsPrepare(checkCalled?p:null, session);
     }
     
     /**
@@ -341,8 +330,14 @@ public abstract class AbstractRefactoring {
     }
     
     private Problem createProblemAndLog(Problem p, Throwable t, Class source) {
-        Problem newProblem = new Problem(false, createMessage(source, t));
-        Logger.global.log(Level.INFO, "Refactoring plugin throwed exception:", t);
+        Throwable cause = t.getCause();
+        Problem newProblem;
+        if (cause != null && cause.getClass().getName().equals("org.netbeans.api.java.source.JavaSource$InsufficientMemoryException")) { //NOI18N
+            newProblem = new Problem(true, NbBundle.getMessage(Util.class, "ERR_OutOfMemory"));
+        } else {
+            newProblem = new Problem(false, createMessage(source, t));
+        }
+        Logger.global.log(Level.INFO, "Refactoring plugin threw exception:", t);
         return chainProblems(newProblem, p);
     }
     
