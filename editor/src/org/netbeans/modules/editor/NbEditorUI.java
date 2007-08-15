@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,11 +21,15 @@ package org.netbeans.modules.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
@@ -210,10 +214,31 @@ public class NbEditorUI extends ExtEditorUI {
         ec.add(scroller);
         scroller.setRowHeader(null);
         scroller.setColumnHeaderView(null);
+        final MouseDispatcher mouse = new MouseDispatcher((JTextComponent) ec.getClientProperty(JTextComponent.class));
         for (Iterator entries = sideBars.entrySet().iterator(); entries.hasNext(); ) {
             Map.Entry entry = (Map.Entry) entries.next();
             SideBarPosition position = (SideBarPosition) entry.getKey();
             JComponent sideBar = (JComponent) entry.getValue();
+            
+            if (position.getPosition() == SideBarPosition.WEST) {
+                JPanel p = new JPanel(new BorderLayout()) {
+
+                    @Override
+                    public void addNotify() {
+                        super.addNotify();
+                        infiltrateContainer(this, mouse, true);
+                    }
+
+                    @Override
+                    public void removeNotify() {
+                        infiltrateContainer(this, mouse, false);
+                        super.removeNotify();
+                    }
+                    
+                };
+                p.add(sideBar, BorderLayout.CENTER);
+                sideBar = p;
+            }
             
             if (position.isScrollable()) {
                 if (position.getPosition() == SideBarPosition.WEST) {
@@ -229,6 +254,66 @@ public class NbEditorUI extends ExtEditorUI {
                 ec.add(sideBar, position.getBorderLayoutPosition());
             }
         }
+    }
+    
+    private static void infiltrateContainer(Container c, MouseDispatcher mouse, boolean add) {
+        for (Component comp : c.getComponents()) {
+            if (add) {
+                comp.addMouseListener(mouse);
+                comp.addMouseMotionListener(mouse);
+            } else {
+                comp.removeMouseListener(mouse);
+                comp.removeMouseMotionListener(mouse);
+            }
+            if (comp instanceof Container) {
+                infiltrateContainer((Container) comp, mouse, add);
+            }
+        }
+
+    }
+    
+    private static final class MouseDispatcher implements MouseListener, MouseMotionListener {
+        
+        private final Component target;
+
+        public MouseDispatcher(Component comp) {
+            this.target = comp;
+        }
+        
+        private void redispatch(MouseEvent oe) {
+            MouseEvent ne = SwingUtilities.convertMouseEvent(
+                    oe.getComponent(), oe, target);
+            target.dispatchEvent(ne);
+        }
+
+        public void mouseDragged(MouseEvent e) {
+            redispatch(e);
+        }
+
+        public void mouseMoved(MouseEvent e) {
+            redispatch(e);
+        }
+
+        public void mouseClicked(MouseEvent e) {
+            redispatch(e);
+        }
+
+        public void mousePressed(MouseEvent e) {
+            redispatch(e);
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            redispatch(e);
+        }
+
+        public void mouseEntered(MouseEvent e) {
+            redispatch(e);
+        }
+
+        public void mouseExited(MouseEvent e) {
+            redispatch(e);
+        }
+        
     }
     
     protected JToolBar createToolBarComponent() {
