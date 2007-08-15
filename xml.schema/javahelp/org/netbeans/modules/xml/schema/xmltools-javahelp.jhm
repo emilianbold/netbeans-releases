@@ -8,8 +8,6 @@
 
 <map version="1.0">
 
-<!--Def to be able to use core topic in pack TOC-->
-	<mapID target="nbdocs_org_netbeans_modules_usersguide_editing_csh_about_source_editor" url="nbdocs:/org/netbeans/modules/usersguide/editing/csh/about_source_editor.html"/>
 
 <!--begin CSH ids-->
 
