@@ -131,6 +131,20 @@ public class CompletionProviderImpl implements CompletionProvider {
         r.waitFinished ();
         return r.getList ();
     }
+
+    private static TokenSequence getInnerTokenSequence (
+        TokenHierarchy  tokenHierarchy,
+        int             offset
+    ) {
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+        tokenSequence.move (offset - 1);
+        while (tokenSequence.moveNext ()) {
+            TokenSequence ts = tokenSequence.embedded ();
+            if (ts == null) break;
+            tokenSequence = ts;
+        }
+        return tokenSequence;
+    }
     
     
     // innerclasses ............................................................
@@ -161,14 +175,10 @@ public class CompletionProviderImpl implements CompletionProvider {
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readLock ();
             try {
-                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
-                int offset = component.getCaret ().getDot ();
-                tokenSequence.move (offset - 1);
-                while (tokenSequence.moveNext ()) {
-                    TokenSequence ts = tokenSequence.embedded ();
-                    if (ts == null) break;
-                    tokenSequence = ts;
-                }
+                TokenSequence tokenSequence = getInnerTokenSequence (
+                    tokenHierarchy,
+                    component.getCaret ().getDot ()
+                );
                 Token token = tokenSequence.token ();
                 String start = token.text ().toString ();
                 
@@ -196,14 +206,27 @@ public class CompletionProviderImpl implements CompletionProvider {
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readLock ();
             try {
-                TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
                 int offset = component.getCaret ().getDot ();
-                compute (tokenSequence, offset, resultSet, doc);
+                TokenSequence tokenSequence = getInnerTokenSequence (
+                    tokenHierarchy,
+                    component.getCaret ().getDot ()
+                );
+                if (tokenSequence.offset () > offset) {
+                    // border of embedded language
+                    // [HACK] borders should be represented by some tokens!!!
+                    return;
+                }
+                String mimeType = tokenSequence.language ().mimeType ();
+                Language language = LanguagesManager.getDefault ().
+                    getLanguage (mimeType);
+                compute (tokenSequence, offset, resultSet, doc, language);
+                addParserTags (resultSet, language);
+            } catch (LanguageDefinitionNotFoundException ex) {
+                resultSet.finish ();
             } finally {
                 if (doc instanceof NbEditorDocument)
                     ((NbEditorDocument) doc).readUnlock ();
             }
-            addParserTags (resultSet);
         }
     
         private String getCompletionType (Feature feature, String tokenType) {
@@ -233,51 +256,37 @@ public class CompletionProviderImpl implements CompletionProvider {
             TokenSequence       tokenSequence, 
             int                 offset, 
             Result              resultSet,
-            Document            doc
+            Document            doc,
+            Language            language
         ) {
-            if (tokenSequence == null) return;
-            String mimeType = tokenSequence.language ().mimeType ();
             String start = null;
-            tokenSequence.move (offset - 1);
-            if (!tokenSequence.moveNext ()) return;
             Token token = tokenSequence.token ();
             start = token.text ().toString ();
-            if (tokenSequence.offset () > offset) {
-                // border of embedded language
-                // [HACK] borders should be represented by some tokens!!!
-                return;
+            String tokenType = token.id ().name ();
+            List<Feature> features = language.getFeatures (COMPLETION, tokenType);
+            Iterator<Feature> it = features.iterator ();
+            while (it.hasNext ()) {
+                Feature feature =  it.next ();
+                String completionType = getCompletionType (feature, tokenType);
+                int tokenOffset = tokenSequence.offset();
+                if (completionType == null) continue;
+                if (COMPLETION_APPEND.equals (completionType) && 
+                    offset < tokenOffset + token.length ()
+                ) 
+                    continue;
+                start = COMPLETION_COMPLETE.equals (completionType) ? 
+                    start.substring (0, offset - tokenOffset).trim () :
+                    "";
+                ignoreCase = false;
+                Feature f = language.getFeature ("PROPERTIES");
+                if (f != null)
+                    ignoreCase = f.getBoolean ("ignoreCase", false);
+                if (ignoreCase) start = start.toLowerCase ();
+                addTags (feature, start, Context.create (doc, tokenSequence), resultSet);
             }
-            try {
-                Language language = LanguagesManager.getDefault ().
-                    getLanguage (mimeType);
-                String tokenType = token.id ().name ();
-                List<Feature> features = language.getFeatures (COMPLETION, tokenType);
-                Iterator<Feature> it = features.iterator ();
-                while (it.hasNext ()) {
-                    Feature feature =  it.next ();
-                    String completionType = getCompletionType (feature, tokenType);
-                    int tokenOffset = tokenSequence.offset();
-                    if (completionType == null) continue;
-                    if (COMPLETION_APPEND.equals (completionType) && 
-                        offset < tokenOffset + token.length ()
-                    ) 
-                        continue;
-                    start = COMPLETION_COMPLETE.equals (completionType) ? 
-                        start.substring (0, offset - tokenOffset).trim () :
-                        "";
-                    ignoreCase = false;
-                    Feature f = language.getFeature ("PROPERTIES");
-                    if (f != null)
-                        ignoreCase = f.getBoolean ("ignoreCase", false);
-                    if (ignoreCase) start = start.toLowerCase ();
-                    addTags (feature, start, Context.create (doc, tokenSequence), resultSet);
-                }
-            } catch (LanguageDefinitionNotFoundException ex) {
-            }
-            compute (tokenSequence.embedded (), offset, resultSet, doc);
         }
 
-        private void addParserTags (final Result resultSet) {
+        private void addParserTags (final Result resultSet, final Language language) {
             final ParserManager parserManager = ParserManager.get (doc);
             if (parserManager.getState () == State.PARSING) {
                 //S ystem.out.println("CodeCompletion: parsing...");
@@ -286,13 +295,13 @@ public class CompletionProviderImpl implements CompletionProvider {
                         //S ystem.out.println("CodeCompletion: parsed " + state);
                         if (resultSet.isFinished ()) return;
                         parserManager.removeListener (this);
-                        addParserTags (ast, resultSet);
+                        addParserTags (ast, resultSet, language);
                         resultSet.finish ();
                     }
                 });
             } else {
                 try {
-                    addParserTags (ParserManagerImpl.get (doc).getAST (), resultSet);
+                    addParserTags (ParserManagerImpl.get (doc).getAST (), resultSet, language);
                 } catch (ParseException ex) {
                     ErrorManager.getDefault ().notify (ex);
                 }
@@ -300,7 +309,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             }
         }
         
-        private void addParserTags (ASTNode node, Result resultSet) {
+        private void addParserTags (ASTNode node, Result resultSet, Language language) {
             if (node == null) {
                 //S ystem.out.println("CodeCompletion: No AST");
                 return;
@@ -317,38 +326,25 @@ public class CompletionProviderImpl implements CompletionProvider {
                 // add tokens for language borders...
                 return;
             }
-            Language lang = null;
-            try {
-                lang = LanguagesManager.getDefault ().getLanguage (token.getMimeType());
-            } catch (ParseException e) {
-            }
-            if(lang == null) {
-                //we do not have a language definition for the mimeType
-                return ;
-            }
-            String tokenType = token.getType();
-            int tokenOffset = token.getOffset();
+            String tokenType = token.getType ();
+            int tokenOffset = token.getOffset ();
 
             for (int i = path.size () - 1; i >= 0; i--) {
                 item = path.get (i);
-                try {
-                    Language language = LanguagesManager.getDefault ().
-                        getLanguage (item.getMimeType ());
-                    List<Feature> features = language.getFeatures (COMPLETION, path.subPath (i));
-                    Iterator<Feature> it2 = features.iterator ();
-                    while (it2.hasNext ()) {
-                        Feature feature =  it2.next ();
-                        String completionType = getCompletionType (feature, tokenType);
-                        if (completionType == null) continue;
-                        if (COMPLETION_APPEND.equals (completionType) && 
-                            offset < tokenOffset + token.getLength ()
-                        ) continue;
-                        String start = COMPLETION_COMPLETE.equals (completionType) ? 
-                            token.getIdentifier ().substring (0, offset - tokenOffset).trim () :
-                            "";
-                        addTags (feature, start, SyntaxContext.create (doc, path.subPath (i)), resultSet);
-                    }
-                } catch (ParseException ex) {
+                if (!item.getMimeType ().equals(language.getMimeType ())) break;
+                List<Feature> features = language.getFeatures (COMPLETION, path.subPath (i));
+                Iterator<Feature> it2 = features.iterator ();
+                while (it2.hasNext ()) {
+                    Feature feature =  it2.next ();
+                    String completionType = getCompletionType (feature, tokenType);
+                    if (completionType == null) continue;
+                    if (COMPLETION_APPEND.equals (completionType) && 
+                        offset < tokenOffset + token.getLength ()
+                    ) continue;
+                    String start = COMPLETION_COMPLETE.equals (completionType) ? 
+                        token.getIdentifier ().substring (0, offset - tokenOffset).trim () :
+                        "";
+                    addTags (feature, start, SyntaxContext.create (doc, path.subPath (i)), resultSet);
                 }
             }
             
