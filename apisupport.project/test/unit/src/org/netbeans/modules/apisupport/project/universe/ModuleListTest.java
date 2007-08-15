@@ -137,7 +137,7 @@ public class ModuleListTest extends TestBase {
         e = ml.getEntry("org.netbeans.libs.xerces");
         assertNotNull(e);
         assertEquals("correct CP extensions (using <binary-origin> and relative paths)",
-            ":" + file("libs/external/xerces-2.8.0.jar"),
+            ":" + file("libs/xerces/external/xerces-2.8.0.jar"),
             e.getClassPathExtensions());
         /* XXX unmaintained:
         e = ml.getEntry("javax.jmi.model");
@@ -146,11 +146,13 @@ public class ModuleListTest extends TestBase {
             ":" + file("mdr/external/mof.jar"),
             e.getClassPathExtensions());
          */
+        /* XXX org.netbeans.modules.css moved to "org.netbeans.modules.languages.css?
         e = ml.getEntry("org.netbeans.modules.css");
         assertNotNull(e);
         assertEquals("correct CP extensions (using <binary-origin> and property substitutions #2)",
             ":" + file("xml/external/flute.jar") + ":" + file("xml/external/sac.jar"),
             e.getClassPathExtensions());
+         */
         e = ml.getEntry("org.netbeans.modules.xml.tax");
         assertNotNull(e);
         assertEquals("correct CP extensions (using runtime-relative-path)",
@@ -167,7 +169,7 @@ public class ModuleListTest extends TestBase {
         // Test a nonstandard module:
         e = ml.getEntry("org.netbeans.modules.looks");
         assertNotNull(e);
-        assertEquals("right path", "openide/looks", e.getNetBeansOrgPath());
+        assertEquals("right path", "contrib/looks", e.getNetBeansOrgPath());
     }
     
     public void testExternalEntries() throws Exception {
