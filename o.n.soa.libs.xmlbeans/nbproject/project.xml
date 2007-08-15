@@ -24,7 +24,69 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.soa.libs.xmlbeans</code-name-base>
             <module-dependencies/>
             <public-packages>
-                <subpackages>org.apache.xmlbeans</subpackages>
+               <package>javax.xml.stream.events</package>
+               <package>schemaorg_apache_xmlbeans.system.sXMLSCHEMA</package>
+               <package>schemaorg_apache_xmlbeans.system.sXMLLANG</package>
+               <package>org.apache.xmlbeans</package>
+               <package>javax.xml.namespace</package>
+               <package>org.apache.xmlbeans.impl.piccolo.xml</package>
+               <package>org.apache.xmlbeans.impl.xb.xmlconfig</package>
+               <package>org.apache.xmlbeans.impl.values</package>
+               <package>org.apache.xmlbeans.impl.piccolo.io</package>
+               <package>org.apache.xmlbeans.impl.regex</package>
+               <package>org.apache.xml.resolver.helpers</package>
+               <package>org.apache.xmlbeans.impl.xb.xsdownload</package>
+               <package>org.apache.xmlbeans.impl.xb.xsdschema</package>
+               <package>schemaorg_apache_xmlbeans.system.sXMLTOOLS</package>
+               <package>org.apache.xmlbeans.impl.jam</package>
+               <package>org.apache.xmlbeans.impl.piccolo.util</package>
+               <package>org.apache.xmlbeans.impl.xb.ltgfmt.impl</package>
+               <package>org.apache.xmlbeans.impl.inst2xsd.util</package>
+               <package>javax.xml.stream.util</package>
+               <package>org.apache.xmlbeans.impl.jam.internal.javadoc</package>
+               <package>org.apache.xmlbeans.impl.jam.internal.parser</package>
+               <package>org.apache.xmlbeans.impl.util</package>
+               <package>org.apache.xmlbeans.impl.soap</package>
+               <package>org.apache.xmlbeans.xml.stream.events</package>
+               <package>org.apache.xmlbeans.soap</package>
+               <package>org.apache.xmlbeans.impl.xb.ltgfmt</package>
+               <package>org.apache.xmlbeans.xml.stream.utils</package>
+               <package>org.apache.xml.resolver.readers</package>
+               <package>org.apache.xmlbeans.impl.xb.xsdownload.impl</package>
+               <package>org.apache.xml.resolver</package>
+               <package>org.apache.xmlbeans.impl.jam.xml</package>
+               <package>org.apache.xml.resolver.tools</package>
+               <package>org.apache.xmlbeans.impl.xb.xmlconfig.impl</package>
+               <package>org.apache.xmlbeans.impl.xquery.saxon</package>
+               <package>org.apache.xmlbeans.impl.jam.provider</package>
+               <package>org.apache.xmlbeans.impl.jam.internal</package>
+               <package>org.apache.xmlbeans.impl.validator</package>
+               <package>org.apache.xmlbeans.impl.jam.annotation</package>
+               <package>org.apache.xmlbeans.impl.xb.substwsdl.impl</package>
+               <package>org.apache.xmlbeans.impl.jam.internal.classrefs</package>
+               <package>org.apache.xmlbeans.impl.jam.mutable</package>
+               <package>org.apache.xmlbeans.impl.jam.internal.reflect</package>
+               <package>org.apache.xmlbeans.impl.xb.xsdschema.impl</package>
+               <package>org.apache.xmlbeans.xml.stream</package>
+               <package>repackage</package>
+               <package>org.apache.xmlbeans.impl.richParser</package>
+               <package>org.apache.xmlbeans.impl.xsd2inst</package>
+               <package>org.apache.xmlbeans.impl.xb.xmlschema</package>
+               <package>org.apache.xmlbeans.impl.common</package>
+               <package>org.apache.xmlbeans.impl.jam.visitor</package>
+               <package>org.apache.xmlbeans.impl.tool</package>
+               <package>javax.xml.stream</package>
+               <package>org.apache.xmlbeans.impl.jam.internal.elements</package>
+               <package>org.apache.xmlbeans.impl.xb.xmlschema.impl</package>
+               <package>org.w3c.dom</package>
+               <package>org.apache.xmlbeans.impl.store</package>
+               <package>org.apache.xmlbeans.impl.schema</package>
+               <package>org.apache.xmlbeans.impl.config</package>
+               <package>org.apache.xmlbeans.impl.xpath.saxon</package>
+               <package>org.apache.xml.resolver.apps</package>
+               <package>org.apache.xmlbeans.impl.inst2xsd</package>
+               <package>schemaorg_apache_xmlbeans.system.sXMLCONFIG</package>
+               <package>org.apache.xmlbeans.impl.xb.substwsdl</package> 
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/xmlbeans-2.1.0/jsr173_1.0_api.jar</runtime-relative-path>
