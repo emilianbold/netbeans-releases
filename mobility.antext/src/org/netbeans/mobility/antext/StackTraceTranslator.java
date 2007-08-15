@@ -208,7 +208,7 @@ public class StackTraceTranslator
     private CPMethodInfo getMethodCall(final ClassFile cf, final Code code, int offset)
     {
         offset -=3;
-        if (offset < 0 || offset >= code.getByteCodes().length) return null;
+        if (offset < 0 || code == null || offset >= code.getByteCodes().length) return null;
         final byte bc[] = code.getByteCodes();
         final int b = bc[offset] & 0xff;
         if (b != ByteCodes.bc_invokespecial && b != ByteCodes.bc_invokestatic && b != ByteCodes.bc_invokevirtual)
