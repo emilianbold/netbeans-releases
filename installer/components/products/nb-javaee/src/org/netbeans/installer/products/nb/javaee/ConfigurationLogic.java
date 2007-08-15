@@ -36,6 +36,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             "{visualweb-cluster}"; // NOI18N
     private static final String IDENTITY_CLUSTER = 
             "{identity-cluster}"; // NOI18N
+    private static final String XML_CLUSTER =
+            "{xml-cluster}"; // NOI18N
     private static final String ID = 
             "WEBEE"; // NOI18N
     
@@ -45,6 +47,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         super(new String[]{
             ENTERPRISE_CLUSTER, 
             VISUALWEB_CLUSTER,
-            IDENTITY_CLUSTER}, ID);
+            IDENTITY_CLUSTER,
+            XML_CLUSTER}, ID);
     }
 }

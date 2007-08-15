@@ -45,18 +45,28 @@ public class Components2 extends HttpServlet {
     private Manager manager;
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        final List<String> basic = Arrays.asList(
+        final List<String> java = Arrays.asList(
                 "nb-platform",
                 "nb-base",
                 "nb-javase");
-        final List<String> standard = Arrays.asList(
+        final List<String> javaee = Arrays.asList(
                 "nb-platform",
                 "nb-base",
                 "nb-javase",
-                "nb-javaee",
-                "nb-javame",
+                "nb-javaee",                
                 "glassfish",
+                "tomcat",
                 "sjsas");
+        final List<String> javame = Arrays.asList(
+                "nb-platform",
+                "nb-base",
+                "nb-javase",
+                "nb-javame");
+        final List<String> ruby = Arrays.asList(
+                "nb-platform",
+                "nb-base",
+                "nb-ruby");
+        
         final List<String> full = Arrays.asList(
                 "nb-platform",
                 "nb-base",
@@ -152,11 +162,17 @@ public class Components2 extends HttpServlet {
                 }
                 
                 String properties = "PROPERTY_NONE";
-                if (basic.contains(product.getUid())) {
-                    properties += " | PROPERTY_BASIC";
+                if (java.contains(product.getUid())) {
+                    properties += " | PROPERTY_JAVA";
                 }
-                if (standard.contains(product.getUid())) {
-                    properties += " | PROPERTY_STANDARD";
+                if (javaee.contains(product.getUid())) {
+                    properties += " | PROPERTY_JAVAEE";
+                }
+                if (javame.contains(product.getUid())) {
+                    properties += " | PROPERTY_JAVAME";
+                }
+                if (ruby.contains(product.getUid())) {
+                    properties += " | PROPERTY_RUBY";
                 }
                 if (full.contains(product.getUid())) {
                     properties += " | PROPERTY_FULL";

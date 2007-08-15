@@ -70,7 +70,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File platformCluster = new File(installLocation, PLATFORM_CLUSTER);
         final File nbCluster = new File(installLocation, NB_CLUSTER);
         final File ideCluster = new File(installLocation, IDE_CLUSTER);
-        final File xmlCluster = new File(installLocation, XML_CLUSTER);
+
         
         /////////////////////////////////////////////////////////////////////////////
         final File jdkHome = new File(
@@ -97,7 +97,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             NetBeansUtils.addCluster(installLocation, PLATFORM_CLUSTER);
             NetBeansUtils.addCluster(installLocation, NB_CLUSTER);
             NetBeansUtils.addCluster(installLocation, IDE_CLUSTER);
-            NetBeansUtils.addCluster(installLocation, XML_CLUSTER);
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.netbeans.clusters"), // NOI18N
@@ -136,7 +135,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         //    SystemUtils.removeIrrelevantFiles(platformCluster);
         //    SystemUtils.removeIrrelevantFiles(nbCluster);
         //    SystemUtils.removeIrrelevantFiles(ideCluster);
-        //    SystemUtils.removeIrrelevantFiles(xmlCluster);
         //} catch (IOException e) {
         //    throw new InstallationException(
         //            getString("CL.install.error.irrelevant.files"), // NOI18N
@@ -152,7 +150,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         //    SystemUtils.correctFilesPermissions(platformCluster);
         //    SystemUtils.correctFilesPermissions(nbCluster);
         //    SystemUtils.correctFilesPermissions(ideCluster);
-        //    SystemUtils.correctFilesPermissions(xmlCluster);
         //} catch (IOException e) {
         //    throw new InstallationException(
         //            getString("CL.install.error.files.permissions"), // NOI18N
@@ -505,9 +502,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String NB_CLUSTER  =
             "{nb-cluster}"; // NOI18N
     public static final String IDE_CLUSTER =
-            "{ide-cluster}"; // NOI18N
-    public static final String XML_CLUSTER =
-            "{xml-cluster}"; // NOI18N
+            "{ide-cluster}"; // NOI18N    
     
     public static final String PLATFORM_UID =
             "nb-platform"; // NOI18N

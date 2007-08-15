@@ -185,7 +185,7 @@
             dest="${temp.file}"/>
         -->
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/rc1/latest/bundles/"
+            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/rc2/latest/bundles/"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
@@ -948,64 +948,64 @@ jarsigner.storepass=${jarsigner.storepass}
         
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-windows.exe">
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-windows.exe">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-linux.sh">
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-linux.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-solaris-x86.sh">
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-solaris-x86.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-solaris-sparc.sh">
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-solaris-sparc.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
-                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-x86.zip">
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-macosx-x86.zip">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
-                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.zip">
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-macosx-ppc.zip">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
         </create-bundle>
+
+
         
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-windows.exe">
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javaee-windows.exe">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-linux.sh">
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javaee-linux.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-solaris-x86.sh">
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javaee-solaris-x86.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
@@ -1014,7 +1014,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-solaris-sparc.sh">
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javaee-solaris-sparc.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
@@ -1023,7 +1023,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
-                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-x86.zip">
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javaee-macosx-x86.zip">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
@@ -1032,13 +1032,68 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
-                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.zip">
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javaee-macosx-ppc.zip">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
         </create-bundle>
+
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="windows" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javame-windows.exe">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="linux" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javame-linux.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="windows" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-windows.exe">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="linux" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-linux.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-x86" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-solaris-x86.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-sparc" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-solaris-sparc.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="macosx-x86" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-macosx-x86.zip">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="macosx-ppc" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-macosx-ppc.zip">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+
         
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
@@ -1140,20 +1195,28 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
 
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-x86.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-macosx-x86.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-macosx-ppc.tgz"/>
         </antcall>
 	<antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-x86.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-x86.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javaee-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javaee-macosx-x86.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.zip"/>
-            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.tgz"/>
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javaee-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javaee-macosx-ppc.tgz"/>
+        </antcall>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-macosx-x86.tgz"/>
+        </antcall>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-macosx-ppc.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
             <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-x86.zip"/>

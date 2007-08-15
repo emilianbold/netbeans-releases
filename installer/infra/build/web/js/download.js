@@ -19,10 +19,12 @@
  */
 
 var PROPERTY_NONE      = 0;
-var PROPERTY_BASIC     = 1;
-var PROPERTY_STANDARD  = 2;
-var PROPERTY_FULL      = 4;
-var PROPERTY_HIDDEN    = 8;
+var PROPERTY_JAVA      = 1;
+var PROPERTY_JAVAEE    = 2;
+var PROPERTY_JAVAME    = 4;
+var PROPERTY_RUBY      = 8;
+var PROPERTY_FULL      = 16;
+var PROPERTY_HIDDEN    = 32;
 
 function handle_keyup(event) {
     //if (event.keyCode == 13) {
@@ -59,8 +61,10 @@ function write_components() {
                 }
             document.write('</td>');
             
-            document.write('    <td class="beige left_border_thin" id="product_' + index + '_basic"></td>');
-            document.write('    <td class="left_border_thin" id="product_' + index + '_standard"></td>');
+            document.write('    <td class="beige left_border_thin" id="product_' + index + '_java"></td>');
+            document.write('    <td class="left_border_thin" id="product_' + index + '_javaee"></td>');
+	    document.write('    <td class="beige left_border_thin" id="product_' + index + '_javame"></td>');
+	    document.write('    <td class="left_border_thin" id="product_' + index + '_ruby"></td>');
             document.write('    <td class="beige left_border_thin" id="product_' + index + '_full"></td>');
             
             document.write('</tr>');
@@ -118,26 +122,44 @@ function update() {
             product_messages[i] = '<tr><td class="no_padding no_border"><img src="img/warning_badge_text_' + platform + '.gif"/></td><td class="no_padding no_border left"><span class="warning">' + product_display_names[i] + ' is not available for ' + platform_display_name + '.</span></td></tr>';
         }
         
-        if (product_properties[i] & PROPERTY_BASIC) {
+        if (product_properties[i] & PROPERTY_JAVA) {
             if (product_messages[i] == null) {
-                document.getElementById("product_" + i + "_basic").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
+                document.getElementById("product_" + i + "_java").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
             } else {
-                document.getElementById("product_" + i + "_basic").innerHTML = '<img src="img/warning_badge_beige_' + platform + '.gif"/>';
+                document.getElementById("product_" + i + "_java").innerHTML = '<img src="img/warning_badge_beige_' + platform + '.gif"/>';
             }
         } else {
-            document.getElementById("product_" + i + "_basic").innerHTML = '';
+            document.getElementById("product_" + i + "_java").innerHTML = '';
         }
-        
-        if (product_properties[i] & PROPERTY_STANDARD) {
+	if (product_properties[i] & PROPERTY_JAVAEE) {
             if (product_messages[i] == null) {
-                document.getElementById("product_" + i + "_standard").innerHTML = '<img src="img/checked_badge_white.gif"/>';
+                document.getElementById("product_" + i + "_javaee").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
             } else {
-                document.getElementById("product_" + i + "_standard").innerHTML = '<img src="img/warning_badge_white_' + platform + '.gif"/>';
+                document.getElementById("product_" + i + "_javaee").innerHTML = '<img src="img/warning_badge_beige_' + platform + '.gif"/>';
             }
         } else {
-            document.getElementById("product_" + i + "_standard").innerHTML = '';
+            document.getElementById("product_" + i + "_javaee").innerHTML = '';
+        }
+	if (product_properties[i] & PROPERTY_JAVAME) {
+            if (product_messages[i] == null) {
+                document.getElementById("product_" + i + "_javame").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
+            } else {
+                document.getElementById("product_" + i + "_javame").innerHTML = '<img src="img/warning_badge_beige_' + platform + '.gif"/>';
+            }
+        } else {
+            document.getElementById("product_" + i + "_javame").innerHTML = '';
         }
         
+	if (product_properties[i] & PROPERTY_RUBY) {
+            if (product_messages[i] == null) {
+                document.getElementById("product_" + i + "_ruby").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
+            } else {
+                document.getElementById("product_" + i + "_ruby").innerHTML = '<img src="img/warning_badge_beige_' + platform + '.gif"/>';
+            }
+        } else {
+            document.getElementById("product_" + i + "_ruby").innerHTML = '';
+        }
+
         if (product_properties[i] & PROPERTY_FULL) {
             if (product_messages[i] == null) {
                 document.getElementById("product_" + i + "_full").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
@@ -162,32 +184,45 @@ function update() {
     document.getElementById("error_message").innerHTML = error_message;
     
     // update the sizes
-    var basic_size = 0;
-    var standard_size = 0;
-    var full_size = 0;
+    var java_size   = 0;
+    var javaee_size = 0;
+    var javame_size = 0;
+    var ruby_size   = 0;
+    var full_size   = 0;
+
     for (var i = 0; i < product_uids.length; i++) {
         if (!is_compatible(i, platform)) {
             continue;
         }
 
-        if (product_properties[i] & PROPERTY_BASIC) {
-            basic_size += new Number(product_download_sizes[i]);
+        if (product_properties[i] & PROPERTY_JAVA) {
+            java_size += new Number(product_download_sizes[i]);
+        }
+	if (product_properties[i] & PROPERTY_JAVAEE) {
+            javaee_size += new Number(product_download_sizes[i]);
+        }
+	if (product_properties[i] & PROPERTY_JAVAME) {
+            javame_size += new Number(product_download_sizes[i]);
         }
 
-        if (product_properties[i] & PROPERTY_STANDARD) {
-            standard_size += new Number(product_download_sizes[i]);
+        if (product_properties[i] & PROPERTY_RUBY) {
+            ruby_size += new Number(product_download_sizes[i]);
         }
 
         if (product_properties[i] & PROPERTY_FULL) {
             full_size += new Number(product_download_sizes[i]);
         }
     }
-    basic_size = Math.ceil(basic_size / 1024.0);
-    standard_size = Math.ceil(standard_size / 1024.0);
-    full_size = Math.ceil(full_size / 1024.0);
+    java_size    = Math.ceil(java_size / 1024.0);
+    javaee_size  = Math.ceil(javaee_size / 1024.0);
+    javame_size  = Math.ceil(javame_size / 1024.0);
+    ruby_size    = Math.ceil(ruby_size / 1024.0);
+    full_size    = Math.ceil(full_size / 1024.0);
     
-    document.getElementById("basic_size").innerHTML = "Free, " + basic_size + " MB";
-    document.getElementById("standard_size").innerHTML = "Free, " + standard_size + " MB";
+    document.getElementById("java_size").innerHTML = "Free, " + java_size + " MB";
+    document.getElementById("javaee_size").innerHTML = "Free, " + javaee_size + " MB"; 
+    document.getElementById("javame_size").innerHTML = "Free, " + javame_size + " MB";
+    document.getElementById("ruby_size").innerHTML = "Free, " + ruby_size + " MB";
     document.getElementById("full_size").innerHTML = "Free, " + full_size + " MB";
 }
 
