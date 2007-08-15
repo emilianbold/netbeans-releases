@@ -29,17 +29,9 @@ Microsystems, Inc. All Rights Reserved.
             
             <!-- Begin Sort -->            
                           
-                        
-                   
-                  
-                         
-             
-             
-             
-             
             <!-- End Sort -->
             
-            <attr name="position" intvalue="500"/>
+            <attr name="position" intvalue="600"/>
             <file name="HtmlOutputText.comp_palette_item" url="resources/HtmlOutputText.comp_palette_item">
                 <attr name="position" intvalue="100"/>
             </file>
