@@ -100,7 +100,7 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
             create = Boolean.FALSE;
         platformInstall =  PlatformInstallPanel.isPlatformInstalled(J2MEPlatform.SPECIFICATION_NAME) ^ true;
         if (platformInstall)
-            platformPanel = new PlatformInstallPanel.WizardPanel(J2MEPlatform.SPECIFICATION_NAME);
+            platformPanel = new PlatformInstallPanel.WizardPanel(NbBundle.getMessage(NewProjectIterator.class, "LBL_NewProjectIter_MIDP"));//NOI18N
         projectPanel = new ProjectPanel.WizardPanel(((Boolean) create).booleanValue(), ((Boolean) create).booleanValue());
         psPanel = new PlatformSelectionPanel();
         csPanel = new ConfigurationsSelectionPanel();
