@@ -11,17 +11,19 @@
     used for execution of your tasks. These targets are usually executed 
     before and after some main targets. They are: 
 
-      pre-init:                 called before initialization of project properties 
-      post-init:                called after initialization of project properties 
-      pre-compile:              called before javac compilation 
-      post-compile:             called after javac compilation 
-      pre-compile-single:       called before javac compilation of single file
-      post-compile-single:      called after javac compilation of single file
-      pre-dist:                 called before jar building 
-      post-dist:                called after jar building 
-      post-clean:               called after cleaning build products 
-      pre-run-deploy:           called before deploying
-      post-run-deploy:          called after deploying
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-dist:                 called before jar building
+      -post-dist:                called after jar building
+      -post-clean:               called after cleaning build products
+      -pre-run-deploy:           called before deploying
+      -post-run-deploy:          called after deploying
+
+    (Targets beginning with '-' are not intended to be called on their own.)
 
     Example of pluging an obfuscator after the compilation could look like 
 
