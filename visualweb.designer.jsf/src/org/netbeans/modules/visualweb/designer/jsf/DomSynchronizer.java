@@ -913,6 +913,12 @@ FacesDndSupport.UpdateSuspender {
 //                ((RaveElement)bean.getElement()).setRendered(null);
                 // XXX FIXME Modifying the data structure!
                 MarkupService.setRenderedElementForElement(bean.getElement(), null);
+                
+                // XXX #112220 Remove the original nodes (they are not to be rendered now.
+                for (Node originalNode : originalNodes) {
+                    parent.removeChild(originalNode);
+                }
+                
                 return true;
             }
 
