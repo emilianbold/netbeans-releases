@@ -32,6 +32,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -295,6 +296,14 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
         
         public void setValueAt(Object aValue, int row, int column) {
+            // check if inserted name is valid Java identifier
+            // if not, fall back to old value
+            if (column == COL_NAME_INDEX) {
+                String insertedName = (String) aValue;
+                if (!Utilities.isJavaIdentifier(insertedName.trim())) {
+                    return;
+                }
+            }
             MethodModel.Variable parameter = parameters.get(row);
             MethodModel.Variable changedParameter = MethodModel.Variable.create(
                     column == COL_TYPE_INDEX ? chooseType(aValue, parameter.getType()) : parameter.getType(),
@@ -348,17 +357,19 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (!(aValue instanceof String)) {
             return "Object";
         }
-        if (((String)aValue).trim().equals("")) {
+        String aValueString = ((String)aValue).trim();
+        if (aValueString.equals("")) {
             return typeName;
         }
-        return (String) aValue;
+        return aValueString;
     }
 
     private static String chooseName(Object aValue, String name) {
-        if (((String)aValue).trim().equals("")) {
+        String aValueString = ((String)aValue).trim();
+        if (aValueString.equals("")) {
             return name;
         }
-        return (String) aValue;
+        return aValueString;
     }
         
 }
