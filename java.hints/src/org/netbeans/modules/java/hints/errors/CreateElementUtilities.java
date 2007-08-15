@@ -333,6 +333,19 @@ public final class CreateElementUtilities {
             return null;
         }
                         
+        TypeMirror argument = info.getTrees().getTypeMirror(new TreePath(new TreePath(parent, efl.getVariable()), efl.getVariable().getType()));
+        
+        if (argument == null)
+            return null;
+        
+        if (argument.getKind().isPrimitive()) {
+            types.add(ElementKind.PARAMETER);
+            types.add(ElementKind.LOCAL_VARIABLE);
+            types.add(ElementKind.FIELD);
+
+            return Collections.singletonList(info.getTypes().getArrayType(argument));
+        }
+        
         TypeElement iterable = info.getElements().getTypeElement("java.lang.Iterable"); //NOI18N
         if (iterable == null) {
             return null;
@@ -341,8 +354,6 @@ public final class CreateElementUtilities {
         types.add(ElementKind.PARAMETER);
         types.add(ElementKind.LOCAL_VARIABLE);
         types.add(ElementKind.FIELD);
-        
-        TypeMirror argument = info.getTrees().getTypeMirror(new TreePath(new TreePath(parent, efl.getVariable()), efl.getVariable().getType()));
         
         return Collections.singletonList(info.getTypes().getDeclaredType(iterable, argument));
     }

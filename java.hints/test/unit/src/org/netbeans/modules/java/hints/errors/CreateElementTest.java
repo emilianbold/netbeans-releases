@@ -320,6 +320,14 @@ public class CreateElementTest extends HintsTestBase {
         performTestAnalysisTest("org.netbeans.test.java.hints.Bug105415", 138, Collections.<String>emptySet());
     }
 
+    public void test112846() throws Exception {
+        performTestAnalysisTest("org.netbeans.test.java.hints.Bug112846", 152, new HashSet<String>(Arrays.asList(
+                "AddParameterOrLocalFix:xxx:double[]:false",
+                "AddParameterOrLocalFix:xxx:double[]:true",
+                "CreateFieldFix:xxx:org.netbeans.test.java.hints.Bug112846:double[]:[private]"
+        )));
+    }
+    
     protected void performTestAnalysisTest(String className, int offset, Set<String> golden) throws Exception {
         prepareTest(className);
         
