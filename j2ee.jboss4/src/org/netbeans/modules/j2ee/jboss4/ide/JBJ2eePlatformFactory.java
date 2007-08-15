@@ -135,7 +135,7 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         public JavaPlatform getJavaPlatform() {
-            return null;
+            return properties.getJavaPlatform();
         }
 
         public File[] getPlatformRoots() {
