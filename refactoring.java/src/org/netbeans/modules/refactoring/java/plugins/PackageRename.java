@@ -124,8 +124,8 @@ public class PackageRename implements RefactoringPluginFactory{
                 
             }
             
-            public String getText() {
-                return "Rename file " + folder.getNameExt();
+            public String getText() {                
+                return NbBundle.getMessage(PackageRename.class, "TXT_RenamePackage") + folder.getNameExt();
             }
             
             public String getDisplayText() {
