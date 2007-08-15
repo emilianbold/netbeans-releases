@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -210,6 +210,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             dialogViewer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaHelp.class, "ACSD_JavaHelp_viewer"));
         }
     }
+    
     private void displayHelpInFrame(JHelp jh) {
         Installer.log.fine("displayHelpInFrame");
         if (jh == null) jh = lastJH;
@@ -239,6 +240,12 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             // After that we need to remember the size and position.
             Dimension screenSize = Utilities.getUsableScreenBounds().getSize();
             Dimension frameSize = frameViewer.getSize();
+            // #108255: Increase size of Help window by 30%
+            frameSize.width = (int) (1.3 * frameSize.width);
+            frameSize.height = (int) (1.3 * frameSize.height);
+            
+            frameViewer.setSize(frameSize);
+            
             // #11018: have mercy on little screens
             if (frameSize.width > screenSize.width) {
                 frameSize.width = screenSize.width;
