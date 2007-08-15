@@ -137,17 +137,6 @@ final class SyntaxQueryHelper {
             case XMLDefaultTokenContext.CHARACTER_ID:
                 //entity references
                 erase = preText.length() + -1 + eraseRight;
-                //Issue #63757: test whether the text above CC offset is a entity reference - if not, do not owerwrite it
-                String tokenImage = token.getImage().substring(1); //cutoff the leading &
-                if(tokenImage.endsWith(";")) tokenImage = tokenImage.substring(0, tokenImage.length() - 1); //cutoff the ending ;
-                GrammarQuery gq = XMLCompletionQuery.getPerformer(sup.getDocument(), sup);
-                if(gq != null) {
-                    Enumeration ents = gq.queryEntities(tokenImage);
-                    if(!ents.hasMoreElements()) {
-                        erase = preText.length() - 1;
-                        tunedOffset -= token.getImage().length() - preText.length();
-                    }
-                }
                 break;
             case XMLDefaultTokenContext.ARGUMENT_ID:
                 erase = preText.length() + eraseRight;
