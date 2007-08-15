@@ -25,7 +25,7 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
-import org.netbeans.modules.tomcat5.TomcatFactory;
+import org.openide.util.Parameters;
 
 /**
  * This is a utility class that can be used by ProgressObject's,
@@ -38,23 +38,22 @@ public class ProgressEventSupport {
 
     /** Source object. */
     private Object obj;
-    
+
     private java.util.Vector listeners;
-    
+
     private DeploymentStatus status;
-    
+
     /**
      * Constructs a <code>ProgressEventSupport</code> object.
      *
-     * @param o Source for any events.
+     * @param source Source for any events.
      */
-    public ProgressEventSupport (Object o) {
-        if (o == null) {
-            throw new NullPointerException ();
-        }
-        obj = o;
+    public ProgressEventSupport (Object source) {
+        Parameters.notNull("source", source);
+
+        obj = source;
     }
-    
+
     /** Add a ProgressListener to the listener list. */
     public synchronized void addProgressListener (ProgressListener lsnr) {
         if (listeners == null) {
@@ -62,7 +61,7 @@ public class ProgressEventSupport {
         }
         listeners.addElement(lsnr);
     }
-    
+
     /** Remove a ProgressListener from the listener list. */
     public synchronized void removeProgressListener (ProgressListener lsnr) {
         if (listeners == null) {
@@ -92,7 +91,7 @@ public class ProgressEventSupport {
 	    }
 	}
     }
-    
+
     /** Returns last DeploymentStatus notified by {@link fireHandleProgressEvent}
      */
     public synchronized DeploymentStatus getDeploymentStatus () {

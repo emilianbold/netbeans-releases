@@ -265,5 +265,6 @@ Microsystems, Inc. All Rights Reserved.
             </test-dependencies>
             <public-packages/>
         </data>
+        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit3"/>
     </configuration>
 </project>

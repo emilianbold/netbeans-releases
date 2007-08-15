@@ -22,10 +22,12 @@ import java.awt.Image;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
-import org.openide.nodes.*;
 import org.openide.util.Lookup;
 import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesAction;
 import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesCookie;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -39,22 +41,23 @@ public class TomcatTargetNode extends AbstractNode {
     /** Creates a new instance of TomcatTargetNode */
     public TomcatTargetNode(Lookup lookup) {
         super(new Children.Array());
-        getChildren().add(new Node[] {new WebModuleHolderNode(lookup)});
+        TomcatWebModuleChildrenFactory factory = new TomcatWebModuleChildrenFactory(lookup);
+        getChildren().add(new Node[] {new WebModuleHolderNode(factory)});
     }
-    
+
     @Override
     public Action[] getActions(boolean b) {
         return new Action[] {};
     }
- 
+
     public class WebModuleHolderNode extends AbstractNode {
-        
-        public WebModuleHolderNode (Lookup lookup){
-            super(new TomcatWebModuleChildren(lookup));
+
+        public WebModuleHolderNode (TomcatWebModuleChildrenFactory factory) {
+            super(Children.create(factory, true));
             setDisplayName(NbBundle.getMessage(TomcatTargetNode.class, "LBL_WebApps"));  // NOI18N
-            getCookieSet().add(new RefreshWebModuleChildren ((TomcatWebModuleChildren)getChildren()));
+            getCookieSet().add(new RefreshWebModuleChildren (factory));
         }
-        
+
         public Image getIcon(int type) {
             return UISupport.getIcon(ServerIcon.WAR_FOLDER);
         }
@@ -62,24 +65,25 @@ public class TomcatTargetNode extends AbstractNode {
         public Image getOpenedIcon(int type) {
             return UISupport.getIcon(ServerIcon.WAR_OPENED_FOLDER);
         }
-        
+
         public javax.swing.Action[] getActions(boolean context) {
             return new SystemAction[] {
                    SystemAction.get(RefreshWebModulesAction.class)
-               };        
+               };
         }
     }
-    
-    
-    class RefreshWebModuleChildren implements RefreshWebModulesCookie {
-        TomcatWebModuleChildren children;
 
-        RefreshWebModuleChildren (TomcatWebModuleChildren children){
-            this.children = children;
+
+    private class RefreshWebModuleChildren implements RefreshWebModulesCookie {
+
+        private final TomcatWebModuleChildrenFactory factory;
+
+        RefreshWebModuleChildren (TomcatWebModuleChildrenFactory factory){
+            this.factory = factory;
         }
 
         public void refresh() {
-            children.updateKeys();
+            factory.updateKeys();
         }
     }
 }

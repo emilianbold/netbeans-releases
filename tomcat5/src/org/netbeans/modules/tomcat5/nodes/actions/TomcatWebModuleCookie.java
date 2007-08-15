@@ -20,6 +20,7 @@
 package org.netbeans.modules.tomcat5.nodes.actions;
 
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * Tomcat web module cookie
@@ -29,8 +30,10 @@ public interface TomcatWebModuleCookie extends Node.Cookie {
 
     /**
      * Undeploys the web module from the server.
+     * 
+     * @return scheduled task that performs undeploy
      */
-    public void undeploy();
+    public Task undeploy();
 
     /**
      * Starts the web module.
