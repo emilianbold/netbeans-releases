@@ -229,7 +229,7 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
     void selectNode(Node n) {
 
 	try {
-	    mgr.setSelectedNodes(new Node[] {n});
+	    mgr.setSelectedNodes(n != null ? new Node[] {n} : new Node[] {});
 	    
 	} catch (Exception exc) {
             Logger.getLogger(TransactionView.class.getName()).log(Level.INFO, "selectNode", exc);
