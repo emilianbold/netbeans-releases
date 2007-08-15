@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.soa.libs.wsdl4j/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/soa/libs/wsdl4j/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Implementation-Version: 1.5.2
+
+

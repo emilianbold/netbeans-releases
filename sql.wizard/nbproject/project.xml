@@ -32,11 +32,12 @@
                         <specification-version>3.24.21.1</specification-version>
                     </run-dependency>
                 </dependency>
-				 <dependency>
-                    <code-name-base>javax.wsdl4j</code-name-base>
+		    <dependency>
+                    <code-name-base>org.netbeans.soa.libs.wsdl4j</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
+                        <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.soa.libs.wsdl4j</code-name-base>
+            <module-dependencies/>
+            <friend-packages>
+                <friend>org.netbeans.modules.compapp.projects.jbi</friend>
+                <friend>org.netbeans.modules.sql.project</friend>
+                <friend>org.netbeans.modules.jdbcwizard</friend>
+                <package>com.ibm.wsdl</package>
+                <package>com.ibm.wsdl.extensions</package>
+                <package>com.ibm.wsdl.extensions.http</package>
+                <package>com.ibm.wsdl.extensions.mime</package>
+                <package>com.ibm.wsdl.extensions.schema</package>
+                <package>com.ibm.wsdl.extensions.soap</package>
+                <package>com.ibm.wsdl.factory</package>
+                <package>com.ibm.wsdl.util</package>
+                <package>com.ibm.wsdl.util.xml</package>
+                <package>com.ibm.wsdl.xml</package>
+                <package>javax.wsdl</package>
+                <package>javax.wsdl.extensions</package>
+                <package>javax.wsdl.extensions.http</package>
+                <package>javax.wsdl.extensions.mime</package>
+                <package>javax.wsdl.extensions.schema</package>
+                <package>javax.wsdl.extensions.soap</package>
+                <package>javax.wsdl.factory</package>
+                <package>javax.wsdl.xml</package>
+                <package>javax.xml.namespace</package>
+            </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/wsdl4j-1.5.2/wsdl4j.jar</runtime-relative-path>
+                <binary-origin>external/wsdl4j-1.5.2/qname.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/wsdl4j-1.5.2/wsdl4j.jar</runtime-relative-path>
+                <binary-origin>external/wsdl4j-1.5.2/wsdl4j.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>
