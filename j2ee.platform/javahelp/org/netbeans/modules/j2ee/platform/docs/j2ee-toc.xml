@@ -165,17 +165,20 @@
                 <tocitem text="Working with Web Services" target="ws_process" />
                 <tocitem text="Web Service Tasks: Quick Reference" target="ws_quickref" />	
             </tocitem>
-            <tocitem text="Implementing Web Services" >
-                <tocitem text="About Implementing Web Services" target="about_implement_ws" />
-                <tocitem text="Generate the WSDL file from Java" >
+            <tocitem text="Creating Web Services" >
+                <tocitem text="About Creating Web Services" target="about_implement_ws" />
+                 <tocitem text="Generate a RESTful Web Service" >
                     <tocitem text="Creating a Web Service from Java" target="create_ws_from_scratch" />
                     <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
                 </tocitem>
-                <tocitem text="Generate the Web Service from a WSDL File" >
+                <tocitem text="Generate a JAX-WS Web Service from a WSDL File" >
                     <tocitem text="Creating a WSDL File" target="create_wsdl_file" />
                     <tocitem text="Creating a Web Service from a WSDL File" target="create_ws_from_wsdl" />
                 </tocitem>
-                
+                <tocitem text="Generate a WSDL file from Java" >
+                    <tocitem text="Creating a Web Service from Java" target="create_ws_from_scratch" />
+                    <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
+                </tocitem>
             </tocitem>
             <tocitem text="Configuring Web Services" >
                 <tocitem text="About Configuring Web Services" target="config_ws_about" />
@@ -188,7 +191,7 @@
                 <tocitem text="About Building Web Services" target="about_build_ws" />
                 <tocitem text="About the Web Service Attributes Editor" target="org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl" />
             </tocitem>
-            <tocitem text="Deploying and Testing Web Services" >
+            <tocitem text="Deploying Web Services" >
                 <tocitem text="About Deploying and Testing Web Services" target="about_deploy_and_test_ws" />
                 <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 	
                
@@ -196,7 +199,7 @@
                 <tocitem text="Testing a JAX-WS Web Service" target="glassfish_tester-ws" />
                 <tocitem text="Viewing the Published WSDL File" target="test_ws" /> 
             </tocitem>
-            <tocitem text="Web Service Clients" >
+            <tocitem text="Creating Web Service Clients" >
                 <tocitem text="About Web Service Clients" target="about_wsc" />
                 <tocitem text="Working with Web Service Clients" target="wsc_process" />
                 <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 
@@ -209,17 +212,17 @@
                 <tocitem text="Building a Web Service Client" target="wsc_build" />
                 <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
             </tocitem>
-            <tocitem text="Handlers" >
-                <tocitem text="About Handlers" target="about_ws_soap_message" />
+            <tocitem text="Creating Handlers" >
+                <tocitem text="About Creating Handlers" target="about_ws_soap_message" />
                 <tocitem text="Creating a Handler" target="create_ws_soap_message" />
                 <tocitem text="Configuring a Handler" target="configure_ws_soap_message" />
                 <tocitem text="Testing and Using a Handler" target="test_and_use_ws_soap_message" />
             </tocitem>
-             <tocitem text="JAXB" >
-                <tocitem text="About JAXB" target="about_jaxb" />
+             <tocitem text="Mapping XML to Java" >
+                <tocitem text="About Mapping XML to Java" target="about_jaxb" />
                 <tocitem text="Using the JAXB Wizard" target="jaxb_wizard" />
             </tocitem>
-               <tocitem text="Web Service Policies">
+               <tocitem text="Configuring Interoperability">
                    <tocitem text="About Web Service Policies" target="org.netbeans.modules.websvc.wsitconf.about"/>
                    <tocitem text="Message Security">
                        <tocitem text="About Security for Web Services" target="org.netbeans.modules.websvc.wsitconf.about.security"/>
