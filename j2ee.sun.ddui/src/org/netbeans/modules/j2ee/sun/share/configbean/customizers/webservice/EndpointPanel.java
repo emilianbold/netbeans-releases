@@ -245,7 +245,7 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         setLayout(new java.awt.GridBagLayout());
 
         jLblName.setLabelFor(jTxtName);
-        jLblName.setText(WebServiceDescriptorCustomizer.bundle.getString("LBL_PortComponentName_1")); // NOI18N
+        jLblName.setText(webserviceBundle. getString("LBL_PortComponentName_1")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
@@ -256,9 +256,11 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(jTxtName, gridBagConstraints);
+        jTxtName.getAccessibleContext().setAccessibleName(webserviceBundle. getString("ACSN_PortComponentName")); // NOI18N
+        jTxtName.getAccessibleContext().setAccessibleDescription(webserviceBundle. getString("ACSD_PortComponentName")); // NOI18N
 
         jLblEndpointAddressURI.setLabelFor(jTxtEndpointAddressURI);
-        jLblEndpointAddressURI.setText(WebServiceDescriptorCustomizer.bundle.getString("LBL_EndpointAddressURI_1")); // NOI18N
+        jLblEndpointAddressURI.setText(webserviceBundle. getString("LBL_EndpointAddressURI_1")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
@@ -269,11 +271,11 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(jTxtEndpointAddressURI, gridBagConstraints);
-        jTxtEndpointAddressURI.getAccessibleContext().setAccessibleName(WebServiceDescriptorCustomizer.bundle.getString("ACSN_EndpointAddressURI")); // NOI18N
-        jTxtEndpointAddressURI.getAccessibleContext().setAccessibleDescription(WebServiceDescriptorCustomizer.bundle.getString("ACSD_EndpointAddressURI")); // NOI18N
+        jTxtEndpointAddressURI.getAccessibleContext().setAccessibleName(webserviceBundle. getString("ACSN_EndpointAddressURI")); // NOI18N
+        jTxtEndpointAddressURI.getAccessibleContext().setAccessibleDescription(webserviceBundle. getString("ACSD_EndpointAddressURI")); // NOI18N
 
         jLblTransportGuarantee.setLabelFor(jCbxTransportGuarantee);
-        jLblTransportGuarantee.setText(WebServiceDescriptorCustomizer.bundle.getString("LBL_TransportGuarantee_1")); // NOI18N
+        jLblTransportGuarantee.setText(webserviceBundle. getString("LBL_TransportGuarantee_1")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
@@ -286,11 +288,11 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(jCbxTransportGuarantee, gridBagConstraints);
-        jCbxTransportGuarantee.getAccessibleContext().setAccessibleName(WebServiceDescriptorCustomizer.bundle.getString("ACSN_TransportGuarantee")); // NOI18N
-        jCbxTransportGuarantee.getAccessibleContext().setAccessibleDescription(WebServiceDescriptorCustomizer.bundle.getString("ACSD_TransportGuarantee")); // NOI18N
+        jCbxTransportGuarantee.getAccessibleContext().setAccessibleName(webserviceBundle. getString("ACSN_TransportGuarantee")); // NOI18N
+        jCbxTransportGuarantee.getAccessibleContext().setAccessibleDescription(webserviceBundle. getString("ACSD_TransportGuarantee")); // NOI18N
 
         jLblDebugEnabled.setLabelFor(jChkDebugEnabled);
-        jLblDebugEnabled.setText(WebServiceDescriptorCustomizer.bundle.getString("LBL_DebugEnabled_1")); // NOI18N
+        jLblDebugEnabled.setText(webserviceBundle. getString("LBL_DebugEnabled_1")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
@@ -303,10 +305,10 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(jChkDebugEnabled, gridBagConstraints);
-        jChkDebugEnabled.getAccessibleContext().setAccessibleName(WebServiceDescriptorCustomizer.bundle.getString("ACSN_DebugEnabled")); // NOI18N
-        jChkDebugEnabled.getAccessibleContext().setAccessibleDescription(WebServiceDescriptorCustomizer.bundle.getString("ACSD_DebugEnabled")); // NOI18N
+        jChkDebugEnabled.getAccessibleContext().setAccessibleName(webserviceBundle. getString("ACSN_DebugEnabled")); // NOI18N
+        jChkDebugEnabled.getAccessibleContext().setAccessibleDescription(webserviceBundle. getString("ACSD_DebugEnabled")); // NOI18N
 
-        jLblSecuritySettings.setText("Security Settings :");
+        jLblSecuritySettings.setText(webserviceBundle. getString("LBL_SecuritySettings")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -314,7 +316,7 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         add(jLblSecuritySettings, gridBagConstraints);
 
         bgSecurity.add(jRBnNoSecurity);
-        jRBnNoSecurity.setText("No Security");
+        jRBnNoSecurity.setText(webserviceBundle. getString("LBL_NoSecurity")); // NOI18N
         jRBnNoSecurity.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRBnNoSecurity.setOpaque(false);
         jRBnNoSecurity.addActionListener(new java.awt.event.ActionListener() {
@@ -327,9 +329,11 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(jRBnNoSecurity, gridBagConstraints);
+        jRBnNoSecurity.getAccessibleContext().setAccessibleName(webserviceBundle. getString("ACSN_NoSecurity")); // NOI18N
+        jRBnNoSecurity.getAccessibleContext().setAccessibleDescription(webserviceBundle. getString("ACSD_NoSecurity")); // NOI18N
 
         bgSecurity.add(jRBnMessageSecurity);
-        jRBnMessageSecurity.setText("Message Security");
+        jRBnMessageSecurity.setText(webserviceBundle. getString("LBL_EnableMsgSecurity")); // NOI18N
         jRBnMessageSecurity.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRBnMessageSecurity.setOpaque(false);
         jRBnMessageSecurity.addActionListener(new java.awt.event.ActionListener() {
@@ -341,9 +345,11 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 5, 0);
         add(jRBnMessageSecurity, gridBagConstraints);
+        jRBnMessageSecurity.getAccessibleContext().setAccessibleName(webserviceBundle. getString("ACSN_MessageSecurity")); // NOI18N
+        jRBnMessageSecurity.getAccessibleContext().setAccessibleDescription(webserviceBundle. getString("ACSD_MessageSecurity")); // NOI18N
 
         jLblEnableMsgSecurity.setLabelFor(jChkEnableMsgSecurity);
-        jLblEnableMsgSecurity.setText(WebServiceDescriptorCustomizer.bundle.getString("LBL_EnableMsgSecurity_1")); // NOI18N
+        jLblEnableMsgSecurity.setText(webserviceBundle. getString("LBL_EnableMsgSecurity_1")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
@@ -360,10 +366,10 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 12);
         add(jChkEnableMsgSecurity, gridBagConstraints);
-        jChkEnableMsgSecurity.getAccessibleContext().setAccessibleName(WebServiceDescriptorCustomizer.bundle.getString("ACSN_EnableMsgSecurity")); // NOI18N
-        jChkEnableMsgSecurity.getAccessibleContext().setAccessibleDescription(WebServiceDescriptorCustomizer.bundle.getString("ACSD_EnableMsgSecurity")); // NOI18N
+        jChkEnableMsgSecurity.getAccessibleContext().setAccessibleName(webserviceBundle. getString("ACSN_EnableMsgSecurity")); // NOI18N
+        jChkEnableMsgSecurity.getAccessibleContext().setAccessibleDescription(webserviceBundle. getString("ACSD_EnableMsgSecurity")); // NOI18N
 
-        jBtnEditBindings.setText(WebServiceDescriptorCustomizer.bundle.getString("LBL_EditMsgSecBindings")); // NOI18N
+        jBtnEditBindings.setText(webserviceBundle. getString("LBL_EditMsgSecBindings")); // NOI18N
         jBtnEditBindings.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnEditBindingsActionPerformed(evt);
@@ -374,11 +380,11 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(jBtnEditBindings, gridBagConstraints);
-        jBtnEditBindings.getAccessibleContext().setAccessibleName(WebServiceDescriptorCustomizer.bundle.getString("ACSN_EditMsgSecBindings")); // NOI18N
-        jBtnEditBindings.getAccessibleContext().setAccessibleDescription(WebServiceDescriptorCustomizer.bundle.getString("ACSD_EditMsgSecBindings")); // NOI18N
+        jBtnEditBindings.getAccessibleContext().setAccessibleName(webserviceBundle. getString("ACSN_EditMsgSecBindings")); // NOI18N
+        jBtnEditBindings.getAccessibleContext().setAccessibleDescription(webserviceBundle. getString("ACSD_EditMsgSecBindings")); // NOI18N
 
         bgSecurity.add(jRBnLoginConfig);
-        jRBnLoginConfig.setText("Login Configuration");
+        jRBnLoginConfig.setText(webserviceBundle. getString("LBL_LoginConfiguration")); // NOI18N
         jRBnLoginConfig.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRBnLoginConfig.setOpaque(false);
         jRBnLoginConfig.addActionListener(new java.awt.event.ActionListener() {
@@ -390,9 +396,11 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(1, 12, 0, 0);
         add(jRBnLoginConfig, gridBagConstraints);
+        jRBnLoginConfig.getAccessibleContext().setAccessibleName(webserviceBundle. getString("ACSN_LoginConfiguration")); // NOI18N
+        jRBnLoginConfig.getAccessibleContext().setAccessibleDescription(webserviceBundle. getString("ACSD_LoginConfiguration")); // NOI18N
 
         jLblRealm.setLabelFor(jTxtRealm);
-        jLblRealm.setText("Realm :");
+        jLblRealm.setText(webserviceBundle. getString("LBL_Realm_1")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(1, 6, 0, 0);
@@ -409,9 +417,11 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(1, 6, 0, 5);
         add(jTxtRealm, gridBagConstraints);
+        jTxtRealm.getAccessibleContext().setAccessibleName(webserviceBundle. getString("ACSN_Realm")); // NOI18N
+        jTxtRealm.getAccessibleContext().setAccessibleDescription(webserviceBundle. getString("ACSD_Realm")); // NOI18N
 
         jLblAuthentication.setLabelFor(jCbxAuthentication);
-        jLblAuthentication.setText("Authentication Method :");
+        jLblAuthentication.setText(webserviceBundle. getString("LBL_AuthenticationMethod_1")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridwidth = 2;
@@ -431,6 +441,8 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(jCbxAuthentication, gridBagConstraints);
+        jCbxAuthentication.getAccessibleContext().setAccessibleName(webserviceBundle. getString("ACSN_AuthenticationMethod")); // NOI18N
+        jCbxAuthentication.getAccessibleContext().setAccessibleDescription(webserviceBundle. getString("ACSD_AuthenticationMethod")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jRBnLoginConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRBnLoginConfigActionPerformed
@@ -470,8 +482,8 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
 
-                jCbxAuthentication.setSelectedItem(getAuthorizationMethodMapping(""));
-                jTxtRealm.setText("");
+                jCbxAuthentication.setSelectedItem(getAuthorizationMethodMapping("")); // NOI18N
+                jTxtRealm.setText(""); // NOI18N
 
                 enableMessageSecurityUI(true);
                 enableAuthenticationUI(false);
@@ -493,8 +505,8 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
 
-                jCbxAuthentication.setSelectedItem(getAuthorizationMethodMapping(""));
-                jTxtRealm.setText("");
+                jCbxAuthentication.setSelectedItem(getAuthorizationMethodMapping("")); // NOI18N
+                jTxtRealm.setText(""); // NOI18N
 
                 enableMessageSecurityUI(false);
                 enableAuthenticationUI(false);
