@@ -327,16 +327,17 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         public void run(CompilationController controller) throws Exception {
             if (!hasTask || !isTaskCancelled()) {
-                if (component != null)
-                    component.putClientProperty("completion-active", Boolean.TRUE); //NOI18N
-                if ((queryType & COMPLETION_QUERY_TYPE) != 0)
+                if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
+                    if (component != null)
+                        component.putClientProperty("completion-active", Boolean.TRUE); //NOI18N
                     resolveCompletion(controller);
-                else if (queryType == TOOLTIP_QUERY_TYPE)
+                    if (component != null && isTaskCancelled())
+                        component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
+                } else if (queryType == TOOLTIP_QUERY_TYPE) {
                     resolveToolTip(controller);
-                else if (queryType == DOCUMENTATION_QUERY_TYPE)
+                } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
                     resolveDocumentation(controller);
-                if (component != null && isTaskCancelled())
-                    component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
+                }
             }
         }
         
