@@ -237,7 +237,7 @@ public class ElementDataObject implements Report
         String tag = "";
 
         int i = 0;
-        while(i < docBuff.length())
+        while(i > -1 && i < docBuff.length())
         {
             char ch = docBuff.charAt(i);
             if (ch == '<')
@@ -711,7 +711,7 @@ public class ElementDataObject implements Report
             
             buff.append("<DT><B>" + // NOI18N
                 NbBundle.getMessage(ElementDataObject.class, 
-                "All_Dependency_Clients") + ":</B><DD>"); // NOI18N
+                "All_Dependency_Clients") + ":</B>"); // NOI18N
             
             Iterator<INamedElement> keys = clients.keySet().iterator();
             
@@ -719,14 +719,9 @@ public class ElementDataObject implements Report
             {
                 INamedElement client = keys.next();
                 ArrayList<String> links = clients.get(client);
-                
-                int i = 0;
-                
+                                
                 for (String type: links)
-                {
-                    if (i > 0)
-                        buff.append(", "); // NOI18N
-
+                { 
                     String name = client.getName();
 
                     if (name == null || name.equals("")) // NOI18N
@@ -740,7 +735,7 @@ public class ElementDataObject implements Report
 
                     ReportTask.addToImageList(imageName);
 
-                    String img = "<IMG SRC=\"" + ReportTask.getPathToReportRoot( // NOI18N
+                    String img = "<DD><IMG SRC=\"" + ReportTask.getPathToReportRoot( // NOI18N
                         getElement()) + "images/" + imageName + // NOI18N
                         "\" ALT=\"(" + type + ") \">"; // NOI18N
 
@@ -749,11 +744,10 @@ public class ElementDataObject implements Report
                         client.getOwningPackage().getFullyQualifiedName(false) +
                         "\">" + name + "</A>"); // NOI18N
                     
-                    i++;
+                    buff.append("</DD>\r\n"); // NOI18N
                 }
-            }
+            }         
             
-            buff.append("</DD>\r\n"); // NOI18N
             buff.append("</DL>\r\n"); // NOI18N
         }
         
@@ -763,7 +757,7 @@ public class ElementDataObject implements Report
             buff.append("<DL>\r\n"); // NOI18N
             
             buff.append("<DT><B>" + NbBundle.getMessage(ElementDataObject.class,  // NOI18N
-                "All_Dependency_Suppliers") + ":</B><DD>"); // NOI18N
+                "All_Dependency_Suppliers") + ":</B>"); // NOI18N
             
             Iterator<INamedElement> keys = suppliers.keySet().iterator();
             
@@ -772,12 +766,8 @@ public class ElementDataObject implements Report
                 INamedElement supplier = keys.next();
                 ArrayList<String> links = suppliers.get(supplier);
                 
-                int i = 0;
                 for (String type: links)
                 {
-                    if (i > 0)
-                        buff.append(", "); // NOI18N
-
                     String name = supplier.getName();
 
                     if (name==null || name.equals(""))// NOI18N
@@ -791,20 +781,18 @@ public class ElementDataObject implements Report
 
                     ReportTask.addToImageList(imageName);
 
-                    String img = "<IMG SRC=\"" + ReportTask.getPathToReportRoot( // NOI18N
+                    String img = "<DD><IMG SRC=\"" + ReportTask.getPathToReportRoot( // NOI18N
                         getElement()) + "images/" + imageName +  // NOI18N
                         "\" ALT=\"(" + type + ") \">"; // NOI18N
 
                     buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" +  // NOI18N
                         getLinkTo(supplier) + "\" title=\"dependency in " + // NOI18N
                         supplier.getOwningPackage().getFullyQualifiedName(false) +
-                        "\">" + name + "</A>"); // NOI18N
-                    
-                    i++;
+                        "\">" + name + "</A>"); // NOI18N    
+                    buff.append("</DD>\r\n"); // NOI18N
                 }
             }
             
-            buff.append("</DD>\r\n"); // NOI18N
             buff.append("</DL>\r\n"); // NOI18N
         }
         
