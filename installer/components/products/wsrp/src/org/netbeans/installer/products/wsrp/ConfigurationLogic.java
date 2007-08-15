@@ -29,6 +29,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
@@ -57,9 +58,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     private static final String WSRP_INSTALLER =
             "wsrp-configurator.jar"; // NOI18N
     
-    private static final String ADDON_ID = 
-            "wsrp"; // NOI18N
-    
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private List<WizardComponent> wizardComponents;
@@ -86,6 +84,16 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         // resolve the dependency
         dependencies.get(0).setVersionResolved(sources.get(0).getVersion());
         
+        final File javaExecutable;
+        try {
+            javaExecutable = JavaUtils.getExecutable(
+                    GlassFishUtils.getJavaHome(glassfishLocation));
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.java.home"), // NOI18N
+                    e);
+        }
+        
         // stop the default domain //////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.stop.as")); // NOI18N
@@ -102,12 +110,15 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             progress.setDetail(getString("CL.install.wsrp.installer")); // NOI18N
             
             final File asadmin = GlassFishUtils.getAsadmin(glassfishLocation);
-            
+            final File domain1 = new File(new File(glassfishLocation, "domains"),
+                    GlassFishUtils.DEFAULT_DOMAIN);
             SystemUtils.executeCommand(
-                    asadmin.getParentFile(),
-                    asadmin.getAbsolutePath(),
-                    GlassFishUtils.INSTALL_ADDON_COMMAND,
-                    wsrpInstaller.getAbsolutePath());
+                    wsrpLocation,
+                    javaExecutable.getAbsolutePath(),
+                    "-jar",
+                    wsrpInstaller.getAbsolutePath(),
+                    glassfishLocation.getAbsolutePath(),
+                    domain1.getAbsolutePath());
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.wsrp.installer"), // NOI18N
@@ -118,44 +129,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         progress.setPercentage(Progress.COMPLETE);
     }
     
-    public void uninstall(Progress progress) throws UninstallationException {
-        // get the list of suitable glassfish installations
-        final List<Dependency> dependencies = 
-                getProduct().getDependencyByUid(GLASSFISH_UID);
-        final List<Product> sources = 
-                Registry.getInstance().getProducts(dependencies.get(0));
-        
-        // pick the first one and integrate with it
-        final File glassfishLocation = sources.get(0).getInstallationLocation();
-        
-        // stop the default domain //////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.uninstall.stop.as")); // NOI18N
-            
-            GlassFishUtils.stopDefaultDomain(glassfishLocation);
-        } catch (IOException e) {
-            throw new UninstallationException(
-                    getString("CL.uninstall.error.stop.as"), // NOI18N
-                    e);
-        }
-
-        // run the wsrp uninstaller //////////////////////////////////////////////
-        try {
-            progress.setDetail(
-                    getString("CL.uninstall.wsrp.installer")); // NOI18N
-            
-            final File asadmin = GlassFishUtils.getAsadmin(glassfishLocation);
-            
-            SystemUtils.executeCommand(
-                    asadmin.getParentFile(),
-                    asadmin.getAbsolutePath(),
-                    GlassFishUtils.UNINSTALL_ADDON_COMMAND,
-                    ADDON_ID);
-        } catch (IOException e) {
-            throw new UninstallationException(
-                    getString("CL.uninstall.error.wsrp.installer"), // NOI18N
-                    e);
-        }
+    public void uninstall(Progress progress) throws UninstallationException {        
     }
     
     public List<WizardComponent> getWizardComponents() {
