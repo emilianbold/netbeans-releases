@@ -640,7 +640,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 "nb-javase",
                 "nb-javaee",
                 "nb-javame",
-                "nb-ccpp",
+                "nb-cnd",
                 "nb-soa",
                 "nb-uml",
                 "nb-ruby",

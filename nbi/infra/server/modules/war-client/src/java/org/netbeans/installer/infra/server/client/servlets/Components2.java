@@ -73,7 +73,7 @@ public class Components2 extends HttpServlet {
                 "nb-javase",
                 "nb-javaee",
                 "nb-javame",
-                "nb-ccpp",
+                "nb-cnd",
                 "nb-soa",
                 "nb-uml",
                 "nb-ruby",
