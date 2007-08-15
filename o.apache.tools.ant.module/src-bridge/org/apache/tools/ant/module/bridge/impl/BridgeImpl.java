@@ -172,9 +172,7 @@ public class BridgeImpl implements BridgeInterface {
             project = new Project();
             project.addBuildListener(logger);
             project.init();
-            /* XXX disabled while investigating #112839
             project.addTaskDefinition("java", ForkedJavaOverride.class); // #56341
-            */
             try {
                 addCustomDefs(project);
             } catch (IOException e) {

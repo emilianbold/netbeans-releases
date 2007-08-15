@@ -193,8 +193,6 @@ public class ForkedJavaOverride extends Java {
                     if (logLevel != null) {
                         maybeFlush();
                     }
-                    in.close();
-                    out.close();
                 }
             } catch (IOException x) {
                 // ignore IOException: Broken pipe from FileOutputStream.writeBytes in BufferedOutputStream.flush
