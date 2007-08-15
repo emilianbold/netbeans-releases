@@ -28,6 +28,9 @@ import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
+import javax.xml.xpath.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 /**
  * REST support utilitities across all project types.
@@ -125,4 +128,28 @@ public class RestUtils {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         restSupport.addJSR311apiJar();
     }
+            
+    public static String getAttributeValue(Document doc, String nodePath, String attrName) throws XPathExpressionException {
+        String attrValue = null;
+        XPathFactory factory = XPathFactory.newInstance();
+        XPath xpath = factory.newXPath();
+        XPathExpression expr3 = xpath.compile(nodePath+"/@"+attrName);
+        Object result3 = expr3.evaluate(doc, XPathConstants.NODESET);
+        NodeList nodes3 = (NodeList) result3;
+        for (int i = 0; i < nodes3.getLength(); i++) {
+            attrValue = nodes3.item(i).getNodeValue();
+            break;
+        }
+        return attrValue;
+    }
+    
+    public static NodeList getNodeList(Document doc, String nodePath) throws XPathExpressionException {
+        String attrValue = null;
+        XPathFactory factory = XPathFactory.newInstance();
+        XPath xpath = factory.newXPath();
+        XPathExpression expr3 = xpath.compile(nodePath);
+        Object result3 = expr3.evaluate(doc, XPathConstants.NODESET);
+        NodeList nodes3 = (NodeList) result3;
+        return nodes3;
+    }      
 }

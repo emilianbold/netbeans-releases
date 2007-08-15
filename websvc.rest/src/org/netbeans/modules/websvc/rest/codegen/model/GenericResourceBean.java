@@ -153,6 +153,10 @@ public class GenericResourceBean {
         return mimeTypes;
     }
     
+    public void setMimeTypes(MimeType[] mimeTypes) {
+        this.mimeTypes = mimeTypes;
+    }    
+    
     public String[] getRepresentationTypes() {
         return representationTypes;
     }

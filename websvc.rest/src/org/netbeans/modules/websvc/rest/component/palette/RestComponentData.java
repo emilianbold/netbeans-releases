@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.xml.parsers.*;
-import javax.xml.xpath.*;
+import javax.xml.xpath.XPathExpressionException;
+import org.netbeans.modules.websvc.rest.RestUtils;
+import org.netbeans.modules.websvc.rest.support.Utils;
 import org.openide.filesystems.*;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Attr;
@@ -174,18 +176,18 @@ public class RestComponentData {
     
     public void init(Document doc) throws XPathExpressionException, IOException {
         
-        name = getAttributeValue("//component", "name");
-        categoryPath = getAttributeValue("//component", "category");
+        name = RestUtils.getAttributeValue(doc, "//component", "name");
+        categoryPath = RestUtils.getAttributeValue(doc, "//component", "category");
         if(name == null || categoryPath == null)
             return;
-        String nameKey = getAttributeValue("//component", "nameKey");
-        String categoryKey = getAttributeValue("//component", "categoryKey");
-        String bundle = getAttributeValue("//component", "bundle");
+        String nameKey = RestUtils.getAttributeValue(doc, "//component", "nameKey");
+        String categoryKey = RestUtils.getAttributeValue(doc, "//component", "categoryKey");
+        String bundle = RestUtils.getAttributeValue(doc, "//component", "bundle");
         displayName = RestPaletteUtils.getLocalizedString(bundle, nameKey, name);
         categoryName = RestPaletteUtils.getLocalizedString(bundle, categoryKey, 
             categoryPath.startsWith("/")?categoryPath.substring(1):categoryPath);        
         
-        NodeList descNodes = getNodeList("//component/description");
+        NodeList descNodes = RestUtils.getNodeList(doc, "//component/description");
         if(descNodes != null && descNodes.getLength() > 0) {
             Node descNode = descNodes.item(0);
             if(descNode.getAttributes() != null &&
@@ -198,7 +200,7 @@ public class RestComponentData {
         }
         
         //Icons
-        NodeList icons = getNodeList("//component/icons/icon");
+        NodeList icons = RestUtils.getNodeList(doc, "//component/icons/icon");
         if(icons != null && icons.getLength() > 0) {
             for(int i=0;i<icons.getLength();i++) {
                 Node icon = icons.item(i);
@@ -216,13 +218,13 @@ public class RestComponentData {
         }
         
         //Service
-        NodeList serviceNodes = getNodeList("//component/service");
+        NodeList serviceNodes = RestUtils.getNodeList(doc, "//component/service");
         if(serviceNodes != null && serviceNodes.getLength() > 0) {         
-            service = new Service(getAttributeValue("//component/service", "name"));
+            service = new Service(RestUtils.getAttributeValue(doc, "//component/service", "name"));
             
             //Methods
             List<Method> methodList = new ArrayList<Method>();
-            NodeList methods = getNodeList("//component/service/method");
+            NodeList methods = RestUtils.getNodeList(doc, "//component/service/method");
             if(methods != null && methods.getLength() > 0) {
                 for(int i=0;i<methods.getLength();i++) {
                     Node method = methods.item(i);
@@ -255,35 +257,11 @@ public class RestComponentData {
                 }
             }
         } else {
-            NodeList classNodes = getNodeList("//component/classes/class");
+            NodeList classNodes = RestUtils.getNodeList(doc, "//component/classes/class");
             if(classNodes != null && classNodes.getLength() > 0) {
-                className = getAttributeValue("//component/classes/class", "name");
+                className = RestUtils.getAttributeValue(doc, "//component/classes/class", "name");
             }
         }
-    }
-    
-    private String getAttributeValue(String nodePath, String attrName) throws XPathExpressionException {
-        String attrValue = null;
-        XPathFactory factory = XPathFactory.newInstance();
-        XPath xpath = factory.newXPath();
-        XPathExpression expr3 = xpath.compile(nodePath+"/@"+attrName);
-        Object result3 = expr3.evaluate(doc, XPathConstants.NODESET);
-        NodeList nodes3 = (NodeList) result3;
-        for (int i = 0; i < nodes3.getLength(); i++) {
-            attrValue = nodes3.item(i).getNodeValue();
-            break;
-        }
-        return attrValue;
-    }
-    
-    private NodeList getNodeList(String nodePath) throws XPathExpressionException {
-        String attrValue = null;
-        XPathFactory factory = XPathFactory.newInstance();
-        XPath xpath = factory.newXPath();
-        XPathExpression expr3 = xpath.compile(nodePath);
-        Object result3 = expr3.evaluate(doc, XPathConstants.NODESET);
-        NodeList nodes3 = (NodeList) result3;
-        return nodes3;
     }
     
     public class Icon {

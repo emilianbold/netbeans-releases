@@ -146,6 +146,14 @@ public class Constants {
             return suffix;
         }
         
+        public static MimeType find(String value) {
+            for(MimeType m:values()) {
+                if(m.value().equals(value))
+                    return m;
+            }
+            return null;
+        }
+        
         public String toString() {
             return value;
         }

@@ -25,6 +25,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.rest.codegen.JAXWSwrapperRESTServiceGenerator;
+import org.netbeans.modules.websvc.rest.codegen.RESTServiceGenerator;
 import org.netbeans.modules.websvc.rest.codegen.WADLResourceCodeGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.JaxwsBasedResourceBean;
 import org.netbeans.modules.websvc.rest.support.Utils;
@@ -70,24 +71,23 @@ public class RestComponentHandler implements ActiveEditorDrop {
         generatorTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 try {
-                    if (RestComponentData.isWSDL(type)) {
-                        JAXWSwrapperRESTServiceGenerator codegen = new JAXWSwrapperRESTServiceGenerator(targetFO, data);
-                        if (codegen.needsInputs()) {
-                            InputValuesPanel panel = new InputValuesPanel(codegen.getInputParameterTypes(), project);
-                            DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(RestComponentHandler.class, "LBL_ConstantParams"));
-                            Object response = DialogDisplayer.getDefault().notify(desc);
-                            if (response.equals(NotifyDescriptor.YES_OPTION)) {
-                                codegen.setConstantInputValues(panel.getInputParamValues());
-                            } else { // cancel
-                                return;
-                            }     
-                        }
-                        codegen.generate();
-                        Utils.showMethod(targetFO, codegen.getSubResourceLocator());
-                    } else if (RestComponentData.isWADL(type)) {
-                        WADLResourceCodeGenerator codegen = new WADLResourceCodeGenerator(targetFO, data);
-                        codegen.generate();
-                    }
+                    RESTServiceGenerator codegen = null;
+                    if (RestComponentData.isWSDL(type))
+                        codegen = new JAXWSwrapperRESTServiceGenerator(targetFO, data); 
+                    else if (RestComponentData.isWADL(type))
+                        codegen = new WADLResourceCodeGenerator(targetFO, data);
+                    if (codegen.needsInputs()) {
+                        InputValuesPanel panel = new InputValuesPanel(codegen.getInputParameterTypes(), project);
+                        DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(RestComponentHandler.class, "LBL_ConstantParams"));
+                        Object response = DialogDisplayer.getDefault().notify(desc);
+                        if (response.equals(NotifyDescriptor.YES_OPTION)) {
+                            codegen.setConstantInputValues(panel.getInputParamValues());
+                        } else { // cancel
+                            return;
+                        }     
+                    }    
+                    codegen.generate();
+                    Utils.showMethod(targetFO, codegen.getSubResourceLocator());
                 } catch(Exception ioe) {
                     errors.add(ioe);
                 } finally {
