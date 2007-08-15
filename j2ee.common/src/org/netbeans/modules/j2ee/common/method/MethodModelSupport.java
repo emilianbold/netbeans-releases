@@ -112,6 +112,19 @@ public final class MethodModelSupport {
      * @return tree representing methodModel
      */
     public static MethodTree createMethodTree(WorkingCopy workingCopy, MethodModel methodModel) {
+        return createMethodTree(workingCopy, methodModel, false);
+    }
+    
+    /**
+     * Creates {@link MethodTree} represented by methodModel in given javac context.
+     * 
+     * @param workingCopy controller from javac context
+     * @param methodModel model of method
+     * @param generateDefaultBody if true and body on methodModel is null or empty string, default return statement will be generated
+     * @throws NullPointerException if any of the parameters is <code>null</code>.
+     * @return tree representing methodModel
+     */
+    public static MethodTree createMethodTree(WorkingCopy workingCopy, MethodModel methodModel, boolean generateDefaultBody) {
         Parameters.notNull("workingCopy", workingCopy); //NOI18N
         Parameters.notNull("methodModel", methodModel); //NOI18N
         TreeMaker treeMaker = workingCopy.getTreeMaker();
@@ -133,6 +146,11 @@ public final class MethodModelSupport {
         }
         MethodTree result;
         String body = methodModel.getBody();
+        // if passed body is null, generate default return statement (if return type is not void)
+        if (generateDefaultBody && (body == null || "".equals(body.trim()))) {
+            String generatedBody = getDefaultReturnValue(workingCopy, methodModel.getReturnType());
+            body = generatedBody == null ? "" : "return " + generatedBody + ";";
+        }
         if (body == null) {
             result = treeMaker.Method(
                     treeMaker.Modifiers(methodModel.getModifiers()),
@@ -152,7 +170,7 @@ public final class MethodModelSupport {
                     Collections.<TypeParameterTree>emptyList(),
                     paramsList,
                     throwsList,
-                    "{" + methodModel.getBody() + "}",
+                    "{" + body + "}",
                     null
                     );
         }
@@ -190,6 +208,39 @@ public final class MethodModelSupport {
             }
         }
         return true;
+    }
+    
+    /**
+     * Generates default value for provided type
+     * 
+     * @param workingCopy workingCopy
+     * @param typeName fully-qualified type name or primitive type name or "void"
+     * @return values according to JLS '4.5.5 Initial Values of Variables'
+     * with exception for "char" where it returns "c"
+     */
+    public static String getDefaultReturnValue(WorkingCopy workingCopy, String typeName) {
+        if ("boolean".equals(typeName)) {           // NOI18N
+            return "false";                         // NOI18N
+        } else if ("byte".equals(typeName)) {       // NOI18N
+            return "0";                             // NOI18N
+        } else if ("short".equals(typeName)) {      // NOI18N
+            return "0";                             // NOI18N
+        } else if ("int".equals(typeName)) {        // NOI18N
+            return "0";                             // NOI18N
+        } else if ("long".equals(typeName)) {       // NOI18N
+            return "0L";                            // NOI18N
+        } else if ("char".equals(typeName)) {       // NOI18N
+            // should be '\u0000' which is null character, but we cannot return that
+            return "'c'";                           // NOI18N
+        } else if ("float".equals(typeName)) {      // NOI18N
+            return "0.0f";                          // NOI18N
+        } else if ("double".equals(typeName)) {     // NOI18N
+            return "0.0d";                          // NOI18N
+        } else if ("void".equals(typeName)) {       // NOI18N
+            return null;
+        } else {
+            return "null";                          // NOI18N
+        }
     }
     
     //TODO: RETOUCHE move/reuse to GenerationUtil, this one has also void type
