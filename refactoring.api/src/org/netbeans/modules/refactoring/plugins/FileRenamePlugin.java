@@ -31,6 +31,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -71,7 +72,7 @@ public class FileRenamePlugin implements RefactoringPlugin {
             this.fo = fo;
         }
         public String getText() {
-            return "Rename file " + fo.getNameExt();
+            return NbBundle.getMessage(FileRenamePlugin.class, "TXT_RenameFile") + fo.getNameExt();
         }
 
         public String getDisplayText() {

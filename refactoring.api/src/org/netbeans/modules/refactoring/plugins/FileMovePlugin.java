@@ -33,6 +33,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -75,7 +76,7 @@ public class FileMovePlugin implements RefactoringPlugin {
             this.fo = fo;
         }
         public String getText() {
-            return "Move file " + fo.getNameExt();
+            return NbBundle.getMessage(FileMovePlugin.class, "TXT_MoveFile") + fo.getNameExt();
         }
 
         public String getDisplayText() {

@@ -32,6 +32,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -74,8 +75,8 @@ public class FileCopyPlugin implements RefactoringPlugin {
             this.fo = fo;
             this.session = session;
         }
-        public String getText() {
-            return "Copy file " + fo.getNameExt();
+        public String getText() {            
+            return NbBundle.getMessage(FileCopyPlugin.class, "TXT_CopyFile") + fo.getNameExt();
         }
         
         public String getDisplayText() {

@@ -34,6 +34,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -85,7 +86,7 @@ public class FileDeletePlugin implements RefactoringPlugin {
             this.session = session;
         }
         public String getText() {
-            return "Delete file " + filename;
+            return NbBundle.getMessage(FileDeletePlugin.class, "TXT_DeleteFile") + filename;
         }
 
         public String getDisplayText() {
