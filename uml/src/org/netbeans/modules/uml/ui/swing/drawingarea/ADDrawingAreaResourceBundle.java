@@ -30,7 +30,7 @@ import com.tomsawyer.editor.TSEImage;
 import com.tomsawyer.editor.TSEGraphWindow;
 import javax.swing.border.Border;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramEnums;
-import org.netbeans.modules.uml.resources.ToolBarResource;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 
 public abstract class ADDrawingAreaResourceBundle extends ListResourceBundle
 {
@@ -327,9 +327,9 @@ public abstract class ADDrawingAreaResourceBundle extends ListResourceBundle
                         button.setEnabled(false);
                     }
                     
-                    ImageIcon icon = this.getIconResource(name + ".icon.pressed", ToolBarResource.class);
+                    ImageIcon icon = this.getIconResource(name + ".icon.pressed", ImageUtil.class);
                     
-                    icon = this.getIconResource(name + ".icon", ToolBarResource.class);
+                    icon = this.getIconResource(name + ".icon", ImageUtil.class);
                     
                     if (icon != null)
                     {

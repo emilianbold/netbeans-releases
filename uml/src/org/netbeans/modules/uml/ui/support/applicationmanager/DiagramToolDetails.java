@@ -32,7 +32,8 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
-import org.netbeans.modules.uml.resources.ToolBarResource;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
+
 
 /**
  *
@@ -89,7 +90,7 @@ public class DiagramToolDetails
                      button.setActionCommand(XMLManip.getAttributeValue(curElement, "id"));
                      button.setToolTipText(XMLManip.getAttributeValue(curElement, "tooltip"));
                      
-                     Class resourceClass = ToolBarResource.class;
+                     Class resourceClass = ImageUtil.class;
                      button.setIcon(new ImageIcon(resourceClass.getResource(XMLManip.getAttributeValue(curElement, "icon"))));
                      button.addActionListener(listener);
                      bar.add(button);
