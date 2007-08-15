@@ -19,11 +19,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
-	<folder name="org-netbeans-api-project-libraries">
-    	<folder name="Libraries">
-			<file name="junit.xml" url="junit_lib.xml"/>
-		</folder>
-	</folder>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="junit-3.8.2.xml" url="junit_3_8_2_lib.xml"/>
+            <file name="junit-4.1.xml" url="junit_4_1_lib.xml"/>
+        </folder>
+    </folder>
 
     <!-- templates -->
     <folder name="Templates">    	

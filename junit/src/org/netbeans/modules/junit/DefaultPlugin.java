@@ -33,15 +33,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ElementHandle;
@@ -49,12 +51,16 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.junit.TestabilityResult.SkippedClass;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
+import org.netbeans.modules.junit.wizards.Utils;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -69,17 +75,20 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.FINEST;
 import static javax.lang.model.util.ElementFilter.methodsIn;
 import static javax.lang.model.util.ElementFilter.typesIn;
 import static org.netbeans.api.java.classpath.ClassPath.SOURCE;
 import static org.netbeans.api.java.classpath.ClassPath.COMPILE;
 import static org.netbeans.api.java.classpath.ClassPath.BOOT;
 import static org.netbeans.modules.junit.JUnitSettings.JUNIT_GENERATOR_ASK_USER;
+import static org.openide.ErrorManager.ERROR;
+import static org.openide.ErrorManager.WARNING;
 import static org.openide.NotifyDescriptor.CANCEL_OPTION;
 import static org.openide.NotifyDescriptor.OK_CANCEL_OPTION;
 import static org.openide.NotifyDescriptor.QUESTION_MESSAGE;
+import static org.openide.NotifyDescriptor.WARNING_MESSAGE;
 
 /**
  * Default JUnit plugin.
@@ -88,15 +97,17 @@ import static org.openide.NotifyDescriptor.QUESTION_MESSAGE;
  */
 public final class DefaultPlugin extends JUnitPlugin {
 
-    /** */
-    private static final String PROJECT_SETTINGS_NAMESPACE_URI
-            = "http://www.netbeans.org/ns/junit/1";                     //NOI18N
-    /** */
-    private static final String JUNIT_VERSION_ELEM_NAME
-                                            = "junit-version";          //NOI18N
-    /** */
-    private static final String JUNIT_VERSION_ATTR_NAME
-                                            = "value";                  //NOI18N
+    /** logger for logging management of JUnit libraries */
+    private static final Logger LOG_JUNIT_VER
+            = Logger.getLogger(DefaultPlugin.class.getName()
+                               + "_JUnit_version_handling");            //NOI18N
+
+    /** full name of a file specific for the JUnit 3.8.x library */
+    private static final String JUNIT3_SPECIFIC
+                                = "junit/awtui/TestRunner.class";       //NOI18N
+    /** full name of a file specific for the JUnit 4.x library */
+    private static final String JUNIT4_SPECIFIC
+                                = "org/junit/Test.class";               //NOI18N
     
     /** */
     private JUnitVersion junitVer;
@@ -1084,40 +1095,81 @@ public final class DefaultPlugin extends JUnitPlugin {
     }
 
     /**
-     * Reads JUnit version from the project's configuration file and stores it
+     * Gets JUnit version info from the project and stores it
      * into field {@link #junitVer}.
-     * If the &quot;junit version&quot; is not stored in the project's settings,
+     * If the &quot;junit version&quot; info is not available,
      * {@code null} is stored.
      *
-     * @param  project  project whose configuration file is to be checked
+     * @param  project  project from which the information is to be obtained
      * @see  #junitVer
      */
     private void readProjectSettingsJUnitVer(Project project) {
         assert project != null;
+        if (LOG_JUNIT_VER.isLoggable(FINER)) {
+            LOG_JUNIT_VER.finer("readProjectSettingsJUnitVer("          //NOI18N
+                                + ProjectUtils.getInformation(project).getDisplayName()
+                                + ')');
+        }
 
         junitVer = null;
 
-        AuxiliaryConfiguration cfg
-                = project.getLookup().lookup(AuxiliaryConfiguration.class);
-        if (cfg != null) {
-            Element cfgElem = cfg.getConfigurationFragment(
-                                                JUNIT_VERSION_ELEM_NAME,
-                                                PROJECT_SETTINGS_NAMESPACE_URI,
-                                                true);       //shared
-            if (cfgElem != null) {
-                String cfgValue = cfgElem.getAttribute(JUNIT_VERSION_ATTR_NAME);
-                if (cfgValue != null) {
-                    try {
-                        junitVer = Enum.valueOf(JUnitVersion.class,
-                                                cfgValue.toUpperCase());
-                    } catch (IllegalArgumentException ex) {
-                        /* This should not happen unless the configuration file
-                           is broken, modified by hand, or generated by a newer
-                           version of the IDE. */
-                    }
+        final ClassPath classPath = getTestClassPath(project);
+        final boolean hasJUnit3 = (classPath.findResource(JUNIT3_SPECIFIC) != null);
+        final boolean hasJUnit4 = (classPath.findResource(JUNIT4_SPECIFIC) != null);
+
+        if (hasJUnit3 != hasJUnit4) {
+            junitVer = hasJUnit3 ? JUnitVersion.JUNIT3
+                                 : JUnitVersion.JUNIT4;
+            if (LOG_JUNIT_VER.isLoggable(FINEST)) {
+                LOG_JUNIT_VER.finest(" - detected version " + junitVer);//NOI18N
+            }
+        } else {
+            LOG_JUNIT_VER.finest(" - no version detected");             //NOI18N
+        }
+    }
+
+    /**
+     * Finds classpath used for compilation of tests.
+     * 
+     * @param  project  project whose classpath should be found
+     * @return  test classpath of the given project, or {@code null} if it could
+     *          not be determined
+     */
+    private static ClassPath getTestClassPath(final Project project) {
+        assert project != null;
+        if (LOG_JUNIT_VER.isLoggable(FINER)) {
+            LOG_JUNIT_VER.finer("getTestClassPath("                     //NOI18N
+                                + ProjectUtils.getInformation(project).getDisplayName()
+                                + ')');
+        }
+
+        final ClassPathProvider cpProvider
+                = project.getLookup().lookup(ClassPathProvider.class);
+        if (cpProvider == null) {
+            LOG_JUNIT_VER.finest(" - ClassPathProvider not found");     //NOI18N
+            return null;
+        }
+
+        final Collection<FileObject> testFolders = Utils.getTestFolders(project);
+        if (testFolders.isEmpty()) {
+            LOG_JUNIT_VER.finest(" - no test folders found");           //NOI18N
+            return null;
+        }
+
+        for (FileObject testRoot : testFolders) {
+            ClassPath testClassPath = cpProvider.findClassPath(testRoot,
+                                                               COMPILE);
+            if (testClassPath != null) {
+                if (LOG_JUNIT_VER.isLoggable(FINEST)) {
+                    LOG_JUNIT_VER.finest(" - returning: "               //NOI18N
+                                         + testClassPath);
                 }
+                return testClassPath;
             }
         }
+
+        LOG_JUNIT_VER.finest(" - no compile classpath for tests found");//NOI18N
+        return null;
     }
 
     /**
@@ -1129,54 +1181,205 @@ public final class DefaultPlugin extends JUnitPlugin {
     private void storeProjectSettingsJUnitVer(final Project project) {
         assert junitVer != null;
 
-        final AuxiliaryConfiguration cfg
-                = project.getLookup().lookup(AuxiliaryConfiguration.class);
-        if (cfg == null) {
+        if (LOG_JUNIT_VER.isLoggable(FINER)) {
+            LOG_JUNIT_VER.finer("storeProjectSettignsJUnitVer("         //NOI18N
+                                + ProjectUtils.getInformation(project).getDisplayName()
+                                + ')');
+        }
+
+        final ClassPath classPath = getTestClassPath(project);
+        final boolean hasJUnit3 = (classPath.findResource(JUNIT3_SPECIFIC) != null);
+        final boolean hasJUnit4 = (classPath.findResource(JUNIT4_SPECIFIC) != null);
+
+        final Pattern pattern = Pattern.compile(
+                                "^junit(?:_|\\W)+([34])(?:\\b|_).*");   //NOI18N
+
+        JUnitLibraryComparator libraryComparator = null;
+
+        Library libraryToAdd = null;
+        Collection<Library> librariesToRemove = null;
+
+        LOG_JUNIT_VER.finest(" - checking libraries:");                 //NOI18N
+        Library[] libraries = LibraryManager.getDefault().getLibraries();
+        for (Library library : libraries) {
+            String name = library.getName().toLowerCase();
+            if (LOG_JUNIT_VER.isLoggable(FINEST)) {
+                LOG_JUNIT_VER.finest("    " + name);
+            }
+            if (!name.startsWith("junit")) {                            //NOI18N
+                LOG_JUNIT_VER.finest("     - not a JUnit library");     //NOI18N
+                continue;
+            }
+
+            boolean add    = false;
+            boolean remove = false;
+            Matcher matcher;
+            final String verNumToAdd;
+            if ((junitVer == JUnitVersion.JUNIT3) && !hasJUnit3) {
+                verNumToAdd = "3";                                      //NOI18N
+            } else if ((junitVer == JUnitVersion.JUNIT4) && !hasJUnit4) {
+                verNumToAdd = "4";                                      //NOI18N
+            } else {
+                verNumToAdd = null;
+            }
+            String verNumToRemove = (junitVer == JUnitVersion.JUNIT3)
+                                    ? "4" : "3";                        //NOI18N
+            if (name.equals("junit")) {                                 //NOI18N
+                add    = (verNumToAdd    == "3");                       //NOI18N
+                remove = (verNumToRemove == "3");                       //NOI18N
+            } else if ((matcher = pattern.matcher(name)).matches()) {
+                String verNum = matcher.group(1);
+                add    = verNum.equals(verNumToAdd   );
+                remove = verNum.equals(verNumToRemove);
+            }
+            if (add) {
+                LOG_JUNIT_VER.finest("     - to be added");             //NOI18N
+                if (libraryToAdd == null) {
+                    libraryToAdd = library;
+                } else {
+                    /*
+                     * If there are multiple conforming libraries, we only want
+                     * to add one - the most recent one (i.e. having the highest
+                     * version number).
+                     */
+                    LOG_JUNIT_VER.finest("        - will be compared:");//NOI18N
+                    if (libraryComparator == null) {
+                        libraryComparator = new JUnitLibraryComparator();
+                    }
+                    if (libraryComparator.compare(libraryToAdd, library) > 0) {
+                        LOG_JUNIT_VER.finest("        - it won");       //NOI18N
+                        libraryToAdd = library;
+                    } else {
+                        LOG_JUNIT_VER.finest("        - it lost");      //NOI18N
+                    }
+                }
+            }
+            if (remove) {
+                LOG_JUNIT_VER.finest("     - to be removed");           //NOI18N
+                if (librariesToRemove == null) {
+                    librariesToRemove = new ArrayList<Library>(2);
+                }
+                librariesToRemove.add(library);
+            }
+        }
+        if ((libraryToAdd == null) && (librariesToRemove == null)) {
             return;
         }
 
-        final ProjectManager prjManager = ProjectManager.getDefault();
-        prjManager.mutex().writeAccess(
-                new Runnable() {
-                        public void run() {
-                            Element cfgElem = cfg.getConfigurationFragment(
-                                                JUNIT_VERSION_ELEM_NAME,
-                                                PROJECT_SETTINGS_NAMESPACE_URI,
-                                                true);       //shared
-                            if (cfgElem == null) {
-                                Document doc = createXmlDocument();
-                                if (doc != null) {
-                                    cfgElem = doc.createElementNS(
-                                                PROJECT_SETTINGS_NAMESPACE_URI,
-                                                JUNIT_VERSION_ELEM_NAME);
-                                }
-                            }
-                            cfgElem.setAttribute(JUNIT_VERSION_ATTR_NAME,
-                                                 junitVer.name().toLowerCase());
-                            cfg.putConfigurationFragment(cfgElem, true);//shared
-                            try {
-                                prjManager.saveProject(project);
-                            } catch (IOException ex) {
-                                ErrorManager.getDefault().notify(
-                                        ErrorManager.ERROR, ex);
-                            }
+        final List<FileObject> projectArtifacts = getProjectTestArtifacts(project);
+        if (projectArtifacts.isEmpty()) {
+            displayMessage("MSG_cannot_set_junit_ver",                  //NOI18N
+                           WARNING_MESSAGE);
+            return;
+        }
+
+        final Library[] libsToAdd, libsToRemove;
+        if (libraryToAdd != null) {
+            libsToAdd = new Library[] {libraryToAdd};
+        } else{
+            libsToAdd = null;
+        }
+        if (librariesToRemove != null) {
+            libsToRemove = librariesToRemove.toArray(
+                                        new Library[librariesToRemove.size()]);
+        } else {
+            libsToRemove = null;
+        }
+        assert (libsToAdd != null) || (libsToRemove != null);
+
+        class LibrarySetModifier implements Runnable {
+            public void run() {
+                boolean modified = false;
+                try {
+                    if (libsToAdd != null) {
+                        for (FileObject prjArtifact : projectArtifacts) {
+                            modified |= ProjectClassPathModifier.addLibraries(
+                                               libsToAdd, prjArtifact, COMPILE);
                         }
-                });
+                    }
+                    if (libsToRemove != null) {
+                        for (FileObject prjArtifact : projectArtifacts) {
+                            modified |= ProjectClassPathModifier.removeLibraries(
+                                               libsToRemove, prjArtifact, COMPILE);
+                        }
+                    }
+                } catch (UnsupportedOperationException ex) {
+                    String prjName = ProjectUtils.getInformation(project)
+                                     .getDisplayName();
+                    ErrorManager.getDefault().log(
+                            WARNING,
+                            "Project " + prjName                        //NOI18N
+                            + ": Could not modify set of JUnit libraries"   //NOI18N
+                            + " - operation not supported by the project.");//NOI18N
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ERROR, ex);
+                }
+                if (modified) {
+                    try {
+                        ProjectManager.getDefault().saveProject(project);
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ERROR, ex);
+                    }
+                }
+            }
+        }
+        ProjectManager.getDefault().mutex().writeAccess(
+                new LibrarySetModifier());
     }
 
     /**
-     * Creates a new DOM document.
-     *
-     * @return  created document, or {@code null} if the document
-     *          could not be created
+     * Schedules displaying of a message to the event-dispatching thread.
+     * 
+     * @param  bundleKey  resource bundle key of the message
+     * @param  msgType  type of the message
+     *                  (e.g. {@code NotifyDescriptor.INFORMATION_MESSAGE})
      */
-    private Document createXmlDocument() {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        try {
-            return factory.newDocumentBuilder().newDocument();
-        } catch (ParserConfigurationException ex) {
-            return null;
+    private static void displayMessage(String bundleKey, int msgType) {
+        DialogDisplayer.getDefault().notifyLater(
+                new NotifyDescriptor.Message(
+                        NbBundle.getMessage(DefaultPlugin.class, bundleKey),
+                        msgType));
+    }
+
+    /**
+     * Finds a project artifact used as an argument to method
+     * {@code ProjectClassPathModifier.removeLibraries(...)
+     * when modifying the set of JUnit libraries (used for tests).
+     * 
+     * @param  project  project for which the project artifact should be found
+     * @return  list of test project artifacts, or {@code null} an empty list
+     *          if no one could be determined
+     */
+    private static List<FileObject> getProjectTestArtifacts(final Project project) {
+        assert project != null;
+
+        final ClassPathProvider cpProvider
+                = project.getLookup().lookup(ClassPathProvider.class);
+        if (cpProvider == null) {
+            Collections.<FileObject>emptyList();
         }
+
+        final Collection<FileObject> testFolders = Utils.getTestFolders(project);
+        if (testFolders.isEmpty()) {
+            Collections.<FileObject>emptyList();
+        }
+
+        List<FileObject> result = null;
+        for (FileObject testRoot : testFolders) {
+            ClassPath testClassPath = cpProvider.findClassPath(testRoot,
+                                                               ClassPath.COMPILE);
+            if (testClassPath != null) {
+                if (result == null) {
+                    if (testFolders.size() == 1) {
+                        return Collections.<FileObject>singletonList(testRoot);
+                    } else {
+                        result = new ArrayList<FileObject>(3);
+                    }
+                }
+                result.add(testRoot);
+            }
+        }
+        return result;
     }
 
     /**

@@ -21,10 +21,12 @@ package org.netbeans.modules.junit.wizards;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -111,6 +113,17 @@ public final class Utils {
         final Utils utils = new Utils(project);
         return utils.getTestTargets(sourceGroupsOnly);
     }
+
+    /**
+     * Identifies and collects root test folders of a given project.
+     * 
+     * @param  project  project whose test folders are to be found
+     * @return  collection of found {@code FileObject}s, possibly empty
+     *          (but not {@code null})
+     */
+    public static Collection<FileObject> getTestFolders(Project project) {
+        return new Utils(project).getTestFolders();
+    }
     
     /**
      * Builds a map that containing relation between <code>SourceGroup</code>s
@@ -142,6 +155,62 @@ public final class Utils {
      */
     Project getProject() {
         return project;
+    }
+
+    /**
+     * Identifies and collects root test folders of the project.
+     * 
+     * @return  collection of found {@code FileObject}s
+     *          - may be empty but never {@code null}
+     */
+    private Collection<FileObject> getTestFolders() {
+        
+        /*
+         * Idea:
+         * 1) Get all SourceGroups
+         * 2) For each SourceGroup, ask UnitTestForSourceQuery for its related
+         *    test SourceGroups
+         */
+
+        /* .) get all SourceGroups: */
+        final SourceGroup[] sourceGroups = getJavaSourceGroups();
+        if (sourceGroups.length == 0) {
+            return Collections.<FileObject>emptyList();
+        }
+
+        List<FileObject> result = null;
+
+        /* .) for each SourceGroup, ask for test root folders: */
+        for (SourceGroup sourceGroup : sourceGroups) {
+            FileObject srcFolder = sourceGroup.getRootFolder();
+            FileObject[] tstFoldersRaw = getTestFoldersRaw(srcFolder);
+            if (tstFoldersRaw.length == 0) {
+                continue;
+            }
+
+            for (FileObject tstFolder : tstFoldersRaw) {
+                if (tstFolder == null) {
+                    continue;
+                }
+
+                if (result == null) {
+                    result = new ArrayList<FileObject>(2);
+                }
+                if (!result.contains(tstFolder)) {
+                    result.add(tstFolder);
+                }
+            }
+        }
+
+        /* .) pack the results: */
+        if (result == null) {
+            return Collections.<FileObject>emptyList();
+        } else {
+            assert !result.isEmpty();
+            return (result.size() == 1)
+                   ? Collections.<FileObject>singleton(result.get(0))
+                   : result;
+        }
     }
 
     /**
