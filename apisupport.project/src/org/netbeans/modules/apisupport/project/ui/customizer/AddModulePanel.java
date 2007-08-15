@@ -20,8 +20,11 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Locale;
@@ -43,8 +46,11 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -59,6 +65,7 @@ import org.openide.util.RequestProcessor;
 public final class AddModulePanel extends JPanel {
     
     private static final String FILTER_DESCRIPTION = getMessage("LBL_FilterDescription");
+    private static Rectangle lastSize;
     
     private CustomizerComponentFactory.DependencyListModel universeModules;
     private RequestProcessor.Task filterTask;
@@ -66,6 +73,31 @@ public final class AddModulePanel extends JPanel {
     private URL currectJavadoc;
     
     private final SingleModuleProperties props;
+    
+    public static ModuleDependency[] selectDependencies(final SingleModuleProperties props) {
+        final AddModulePanel addPanel = new AddModulePanel(props);
+        final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
+                getMessage("CTL_AddModuleDependencyTitle"));
+        descriptor.setHelpCtx(new HelpCtx(AddModulePanel.class));
+        descriptor.setClosingOptions(new Object[0]);
+        final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
+        descriptor.setButtonListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (DialogDescriptor.OK_OPTION.equals(e.getSource()) && addPanel.getSelectedDependencies().length == 0) {
+                    return;
+                }
+                d.setVisible(false);
+                d.dispose();
+            }
+        });
+        if (lastSize != null) {
+            d.setBounds(lastSize);
+        }
+        d.setVisible(true);
+        lastSize = d.getBounds();
+        d.dispose();
+        return addPanel.getSelectedDependencies();
+    }
     
     public AddModulePanel(final SingleModuleProperties props) {
         this.props = props;

@@ -22,7 +22,6 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.awt.Dialog;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -370,41 +369,20 @@ final class LibrariesNode extends AbstractNode {
         }
         
         public void actionPerformed(ActionEvent ev) {
-            // XXX duplicated from CustomizerLibraries --> Refactor
             SingleModuleProperties props = SingleModuleProperties.getInstance(project);
-            final AddModulePanel addPanel = new AddModulePanel(props);
-            final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
-                    getMessage("CTL_AddModuleDependencyTitle"));
-            descriptor.setHelpCtx(new HelpCtx(AddModulePanel.class));
-            descriptor.setClosingOptions(new Object[0]);
-            final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
-            descriptor.setButtonListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (DialogDescriptor.OK_OPTION.equals(e.getSource()) &&
-                            addPanel.getSelectedDependencies().length == 0) {
-                        return;
-                    }
-                    d.setVisible(false);
-                    d.dispose();
+            ModuleDependency[] newDeps = AddModulePanel.selectDependencies(props);
+            ProjectXMLManager pxm = new ProjectXMLManager(project);
+            try {
+                for (ModuleDependency dep : newDeps) {
+                    pxm.addDependency(dep);
                 }
-            });
-            d.setVisible(true);
-            if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
-                ModuleDependency[] newDeps = addPanel.getSelectedDependencies();
-                ProjectXMLManager pxm = new ProjectXMLManager(project);
-                try {
-                    for (ModuleDependency dep : newDeps) {
-                        pxm.addDependency(dep);
-                    }
-                    ProjectManager.getDefault().saveProject(project);
-                } catch (IOException e) {
-                    ErrorManager.getDefault().annotate(e, "Cannot add selected dependencies: " + Arrays.asList(newDeps)); // NOI18N
-                    ErrorManager.getDefault().notify(e);
-                }
+                ProjectManager.getDefault().saveProject(project);
+            } catch (IOException e) {
+                ErrorManager.getDefault().annotate(e, "Cannot add selected dependencies: " + Arrays.asList(newDeps)); // NOI18N
+                ErrorManager.getDefault().notify(e);
             }
-            d.dispose();
         }
-        
+
     }
     
     private static final class EditDependencyAction extends AbstractAction {

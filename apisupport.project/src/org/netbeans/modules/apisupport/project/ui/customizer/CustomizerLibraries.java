@@ -21,9 +21,6 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
@@ -56,8 +53,6 @@ import org.openide.util.NbCollections;
  * @author mkrauskopf
  */
 public class CustomizerLibraries extends NbPropertyPanel.Single {
-    
-    private static Rectangle lastSize;
     
     /** Creates new form CustomizerLibraries */
     public CustomizerLibraries(final SingleModuleProperties props) {
@@ -516,41 +511,17 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
-        final AddModulePanel addPanel = new AddModulePanel(getProperties());
-        final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
-                getMessage("CTL_AddModuleDependencyTitle"));
-        descriptor.setHelpCtx(new HelpCtx(AddModulePanel.class));
-        descriptor.setClosingOptions(new Object[0]);
-        final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
-        descriptor.setButtonListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (DialogDescriptor.OK_OPTION.equals(e.getSource()) &&
-                        addPanel.getSelectedDependencies().length == 0) {
-                    return;
-                }
-                d.setVisible(false);
-                d.dispose();
-            }
-        });
-        if (lastSize != null) {
-            d.setBounds(lastSize);
-        }
-        d.setVisible(true);
-        lastSize = d.getBounds();
-        d.dispose();
-        if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
-            ModuleDependency[] newDeps = addPanel.getSelectedDependencies();
-            for (int i = 0; i < newDeps.length; i++) {
-                ModuleDependency dep = newDeps[i];
-                if ("0".equals(dep.getReleaseVersion())) { // #72216 NOI18N
-                    getDepListModel().addDependency(new ModuleDependency(
+        ModuleDependency[] newDeps = AddModulePanel.selectDependencies(getProperties());
+        for (int i = 0; i < newDeps.length; i++) {
+            ModuleDependency dep = newDeps[i];
+            if ("0".equals(dep.getReleaseVersion())) { // #72216 NOI18N
+                getDepListModel().addDependency(new ModuleDependency(
                             dep.getModuleEntry(), "0-1", dep.getSpecificationVersion(), // NOI18N
                             dep.hasCompileDependency(), dep.hasImplementationDepedendency()));
-                } else {
-                    getDepListModel().addDependency(dep);
-                }
-                dependencyList.setSelectedValue(dep, true);
+            } else {
+                getDepListModel().addDependency(dep);
             }
+            dependencyList.setSelectedValue(dep, true);
         }
         dependencyList.requestFocusInWindow();
     }//GEN-LAST:event_addModuleDependency
