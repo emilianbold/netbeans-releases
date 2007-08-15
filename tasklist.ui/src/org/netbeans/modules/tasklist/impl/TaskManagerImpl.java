@@ -438,13 +438,13 @@ public class TaskManagerImpl extends TaskManager {
     }
     
     private void setWorkingStatus( boolean newStatus ) {
-        if( newStatus != workingStatus ) {
-            boolean oldStatus = workingStatus;
-            workingStatus = newStatus;
-            propertySupport.firePropertyChange( PROP_WORKING_STATUS, oldStatus, newStatus );
-            //for unit testing
-            if( !workingStatus ) {
-                synchronized( workingScanners ) {
+        synchronized( workingScanners ) {
+            if( newStatus != workingStatus ) {
+                boolean oldStatus = workingStatus;
+                workingStatus = newStatus;
+                propertySupport.firePropertyChange( PROP_WORKING_STATUS, oldStatus, newStatus );
+                //for unit testing
+                if( !workingStatus ) {
                     workingScanners.notifyAll();
                 }
             }
