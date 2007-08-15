@@ -44,7 +44,7 @@ public class ImplementMethod extends GenerateCode {
         try {
             editor.requestFocus();
             editor.setCaretPosition(18, 5);
-            assert(GenerateCodeOperator.containsItems(editor, GenerateCodeOperator.IMPLEMENT_METHOD,GenerateCodeOperator.GENERATE_CONSTRUCTOR, GenerateCodeOperator.OVERRIDE_METHOD));
+            assert(GenerateCodeOperator.containsItems(editor,GenerateCodeOperator.GENERATE_CONSTRUCTOR, GenerateCodeOperator.OVERRIDE_METHOD));
          } finally {
             editor.close(false);
          }           
