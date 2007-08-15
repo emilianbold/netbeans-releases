@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
         <description>#88769 Incompatible change due to removal of PropertySheetSettings</description>
         <transformation>
             <trigger-dependency type="older">
-                <module-dependency codenamebase="org.openide.explorer" spec="6.7"/>
+                <module-dependency codenamebase="org.openide.explorer" spec="6.8"/>
             </trigger-dependency>
             <implies>
                 <result>
