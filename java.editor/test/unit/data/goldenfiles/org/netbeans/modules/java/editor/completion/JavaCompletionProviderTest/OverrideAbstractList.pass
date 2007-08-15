@@ -9,6 +9,7 @@ public boolean containsAll(Collection arg0) - override
 public boolean equals(Object arg0) - override
 protected void finalize() - override
 public abstract Object get(int arg0) - implement
+public int getModCount() - generate
 public int hashCode() - override
 public int indexOf(Object arg0) - override
 public boolean isEmpty() - override
@@ -22,6 +23,7 @@ public boolean removeAll(Collection arg0) - override
 protected void removeRange(int arg0, int arg1) - override
 public boolean retainAll(Collection arg0) - override
 public Object set(int arg0, Object arg1) - override
+public void setModCount(int modCount) - generate
 public abstract int size() - implement
 public List subList(int arg0, int arg1) - override
 public Object[] toArray() - override

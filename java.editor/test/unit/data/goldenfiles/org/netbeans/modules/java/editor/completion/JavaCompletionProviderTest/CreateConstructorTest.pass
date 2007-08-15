@@ -3,7 +3,15 @@ public CreateConstructorTest(int time, List<String> list) - generate
 protected native Object clone() - override
 public boolean equals(Object arg0) - override
 protected void finalize() - override
+public List<String> getList() - generate
+public double getSomething() - generate
+public String getText() - generate
+public int getTime() - generate
 public native int hashCode() - override
+public void setList(List<String> list) - generate
+public void setSomething(double something) - generate
+public void setText(String text) - generate
+public void setTime(int time) - generate
 public String toString() - override
 abstract
 boolean

@@ -3,7 +3,13 @@ public X(byte a, Map<String, Set<String>> map1) - generate
 protected native Object clone() - override
 public boolean equals(Object arg0) - override
 protected void finalize() - override
+public byte getA() - generate
+public Map<String, Set<String>> getMap1() - generate
+public Map<String, Set<String>> getMap2() - generate
 public native int hashCode() - override
+public void setA(byte a) - generate
+public void setMap1(Map<String, Set<String>> map1) - generate
+public void setMap2(Map<String, Set<String>> map2) - generate
 public String toString() - override
 abstract
 boolean
