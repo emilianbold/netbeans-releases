@@ -66,6 +66,7 @@ class BranchSettings extends javax.swing.JPanel {
         
         cbCheckoutBranch.setSelected(CvsModuleConfig.getDefault().getPreferences().getBoolean("BranchSettings.checkout", true)); // NOI18N
         tfName.setText(CvsModuleConfig.getDefault().getPreferences().get("BranchSettings.branchName", NbBundle.getMessage(BranchSettings.class, "BK0002"))); // NOI18N
+        tfName.selectAll();
         tfName.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 onBranchNameChange(tfName.getText());
