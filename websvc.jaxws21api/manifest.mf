@@ -2,3 +2,4 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.websvc.jaxws21api/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/jaxws21api/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
+AutoUpdate-Show-In-Client: false
