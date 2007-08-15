@@ -19,11 +19,8 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -41,24 +38,17 @@ import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEdi
  */
 public class GaugeDisplayPresenter extends ItemDisplayPresenter {
     
-    private static final int PANEL_HEIGHT = 40;
-    private static final int BAR_WIDTH = 8;
-    private static final int BAR_GAP = 5;
-    private static final BasicStroke GAUGE_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE,
-            BasicStroke.JOIN_BEVEL, 0, new float[] {3,2}, 0);
-    
     private JPanel panel;
-    private Dimension size;
-    private boolean interactive;
-    private int maxValue;
-    private int value;
+    private GaugeDisplayPresenterElement gauge;
     
     public GaugeDisplayPresenter() {
+        gauge = new GaugeDisplayPresenterElement();
         panel = new JPanel() {
             @Override
             public void paint(Graphics g) {
                 super.paint(g);
-                paintGauge(g);
+                gauge.setPanel(this);
+                gauge.paintGauge(g);
             }
         };
         panel.setOpaque(false);
@@ -68,64 +58,24 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
         panel.revalidate();
     }
     
-    private void paintGauge(Graphics g) {
-        size = panel.getSize();
-        if (size == null) { // did not realoaded yet
-            return;
-        }
-        int gaugeWidth = size.width;
-        int gaugeHeight = size.height - 5;
-        int barsCount = gaugeWidth / (BAR_WIDTH + BAR_GAP) + 1;
-        int selectionBarCount = 0;
-        if (value > 0) {
-            selectionBarCount = barsCount * value / maxValue ;
-        }
-        int px = 0;
-        
-        Graphics2D g2D = (Graphics2D) g;
-        g2D.setColor(Color.GRAY);
-        g2D.setStroke(GAUGE_STROKE);
-        
-        float barHeight = (float) gaugeHeight;
-        float heightStep = 0f;
-        if (interactive) {
-            barHeight = 1f;
-            heightStep = (float) gaugeHeight / (float) barsCount;
-        }
-        
-        for (int i=0; i < barsCount; i++) {
-            if (i < selectionBarCount) {
-                g2D.fillRect(px, (int) (gaugeHeight - barHeight), BAR_WIDTH, (int) barHeight);
-            } else {
-                g2D.drawRect(px, (int) (gaugeHeight - barHeight), BAR_WIDTH, (int) barHeight);
-            }
-            px += BAR_WIDTH + BAR_GAP;
-            if (interactive && (barHeight < gaugeHeight)) {
-                barHeight += heightStep;
-                if (barHeight > gaugeHeight) {
-                    barHeight = gaugeHeight;
-                }
-            }
-        }
-    }
-    
     @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         
-        size = panel.getSize();
-        interactive = MidpTypes.getBoolean(getComponent().readProperty(GaugeCD.PROP_INTERACTIVE));
-        maxValue = MidpTypes.getInteger(getComponent().readProperty(GaugeCD.PROP_MAX_VALUE));
+        gauge.setSize(panel.getSize());
+        gauge.setInteractive(MidpTypes.getBoolean(getComponent().readProperty(GaugeCD.PROP_INTERACTIVE)));
+        int maxValue = MidpTypes.getInteger(getComponent().readProperty(GaugeCD.PROP_MAX_VALUE));
         if (maxValue < 0) {
             maxValue = 1;
         }
-        value = MidpTypes.getInteger(getComponent().readProperty(GaugeCD.PROP_VALUE));
+        gauge.setMaxValue(maxValue);
+        int value = MidpTypes.getInteger(getComponent().readProperty(GaugeCD.PROP_VALUE));
         if (value < 0) {
             value = 0;
         } else if (value > maxValue) {
             value = maxValue;
         }
-        
+        gauge.setValue(value);
         panel.repaint();
     }
     

@@ -25,9 +25,9 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.openide.util.Utilities;
-
 import javax.swing.*;
 import java.awt.*;
+import org.netbeans.modules.vmd.midp.components.items.GaugeCD;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -35,15 +35,18 @@ import org.openide.filesystems.FileObject;
  * @author Anton Chechel
  */
 public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
-    
+
     private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/screen/broken-image.png"; // NOI18N
     private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
-    
+
     private JLabel imageLabel;
     private JLabel stringLabel;
     private ScreenFileObjectListener imageFileListener;
     private FileObject imageFileObject;
-    
+    private GaugeDisplayPresenterElement gauge;
+    private JPanel panel;
+    private GridBagConstraints constraints;
+
     public AlertDisplayPresenter() {
         imageLabel = new JLabel();
         imageLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -51,32 +54,31 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
         stringLabel.setHorizontalAlignment(JLabel.CENTER);
         JPanel contentPanel = getPanel().getContentPanel();
         contentPanel.setLayout(new GridBagLayout());
-        
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.weightx = 1.0;
-        constraints.weighty = 1.0;
+
+        constraints = new GridBagConstraints();
         constraints.insets = new Insets(2, 2, 2, 2);
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.gridx = GridBagConstraints.REMAINDER;
         constraints.gridy = GridBagConstraints.RELATIVE;
         constraints.anchor = GridBagConstraints.CENTER;
         contentPanel.add(imageLabel, constraints);
-        
+
         constraints.anchor = GridBagConstraints.NORTHWEST;
         contentPanel.add(stringLabel, constraints);
     }
-    
+
     @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        
+
         String text = MidpTypes.getString(getComponent().readProperty(AlertCD.PROP_STRING));
         stringLabel.setText(text);
-        
+
         DesignComponent imageComponent = getComponent().readProperty(AlertCD.PROP_IMAGE).getComponent();
         String path = null;
-        if (imageComponent != null)
+        if (imageComponent != null) {
             path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
+        }
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
         imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
         if (imageFileObject != null) {
@@ -91,8 +93,49 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
         } else {
             imageLabel.setIcon(null);
         }
+        DesignComponent indicator = getComponent().readProperty(AlertCD.PROP_INDICATOR).getComponent();
+        if (indicator != null) {
+            gauge = new GaugeDisplayPresenterElement();
+            if (panel == null) {
+                panel = new JPanel() {
+
+                    @Override
+                    public void paint(Graphics g) {
+                        super.paint(g);
+                        gauge.setPanel(this);
+                        gauge.paintGauge(g);
+                    }
+                };
+                panel.setOpaque(false);
+                panel.setPreferredSize(new Dimension(200, 40)); // TODO compute it from fontSize
+                panel.repaint();
+                panel.revalidate();
+
+                constraints.anchor = GridBagConstraints.CENTER;
+                getPanel().getContentPanel().add(panel, constraints);
+            }
+            gauge.setSize(panel.getSize());
+            gauge.setInteractive(MidpTypes.getBoolean(indicator.readProperty(GaugeCD.PROP_INTERACTIVE)));
+            int maxValue = MidpTypes.getInteger(indicator.readProperty(GaugeCD.PROP_MAX_VALUE));
+            if (maxValue < 0) {
+                maxValue = 1;
+            }
+            gauge.setMaxValue(maxValue);
+            int value = MidpTypes.getInteger(indicator.readProperty(GaugeCD.PROP_VALUE));
+            if (value < 0) {
+                value = 0;
+            } else if (value > maxValue) {
+                value = maxValue;
+            }
+            gauge.setValue(value);
+            panel.repaint();
+        } else if (panel != null) {
+            getPanel().getContentPanel().remove(panel);
+            panel = null;
+            gauge = null;
+        }
     }
-    
+
     @Override
     protected void notifyDetached(DesignComponent component) {
         if (imageFileObject != null && imageFileListener != null) {
