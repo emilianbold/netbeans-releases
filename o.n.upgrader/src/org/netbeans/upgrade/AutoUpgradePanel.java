@@ -71,24 +71,24 @@ final class AutoUpgradePanel extends JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         txtVersions = new javax.swing.JTextArea();
 
+        setName(bundle.getString("LBL_UpgradePanel_Name")); // NOI18N
         setLayout(new java.awt.BorderLayout());
 
-        setName(bundle.getString("LBL_UpgradePanel_Name"));
         txtVersions.setBackground(getBackground());
         txtVersions.setColumns(50);
         txtVersions.setEditable(false);
         txtVersions.setFont(new java.awt.Font("Dialog", 0, 12));
         txtVersions.setLineWrap(true);
         txtVersions.setRows(3);
-        txtVersions.setText(NbBundle.getMessage (AutoUpgradePanel.class, "MSG_Confirmation", source));
+        txtVersions.setText(NbBundle.getMessage (AutoUpgradePanel.class, "MSG_Confirmation", source)); // NOI18N
         txtVersions.setWrapStyleWord(true);
+        txtVersions.setFocusable(false);
         txtVersions.setMinimumSize(new java.awt.Dimension(100, 50));
         add(txtVersions, java.awt.BorderLayout.CENTER);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea txtVersions;
