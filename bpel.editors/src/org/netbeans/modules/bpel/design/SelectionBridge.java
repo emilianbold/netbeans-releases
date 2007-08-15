@@ -59,9 +59,8 @@ public class SelectionBridge implements
     
     public void release(){
         TopComponent.getRegistry().removePropertyChangeListener(this);
-        designView.getSelectionModel().removerSelectionListener(this);
+        designView.getSelectionModel().removeSelectionListener(this);
         designView = null;
-        
     }
     
     public void selectionChanged(BpelEntity oldSelection, final BpelEntity newSelection) {

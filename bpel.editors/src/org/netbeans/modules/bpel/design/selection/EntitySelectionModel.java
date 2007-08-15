@@ -51,7 +51,7 @@ public class EntitySelectionModel {
     }
     
     
-    public void removerSelectionListener(DiagramSelectionListener l) {
+    public void removeSelectionListener(DiagramSelectionListener l) {
         listeners.remove(l);
     }
 
