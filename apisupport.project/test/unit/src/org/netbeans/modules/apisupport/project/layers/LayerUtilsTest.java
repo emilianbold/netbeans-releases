@@ -329,7 +329,7 @@ public class LayerUtilsTest extends LayerTestBase {
             "org-netbeans-modules-options-OptionsWindowAction.shadow",
             // org-netbeans-core-actions-OptionsAction.instance should be masked
         })), optionInstanceNames);
-        assertNotNull("system FS has xml/catalog", fs.findResource("Services/Hidden/org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance"));
+        assertNotNull("system FS has xml/catalog", fs.findResource("Services/Hidden/CatalogProvider/org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance"));
         assertNull("but one entry hidden by apisupport/project", fs.findResource("Services/Hidden/org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance"));
     }
     
