@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -37,6 +38,7 @@ import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSou
 import org.netbeans.modules.vmd.midpnb.flow.FlowSVGMenuElementPinOrderPresenter;
 import org.openide.util.NbBundle;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -90,6 +92,12 @@ public class SVGMenuCD extends ComponentDescriptor {
             .addParameters (MidpCustomCodePresenterSupport.createSVGMenuElementParameter ())
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (SVGPlayerCD.PROP_SVG_IMAGE, MidpCustomCodePresenterSupport.PARAM_DISPLAY))
             .addSetters (MidpSetter.createSetter ("addMenuElement", MidpVersionable.MIDP_2).setArrayParameter (MidpCustomCodePresenterSupport.PARAM_SVG_MENU_ELEMENT).addParameters (MidpCustomCodePresenterSupport.PARAM_SVG_MENU_ELEMENT)); // NOI18N
+    }
+
+
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        MidpActionsSupport.addNewActionPresenter(presenters, SVGMenuElementEventSourceCD.TYPEID);
+        super.gatherPresenters (presenters);
     }
 
     protected List<? extends Presenter> createPresenters() {
