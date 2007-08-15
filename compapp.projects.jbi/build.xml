@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../../nbbuild/templates/projectized.xml"/>
     
     <target name="init" depends="projectized.init">
-        <ant dir="${compapp.external}" target="unzip"/>
+        <!--<ant dir="${compapp.external}" target="unzip"/>-->
     </target>
     
     <target name="ant-extra" depends="init">
@@ -55,16 +55,5 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
     
-    <target name="ext-extra" depends="init">
-<!--    
-        <mkdir dir="${cluster}/modules/ext/jbi"/>
-        <copy todir="${cluster}/modules/ext/jbi">
-            <fileset dir="${compapp.external}"
-                     includes="*.jar"
-                     excludes="castor-1.0.jar" />
-        </copy>
--->
-    </target>
-    
-    <target name="netbeans-extra" depends="ant-extra,catd-extra,ext-extra"/>
+    <target name="netbeans-extra" depends="ant-extra,catd-extra"/>
 </project>
