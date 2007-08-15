@@ -39,14 +39,17 @@ Microsystems, Inc. All Rights Reserved.
       <!--  JSP Document --> 
       <file name="JSPX.jspx" url="templates/JSPDoc.template">
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+        <attr name="template" boolvalue="true"/>
         <attr name="position" intvalue="0"/>
       </file>
       <!--  JSP Segment --> 
       <file name="JSPF.jspf" url="templates/JSPF.template">
+        <attr name="template" boolvalue="true"/>
         <attr name="position" intvalue="0"/>
       </file>
       <!--  XML segemnt --> 
       <file name="JSPFX.jspf" url="templates/JSPDocX.template">
+        <attr name="template" boolvalue="true"/>
         <attr name="position" intvalue="0"/>
       </file>
       <!-- Tag File -->
@@ -60,14 +63,17 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <!--  Tag File Document --> 
       <file name="TagFileX.tagx" url="templates/TagFileX.template">
+        <attr name="template" boolvalue="true"/>
         <attr name="position" intvalue="0"/>
       </file>
       <!--  Tag File Segments --> 
       <file name="TagFileF.tagf" url="templates/TagFileF.template">
+        <attr name="template" boolvalue="true"/>
         <attr name="position" intvalue="0"/>
       </file>
       <file name="TagFileFX.tagf" url="templates/TagFileFX.template">
         <attr name="position" intvalue="0"/>
+        <attr name="template" boolvalue="true"/>
       </file>
       <!-- Servlet --> 
       <file name="Servlet.java" url="templates/Servlet.template">
