@@ -17,32 +17,21 @@
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyEditor;
 import java.lang.ref.WeakReference;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
-import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
-import org.openide.explorer.propertysheet.InplaceEditor;
-import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.explorer.propertysheet.PropertyModel;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Anton Chechel
  */
-public class PropertyEditorGoToSource extends DesignPropertyEditor implements ActionListener {
-
+public class PropertyEditorGoToSource extends DesignPropertyEditor {
+    
+    private String GO_TO_SOURCE_TEXT = NbBundle.getMessage(GoToSourceCPE.class, "LBL_GoToSourcePropertyText"); //NOI18N
+    
     private WeakReference<DesignComponent> component;
-    private ButtonInplaceEditor inplaceEditor;
+    private GoToSourceCPE customPropertyEditor;
 
     private PropertyEditorGoToSource() {
     }
@@ -53,12 +42,20 @@ public class PropertyEditorGoToSource extends DesignPropertyEditor implements Ac
 
     @Override
     public Boolean canEditAsText() {
-        return true;
+        return false;
+    }
+
+    @Override
+    public Component getCustomEditor() {
+        if (customPropertyEditor == null) {
+            customPropertyEditor = new GoToSourceCPE(component);
+        }
+        return customPropertyEditor;
     }
 
     @Override
     public boolean canWrite() {
-        return true;
+        return false;
     }
 
     @Override
@@ -68,7 +65,7 @@ public class PropertyEditorGoToSource extends DesignPropertyEditor implements Ac
 
     @Override
     public boolean supportsCustomEditor() {
-        return false;
+        return true;
     }
 
     @Override
@@ -78,104 +75,7 @@ public class PropertyEditorGoToSource extends DesignPropertyEditor implements Ac
 
     @Override
     public String getAsText() {
-        return ""; // NOI18N
+        return GO_TO_SOURCE_TEXT; // NOI18N
     }
 
-    @Override
-    public InplaceEditor getInplaceEditor() {
-        if (inplaceEditor == null) {
-            inplaceEditor = new ButtonInplaceEditor(this);
-            JButton button = (JButton) inplaceEditor.getComponent();
-            button.addActionListener(this);
-        }
-        return inplaceEditor;
-    }
-
-    @Override
-    public void paintValue(Graphics gfx, Rectangle box) {
-        JComponent _component = inplaceEditor.getComponent();
-        _component.setSize(box.width, box.height);
-        _component.doLayout();
-        _component.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        Graphics g = gfx.create(box.x, box.y, box.width, box.height);
-        _component.setOpaque(false);
-        _component.paint(g);
-        g.dispose();
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        if (component == null || component.get() == null) {
-            return;
-        }
-
-        GoToSourceSupport.goToSourceOfComponent(component.get());
-    }
-
-    @Override
-    public boolean isPaintable() {
-        return true;
-    }
-
-    private static class ButtonInplaceEditor implements InplaceEditor {
-
-        private JButton button;
-        private DesignPropertyEditor propertyEditor;
-        private PropertyModel model;
-
-        public ButtonInplaceEditor(DesignPropertyEditor propertyEditor) {
-            this.propertyEditor = propertyEditor;
-            button = new JButton(NbBundle.getMessage(PropertyEditorGoToSource.class, "LBL_GOTO_STR")); // NOI18N
-        }
-
-        public void connect(PropertyEditor pe, PropertyEnv env) {
-        }
-
-        public JComponent getComponent() {
-            //button.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
-            return button;
-        }
-
-        public void clear() {
-        }
-
-        public Object getValue() {
-            return propertyEditor.getValue();
-        }
-
-        public void setValue(Object o) {
-        }
-
-        public boolean supportsTextEntry() {
-            return true;
-        }
-
-        public void reset() {
-        }
-
-        public void addActionListener(ActionListener al) {
-        }
-
-        public void removeActionListener(ActionListener al) {
-        }
-
-        public KeyStroke[] getKeyStrokes() {
-            return new KeyStroke[0];
-        }
-
-        public PropertyEditor getPropertyEditor() {
-            return propertyEditor;
-        }
-
-        public PropertyModel getPropertyModel() {
-            return model;
-        }
-
-        public void setPropertyModel(PropertyModel pm) {
-            this.model = model;
-        }
-
-        public boolean isKnownComponent(Component c) {
-            return true;
-        }
-    }
 }
