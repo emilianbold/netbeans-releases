@@ -68,8 +68,8 @@ public class EntityGeneratorTest extends TestBase {
         assertFalse(entity.isReentrant());
         assertEquals("TestCmp", entity.getAbstractSchemaName());
         assertEquals(1, entity.getCmpField().length);
-        assertEquals("key", entity.getCmpField()[0].getFieldName());
-        assertEquals("key", entity.getPrimkeyField());
+        assertEquals("pk", entity.getCmpField()[0].getFieldName());
+        assertEquals("pk", entity.getPrimkeyField());
         assertFile(
                 FileUtil.toFile(packageFileObject.getFileObject("TestCmpBean.java")), 
                 getGoldenFile("testGenerateJavaEE14/TestCmpBean.java"), 

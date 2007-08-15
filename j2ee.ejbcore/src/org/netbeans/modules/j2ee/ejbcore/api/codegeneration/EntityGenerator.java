@@ -192,9 +192,9 @@ public final class EntityGenerator {
             entity.setAbstractSchemaName(wizardTargetName);
             if (primaryKeyName == null) {
                 CmpField cmpField = entity.newCmpField();
-                cmpField.setFieldName("key");
+                cmpField.setFieldName("pk");
                 entity.addCmpField(cmpField);
-                entity.setPrimkeyField("key");
+                entity.setPrimkeyField("pk");
             } else {
                 entity.setPrimkeyField(primaryKeyName);
             }

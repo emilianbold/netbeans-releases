@@ -74,9 +74,9 @@ public abstract class ${name} implements EntityBean {
     // </editor-fold>
     
     <#if !primaryKeyName??>
-    public abstract ${primaryKey} getKey();
+    public abstract ${primaryKey} getPk();
 
-    public abstract void setKey(${primaryKey} key);
+    public abstract void setPk(${primaryKey} key);
     </#if>
     
     public ${primaryKey} ejbCreate(${primaryKey} key)  throws CreateException {
@@ -86,7 +86,7 @@ public abstract class ${name} implements EntityBean {
         
         // TODO add additional validation code, throw CreateException if data is not valid
         <#if !primaryKeyName??>
-        setKey(key);
+        setPk(key);
         </#if>
 
         return null;

@@ -17,6 +17,6 @@ import javax.ejb.EJBLocalObject;
  */
 public interface TestCmpLocal extends EJBLocalObject {
 
-    java.lang.Long getKey();
+    java.lang.Long getPk();
 
 }

@@ -79,7 +79,6 @@ public class SelectMethodGeneratorTest extends TestBase {
                 for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
                     if (executableElement.getSimpleName().contentEquals("ejbSelectTest")) {
                         MethodTree methodTree = workingCopy.getTrees().getTree(executableElement);
-                        assertNull(methodTree.getBody());
                         assertSame(TypeKind.INT, executableElement.getReturnType().getKind());
                         TypeElement finderException = workingCopy.getElements().getTypeElement("javax.ejb.FinderException");
                         assertTrue(executableElement.getThrownTypes().contains(finderException.asType()));

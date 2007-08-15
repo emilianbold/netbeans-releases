@@ -77,9 +77,9 @@ public abstract class TestCmpBean implements EntityBean {
 
     // </editor-fold>
     
-    public abstract java.lang.Long getKey();
+    public abstract java.lang.Long getPk();
 
-    public abstract void setKey(java.lang.Long key);
+    public abstract void setPk(java.lang.Long key);
     
     public java.lang.Long ejbCreate(java.lang.Long key)  throws CreateException {
         if (key == null) {
@@ -87,7 +87,7 @@ public abstract class TestCmpBean implements EntityBean {
         }
         
         // TODO add additional validation code, throw CreateException if data is not valid
-        setKey(key);
+        setPk(key);
 
         return null;
     }

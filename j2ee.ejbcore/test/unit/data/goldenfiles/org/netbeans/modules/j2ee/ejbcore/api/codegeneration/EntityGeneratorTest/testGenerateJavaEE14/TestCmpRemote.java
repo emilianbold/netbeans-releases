@@ -18,6 +18,6 @@ import javax.ejb.EJBObject;
  */
 public interface TestCmpRemote extends EJBObject {
 
-    java.lang.Long getKey() throws RemoteException;
+    java.lang.Long getPk() throws RemoteException;
     
 }
