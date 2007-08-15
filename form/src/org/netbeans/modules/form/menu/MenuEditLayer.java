@@ -587,6 +587,7 @@ public class MenuEditLayer extends JPanel {
         }
         RADComponent targetRad = formDesigner.getMetaComponent(target);
         RADComponent parentRad = targetRad.getParentComponent();
+        if(parentRad == null) return false;
         Object possibleParent = formDesigner.getComponent(parentRad);
         RADComponent realParentRad = formDesigner.getMetaComponent(parent);
         if(parentRad == realParentRad) {
