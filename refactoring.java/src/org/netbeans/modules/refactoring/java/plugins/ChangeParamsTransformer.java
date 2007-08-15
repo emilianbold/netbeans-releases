@@ -136,6 +136,8 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             if (!el.getModifiers().contains(Modifier.ABSTRACT)) {
                 modifiers.remove(Modifier.ABSTRACT);
             }
+            ClassTree enclosingClass = (ClassTree) workingCopy.getTrees().getTree(el.getEnclosingElement());                                
+            if(workingCopy.getTreeUtilities().isInterface(enclosingClass)) modifiers.remove(Modifier.ABSTRACT);
             MethodTree nju = make.Method(
                     make.Modifiers(modifiers),
                     current.getName(),
