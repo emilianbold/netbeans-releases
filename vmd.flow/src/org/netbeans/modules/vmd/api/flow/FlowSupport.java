@@ -18,11 +18,25 @@
  */
 package org.netbeans.modules.vmd.api.flow;
 
+import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.flow.FlowAccessController;
+
 /**
  * @author David Kaspar
  */
 public final class FlowSupport {
 
     public static final String PROJECT_TYPE_TAG_FLOW = "flow";  // NOI18N
+
+    /**
+     * Returns a FlowScene for a specified document
+     * @param document the document
+     * @return the flow scene
+     */
+    public static FlowScene getFlowSceneForDocument (DesignDocument document) {
+        FlowAccessController controller = document.getListenerManager ().getAccessController (FlowAccessController.class);
+        return controller.getScene ();
+    }
 
 }

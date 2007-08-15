@@ -20,6 +20,7 @@ package org.netbeans.modules.vmd.midp.actions;
 
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
+import org.netbeans.modules.vmd.api.flow.FlowSupport;
 import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
@@ -55,11 +56,29 @@ public class ExportFlowAsImageAction extends SystemAction implements DesignDocum
         return new HelpCtx (ExportFlowAsImageAction.class);
     }
 
-    public void actionPerformed (ActionEvent e) {
+    public boolean isEnabled () {
+        updateDesignDocumentReference ();
+        FlowScene scene = FlowSupport.getFlowSceneForDocument (document);
+
+        if (scene == null)
+            return false;
+
+        JComponent view = scene.getView ();
+        if (view == null  ||  ! view.isShowing ())
+            return false;
+        Rectangle rectangle = scene.getBounds ();
+        return rectangle.width > 0  &&  rectangle.height > 0;
+    }
+
+    private void updateDesignDocumentReference () {
         DataObjectContext context = ActiveViewSupport.getDefault ().getActiveView ().getContext ();
         context.addDesignDocumentAwareness (this);
         context.removeDesignDocumentAwareness (this);
-        FlowScene scene = FlowScene.getFlowSceneForDocument (document);
+    }
+
+    public void actionPerformed (ActionEvent e) {
+        updateDesignDocumentReference ();
+        FlowScene scene = FlowSupport.getFlowSceneForDocument (document);
         if (scene == null)
             return;
         saveAsImage (scene);

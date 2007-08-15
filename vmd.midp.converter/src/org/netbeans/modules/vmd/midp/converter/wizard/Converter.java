@@ -29,6 +29,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.vmd.api.flow.visual.FlowNodeDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
+import org.netbeans.modules.vmd.api.flow.FlowSupport;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
@@ -119,7 +120,7 @@ public class Converter {
                     public void run () {
                         document.getTransactionManager ().writeAccess (new Runnable() {
                             public void run () {
-                                FlowScene scene = FlowScene.getFlowSceneForDocument (document);
+                                FlowScene scene = FlowSupport.getFlowSceneForDocument (document);
                                 for (FlowNodeDescriptor node : scene.getNodes ()) {
 //                                    Point point = flowNodes.get (node.getRepresentedComponent ());
 //                                    if (point != null) {

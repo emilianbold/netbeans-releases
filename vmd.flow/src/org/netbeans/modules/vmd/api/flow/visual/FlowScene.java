@@ -38,7 +38,6 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.palette.PaletteSupport;
-import org.netbeans.modules.vmd.flow.FlowAccessController;
 import org.netbeans.modules.vmd.flow.FlowViewController;
 import org.openide.util.Utilities;
 
@@ -510,16 +509,6 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
             }
         }
         return anchor;
-    }
-
-    /**
-     * Returns a FlowScene for a specified document
-     * @param document the document
-     * @return the flow scene
-     */
-    public static FlowScene getFlowSceneForDocument (DesignDocument document) {
-        FlowAccessController controller = document.getListenerManager ().getAccessController (FlowAccessController.class);
-        return controller.getScene ();
     }
 
     private class FlowObjectSceneListener implements ObjectSceneListener {
