@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.design.decoration.components;
 
 import java.awt.Color;
@@ -45,45 +43,25 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author aa160298
  */
-public class ShowGlassPaneButton extends JToggleButton
-        implements ActionListener, HierarchyListener, DecorationComponent 
-{
-    private GlassPane glassPane = new GlassPane();
-    
-    private Icon icon;
+public class ShowGlassPaneButton extends AbstractGlassPaneButton {
     
     public ShowGlassPaneButton(List<ResultItem> resultItems) {
         super(ERROR_ICON);
-        addActionListener(this);
-        addHierarchyListener(this);
-        
-        setOpaque(false);
-        setBorder(null);
-        setRolloverEnabled(true);
-        setContentAreaFilled(false);
-        setFocusable(false);
         
         fillGlassPaneHeader(resultItems);
         fillGlassPaneContent(resultItems);
         
-        setPreferredSize(new Dimension(icon.getIconWidth() + 6, 
-                icon.getIconHeight() + 6));
-        
-        glassPane.addHierarchyListener(this);
+        updatePreferredSize();
     }
-
-
 
     public void setResultItems(List<ResultItem> resultItems) {
-        glassPane.removeHeaders();
-        glassPane.removeHTML();
+        getGlassPane().removeHeaders();
+        getGlassPane().removeHTML();
         fillGlassPaneHeader(resultItems);
         fillGlassPaneContent(resultItems);
     }
-    
     
     private void fillGlassPaneHeader(List<ResultItem> resultItems) {
         int errorsCount = 0;
@@ -106,55 +84,53 @@ public class ShowGlassPaneButton extends JToggleButton
         
         if (errorsCount > 0) {
             if (errorsCount > 1) {
-                glassPane.addHeader(ERROR_ICON, "" + errorsCount + " "
+                getGlassPane().addHeader(ERROR_ICON, "" + errorsCount + " "
                         + NbBundle.getMessage(getClass(), 
                         "LBL_ShowGlassPaneButton_N_Errors").trim()); // NOI18N
             } else {
-                glassPane.addHeader(ERROR_ICON, NbBundle.getMessage(getClass(), 
+                getGlassPane().addHeader(ERROR_ICON, NbBundle.getMessage(getClass(), 
                         "LBL_ShowGlassPaneButton_1_Error").trim()); // NOI18N
             }
         } 
 
         if (warningsCount > 0) {
             if (warningsCount > 1) {
-                glassPane.addHeader(WARNING_ICON, "" + warningsCount + " " 
+                getGlassPane().addHeader(WARNING_ICON, "" + warningsCount + " " 
                         + NbBundle.getMessage(getClass(), 
                         "LBL_ShowGlassPaneButton_N_Warnings").trim()); // NOI18N
             } else {
-                glassPane.addHeader(WARNING_ICON, NbBundle.getMessage(getClass(), 
+                getGlassPane().addHeader(WARNING_ICON, NbBundle.getMessage(getClass(), 
                         "LBL_ShowGlassPaneButton_1_Warning").trim()); // NOI18N
             }
         } 
 
         if (advicesCount > 0) {
             if (advicesCount > 1) {
-                glassPane.addHeader(ADVICE_ICON, "" + advicesCount + " "
+                getGlassPane().addHeader(ADVICE_ICON, "" + advicesCount + " "
                         + NbBundle.getMessage(getClass(), 
                         "LBL_ShowGlassPaneButton_N_Advices").trim()); // NOI18N
             } else {
-                glassPane.addHeader(ADVICE_ICON, NbBundle.getMessage(getClass(), 
+                getGlassPane().addHeader(ADVICE_ICON, NbBundle.getMessage(getClass(), 
                         "LBL_ShowGlassPaneButton_1_Advice").trim()); // NOI18N
             }
         } 
         
         
         if (errorsCount > 0) {
-            icon = ERROR_ICON;
+            setMyIcon(ERROR_ICON);
         } else if (warningsCount > 0) {
-            icon = WARNING_ICON;
+            setMyIcon(WARNING_ICON);
         } else if (advicesCount > 0) {
-            icon = ADVICE_ICON;
+            setMyIcon(ADVICE_ICON);
         }
     }
-    
     
     private void fillGlassPaneContent(List<ResultItem> resultItems) {
         addToGlassPane(resultItems, ResultType.ERROR); // NOI18N
         addToGlassPane(resultItems, ResultType.ADVICE); // NOI18N
         addToGlassPane(resultItems, ResultType.WARNING); // NOI18N
-        glassPane.updateHTML();
+        getGlassPane().updateHTML();
     }
-    
     
     private void addToGlassPane(List<ResultItem> resultItems, ResultType type) 
     {
@@ -179,13 +155,12 @@ public class ShowGlassPaneButton extends JToggleButton
         
         for (ResultItem item : items) {
             if ("BPELSchemaValidator".equals(item.getValidator().getName())) { // NOI18N
-                glassPane.addListItem(slowIcon, item.getDescription());
+                getGlassPane().addListItem(slowIcon, item.getDescription());
             } else {
-                glassPane.addListItem(icon, item.getDescription());
+                getGlassPane().addListItem(icon, item.getDescription());
             }
         }
     }
-    
     
     private List<ResultItem> filterResultItems(List<ResultItem> resultItems, 
             ResultType type) 
@@ -198,82 +173,6 @@ public class ShowGlassPaneButton extends JToggleButton
         }
         return result;
     }
-
-    
-    public void actionPerformed(ActionEvent e) {
-        if (!isGlassPaneShown()) {
-            showGlassPane();
-        } else {
-            hideGlassPane();
-        }
-    }
-
-
-    public void setBounds(int x, int y, int w, int h) {
-        super.setBounds(x, y, w, h);
-        
-        if (isGlassPaneShown()) {
-            updateGlassPaneBounds();
-        }
-    }
-    
-    
-    private void showGlassPane() {
-        getDesignView().add(glassPane);
-        updateGlassPaneBounds();
-        glassPane.scrollRectToVisible(new Rectangle(0, 0, 
-                glassPane.getWidth(), glassPane.getHeight()));
-    }
-    
-    
-    private void hideGlassPane() {
-        DesignView designView = (DesignView) glassPane.getParent();
-        designView.remove(glassPane);
-        designView.revalidate();
-        designView.repaint();
-    }
-    
-    
-    private DesignView getDesignView() {
-        return (DesignView) SwingUtilities
-                .getAncestorOfClass(DesignView.class, this);
-    }
-    
-    
-    private boolean isGlassPaneShown() {
-        return (glassPane.getParent() != null);
-    }
-    
-    
-    private void updateGlassPaneBounds() {
-        DesignView designView = getDesignView();
-
-        Point coords = SwingUtilities.convertPoint(this, 
-                getWidth() + 1, getHeight() / 2, designView);
-        
-        Dimension size = glassPane.getPreferredSize();
-        
-        glassPane.setBounds(coords.x, coords.y, size.width, size.height);
-        
-        designView.revalidate();
-        designView.repaint();
-    }
-    
-    
-    public void hierarchyChanged(HierarchyEvent e) {
-        if (e.getSource() == this) {
-            if ((getParent() == null) && isGlassPaneShown()) {
-                hideGlassPane();
-            }
-        } else if (e.getSource() == glassPane) {
-            if (glassPane.getParent() == null) {
-                setSelected(false);
-            } else {
-                setSelected(true);
-            }
-        }
-    }
-    
     
     protected void paintComponent(Graphics g) {
         ButtonModel model = getModel();
@@ -282,20 +181,20 @@ public class ShowGlassPaneButton extends JToggleButton
             ButtonRenderer.paintButton(this, g, 
                     ButtonRenderer.PRESSED_FILL_COLOR, false, 
                     ButtonRenderer.PRESSED_BORDER_COLOR, 
-                    ButtonRenderer.PRESSED_STROKE_WIDTH, icon);
+                    ButtonRenderer.PRESSED_STROKE_WIDTH, getMyIcon());
         } else if (model.isRollover()) {
             ButtonRenderer.paintButton(this, g, 
                     ButtonRenderer.ROLLOVER_FILL_COLOR, true, 
                     ButtonRenderer.ROLLOVER_BORDER_COLOR, 
-                    ButtonRenderer.ROLLOVER_STROKE_WIDTH, icon);
+                    ButtonRenderer.ROLLOVER_STROKE_WIDTH, getMyIcon());
             
         } else if (model.isSelected()) {
             ButtonRenderer.paintButton(this, g, BACKGROUND, false, 
                     ButtonRenderer.PRESSED_BORDER_COLOR, 
-                    ButtonRenderer.PRESSED_STROKE_WIDTH, icon);
+                    ButtonRenderer.PRESSED_STROKE_WIDTH, getMyIcon());
         } else {
             ButtonRenderer.paintButton(this, g, BACKGROUND, false, 
-                    null, ButtonRenderer.NORMAL_STROKE_WIDTH, icon);
+                    null, ButtonRenderer.NORMAL_STROKE_WIDTH, getMyIcon());
         }
     }
     
