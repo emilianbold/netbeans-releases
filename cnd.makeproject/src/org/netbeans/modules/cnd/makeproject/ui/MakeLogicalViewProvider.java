@@ -282,22 +282,26 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-    public static void checkForChangedItems(Project project, Folder folder, Item item) {
-        if (item == null) {
-            checkForChangedItems(project);
-            return;
-        }
-        Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-        Node root = findProjectNode(rootNode, project);
-        if (root != null){
-            Node node = findItemNode(root, item);
-            if (node instanceof FilterNode){
-                Object o = node.getLookup().lookup(ViewItemNode.class);
-                if (o != null){
-                    ((ChangeListener)o).stateChanged(null);
+    public static void checkForChangedItems(final Project project, final Folder folder, final Item item) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (item == null) {
+                    checkForChangedItems(project);
+                    return;
+                }
+                Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
+                Node root = findProjectNode(rootNode, project);
+                if (root != null){
+                    Node node = findItemNode(root, item);
+                    if (node instanceof FilterNode){
+                        Object o = node.getLookup().lookup(ViewItemNode.class);
+                        if (o != null){
+                            ((ChangeListener)o).stateChanged(null);
+                        }
+                    }
                 }
             }
-        }
+        });
     }
 
     private static void checkForChangedItems(Project project) {

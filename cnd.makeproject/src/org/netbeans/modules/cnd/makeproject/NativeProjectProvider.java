@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfigurati
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ExtensionList;
+import org.openide.util.RequestProcessor;
 
 final public class NativeProjectProvider implements NativeProject, PropertyChangeListener {
     private Project project;
@@ -256,7 +257,15 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         return (NativeFileItem)getMakeConfigurationDescriptor().findItemByFile(file);
     }
     
-    private void checkConfigurationChanged(Configuration oldConf, Configuration newConf) {
+    private void checkConfigurationChanged(final Configuration oldConf, final Configuration newConf) {
+        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                checkConfigurationChangedWorker(oldConf, newConf);
+            }
+        });
+    }
+    
+    private void checkConfigurationChangedWorker(Configuration oldConf, Configuration newConf) {
         MakeConfiguration oldMConf = (MakeConfiguration)oldConf;
         MakeConfiguration newMConf = (MakeConfiguration)newConf;
         List<NativeFileItem> list = new ArrayList<NativeFileItem>();
@@ -337,7 +346,15 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         firePropertiesChanged(list);
     }
     
-    public void checkForChangedItems(Folder folder, Item item) {
+    public void checkForChangedItems(final Folder folder, final Item item) {
+        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                checkForChangedItemsWorker(folder, item);
+            }
+        });
+    }
+    
+    private void checkForChangedItemsWorker(Folder folder, Item item) {
         synchronized (listeners) {
             if (listeners.size() == 0)
                 return;
