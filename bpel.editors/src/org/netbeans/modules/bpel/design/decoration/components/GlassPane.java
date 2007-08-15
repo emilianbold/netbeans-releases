@@ -16,10 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.design.decoration.components;
-
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -94,11 +91,7 @@ public class GlassPane extends JPanel implements ActionListener,
                 g2.dispose();
             }
         };
-        
-//        editorPane.setEditable(false);
-        //vlv
-        editorPane.setEditable(true);
-
+        editorPane.setEditable(false);
         editorPane.setEditorKitForContentType("text/html", new HTMLEditorKit());
         editorPane.setContentType("text/html");
         editorPane.setBackground(null);
@@ -153,11 +146,9 @@ public class GlassPane extends JPanel implements ActionListener,
         editorPane.addMouseListener(this);
     }
     
-    
     public boolean contains(int x, int y) {
         return createBorderShape().contains(0.5 + x, 0.5 + y);
     }
-    
     
     public void addHeader(Icon icon, String text) {
         HeaderLabel label = new HeaderLabel(icon, text);
@@ -178,16 +169,13 @@ public class GlassPane extends JPanel implements ActionListener,
         }
     }
 
-
     public void removeHeaders() {
         labelPane.removeAll();
     }
 
-
     public void removeHTML() {
         html.delete(0, html.length());
     }
-    
     
     public void addListItem(String iconPath, String description) {
         if (html.length() == 0) {
@@ -212,7 +200,6 @@ public class GlassPane extends JPanel implements ActionListener,
                 iconSpace, description);
         fillHTMLSpacer();
     }
-
     
     public void updateHTML() {
         if (html.length() == 0) {
@@ -233,7 +220,6 @@ public class GlassPane extends JPanel implements ActionListener,
         html.delete(0, html.length());
     }
 
-
     private boolean equals(String s1, String s2) {
         if (s1 == s2) return true;
         if (s1 == null) return false;
@@ -241,8 +227,7 @@ public class GlassPane extends JPanel implements ActionListener,
         return s1.equals(s2);
     }
     
-    
-     private void fillHTMLHeader() {
+    private void fillHTMLHeader() {
         Font font = new JLabel().getFont();
         html.append("<html><head>"); // NOI18N
         html.append("<style> TD { font-family: "); // NOI18N
@@ -304,7 +289,6 @@ public class GlassPane extends JPanel implements ActionListener,
         html.append("\" width=1 height=5></td></tr></table>"); // NOI18N
     }
     
-    
     public void actionPerformed(ActionEvent e) {
         DesignView designView = (DesignView) getParent();
         designView.remove(this);
@@ -317,7 +301,6 @@ public class GlassPane extends JPanel implements ActionListener,
         designView.revalidate();
         designView.repaint();
     }
-    
     
     public void paintThumbnail(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
@@ -566,11 +549,7 @@ public class GlassPane extends JPanel implements ActionListener,
         }
     }
 
-    
-    private static final URL E_IMAGE_URL 
-            = Decoration.class.getResource("resources/e.png"); // NOI18N
-    
+    private static final URL E_IMAGE_URL = Decoration.class.getResource("resources/e.png"); // NOI18N
     private static final Color FILL = Color.WHITE;
     private static final Color STROKE = new Color(0x444444);
 }
-

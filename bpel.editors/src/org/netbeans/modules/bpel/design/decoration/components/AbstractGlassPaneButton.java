@@ -62,7 +62,7 @@ public class AbstractGlassPaneButton extends JToggleButton implements ActionList
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (!isGlassPaneShown()) {
+        if ( !isGlassPaneShown()) {
             showGlassPane();
         } else {
             hideGlassPane();
