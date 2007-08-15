@@ -50,7 +50,7 @@ public class AutoupdateCatalogFactory {
     }
     
     private static final String UPDATE_VERSION_PROP = "netbeans.autoupdate.version"; // NOI18N
-    private static final String UPDATE_VERSION = "1.22"; // NOI18N
+    private static final String UPDATE_VERSION = "1.23"; // NOI18N
     private static final String IDE_HASH_CODE = "netbeans.hash.code"; // NOI18N
     private static final String SYSPROP_COUNTRY = "netbeans.autoupdate.country"; // NOI18N
     private static final String SYSPROP_LANGUAGE = "netbeans.autoupdate.language"; // NOI18N
