@@ -150,7 +150,7 @@ public class AddWsOperationHelper {
      */
     private void addOperation(final MethodModel methodModel, final FileObject implClassFo) {
         final JavaSource targetSource = JavaSource.forFileObject(implClassFo);
-        final ProgressHandle handle = ProgressHandleFactory.createHandle("Adding operation");
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(AddWsOperationHelper.class, "MSG_AddingNewOperation", methodModel.getName()));
         handle.start(100);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {

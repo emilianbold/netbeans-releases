@@ -139,21 +139,12 @@ public class AddOperationAction extends AbstractAction {
             Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
             dialog.setVisible(true);
         } else { // WS from Java
-            final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.
-                    getMessage(AddOperationAction.class, "MSG_AddingNewOperation")); //NOI18N
-            Task task = new Task(new Runnable() {
-                public void run() {
-                    try{
-                        handle.start();
-                        addJavaMethod();
-                    }catch(IOException e){
-                        handle.finish();
-                        ErrorManager.getDefault().notify(e);
-                    }finally{
-                        handle.finish();
-                    }
-                }});
-                RequestProcessor.getDefault().post(task);
+            try{
+                // no need to create new task or progress handle, as strategy does it.
+                addJavaMethod();
+            }catch(IOException e){
+                ErrorManager.getDefault().notify(e);
+            }
         }
     }
     
