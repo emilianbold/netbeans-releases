@@ -157,6 +157,11 @@
             name="javaeesdk-blueprints-buildnumber" 
             classpath="${custom.tasks.cls}" 
             classname="org.netbeans.installer.infra.build.ant.BuildNumberBluePrints"/>
+	<taskdef 
+            name="wsrp-buildnumber" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.BuildNumberWsrp"/>
+
         
         <taskdef 
             name="if" 
@@ -209,8 +214,11 @@
             prefix="swdp"/>
         
         <get
-            src="${glassfish.builds.host}/java/re/javaeesdk/5.0_03/archive/preview2/latest/bundles/"
+            src="${glassfish.builds.host}/java/re/javaeesdk/5.0_03/archive/fcs/latest/bundles/"
             dest="${temp.file}"/>
+	<sjsam-buildnumber
+	    file="${temp.file}" 
+            prefix="sjsam"/>
         <portletcontainer-buildnumber 
             file="${temp.file}" 
             prefix="portletcontainer"/>
@@ -223,6 +231,10 @@
         <javaeesdk-blueprints-buildnumber 
             file="${temp.file}" 
             prefix="javaeesdk-samples"/>
+	<wsrp-buildnumber
+	    file="${temp.file}" 
+            prefix="wsrp"/>
+
         
         <property name="javaeesdk-javadocs.build.number" value="20060907"/>
         
@@ -231,12 +243,6 @@
             src="${sjsam.builds.host}/projects/am-javaee/update3beta/"
             dest="${temp.file}"/>
         -->
-        <get
-            src="${glassfish.builds.host}/java/re/javaeesdk/5.0_03/archive/fcs/latest/bundles/"
-            dest="${temp.file}"/>
-        <sjsam-buildnumber 
-            file="${temp.file}" 
-            prefix="sjsam"/>
             
         <!--
         <property name="sjsam.milestone.number" value="1"/>
@@ -248,7 +254,7 @@
     
     <target name="-init-properties">
         <echo file="${environment.properties}"/>
-        
+        <!-- Obligatory properties -->
         <if property="cvs.branch">
             <echo file="${environment.properties}" append="true">
 cvs.branch=${cvs.branch}
@@ -266,46 +272,6 @@ release.to.server=false
 release.registry.dir=${output.dir}/registry-temp
 
 build.number=${build.number}
-
-glassfish.milestone.number=${glassfish.milestone.number}
-glassfish.milestone.number.real=${glassfish.milestone.number.real}
-glassfish.build.type=${glassfish.build.type}
-glassfish.build.number=${glassfish.build.number}
-
-sjsas.milestone.number=${sjsas.milestone.number}
-sjsas.milestone.number.real=${sjsas.milestone.number.real}
-sjsas.build.type=${sjsas.build.type}
-sjsas.build.number=${sjsas.build.number}
-
-openesb.build.number=${openesb.build.number}
-openesb.build.number.real=${openesb.build.number.real}
-
-sjsam.milestone.number=${sjsam.milestone.number}
-sjsam.build.number=${sjsam.build.number}
-
-swdp.milestone.number=${swdp.milestone.number}
-swdp.build.type=${swdp.build.type}
-swdp.build.number=${swdp.build.number}
-swdp.macro.number=${swdp.macro.number}
-
-portletcontainer.milestone.number=${portletcontainer.milestone.number}
-portletcontainer.build.number=${portletcontainer.build.number}
-portletcontainer.macro.number=${portletcontainer.macro.number}
-portletcontainer.micro.number=${portletcontainer.micro.number}
-
-javaeesdk-firstcup.milestone.number=${javaeesdk-firstcup.milestone.number}
-javaeesdk-firstcup.build.number=${javaeesdk-firstcup.build.number}
-javaeesdk-firstcup.macro.number=${javaeesdk-firstcup.macro.number}
-javaeesdk-firstcup.micro.number=${javaeesdk-firstcup.micro.number}
-
-
-javaeesdk-blueprints.milestone.number=${javaeesdk-blueprints.milestone.number}
-javaeesdk-blueprints.build.number=${javaeesdk-blueprints.build.number}
-
-javaeesdk-samples.milestone.number=${javaeesdk-samples.milestone.number}
-javaeesdk-samples.build.number=${javaeesdk-samples.build.number}
-javaeesdk-javadocs.build.number=${javaeesdk-javadocs.build.number}
-
 dont.build.custom.tasks=true
 custom.tasks.cls=${custom.tasks.cls}
 
@@ -327,7 +293,68 @@ openesb.builds.host=${openesb.builds.host}
 sjsam.builds.host=${sjsam.builds.host}
 
 remote.work.dir=~/.netbeans-trunk-nightly-${build.number}
+	</echo>
 
+	<!-- NetBeans Build properties -->
+        <echo file="${environment.properties}" append="true">
+glassfish.milestone.number=${glassfish.milestone.number}
+glassfish.milestone.number.real=${glassfish.milestone.number.real}
+glassfish.build.type=${glassfish.build.type}
+glassfish.build.number=${glassfish.build.number}
+
+sjsas.milestone.number=${sjsas.milestone.number}
+sjsas.milestone.number.real=${sjsas.milestone.number.real}
+sjsas.build.type=${sjsas.build.type}
+sjsas.build.number=${sjsas.build.number}
+
+openesb.build.number=${openesb.build.number}
+openesb.build.number.real=${openesb.build.number.real}
+	</echo>
+
+	<!-- SJSAM properties -->
+        <echo file="${environment.properties}" append="true">
+sjsam.milestone.number=${sjsam.milestone.number}
+sjsam.build.number=${sjsam.build.number}
+	</echo>
+
+	<!-- SWDP properties -->
+	<!--
+        <echo file="${environment.properties}" append="true">
+swdp.milestone.number=${swdp.milestone.number}
+swdp.build.type=${swdp.build.type}
+swdp.build.number=${swdp.build.number}
+swdp.macro.number=${swdp.macro.number}
+	</echo>
+	-->
+
+	<!-- Java EE SDK component properties -->
+        <echo file="${environment.properties}" append="true">
+javaeesdk-firstcup.milestone.number=${javaeesdk-firstcup.milestone.number}
+javaeesdk-firstcup.build.number=${javaeesdk-firstcup.build.number}
+javaeesdk-firstcup.macro.number=${javaeesdk-firstcup.macro.number}
+javaeesdk-firstcup.micro.number=${javaeesdk-firstcup.micro.number}
+
+javaeesdk-blueprints.milestone.number=${javaeesdk-blueprints.milestone.number}
+javaeesdk-blueprints.build.number=${javaeesdk-blueprints.build.number}
+javaeesdk-blueprints.build.type=${javaeesdk-blueprints.build.type}
+
+javaeesdk-samples.milestone.number=${javaeesdk-samples.milestone.number}
+javaeesdk-samples.build.type=${javaeesdk-samples.build.type}
+javaeesdk-samples.build.number=${javaeesdk-samples.build.number}
+
+javaeesdk-javadocs.build.number=${javaeesdk-javadocs.build.number}
+
+portletcontainer.milestone.number=${portletcontainer.milestone.number}
+portletcontainer.build.number=${portletcontainer.build.number}
+portletcontainer.macro.number=${portletcontainer.macro.number}
+portletcontainer.micro.number=${portletcontainer.micro.number}
+
+wsrp.milestone.number=${wsrp.milestone.number}
+wsrp.build.number=${wsrp.build.number}
+        </echo>
+
+	<!-- SJSAS Image properties -->
+         <echo file="${environment.properties}" append="true">
 remote.host.windows=${remote.host.windows}
 remote.port.windows=${remote.port.windows}
 remote.user.windows=${remote.user.windows}
@@ -354,6 +381,8 @@ sjsas.image.token.hostname.solaris-x86=${sjsas.image.token.hostname.solaris-x86}
 sjsas.image.token.hostname.solaris-sparc=${sjsas.image.token.hostname.solaris-sparc}
 sjsas.image.token.hostname.macosx=${sjsas.image.token.hostname.macosx}
         </echo>
+
+        <!-- Jar singing properties -->
 	<if property="jarsigner.enabled" value="true">
 	    <echo file="${environment.properties}" append="true">
 jarsigner.keystore=${jarsigner.keystore}
@@ -361,6 +390,7 @@ jarsigner.alias=${jarsigner.alias}
 jarsigner.storepass=${jarsigner.storepass}
             </echo>
 	</if>
+        
         <replace file="${environment.properties}" token="\" value="/"/>
     </target>
     
@@ -382,6 +412,16 @@ jarsigner.storepass=${jarsigner.storepass}
                 
                 <!-- tomcat -->
                 <exclude name="**/tomcat*"/>
+
+		<!-- javaeesdk components -->
+                <exclude name="**/javaeesdk-samples*${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}*"/>
+		<exclude name="**/javaeesdk-blueprints*${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}*"/>
+		<exclude name="**/javaeesdk-firstcup*${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}*"/>
+	        <exclude name="**/javaeesdk-javadocs*${javaeesdk-javadocs.build.number}*"/>
+		<exclude name="**/portletcontainer*${portletcontainer.milestone.number}.${portletcontainer.build.number}*"/>
+		<exclude name="**/wsrp*${wsrp.milestone.number}.${wsrp.build.number}*"/>
+                <exclude name="**/sjsas*${sjsas.milestone.number}.${sjsas.build.number}*"/>
+
             </fileset>
         </delete>
     </target>
@@ -640,6 +680,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
+
         <!--
 	<echo message="BUILDING NB-CND =========================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-cnd" target="release-all">
@@ -709,8 +750,9 @@ jarsigner.storepass=${jarsigner.storepass}
                 value=""/>
         </ant>
         
-        <echo message="BUILDING SJSAS ============================================"/>
+        
         <!--
+	<echo message="BUILDING SJSAS ============================================"/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/sjsas" target="release-all">
             <property 
                 name="basedir" 
@@ -783,8 +825,9 @@ jarsigner.storepass=${jarsigner.storepass}
                 value=""/>
         </ant>
         
-        <echo message="BUILDING SJSAM ============================================"/>
+        
         <!--
+	<echo message="BUILDING SJSAM ============================================"/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/sjsam" target="release-all">
             <property 
                 name="basedir" 
@@ -809,8 +852,9 @@ jarsigner.storepass=${jarsigner.storepass}
         </ant>
         -->
         
-        <echo message="BUILDING SWDP ============================================="/>
+        
         <!--
+	<echo message="BUILDING SWDP ============================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/swdp" target="release-all">
             <property 
                 name="basedir" 
@@ -834,35 +878,8 @@ jarsigner.storepass=${jarsigner.storepass}
                 value=""/>
         </ant>
         -->
-        
-        <echo message="BUILDING PORTLET CONTAINER ================================"/>
         <!--
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/portletcontainer" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/portletcontainer"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-                
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
-        -->
-        
-        <echo message="BUILDING JAVAEESDK: FIRSTCUP =============================="/>
-        <!--
+        <echo message="BUILDING JAVAEESDK: FIRSTCUP =============================="/>        
         <ant dir="${nbi.netbeans.dir}/infra/build/products/javaeesdk-firstcup" target="release-all">
             <property 
                 name="basedir" 
@@ -885,10 +902,8 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-        -->
 
         <echo message="BUILDING JAVAEESDK: BLUEPRINTS ============================"/>
-        <!--
         <ant dir="${nbi.netbeans.dir}/infra/build/products/javaeesdk-blueprints" target="release-all">
             <property 
                 name="basedir" 
@@ -911,10 +926,8 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-        -->
 
         <echo message="BUILDING JAVAEESDK: SAMPLES ==============================="/>
-        <!--
         <ant dir="${nbi.netbeans.dir}/infra/build/products/javaeesdk-samples" target="release-all">
             <property 
                 name="basedir" 
@@ -937,10 +950,8 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-        -->
-        
+
         <echo message="BUILDING JAVAEESDK: JAVADOCS =============================="/>
-        <!--
         <ant dir="${nbi.netbeans.dir}/infra/build/products/javaeesdk-javadocs" target="release-all">
             <property 
                 name="basedir" 
@@ -963,7 +974,56 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-        -->
+
+        <echo message="BUILDING PORTLET CONTAINER ================================"/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/portletcontainer" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/portletcontainer"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+
+        <echo message="BUILDING WSRP ================================"/>
+        
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/wsrp" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/wsrp"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+	-->
         
         <export-registry 
             root="${output.dir}/registry-temp" 
@@ -1224,6 +1284,112 @@ jarsigner.storepass=${jarsigner.storepass}
             -->
         </create-bundle>
 
+        <!-- Java Tools Bundle installer -->
+	<!--
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="windows" 
+                       target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-windows.exe">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>	                
+            <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
+	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
+            <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
+	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
+	    <component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/>
+	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="linux" 
+                       target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-linux.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
+	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
+            <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
+	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
+	    <component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/>
+	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-x86" 
+                       target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-solaris-x86.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>            
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>            
+            <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
+	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
+            <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
+	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
+	    <component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/>
+	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-sparc" 
+                       target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-solaris-sparc.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
+	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
+            <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
+	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
+	    <component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/>
+	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="macosx-x86" 
+                       target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-macosx-x86.zip">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
+	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
+            <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
+	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
+	    <component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/>
+	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="macosx-ppc" 
+                       target="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-macosx-ppc.zip">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
+	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
+            <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
+	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
+	    <component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/>
+	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.0.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+        </create-bundle>
+	-->
+
         <antcall target="zip-to-tgz">
             <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-macosx-x86.zip"/>
             <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-macosx-x86.tgz"/>
@@ -1257,7 +1423,17 @@ jarsigner.storepass=${jarsigner.storepass}
             <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-ppc.tgz"/>
         </antcall>
 
-       
+	<!-- Java Tools Bundle installers processing -->
+	<!--
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-macosx-x86.tgz"/>
+        </antcall>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/java-tools-bundle-preview3-nightly-${build.number}-macosx-ppc.tgz"/>
+        </antcall>
+        -->
         <replace 
             dir="${nbi.netbeans.dir}/infra/build/web" 
             token="${build.number.token}" 
