@@ -41,7 +41,7 @@ import org.openide.util.lookup.Lookups;
 
 public class SubResourceLocatorsNode extends AbstractNode { //implements PropertyChangeListener{
     private Project project;
-    private static final Image SUB_RESOURCE_LOCATORS_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/restservices.png", true ); // NOI18N
+    private static final Image SUB_RESOURCE_LOCATORS_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/subresource_locators.png", true ); // NOI18N
     static Icon folderIconCache;
     static Icon openedFolderIconCache;
     
