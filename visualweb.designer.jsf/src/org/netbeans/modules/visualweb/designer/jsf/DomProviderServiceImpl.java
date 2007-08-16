@@ -375,7 +375,7 @@ public class DomProviderServiceImpl implements DomProviderService {
     public Element getSourceElementWhichRendersChildren(Element element) {
         MarkupDesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(element);
         if (bean != null) {
-            MarkupDesignBean parent = findRendersChildren(bean);
+            MarkupDesignBean parent = findClosestRendersChildren(bean);
             if (parent != null) {
                 return parent.getElement();
             }
@@ -383,11 +383,12 @@ public class DomProviderServiceImpl implements DomProviderService {
         return null;
     }
     
-    // XXX Moved from FacesSupport.
-    /** Find outermost renders-children bean above the given bean, or
+    // XXX Moved from FacesSupport. !! Changed
+    /** Find closest (not the outermost as before) renders-children bean above the given bean, or
      * the bean itself if there is no such parent.
      */
-    private MarkupDesignBean findRendersChildren(MarkupDesignBean bean) {
+//    private MarkupDesignBean findRendersChildren(MarkupDesignBean bean) {
+    private MarkupDesignBean findClosestRendersChildren(MarkupDesignBean bean) {
         // Similar to FacesSupport.findHtmlContainer(bean), but
         // we need to return the outermost html container itself, not
         // the parent, since we're not looking for its container but
@@ -409,8 +410,10 @@ public class DomProviderServiceImpl implements DomProviderService {
                     Thread.currentThread().setContextClassLoader(InSyncServiceProvider.get().getContextClassLoader(curr.getDesignContext()));
                     if (((UIComponent)curr.getInstance()).getRendersChildren()) {
                     	bean = curr;
-                        // Can't break here - there could be an outer
-                        // renders-children parent
+//                        // Can't break here - there could be an outer
+//                        // renders-children parent
+                        // XXX #112580 Find the closest renders-children bean.
+                        return bean;
                     }               
             	} finally {
                     Thread.currentThread().setContextClassLoader(oldContextClassLoader);

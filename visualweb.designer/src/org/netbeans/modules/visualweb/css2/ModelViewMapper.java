@@ -2592,7 +2592,9 @@ public final class ModelViewMapper {
 //                    if (parent != bean) {
                 Element se = WebForm.getDomProviderService().getSourceElementWhichRendersChildren(element);
                 if (se != null) {
-                    if (se != element) {
+//                    if (se != element) {
+                    // XXX #112580 Needs to compare rendered with rendered or source with source element.
+                    if (se != MarkupService.getSourceElementForElement(element)) {
                         if (adjust) {
                             // There was a renders-children parent we
                             // should skip
