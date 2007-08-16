@@ -19,13 +19,50 @@
 
 package org.netbeans.modules.languages.features;
 
-import org.netbeans.api.languages.*;
+
+import java.awt.Component;
+import java.awt.Image;
+import javax.swing.JComponent;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import javax.swing.tree.TreePath;
+
+import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.Context;
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
+import org.netbeans.api.languages.ParserManagerListener;
+import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.spi.navigator.NavigatorPanel;
-import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
@@ -42,26 +79,6 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
 import org.openide.loaders.DataObject;
-
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.io.IOException;
-import java.util.*;
-import java.util.List;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.Document;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.tree.TreePath;
 
 
 /**
@@ -163,9 +180,9 @@ public class LanguagesNavigator implements NavigatorPanel {
                 EditorCookie ec = null;
                 LineCookie lc = null;
                 try {
-                    ec = (EditorCookie) dataObject.getCookie (EditorCookie.class);
+                    ec = dataObject.getCookie (EditorCookie.class);
                     if (ec == null) return;
-                    lc = (LineCookie) dataObject.getCookie (LineCookie.class);
+                    lc = dataObject.getCookie (LineCookie.class);
                 } catch (NullPointerException e) {
                     // dataObject == null, panelDeactivated() called
                     return;
@@ -203,7 +220,6 @@ public class LanguagesNavigator implements NavigatorPanel {
                             parserManager.addListener (parserListener);
                         lastDocument = document;
                     }
-                    List data = new ArrayList ();
                     getComponent ();
                     if (ast != null) {
                         Model model = new Model ();
@@ -239,17 +255,17 @@ public class LanguagesNavigator implements NavigatorPanel {
     }
 
     private static NavigatorNode createNavigatorNode (
-        ASTItem         item,
-        List<ASTItem>   path,
-        Line.Set        lineSet,
-        NbEditorDocument doc
+        ASTItem             item,
+        List<ASTItem>       path,
+        Line.Set            lineSet,
+        NbEditorDocument    doc
     ) {
-        ASTPath path2 = ASTPath.create (path);
+        ASTPath astPath = ASTPath.create (path);
         Feature navigator = null;
         try {
             Language language = LanguagesManager.getDefault ().
                 getLanguage (item.getMimeType ());
-            navigator = language.getFeature ("NAVIGATOR", path2);
+            navigator = language.getFeature ("NAVIGATOR", astPath);
         } catch (ParseException ex) {
             return null;
         }
@@ -258,9 +274,7 @@ public class LanguagesNavigator implements NavigatorPanel {
             lineSet.getCurrent (NbDocument.findLineNumber (doc, item.getOffset ())) 
             : null;
         int column = NbDocument.findLineColumn (doc, item.getOffset ());
-        int start = item.getOffset ();
-        int end = item.getEndOffset ();
-        Context context = SyntaxContext.create (doc, path2);
+        Context context = SyntaxContext.create (doc, astPath);
         String displayName = (String) navigator.getValue ("display_name", context);
         if (displayName == null || displayName.trim().length() == 0) {
             return null;
@@ -272,14 +286,14 @@ public class LanguagesNavigator implements NavigatorPanel {
         boolean isLeaf = navigator.getBoolean ("tooltip", context, false);
         return new NavigatorNode (
             item,
-            path,
+            new ArrayList<ASTItem> (path),
             line, column, 
             displayName, tooltip, icon,
             isLeaf
         );
     }
     
-    private static Map icons = new HashMap ();
+    private static Map<String,Icon> icons = new HashMap<String,Icon> ();
     
     private static Icon getCIcon (String resourceName) {
         if (!icons.containsKey (resourceName)) {
@@ -293,7 +307,7 @@ public class LanguagesNavigator implements NavigatorPanel {
                 new ImageIcon (image)
             );
         }
-        return (Icon) icons.get (resourceName);
+        return icons.get (resourceName);
     }
     
     private void markSelected (int position) {
@@ -301,15 +315,13 @@ public class LanguagesNavigator implements NavigatorPanel {
         Model model = (Model) tree.getModel ();
         ASTPath astPath = model.root.findPath (position);
         if (astPath == null) return;
-        List nodePath = new ArrayList ();
-        NavigatorNode node = (NavigatorNode) model.astToNode.get (model.root);
+        List<NavigatorNode> nodePath = new ArrayList<NavigatorNode> ();
         Iterator it = astPath.listIterator ();
         while (it.hasNext ()) {
             Object o = it.next ();
-            NavigatorNode nn = (NavigatorNode) model.astToNode.get (o);
+            NavigatorNode nn = model.astToNode.get (o);
             if (nn == null) continue;
             nodePath.add (nn);
-            node = nn;
         }
         if (nodePath.isEmpty ()) return;
         TreePath treePath = new TreePath (nodePath.toArray ());
@@ -376,14 +388,13 @@ public class LanguagesNavigator implements NavigatorPanel {
     
     static class Model implements TreeModel {
         
-        private NbEditorDocument    doc;
-        private ASTNode             root;
-        private Language            language;
-        private Line.Set            lineSet;
+        private NbEditorDocument            doc;
+        private ASTNode                     root;
+        private Line.Set                    lineSet;
         
-        private WeakHashMap         nodeToNodes = new WeakHashMap ();
-        private WeakHashMap         astToNode = new WeakHashMap ();
-        private NavigatorComparator navigatorComparator;
+        private Map<NavigatorNode,List<NavigatorNode>>  nodeToNodes = new WeakHashMap<NavigatorNode,List<NavigatorNode>> ();
+        private Map<ASTItem,NavigatorNode>  astToNode = new WeakHashMap<ASTItem,NavigatorNode> ();
+        private NavigatorComparator         navigatorComparator;
         
         
         public Object getRoot () {
@@ -400,7 +411,7 @@ public class LanguagesNavigator implements NavigatorPanel {
                 );
                 astToNode.put (root, navigatorNode);
             }
-            return (NavigatorNode) astToNode.get (root);
+            return astToNode.get (root);
         }
 
         public Object getChild (Object parent, int index) {
@@ -441,13 +452,17 @@ public class LanguagesNavigator implements NavigatorPanel {
             this.doc = doc;
         }
     
-        private List getNavigatorNodes (NavigatorNode n) {
-            List nodes = (List) nodeToNodes.get (n);
+        private List<NavigatorNode> getNavigatorNodes (NavigatorNode n) {
+            List<NavigatorNode> nodes = nodeToNodes.get (n);
             if (nodes == null) {
                 if (n.isLeaf)
                     nodes = Collections.emptyList ();
                 else {
-                    nodes = getNavigatorNodes (n.item, n.path, new ArrayList ());
+                    nodes = getNavigatorNodes (
+                        n.item, 
+                        new ArrayList<ASTItem> (n.path), 
+                        new ArrayList<NavigatorNode> ()
+                    );
                     try {
                         Language language = LanguagesManager.getDefault ().
                             getLanguage (n.item.getMimeType ());
@@ -457,7 +472,7 @@ public class LanguagesNavigator implements NavigatorPanel {
                         ) {
                             if (navigatorComparator == null)
                                 navigatorComparator = new NavigatorComparator ();
-                            Collections.sort (nodes, navigatorComparator);
+                            Collections.<NavigatorNode>sort (nodes, navigatorComparator);
                         }
                     } catch (ParseException ex) {
                     }
@@ -466,26 +481,26 @@ public class LanguagesNavigator implements NavigatorPanel {
             }
             return nodes;
         }
-        
-        private NavigatorNode getNavigatorNode (ASTItem item, List<ASTItem> path) {
-            if (astToNode.get (item) == null) {
-                NavigatorNode navigatorNode = createNavigatorNode (
-                    item,
-                    path,
-                    lineSet,
-                    doc
-                );
-                astToNode.put (item, navigatorNode);
-            }
-            return (NavigatorNode) astToNode.get (item);
-        }
     
-        private List getNavigatorNodes (ASTItem item, List<ASTItem> path, List nodes) {
+        private List<NavigatorNode> getNavigatorNodes (
+            ASTItem             item, 
+            List<ASTItem>       path, 
+            List<NavigatorNode> nodes
+        ) {
             Iterator<ASTItem> it = item.getChildren ().iterator ();
             while (it.hasNext ()) {
                 ASTItem item2 = it.next ();
                 path.add (item2);
-                NavigatorNode navigatorNode = getNavigatorNode (item2, path);
+                NavigatorNode navigatorNode = astToNode.get (item2);
+                if (navigatorNode == null) {
+                    navigatorNode = createNavigatorNode (
+                        item2,
+                        path,
+                        lineSet,
+                        doc
+                    );
+                    astToNode.put (item2, navigatorNode);
+                }
                 if (navigatorNode != null) 
                     nodes.add (navigatorNode);
                 else
@@ -524,42 +539,40 @@ public class LanguagesNavigator implements NavigatorPanel {
     
     static class NavigatorNode {
 
-        Line        line;
-        int         column;
-        String      displayName;
-        String      tooltip;
-        String      icon;
-        ASTItem     item;
-        List<ASTItem> path;
-        boolean     isLeaf;
+        Line            line;
+        int             column;
+        String          displayName;
+        String          tooltip;
+        String          icon;
+        ASTItem         item;
+        List<ASTItem>   path;
+        boolean         isLeaf;
 
         /** Creates a new instance of NavigatorNode */
         NavigatorNode (
-            ASTItem     item,
-            List<ASTItem> path,
-            Line        line,
-            int         column,
-            String      displayName,
-            String      tooltip,
-            String      icon,
-            boolean     isLeaf
+            ASTItem         item,
+            List<ASTItem>   path,
+            Line            line,
+            int             column,
+            String          displayName,
+            String          tooltip,
+            String          icon,
+            boolean         isLeaf
         ) {
-            this.item = item;
-            this.path = path;
-            this.line = line;
-            this.column = column;
+            this.item =     item;
+            this.path =     path;
+            this.line =     line;
+            this.column =   column;
             this.displayName = displayName;
-            this.tooltip = tooltip;
-            this.icon = icon;
-            this.isLeaf = isLeaf;
+            this.tooltip =  tooltip;
+            this.icon =     icon;
+            this.isLeaf =   isLeaf;
         }
     }
     
-    static class NavigatorComparator implements Comparator {
-        public int compare (Object o1, Object o2) {
-            return ((NavigatorNode) o1).displayName.compareToIgnoreCase (
-                ((NavigatorNode) o2).displayName
-            );
+    static class NavigatorComparator implements Comparator<NavigatorNode> {
+        public int compare (NavigatorNode o1, NavigatorNode o2) {
+            return o1.displayName.compareToIgnoreCase (o2.displayName);
         }
     }
     
