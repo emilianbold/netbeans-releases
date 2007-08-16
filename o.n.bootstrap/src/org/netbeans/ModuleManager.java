@@ -827,7 +827,7 @@ public final class ModuleManager {
                     m.setEnabled(true);
                     ev.log(Events.PERF_END, "bringing up classloader on " + m.getCodeName() ); // NOI18N
                     // Check package dependencies.
-                    ev.log(Events.PERF_START, "package dependency check on " + m.getCodeName() ); // NOI18N
+//                    ev.log(Events.PERF_START, "package dependency check on " + m.getCodeName() ); // NOI18N
                     Util.err.fine("enable: checking package dependencies for " + m);
                     Dependency[] dependencies = m.getDependenciesArray();
                     for (int i = 0; i < dependencies.length; i++) {
@@ -841,7 +841,7 @@ public final class ModuleManager {
                         }
                         Util.err.fine("Successful check for: " + dep);
                     }
-                    ev.log(Events.PERF_END, "package dependency check on " + m.getCodeName() ); // NOI18N
+//                    ev.log(Events.PERF_END, "package dependency check on " + m.getCodeName() ); // NOI18N
                     // Prepare to load it.
                     ev.log(Events.PERF_START, "ModuleInstaller.prepare " + m.getCodeName() ); // NOI18N
                     installer.prepare(m);
