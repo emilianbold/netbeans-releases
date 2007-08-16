@@ -259,7 +259,6 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements Documen
     // filling the folder field
     String target = null;
     FileObject docBase = getLocationRoot();
-    System.out.println("Preselected folder: " + preselectedFolder.getPath());
     if (preselectedFolder != null && FileUtil.isParentOf(docBase, preselectedFolder)) {
       target = FileUtil.getRelativePath(docBase, preselectedFolder);
     }
