@@ -25,12 +25,10 @@ import java.awt.Image;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.websvc.design.view.layout.FlowLayout;
 
 /**
  *
@@ -66,12 +64,55 @@ public class ImageLabelWidget extends Widget {
             String comment, int hgap) {
         super(scene);
         
-        setLayout(new FlowLayout(false,FlowLayout.Alignment.CENTER,hgap));
+        setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, hgap));
         
-        Font font = scene.getDefaultFont();
         setImage(image);
         setLabel(label);
         setComment(comment);
+    }
+    
+    public void setLabel(String label) {
+        if(labelWidget==null) {
+            labelWidget = new LabelWidget(getScene(),label);
+            labelWidget.setAlignment(LabelWidget.Alignment.CENTER);
+            addChild(imageWidget==null||getChildren().isEmpty()?0:1,labelWidget,1);
+        } else {
+            labelWidget.setLabel(label);
+        }
+        labelWidget.setVisible(label!=null);
+    }
+    
+    public void setImage(Image image) {
+        if(imageWidget==null) {
+            imageWidget = new ImageWidget(getScene(),image);
+            addChild(0,imageWidget,1);
+        } else {
+            imageWidget.setImage(image);
+        }
+        imageWidget.setVisible(image!=null);
+    }
+    
+    public void setComment(String comment) {
+        if(commentWidget==null) {
+            commentWidget = new LabelWidget(getScene(),comment);
+            addChild(commentWidget,1);
+            commentWidget.setPaintAsDisabled(true);
+        } else {
+            commentWidget.setLabel(comment);
+        }
+        commentWidget.setVisible(comment!=null);
+    }
+    
+    public String getLabel() {
+        return labelWidget==null?null:labelWidget.getLabel();
+    }
+    
+    public Image getImage() {
+        return imageWidget==null?null:imageWidget.getImage();
+    }
+    
+    public String getComment() {
+        return commentWidget==null?null:commentWidget.getLabel();
     }
     
     public boolean isPaintAsDisabled() {
@@ -108,30 +149,6 @@ public class ImageLabelWidget extends Widget {
         }
     }
     
-    public void setLabel(String label) {
-        if(label==null) {
-            if (labelWidget!=null) {
-                labelWidget.removeFromParent();
-                labelWidget = null;
-            }
-        } else {
-            if(labelWidget==null) {
-                labelWidget = new LabelWidget(getScene(),label);
-                labelWidget.setFont(getScene().getFont());
-            } else {
-                labelWidget.setLabel(label);
-            }
-            if(labelWidget.getParentWidget()!=this) {
-                labelWidget.removeFromParent();
-                addChild(labelWidget);
-            }
-        }
-    }
-    
-    protected LabelWidget getLabelWidget() {
-        return labelWidget;
-    }
-    
     public void setLabelFont(Font font) {
         labelWidget.setFont(font);
     }
@@ -148,56 +165,8 @@ public class ImageLabelWidget extends Widget {
         return editor!=null && editor.isEnabled(this);
     }
 
-    public void setImage(Image image) {
-        if(image==null) {
-            if (imageWidget!=null) {
-                imageWidget.removeFromParent();
-                imageWidget = null;
-            }
-        } else {
-            if(imageWidget==null) {
-                imageWidget = new ImageWidget(getScene(),image);
-            } else {
-                imageWidget.setImage(image);
-            }
-            if(imageWidget.getParentWidget()!=this) {
-                imageWidget.removeFromParent();
-                addChild(imageWidget);
-            }
-        }
-    }
-    
-    public void setComment(String comment) {
-        if(comment==null) {
-            if (commentWidget!=null) {
-                commentWidget.removeFromParent();
-                commentWidget = null;
-            }
-        } else {
-            if(commentWidget==null) {
-                commentWidget = new LabelWidget(getScene(),comment);
-                commentWidget.setFont(getScene().getFont());
-                commentWidget.setPaintAsDisabled(true);
-            } else {
-                commentWidget.setLabel(comment);
-            }
-            if(commentWidget.getParentWidget()!=this) {
-                commentWidget.removeFromParent();
-                addChild(commentWidget);
-            }
-        }
-    }
-    
-    public String getLabel() {
-        return labelWidget==null?null:labelWidget.getLabel();
-    }
-    
-    public Image getImage() {
-        return imageWidget==null?null:imageWidget.getImage();
-    }
-    
-    public String getComment() {
-        return commentWidget==null?null:commentWidget.getLabel();
+    protected LabelWidget getLabelWidget() {
+        return labelWidget;
     }
     
     public static final int DEFAULT_GAP = 4;
