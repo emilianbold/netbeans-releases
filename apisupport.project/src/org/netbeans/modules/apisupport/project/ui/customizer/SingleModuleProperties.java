@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -58,9 +58,12 @@ import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -201,8 +204,11 @@ public final class SingleModuleProperties extends ModuleProperties {
         implementationVersion = manifestManager.getImplementationVersion();
         provTokensString = manifestManager.getProvidedTokensString();
         autoUpdateShowInClient = manifestManager.getAutoUpdateShowInClient();
-        originalPlatform = activePlatform = NbPlatform.getPlatformByDestDir(
-                getHelper().resolveFile(getEvaluator().getProperty("netbeans.dest.dir"))); // NOI18N
+        String nbDestDirS = getEvaluator().getProperty("netbeans.dest.dir"); // NOI18N
+        if (nbDestDirS != null) {
+            originalPlatform = activePlatform = NbPlatform.getPlatformByDestDir(
+                    getHelper().resolveFile(nbDestDirS));
+        }
         String activeJdk = getEvaluator().getProperty("nbjdk.active"); // NOI18N
         if (activeJdk != null) {
             activeJavaPlatform = ModuleProperties.findJavaPlatformByID(activeJdk); // NOI18N
@@ -261,7 +267,10 @@ public final class SingleModuleProperties extends ModuleProperties {
         assert isSuiteComponent();
         SuiteProject suite = null;
         try {
-            suite = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(getSuiteDirectory()));
+            FileObject suiteDir = FileUtil.toFileObject(getSuiteDirectory());
+            if (suiteDir != null) {
+                suite = (SuiteProject) ProjectManager.getDefault().findProject(suiteDir);
+            }
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }
@@ -473,7 +482,12 @@ public final class SingleModuleProperties extends ModuleProperties {
         Set<ModuleDependency> result = new HashSet<ModuleDependency>(universeDependencies);
         if (filterExcludedModules && isSuiteComponent()) {
             SuiteProject suite = getSuite();
-            assert suite != null : "#105651: not really a suite in " + getHelper().getProjectDirectory();
+            if (suite == null) {
+                DialogDisplayer.getDefault().notify(new Message(NbBundle.getMessage(SingleModuleProperties.class,
+                        "SingleModuleProperties.incorrectSuite", getSuiteDirectoryPath(), getProjectDisplayName()),
+                        Message.WARNING_MESSAGE));
+                return Collections.emptySet();
+            }
             String[] disableModules = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY);
             String[] enableClusters = SuiteProperties.getArrayProperty(
@@ -632,7 +646,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         return availablePublicPackages;
     }
     
-    void storeProperties() throws IOException {
+    @Override void storeProperties() throws IOException {
         super.storeProperties();
         
         // Store chnages in manifest
