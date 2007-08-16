@@ -153,11 +153,7 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="generate-fold-popup">
                         <attr name="position" intvalue="4200"/>
                     </file>
-                    <file name="SeparatorAfterFolding.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="4300"/>
-                    </file>
-                </folder>
+                    </folder>
             </folder>
         </folder>
     </folder>
@@ -169,4 +165,3 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 </filesystem>
-
