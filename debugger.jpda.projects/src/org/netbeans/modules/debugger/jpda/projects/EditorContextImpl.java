@@ -776,6 +776,8 @@ public class EditorContextImpl extends EditorContext {
         return s1.equals(s2);
     }
     
+    /** @return { "method name", "method signature", "enclosing class name" }
+     */
     public String[] getCurrentMethodDeclaration() {
         Node[] nodes = TopComponent.getRegistry ().getCurrentNodes ();
         if (nodes == null) return null;
@@ -788,7 +790,7 @@ public class EditorContextImpl extends EditorContext {
         EditorCookie ec = nodes[0].getCookie(EditorCookie.class);
         final int currentOffset = (ec == null) ? 0 : ec.getOpenedPanes()[0].getCaretPosition();
         //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
-        final String[] currentMethodPtr = new String[] { null, null };
+        final String[] currentMethodPtr = new String[] { null, null, null };
         final Future<Void> scanFinished;
         try {
             scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
@@ -820,6 +822,20 @@ public class EditorContextImpl extends EditorContext {
                                 currentMethodPtr[0] = el.getEnclosingElement().getSimpleName().toString();
                             }
                             currentMethodPtr[1] = createSignature((ExecutableElement) el);
+                            Element enclosingClassElement = el;
+                            TypeElement te = null;
+                            while (enclosingClassElement != null) {
+                                ElementKind kind = enclosingClassElement.getKind();
+                                if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE) {
+                                    te = (TypeElement) enclosingClassElement;
+                                    break;
+                                } else {
+                                    enclosingClassElement = enclosingClassElement.getEnclosingElement();
+                                }
+                            }
+                            if (te != null) {
+                                currentMethodPtr[2] = ElementUtilities.getBinaryName(te);
+                            }
                         }
                     }
                 }

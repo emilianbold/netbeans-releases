@@ -147,6 +147,9 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
             if (methodInfo != null) {
                 methodName = methodInfo[0];
                 methodSignature = methodInfo[1];
+                if (methodInfo[2] != null) {
+                    className[0] = methodInfo[2];
+                }
             } else if (mex == null) {
                 return false;
             } else {
