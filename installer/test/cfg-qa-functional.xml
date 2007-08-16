@@ -25,22 +25,38 @@
 
     <!-- testbag with all MyModule tests running in jvm mode (i.e. in standard JVM)
          use ant runtests -Dxtest.attribs=all,jvm to run this testbag  -->
-    <testbag testattribs="all or basic" executor="installer-executor" name="installer basic bandle test">
+    <testbag testattribs="all or java" executor="installer-executor" name="installer java bandle test">
         <testset dir=".">
             <patternset>
-	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerBasic.class"/>
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJava.class"/>
            </patternset>
         </testset>
     </testbag>
 
-    <testbag testattribs="all or standard" executor="installer-executor" name="installer standard bundle test">
+    <testbag testattribs="all or javaee" executor="installer-executor" name="installer javaee bundle test">
         <testset dir=".">
             <patternset>
-	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerStandard.class"/>
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJavaEE.class"/>
            </patternset>
         </testset>
     </testbag>
 
+    <testbag testattribs="all or javame" executor="installer-executor" name="installer javeme bandle test">
+        <testset dir=".">
+            <patternset>
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJavaME.class"/>
+           </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="all or ruby" executor="installer-executor" name="installer ruby bandle test">
+        <testset dir=".">
+            <patternset>
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerRuby.class"/>
+           </patternset>
+        </testset>
+    </testbag>
+    
     <testbag testattribs="all or full" executor="installer-executor" name="installer full bundle test">
         <testset dir=".">
             <patternset>
