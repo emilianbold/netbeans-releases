@@ -112,27 +112,15 @@ public class AddToIndexAction extends DatabaseAction {
             // Create and execute command
 
             LabeledComboDialog dlg = new LabeledComboDialog(bundle().getString("AddToIndexTitle"), bundle().getString("AddToIndexLabel"), cols); // NOI18N
+            String selectedCol;
             if (dlg.run()) {
-                CreateIndex icmd = spec.createCommandCreateIndex(tablename);
-                icmd.setIndexName(index);
-                icmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
-                if(isUQ)
-                    icmd.setIndexType(ColumnItem.UNIQUE);
-                else
-                    icmd.setIndexType(new String());
-                
-                Iterator enu = ixrm.iterator();
-                while (enu.hasNext())
-                    icmd.specifyColumn((String)enu.next());
+                AddToIndexDDL ddl = new AddToIndexDDL(spec, 
+                        (String)info.get(DatabaseNodeInfo.SCHEMA),
+                        tablename);
 
-                icmd.specifyColumn((String)dlg.getSelectedItem());
-                DropIndex dicmd = spec.createCommandDropIndex(index);
-                dicmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
-                dicmd.setTableName(tablename);
-                dicmd.execute();
-                icmd.execute();
-                info.getParent(DatabaseNode.TABLE).refreshChildren();
-//				((DatabaseNodeChildren)nfo.getNode().getChildren()).createSubnode(info,true);
+                selectedCol = (String)dlg.getSelectedItem();
+                ixrm.add(selectedCol);
+                ddl.execute(index, isUQ, ixrm);
             }
 
         } catch(Exception exc) {
