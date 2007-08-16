@@ -19,12 +19,14 @@
  */
 package org.netbeans.modules.vmd.midp.palette.wizard;
 
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
 import org.netbeans.api.project.Project;
+import org.openide.WizardDescriptor;
+import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -99,7 +101,13 @@ public class AddToPaletteWizardPanel2 implements WizardDescriptor.Panel {
     public void readSettings(Object settings) {
         getComponent ();
         Project project = (Project) ((WizardDescriptor) settings).getProperty (AddToPaletteWizardAction.PROPERTY_PROJECT);
-        Map<String, ComponentInstaller.Item> items = ComponentInstaller.search (project);
+        Map<String, ComponentInstaller.Item> items = null;
+        try {
+            items = ComponentInstaller.search (project);
+        } catch (Exception e) {
+            Exceptions.printStackTrace (e);
+            items = Collections.emptyMap ();
+        }
         ((WizardDescriptor) settings).putProperty (AddToPaletteWizardAction.PROPERTY_ITEMS, items);
         component.setItems (items.values ());
     }
