@@ -25,6 +25,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +37,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PushbackInputStream;
 import java.io.Reader;
+import java.io.SequenceInputStream;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
@@ -422,7 +425,25 @@ public class Installer extends ModuleInstall implements Runnable {
         factory.setValidating(false);
         factory.setIgnoringComments(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(is);
+
+        PushbackInputStream isWithProlog = new PushbackInputStream(is, 255);
+        byte[] xmlHeader = new byte[5];
+        int len = isWithProlog.read(xmlHeader);
+        isWithProlog.unread(xmlHeader, 0, len);
+        
+        if (len < 5 || xmlHeader[0] != '<' ||
+            xmlHeader[1] != '?' ||
+            xmlHeader[2] != 'x' ||
+            xmlHeader[3] != 'm' ||
+            xmlHeader[4] != 'l'
+        ) {
+            String header = "<?xml version='1.0' encoding='" +
+                Charset.defaultCharset().name() +
+                "'?>";
+            isWithProlog.unread(header.getBytes("utf-8"));
+        }
+        
+        Document doc = builder.parse(isWithProlog);
         
         List<Object> buttons = new ArrayList<Object>();
         List<Object> left = new ArrayList<Object>();
@@ -779,12 +800,6 @@ public class Installer extends ModuleInstall implements Runnable {
                         enc = m.group(1);
                         text = new String(arr, 0, len, enc);
                     }
-                }
-                
-                if (first && !text.startsWith("<?xml")) {
-                    text = "<?xml version='1.0' encoding='" + 
-                        Charset.defaultCharset().name() + 
-                        "'?>" + text;
                 }
                 os.write(text.getBytes());
             }
