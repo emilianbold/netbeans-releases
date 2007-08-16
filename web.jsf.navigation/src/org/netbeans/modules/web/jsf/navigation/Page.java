@@ -42,143 +42,132 @@ import org.openide.util.actions.SystemAction;
  * @author joelle
  */
 public class Page extends PageFlowSceneElement implements SaveCookie {
-    
+
     public PageFlowController pc;
     private Node original;
     private PageContentModel pageContentModel = null;
-    
+
     /**
      * Creates a PageFlowNode
      * @param pc
      * @param original
      */
-    public Page( PageFlowController pc, Node original ){
+    public Page(PageFlowController pc, Node original) {
         this.pc = pc;
         setNode(original);
-        /* Update the page only at request 
+        /* Update the page only at request
         updateContentModel();
         initListeners();
          */
     }
-    
-    
+
     public void updateContentModel() {
-        if( !isDataNode() ){
+        if (!isDataNode()) {
             return;
         }
-        FileObject fileObject = ((DataNode)original).getDataObject().getPrimaryFile();
-        Lookup.Template<PageContentModelProvider> templ = new Lookup.Template<PageContentModelProvider>(PageContentModelProvider.class);
-        final Lookup.Result<PageContentModelProvider> result = Lookup.getDefault().lookup(templ);
-        Collection<? extends PageContentModelProvider> impls =  result.allInstances();
+
+        FileObject fileObject = ((DataNode) original).getDataObject().getPrimaryFile();
+
+        destroyListeners(); /* Otherwise initlisteners will not work */
         
-        for( PageContentModelProvider provider : impls){
+        for (PageContentModelProvider provider : PageFlowController.getPageContentModelProviders()) {
             pageContentModel = provider.getPageContentModel(fileObject);
             //exit when you find one.
-            if(pageContentModel != null){
+            if (pageContentModel != null) {
+                initListeners();
                 return;
             }
         }
-        
     }
-    
-    
-    
     //    public Node getWrappedNode() {
     //        return original;
     //    }
-    
-    
     private String nodeDisplayName;
-    
-    private void setNode(Node newNode ){
+
+    private void setNode(Node newNode) {
         String oldDisplayName = nodeDisplayName;
         original = newNode;
         nodeDisplayName = original.getDisplayName();
         //HACK sometimes the datanode name isn't updated as fast as the filename.
-        if( original instanceof DataNode ){
+        if (original instanceof DataNode) {
             assert pc != null;
-            
-            FileObject fileObj = ((DataNode)original).getDataObject().getPrimaryFile();
-            assert fileObj != null;
-            nodeDisplayName = getFolderDisplayName(pc.getWebFolder(), fileObj );
 
+            FileObject fileObj = ((DataNode) original).getDataObject().getPrimaryFile();
+            assert fileObj != null;
+            nodeDisplayName = getFolderDisplayName(pc.getWebFolder(), fileObj);
         }
-       if( !nodeDisplayName.equals(oldDisplayName)) {
-            if  (oldDisplayName != null ) { 
+        if (!nodeDisplayName.equals(oldDisplayName)) {
+            if (oldDisplayName != null) {
                 pc.removePageName2Page(oldDisplayName, false);
             }
             pc.putPageName2Page(nodeDisplayName, this);
         }
     }
-    
-    public void updateNode_HACK(){
+
+    public void updateNode_HACK() {
         setNode(original);
     }
-    
-    
+
     /* We may want this to notify listeners of changes.*/
-    public void replaceWrappedNode(Node newNode ){
+    public void replaceWrappedNode(Node newNode) {
         //        pc.pageName2Node.remove(getDisplayName());
         //pc.removePageName2Page(getDisplayName(), false);
         setNode(newNode);
         pc.putPageName2Page(getDisplayName(), this);
         //        pc.putPageName2Node(getDisplayName(), this);
     }
-    
-    private boolean renaming = false;;
-    public boolean isRenaming(){
+    private boolean renaming = false;
+    {
+    }
+
+    public boolean isRenaming() {
         return renaming;
     }
-    
+
     @Override
     public void setName(String s) {
-        
+
         String oldDisplayName = getDisplayName();
         try {
-            if( !pc.isPageInAnyFacesConfig(oldDisplayName) ) {
+            if (!pc.isPageInAnyFacesConfig(oldDisplayName)) {
                 original.setName(s);
             } else {
                 renaming = true;
                 original.setName(s);
                 String newDisplayName = original.getDisplayName();
-                if( isDataNode() ){
-                    newDisplayName = getFolderDisplayName(pc.getWebFolder(),((DataNode) original).getDataObject().getPrimaryFile());
+                if (isDataNode()) {
+                    newDisplayName = getFolderDisplayName(pc.getWebFolder(), ((DataNode) original).getDataObject().getPrimaryFile());
                 }
                 pc.saveLocation(oldDisplayName, newDisplayName);
-                renaming= false;
+                renaming = false;
                 pc.renamePageInModel(oldDisplayName, newDisplayName);
             }
-            
-        } catch (IllegalArgumentException iae ) {
-            
+        } catch (IllegalArgumentException iae) {
+
             // determine if "printStackTrace"  and  "new annotation" of this exception is needed
             boolean needToAnnotate = Exceptions.findLocalizedMessage(iae) == null;
-            
+
             // annotate new localized message only if there is no localized message yet
             if (needToAnnotate) {
-                Exceptions.attachLocalizedMessage(iae,NbBundle.getMessage(Page.class,
-                        "MSG_BadFormat",
-                        oldDisplayName,
-                        s));
+                Exceptions.attachLocalizedMessage(iae, NbBundle.getMessage(Page.class, "MSG_BadFormat", oldDisplayName, s));
             }
-            
+
             Exceptions.printStackTrace(iae);
         }
     }
-    
+
     public String getDisplayName() {
         return nodeDisplayName;
         //        return original.getDisplayName();
     }
-    
+
     @Override
     public String getName() {
         //        Thread.dumpStack();
         return original.getName();
         //        return nodeDisplayName;
     }
-    
-    
+
     /**
      *
      * @return
@@ -187,55 +176,46 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     public boolean canRename() {
         return isModifiable();
     }
-    
+
     @Override
     public boolean canDestroy() {
         return true;
     }
-    
+
     /* Joelle: Temporarily I need not use destroy for the other purpose.  I plan to fix after stabilization */
-    public void destroy2(){
+    public void destroy2() {
         destroyListeners();
     }
-    
-    
+
     public void destroy() throws IOException {
-        
-        Object input = DialogDescriptor.NO_OPTION;       //This should be the default option especially if not a DataNode.
-        boolean removePageName2NodeReference = true;    //By default remove it.
-        
-        
-        if ( isDataNode() ){
+
+        Object input = DialogDescriptor.NO_OPTION; //This should be the default option especially if not a DataNode.
+        boolean removePageName2NodeReference = true; //By default remove it.
+        if (isDataNode()) {
             //Don't even ask unless DataNode.
-            DialogDescriptor dialog = new DialogDescriptor(
-                    NbBundle.getMessage(Page.class, "MSG_DELETE_QUESTION", getDisplayName()),
-                    NbBundle.getMessage(Page.class, "MSG_DELETE_TITLE"),
-                    true,
-                    DialogDescriptor.YES_NO_CANCEL_OPTION,
-                    DialogDescriptor.NO_OPTION,
-                    null);
+            DialogDescriptor dialog = new DialogDescriptor(NbBundle.getMessage(Page.class, "MSG_DELETE_QUESTION", getDisplayName()), NbBundle.getMessage(Page.class, "MSG_DELETE_TITLE"), true, DialogDescriptor.YES_NO_CANCEL_OPTION, DialogDescriptor.NO_OPTION, null);
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
             input = dialog.getValue();
-            if ( pc.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_PROJECT) ) {
-                removePageName2NodeReference = false;  //if it is a data node and we are in project scope make sure to not remove it.
+            if (pc.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_PROJECT)) {
+                removePageName2NodeReference = false; //if it is a data node and we are in project scope make sure to not remove it.
             }
         }
-        
+
         String displayName = getDisplayName();
         // Would you like to delete this file too?
-        if ( input == DialogDescriptor.YES_OPTION ){
+        if (input == DialogDescriptor.YES_OPTION) {
             pc.removeSceneNodeEdges(this);
             original.destroy();
             destroyListeners();
-        } else if ( input == DialogDescriptor.NO_OPTION ) {
+        } else if (input == DialogDescriptor.NO_OPTION) {
             pc.removeSceneNodeEdges(this);
             //            if ( removePageName2NodeReference ) {  //HACK Should I remove the node myself until Petr fixes this bug?
             //                //                pc.removePageName2Node(displayName);
             //                destroy();
             //            }
             //            System.out.println("Only Node Removed");
-        } else if ( input == DialogDescriptor.CANCEL_OPTION ) {
+        } else if (input == DialogDescriptor.CANCEL_OPTION) {
             //            System.out.println("Cancel... Do Nothing.");
         }
         //        destroyListeners();
@@ -243,101 +223,104 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         //        original.destroy();
         //        pc.pageName2Node.remove(getDisplayName());
     }
-    
-    
     private static final Image ABSTRACTNODE = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/abstract.gif"); // NOI18N
+
     public Image getIcon(int type) {
-        if ( !isDataNode())
+        if (!isDataNode()) {
             return ABSTRACTNODE;
+        }
         return original.getIcon(type);
     }
-    
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return original.getHelpCtx();
     }
-    
+
     public Node getNode() {
-        if ( isDataNode() )
+        if (isDataNode()) {
             return original;
-        else
+        } else {
             return new NonDataNode(this, original.getName());
+        }
     }
-    
-    
-    
-    public boolean isDataNode(){
-        return ( original instanceof DataNode );
+
+    public boolean isDataNode() {
+        return original instanceof DataNode;
     }
-    
+
     public void save() throws IOException {
         //            pc.getConfigDataObject().getEditorSupport().saveDocument();
         getCookie(SaveCookie.class).save();
     }
-    
+
     //    @Override
     public <T extends Cookie> T getCookie(Class<T> type) {
-        if( type.equals(SaveCookie.class)) {
+        if (type.equals(SaveCookie.class)) {
             return pc.getConfigDataObject().getCookie(type);
         }
         return original.getCookie(type);
     }
-    
+
     /**
      * Solves a fileobjects display name.
      * @param webFolder
      * @param fileObject
      * @return
      */
-    public static String getFolderDisplayName( FileObject webFolder, FileObject  fileObject ){
+    public static String getFolderDisplayName(FileObject webFolder, FileObject fileObject) {
         String folderpath = webFolder.getPath();
         String filepath = fileObject.getPath();
-        return filepath.replaceFirst(folderpath+"/", "");
+        return filepath.replaceFirst(folderpath + "/", "");
     }
-    
-    public static String getFolderDisplayName( FileObject webFolder, String path, String fileNameExt ){
+
+    public static String getFolderDisplayName(FileObject webFolder, String path, String fileNameExt) {
         String folderpath = webFolder.getPath();
-        return path.replaceFirst(folderpath +"/", "") + fileNameExt;
+        return path.replaceFirst(folderpath + "/", "") + fileNameExt;
     }
-    
+
     public Collection<PageContentItem> getPageContentItems() {
-        if( pageContentModel == null ){
+        if (pageContentModel == null) {
             return new ArrayList<PageContentItem>();
         }
         return pageContentModel.getPageContentItems();
     }
-    
-    
     private boolean hasPageContentModelBeenChecked = false;
+
     public Collection<Pin> getPinNodes() {
-        if( !hasPageContentModelBeenChecked ){
+        if (!hasPageContentModelBeenChecked) {
             updateContentModel();
-            initListeners();
             hasPageContentModelBeenChecked = true;
         }
-        if( pageContentModel == null ){
+        if (pageContentModel == null) {
             return Collections.emptyList();
         }
         Collection<PageContentItem> pageContentItems = pageContentModel.getPageContentItems();
         Collection<Pin> pinNodes = new ArrayList<Pin>(pageContentItems.size());
-        for( PageContentItem pageContentItem : pageContentItems ){
+        for (PageContentItem pageContentItem : pageContentItems) {
             pinNodes.add(new Pin(this, pageContentItem));
         }
         return pinNodes;
     }
-    
-    
     private PageContentChangeListener pccl;
-    private void initListeners(){
-        if( pageContentModel != null && pccl == null ) {
+
+    /**
+     * Before using this method, it is good to make sure all listeners
+     * are destroyed.  Use destroyListeners().
+     **/
+    private void initListeners() {
+        if (pageContentModel != null && pccl == null) {
             pccl = new PageContentChangeListener(pc, this);
             pageContentModel.addChangeListener(pccl);
         }
     }
+
+    /**
+     * Removes any content model listeners
+     **/
     private void destroyListeners() {
-        if( pccl != null && pageContentModel != null ) {
-            try         {
+        if (pccl != null && pageContentModel != null) {
+            try {
                 pageContentModel.removeChangeListener(pccl);
                 pageContentModel.destroy();
                 pageContentModel = null;
@@ -347,22 +330,24 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
             }
         }
     }
-    private class PageContentChangeListener implements ChangeListener{
+
+    private class PageContentChangeListener implements ChangeListener {
+
         final PageFlowController pc;
         final Page pageNode;
-        public PageContentChangeListener(PageFlowController pc,Page pageNode) {
+
+        public PageContentChangeListener(PageFlowController pc, Page pageNode) {
             this.pc = pc;
             this.pageNode = pageNode;
         }
-        
+
         public void stateChanged(ChangeEvent arg0) {
             pc.updatePageItems(pageNode);
         }
     }
-    
-    
+
     public Action[] getActions(boolean context) {
-        if( pageContentModel != null ){
+        if (pageContentModel != null) {
             return pageContentModel.getActions();
         }
         return new SystemAction[]{};
@@ -384,47 +369,45 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         //        } else {
         //            return super.getActions();
         //        }
-        
     }
-    
+
     public boolean equals(Object obj) {
-        return (this == obj);
+        return this == obj;
     }
-    
+
     @Override
     public int hashCode() {
         return System.identityHashCode(this);
     }
-    
     //
     //    public final NonDataNode createNonDataNode() {
     //        return new NonDataNode(this);
     //    }
-    
+
     public final class NonDataNode extends AbstractNode {
+
         Page page;
+
         public NonDataNode(Page page, String pageName) {
             super(Children.LEAF);
             super.setName(pageName);
             this.page = page;
         }
-        
+
         @Override
         public boolean canRename() {
             return true;
         }
-        
+
         @Override
         public String getName() {
             return page.getName();
         }
-        
+
         @Override
         public void setName(String s) {
             super.setName(s);
             page.setName(s);
         }
-        
     }
-    
 }

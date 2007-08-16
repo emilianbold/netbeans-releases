@@ -22,4 +22,14 @@ public interface PageContentModelProvider {
      * @return PageContentModel for a given fileobject, null if none exists.
      */
     public PageContentModel getPageContentModel(FileObject fileObject);
+    /**
+     * This method is tricky and sort of a hack.
+     * Given a new page or modification, does there now exist a model
+     * unlike before.  This method was primarily completed for VWP 
+     * functionality which sometimes needs to know about a new JAVA 
+     * file being updated.
+     * @param fileObject of the new page 
+     * @return FileObject of the model that should be updated 
+     **/
+    public FileObject isNewPageContentModel(FileObject fileObject);
 }

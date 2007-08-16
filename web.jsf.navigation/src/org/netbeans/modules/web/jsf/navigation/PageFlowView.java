@@ -78,7 +78,7 @@ import org.openide.windows.TopComponent;
 
 /**
  * PageFlowView is the TopComponent that setups the controller and the view.  It also does
- * the necessary setting of activated nodes, focus setting, etc.  
+ * the necessary setting of activated nodes, focus setting, etc.
  * @author Joelle Lam
  */
 public class PageFlowView extends TopComponent implements Lookup.Provider, ExplorerManager.Provider {
@@ -91,11 +91,8 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     private PageFlowSceneData sceneData;
     private BlockingQueue<Runnable> runnables = new LinkedBlockingQueue<Runnable>();
     private ThreadPoolExecutor executor;
-
     private static final Logger LOG = Logger.getLogger("org.netbeans.web.jsf.navigation");
     private JComponent view;
-
-
     private static final String ACN_PAGEVIEW_TC = NbBundle.getMessage(PageFlowView.class, "ACN_PageView_TC");
     private static final String ACDS_PAGEVIEW_TC = NbBundle.getMessage(PageFlowView.class, "ACDS_PageView_TC");
 
@@ -117,7 +114,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
         getAccessibleContext().setAccessibleDescription(ACDS_PAGEVIEW_TC);
         getAccessibleContext().setAccessibleName(ACN_PAGEVIEW_TC);
-        
     }
 
     public void requestMultiViewActive() {
@@ -132,11 +128,8 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     public PageFlowController getPageFlowController() {
         return pfc;
     }
-
-
     /** Weak reference to the lookup. */
     private WeakReference<Lookup> lookupWRef = new WeakReference<Lookup>(null);
-
 
     @Override
     public Lookup getLookup() {
@@ -167,7 +160,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         return lookup;
     }
 
-
     /**
      * Unregister all the listeners.  See "registerListeners()".
      **/
@@ -185,7 +177,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
             pfc.registerListeners();
         }
     }
-
 
     /*
      * Initializes the Panel and the graph
@@ -217,14 +208,14 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
             Node node = new DefaultDataNode(DataObject.find(context.getFacesConfigFile()));
             setActivatedNodes(new Node[]{node});
         } catch (DataObjectNotFoundException donfe) {
-            Exceptions.printStackTrace(donfe);            
+            Exceptions.printStackTrace(donfe);
             /* Trying to track down #112243 */
             System.out.println("WARNING: Unable to find the following DataObject: " + context.getFacesConfigFile());
             setActivatedNodes(new Node[]{});
         }
     }
 
-    /* In order to prevent modifications of tab names when a page was selected, I needed to 
+/* In order to prevent modifications of tab names when a page was selected, I needed to
      * create a DefaultDataNode (or filterNode).  Basically this is used to take look like
      * a DataNode but not be one exactly.
      **/
@@ -236,7 +227,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
             this(dataObject.getNodeDelegate());
             Project p = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
             /* Let's only worry about this if it is actually part of a project.*/
-            if( p != null ){
+            if (p != null) {
                 FileObject projectDirectory = p.getProjectDirectory();
                 Sources sources = ProjectUtils.getSources(p);
                 SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -277,7 +268,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         scene.createMalFormedWidget();
     }
 
-    /* 
+    /*
      * Once the faces-config can be parsed again remove the warning from the scene.
      * See "warnUserMalFormedFacesConfig()
      **/
@@ -287,7 +278,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
     //    private static final Image IMAGE_LIST = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/list_32.png"); // NOI18N
     /**
-     * Remove all the nodes from the graph.  I especially use this when redrawing 
+     * Remove all the nodes from the graph.  I especially use this when redrawing
      * the page in a new scope or if the faces-config file can no longer be parsed.
      **/
     public void clearGraph() {
@@ -319,15 +310,14 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         sceneData.saveCurrentSceneData(scene);
     }
 
-    /* 
+    /*
      * Save the location of just the given page.
-     * This is necessary because I save locations by page name.  If the page name 
+     * This is necessary because I save locations by page name.  If the page name
      * is updated, we must save the location under the new page name.
      */
     public void saveLocation(String oldDisplayName, String newDisplayName) {
         sceneData.savePageWithNewName(oldDisplayName, newDisplayName);
     }
-
 
 //    private static final String ACN_PAGE = NbBundle.getMessage(PageFlowView.class, "ACN_Page");
 //    private static final String ACDS_PAGE = NbBundle.getMessage(PageFlowView.class, "ACDS_Page");
@@ -359,13 +349,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         return widget;
     }
 
-
-
-
     /* This method was put into place to gather all the pin data for a given page.
      * Although it may seem non-sensical for a non-jsp page, a vwp-page may need
      * more processing time to determine it's compoenents.  To prevent further delay
-     * in the drawing of the Page Flow Editor, I have added an executor in which 
+     * in the drawing of the Page Flow Editor, I have added an executor in which
      * it will run and get the conent items in the background.
      * For the background process to start startBackgroundPinAddingProcess() must be called.
      * If you no longer need the page to complete loading, you can call the clear equivalent.
@@ -453,10 +440,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      */
     protected final VMDPinWidget createPin(Page pageNode, Pin pinNode) {
         VMDPinWidget widget = null;
-        
+
         /* Make sure scene still has this page. */
-        if( pageNode != null && scene.isNode(pageNode) ){ 
-             widget = (VMDPinWidget) scene.addPin(pageNode, pinNode);
+        if (pageNode != null && scene.isNode(pageNode)) {
+            widget = (VMDPinWidget) scene.addPin(pageNode, pinNode);
         }
         //        VMDPinWidget widget = (VMDPinWidget) graphScene.addPin(page, pin);
         //        if( navComp != null ){
@@ -483,22 +470,21 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         //connectionWidget.getAccessibleContext().setAccessibleDescription(ACDS_PAGE);
     }
 
-
     public void renameEdgeWidget(NavigationCaseEdge edge, String newName, String oldName) {
         scene.renameEdgeWidget(edge, newName, oldName);
     }
-    
-    /* 
+
+    /*
      * Figure out what the source of the case is.  This is necessary if we are renaming
      * a case.  It must also modify the case string for a non-default pin.
      * @return source pin
      */
-    public Pin getEdgeSourcePin( NavigationCaseEdge navCase ) {  
+    public Pin getEdgeSourcePin(NavigationCaseEdge navCase) {
         return scene.getEdgeSource(navCase);
     }
 
-    /* 
-     * Sets the source or "from" pin.  This can either be a pages default pin (in otherwords 
+    /*
+     * Sets the source or "from" pin.  This can either be a pages default pin (in otherwords
      * it is simply navigable from that page) or from another pin (ie button).
      */
     private void setEdgeSourcePin(NavigationCaseEdge navCaseNode, Page fromPageNode) {
@@ -517,7 +503,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
         scene.setEdgeSource(navCaseNode, sourcePin);
     }
-    
 
     /*
      * Set the target or the "to page" for a given pin
@@ -527,12 +512,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         //I need to remove extension so it matches the DataNode's pins.
         scene.setEdgeTarget(navCaseNode, targetPin);
     }
-
-
     private static final String PATH_TOOLBAR_FOLDER = "PageFlowEditor/Toolbars"; // NOI18N
 
     /**
-     * Gives the JSFPageMultiviewViewDescriptor (MultiView Component)the needed 
+     * Gives the JSFPageMultiviewViewDescriptor (MultiView Component)the needed
      * toolbar.
      * @return the JComponent of the Toolbar
      */
@@ -554,8 +537,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
         return toolbar;
     }
-
-
     private static final String PATH_PALETTE_FOLDER = "PageFlowEditor/Palette"; // NOI18N
 
     /**
@@ -593,11 +574,9 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         return null;
     }
 
-
     public ExplorerManager getExplorerManager() {
         return explorer;
     }
-
     private ExplorerManager explorer;
 
     @Override
@@ -619,7 +598,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         super.requestFocusInWindow();
         return view.requestFocusInWindow();
     }
-
 
     /**
      * Remove the Edge from the scene.
@@ -647,8 +625,8 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
     /*
      * Reset a Node Widget basically redraws a page gathering the current information
-     * for a given page.  This is useful when a page has been renamed.  A flag is 
-     * also passed if it is suspected the page content items have been modified. 
+     * for a given page.  This is useful when a page has been renamed.  A flag is
+     * also passed if it is suspected the page content items have been modified.
      * If this is suspected, it will then call redrawPinsAndEdges.
      **/
     public void resetNodeWidget(Page pageNode, boolean contentItemsChanged) {
@@ -681,10 +659,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         }
     }
 
-    /* 
+    /*
      * If a page is updated it will general call this method to redraw both pins
-     * and edges.  Although it is obvious why we would update pins if a pin a page 
-     * is modified ( a pin may have been added,removed,etc), it we also need to 
+     * and edges.  Although it is obvious why we would update pins if a pin a page
+     * is modified ( a pin may have been added,removed,etc), it we also need to
      * redraw the edges.
      * Redrawing pin edges is necessary when the case name has been modified.
      * Generally this method is only called by "resetNodeWidget()".
@@ -716,7 +694,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         }
     }
 
-    /* 
+    /*
      * Get all the edges for a given node.
      * @returns the collection of edge objects.
      **/
@@ -735,13 +713,13 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         return myNavCases;
     }
 
-    /* 
+    /*
      * Solve for the file in which we should store serialization information.
      **/
     public static final FileObject getStorageFile(FileObject configFile) {
         //        FileObject webFolder = getWebFolder(configFile);
         Project p = FileOwnerQuery.getOwner(configFile);
-        if( p == null ){
+        if (p == null) {
             LOG.warning("File does not exist inside a project.  Can't solve getStorageFile().");
             System.err.println("File does not exist inside a project.  Can't solve getStorageFile().");
             return null;
@@ -766,9 +744,9 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         return storageFile;
     }
 
-    /* 
+    /*
      * Figures out the current web folder
-     * @return the project web folder. 
+     * @return the project web folder.
      */
     public static final FileObject getWebFolder(FileObject configFile) {
         WebModule webModule = WebModule.getWebModule(configFile);
@@ -782,7 +760,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         return webFolder;
     }
 
-    /* Use to keep the node locations for the next time the Page Flow Editor is 
+    /* Use to keep the node locations for the next time the Page Flow Editor is
      * opened.
      */
     public void serializeNodeLocations(FileObject navDataFile) {
@@ -810,12 +788,11 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
     }
-
     /* Keep the last layout used so you can toggle through them with the layout button. */
     LayoutUtility.LayoutType lastUsedLayout = LayoutUtility.LayoutType.GRID_GRAPH;
 
     /*
-     * Method use to reset the layout of the various pages 
+     * Method use to reset the layout of the various pages
      */
     public void layoutNodes() {
         LayoutUtility.LayoutType useLayout = null;
@@ -830,14 +807,14 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     }
 
     /*
-     * Start the background process for loading on the inner page (pin) 
-     * information.  
+     * Start the background process for loading on the inner page (pin)
+     * information.
      */
-     protected void startBackgroundPinAddingProcess() {
+    protected void startBackgroundPinAddingProcess() {
         executor.prestartAllCoreThreads();
     }
-    
-    /* 
+
+    /*
      * Prevent any Runners that have not completed from running.  This is important
      * when the scope is being changed and we no longer want the pages to continue
      * loading.

@@ -26,7 +26,6 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.EventQueue;
@@ -70,12 +69,14 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities.Scope;
+import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModelProvider;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbPreferences;
-import org.netbeans.editor.BaseDocument;
 import org.openide.cookies.EditCookie;
+import org.openide.loaders.DataNode;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -87,7 +88,6 @@ public class PageFlowController {
     private JSFConfigModel configModel;
     private Collection<FileObject> webFiles;
     private DataObject configDataObj;
-
     private final HashMap<NavigationCase, NavigationCaseEdge> navCase2NavCaseEdge = new HashMap<NavigationCase, NavigationCaseEdge>();
     private HashMap<NavigationRule, String> navRule2String = new HashMap<NavigationRule, String>();
     private final HashMap<String, Page> pageName2Page = new HashMap<String, Page>(); //Should this be synchronized.
@@ -156,7 +156,6 @@ public class PageFlowController {
     public boolean isShowNoWebFolderDialog() {
         return getPreferences().getBoolean(PROP_SHOW_NO_WEB_FOLDER, true);
     }
-
     private PropertyChangeListener pcl;
     private FileChangeListener fcl;
 
@@ -202,7 +201,6 @@ public class PageFlowController {
     public boolean isCurrentScope(Scope scope) {
         return PageFlowToolbarUtilities.getInstance(view).getCurrentScope().equals(scope);
     }
-
 
     /**
      * Set From outcome by default.
@@ -253,7 +251,6 @@ public class PageFlowController {
         view.resetNodeWidget(pageNode, true);
         view.validateGraph();
     }
-
     private static final String CASE_STRING = "case";
 
     private int getNewCaseNumber(NavigationRule navRule) {
@@ -289,11 +286,9 @@ public class PageFlowController {
         return null;
     }
 
-
     private Collection<FileObject> getAllProjectRelevantFilesObjects() {
         return getProjectKnownFileOjbects(getWebFolder());
     }
-
 
     private Collection<FileObject> getProjectKnownFileOjbects(FileObject folder) {
         Collection<FileObject> projectKnownFiles = new LinkedList<FileObject>();
@@ -349,7 +344,6 @@ public class PageFlowController {
         view.saveLocations();
         return setupGraphNoSaveData();
     }
-
     PropertyChangeListener otherFacesConfigListener = null;
 
     private PropertyChangeListener getOtherFacesConfigListener() {
@@ -460,7 +454,6 @@ public class PageFlowController {
         }
     }
 
-
     private void createAllEdges(List<NavigationRule> rules) {
 
         List<NavigationRule> editableRules = configModel.getRootComponent().getNavigationRules();
@@ -495,7 +488,6 @@ public class PageFlowController {
         }
     }
 
-
     private Collection<String> getFacesConfigPageNames(List<NavigationRule> navRules) {
         // Get all the pages in the faces config.  But don't list them twice.
         Collection<String> pages = new HashSet<String>();
@@ -513,7 +505,6 @@ public class PageFlowController {
         }
         return pages;
     }
-
     public java.util.Stack<String> PageFlowCreationStack = new java.util.Stack<String>();
     private int PageFlowCreationCount = 0;
 
@@ -534,7 +525,6 @@ public class PageFlowController {
         Page node = createPageFlowNode(tmpNode);
         return node;
     }
-
     public java.util.Stack<String> PageFlowDestroyStack = new java.util.Stack<String>();
     private int PageFlowDestroyCount = 0;
 
@@ -615,7 +605,6 @@ public class PageFlowController {
             }
         }
     }
-
     private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
     public Page removePageName2Page(Page pageNode, boolean destroy) {
@@ -698,7 +687,6 @@ public class PageFlowController {
             return pageName2Page.get(displayName);
         }
     }
-
     private Thread t = null;
 
     public void printThreadInfo() {
@@ -708,11 +696,9 @@ public class PageFlowController {
         }
     }
 
-
     public void renamePageInModel(String oldDisplayName, String newDisplayName) {
         FacesModelUtility.renamePageInModel(configModel, oldDisplayName, newDisplayName);
     }
-
 
     public void removeSceneNodeEdges(Page pageNode) {
 
@@ -726,7 +712,6 @@ public class PageFlowController {
             //            view.removeEdge(navCaseNode);
         }
     }
-
 
     /**
      * Remove all rules and cases with this pagename.
@@ -760,9 +745,6 @@ public class PageFlowController {
             Exceptions.printStackTrace(ex);
         }
     }
-
-
-
     private FileObject webFolder = null;
 
     /**
@@ -773,7 +755,6 @@ public class PageFlowController {
         //        assert webFolder.isValid();
         return webFolder;
     }
-
 
     public boolean isPageInAnyFacesConfig(String name) {
         WebModule webModule = WebModule.getWebModule(getWebFolder());
@@ -806,7 +787,6 @@ public class PageFlowController {
         view.resetNodeWidget(oldNode, true);
     }
 
-
     public DataObject getConfigDataObject() {
         return configDataObj;
     }
@@ -827,7 +807,6 @@ public class PageFlowController {
     public final boolean containsWebFile(FileObject fileObj) {
         return webFiles.contains(fileObj);
     }
-
 
     public final void putNavCase2NavCaseEdge(NavigationCase navCase, NavigationCaseEdge navCaseEdge) {
         navCase2NavCaseEdge.put(navCase, navCaseEdge);
@@ -863,7 +842,6 @@ public class PageFlowController {
     public PageFlowView getView() {
         return view;
     }
-
 
     public void setModelNavigationCaseName(NavigationCase navCase, String newName) {
         configModel.startTransaction();
@@ -907,7 +885,7 @@ public class PageFlowController {
         final NavigationCase navCase = getNavCase2NavCaseEdge(navCaseEdge);
         //FileObject fobj = NbEditorUtilities.getFileObject(navCase.getModel().getDocument());
         //DataObject dobj = DataObject.find(fobj);
-        DataObject dobj = getConfigDataObject();        
+        DataObject dobj = getConfigDataObject();
         if (dobj != null) {
             final EditCookie ec2 = dobj.getCookie(EditCookie.class);
             if (ec2 != null) {
@@ -948,9 +926,21 @@ public class PageFlowController {
 
     private void openPane(JEditorPane pane, NavigationCase navCase) {
         final Cursor editCursor = pane.getCursor();
-        pane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) );
+        pane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         pane.setCaretPosition(navCase.findPosition() + 2);
         pane.setCursor(editCursor);
         StatusDisplayer.getDefault().setStatusText(""); //NOI18N
+    }
+
+    /**
+     * Moved this out of Page.java so that WebFolderListener also has an opportunity  to 
+     * access the providers so that it can listen and decide wether or not to update 
+     * contents should be updated given a page.
+     **/
+    public static final Collection<? extends PageContentModelProvider> getPageContentModelProviders() {
+        Lookup.Template<PageContentModelProvider> templ = new Lookup.Template<PageContentModelProvider>(PageContentModelProvider.class);
+        final Lookup.Result<PageContentModelProvider> result = Lookup.getDefault().lookup(templ);
+        Collection<? extends PageContentModelProvider> impls = result.allInstances();
+        return impls;
     }
 }

@@ -81,4 +81,13 @@ public class VWPContentModelProvider implements PageContentModelProvider {
             }
         }
     }
+    
+    
+    public FileObject isNewPageContentModel(FileObject fileObject) {
+        FileObject jsp = JsfProjectUtils.getJspForJava(fileObject);
+        if( map.get(jsp) == null ){
+            return jsp;
+        }
+        return null;
+    }
 }

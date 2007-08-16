@@ -104,6 +104,7 @@ public class Pin extends PageFlowSceneElement {
      * Get the name of this pin.  Will return content item name.
      * @return String
      */
+    @Override
     public String getName() {
         if (pageContentItem != null) {
             return pageContentItem.getName();
@@ -165,6 +166,7 @@ public class Pin extends PageFlowSceneElement {
     }
 
 
+    @Override
     public boolean equals(Object obj) {
         return this == obj;
     }
