@@ -281,6 +281,9 @@ public class NbEditorUI extends ExtEditorUI {
         }
         
         private void redispatch(MouseEvent oe) {
+            if (oe.isConsumed()) {
+                return;
+            }
             MouseEvent ne = SwingUtilities.convertMouseEvent(
                     oe.getComponent(), oe, target);
             target.dispatchEvent(ne);
