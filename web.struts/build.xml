@@ -21,13 +21,24 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
 
-
     <property name="s2b_root" location="src/org/netbeans/modules/web/struts/config/model"/>
     <property name="s2b_res_root" location="src/org/netbeans/modules/web/struts/resources"/>
 
-    <target name="common-init" depends="default.init">
-        <mkdir dir="build/external"/>
-        <unzip src="external/struts-1.2.9-lib.zip" dest="build/external"/>
+    <target name="release" depends="projectized.release">
+        <mkdir dir="${cluster}/modules/ext/struts"/>
+        <unzip src="external/struts-1.2.9-lib.zip" dest="${cluster}/modules/ext/struts">
+            <patternset>
+                <include name="struts-1.2.9-lib/antlr.jar"/>
+                <include name="struts-1.2.9-lib/commons-beanutils.jar"/>
+                <include name="struts-1.2.9-lib/commons-digester.jar"/>
+                <include name="struts-1.2.9-lib/commons-fileupload.jar"/>
+                <include name="struts-1.2.9-lib/commons-logging.jar"/>
+                <include name="struts-1.2.9-lib/commons-validator.jar"/>
+                <include name="struts-1.2.9-lib/jakarta-oro.jar"/>
+                <include name="struts-1.2.9-lib/struts.jar"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
     </target>
  
    <target name="s2binit" depends="build-init">
