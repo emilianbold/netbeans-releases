@@ -57,6 +57,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -407,7 +408,25 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         return save(null);
     }
     
-    public boolean save(String extraMessage) {
+    public boolean save(final String extraMessage) {
+        SaveRunnable saveRunnable = new SaveRunnable(extraMessage);
+        RequestProcessor.Task task = RequestProcessor.getDefault().post(saveRunnable);
+        task.waitFinished();     
+        return saveRunnable.ret;
+    }
+    
+    private class SaveRunnable implements Runnable {
+        public boolean ret = false;
+        private String extraMessage;
+        public SaveRunnable(String extraMessage) {
+            this.extraMessage = extraMessage;
+        }
+        public void run() {
+            ret = saveWorker(extraMessage);
+        }
+    }
+
+    private boolean saveWorker(String extraMessage) {
         // First check all configurations aux objects if they have changed
         Configuration[] configurations = getConfs().getConfs();
         for (int i = 0; i < configurations.length; i++) {
