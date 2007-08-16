@@ -22,13 +22,13 @@ package org.netbeans.modules.db.explorer.dlg;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
-import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-import org.netbeans.lib.ddl.impl.CreateIndex;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
@@ -42,10 +42,12 @@ public class AddIndexDialog {
     JTextField namefld;
     CheckBoxListener cbxlistener;
     JCheckBox cbx_uq;
+    private static Logger LOGGER = Logger.getLogger(AddIndexDialog.class.getName());
+    private final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+
     
     public AddIndexDialog(Collection columns, final Specification spec, final DatabaseNodeInfo info) {
         try {
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
             JPanel pane = new JPanel();
             pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
             GridBagLayout layout = new GridBagLayout();
@@ -158,30 +160,26 @@ public class AddIndexDialog {
                         
                         try {
                             result = false;
-                            CreateIndex icmd = spec.createCommandCreateIndex(tablename);
-                            icmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
-                            icmd.setIndexName(getIndexName());
-                            icmd.setIndexType(getIndexType());
-                            Iterator enu = getSelectedColumns().iterator();
-                            while (enu.hasNext())
-                                icmd.specifyColumn((String)enu.next());
-                            icmd.execute();
+                            AddIndexDDL ddl = new AddIndexDDL(spec,
+                                    ((String)info.get(DatabaseNodeInfo.SCHEMA)),
+                                      tablename);
+                            
+                            boolean wasException = ddl.execute(getIndexName(),
+                                    cbx_uq.isSelected(),
+                                    getSelectedColumns());
 
-                            if (!icmd.wasException()) {
+                            if (!wasException) {
                                 dialog.setVisible(false);
                                 dialog.dispose();
                             }
                             result = true;
-                        } catch (CommandNotSupportedException e) {
-                            //PENDING
-                        } catch (DDLException e) {
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
-                        } catch (ClassNotFoundException e) {
-                            //PENDING
-                        } catch (IllegalAccessException e) {
-                            //PENDING
-                        } catch (InstantiationException e) {
-                            //PENDING
+                        } catch (Exception e) {
+                            LOGGER.log(Level.WARNING, "Unable to create index", e);
+                                                      
+                            DbUtilities.reportError(bundle.getString(
+                                "ERR_UnableToAddIndex"), e.getMessage());
+                            
+                            return;
                         }
                     }
                 }
@@ -218,11 +216,6 @@ public class AddIndexDialog {
     public String getIndexName()
     {
         return namefld.getText();
-    }
-
-    public String getIndexType()
-    {
-        return (cbx_uq.isSelected())?ColumnItem.UNIQUE:""; // NOI18N
     }
 
     class CheckBoxListener implements ActionListener
