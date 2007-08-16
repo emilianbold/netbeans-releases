@@ -71,6 +71,7 @@ public class JavaEESamplesPanelVisual extends JPanel implements DocumentListener
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         projectNameLabel = new javax.swing.JLabel();
         projectNameTextField = new javax.swing.JTextField();
         projectLocationLabel = new javax.swing.JLabel();
@@ -177,6 +178,11 @@ public class JavaEESamplesPanelVisual extends JPanel implements DocumentListener
                 .add(infoDBLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JavaEESamplesPanelVisual.class, "LBL_ProjectLocation_A11YDesc")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JavaEESamplesPanelVisual.class, "LBL_Browse_A11YDesc")); // NOI18N
+        txtDBName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JavaEESamplesPanelVisual.class, "LBL_DBName_A11YDesc")); // NOI18N
+        txtDBLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JavaEESamplesPanelVisual.class, "LBL_DBLocation_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
