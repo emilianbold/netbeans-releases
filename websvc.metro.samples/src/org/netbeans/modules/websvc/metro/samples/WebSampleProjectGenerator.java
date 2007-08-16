@@ -29,6 +29,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.netbeans.modules.websvc.wsitconf.api.DevDefaultsProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -95,6 +96,10 @@ public class WebSampleProjectGenerator {
                         FileObject prjLoc = createProjectFolder(new File(projectLocation, prjName.substring(0, prjName.indexOf('.'))));
                         unzip(is, prjLoc);
                         projects.add(prjLoc);
+                        Boolean needsDefaults = (Boolean)template.getAttribute("needsdefaults");
+                        if (needsDefaults) {
+                            DevDefaultsProvider.getDefault().fillDefaultsToDefaultServer();
+                        }
 //                        File projXml = FileUtil.toFile(prjLoc.getFileObject(prjName).getFileObject(AntProjectHelper.PROJECT_XML_PATH));
 //                        Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
 //                        NodeList nlist = doc.getElementsByTagNameNS(PROJECT_CONFIGURATION_NAMESPACE, "name");       //NOI18N
@@ -110,6 +115,7 @@ public class WebSampleProjectGenerator {
 //                            }
 //                            saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
 //                        }
+                        
                     } catch (Exception e) {
                         throw new IOException(e.toString());
                     } finally {

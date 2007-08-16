@@ -152,7 +152,7 @@ public class SecurityConfiguration implements WSConfiguration {
             // enable secure conversation by default - better performance, and no need to hassle with RM set/unset
             ProfilesModelHelper.enableSecureConversation(binding, true, ComboConstants.PROF_MUTUALCERT);
             
-            Util.fillDefaults(project, false);
+            Util.fillDefaults(project, false,true);
             ProfilesModelHelper.setServiceDefaults(ComboConstants.PROF_MUTUALCERT, binding, project);
 
             WSITModelSupport.save(binding);

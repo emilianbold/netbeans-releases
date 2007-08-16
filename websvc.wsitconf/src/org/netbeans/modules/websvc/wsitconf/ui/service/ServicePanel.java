@@ -278,7 +278,7 @@ public class ServicePanel extends SectionInnerPanel {
             if (securityChBox.isSelected()) {
                 profileCombo.setSelectedItem(profile);
                 if (devDefaultsChBox.isSelected()) {
-                    Util.fillDefaults(project, false);
+                    Util.fillDefaults(project, false,true);
                     ProfilesModelHelper.setServiceDefaults((String) profileCombo.getSelectedItem(), binding, project);
                     if (ProfilesModelHelper.isSSLProfile(profile)) {
                         ProfilesModelHelper.setSSLAttributes(binding);
@@ -298,7 +298,7 @@ public class ServicePanel extends SectionInnerPanel {
 
         if (source.equals(devDefaultsChBox)) {
             if (devDefaultsChBox.isSelected()) {
-                Util.fillDefaults(project, false);
+                Util.fillDefaults(project, false,true);
                 ProfilesModelHelper.setServiceDefaults((String) profileCombo.getSelectedItem(), binding, project);
             } else {
                 Util.unfillDefaults(project);

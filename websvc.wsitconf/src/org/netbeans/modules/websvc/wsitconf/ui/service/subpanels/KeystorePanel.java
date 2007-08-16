@@ -45,6 +45,7 @@ public class KeystorePanel extends JPanel {
     public static final String JKS = "JKS";            //NOI18N
 
     public static final String DEFAULT_PASSWORD="changeit";    //NOI18N
+    public static final String DEFAULT_PASSWORD2="adminadmin";    //NOI18N
     
     private WSDLComponent comp;
 

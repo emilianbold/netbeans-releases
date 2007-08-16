@@ -94,6 +94,15 @@ public class Util {
     private static final String XWS_SECURITY_CLIENT = "xws-security-client";
     private static final String XWS_SECURITY_SERVER = "xws-security-server";
 
+    private static final String SERVER_KEYSTORE_BUNDLED = "/org/netbeans/modules/websvc/wsitconf/resources/server-keystore.jks"; //NOI18N
+    private static final String SERVER_TRUSTSTORE_BUNDLED = "/org/netbeans/modules/websvc/wsitconf/resources/server-truststore.jks"; //NOI18N
+    private static final String CLIENT_KEYSTORE_BUNDLED = "/org/netbeans/modules/websvc/wsitconf/resources/client-keystore.jks"; //NOI18N
+    private static final String CLIENT_TRUSTSTORE_BUNDLED = "/org/netbeans/modules/websvc/wsitconf/resources/client-truststore.jks"; //NOI18N
+
+    private static final String PASSWORD = "changeit";
+
+    private static final String STORE_FOLDER_NAME = "certs";
+    
     public enum ProjectType {
         WEB, EJB, CLIENT, UNKNOWN
     };
@@ -392,48 +401,43 @@ public class Util {
     }
 
     public static String getStoreLocation(Project project, boolean trust, boolean client) {
-        String keystoreLocation = null;
+        String storeLocation = null;
         J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
         if (mp != null) {
             String sID = mp.getServerInstanceID();
-            
             InstanceProperties ip = mp.getInstanceProperties();
             if ("".equals(ip.getProperty("LOCATION"))) {
                 return "";
             }
-            
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
-            File[] keyLocs = null;
-            String store = null;
-            if (client) {
-                store = trust ? J2eePlatform.TOOL_TRUSTSTORE_CLIENT : J2eePlatform.TOOL_KEYSTORE_CLIENT;
-            } else {
-                store = trust ? J2eePlatform.TOOL_TRUSTSTORE : J2eePlatform.TOOL_KEYSTORE;
-            }
-            keyLocs = j2eePlatform.getToolClasspathEntries(store);
-            if ((keyLocs != null) && (keyLocs.length > 0)) {
-                keystoreLocation = keyLocs[0].getAbsolutePath();
-            }
+            storeLocation = getStoreLocation(sID, trust, client);
         }
-        return keystoreLocation;
+        return storeLocation;
     }
 
+    public static String getStoreLocation(String serverInstanceID, boolean trust, boolean client) {
+        String storeLocation = null;
+        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+        File[] keyLocs = null;
+        String store = null;
+        if (client) {
+            store = trust ? J2eePlatform.TOOL_TRUSTSTORE_CLIENT : J2eePlatform.TOOL_KEYSTORE_CLIENT;
+        } else {
+            store = trust ? J2eePlatform.TOOL_TRUSTSTORE : J2eePlatform.TOOL_KEYSTORE;
+        }
+        keyLocs = j2eePlatform.getToolClasspathEntries(store);
+        if ((keyLocs != null) && (keyLocs.length > 0)) {
+            storeLocation = keyLocs[0].getAbsolutePath();
+        }
+        return storeLocation;
+    }
+    
     public static FileObject getTomcatLocation(Project project) {
         J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
         FileObject folder = null;
         if (mp != null) { 
             try {
                 String id = mp.getServerInstanceID();
-                int begin = id.indexOf("home=") + 5;
-                int end = id.indexOf(":", id.indexOf("home=") + 1);
-                if (end <= begin) {
-                    end = id.length();
-                }
-                String location = id.substring(begin, end);
-                File f = new File(location);
-                if (f != null) {
-                    folder = FileUtil.toFileObject(f);
-                }
+                folder = getTomcatLocation(id);
             } catch (Exception ex) {
                 Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
             }    
@@ -441,6 +445,26 @@ public class Util {
         return folder;
     }
 
+    public static FileObject getTomcatLocation(String serverID) {
+        if (serverID == null) return null;
+        FileObject folder = null;
+        try {
+            int begin = serverID.indexOf("home=") + 5;
+            int end = serverID.indexOf(":", serverID.indexOf("home=") + 1);
+            if (end <= begin) {
+                end = serverID.length();
+            }
+            String location = serverID.substring(begin, end);
+            File f = new File(location);
+            if (f != null) {
+                folder = FileUtil.toFileObject(f);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
+        }    
+        return folder;
+    }
+    
     public static String getDefaultPassword(Project p) {
         String password = KeystorePanel.DEFAULT_PASSWORD;
         if (isGlassfish(p)) {
@@ -458,10 +482,120 @@ public class Util {
         }        
         return password;
     }
-    
-    public static final void fillDefaults(Project project, boolean client) {
 
-        final String STORE_FOLDER_NAME = "certs";
+    public static String getDefaultPassword(String serverID) {
+        String password = KeystorePanel.DEFAULT_PASSWORD;
+        if (isGlassfish(serverID)) {
+            String storeLoc = getStoreLocation(serverID, false, false);
+            try {
+                getAliases(storeLoc, password.toCharArray(), KeystorePanel.JKS);
+            } catch (IOException ioe) {
+                password = KeystorePanel.DEFAULT_PASSWORD2;
+                try {
+                    getAliases(storeLoc, password.toCharArray(), KeystorePanel.JKS);
+                } catch (IOException ioe2) {
+                    password = "";
+                }
+            }
+        }        
+        return password;
+    }
+    
+    public static final void fillDefaultsToDefaultServer() {
+
+        String sID = Deployment.getDefault().getDefaultServerInstanceID();
+        boolean glassfish = isGlassfish(sID);
+
+        String serverKeyStorePath = getStoreLocation(sID, false, false);
+        String serverTrustStorePath = getStoreLocation(sID, true, false);
+        String clientKeyStorePath = getStoreLocation(sID, false, true);
+        String clientTrustStorePath = getStoreLocation(sID, true, true);
+
+        if (!glassfish) {
+            FileObject tomcatLocation = getTomcatLocation(sID);
+            try {
+                FileObject targetFolder = FileUtil.createFolder(tomcatLocation, STORE_FOLDER_NAME);
+                DataFolder folderDO = (DataFolder) DataObject.find(targetFolder);
+                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+                FileObject foClientKey = fs.findResource("Templates/WebServices/client-keystore.jks"); // NOI18N
+                FileObject foClientTrust = fs.findResource("Templates/WebServices/client-truststore.jks"); // NOI18N
+                FileObject foServerKey = fs.findResource("Templates/WebServices/server-keystore.jks"); // NOI18N
+                FileObject foServerTrust = fs.findResource("Templates/WebServices/server-truststore.jks"); // NOI18N
+                FileObject[] filesToCreate = {foClientKey, foClientTrust, foServerKey, foServerTrust };
+                for (FileObject fo : filesToCreate) {
+                    if (fo != null) {
+                        DataObject template = DataObject.find(fo);
+                        if (template != null) {
+                            if (targetFolder.getFileObject(fo.getName(), fo.getExt()) == null) {
+                                template.createFromTemplate(folderDO, fo.getNameExt());
+                            }
+                        }
+                    }
+                }
+
+                FileObject tomcatUsers = tomcatLocation.getFileObject("conf/tomcat-users.xml");
+
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = dbf.newDocumentBuilder();
+                Document document = builder.parse(FileUtil.toFile(tomcatUsers));
+
+                NodeList nodes = document.getElementsByTagName("tomcat-users");
+                if ((nodes != null) && (nodes.getLength() > 0)) {
+                    Node n = nodes.item(0);
+                    NodeList users = document.getElementsByTagName("user");
+                    boolean foundUser = false;
+                    for (int i=0; i < users.getLength(); i++) {
+                        Node node = users.item(i);
+                        if (node instanceof Element) {
+                            Element u = (Element)node;
+                            String userAttr = u.getAttribute("name");
+                            if (UsernameAuthenticationProfile.DEFAULT_USERNAME.equals(userAttr)) {
+                                foundUser = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!foundUser) {
+                        if (tomcatUsers.getParent().getFileObject("tomcat-users.backup", "xml") == null) {
+                            FileUtil.copyFile(tomcatUsers, tomcatUsers.getParent(), "tomcat-users.backup");
+                        }
+
+                        Element user = document.createElement("user");
+                        user.setAttribute("name", UsernameAuthenticationProfile.DEFAULT_USERNAME);
+                        user.setAttribute("password", UsernameAuthenticationProfile.DEFAULT_PASSWORD);
+                        user.setAttribute("roles", "tomcat");
+                        n.appendChild(user);
+
+                        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+                        //initialize StreamResult with File object to save to file
+                        StreamResult result = new StreamResult(FileUtil.toFile(tomcatUsers));
+                        DOMSource source = new DOMSource(document);
+                        transformer.transform(source, result);
+                    }
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
+            }
+            return;
+        }
+
+        String dstPasswd = getDefaultPassword(sID);
+        try {
+            copyKey(SERVER_KEYSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverKeyStorePath,XWS_SECURITY_SERVER, dstPasswd, false);
+            copyKey(SERVER_KEYSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, serverKeyStorePath,WSSIP, dstPasswd, false);
+            copyKey(SERVER_TRUSTSTORE_BUNDLED, "certificate-authority", PASSWORD, PASSWORD, serverTrustStorePath, "xwss-certificate-authority", dstPasswd, true);
+            copyKey(SERVER_TRUSTSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_CLIENT, dstPasswd, true);
+            copyKey(CLIENT_KEYSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, clientKeyStorePath,XWS_SECURITY_CLIENT, dstPasswd, false);
+            copyKey(CLIENT_TRUSTSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, clientTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
+            copyKey(CLIENT_TRUSTSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, clientTrustStorePath,WSSIP, dstPasswd, true);
+        } catch (Exception ex) {
+            Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
+        }
+    }
+    
+    public static final void fillDefaults(Project project, boolean client, boolean refreshScript) {
         
         boolean tomcat = isTomcat(project);
         boolean glassfish = isGlassfish(project);
@@ -470,13 +604,6 @@ public class Util {
         String serverTrustStorePath = getStoreLocation(project, true, false);
         String clientKeyStorePath = getStoreLocation(project, false, true);
         String clientTrustStorePath = getStoreLocation(project, true, true);
-
-        String serverKeyStoreBundled = "/org/netbeans/modules/websvc/wsitconf/resources/server-keystore.jks"; //NOI18N
-        String serverTrustStoreBundled = "/org/netbeans/modules/websvc/wsitconf/resources/server-truststore.jks"; //NOI18N
-        String clientKeyStoreBundled = "/org/netbeans/modules/websvc/wsitconf/resources/client-keystore.jks"; //NOI18N
-        String clientTrustStoreBundled = "/org/netbeans/modules/websvc/wsitconf/resources/client-truststore.jks"; //NOI18N
-        
-        String srcPasswd = "changeit";
         
         if (tomcat) {
             if (project != null) {
@@ -552,23 +679,21 @@ public class Util {
             return;
         }
 
-        String dstPasswd = getDefaultPassword(project);
-        
+        String dstPasswd = getDefaultPassword(project);        
         if (glassfish) {
             try {
-                if (!client) refreshBuildScript(project);
-                copyKey(serverKeyStoreBundled, XWS_SECURITY_SERVER, srcPasswd, srcPasswd, serverKeyStorePath,XWS_SECURITY_SERVER, dstPasswd, false);
-                copyKey(serverKeyStoreBundled, WSSIP, srcPasswd, srcPasswd, serverKeyStorePath,WSSIP, dstPasswd, false);
-                copyKey(serverTrustStoreBundled, "certificate-authority", srcPasswd, srcPasswd, serverTrustStorePath, "xwss-certificate-authority", dstPasswd, true);
-                copyKey(serverTrustStoreBundled, XWS_SECURITY_CLIENT, srcPasswd, srcPasswd, serverTrustStorePath,XWS_SECURITY_CLIENT, dstPasswd, true);
-                copyKey(clientKeyStoreBundled, XWS_SECURITY_CLIENT, srcPasswd, srcPasswd, clientKeyStorePath,XWS_SECURITY_CLIENT, dstPasswd, false);
-                copyKey(clientTrustStoreBundled, XWS_SECURITY_SERVER, srcPasswd, srcPasswd, clientTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
-                copyKey(clientTrustStoreBundled, WSSIP, srcPasswd, srcPasswd, clientTrustStorePath,WSSIP, dstPasswd, true);
+                if (!client && refreshScript) refreshBuildScript(project);
+                copyKey(SERVER_KEYSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, serverKeyStorePath,XWS_SECURITY_SERVER, dstPasswd, false);
+                copyKey(SERVER_KEYSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, serverKeyStorePath,WSSIP, dstPasswd, false);
+                copyKey(SERVER_TRUSTSTORE_BUNDLED, "certificate-authority", PASSWORD, PASSWORD, serverTrustStorePath, "xwss-certificate-authority", dstPasswd, true);
+                copyKey(SERVER_TRUSTSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, serverTrustStorePath,XWS_SECURITY_CLIENT, dstPasswd, true);
+                copyKey(CLIENT_KEYSTORE_BUNDLED, XWS_SECURITY_CLIENT, PASSWORD, PASSWORD, clientKeyStorePath,XWS_SECURITY_CLIENT, dstPasswd, false);
+                copyKey(CLIENT_TRUSTSTORE_BUNDLED, XWS_SECURITY_SERVER, PASSWORD, PASSWORD, clientTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
+                copyKey(CLIENT_TRUSTSTORE_BUNDLED, WSSIP, PASSWORD, PASSWORD, clientTrustStorePath,WSSIP, dstPasswd, true);
             } catch (Exception ex) {
                 Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
             }
         }
-        
     }
     
     public static void copyKey(String srcPath, String srcAlias, String srcPasswd, String srcKeyPasswd, 
@@ -616,12 +741,14 @@ public class Util {
     public static final boolean isGlassfish(Project project) {
         if (project != null) {
             J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
-            if (mp != null) {
-                String instid = mp.getServerInstanceID();
-                if ((instid != null) && (instid.toLowerCase().contains("appserv"))) {     //NOI18N
-                    return true;
-                }
-            }
+            return isGlassfish(mp.getServerInstanceID());
+        }
+        return false;
+    }
+    
+    public static final boolean isGlassfish(String serverID) {
+        if ((serverID != null) && (serverID.toLowerCase().contains("appserv"))) {     //NOI18N
+            return true;
         }
         return false;
     }

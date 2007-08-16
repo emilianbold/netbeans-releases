@@ -294,6 +294,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.websvc.metro.samples</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <package>org.netbeans.modules.websvc.wsitconf.api</package>
