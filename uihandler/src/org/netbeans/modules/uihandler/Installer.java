@@ -18,14 +18,11 @@
  */
 package org.netbeans.modules.uihandler;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,7 +36,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PushbackInputStream;
 import java.io.Reader;
-import java.io.SequenceInputStream;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
@@ -47,6 +43,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,7 +68,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -82,6 +78,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.uihandler.LogRecords;
+import org.netbeans.lib.uihandler.PasswdEncryption;
 import org.netbeans.modules.exceptions.ReportPanel;
 import org.netbeans.modules.exceptions.ExceptionsSettings;
 import org.netbeans.modules.uihandler.api.Activated;
@@ -1153,10 +1150,22 @@ public class Installer extends ModuleInstall implements Runnable {
             if ((reportPanel != null)&&(report)){
                 params.add(reportPanel.getSummary());
                 params.add(reportPanel.getComment());
-                if (openPasswd) params.add(new ExceptionsSettings().getPasswd());
-                else params.add("*********");
+                try {
+                    if (openPasswd) {
+                        String passwd = new ExceptionsSettings().getPasswd();
+                        passwd = PasswdEncryption.encrypt(passwd);
+                        params.add(passwd);
+                    } else {
+                        params.add("*********");// NOI18N
+                    }
+                } catch (GeneralSecurityException exc) {
+                    LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
+                } catch (IOException exc) {
+                    LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
+                }
             }
         }
+        
         protected Object showDialogAndGetValue(DialogDescriptor dd) {
             if (!connectDialog) {
                 synchronized (this) {
