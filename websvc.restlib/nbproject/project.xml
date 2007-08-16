@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jettison-1.0-RC1.jar/</runtime-relative-path>
-                <binary-origin>build/external/rest/jettison-1.0-RC1.jar</binary-origin> 
+                <binary-origin>build/external/rest/jettison-1.0-RC1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/comresrcgen.jar/</runtime-relative-path>
@@ -69,6 +69,7 @@ Microsystems, Inc. All Rights Reserved.
             </class-path-extension>
             <friend-packages>
                 <friend>org.netbeans.modules.websvc.rest</friend>
+                <friend>org.netbeans.modules.websvc.restkit</friend>
                 <package>javax.ws.rs</package>
                 <package>javax.ws.rs.core</package>
                 <package>javax.ws.rs.ext</package>
