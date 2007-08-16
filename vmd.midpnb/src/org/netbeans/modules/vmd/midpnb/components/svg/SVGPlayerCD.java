@@ -82,16 +82,15 @@ public class SVGPlayerCD extends ComponentDescriptor {
     @Override
     public void postInitialize(DesignComponent component) {
         component.writeProperty(PROP_START_ANIM_IMMEDIATELY, MidpTypes.createBooleanValue(true));
-        component.writeProperty(PROP_RESET_ANIMATION_WHEN_STOPPED, MidpTypes.createBooleanValue(true));
         MidpProjectSupport.addLibraryToProject(component.getDocument(), MIDP_NB_SVG_LIBRARY);
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
                 new PropertyDescriptor(PROP_SVG_IMAGE, SVGImageCD.TYPEID, PropertyValue.createNull(), true, true, Versionable.FOREVER),
-                new PropertyDescriptor(PROP_START_ANIM_IMMEDIATELY, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(false), false, true, Versionable.FOREVER),
+                new PropertyDescriptor(PROP_START_ANIM_IMMEDIATELY, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), false, true, Versionable.FOREVER),
                 new PropertyDescriptor(PROP_TIME_INCREMENT, MidpTypes.TYPEID_FLOAT, MidpTypes.createFloatValue(0.1f), false, true, Versionable.FOREVER),
-                new PropertyDescriptor(PROP_RESET_ANIMATION_WHEN_STOPPED, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(false), false, true, Versionable.FOREVER)
+                new PropertyDescriptor(PROP_RESET_ANIMATION_WHEN_STOPPED, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), false, true, Versionable.FOREVER)
                 );
     }
 
