@@ -43,6 +43,7 @@ public class DataFolderMoveTest extends LoggingTestCaseHid {
     }
 
     
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         err = org.openide.ErrorManager.getDefault().getInstance("TEST-" + getName());
@@ -117,6 +118,7 @@ public class DataFolderMoveTest extends LoggingTestCaseHid {
 
                 // thread moving whole directory structure from src to dest FS
                 Thread t = new Thread("moving thread") {
+                    @Override
                     public void run() {
                         try {
                             DataObject[] objects = roots[src].getChildren();
@@ -168,7 +170,7 @@ public class DataFolderMoveTest extends LoggingTestCaseHid {
         boolean failed = false;
         Node[] nodes = n.getChildren().getNodes();
         for (int j = 0; j < nodes.length; j++) {
-            DataObject dobj = (DataObject) nodes[j].getCookie(DataObject.class);
+            DataObject dobj = nodes[j].getCookie(DataObject.class);
             if (!dobj.isValid()) {
                 failed = true;
                 try {
