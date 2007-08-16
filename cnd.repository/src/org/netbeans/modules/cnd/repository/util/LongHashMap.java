@@ -140,7 +140,7 @@ public class LongHashMap<K>
     /**
      * The table, resized as necessary. Length MUST Always be a power of two.
      */
-    transient Entry[] table;
+    transient Entry<K>[] table;
 
     /**
      * The number of key-value mappings contained in this identity hash map.
@@ -493,14 +493,14 @@ public class LongHashMap<K>
      *        is irrelevant).
      */
     void resize(int newCapacity) {
-        Entry[] oldTable = table;
+        Entry<K>[] oldTable = table;
         int oldCapacity = oldTable.length;
         if (oldCapacity == MAXIMUM_CAPACITY) {
             threshold = Integer.MAX_VALUE;
             return;
         }
 
-        Entry[] newTable = new Entry[newCapacity];
+        Entry<K>[] newTable = new Entry[newCapacity];
         transfer(newTable);
         table = newTable;
         threshold = (int)(newCapacity * loadFactor);
@@ -510,7 +510,7 @@ public class LongHashMap<K>
      * Transfer all entries from current table to newTable.
      */
     void transfer(Entry[] newTable) {
-        Entry[] src = table;
+        Entry<K>[] src = table;
         int newCapacity = newTable.length;
         for (int j = 0; j < src.length; j++) {
             Entry<K> e = src[j];

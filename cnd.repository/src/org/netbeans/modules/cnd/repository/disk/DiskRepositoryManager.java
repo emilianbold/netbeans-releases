@@ -225,7 +225,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
     }
     
     public void removeUnit(String unitName) {
-	closeUnit(unitName, true, Collections.EMPTY_SET);
+	closeUnit(unitName, true, Collections.<String>emptySet());
     }
 
     public void close() {

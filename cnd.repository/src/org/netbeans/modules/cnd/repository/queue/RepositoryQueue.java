@@ -62,7 +62,7 @@ public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
     public void clearQueue (Validator validator) {
        synchronized (lock) {
             // don't use Iterator.remove here
-            Collection copy = new HashSet(map.keySet());
+            Collection<Key> copy = new HashSet<Key>(map.keySet());
             
             for (Iterator<Key> it = copy.iterator(); it.hasNext();) {
                 Key key = it.next();
