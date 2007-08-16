@@ -39,6 +39,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -54,33 +55,37 @@ public class J2MEProjectModuleInstall extends ModuleInstall implements LookupLis
     }
     
     public void resultChanged(final LookupEvent e) {
-        try {
-            ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction<Object>() {
-                public Object run() throws Exception{
-                    MobilityDeploymentProperties mp = new MobilityDeploymentProperties();
-                    final EditableProperties props = PropertyUtils.getGlobalProperties();
-                    final Iterator it = ((Lookup.Result)e.getSource()).allInstances().iterator();
-                    while (it.hasNext()) {
-                        final DeploymentPlugin plugin = (DeploymentPlugin)it.next();
-                        final String name = plugin.getDeploymentMethodName();
-                        final String loc = plugin.getAntScriptLocation();
-                        if (loc != null) {
-                            File f = new File(loc);
-                            if (!f.isFile()) f = InstalledFileLocator.getDefault().locate(loc, null, false);
-                            if (name != null && f != null && Utilities.isJavaIdentifier(name)) {
-                                props.setProperty("deployment." + name + ".scriptfile", f.getAbsolutePath()); //NOI18N
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    ProjectManager.mutex().writeAccess(
+                        new Mutex.ExceptionAction<Object>() {
+                            public Object run() throws Exception{
+                                MobilityDeploymentProperties mp = new MobilityDeploymentProperties();
+                                final EditableProperties props = PropertyUtils.getGlobalProperties();
+                                final Iterator it = ((Lookup.Result)e.getSource()).allInstances().iterator();
+                                while (it.hasNext()) {
+                                    final DeploymentPlugin plugin = (DeploymentPlugin)it.next();
+                                    final String name = plugin.getDeploymentMethodName();
+                                    final String loc = plugin.getAntScriptLocation();
+                                    if (loc != null) {
+                                        File f = new File(loc);
+                                        if (!f.isFile()) f = InstalledFileLocator.getDefault().locate(loc, null, false);
+                                        if (name != null && f != null && Utilities.isJavaIdentifier(name)) {
+                                            props.setProperty("deployment." + name + ".scriptfile", f.getAbsolutePath()); //NOI18N
+                                        }
+                                    }
+                                    if (!mp.getInstanceList(name).contains("default")) mp.createInstance(name, "default"); //NOI18N
+                                }
+                                PropertyUtils.putGlobalProperties(props);
+                                return null;
                             }
                         }
-                        if (!mp.getInstanceList(name).contains("default")) mp.createInstance(name, "default"); //NOI18N
-                    }
-                    PropertyUtils.putGlobalProperties(props);
-                    return null;
+                    );
+                } catch (MutexException me) {
+                    ErrorManager.getDefault().notify(me.getException());
                 }
             }
-            );
-        } catch (MutexException me) {
-            ErrorManager.getDefault().notify(me.getException());
-        }
+        }, 200);
     }
 }
