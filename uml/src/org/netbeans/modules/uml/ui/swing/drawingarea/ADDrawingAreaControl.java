@@ -12767,8 +12767,8 @@ public class ADDrawingAreaControl extends ApplicationView
                 
             case ALIGN_HCENTER:
                 return new TSConstPoint(
-                    anchorNode.getCenterX(), 
-                    alignNode.getCenterY());
+                    alignNode.getCenterX(), 
+                    anchorNode.getCenterY());
                 
             case ALIGN_RIGHT:
                 return new TSConstPoint(
@@ -12784,8 +12784,8 @@ public class ADDrawingAreaControl extends ApplicationView
                 
             case ALIGN_VCENTER:
                 return new TSConstPoint(
-                    alignNode.getCenterX(), 
-                    anchorNode.getCenterY());
+                    anchorNode.getCenterX(), 
+                    alignNode.getCenterY());
                 
             case ALIGN_BOTTOM:
                 return new TSConstPoint(
