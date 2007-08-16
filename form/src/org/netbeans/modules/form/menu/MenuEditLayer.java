@@ -493,7 +493,7 @@ public class MenuEditLayer extends JPanel {
         // make sure it will draw it's border so we can have rollovers and selection
         menu.setBorderPainted(true);
         //install the wrapper icon if not a toplevel JMenu
-        if(!(menu.getParent() instanceof JMenuBar)) {
+        if(!isTopLevelMenu(menu)) {
             if(!(menu.getIcon() instanceof WrapperIcon)) {
                 menu.setIcon(new WrapperIcon(menu.getIcon()));
             }
@@ -1212,7 +1212,7 @@ public class MenuEditLayer extends JPanel {
                     }
                 }
                 // do the actual update
-                if(!(item.getIcon() instanceof WrapperIcon)) {
+                if(!(item.getIcon() instanceof WrapperIcon) && !isTopLevelMenu(item)) {
                     item.setIcon(new WrapperIcon(item.getIcon()));
                 }
                 
@@ -1266,6 +1266,14 @@ public class MenuEditLayer extends JPanel {
         return false;
     }
     
+    public static boolean isTopLevelMenu(JComponent comp) {
+        if(comp == null) return false;
+        if(comp instanceof JMenu) {
+            if(comp.getParent() instanceof JMenuBar) return true;
+        }
+        return false;
+    }
+    
     public boolean doesFormContainMenuBar() {
         for(RADComponent comp : formDesigner.getFormModel().getAllComponents()) {
             if(JMenuBar.class.isAssignableFrom(comp.getBeanClass())) {
@@ -1304,7 +1312,7 @@ public class MenuEditLayer extends JPanel {
             RADComponent rad = formDesigner.getHandleLayer().getMetaComponentAt(e.getPoint(), HandleLayer.COMP_DEEPEST);
             if(rad != null) {
                 JComponent c = (JComponent) formDesigner.getComponent(rad);
-                if(c != null && c instanceof JMenu && c.getParent() instanceof JMenuBar) {
+                if(c != null && c instanceof JMenu && isTopLevelMenu(c)) {
                     p("this is a top level JMenu");
                     if(e.getClickCount() > 1) {
                         isEditing = true;
