@@ -33,3 +33,10 @@ web/tlddoc/
 # Not used by the build:
 usersguide/release_doc_drafts/
 performance/performancetestutilities/
+
+# Not used in NB 6.0; see #111437 for details:
+enterprise/dataintegrator/
+enterprise/dcom/
+enterprise/iep/
+enterprise/openesbaddons/
+enterprise/workflow/
