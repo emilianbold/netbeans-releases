@@ -74,13 +74,13 @@ public class DefaultModel implements Model, NodeListener {
         Category cat = null;
         Item it = null;
         if( null != category ) {
-            Node catNode = (Node)category.lookup( Node.class );
+            Node catNode = category.lookup( Node.class );
             if( null != catNode ) {
                 cat = findCategory( catNode );
             }
         }
         if( null != item && null != cat ) {
-            Node itNode = (Node)item.lookup( Node.class );
+            Node itNode = item.lookup( Node.class );
             if( null != itNode ) {
                 it = findItem( cat, itNode );//new DefaultItem( itNode );
             }
@@ -123,11 +123,13 @@ public class DefaultModel implements Model, NodeListener {
 
     
     public Category[] getCategories() {
-        if( null == categories ) {
-            Node[] nodes = rootNode.getChildren().getNodes( canBlock() );
-            categories = nodes2categories( nodes );
+        synchronized( this ) {
+            if( null == categories ) {
+                Node[] nodes = rootNode.getChildren().getNodes( canBlock() );
+                categories = nodes2categories( nodes );
+            }
+            return categories;
         }
-        return categories;
     }
     
     public static boolean canBlock() {
@@ -137,8 +139,10 @@ public class DefaultModel implements Model, NodeListener {
     /** Fired when a set of new children is added.
     * @param ev event describing the action
     */
-    public synchronized void childrenAdded(NodeMemberEvent ev) {
-        categories = null;
+    public void childrenAdded(NodeMemberEvent ev) {
+        synchronized( this ) {
+            categories = null;
+        }
         if( isRefreshingChildren )
             return;
         getCategories();
@@ -149,17 +153,21 @@ public class DefaultModel implements Model, NodeListener {
     /** Fired when a set of children is removed.
     * @param ev event describing the action
     */
-    public synchronized void childrenRemoved(NodeMemberEvent ev) {
+    public void childrenRemoved(NodeMemberEvent ev) {
         Category[] removedCategories = findCategories( ev.getDelta() );
-        categories = null;
+        synchronized( this ) {
+            categories = null;
+        }
         fireCategoriesChanged( removedCategories, false );
     }
 
     /** Fired when the order of children is changed.
     * @param ev event describing the change
     */
-    public synchronized void childrenReordered(NodeReorderEvent ev) {
-        categories = null;
+    public void childrenReordered(NodeReorderEvent ev) {
+        synchronized( this ) {
+            categories = null;
+        }
         fireCategoriesChanged( null, false );
     }
 
@@ -206,34 +214,38 @@ public class DefaultModel implements Model, NodeListener {
     }
     
     private Category[] findCategories( Node[] nodes ) {
-        Category[] res = new Category[ nodes.length ];
-        
-        for( int i=0; i<res.length; i++ ) {
-            boolean found = false;
-            for( int j=0; !found && null != categories && j<categories.length; j++ ) {
-                Node catNode = (Node)categories[j].getLookup().lookup( Node.class );
-                if( nodes[i].equals( catNode ) ) {
-                    res[i] = categories[i];
-                    found = true;
+        synchronized( this ) {
+            Category[] res = new Category[ nodes.length ];
+
+            for( int i=0; i<res.length; i++ ) {
+                boolean found = false;
+                for( int j=0; !found && null != categories && j<categories.length; j++ ) {
+                    Node catNode = categories[j].getLookup().lookup( Node.class );
+                    if( nodes[i].equals( catNode ) ) {
+                        res[i] = categories[j];
+                        found = true;
+                    }
+                }
+                if( !found ) {
+                    res[i] = new DefaultCategory( nodes[i] );
                 }
             }
-            if( !found ) {
-                res[i] = new DefaultCategory( nodes[i] );
-            }
+
+            return res;
         }
-        
-        return res;
     }
 
     private boolean isRefreshingChildren = false;
     public void refresh() {
-        PaletteActions customActions = (PaletteActions)rootNode.getLookup().lookup( PaletteActions.class );
+        PaletteActions customActions = rootNode.getLookup().lookup( PaletteActions.class );
         Action customRefreshAction = customActions.getRefreshAction();
         if( null != customRefreshAction ) {
             customRefreshAction.actionPerformed( new ActionEvent( getRoot(), 0, "refresh" ) ); //NOI18N
         }
         clearSelection();
-        categories = null;
+        synchronized( this ) {
+            categories = null;
+        }
         isRefreshingChildren = true;
         try {
             rootNode.refreshChildren();
@@ -261,9 +273,9 @@ public class DefaultModel implements Model, NodeListener {
     }
 
     private int categoryToIndex( Category category ) {
-        Node node = (Node)category.getLookup().lookup( Node.class );
+        Node node = category.getLookup().lookup( Node.class );
         if( null != node ) {
-            Index order = (Index)rootNode.getCookie( Index.class );
+            Index order = rootNode.getCookie( Index.class );
             if( null != order ) {
                 return order.indexOf( node );
             }
@@ -278,7 +290,7 @@ public class DefaultModel implements Model, NodeListener {
     private Category findCategory( Node node ) {
         Category[] cats = getCategories();
         for( int i=0; i<cats.length; i++ ) {
-            Node catNode = (Node)cats[i].getLookup().lookup( Node.class );
+            Node catNode = cats[i].getLookup().lookup( Node.class );
             if( null != catNode && catNode.equals( node ) )
                 return cats[i];
         }
@@ -288,7 +300,7 @@ public class DefaultModel implements Model, NodeListener {
     private Item findItem( Category category, Node node ) {
         Item[] items = category.getItems();
         for( int i=0; i<items.length; i++ ) {
-            Node itNode = (Node)items[i].getLookup().lookup( Node.class );
+            Node itNode = items[i].getLookup().lookup( Node.class );
             if( null != itNode && itNode.equals( node ) )
                 return items[i];
         }
@@ -300,6 +312,6 @@ public class DefaultModel implements Model, NodeListener {
     }
     
     private DragAndDropHandler getDragAndDropHandler() {
-        return (DragAndDropHandler)rootNode.getLookup().lookup( DragAndDropHandler.class );
+        return rootNode.getLookup().lookup( DragAndDropHandler.class );
     }
 }
