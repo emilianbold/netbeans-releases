@@ -51,15 +51,27 @@ public final class LayoutEngines extends CustomizablePersistLayout {
         CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
         
         // First determine the relative Y ordering.
+        int maxWidth = 0;
         List<CasaNodeWidget> orderedNodeList = new ArrayList<CasaNodeWidget>();
         for (Widget child : widget.getChildren()) {
             if (child instanceof CasaNodeWidget) {
                 orderedNodeList.add((CasaNodeWidget) child);
+                if(maxWidth < child.getBounds().width) {
+                    maxWidth = child.getBounds().width;
+                }
             }
         }
         Collections.sort(orderedNodeList, new YOrderComparator(scene));
         
-        final int parentWidth  = (int) widget.getBounds().getWidth();
+        /* Update region width to accomade the new widget */
+        int parentWidth  = (int) widget.getBounds().getWidth();
+        maxWidth = maxWidth + 2 * SPACING_FROM_REGION_EDGES + 20;
+        if(parentWidth < maxWidth) {
+            Rectangle bounds = widget.getBounds();
+            bounds.width = maxWidth;
+            widget.setPreferredBounds(bounds);
+            parentWidth  = (int) widget.getBounds().getWidth();
+        }
 
         CenteredFlowLayout layout = new CenteredFlowLayout(
                 parentWidth, 

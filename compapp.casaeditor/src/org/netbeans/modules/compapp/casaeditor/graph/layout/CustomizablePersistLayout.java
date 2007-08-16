@@ -103,17 +103,6 @@ public abstract class CustomizablePersistLayout implements Layout {
                 widget.setPreferredLocation(new Point(suggestedX, currentLocation.y));
             }
         }
-        /*
-        } else if (suggestedX + widgetSize.width > region.getBounds().width) {
-            suggestedX =
-                    region.getBounds().width -
-                    widgetSize.width -
-                    30; // Position the widget a short gap from the right edge.
-            if (suggestedX  < 0) {
-                suggestedX = 0;
-            }
-        }
-        */
         return new Point(suggestedX, suggestedY);
     }
     
