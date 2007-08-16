@@ -376,7 +376,8 @@ abstract class AbstractLines implements Lines, Runnable {
          if (physicalLine == 0) {
              //First getLine never has lines above it
              physIdx[1] = 0;
-             physIdx[2] = (length(physicalLine) / charsPerLine);
+             //#104307
+             physIdx[2] = lenDividedByCount(length(physicalLine), charsPerLine);
          }
 
          if (charsPerLine >= getLongestLineLength() || (getLineCount() <= 1)) {
@@ -392,8 +393,8 @@ abstract class AbstractLines implements Lines, Runnable {
          int linesAbove = getLogicalLineCountAbove(logicalLine, charsPerLine);
 
          int len = length(logicalLine);
-
-         int wrapCount = len > charsPerLine ? (len / charsPerLine) + 1 : 1;
+         //#104307
+         int wrapCount = len > charsPerLine ? lenDividedByCount(len, charsPerLine) + 1 : 1;
 
          physIdx[0] = logicalLine;
          int lcount = linesAbove + wrapCount;
@@ -623,6 +624,10 @@ abstract class AbstractLines implements Lines, Runnable {
             if (lineStartList.size() == 0) {
                 return 0;
             }
+            //#104307
+            if (bcount == 0) {
+                return 0;
+            }
             int nOfLines = lineStartList.size();
             int lineCount = 0;
             for (int i=0; i < nOfLines; i++) {
@@ -658,7 +663,7 @@ abstract class AbstractLines implements Lines, Runnable {
             for (int i=0; i < line; i++) {
                 int len = length(i);
                 if (len > charCount) {
-                    lastWrappedAboveLineCount += (len / charCount) + 1;
+                    lastWrappedAboveLineCount += lenDividedByCount(len, charCount) + 1;
                 } else {
                     lastWrappedAboveLineCount++;
                 }
@@ -668,6 +673,10 @@ abstract class AbstractLines implements Lines, Runnable {
             setLastCharCountForWrapAboveCalculation(charCount);
             return lastWrappedAboveLineCount;
         }
+    }
+    //#104307
+    int lenDividedByCount(int len, int count) {
+        return count == 0 ? len : (len / count);
     }
     
     void markDirty() {

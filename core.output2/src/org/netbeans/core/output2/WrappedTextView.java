@@ -369,7 +369,8 @@ public class WrappedTextView extends View {
                     doc.getText(lineStart, length, seg);
 
                     //Get the number of logical lines this physical line contains
-                    int logicalLines = seg.count <= charsPerLine ? 1 :  1 + (length / charsPerLine);
+                    //#104307
+                    int logicalLines = seg.count <= charsPerLine ? 1 :  1 + (charsPerLine == 0 ? length : (length / charsPerLine));
 
                     int currLogicalLine = 0;
 
@@ -542,7 +543,8 @@ public class WrappedTextView extends View {
             int charsPerLine = getCharsPerLine();
 
             int row = od.getLines().getLogicalLineCountAbove(line, charsPerLine);
-            if (column > charsPerLine) {
+            //#104307
+            if (column > charsPerLine && charsPerLine != 0) {
                 row += (column / charsPerLine);
                 column %= charsPerLine;
             }
