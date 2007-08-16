@@ -58,5 +58,6 @@ SOA_BUILD_LOG=$LOGS/$BASENAME-build-soa.log
 RUBY_BUILD_LOG=$LOGS/$BASENAME-build-ruby.log
 NBMS_BUILD_LOC=$LOGS/$BASENAME-build-nbms.log
 SCP_LOG=$LOGS/$BASENAME-scp.log
+MAC_LOG=$LOGS/$BASENAME-native_mac.log
 INSTALLER_LOG=$LOGS/$BASENAME-installers.log
 VISUALWEB_SANITY_LOG=$LOGS/$BASENAME-sanity-visualweb.log
