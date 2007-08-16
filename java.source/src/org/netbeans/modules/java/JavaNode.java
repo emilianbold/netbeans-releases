@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,9 +25,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -44,7 +41,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -84,7 +80,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
             if (status != null) {
                 status.addChangeListener(WeakListeners.change(this, status));
                 
-                queue.add(new Task(false, true, this));
+                WORKER.post(new BuildStatusTask(this));
             }
         } else {
             this.status = null;
@@ -224,7 +220,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
     }
 
     public void stateChanged(ChangeEvent e) {
-        queue.add(new Task(false, true, this));
+        WORKER.post(new BuildStatusTask(this));
     }
     
     public Image getIcon(int type) {
@@ -247,50 +243,23 @@ public final class JavaNode extends DataNode implements ChangeListener {
         return i;
     }
     
-    static {
-        new RequestProcessor("Java Node Badge Processor", 1).post(new Runnable() {
-            public void run() {
-                while (true) {
-                    try {
-                        Task t = queue.poll(Integer.MAX_VALUE - 10, TimeUnit.MILLISECONDS);
-                        
-                        if (t != null) {
-                            boolean fire = t.fire;
-                            JavaNode node = t.node;
-                            
-                            if (t.computeBuiltStatus) {
-                                boolean newIsCompiled = node.status != null ? node.status.isBuilt() : true;
-                                boolean oldIsCompiled = node.isCompiled.getAndSet(newIsCompiled);
-                                
-                                fire |= newIsCompiled != oldIsCompiled;
-                            }
-                            
-                            if (fire) {
-                                node.fireIconChange();
-                                node.fireOpenedIconChange();
-                            }
-                        }
-                    } catch (ThreadDeath e) {
-                        throw e;
-                    } catch (Throwable e) {
-                        Exceptions.printStackTrace(e);
-                    }
-                }
-            }
-        });
-    }
-
-    private static BlockingQueue<Task> queue = new LinkedBlockingQueue<Task>();
+    private static final RequestProcessor WORKER = new RequestProcessor("Java Node Badge Processor", 1);
     
-    private static class Task {
-        private boolean  fire;
-        private boolean  computeBuiltStatus;
+    private static class BuildStatusTask implements Runnable {
         private JavaNode node;
         
-        public Task(boolean fire, boolean computeBuiltStatus, JavaNode node) {
-            this.fire = fire;
-            this.computeBuiltStatus = computeBuiltStatus;
+        public BuildStatusTask(JavaNode node) {
             this.node = node;
+        }
+
+        public void run() {
+            boolean newIsCompiled = node.status != null ? node.status.isBuilt() : true;
+            boolean oldIsCompiled = node.isCompiled.getAndSet(newIsCompiled);
+
+            if (newIsCompiled != oldIsCompiled) {
+                node.fireIconChange();
+                node.fireOpenedIconChange();
+            }
         }
     }
     
