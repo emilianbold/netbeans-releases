@@ -551,7 +551,6 @@ final class StandardModule extends Module {
         List<ClassLoader> loaders = new ArrayList<ClassLoader>(parents.size() + 1);
         // This should really be the base loader created by org.nb.Main for loading openide etc.:
         loaders.add(Module.class.getClassLoader());
-        Iterator it = parents.iterator();
         for (Module parent: parents) {
             PackageExport[] exports = parent.getPublicPackages();
             if (exports != null && exports.length == 0) {
