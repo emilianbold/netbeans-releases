@@ -4266,10 +4266,13 @@ public class UMLParsingIntegrator
                         if (isAssociation == false)
                         {
                             ArrayList < ETPairT < Node, String > > symbolList = m_SymbolTable.get(typeName);
-                            if ((symbolList != null) && (symbolList.size() > 0))
+                            // 103234 in case of RE part of existing project, search type in entire project
+                            // rather than the symbol table created for this RE session
+                            if ((symbolList != null) && (symbolList.size() > 0) ||
+                                    m_Locator.findByNameInMembersAndImports(m_Namespace, typeName).size()>0)
                             {
                                 isAllowed = true;
-                            }
+                            }                          
                         }
                     }
                 }
