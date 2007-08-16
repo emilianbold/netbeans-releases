@@ -28,7 +28,6 @@ import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
-import org.netbeans.modules.websvc.design.view.layout.BorderLayout;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -63,13 +62,15 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
     private void createContent() {
         headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle());
         headerLabelWidget.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
-        BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.CENTER);
+        getHeaderWidget().addChild(new Widget(getScene()),5);
+        getHeaderWidget().addChild(headerLabelWidget);
+        getHeaderWidget().addChild(new Widget(getScene()),4);
         
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
         buttons.addChild(getExpanderWidget());
-        BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
+        getHeaderWidget().addChild(buttons);
         
         LabelWidget returnWidget = new LabelWidget(getScene(), method.isOneWay()?
             NbBundle.getMessage(OperationWidget.class, "LBL_ReturnTypeNone"):

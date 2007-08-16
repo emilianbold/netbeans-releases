@@ -32,7 +32,6 @@ import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.SeparatorWidget;
-import org.netbeans.modules.websvc.design.view.layout.BorderLayout;
 
 /**
  * @author Ajit Bhate
@@ -91,7 +90,8 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         setBorder(new RoundedBorder3D(this,radius, depth, 0, 0, borderColor));
         headerWidget = new Widget(getScene());
         headerWidget.setBorder(BorderFactory.createEmptyBorder(hgap, hgap/2));
-        headerWidget.setLayout(new BorderLayout(headerWidget));
+        headerWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, hgap));
+//        headerWidget.setLayout(new BorderLayout(headerWidget));
         addChild(headerWidget);
         seperatorWidget = new SeparatorWidget(getScene(),SeparatorWidget.Orientation.HORIZONTAL);
         seperatorWidget.setForeground(borderColor);

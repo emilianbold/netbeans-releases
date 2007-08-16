@@ -31,7 +31,6 @@ import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.javamodel.Utils;
-import org.netbeans.modules.websvc.design.view.layout.BorderLayout;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -126,20 +125,22 @@ public class SampleMessageWidget extends AbstractTitledWidget {
      * @param type 
      */
     public SampleMessageWidget(ObjectScene scene, MethodModel operation, Type type) {
-        super(scene,0,TITLE_COLOR);
+        super(scene,0,12,0,TITLE_COLOR);
         this.operation = operation;
         this.type = type;
-
 
         headerLabelWidget = new ImageLabelWidget(scene, null, operation.getOperationName()+": ",type.getTitle());
         headerLabelWidget.setLabelFont(scene.getFont().deriveFont(Font.BOLD));
         headerLabelWidget.setPaintAsDisabled(false);
         headerLabelWidget.setLabelForeground(type.getBorderColor());
-        BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.CENTER);
+        getHeaderWidget().addChild(new Widget(getScene()),1);
+        getHeaderWidget().addChild(headerLabelWidget);
+        getHeaderWidget().addChild(new Widget(getScene()),1);
+
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
-        BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
+        getHeaderWidget().addChild(buttons);
         final ButtonWidget closeButton = new ButtonWidget(getScene(), "x");
         closeButton.setLabelForeground(new Color(255,95,95));
         closeButton.setLabelFont(scene.getFont().deriveFont(Font.BOLD));

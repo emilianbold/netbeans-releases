@@ -40,7 +40,6 @@ import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookie;
 import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
-import org.netbeans.modules.websvc.design.view.layout.BorderLayout;
 import org.netbeans.modules.websvc.design.view.widget.AbstractTitledWidget;
 import org.netbeans.modules.websvc.design.view.widget.ButtonWidget;
 import org.netbeans.modules.websvc.design.view.widget.ImageLabelWidget;
@@ -86,7 +85,8 @@ public class WsitWidget extends AbstractTitledWidget {
         headerLabelWidget = new ImageLabelWidget(getScene(), null,
                 NbBundle.getMessage(WsitWidget.class, "LBL_Wsit"));
         headerLabelWidget.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
-        BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.WEST);
+        getHeaderWidget().addChild(headerLabelWidget);
+        getHeaderWidget().addChild(new Widget(getScene()),1);
         
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
@@ -94,7 +94,7 @@ public class WsitWidget extends AbstractTitledWidget {
         
         buttons.addChild(getExpanderWidget());
         
-        BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
+        getHeaderWidget().addChild(buttons);
 
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(RADIUS));
 

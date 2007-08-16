@@ -42,7 +42,6 @@ import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.actions.RemoveOperationAction;
-import org.netbeans.modules.websvc.design.view.layout.BorderLayout;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -138,7 +137,8 @@ public class OperationWidget extends AbstractTitledWidget {
             }
         });
         headerLabelWidget.setToolTipText(typeOfOperation);
-        BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.WEST);
+        getHeaderWidget().addChild(headerLabelWidget);
+        getHeaderWidget().addChild(new Widget(getScene()),1);
 
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
@@ -182,7 +182,7 @@ public class OperationWidget extends AbstractTitledWidget {
         }
         buttons.addChild(getExpanderWidget());
 
-        BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
+        getHeaderWidget().addChild(buttons);
 
         getContentWidget().setLayout(LayoutFactory.createCardLayout(getContentWidget()));
 
@@ -214,7 +214,7 @@ public class OperationWidget extends AbstractTitledWidget {
             getHeaderWidget().revalidate(true);
             buttons.removeChild(getExpanderWidget());
             getHeaderWidget().removeChild(buttons);
-            BorderLayout.addLayoutComponent(getHeaderWidget(), getExpanderWidget(), BorderLayout.Constraint.EAST);
+            getHeaderWidget().addChild(getExpanderWidget());
         }
         super.collapseWidget();
     }
@@ -224,7 +224,7 @@ public class OperationWidget extends AbstractTitledWidget {
             getHeaderWidget().revalidate(true);
             getHeaderWidget().removeChild(getExpanderWidget());
             buttons.addChild(getExpanderWidget());
-            BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
+            getHeaderWidget().addChild(buttons);
         }
         super.expandWidget();
     }

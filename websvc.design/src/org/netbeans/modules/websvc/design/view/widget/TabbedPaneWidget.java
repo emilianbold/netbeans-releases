@@ -42,11 +42,9 @@ import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Rectangle2D;
 import javax.swing.AbstractAction;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.view.layout.TableLayout;
@@ -102,8 +100,6 @@ public class TabbedPaneWidget extends Widget {
                 return false;
             }
         };
-//        tab.setLayout(LayoutFactory.createOverlayLayout());
-//        tab.getLabelWidget().setAlignment(LabelWidget.Alignment.CENTER);
         tab.setBorder(new TabBorder(this,tab));
         tab.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
