@@ -232,6 +232,7 @@ public class CompletionProviderImpl implements CompletionProvider {
         private String getCompletionType (Feature feature, String tokenType) {
             String projectType = (String) feature.getValue("project_type");
             if (projectType != null) {
+                if (fileObject == null) return null;
                 Project p = FileOwnerQuery.getOwner (fileObject);
                 if (p == null) return null;
                 Object o = p.getLookup ().lookup (ActionProvider.class);
@@ -363,21 +364,23 @@ public class CompletionProviderImpl implements CompletionProvider {
                     resultSet.addItem (cs);
             }
             try {
-                Map<FileObject,List<DatabaseDefinition>> globals = Index.getGlobalItems (fileObject, true);
-                Iterator<FileObject> it1 = globals.keySet ().iterator ();
-                while (it1.hasNext()) {
-                    FileObject fileObject =  it1.next();
-                    List<DatabaseDefinition> l = globals.get (fileObject);
-                    Iterator<DatabaseDefinition> it2 = l.iterator ();
-                    while (it2.hasNext()) {
-                        DatabaseDefinition definition =  it2.next();
-                        if (names.contains (definition.getName ())) continue;
-                        CompletionSupport cs = createCompletionItem (definition, fileObject.getNameExt (), start);
-                        items.add (cs);
-                        if (definition.getName ().startsWith (start))
-                            resultSet.addItem (cs);
-                    }
+                if (fileObject != null) {
+                    Map<FileObject,List<DatabaseDefinition>> globals = Index.getGlobalItems (fileObject, true);
+                    Iterator<FileObject> it1 = globals.keySet ().iterator ();
+                    while (it1.hasNext()) {
+                        FileObject fileObject =  it1.next();
+                        List<DatabaseDefinition> l = globals.get (fileObject);
+                        Iterator<DatabaseDefinition> it2 = l.iterator ();
+                        while (it2.hasNext()) {
+                            DatabaseDefinition definition =  it2.next();
+                            if (names.contains (definition.getName ())) continue;
+                            CompletionSupport cs = createCompletionItem (definition, fileObject.getNameExt (), start);
+                            items.add (cs);
+                            if (definition.getName ().startsWith (start))
+                                resultSet.addItem (cs);
+                        }
 
+                    }
                 }
             } catch (FileNotParsedException ex) {
                 ex.printStackTrace ();
