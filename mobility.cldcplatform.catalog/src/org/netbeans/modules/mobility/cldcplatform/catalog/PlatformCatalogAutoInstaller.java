@@ -203,12 +203,12 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
                     out.flush();
                 }
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
             } finally  {
                 try {
                     out.close();
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                 }
             }
         }
