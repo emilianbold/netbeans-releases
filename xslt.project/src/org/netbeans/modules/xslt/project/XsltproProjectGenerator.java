@@ -35,6 +35,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -207,7 +208,15 @@ public class XsltproProjectGenerator {
         
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_SE_TYPE, "sun-xslt-engine"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.SERVICE_UNIT_DESCRIPTION, "This represents the Service Unit"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.SERVICE_UNIT_DESCRIPTION, 
+                NbBundle.getMessage(XsltproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
+        
+        // todo r
+        ep.setProperty("jbi.se.type", "sun-bpel-engine"); // NOI18N
+        ep.setProperty("jbi.service-unit.description", 
+                NbBundle.getMessage(XsltproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
+
+        
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_ROOT, "nbproject/private"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_ROOT, "nbproject/deployment"); // NOI18N
         ep.setProperty(IcanproProjectProperties.BC_DEPLOYMENT_JAR,
