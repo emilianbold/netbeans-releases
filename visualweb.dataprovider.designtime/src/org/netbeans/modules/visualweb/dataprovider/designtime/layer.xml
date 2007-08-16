@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isExpanded" boolvalue="false"/>
             
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>
-            <attr name="position" intvalue="700"/>
+            <attr name="position" intvalue="800"/>
             <file name="CachedRowSetDataProvider.comp_palette_item" url="resources/CachedRowSetDataProvider.comp_palette_item">
                 <attr name="position" intvalue="100"/>
             </file>   
@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="ValueBindingFilterCriteria.comp_palette_item/ValueExpressionFilterCriteria.comp_palette_item" boolvalue="true"/>
             <attr name="ValueExpressionFilterCriteria.comp_palette_item/BasicTransactionalDataProvider.comp_palette_item" boolvalue="true"/>       
             -->    
-            <attr name="position" intvalue="800"/>
+            <attr name="position" intvalue="900"/>
             <file name="TableRowDataProvider.comp_palette_item" url="resources/TableRowDataProvider.comp_palette_item">
                 <attr name="position" intvalue="100"/>
             </file>    
