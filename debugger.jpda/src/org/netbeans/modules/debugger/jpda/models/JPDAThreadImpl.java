@@ -33,6 +33,7 @@ import com.sun.jdi.VMDisconnectedException;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -432,6 +433,7 @@ public final class JPDAThreadImpl implements JPDAThread {
         }
         Boolean suspendedToFire = null;
         synchronized (this) {
+            waitUntilMethodInvokeDone();
             setReturnVariable(null); // Clear the return var on resume
             setCurrentOperation(null);
             if (!doKeepLastOperations) {
@@ -447,6 +449,7 @@ public final class JPDAThreadImpl implements JPDAThread {
                 }
                 suspendCount = 0;
                 suspended = false;
+                methodInvokingDisabledUntilResumed = false;
             } catch (ObjectCollectedException ex) {
             } catch (VMDisconnectedException ex) {
             }
@@ -466,6 +469,9 @@ public final class JPDAThreadImpl implements JPDAThread {
     private void notifyToBeRunning(boolean clearVars, boolean resumed) {
         Boolean suspendedToFire = null;
         synchronized (this) {
+            if (resumed) {
+                waitUntilMethodInvokeDone();
+            }
             if (resumed && (--suspendCount > 0)) return ;
             suspendCount = 0;
             if (clearVars) {
@@ -478,6 +484,7 @@ public final class JPDAThreadImpl implements JPDAThread {
             if (suspended) {
                 suspended = false;
                 suspendedToFire = Boolean.FALSE;
+                methodInvokingDisabledUntilResumed = false;
             }
         }
         cleanCachedFrames();
@@ -508,12 +515,48 @@ public final class JPDAThreadImpl implements JPDAThread {
         }
     }
     
-    public void notifyMethodInvoking() {
+    private boolean methodInvoking;
+    private boolean methodInvokingDisabledUntilResumed;
+    
+    public void notifyMethodInvoking() throws PropertyVetoException {
+        synchronized (this) {
+            if (methodInvokingDisabledUntilResumed) {
+                throw new PropertyVetoException("disabled until resumed", null);
+            }
+            if (methodInvoking) {
+                throw new PropertyVetoException("Already invoking!", null);
+            }
+            methodInvoking = true;
+        }
         notifyToBeRunning(false, false);
     }
     
     public void notifyMethodInvokeDone() {
+        synchronized (this) {
+            methodInvoking = false;
+            this.notifyAll();
+        }
         notifySuspended();
+    }
+    
+    public synchronized boolean isMethodInvoking() {
+        return methodInvoking;
+    }
+    
+    public void waitUntilMethodInvokeDone() {
+        synchronized (this) {
+            while (methodInvoking) {
+                try {
+                    this.wait();
+                } catch (InterruptedException iex) {
+                    break;
+                }
+            }
+        }
+    }
+    
+    public synchronized void disableMethodInvokeUntilResumed() {
+        methodInvokingDisabledUntilResumed = true;
     }
     
     public void interrupt() {

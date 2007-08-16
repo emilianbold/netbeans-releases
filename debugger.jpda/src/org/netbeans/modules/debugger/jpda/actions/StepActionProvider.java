@@ -128,38 +128,41 @@ implements Executor {
             try {
                 // 1) init info about current state & remove old
                 //    requests in the current thread
-                JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
-                ThreadReference tr = resumeThread.getThreadReference ();
-                removeStepRequests (tr);
-
-                // 2) create new step request
-                VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
-                if (vm == null) return ; // There's nothing to do without the VM.
-                stepRequest = vm.eventRequestManager ().createStepRequest (
-                        tr,
-                        StepRequest.STEP_LINE,
-                        getJDIAction (action)
-                    );
-                stepRequest.addCountFilter (1);
-                getDebuggerImpl ().getOperator ().register (stepRequest, StepActionProvider.this);
                 int suspendPolicy = getDebuggerImpl().getSuspend();
-                stepRequest.setSuspendPolicy(suspendPolicy);
-                try {
-                    stepRequest.enable ();
-                } catch (IllegalThreadStateException itsex) {
-                    // the thread named in the request has died.
-                    // Or suspend count > 1 !
-                    //itsex.printStackTrace();
-                    //System.err.println("Thread: "+tr.name()+", suspended = "+tr.isSuspended()+", suspend count = "+tr.suspendCount()+", status = "+tr.status());
-                    logger.warning(itsex.getLocalizedMessage()+"\nThread: "+tr.name()+", suspended = "+tr.isSuspended()+", suspend count = "+tr.suspendCount()+", status = "+tr.status());
-                    getDebuggerImpl ().getOperator ().unregister(stepRequest);
-                    return ;
-                }
-                logger.fine("JDI Request (action "+action+"): " + stepRequest);
-                if (action == ActionsManager.ACTION_STEP_OUT) {
-                    addMethodExitBP(tr);
-                }
+                JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
+                synchronized (resumeThread) {
+                    resumeThread.waitUntilMethodInvokeDone();
+                    ThreadReference tr = resumeThread.getThreadReference ();
+                    removeStepRequests (tr);
 
+                    // 2) create new step request
+                    VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
+                    if (vm == null) return ; // There's nothing to do without the VM.
+                    stepRequest = vm.eventRequestManager ().createStepRequest (
+                            tr,
+                            StepRequest.STEP_LINE,
+                            getJDIAction (action)
+                        );
+                    stepRequest.addCountFilter (1);
+                    getDebuggerImpl ().getOperator ().register (stepRequest, StepActionProvider.this);
+                    stepRequest.setSuspendPolicy(suspendPolicy);
+                    try {
+                        stepRequest.enable ();
+                    } catch (IllegalThreadStateException itsex) {
+                        // the thread named in the request has died.
+                        // Or suspend count > 1 !
+                        //itsex.printStackTrace();
+                        //System.err.println("Thread: "+tr.name()+", suspended = "+tr.isSuspended()+", suspend count = "+tr.suspendCount()+", status = "+tr.status());
+                        logger.warning(itsex.getLocalizedMessage()+"\nThread: "+tr.name()+", suspended = "+tr.isSuspended()+", suspend count = "+tr.suspendCount()+", status = "+tr.status());
+                        getDebuggerImpl ().getOperator ().unregister(stepRequest);
+                        return ;
+                    }
+                    logger.fine("JDI Request (action "+action+"): " + stepRequest);
+                    if (action == ActionsManager.ACTION_STEP_OUT) {
+                        addMethodExitBP(tr);
+                    }
+                    resumeThread.disableMethodInvokeUntilResumed();
+                }
                 // 3) resume JVM
                 if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
                     stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);

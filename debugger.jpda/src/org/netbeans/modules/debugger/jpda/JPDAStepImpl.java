@@ -117,46 +117,49 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         if (vm == null) {
             return ; // The session has finished
         }
-        EventRequestManager erm = vm.eventRequestManager();
-        //Remove all step requests -- TODO: Do we want it?
-        List<StepRequest> stepRequests = erm.stepRequests();
-        erm.deleteEventRequests(stepRequests);
-        for (StepRequest stepRequest : stepRequests) {
-            SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
-        }
-        int size = getSize();
-        boolean stepAdded = false;
-        logger.log(Level.FINE, "Step "+((size == JPDAStep.STEP_OPERATION) ? "operation" : "line")
-                   +" "+((getDepth() == JPDAStep.STEP_INTO) ? "into" :
-                       ((getDepth() == JPDAStep.STEP_OVER) ? "over" : "out"))
-                   +" in thread "+tr.getName());
-        if (size == JPDAStep.STEP_OPERATION) {
-            stepAdded = addOperationStep(trImpl, false);
+        synchronized (tr) {
+            ((JPDAThreadImpl) tr).waitUntilMethodInvokeDone();
+            EventRequestManager erm = vm.eventRequestManager();
+            //Remove all step requests -- TODO: Do we want it?
+            List<StepRequest> stepRequests = erm.stepRequests();
+            erm.deleteEventRequests(stepRequests);
+            for (StepRequest stepRequest : stepRequests) {
+                SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
+            }
+            int size = getSize();
+            boolean stepAdded = false;
+            logger.log(Level.FINE, "Step "+((size == JPDAStep.STEP_OPERATION) ? "operation" : "line")
+                       +" "+((getDepth() == JPDAStep.STEP_INTO) ? "into" :
+                           ((getDepth() == JPDAStep.STEP_OVER) ? "over" : "out"))
+                       +" in thread "+tr.getName());
+            if (size == JPDAStep.STEP_OPERATION) {
+                stepAdded = addOperationStep(trImpl, false);
+                if (!stepAdded) {
+                    size = JPDAStep.STEP_LINE;
+                    logger.log(Level.FINE, "Operation step changed to line step");
+                }
+            }
             if (!stepAdded) {
-                size = JPDAStep.STEP_LINE;
-                logger.log(Level.FINE, "Operation step changed to line step");
-            }
-        }
-        if (!stepAdded) {
-            StepRequest stepRequest = vm.eventRequestManager().createStepRequest(
-                trImpl.getThreadReference(),
-                size,
-                getDepth()
-            );
-            stepRequest.addCountFilter(1);
-            debuggerImpl.getOperator().register(stepRequest, this);
-            stepRequest.setSuspendPolicy(debugger.getSuspend());
+                StepRequest stepRequest = vm.eventRequestManager().createStepRequest(
+                    trImpl.getThreadReference(),
+                    size,
+                    getDepth()
+                );
+                stepRequest.addCountFilter(1);
+                debuggerImpl.getOperator().register(stepRequest, this);
+                stepRequest.setSuspendPolicy(debugger.getSuspend());
 
-            try {
-                stepRequest.enable ();
-            } catch (IllegalThreadStateException itsex) {
-                // the thread named in the request has died.
-                debuggerImpl.getOperator().unregister(stepRequest);
-                stepRequest = null;
-            }
-            
-            if (stepRequest != null && stepRequest.suspendPolicy() == StepRequest.SUSPEND_EVENT_THREAD) {
-                stepWatch = new SingleThreadedStepWatch(debuggerImpl, stepRequest);
+                try {
+                    stepRequest.enable ();
+                } catch (IllegalThreadStateException itsex) {
+                    // the thread named in the request has died.
+                    debuggerImpl.getOperator().unregister(stepRequest);
+                    stepRequest = null;
+                }
+
+                if (stepRequest != null && stepRequest.suspendPolicy() == StepRequest.SUSPEND_EVENT_THREAD) {
+                    stepWatch = new SingleThreadedStepWatch(debuggerImpl, stepRequest);
+                }
             }
         }
     }

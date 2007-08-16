@@ -19,11 +19,21 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
-import com.sun.jdi.*;
-import java.beans.Customizer;
+import com.sun.jdi.ArrayReference;
+import com.sun.jdi.ArrayType;
+import com.sun.jdi.CharValue;
+import com.sun.jdi.ClassType;
+import com.sun.jdi.Method;
+import com.sun.jdi.ObjectCollectedException;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveValue;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.StringReference;
+import com.sun.jdi.Type;
+import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.Value;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;

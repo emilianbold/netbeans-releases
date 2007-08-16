@@ -42,6 +42,7 @@ import com.sun.jdi.request.InvalidRequestStateException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -669,9 +670,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
                             new Runnable() {
                                 public void run() {
                                     if (disabledBreakpoints[0] == null) {
+                                        try {
+                                            resumedThread[0].notifyMethodInvoking();
+                                        } catch (PropertyVetoException pvex) {
+                                            throw new RuntimeException(
+                                                new InvalidExpressionException (pvex.getMessage()));
+                                        }
                                         disabledBreakpoints[0] = disableAllBreakpoints ();
                                         resumedThread[0] = (JPDAThreadImpl) getThread(tr);
-                                        resumedThread[0].notifyMethodInvoking();
                                     }
                                 }
                             },
@@ -701,6 +707,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 IllegalStateException isex = new IllegalStateException(itsex.getLocalizedMessage());
                 isex.initCause(itsex);
                 throw isex;
+            } catch (RuntimeException rex) {
+                Throwable cause = rex.getCause();
+                if (cause instanceof InvalidExpressionException) {
+                    throw (InvalidExpressionException) cause;
+                } else {
+                    throw rex;
+                }
             }
         }
     }
@@ -719,21 +732,33 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (methodCallsUnsupportedExc != null) {
                 throw methodCallsUnsupportedExc;
             }
-            List<EventRequest> l = disableAllBreakpoints ();
-            ThreadReference tr = getEvaluationThread();
-            JPDAThreadImpl thread = (JPDAThreadImpl) getThread(tr);
-            boolean threadSuspended = thread.isSuspended();
-            // Remember the current stack frame, it might be necessary to re-set.
-            CallStackFrameImpl csf = (CallStackFrameImpl) 
-                getCurrentCallStackFrame ();
+            boolean threadSuspended = false;
             JPDAThread frameThread = null;
-            if (csf != null) {
-                try {
-                    frameThread = csf.getThread();
-                } catch (InvalidStackFrameException isfex) {}
-            }
-            thread.notifyMethodInvoking();
+            CallStackFrameImpl csf = null;
+            JPDAThreadImpl thread = null;
+            List<EventRequest> l = null;
             try {
+                // Remember the current stack frame, it might be necessary to re-set.
+                csf = (CallStackFrameImpl) getCurrentCallStackFrame ();
+                if (csf != null) {
+                    try {
+                        frameThread = csf.getThread();
+                    } catch (InvalidStackFrameException isfex) {}
+                }
+                ThreadReference tr = getEvaluationThread();
+                thread = (JPDAThreadImpl) getThread(tr);
+                synchronized (thread) {
+                    threadSuspended = thread.isSuspended();
+                    if (!threadSuspended) {
+                        throw new InvalidExpressionException ("No current context");
+                    }
+                    try {
+                        thread.notifyMethodInvoking();
+                    } catch (PropertyVetoException pvex) {
+                        throw new InvalidExpressionException (pvex.getMessage());
+                    }
+                }
+                l = disableAllBreakpoints ();
                 return org.netbeans.modules.debugger.jpda.expr.Evaluator.
                     invokeVirtual (
                         reference,
@@ -747,10 +772,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
                 throw ieex;
             } finally {
+                if (l != null) {
+                    enableAllBreakpoints (l);
+                }
                 if (threadSuspended) {
                     thread.notifyMethodInvokeDone();
                 }
-                enableAllBreakpoints (l);
                 if (frameThread != null) {
                     try {
                         csf.getThread();
@@ -1349,6 +1376,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
     
     private List<EventRequest> disableAllBreakpoints () {
+        logger.fine ("disableAllBreakpoints() start.");
         List<EventRequest> l = new ArrayList<EventRequest>();
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return l;
@@ -1371,10 +1399,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
             else
                 l.get (i).disable ();
         operator.breakpointsDisabled();
+        logger.fine ("disableAllBreakpoints() end.");
         return l;
     }
     
     private void enableAllBreakpoints (List<EventRequest> l) {
+        logger.fine ("enableAllBreakpoints() start.");
         operator.breakpointsEnabled();
         int i, k = l.size ();
         for (i = 0; i < k; i++)
@@ -1387,6 +1417,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             } catch (InvalidRequestStateException ex) {
                 // workaround for #51176
             }
+        logger.fine ("enableAllBreakpoints() end.");
     }
 
     private void checkJSR45Languages (JPDAThread t) {
