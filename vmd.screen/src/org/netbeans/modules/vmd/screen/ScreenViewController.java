@@ -50,6 +50,7 @@ public class ScreenViewController implements DesignDocumentAwareness {
         visual = new JPanel ();
         visual.setLayout (new BorderLayout ());
         toolbar = new JToolBar ();
+        toolbar.setFloatable (false);
 
         context.addDesignDocumentAwareness (this);
     }

@@ -55,6 +55,7 @@ public class FlowViewController implements DesignDocumentAwareness {
         loadingPanel = IOUtils.createLoadingPanel ();
         visual = new JPanel (new BorderLayout ());
         toolbar = new JToolBar ();
+        toolbar.setFloatable (false);
         toolbar.setRollover (true);
         toolbar.setPreferredSize (new Dimension (14, 14));
         toolbar.setSize (new Dimension (14, 14));

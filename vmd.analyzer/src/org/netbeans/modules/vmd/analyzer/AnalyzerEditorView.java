@@ -26,18 +26,18 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import java.util.HashMap;
-import org.openide.util.NbBundle;
+import java.util.Map;
 
 /**
  * @author David Kaspar
@@ -96,6 +96,7 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
         context.addDesignDocumentAwareness (this);
 
         toolbar = new JToolBar ();
+        toolbar.setFloatable (false);
         toolbar.setRollover (true);
         toolbar.setPreferredSize (new Dimension (14, 14));
         toolbar.setSize (new Dimension (14, 14));

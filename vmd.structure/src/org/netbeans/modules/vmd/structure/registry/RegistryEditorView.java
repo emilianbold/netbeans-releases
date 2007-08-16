@@ -45,7 +45,7 @@ public class RegistryEditorView implements DataEditorView, DescriptorRegistryLis
     private DataObjectContext context;
     private transient DescriptorRegistry registry;
 
-    private transient JToolBar toolbarRepresentation = new JToolBar ();
+    private transient JToolBar toolbarRepresentation;
     private transient JScrollPane scrollPane;
     private transient RegistryScene scene;
     private transient JComponent view;
@@ -63,6 +63,8 @@ public class RegistryEditorView implements DataEditorView, DescriptorRegistryLis
         scene = new RegistryScene ();
         view = scene.createView ();
         scrollPane = new JScrollPane (view);
+        toolbarRepresentation = new JToolBar ();
+        toolbarRepresentation.setFloatable (false);
     }
 
     public DataObjectContext getContext () {

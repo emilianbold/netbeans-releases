@@ -66,8 +66,10 @@ public class DocumentController implements DesignDocumentAwareness, DesignListen
     }
 
     public JComponent getToolbarRepresentation () {
-        if (toolbarRepresentation == null)
+        if (toolbarRepresentation == null) {
             toolbarRepresentation = new JToolBar ();
+            toolbarRepresentation.setFloatable (false);
+        }
         return toolbarRepresentation;
     }
 
