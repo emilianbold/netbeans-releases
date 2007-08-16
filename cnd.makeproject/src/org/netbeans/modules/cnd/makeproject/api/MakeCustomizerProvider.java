@@ -22,14 +22,12 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Vector;
 import java.util.WeakHashMap;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -42,9 +40,8 @@ import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /** Customization of Make project
  */
@@ -87,7 +84,15 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         showCustomizer(preselectedNodeName, null, null);
     }
     
-    public void showCustomizer(String preselectedNodeName, Item item, Folder folder) {
+    public void showCustomizer(final String preselectedNodeName, final Item item, final Folder folder) {
+        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                showCustomizerWorker(preselectedNodeName, item, folder);
+            }
+        });     
+    }
+    
+    private void showCustomizerWorker(String preselectedNodeName, Item item, Folder folder) {
         
         if (customizerPerProject.containsKey (project)) {
             Dialog dlg = (Dialog)customizerPerProject.get (project);
