@@ -11,7 +11,13 @@ Use is subject to license terms.  *-->
 <h2>Generating a RESTful Web Service from Scratch</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
 
-
+<p>Some JAX-WS web services can be described as being RESTful. 
+REpresentational State Transfer (REST) REST is an architectural style. 
+Elements of the REST archictectural style are its stateless client-server
+architecture and the fact that web services are viewed as resources that 
+can be identified by their URLs. The application of some or all of the 
+constraints specified by the REST architectural style to a JAX-WS web 
+service makes it a RESTful web service.
 
    <p>For a full tutorial on RESTful web services in the IDE,
         see:
@@ -23,6 +29,8 @@ Use is subject to license terms.  *-->
             <param name="textColor" value="blue">
         </object>
 
+        <p><b>To generate a RESTful web service from scratch:</b>        
+        
 <ol>
 <li>Use the Plugin Manager under the Tools menu
     to install the following modules:
@@ -40,13 +48,37 @@ and choose New. Then choose one of the following:
     <li><b>RESTful Web Services from Patterns.</b>
       Creates generic RESTful web services, stand-alone web services,
       or web services that are part of the Container pattern.</li>
+      <ul>
+          <li><b>Singleton.</b> Creates a singleton RESTful resource
+          class with GET and PUT methods, using Java API for RESTful 
+          Web Service (JSR-311). This pattern is useful for creating 
+          a simple HelloWorld service and wrapper services for invoking 
+          WSDL-based web services.
+          <li><b>Container-Item.</b> Creates a pair of RESTful resource
+          classes, consisting of an item resource class and its container
+          resource class using Java API for RESTful Web Service (JSR-311). 
+          Item resources can be created and added to the container resource
+          using the POST method on the container resource class. Note 
+          that the URI for the newly created item resource is determined
+          by the container resource.
+          <li><b>Client-Controlled Container-Item.</b> Creates a pair of RESTful
+          resource classes, consisting of an item resource class and its container
+          resource class using Java API for RESTful Web Service (JSR-311).
+          This pattern is a slight variation of the Container-Item pattern.
+          The difference is that there is no POST method on the container
+          resource class for creating item resources. Instead, item resources 
+          are created using the PUT method on the item resource class. 
+          The reason this is called Client-Controlled Container-Item pattern
+          is because the URI for the item resource is determined by the client
+          and not the container resource. 
+      </ul>
 </ul>    
 <p>Alternatively, you can choose the above templates
  by right-clicking the project node, choosing New &gt; Other
  and then selecting them from the Web Services category.
     
 </li>
-
+<li>Click Next and complete the wizard.
 </ol>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
