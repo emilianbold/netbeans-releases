@@ -85,8 +85,8 @@ public final class UEIEmulatorConfiguratorImpl {
         {"WMA",    "2.0", "javax/wireless/messaging/MultipartMessage.class"},
         {"WMA",    "1.1", "javax/wireless/messaging/Message.class"},
         {"NOKIAUI","1.0", "com/nokia/mid/ui/FullCanvas.class"},
-        {"IMP",    "1.0", "com/siemens/icm/io/ATCommand.class", "com/siemens/icm/io/CommConnection.class"},
-        {"IMP-NG", "1.0", "com/siemens/icm/io/ATCommand.class", "javax/microedition/pki/Certificate.class", "javax/microedition/io/PushRegistry.class"},
+        {"IMP",    "1.0", "java/lang/IllegalStateException.class", "java/util/Timer.class", "javax/microedition/io/HttpConnection.class", "javax/microedition/rms/RecordStore.class", "javax/microedition/midlet/MIDlet.class"},
+        {"IMP-NG", "1.0", "java/lang/IllegalStateException.class", "java/util/Timer.class", "javax/microedition/rms/RecordStore.class", "javax/microedition/midlet/MIDlet.class", "javax/microedition/pki/Certificate.class"},
         {"AJOF",   "1.0", "com/siemens/icm/ajof/WmMIDlet.class"},
     };
     
@@ -134,7 +134,7 @@ public final class UEIEmulatorConfiguratorImpl {
             final HashMap<String,String> dependencies = new HashMap<String,String>();
             //String API name -> String API display name
             final HashMap<String,String> dispNames = new HashMap<String,String>();
-            
+            boolean foundMIDP = false;
             //first get the information from manifests
             for ( final Object root : files ) {
                 final Manifest m = getManifest(root);
@@ -142,6 +142,7 @@ public final class UEIEmulatorConfiguratorImpl {
                     final String api = m.getMainAttributes().getValue("API"); //NOI18N
                     String version = m.getMainAttributes().getValue("API-Specification-Version"); //NOI18N
                     if (api != null) {
+                        foundMIDP = foundMIDP || "MIDP".equals(api); //NOI18N
                         if (version == null) version = "1.0"; //NOI18N
                         final String key = api + '-' + version;
                         
@@ -208,6 +209,7 @@ public final class UEIEmulatorConfiguratorImpl {
                     }
                 }
                 if (apiRoots != null) {
+                    foundMIDP = foundMIDP || "MIDP".equals(APIs[i][0]); //NOI18N
                     ignoreRoots.addAll(apiRoots);
                     foundAPIs.put(APIs[i][0] + '-' + APIs[i][1], apiRoots);
                 }
@@ -220,21 +222,23 @@ public final class UEIEmulatorConfiguratorImpl {
                 int i = name.lastIndexOf('-');
                 String version = name.substring(i + 1);
                 name = name.substring(0, i);
-                String dispName = dispNames.get(name);
-                try {
-                    dispName = NbBundle.getMessage(UEIEmulatorConfiguratorImpl.class, name);
-                } catch (Exception ex) {}
-                final String type = "CLDC".equals(name) ? J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION : ("MIDP".equals(name) || "IMP".startsWith(name) ? J2MEPlatform.J2MEProfile.TYPE_PROFILE : J2MEPlatform.J2MEProfile.TYPE_OPTIONAL); //NOI18N
-                final StringBuffer cp = new StringBuffer();
-                boolean def = true;
-                for ( final Object obj : e.getValue() ) {
-                    final String cpEl = cutPath(froot, obj);
-                    if (cp.length() > 0) cp.append(':');
-                    cp.append(cpEl);
-                    if (!defaultCp.contains(cpEl)) def = false;
+                if (!foundMIDP || !("IMP".equals(name) || "IMP-NG".equals(name))) { //NOI18N
+                    String dispName = dispNames.get(name);
+                    try {
+                        dispName = NbBundle.getMessage(UEIEmulatorConfiguratorImpl.class, name);
+                    } catch (Exception ex) {}
+                    final String type = "CLDC".equals(name) ? J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION : ("MIDP".equals(name) || "IMP".equals(name) || "IMP-NG".equals(name) ? J2MEPlatform.J2MEProfile.TYPE_PROFILE : J2MEPlatform.J2MEProfile.TYPE_OPTIONAL); //NOI18N
+                    final StringBuffer cp = new StringBuffer();
+                    boolean def = true;
+                    for ( final Object obj : e.getValue() ) {
+                        final String cpEl = cutPath(froot, obj);
+                        if (cp.length() > 0) cp.append(':');
+                        cp.append(cpEl);
+                        if (!defaultCp.contains(cpEl)) def = false;
+                    }
+                    result.add(new J2MEPlatform.J2MEProfile(name, version, dispName, type, dependencies.get(e.getKey()), cp.toString(), def));
+                    undetected.removeAll(e.getValue());
                 }
-                result.add(new J2MEPlatform.J2MEProfile(name, version, dispName, type, dependencies.get(e.getKey()), cp.toString(), def));
-                undetected.removeAll(e.getValue());
             }
             
             for ( Object obj : undetected ) {
