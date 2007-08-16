@@ -73,7 +73,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         // get the list of suitable glassfish installations
         final List<Dependency> dependencies =
-                getProduct().getDependencyByUid(APPSERVER_UID);
+                getProduct().getDependencyByUid(GLASSFISH_UID);
         final List<Product> sources =
                 Registry.getInstance().getProducts(dependencies.get(0));
         

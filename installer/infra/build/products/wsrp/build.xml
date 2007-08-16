@@ -20,7 +20,7 @@
 -->
 
 <!--
-  This is the build script for the Java EE SDK : Javadocs nbi product 
+  This is the build script for the WSRP nbi product 
   package.
     
   It inherits most of the functionality from the base script for building nbi 
@@ -28,7 +28,7 @@
   core properties. For more details on the values of these properties see
   the build.properties file.
 -->
-<project name="javaeesdk-samples-product" default="usage" basedir=".">
+<project name="wsrp-product" default="usage" basedir=".">
     <!-- import the properties that are specific to this environment -->
     <property file="${environment.properties}"/>
     
@@ -41,17 +41,7 @@
     <!-- ============================================================================
       Default
     ============================================================================= -->
-    <target name="-pre-package">	
-	<n-unzip src="${data.directory}/s1as-javadocs.zip"
-		dest="${data.directory}/extract"/>
-	<delete file="${data.directory}/s1as-javadocs.zip"/>
-	<move todir="${data.directory}">
-            <fileset dir="${data.directory}/extract">
-                <include name="**/*"/>
-            </fileset>
-        </move>	
-	<delete dir="${data.directory}/extract" includeemptydirs="true"/>
-    </target>
+    
     <!--
       The default target. 
       

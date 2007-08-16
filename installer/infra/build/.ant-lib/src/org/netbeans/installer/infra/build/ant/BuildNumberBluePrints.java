@@ -91,12 +91,16 @@ public class BuildNumberBluePrints extends Task {
             final Matcher matcher = PATTERN.matcher(contents);
             
             if (matcher.find()) {
-                final String milestoneNumber =
+		final String buildType =
                         matcher.group(1);                              // NOMAGI
+                final String milestoneNumber =
+                        matcher.group(2);                              // NOMAGI
                 
                 final String buildNumber = FORMAT_OUT.format(
-                        FORMAT_IN.parse(matcher.group(2))); // NOMAGI
-                
+                        FORMAT_IN.parse(matcher.group(3))); // NOMAGI
+                getProject().setProperty(
+                        prefix + BUILD_TYPE_SUFFIX,
+                        buildType);
                 getProject().setProperty(
                         prefix + MILESTONE_NUMBER_SUFFIX,
                         milestoneNumber);
@@ -120,7 +124,7 @@ public class BuildNumberBluePrints extends Task {
      * Pattern for which to look in the input file.
      */
     private static final Pattern PATTERN = Pattern.compile(
-            "java_ee_sdk-5_03-preview2-bin-b([0-9]+)-blueprints-([A-Za-z0-9_]+).zip");//NOI18N
+            "java_ee_sdk-5_03-([A-Za-z0-9]+)-bin-b([0-9]+)-blueprints-([A-Za-z0-9_]+).zip");//NOI18N
     
     /**
      * Date format used in the input file.
@@ -139,6 +143,11 @@ public class BuildNumberBluePrints extends Task {
      */
     private static final String MILESTONE_NUMBER_SUFFIX =
             ".milestone.number"; // NOI18N
+    /**
+     * Build type property suffix.
+     */
+    private static final String BUILD_TYPE_SUFFIX =
+            ".build.type"; // NOI18N
     
     /**
      * Build number property suffix.

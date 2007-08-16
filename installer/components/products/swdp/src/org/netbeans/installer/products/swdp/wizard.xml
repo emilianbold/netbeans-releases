@@ -22,7 +22,7 @@
 <wizard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wizard-components.xsd">
     <component class="org.netbeans.installer.wizard.components.actions.SetInstallationLocationAction">
         <properties>
-            <property name="source.component">sjsas</property>
+            <property name="source.component">glassfish</property>
             <property name="relative.location">addons</property>
         </properties>
     </component>
