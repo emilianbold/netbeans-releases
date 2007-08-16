@@ -179,8 +179,7 @@ public class LifecycleTest extends TestCase {
         //Now close err & out in the opposite order
         writer.close();
         sleep();
-        assertFalse ("Out should not be closed after calling close() on it but not the error out", writer.isClosed());
-        assertFalse (writer.isClosed());
+        assertTrue ("Out should  be closed after calling close() on it", writer.isClosed());
         
         err.close();
         sleep();

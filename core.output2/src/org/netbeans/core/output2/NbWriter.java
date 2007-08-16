@@ -108,6 +108,9 @@ class NbWriter extends OutputWriter {
                 try {
                     if (Controller.LOG) Controller.log ( "Now closing OutWriter");
                     out.close();
+                    if (err != null) {
+                        err.close();
+                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
