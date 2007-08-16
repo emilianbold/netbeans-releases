@@ -29,17 +29,11 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="../../external/org-netbeans-modules-j2ee-sun-appsrv81.jar" todir="${cluster}/ant/nblib"/>
     </target>
 
-    <target name="javahelp" depends="init,unjar-extra-help">
+    <target name="javahelp" depends="init">
         <antcall target="projectized.javahelp"/>
         <delete dir="javahelp/com"/>
     </target>
 
-    <!-- XXX poor style; should rather override javahelp target to build jar differently: -->
-    <target name="unjar-extra-help">
-        <unjar src="../../external/persistence-help.jar" dest="javahelp"/>
-        <delete dir="javahelp/META-INF"/>
-    </target>
-    
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
         <property name="nbm.target.cluster" value=""/> <!-- fallback -->        
