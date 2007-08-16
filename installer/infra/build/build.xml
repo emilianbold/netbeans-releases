@@ -184,13 +184,8 @@
             classpath="${custom.tasks.cls}" 
             classname="org.netbeans.installer.infra.build.ant.registries.CreateBundle"/>
         
-        <!--
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/rc/b51/bundles/"
-            dest="${temp.file}"/>
-        -->
-        <get
-            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/rc2/latest/bundles/"
+            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/rc3/latest/bundles/"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
