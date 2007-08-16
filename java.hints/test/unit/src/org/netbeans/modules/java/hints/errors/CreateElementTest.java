@@ -328,6 +328,21 @@ public class CreateElementTest extends HintsTestBase {
         )));
     }
     
+    public void test111048() throws Exception {
+	// do not offer to create method in non-writable file/class
+	performTestAnalysisTest("org.netbeans.test.java.hints.Bug111048", 202, Collections.<String>emptySet());
+	// but do it in writable
+	performTestAnalysisTest("org.netbeans.test.java.hints.Bug111048", 231, new HashSet<String>(Arrays.asList(
+		"CreateMethodFix:contains(java.lang.String string)boolean:org.netbeans.test.java.hints.bb"
+        )));
+	// do not offer to create field/inner class in non-writable file/class
+	performTestAnalysisTest("org.netbeans.test.java.hints.Bug111048", 261, Collections.<String>emptySet());
+	performTestAnalysisTest("org.netbeans.test.java.hints.Bug111048", 301, new HashSet<String>(Arrays.asList(
+		"CreateInnerClass:org.netbeans.test.java.hints.bb.fieldOrClass:[static]:CLASS",
+		"CreateFieldFix:fieldOrClass:org.netbeans.test.java.hints.bb:java.lang.Object:[static]"
+        )));
+    }
+    
     protected void performTestAnalysisTest(String className, int offset, Set<String> golden) throws Exception {
         prepareTest(className);
         
@@ -349,7 +364,15 @@ public class CreateElementTest extends HintsTestBase {
                 real.add(((AddParameterOrLocalFix) f).toDebugString(info));
                 continue;
             }
-            
+	    if (f instanceof CreateMethodFix) {
+                real.add(((CreateMethodFix) f).toDebugString(info));
+                continue;
+	    }
+	    if (f instanceof CreateClassFix) {
+		real.add(((CreateClassFix) f).toDebugString(info));
+		continue;
+	    }
+	    
             fail("Fix of incorrect type: " + f.getClass());
         }
         
