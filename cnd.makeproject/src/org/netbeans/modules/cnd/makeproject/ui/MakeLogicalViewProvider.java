@@ -472,28 +472,26 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             Action[] standardActions = getAdditionalActions();
             for (int i = 0; i < standardActions.length; i++)
                 actions.add(standardActions[i]);
+            actions.add(null);
             addActionsFromLayers(actions, "NativeProjects/Actions"); // NOI18N
             if(broken ) {
 		actions.add(getBrokenIncludesAction(project));
 	    }
+            actions.add(null);
+            actions.add(SystemAction.get(org.openide.actions.FindAction.class ));
             addActionsFromLayers(actions, "Projects/Actions"); // NOI18N
             // Add remaining actions
             actions.add(null);
-            actions.add(SystemAction.get(ToolsAction.class));
-            actions.add(null);
+            //actions.add(SystemAction.get(ToolsAction.class));
+            //actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
             return (Action[])actions.toArray(new Action[actions.size()]);
         }
         
         private void addActionsFromLayers(final Vector actions, String path) {
             Lookup look = Lookups.forPath(path);
-            boolean first = true;
             for (Object next : look.lookupAll(Object.class)) {
                 if (next instanceof Action) {
-                    if (first) {
-                        actions.add(null);
-                        first = false;
-                    }
                     actions.add((Action) next);
                 } else if (next instanceof JSeparator) {
                     actions.add(null);
@@ -537,6 +535,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             
             return new Action[] {
                 CommonProjectActions.newFileAction(),
+                null,
                 SystemAction.get(AddExistingItemAction.class),
                 SystemAction.get(AddExistingFolderItemsAction.class),
                 SystemAction.get(NewFolderAction.class),
@@ -557,12 +556,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 CommonProjectActions.openSubprojectsAction(),
                 CommonProjectActions.closeProjectAction(),
                 null,
-                SystemAction.get(org.openide.actions.FindAction.class ),
-                null,
                 CommonProjectActions.renameProjectAction(),
                 CommonProjectActions.moveProjectAction(),
                 CommonProjectActions.copyProjectAction(),
                 CommonProjectActions.deleteProjectAction(),
+                null,
             };
             
         }

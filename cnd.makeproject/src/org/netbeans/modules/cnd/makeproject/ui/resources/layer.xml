@@ -20,14 +20,14 @@ Microsystems, Inc. All Rights Reserved.
 <?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-
+    
     <folder name="Templates">
         <folder name="Project">
             <folder name="Native">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/desktop.html"/>
-
-                <attr name="position" intvalue="300"/>
+                
+                <attr name="position" intvalue="850"/>
                 <file name="makefile.xml">
                     <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makefile.html"/>
                 </file>
-
+                
                 <file name="newApplication.xml">
                     <attr name="position" intvalue="200"/>
                     <attr name="template" boolvalue="true"/>
@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newApplication.html"/>
                 </file>
-
+                
                 <file name="newDynamicLibrary.xml">
                     <attr name="position" intvalue="300"/>
                     <attr name="template" boolvalue="true"/>
@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newDynamicLibrary.html"/>
                 </file>                
-
+                
                 <file name="newStaticLibrary.xml">
                     <attr name="position" intvalue="400"/>
                     <attr name="template" boolvalue="true"/>
@@ -63,9 +63,9 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newStaticLibrary.html"/>
                 </file>
-	    
-                </folder>
-
+                
+            </folder>
+            
             <folder name="Samples">
                 <folder name="Native">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
                     
                     <folder name="CCPP">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
-
+                        
                         <file name="args.zip" url="samples/args.zip">
                             <attr name="position" intvalue="100"/>
                             <attr name="template" boolvalue="true"/>
@@ -104,7 +104,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
-
+                        
                         <file name="mp.zip" url="samples/mp.zip">
                             <attr name="position" intvalue="200"/>
                             <attr name="template" boolvalue="true"/>
@@ -131,13 +131,13 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
-
-                        </folder>
+                        
+                    </folder>
                 </folder>
             </folder>
         </folder>
     </folder>
-
+    
     <folder name="Services">
         <file name="org-netbeans-modules-cnd-makeproject-MakeOptions.settings" url="MakeOptions.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.Bundle"/>
@@ -145,7 +145,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </file>
     </folder>
-
+    
     <!--
     <folder name="UI">
         <folder name="Services">
@@ -176,10 +176,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-cnd-makeproject-api-actions-ConfigurationManagerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.ConfigurationManagerAction"/>
             </file>
-                                    
+            
         </folder>
     </folder>
-
+    
     <folder name="Menu"> <!-- Hacking menus -->
         <folder name="BuildProject">
             <file name="org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.shadow">
@@ -187,16 +187,17 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="position" intvalue="400"/>
             </file>
             
-             
-
+            
+            
         </folder>
+        <!--
         <folder name="File">
             <file name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.instance"/>
                 <attr name="position" intvalue="300"/>
             </file>
-            
-            </folder>
+        </folder>
+        -->
     </folder>
     
     <folder name="OptionsDialog">
@@ -225,9 +226,9 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="200"/>
                     </file>
-                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>
-
+    
 </filesystem>
