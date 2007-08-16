@@ -98,7 +98,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                     return null;
                 }
             }
-            problem = new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembers")); // NOI18N
+            problem = new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_NoMembers")); // NOI18N
             // increase progress (step 3)
             fireProgressListenerStep();
             return problem;
