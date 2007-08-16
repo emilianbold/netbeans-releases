@@ -252,23 +252,21 @@ public class ShellExecSupport extends ExecutionSupport {
                     getString("HINT_fileParams")
                 ) {
                     public Object getValue() {
-                        String[] args = getArguments ();
-                        /*
-                        StringBuffer b = new StringBuffer(50);
+                        String[] args = getArguments();
+                        StringBuilder b = new StringBuilder();
                         for (int i = 0; i < args.length; i++) {
                             b.append(args[i]).append(' ');
                         }
                         return b.toString();
-                         */
-                        return Utilities.escapeParameters(args);
                     }
                     public void setValue (Object val) throws InvocationTargetException {
                         if (val instanceof String) {
                             try {
-                                setArguments(Utilities.parseParameters((String)val));
+                                // Keep user arguments as is in args[0]
+                                setArguments(new String[] {(String)val});
                             } catch(IOException e) {
                                 throw new InvocationTargetException (e);
-                            }
+                        }
                         }
                         else {
                             throw new IllegalArgumentException();
@@ -281,10 +279,10 @@ public class ShellExecSupport extends ExecutionSupport {
 
                     public void restoreDefaultValue () throws InvocationTargetException {
                         try {
-                            setArguments(null);
+                        setArguments(null);
                         } catch(IOException e) {
                             throw new InvocationTargetException (e);
-                        }
+                    }
                     }
 
                    public boolean canWrite () {
