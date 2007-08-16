@@ -30,6 +30,8 @@ mkdir $progdir/build
 unzip -d $progdir/build $zipdir/$basename.zip
 # remove uml, it has serious performance problem on Mac
 rm -rf $progdir/build/netbeans/uml*
+# remove mobility, there is no WTK on Mac
+rm -rf $progdir/build/netbeans/mobility*
 # copy over GlassFish.pkg
 mkdir -p $progdir build/pkg
 rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
