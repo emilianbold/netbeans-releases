@@ -56,17 +56,6 @@ public class MakefileDataLoader extends UniFileLoader {
         init();
     }
     
-    public MakefileDataLoader(String recognizedClassName) {
-	super(recognizedClassName);
-        init();
-    }
-  
-    /** @deprecated Use {@link #MakefileDataLoader(String)} instead */
-    public MakefileDataLoader(Class recognizedClass) {
-	super(recognizedClass);
-        init();
-    }
-    
     /** Do various initializations */
     private void init() {
         Enumeration en;
@@ -107,8 +96,7 @@ public class MakefileDataLoader extends UniFileLoader {
 
     public static MakefileDataLoader getInstance(){
         if (instance == null) {
-            instance = (MakefileDataLoader)
-                            SharedClassObject.findObject(MakefileDataLoader.class, true);
+            instance = SharedClassObject.findObject(MakefileDataLoader.class, true);
         }
         return instance;
     }

@@ -50,22 +50,9 @@ public class CCDataLoader extends CndAbstractDataLoader {
         createExtentions(cppExtensions);
     }
 
-    protected CCDataLoader(String representationClassName) {
-	super(representationClassName);
-        instance = this;
-        createExtentions(cppExtensions);
-    }
-
-    /** @deprecated Use {@link #CCDataLoader(String)} instead */
-    protected CCDataLoader(Class representationClass) {
-	super(representationClass);
-        instance = this;
-        createExtentions(cppExtensions);
-    }
-
     public static CCDataLoader getInstance(){
         if (instance == null) {
-            instance = (CCDataLoader) SharedClassObject.findObject(CCDataLoader.class, true);
+            instance = SharedClassObject.findObject(CCDataLoader.class, true);
         }
         return instance;
     }

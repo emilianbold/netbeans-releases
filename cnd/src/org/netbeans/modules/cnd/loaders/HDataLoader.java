@@ -59,22 +59,9 @@ public final class HDataLoader extends CndAbstractDataLoader {
         createExtentions(hdrExtensions);
     }
 
-    public HDataLoader(String representationClassName) {
-	super(representationClassName);
-        instance = this;
-	createExtentions(hdrExtensions);
-    }
-
-    /** @deprecated Use {@link #HDataLoader(String)} instead */
-    public HDataLoader(Class representationClass) {
-	super(representationClass);
-        instance = this;
-	createExtentions(hdrExtensions);
-    }
-
     public static HDataLoader getInstance(){
         if (instance == null) {
-            instance = (HDataLoader) SharedClassObject.findObject(HDataLoader.class, true);
+            instance = SharedClassObject.findObject(HDataLoader.class, true);
         }
         return instance;
     }

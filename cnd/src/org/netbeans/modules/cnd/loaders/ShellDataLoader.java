@@ -60,19 +60,6 @@ public class ShellDataLoader extends CndAbstractDataLoader {
 	createExtentions(shellExtensions);
     }
     
-    public ShellDataLoader(String recognizedClassName) {
-	super(recognizedClassName);
-	instance = this;
-	createExtentions(shellExtensions);
-    }
-  
-    /** @deprecated Use {@link #ShellDataLoader(String)} instead */
-    public ShellDataLoader(Class recognizedClass) {
-	super(recognizedClass);
-	instance = this;
-	createExtentions(shellExtensions);
-    }
-
     public static ShellDataLoader getInstance() {
 	return instance;
     }

@@ -50,22 +50,9 @@ public class FortranDataLoader extends CndAbstractDataLoader {
         createExtentions(fortranExtensions);
     }
 
-    protected FortranDataLoader(String representationClassName) {
-	super(representationClassName);
-        instance = this;
-        createExtentions(fortranExtensions);
-    }
-
-    /** @deprecated Use {@link #FortranDataLoader(String)} instead */
-    protected FortranDataLoader(Class representationClass) {
-	super(representationClass);
-        instance = this;
-        createExtentions(fortranExtensions);
-    }
-
     public static FortranDataLoader getInstance(){
         if (instance == null) {
-            instance = (FortranDataLoader) SharedClassObject.findObject(FortranDataLoader.class, true);
+            instance = SharedClassObject.findObject(FortranDataLoader.class, true);
         }
         return instance;
     }

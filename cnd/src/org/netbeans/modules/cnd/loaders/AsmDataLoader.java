@@ -49,22 +49,9 @@ public class AsmDataLoader extends CndAbstractDataLoader{
         createExtentions(asmExtensions);
     }
 
-    protected AsmDataLoader(String representationClassName) {
-	super(representationClassName);
-        instance = this;
-        createExtentions(asmExtensions);
-    }
-
-    /** @deprecated Use {@link #AsmDataLoader(String)} instead */
-    protected AsmDataLoader(Class representationClass) {
-	super(representationClass);
-        instance = this;
-        createExtentions(asmExtensions);
-    }
-
     public static AsmDataLoader getInstance(){
         if (instance == null) {
-            instance = (AsmDataLoader) SharedClassObject.findObject(AsmDataLoader.class, true);
+            instance = SharedClassObject.findObject(AsmDataLoader.class, true);
         }
         return instance;
     }

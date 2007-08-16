@@ -49,22 +49,9 @@ public class CDataLoader extends CndAbstractDataLoader {
         createExtentions(cExtensions);
     }
 
-    protected CDataLoader(String representationClassName) {
-	super(representationClassName);
-        instance = this;
-        createExtentions(cExtensions);
-    }
-
-    /** @deprecated Use {@link #CDataLoader(String)} instead */
-    protected CDataLoader(Class representationClass) {
-	super(representationClass);
-        instance = this;
-        createExtentions(cExtensions);
-    }
-
     public static CDataLoader getInstance(){
         if (instance == null) {
-            instance = (CDataLoader) SharedClassObject.findObject(CDataLoader.class, true);
+            instance = SharedClassObject.findObject(CDataLoader.class, true);
         }
         return instance;
     }
