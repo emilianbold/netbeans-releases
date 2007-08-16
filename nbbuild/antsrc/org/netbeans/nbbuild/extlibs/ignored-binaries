@@ -40,3 +40,6 @@ enterprise/dcom/
 enterprise/iep/
 enterprise/openesbaddons/
 enterprise/workflow/
+
+# Just some metadata files written by us:
+ruby/rubyide/RubyNetBeans.app.zip
