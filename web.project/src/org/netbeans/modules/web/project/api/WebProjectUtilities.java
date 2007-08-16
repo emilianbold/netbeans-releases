@@ -249,7 +249,7 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
         ep.setProperty(WebProjectProperties.LIBRARIES_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/" + WEB_INF + "/lib"); //NOI18N
         
-        ep.setProperty(WebProjectProperties.WEBINF_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/" + WEB_INF);
+        ep.setProperty(WebProjectProperties.WEBINF_DIR, DEFAULT_DOC_BASE_FOLDER + "/" + WEB_INF);
         
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
         UpdateHelper updateHelper = ((WebProject) p).getUpdateHelper();

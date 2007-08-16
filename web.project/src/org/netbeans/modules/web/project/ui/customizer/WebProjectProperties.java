@@ -194,6 +194,7 @@ public class WebProjectProperties {
     DefaultTableModel SOURCE_ROOTS_MODEL;
     DefaultTableModel TEST_ROOTS_MODEL;
     Document WEB_DOCBASE_DIR_MODEL;
+    Document WEBINF_DIR_MODEL;
     ComboBoxModel JAVAC_SOURCE_MODEL;
 
     // CustomizerLibraries
@@ -297,6 +298,7 @@ public class WebProjectProperties {
         SOURCE_ROOTS_MODEL = WebSourceRootsUi.createModel( project.getSourceRoots() );
         TEST_ROOTS_MODEL = WebSourceRootsUi.createModel( project.getTestSourceRoots() );
         WEB_DOCBASE_DIR_MODEL = projectGroup.createStringDocument( evaluator, WEB_DOCBASE_DIR );
+        WEBINF_DIR_MODEL = projectGroup.createStringDocument( evaluator, WEBINF_DIR );
 
         // CustomizerLibraries
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                

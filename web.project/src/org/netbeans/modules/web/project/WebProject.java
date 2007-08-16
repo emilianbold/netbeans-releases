@@ -813,7 +813,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             //add webinf.dir required by 6.0 projects
             if (props.getProperty(WebProjectProperties.WEBINF_DIR) == null) {
                 //we can do this because in previous versions WEB-INF was expected under docbase
-                props.setProperty(WebProjectProperties.WEBINF_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/WEB-INF"); //NOI18N
+                String web = props.get(WebProjectProperties.WEB_DOCBASE_DIR);
+                props.setProperty(WebProjectProperties.WEBINF_DIR, web + "/WEB-INF"); //NOI18N
             }
 
             updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

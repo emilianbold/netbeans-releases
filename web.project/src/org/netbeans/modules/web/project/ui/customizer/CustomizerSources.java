@@ -32,6 +32,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListDataEvent;
@@ -72,6 +73,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         this.projectFld = pf;
         
         jTextFieldWebPages.setDocument(uiProperties.WEB_DOCBASE_DIR_MODEL);
+        webInfTextField.setDocument(uiProperties.WEBINF_DIR_MODEL);
         
         WebSourceRootsUi.EditMediator emSR = WebSourceRootsUi.registerEditMediator(
                 (WebProject)uiProperties.getProject(),
@@ -174,6 +176,9 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         jLabelWebPages = new javax.swing.JLabel();
         jTextFieldWebPages = new javax.swing.JTextField();
         jButtonBrowse = new javax.swing.JButton();
+        webInfLabel = new javax.swing.JLabel();
+        webInfTextField = new javax.swing.JTextField();
+        webInfBrowseButton = new javax.swing.JButton();
         sourceRootsPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -242,8 +247,31 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
         add(jButtonBrowse, gridBagConstraints);
         jButtonBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_webPagesFolderBrowse")); // NOI18N
+
+        webInfLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("MNE_WebInf").charAt(0));
+        webInfLabel.setLabelFor(webInfTextField);
+        webInfLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_WebInfFolder")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(webInfLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(webInfTextField, gridBagConstraints);
+
+        webInfBrowseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("MNE_WebInfBrowse").charAt(0));
+        webInfBrowseButton.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_WebInf_Browse_JButton")); // NOI18N
+        webInfBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                webInfBrowseButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        add(webInfBrowseButton, gridBagConstraints);
 
         sourceRootsPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -346,7 +374,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -456,7 +484,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -490,6 +518,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         jComboBoxSourceLevel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AN_SourceLevel")); // NOI18N
         jComboBoxSourceLevel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AD_SourceLevel")); // NOI18N
 
+        jLabel5.setLabelFor(encoding);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_Encoding")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -500,7 +529,6 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         jPanel1.add(jLabel5, gridBagConstraints);
 
-        encoding.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -513,35 +541,43 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void webInfBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webInfBrowseButtonActionPerformed
+        updateFolder(webInfTextField);
+    }//GEN-LAST:event_webInfBrowseButtonActionPerformed
     
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
+        updateFolder(jTextFieldWebPages);
+    }//GEN-LAST:event_jButtonBrowseActionPerformed
+    
+    private void updateFolder(JTextField textField) {
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        File fileName = new File(jTextFieldWebPages.getText());
-        File webPages = fileName.isAbsolute() ? fileName : new File(projectFld, fileName.getPath());
-        if (webPages.exists()) {
-            chooser.setSelectedFile(webPages);
+        File fileName = new File(textField.getText());
+        File folder = fileName.isAbsolute() ? fileName : new File(projectFld, fileName.getPath());
+        if (folder.exists()) {
+            chooser.setSelectedFile(folder);
         } else {
             chooser.setSelectedFile(projectFld);
         }
-        if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File selected = FileUtil.normalizeFile(chooser.getSelectedFile());
-            String newWebPages;
+            String newFolder;
             if (CollocationQuery.areCollocated(projectFld, selected)) {
-                newWebPages = PropertyUtils.relativizeFile(projectFld, selected);
+                newFolder = PropertyUtils.relativizeFile(projectFld, selected);
             } else {
-                newWebPages = selected.getPath();
+                newFolder = selected.getPath();
             }
-            jTextFieldWebPages.setText(newWebPages);
+            textField.setText(newFolder);
         }
-    }//GEN-LAST:event_jButtonBrowseActionPerformed
+    }
     
     private void handleEncodingChange() {
         Charset enc = (Charset) encoding.getSelectedItem();
@@ -581,6 +617,9 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JPanel testRootsPanel;
     private javax.swing.JButton upSourceRoot;
     private javax.swing.JButton upTestRoot;
+    private javax.swing.JButton webInfBrowseButton;
+    private javax.swing.JLabel webInfLabel;
+    private javax.swing.JTextField webInfTextField;
     // End of variables declaration//GEN-END:variables
     
     private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
