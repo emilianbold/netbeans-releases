@@ -118,6 +118,7 @@ public class Installer extends ModuleInstall implements Runnable {
     private static UIHandler handler = new UIHandler(true);
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
     public static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
+    public static final RequestProcessor RP_UI = new RequestProcessor("UI Gestures - Create Dialog"); // NOI18N
     private static final Preferences prefs = NbPreferences.forModule(Installer.class);
     private static OutputStream logStream;
     private static int logsSize;
@@ -710,7 +711,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             
             synchronized (this) {
-                RP.post(this);
+                RP_UI.post(this);
                 while (!dialogCreated) {
                     try {
                         wait();
