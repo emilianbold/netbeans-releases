@@ -29,13 +29,11 @@ import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openide.windows.TopComponent;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.WeakHashMap;
 
 /**
  * @author David Kaspar
@@ -52,8 +50,7 @@ public class EditorViewElement implements MultiViewElement, Serializable {
     private transient Lookup lookup;
     private transient EditorTopComponent topComponent;
     private transient MultiViewElementCallback callback;
-    private static WeakHashMap<DataEditorView, TopComponent> views = new WeakHashMap<DataEditorView, TopComponent>();
-    
+
     public EditorViewElement() {
     }
     
@@ -78,7 +75,6 @@ public class EditorViewElement implements MultiViewElement, Serializable {
             JComponent visualRepresentation = view.getVisualRepresentation();
             if (visualRepresentation != null) {
                 topComponent = kind == DataEditorView.Kind.CODE ? new CodeEditorTopComponent(context, lookup, visualRepresentation) : new EditorTopComponent(context, lookup, visualRepresentation);
-                views.put(view, topComponent);
             }
         }
         return topComponent;
@@ -155,10 +151,6 @@ public class EditorViewElement implements MultiViewElement, Serializable {
             throw new ClassNotFoundException("DataEditorView expected but not found"); // NOI18N
         view = (DataEditorView) object;
         init();
-    }
-    
-    public static TopComponent getTopComponent(DataEditorView view) {
-        return views.get(view);
     }
     
 }
