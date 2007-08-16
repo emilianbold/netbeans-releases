@@ -624,6 +624,7 @@ public class WSITModelSupport {
     public static Binding getBinding(Service service, FileObject implClass, Project project, boolean create, Collection<FileObject> createdFiles) {
         String portName = service.getPortName();
         String serviceName = service.getServiceName();
+        if (serviceName == null) return null;
         WSDLModel model = WSITModelSupport.getModelForService(service, implClass, project, create, createdFiles);
         if (model == null) return null;
         Definitions definitions = model.getDefinitions();
@@ -632,6 +633,7 @@ public class WSITModelSupport {
         if (bindings.size() == 1) return bindings.iterator().next();
         Collection<org.netbeans.modules.xml.wsdl.model.Service> services = definitions.getServices();
         for (org.netbeans.modules.xml.wsdl.model.Service s : services) {
+            if (s == null) continue;
             if (serviceName.equals(s.getName())) {
                 Collection<Port> ports = s.getPorts();
                 for (Port p : ports) {

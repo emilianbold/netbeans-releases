@@ -97,6 +97,7 @@ public class SecurityConfiguration implements WSConfiguration {
                     update();
                 }
             };
+            this.binding = WSITModelSupport.getBinding(service, implementationFile, project, false, null);
             if (binding != null) {
                 binding.getModel().addComponentListener(cl);
             }
