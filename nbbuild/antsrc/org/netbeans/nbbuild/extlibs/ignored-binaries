@@ -46,3 +46,6 @@ ruby/rubyide/RubyNetBeans.app.zip
 
 # Not used in NB 6.0; see #113010 for details:
 serverplugins/businessone/
+
+# Seems harmless:
+serverplugins/sun/appsrv81/src/org/netbeans/modules/j2ee/sun/ide/j2ee/db/pointbasescripts.zip
