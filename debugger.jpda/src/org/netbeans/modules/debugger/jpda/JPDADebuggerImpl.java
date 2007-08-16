@@ -670,14 +670,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
                             new Runnable() {
                                 public void run() {
                                     if (disabledBreakpoints[0] == null) {
+                                        JPDAThreadImpl theResumedThread = (JPDAThreadImpl) getThread(tr);
                                         try {
-                                            resumedThread[0].notifyMethodInvoking();
+                                            theResumedThread.notifyMethodInvoking();
                                         } catch (PropertyVetoException pvex) {
                                             throw new RuntimeException(
                                                 new InvalidExpressionException (pvex.getMessage()));
                                         }
                                         disabledBreakpoints[0] = disableAllBreakpoints ();
-                                        resumedThread[0] = (JPDAThreadImpl) getThread(tr);
+                                        resumedThread[0] = theResumedThread;
                                     }
                                 }
                             },
