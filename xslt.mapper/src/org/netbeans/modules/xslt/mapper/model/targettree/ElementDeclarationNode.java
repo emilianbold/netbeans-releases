@@ -51,32 +51,31 @@ import org.openide.util.NbBundle;
  *
  * @author Alexey
  */
-public class ElementDeclarationNode extends DeclarationNode
-        implements TooltipTextProvider {
-    
-    
+public class ElementDeclarationNode extends DeclarationNode implements TooltipTextProvider {
+
     public ElementDeclarationNode(XslComponent component, XsltMapper mapper) {
         super(component, mapper);
     }
+
     protected List<TreeNode> loadChildren() {
         XslComponent myself = (XslComponent) getDataObject();
-        
-        
+
+
         List<AXIComponent> childTypes = AXIUtils.getChildTypes(getType());
         List<AXIComponent> usedTypes = new ArrayList<AXIComponent>();
         List<TreeNode> xslNodes = new ArrayList<TreeNode>();
-        
+
         //dont show child XSL components if the only child of current eleemnt is "value-of" element
         if (GetExpressionVisitor.isValueOfContainer(myself) == null) {
-            
+
             List<XslComponent> children = myself.getChildren();
-            for(XslComponent c: children){
+            for (XslComponent c : children) {
                 TreeNode newNode = (TreeNode) NodeFactory.createNode(c, getMapper());
-                
-                if (newNode == null){
+
+                if (newNode == null) {
                     continue;
                 }
-                
+
                 newNode.setParent(this);
                 xslNodes.add(newNode);
                 usedTypes.add(newNode.getType());
@@ -85,43 +84,47 @@ public class ElementDeclarationNode extends DeclarationNode
         TreeNode current = null;
         int lastPos = 0;
         List<TreeNode> results = new ArrayList<TreeNode>();
-        
-        for(TreeNode xsl_tn: xslNodes){
+
+        for (TreeNode xsl_tn : xslNodes) {
             AXIComponent type = xsl_tn.getType();
             int pos0 = childTypes.indexOf(type);
-            if (pos0 > 0){
-                for(int n = lastPos; n < pos0; n++){
+            if (pos0 > 0) {
+                for (int n = lastPos; n < pos0; n++) {
                     AXIComponent t = childTypes.get(n);
-                    if(!usedTypes.contains(t)){
+                    if (!usedTypes.contains(t)) {
                         results.add(createSchemaNode(t));
                     }
-                    
                 }
                 lastPos = pos0 + 1;
             }
             results.add(xsl_tn);
         }
-        
+
         //add the remaining schema nodes
-        for(int n = lastPos; n < childTypes.size(); n++){
+        for (int n = lastPos; n < childTypes.size(); n++) {
             AXIComponent t = childTypes.get(n);
-            
-            if(!usedTypes.contains(t)){
+
+            if (!usedTypes.contains(t)) {
                 results.add(createSchemaNode(t));
             }
         }
         return results;
     }
-    
+
     public AXIComponent getType() {
-        return AXIUtils.getType(getComponent(), getMapper());
+        AXIComponent type = AXIUtils.getType(getComponent(), getMapper());
+        if (type == null || type.getModel() == null){
+            return null;
+        }
+        return type;
     }
-    
+
     public void accept(NodeVisitor visitor) {
         visitor.visit(this);
     }
-    public String toString(){
-        XslComponent comp  = getComponent();
+
+    public String toString() {
+        XslComponent comp = getComponent();
         if (comp instanceof Element) {
             return ((Element) comp).getName().getQName().getLocalPart();
         } else if (comp instanceof LiteralResultElement) {
@@ -129,55 +132,52 @@ public class ElementDeclarationNode extends DeclarationNode
         }
         return comp.toString();
     }
-    
+
     public Image getIcon() {
         AXIComponent axiComponent = getType();
         if (axiComponent instanceof org.netbeans.modules.xml.axi.Element) {
-            BadgeModificator bm = AxiomUtils.getElementBadge(
-                    (org.netbeans.modules.xml.axi.Element)axiComponent);
+            BadgeModificator bm = AxiomUtils.getElementBadge((org.netbeans.modules.xml.axi.Element) axiComponent);
             return NodeType.ELEMENT.getImage(bm);
         }
         //
         return NodeType.ELEMENT.getImage(BadgeModificator.SINGLE);
     }
-    
+
     public String getName() {
         AXIComponent axiComponent = getType();
         if (axiComponent instanceof org.netbeans.modules.xml.axi.Element) {
-            return ((org.netbeans.modules.xml.axi.Element)axiComponent).getName();
-        } else {
-            return toString();
-        }
+            return ((org.netbeans.modules.xml.axi.Element) axiComponent).getName();
+        } 
+        return toString();
     }
-    
+
     public String getName(boolean selected) {
         AXIComponent axiComponent = getType();
+
+
+
         if (selected) {
             return getName();
         } else if (axiComponent instanceof org.netbeans.modules.xml.axi.Element) {
             return getName();
         } else {
-            return SoaUiUtil.getFormattedHtmlString(true,
-                    new SoaUiUtil.TextChunk(getName(), SoaUiUtil.MISTAKE_RED));
+            return SoaUiUtil.getFormattedHtmlString(true, new SoaUiUtil.TextChunk(getName(), SoaUiUtil.MISTAKE_RED));
         }
     }
-    
+
     public String getTooltipText() {
         AXIComponent axiComponent = getType();
         if (axiComponent instanceof org.netbeans.modules.xml.axi.Element) {
-            return AxiomUtils.getElementTooltip(
-                    (org.netbeans.modules.xml.axi.Element)axiComponent);
+            return AxiomUtils.getElementTooltip((org.netbeans.modules.xml.axi.Element) axiComponent);
         } else {
-            return SoaUiUtil.getFormattedHtmlString(true,
-                    new SoaUiUtil.TextChunk(toString(), SoaUiUtil.MISTAKE_RED));
+            return SoaUiUtil.getFormattedHtmlString(true, new SoaUiUtil.TextChunk(toString(), SoaUiUtil.MISTAKE_RED));
         }
     }
-    
+
     public JPopupMenu constructPopupMenu() {
         JPopupMenu rootMenu = new JPopupMenu();
         //
-        String localizedName = NbBundle.getMessage(
-                ActionConst.class, ActionConst.ADD_MENU);
+        String localizedName = NbBundle.getMessage(ActionConst.class, ActionConst.ADD_MENU);
         JMenu addMenu = new JMenu(localizedName);
         //
         ActionGroupConstructor nestedAxi = new AddNestedAxiGroup(getMapper(), this);
@@ -192,8 +192,7 @@ public class ElementDeclarationNode extends DeclarationNode
             }
         }
         //
-        if (addNestedAxiArr != null && addNestedAxiArr.length > 0 &&
-                addNestedRuleArr != null && addNestedRuleArr.length > 0) {
+        if (addNestedAxiArr != null && addNestedAxiArr.length > 0 && addNestedRuleArr != null && addNestedRuleArr.length > 0) {
             addMenu.add(new JSeparator());
         }
         //
@@ -212,15 +211,12 @@ public class ElementDeclarationNode extends DeclarationNode
         //
         return rootMenu;
     }
-    
-    private TreeNode createSchemaNode(AXIComponent c){
+
+    private TreeNode createSchemaNode(AXIComponent c) {
         TreeNode newNode = (TreeNode) NodeFactory.createNode(c, getMapper());
-        if (newNode != null){
+        if (newNode != null) {
             newNode.setParent(ElementDeclarationNode.this);
         }
         return newNode;
     }
-    
-    
-   
 }
