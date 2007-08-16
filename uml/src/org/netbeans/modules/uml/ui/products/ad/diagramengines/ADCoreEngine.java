@@ -84,6 +84,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ITaggedValue;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IValueSpecification;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.MetaLayerRelationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.OwnerRetriever;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.Relationship;
 import org.netbeans.modules.uml.core.metamodel.diagrams.ICoreRelationshipDiscovery;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDelayedAction;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
@@ -2175,13 +2176,17 @@ public class ADCoreEngine extends DiagramEngine
                             "MBK_SYNCH_ELEMENT_WITH_DATA")); // NOI18N
 
                         addSeparatorMenuItem(manager);
-                        createNodeAlignmentPullright(manager);
 
+                        if (atLeastTwoSelectedNodes(control.getSelected4()))
+                        {
+                            createNodeAlignmentPullright(manager);
+                            addSeparatorMenuItem(manager);
+                        }
+                        
                         // disabled - feature to be added with Meteora
                         // createNodeDistributionPullright(manager);
                         //  addSeparatorMenuItem(manager);
                         
-                        addSeparatorMenuItem(manager);
 
                         if (pGraphic == null)
                             createNodeNavigationPullright(manager);
@@ -2213,6 +2218,23 @@ public class ADCoreEngine extends DiagramEngine
                 }
             }
         }
+    }
+    
+    
+    private boolean atLeastTwoSelectedNodes(ETList<IElement> elements)
+    {
+        int i = 0;
+
+        for (IElement element: elements)
+        {
+            if (!(element instanceof Relationship))
+                i++;
+            
+            if (i > 1)
+                return true;
+        }
+        
+        return false;
     }
 
 	/**
