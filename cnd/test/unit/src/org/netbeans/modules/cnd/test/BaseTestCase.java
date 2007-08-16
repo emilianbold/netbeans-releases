@@ -21,9 +21,13 @@ package org.netbeans.modules.cnd.test;
 
 import java.io.File;
 import java.io.IOException;
-import javax.swing.JEditorPane;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.Manager;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
+import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -61,11 +65,13 @@ public abstract class BaseTestCase extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
     
     @SuppressWarnings("deprecation")
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         // this is the only way to init extension-based recognizer
@@ -73,9 +79,11 @@ public abstract class BaseTestCase extends NbTestCase {
         FileUtil.setMIMEType("h", "text/x-c++");
         FileUtil.setMIMEType("c", "text/x-c");
         
-        JEditorPane.registerEditorKitForContentType("text/x-c++", "org.netbeans.modules.cnd.editor.cplusplus.CCKit");
-        
-        JEditorPane.registerEditorKitForContentType("text/x-c", "org.netbeans.modules.cnd.editor.cplusplus.CKit");
+        MockServices.setServices(MockMimeLookup.class);
+        MimePath mimePath = MimePath.parse("text/x-c++");
+        MockMimeLookup.setInstances(mimePath, new CCKit());
+        mimePath = MimePath.parse("text/x-c");
+        MockMimeLookup.setInstances(mimePath, new CKit());
     }
 
     /**
@@ -93,6 +101,7 @@ public abstract class BaseTestCase extends NbTestCase {
      * @return golden file
      * @see getTestCaseGoldenDataClass
      */
+    @Override
     public File getGoldenFile(String filename) {
         String fullClassName = getTestCaseGoldenDataClass().getName();
         String goldenFileName = fullClassName.replace('.', File.separatorChar) + File.separator + filename;
@@ -160,6 +169,7 @@ public abstract class BaseTestCase extends NbTestCase {
      * file is created (diff is created only when using native diff, for details
      * see JUnit module documentation)
      */
+    @Override
     public void compareReferenceFiles() {
         compareReferenceFiles(this.getName()+".ref",this.getName()+".ref");
     }    

@@ -56,7 +56,7 @@ public class CndCoreTestUtils {
                         editor[0] = pane;
                     } catch (Exception e) {
                         e.printStackTrace(System.err);
-                    };
+                    }
                 }
             };
             if (SwingUtilities.isEventDispatchThread()) {
@@ -71,7 +71,7 @@ public class CndCoreTestUtils {
     }
     
     public static BaseDocument getBaseDocument(final DataObject dob) throws Exception {
-        EditorCookie  cookie = (EditorCookie)dob.getCookie(EditorCookie.class);
+        EditorCookie  cookie = dob.getCookie(EditorCookie.class);
         
         if (cookie == null) {
             throw new IllegalStateException("Given file (\"" + dob.getName() + "\") does not have EditorCookie.");
@@ -86,7 +86,7 @@ public class CndCoreTestUtils {
     private static final long SLEEP_TIME = 1000;
     
     private static JEditorPane getAnEditorPane(DataObject dob) throws Exception {
-        EditorCookie  cookie = (EditorCookie)dob.getCookie(EditorCookie.class);
+        EditorCookie  cookie = dob.getCookie(EditorCookie.class);
         
         if (cookie == null) {
             throw new IllegalStateException("Given file (\"" + dob.getName() + "\") does not have EditorCookie.");
@@ -113,10 +113,10 @@ public class CndCoreTestUtils {
                     e.printStackTrace(System.err);
                 }
                 panes = cookie.getOpenedPanes();
-            };
+            }
             
             System.err.println("Waiting spent: " + (System.currentTimeMillis() - start) + "ms.");
-        };
+        }
         
         if (panes == null)
             throw new IllegalStateException("The editor was not opened. The timeout was: " + OPENING_TIMEOUT + "ms.");

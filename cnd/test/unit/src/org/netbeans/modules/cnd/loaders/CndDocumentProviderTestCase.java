@@ -20,9 +20,7 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.File;
-import javax.swing.JEditorPane;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.test.BaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.filesystems.FileObject;
@@ -42,15 +40,26 @@ public class CndDocumentProviderTestCase extends BaseTestCase {
         super(testName);
     }
     
-   
+    public void testHeaderDocument() throws Exception {
+        testBaseDocumentInitialized("file.h", HDataObject.class);
+    }
     
-    public void testBaseDocumentInitialized() throws Exception {
-        File newFile = new File(super.getWorkDir(), "file.h");
+    public void testCSourceDocument() throws Exception {
+        testBaseDocumentInitialized("file.c", CDataObject.class);
+    }
+
+    public void testCppSourceDocument() throws Exception {
+        testBaseDocumentInitialized("file.cc", CCDataObject.class);
+    }
+
+    private void testBaseDocumentInitialized(String file, Class clazz) throws Exception {
+        File newFile = new File(super.getWorkDir(), file);
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = FileUtil.toFileObject(newFile);        
         DataObject dob = DataObject.find(fo);
-        assertTrue(dob instanceof HDataObject);
+        assertNotNull(dob);
+        assertSame(dob.getClass(), clazz);
         BaseDocument doc = CndCoreTestUtils.getBaseDocument(dob);
         assertNotNull(doc);
         System.err.println("text len: " + doc.getLength());

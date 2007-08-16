@@ -28,7 +28,6 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.cnd.test.BaseTestCase;
 
 /**
@@ -38,7 +37,7 @@ import org.netbeans.modules.cnd.test.BaseTestCase;
  *
  * @author Miloslav Metelka
  */
-public class BaseDocumentUnitTestCase extends BaseTestCase {
+public abstract class BaseDocumentUnitTestCase extends BaseTestCase {
     
     private EditorKit editorKit;
     
@@ -230,9 +229,7 @@ public class BaseDocumentUnitTestCase extends BaseTestCase {
      * <code>BaseDocument</code> instances
      * from its {@link javax.swing.text.EditorKit.createDefaultDocument()}.
      */
-    protected EditorKit createEditorKit() {
-        return BaseKit.getKit(BaseKit.class);
-    }
+    abstract protected EditorKit createEditorKit();
     
     /**
      * Get the kit that should be used
