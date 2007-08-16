@@ -170,6 +170,7 @@
                  <tocitem text="Creating a RESTful Web Service from Scratch" >
                     <tocitem text="Generating a RESTful Web Service from Scratch" target="create_rest_from_scratch" />
                     <tocitem text="Using the Preregistered Web Service Clients" target="wsc_rest" />
+                    <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
                 </tocitem>
                 <tocitem text="Creating a JAX-WS Web Service from Scratch" >
                     <tocitem text="Generating a JAX-WS Web Service from Scratch" target="create_ws_from_scratch" />
@@ -203,10 +204,11 @@
                 <tocitem text="About Web Service Clients" target="about_wsc" />
                 <tocitem text="Working with Web Service Clients" target="wsc_process" />
                 <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 
-                <tocitem text="Creating a Web Service Client" target="wsc_create" />
-               <tocitem text="Using the Preregistered Web Service Clients" target="wsc_rest" />
-               <tocitem text="Calling a Web Service Operation" target="wsc_call_ws" />
-               <tocitem text="Exposing the Web Service Client in the Projects Window" target="wsc_expose" />
+                <tocitem text="Generating a JAX-WS Web Service Client" target="wsc_create" />
+                <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
+                <tocitem text="Using the Preregistered Web Service Clients" target="wsc_rest" />
+                <tocitem text="Calling a Web Service Operation" target="wsc_call_ws" />
+                <tocitem text="Exposing the Web Service Client in the Projects Window" target="wsc_expose" />
                 <tocitem text="Asynchronously Calling a JAX-WS Web Service Operation" target="wsc_call_ws_asynchronous" />
                 <tocitem text="Building a Web Service Client" target="wsc_build" />
                 <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />

@@ -127,7 +127,8 @@
 	<mapID target="wsc_process" url="webservice/consume/wsc_process.html" />
 	<mapID target="wsc_proxy" url="webservice/consume/wsc_proxy.html" />
         <mapID target="wsc_rest" url="webservice/consume/wsc_rest.html" />
-	<mapID target="wsc_build" url="webservice/consume/wsc_build.html" />
+	<mapID target="wsc_stubs" url="webservice/consume/wsc_stubs.html" />
+        <mapID target="wsc_build" url="webservice/consume/wsc_build.html" />
 	<mapID target="wsc_create" url="webservice/consume/wsc_create.html" />
 	<mapID target="wsc_expose" url="webservice/consume/wsc_expose.html" />
 	<mapID target="wsc_call_ws" url="webservice/consume/wsc_call_ws.html" />
