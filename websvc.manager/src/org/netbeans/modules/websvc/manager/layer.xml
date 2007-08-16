@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="UI">
+        <folder name="Runtime">
+            <file name="org-netbeans-modules-websvc-manager-nodes-WebServicesRootNode.instance">
+                <attr name="position" intvalue="200"/>
+            </file>
+            </folder>
+    </folder>
+</filesystem>

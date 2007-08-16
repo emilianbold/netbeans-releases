@@ -1,0 +1,365 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.websvc.manager.nodes;
+
+import org.netbeans.modules.websvc.manager.WebServiceTransferManager;
+
+import org.netbeans.modules.websvc.manager.actions.AddDataProviderToFormAction;
+import org.netbeans.modules.websvc.manager.actions.TestMethodAction;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+
+import org.openide.nodes.PropertySupport.Reflection;
+import org.openide.nodes.Sheet.Set;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.Utilities;
+import org.openide.ErrorManager;
+
+import org.netbeans.modules.websvc.manager.util.Util;
+import org.netbeans.modules.websvc.manager.model.WebServiceData;
+
+import com.sun.tools.ws.processor.model.Operation;
+import com.sun.tools.ws.processor.model.java.JavaMethod;
+import com.sun.tools.ws.processor.model.java.JavaParameter;
+
+import java.awt.Image;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import javax.swing.Action;
+import org.netbeans.modules.websvc.manager.WebServiceMetaDataTransfer;
+import org.openide.util.datatransfer.ExTransferable;
+
+/**
+ * A simple node with no children.
+ * Often used in conjunction with some kind of underlying data model, where
+ * each node represents an element in that model. In this case, you should see
+ * the Container Node template which will permit you to create a whole tree of
+ * such nodes with the proper behavior.
+ * @author octav
+ */
+public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
+    private static final DataFlavor METHOD_NODE_FLAVOR;
+    
+    static {
+        try {
+            //METHOD_NODE_FLAVOR = new java.awt.datatransfer.DataFlavor("application/x-java-netbeans-websvcmgr-method;class=org.netbeans.modules.websvc.manager.nodes.WebServiceMethodNode");
+            METHOD_NODE_FLAVOR = new java.awt.datatransfer.DataFlavor("application/x-java-netbeans-websvcmgr-method;class=org.openide.nodes.Node");
+        } catch (ClassNotFoundException ex) {
+            throw new AssertionError(ex);
+        }
+    
+    }
+    
+    
+    private WebServiceData wsData;
+    private JavaMethod javaMethod;
+    private WsdlPort port;
+    private Transferable transferable;
+    
+    public WebServiceMethodNode() {
+        this(null,null,null);
+    }
+    
+    public JavaMethod getJavaMethod() {
+        return javaMethod;
+    }
+    
+    public WebServiceData getWebServiceData() {
+        return wsData;
+    }
+    
+    public WsdlPort getPort() {
+        return port;
+    }
+    
+    // will frequently accept an element from some data model in the constructor:
+    public WebServiceMethodNode(WebServiceData inWsData, WsdlPort inPort, WsdlOperation inOperation) {
+        super(Children.LEAF);
+        
+        wsData = inWsData;
+        
+        /**
+         * Bug fix: 5059732
+         * We need to get the port that this method is on to correctly get the type for the parameter.
+         *
+         */
+        
+        port = inPort;
+        if(null == inOperation) {
+            return;
+        }
+        javaMethod = ((Operation)inOperation.getInternalJAXWSOperation()).getJavaMethod() ;
+        setName(inOperation.getJavaName());
+        
+        // Use the port's transferable if the underlying method returns void
+        if ("void".equals(javaMethod.getReturnType().getRealName())) { // NOI18N
+            transferable = ExTransferable.create(new WebServicesPortNode.PortTransferable(new WebServiceMetaDataTransfer.Port(inWsData, inPort.getName())));
+        }else {
+            transferable = ExTransferable.create(new MethodTransferable(new WebServiceMetaDataTransfer.Method(wsData, javaMethod, port.getName())));
+        }
+        
+        /**
+         * Set the shortDescription (tooltip) to the method signature
+         */
+        String signature = javaMethod.getReturnType().getFormalName() + " " + javaMethod.getName() + "(";
+        Iterator parameterIterator = javaMethod.getParametersList().iterator();
+        JavaParameter currentParam = null;
+        while(parameterIterator.hasNext()) {
+            currentParam = (JavaParameter)parameterIterator.next();
+            String parameterType = Util.getParameterType(currentParam);
+            signature += parameterType + " " + currentParam.getName();
+            if(parameterIterator.hasNext()) {
+                signature += ", ";
+            }
+        }
+        signature += ")";
+        
+        setShortDescription(signature);    
+    }
+    
+    // Create the popup menu:
+    public Action[] getActions(boolean context) {
+        return new Action[] {
+            SystemAction.get(AddDataProviderToFormAction.class),
+            SystemAction.get(TestMethodAction.class)
+        };
+    }
+    
+    public Action getPreferredAction() {
+        return SystemAction.get(AddDataProviderToFormAction.class);
+    }
+    
+    public Image getIcon(int type){
+        return getMethodIcon();
+    }
+    
+    public Image getOpenedIcon(int type){
+        return getMethodIcon();
+    }
+    
+    private Image getMethodIcon() {
+        if(!"void".equals(javaMethod.getReturnType().getRealName())) {
+            Image image1 = Utilities.loadImage("org/netbeans/modules/visualweb/websvcmgr/resources/methodicon.png");
+            Image image2 = Utilities.loadImage("org/netbeans/modules/visualweb/websvcmgr/resources/table_dp_badge.png");
+            int x = image1.getWidth(null) - image2.getWidth(null);
+            int y = image1.getHeight(null) - image2.getHeight(null);
+            return Utilities.mergeImages( image1, image2, x, y);
+        } else
+            return Utilities.loadImage("org/netbeans/modules/visualweb/websvcmgr/resources/methodicon.png");
+    }
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+        // When you have help, change to:
+        // return new HelpCtx(WebServiceMethodNode.class);
+    }
+    
+    /**
+     * Create a property sheet for the individual method node
+     * @return property sheet for the data source nodes
+     */
+    protected Sheet createSheet() {
+        Sheet sheet = super.createSheet();
+        Set ss = sheet.get("data"); // NOI18N
+        
+        if (ss == null) {
+            ss = new Set();
+            ss.setName("data");  // NOI18N
+            ss.setDisplayName(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_INFO"));
+            ss.setShortDescription(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_INFO"));
+            sheet.put(ss);
+        }
+        
+        try {
+            Reflection p;
+            
+            p = new Reflection(javaMethod, String.class, "getName", null); // NOI18N
+            p.setName("name"); // NOI18N
+            p.setDisplayName(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_NAME"));
+            p.setShortDescription(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_NAME"));
+            ss.put(p);
+            String signature = javaMethod.getReturnType().getRealName() + " " +
+                    javaMethod.getName() + "(";
+            
+            Iterator tempIterator = javaMethod.getParametersList().iterator();
+            JavaParameter currentparam = null;
+            while(tempIterator.hasNext()) {
+                currentparam = (JavaParameter)tempIterator.next();
+                signature += currentparam.getType().getRealName() + " " + currentparam.getName();
+                if(tempIterator.hasNext()) {
+                    signature += ", ";
+                }
+            }
+            
+            signature += ")";
+            
+            Iterator excpIterator = javaMethod.getExceptions();
+            if(excpIterator.hasNext()) {
+                signature += " throws";
+                while(excpIterator.hasNext()) {
+                    String currentExcp = (String)excpIterator.next();
+                    signature +=  " " + currentExcp;
+                    if(excpIterator.hasNext()) {
+                        signature +=  ",";
+                    }
+                }
+                
+                
+            }
+            
+            p = new Reflection(signature, String.class, "toString", null); // NOI18N
+            p.setName("signature"); // NOI18N
+            p.setDisplayName(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_SIGNATURE"));
+            p.setShortDescription(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_SIGNATURE"));
+            ss.put(p);
+            
+            p = new Reflection(javaMethod.getReturnType(), String.class, "getRealName", null); // NOI18N
+            p.setName("returntype"); // NOI18N
+            p.setDisplayName(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_RETURNTYPE"));
+            p.setShortDescription(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_RETURNTYPE"));
+            ss.put(p);
+            
+            Set paramSet = sheet.get("parameters"); // NOI18N
+            if (paramSet == null) {
+                paramSet = new Sheet.Set();
+                paramSet.setName("parameters"); // NOI18N
+                paramSet.setDisplayName(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_PARAMDIVIDER")); // NOI18N
+                paramSet.setShortDescription(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_PARAMDIVIDER")); // NOI18N
+                sheet.put(paramSet);
+            }
+            Iterator paramIterator = javaMethod.getParametersList().iterator();
+            if(paramIterator.hasNext()) {
+                p = new Reflection(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_PARAMTYPE"),
+                        String.class,
+                        "toString",
+                        null); // NOI18N
+                p.setName("paramdivider2"); // NOI18N
+                
+                JavaParameter currentParameter = null;
+                for(int ii=0;paramIterator.hasNext();ii++) {
+                    currentParameter = (JavaParameter)paramIterator.next();
+                    if(currentParameter.getType().isHolder()) {
+                        p = new Reflection(Util.getParameterType(currentParameter), String.class, "toString", null); // NOI18N
+                    } else {
+                        p = new Reflection(currentParameter.getType(), String.class, "getRealName", null); // NOI18N
+                    }
+                    p.setName("paramname" + ii); // NOI18N
+                    p.setDisplayName(currentParameter.getName());
+                    p.setShortDescription(currentParameter.getName() + "-" +
+                            currentParameter.getType().getRealName());
+                    paramSet.put(p);
+                }
+            }
+            Set exceptionSet = sheet.get("exceptions"); // NOI18N
+            if (exceptionSet == null) {
+                exceptionSet = new Sheet.Set();
+                exceptionSet.setName("exceptions"); // NOI18N
+                exceptionSet.setDisplayName(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_EXCEPTIONDIVIDER")); // NOI18N
+                exceptionSet.setShortDescription(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_EXCEPTIONDIVIDER")); // NOI18N
+                sheet.put(exceptionSet);
+            }
+            
+            Iterator exceptionIterator = javaMethod.getExceptions();
+            String currentException = null;
+            for(int ii=0;exceptionIterator.hasNext();ii++) {
+                currentException = (String)exceptionIterator.next();
+                p = new Reflection(currentException, String.class, "toString", null); // NOI18N
+                p.setName("exception" + ii); // NOI18N
+                p.setDisplayName(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_PARAMTYPE"));
+                p.setShortDescription(NbBundle.getMessage(WebServiceMethodNode.class, "METHOD_PARAMTYPE"));
+                exceptionSet.put(p);
+            }
+        } catch (NoSuchMethodException nsme) {
+            ErrorManager.getDefault().notify(nsme);
+        }
+        
+        return sheet;
+    }
+    
+    // Handle copying and cutting specially:
+    
+    public boolean canCopy() {
+        return isMethodDroppable();
+    }
+    public boolean canCut() {
+        return isMethodDroppable();
+    }
+    
+    public boolean isMethodDroppable() {
+        boolean isJ2EE_15 = Util.isJavaEE5Project(WebServiceLibReferenceHelper.getActiveProject());
+        if (wsData != null && isJ2EE_15) {
+            return wsData.isJaxWsEnabled();
+        } else if (wsData != null && !isJ2EE_15) {
+            return wsData.isJaxRpcEnabled();
+        } else {
+            return true;
+        }
+    }
+    
+    public Transferable clipboardCopy() throws IOException {
+        if (!isMethodDroppable()) {
+            return super.clipboardCopy();
+        }
+        
+        Collection<? extends WebServiceTransferManager> managers = Lookup.getDefault().lookupAll(WebServiceTransferManager.class);
+        Transferable result = transferable;
+        
+        for (WebServiceTransferManager m : managers) {
+            result = m.addDataFlavors(result);
+        }
+        
+        return result;
+    }
+    
+    private static final class MethodTransferable implements Transferable {
+        private static final DataFlavor[] SUPPORTED_FLAVORS = { WebServiceMetaDataTransfer.METHOD_FLAVOR, METHOD_NODE_FLAVOR };
+        private final WebServiceMetaDataTransfer.Method transferData;
+        
+        public MethodTransferable(WebServiceMetaDataTransfer.Method transferData) {
+            this.transferData = transferData;
+        }
+        
+        public DataFlavor[] getTransferDataFlavors() {
+            return SUPPORTED_FLAVORS;
+        }
+
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return flavor == SUPPORTED_FLAVORS[0] || flavor == SUPPORTED_FLAVORS[1];
+        }
+
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (!isDataFlavorSupported(flavor)) {
+                throw new UnsupportedFlavorException(flavor);
+            }else {
+                return transferData;
+            }
+        }
+    }
+}
