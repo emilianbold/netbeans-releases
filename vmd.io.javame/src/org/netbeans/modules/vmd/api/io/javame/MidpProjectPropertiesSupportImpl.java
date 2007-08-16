@@ -29,10 +29,11 @@ import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 
 import java.awt.*;
 import java.util.HashMap;
@@ -97,11 +98,14 @@ public class MidpProjectPropertiesSupportImpl {
 
     public static void addDeviceListener (DataObjectContext context, DeviceListener listener) {
         Project project = ProjectUtils.getProject (context);
-        assert project != null;
+        if (project == null)
+            return;
         AntProjectHelper helper = project.getLookup ().lookup (AntProjectHelper.class);
-        assert helper != null;
+        if (helper == null)
+            return;
 
-        assert ! deviceListeners.containsKey (listener);
+        if (deviceListeners.containsKey (listener))
+            Debug.warning ("DeviceListener already registered", listener); // NOI18N
         DeviceAntProjectListener antListener = new DeviceAntProjectListener (listener);
         helper.addAntProjectListener (antListener);
         deviceListeners.put (listener, antListener);
@@ -109,14 +113,17 @@ public class MidpProjectPropertiesSupportImpl {
 
     public static void removeDeviceListener (DataObjectContext context, DeviceListener listener) {
         Project project = ProjectUtils.getProject (context);
-        assert project != null;
+        if (project == null)
+            return;
         AntProjectHelper helper = project.getLookup ().lookup (AntProjectHelper.class);
-        assert helper != null;
+        if (helper == null)
+            return;
 
-        AntProjectListener antListener = deviceListeners.get (listener);
-        assert antListener != null;
-        helper.removeAntProjectListener (antListener);
-        deviceListeners.remove (listener);
+        AntProjectListener antListener = deviceListeners.remove (listener);
+        if (antListener != null)
+            helper.removeAntProjectListener (antListener);
+        else
+            Debug.warning ("DeviceListener not registered", listener); // NOI18N
     }
 
     public static boolean isMobileProject (Project project) {
