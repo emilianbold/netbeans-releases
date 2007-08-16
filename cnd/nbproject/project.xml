@@ -195,6 +195,18 @@
                         <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>
