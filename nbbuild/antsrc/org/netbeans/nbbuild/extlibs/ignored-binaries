@@ -43,3 +43,6 @@ enterprise/workflow/
 
 # Just some metadata files written by us:
 ruby/rubyide/RubyNetBeans.app.zip
+
+# Not used in NB 6.0; see #113010 for details:
+serverplugins/businessone/
