@@ -26,8 +26,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
+import junit.framework.Test;
 
 import org.netbeans.junit.*;
+import org.openide.nodes.Node;
 import org.openide.util.test.MockPropertyChangeListener;
 
 /** Test recognition of objects in folders, and folder ordering.
@@ -41,7 +44,13 @@ public class DataFolderTest extends LoggingTestCaseHid {
     public DataFolderTest (String name) {
         super (name);
     }
+    
+    public static Test suite() {
+        return new NbTestSuite(DataFolderTest.class);
+        //return new DataFolderTest("testMoveFolderWithReadOnlyFile");
+    }
 
+    @Override
     protected void setUp () throws Exception {
         clearWorkDir ();
     }
@@ -60,6 +69,60 @@ public class DataFolderTest extends LoggingTestCaseHid {
         });
         
         assertEquals ("Found the right one", fo, df.getPrimaryFile());
+    }
+
+    public void testMoveFolderWithReadOnlyFile () throws Exception {
+        String fsstruct [] = new String [] {
+            "AA/A.txt",
+            "AA/B.txt",
+            "AA/C.txt",
+            "AA/D.txt",
+            "target/",
+        };
+        
+        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
+
+        FileObject fo = lfs.findResource ("AA");
+        DataFolder folder = DataFolder.findFolder(fo);
+        
+        FileObject c = lfs.findResource("AA/C.txt");
+        File cFile = FileUtil.toFile(c);
+        assertNotNull(cFile);
+        
+        cFile.setReadOnly();
+        
+        assertFalse("Read only", c.canWrite());
+        
+        
+        DataFolder target = DataFolder.findFolder(lfs.findResource("target"));
+
+        CharSequence log = Log.enable("org.openide.loaders.DataFolder", Level.INFO);
+        folder.move(target);
+//        if (log.toString().indexOf("C.txt") == -1) {
+//            fail("There should be warning about C.txt:\n" + log);
+//        }
+        FileObject newFO = lfs.findResource("target/AA");
+        assertNotNull("New folder created", newFO);
+        DataFolder newFolder = DataFolder.findFolder(newFO);
+        assertEquals("New folder has three DO", 3, newFolder.getChildren().length);
+        
+        
+        assertEquals("Folder keeps pointing to old file", "AA", folder.getPrimaryFile().getPath());
+        assertEquals("It has one DO", 1, folder.getChildren().length);
+        
+        DataFolder original = DataFolder.findFolder(lfs.findResource("AA"));
+        assertSame("Old folder retains identity", original, folder);
+        
+        if (newFolder == folder) {
+            fail("newFolder should be created");
+        }
+        
+        Node[] oldNodes = folder.getNodeDelegate().getChildren().getNodes(true);
+        assertEquals("One node remains", 1, oldNodes.length);
+        
+        
+        Node[] newNodes = newFolder.getNodeDelegate().getChildren().getNodes(true);
+        assertEquals("Three nodes created", 3, newNodes.length);
     }
     
     /** Tests whether children are updated immediately.

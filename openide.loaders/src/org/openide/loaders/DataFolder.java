@@ -626,6 +626,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     * @return new primary file of the object
     * @exception IOException if an error occures
     */
+    @Override
     protected FileObject handleMove (DataFolder df) throws IOException {
         FileObject originalFolder = getPrimaryFile ();
         FileLock lock = originalFolder.lock();
@@ -729,6 +730,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 // some children couldn't be moved -> folder shouldn't be moved
                 restoreEntries (backup);
                 list.refresh ();
+                assert newFolder.getClass().getName().indexOf("NodeSharingDataFolder") >= 0;
+                // and new folder is going to stay, so dispose this NodeSharingDataFolder
+                newFolder.dispose();
                 return originalFolder;
             }
 

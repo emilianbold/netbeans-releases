@@ -772,6 +772,9 @@ implements ChangeListener {
     private synchronized void changePrimaryFile (
         Item item, FileObject newFile
     ) {
+        if (item.primaryFile == newFile) {
+            return;
+        }
         map.remove (item.primaryFile);
         item.primaryFile = newFile;
         map.put (newFile, item);
