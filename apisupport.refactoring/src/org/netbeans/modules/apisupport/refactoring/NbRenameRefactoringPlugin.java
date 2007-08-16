@@ -453,7 +453,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
          * Creates a new instance of ServicesRenameRefactoringElement
          */
         public ServicesRenameRefactoringElement(String fqname , FileObject file) {
-            this.name = fqname.substring(fqname.lastIndexOf('.'));
+            this.name = fqname.substring(fqname.lastIndexOf('.') + 1);
             parentFile = file;
             oldName = fqname;
         }
@@ -469,17 +469,16 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             String content = Utility.readFileIntoString(parentFile);
             oldContent = content;
             if (content != null) {
-                String longName = oldName;
                 if (newName == null) {
 //                    System.out.println("new name=" + rename.getNewName());
                     newName = rename.getNewName();
                 }
-                longName = longName.replaceAll("[.]", "\\."); // NOI18N
-                content = content.replaceAll("^" + longName + "[ \\\r\\\n]*", newName + System.getProperty("line.separator")); // NOI18N
+                content = content.replaceAll(name + "[ \\\r\\\n]*", newName + System.getProperty("line.separator")); // NOI18N
                 Utility.writeFileFromString(parentFile, content);
             }
         }
         
+        @Override
         public void undoChange() {
             if (oldContent != null) {
                 Utility.writeFileFromString(parentFile, oldContent);
@@ -509,6 +508,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             return NbBundle.getMessage(NbRenameRefactoringPlugin.class, "TXT_ServicesPackageRename", this.name);
         }
         
+        @Override
         public void performChange() {
             String content = Utility.readFileIntoString(parentFile);
             if (content != null) {
