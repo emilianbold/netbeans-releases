@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -47,7 +47,6 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -470,7 +469,7 @@ public final class UIUtil {
             return displayName;
         }
         
-        public String toString() {
+        public @Override String toString() {
             return getDisplayName();
         }
         
@@ -619,7 +618,7 @@ public final class UIUtil {
         }
         
         // #93658: GTK needs name to render cell renderer "natively"
-        public String getName() {
+        public @Override String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
         }
@@ -793,7 +792,7 @@ public final class UIUtil {
             setMultiSelectionEnabled(false);
             addChoosableFileFilter(new IconFilter());
             setFileView(new FileView() {
-                public Icon getIcon(File f) {
+                public @Override Icon getIcon(File f) {
                     // Show icons right in the chooser, to make it easier to find
                     // the right one.
                     if (f.getName().endsWith(".gif") || f.getName().endsWith(".png")) { // NOI18N
@@ -804,7 +803,7 @@ public final class UIUtil {
                     }
                     return null;
                 }
-                public String getName(File f) {
+                public @Override String getName(File f) {
                     File f2 = getSelectedFile();
                     if (f2 != null && (f2.getName().endsWith(".gif") || f2.getName().endsWith(".png"))) { // NOI18N
                         Icon icon = new ImageIcon(f2.getAbsolutePath());

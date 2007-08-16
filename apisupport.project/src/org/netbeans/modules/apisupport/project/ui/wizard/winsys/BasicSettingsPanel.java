@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -92,13 +92,13 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
             FileObject foRoot = fs.getRoot().getFileObject("Windows2/Modes"); //NOI18N
             if (foRoot != null) {
                 FileObject[] fos = foRoot.getChildren();
-                Collection col = new ArrayList();
-                for (int i=0; i < fos.length; i++) {
-                    if (fos[i].isData() && "wsmode".equals(fos[i].getExt())) { //NOI18N
-                        col.add(fos[i].getName());
+                Collection<String> col = new ArrayList<String>();
+                for (FileObject fo : fos) {
+                    if (fo.isData() && "wsmode".equals(fo.getExt())) { //NOI18N
+                        col.add(fo.getName());
                     }
                 }
-                modes = (String[])col.toArray(new String[col.size()]);
+                modes = col.toArray(new String[col.size()]);
             } else {
                 modes = DEFAULT_MODES;
             }

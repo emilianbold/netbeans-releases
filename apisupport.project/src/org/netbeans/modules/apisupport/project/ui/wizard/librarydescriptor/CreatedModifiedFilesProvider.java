@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -62,11 +62,8 @@ final class CreatedModifiedFilesProvider  {
     }
     
     private static void addOperations(CreatedModifiedFiles fileSupport, NewLibraryDescriptor.DataModel data)  {
-        URL template;
-        Map tokens;
-        
-        template = CreatedModifiedFilesProvider.class.getResource("libdescriptemplate.xml");//NOI18N
-        tokens = getTokens(fileSupport, data.getProject(), data);
+        URL template = CreatedModifiedFilesProvider.class.getResource("libdescriptemplate.xml");//NOI18N
+        Map<String, String> tokens = getTokens(fileSupport, data.getProject(), data);
         String layerEntry = getLibraryDescriptorEntryPath(data.getLibraryName());
         
         fileSupport.add(
@@ -108,8 +105,8 @@ final class CreatedModifiedFilesProvider  {
         return sb.toString();
     }
     
-    private static Map getTokens(CreatedModifiedFiles fileSupport, Project project, NewLibraryDescriptor.DataModel data) {
-        Map retval = new HashMap();
+    private static Map<String, String> getTokens(CreatedModifiedFiles fileSupport, Project project, NewLibraryDescriptor.DataModel data) {
+        Map<String, String> retval = new HashMap<String, String>();
         Library library = data.getLibrary();
         retval.put("name_to_substitute",data.getLibraryName());//NOI18N
         retval.put("bundle_to_substitute",getPackagePlusBundle(project).replace('/','.'));//NOI18N

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -178,7 +178,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         
         this.createdProjectFolder = FileUtil.toFileObject(FileUtil.normalizeFile(projectFolder));
         
-        Set<FileObject> resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
         resultSet.add(createdProjectFolder);
         
         UIUtil.setProjectChooserDirParent(projectFolder);

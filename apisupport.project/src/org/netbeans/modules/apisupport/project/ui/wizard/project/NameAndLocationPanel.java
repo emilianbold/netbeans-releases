@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -159,7 +159,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             return false;
         }
         ModuleEntry[] entries = platform.getModules();
-        Collection modules = new HashSet(Arrays.asList(NewProjectIterator.MODULES));
+        Collection<String> modules = new HashSet<String>(Arrays.asList(NewProjectIterator.MODULES));
         
         for (int i = 0; i < entries.length; i++) {
             modules.remove(entries[i].getCodeNameBase());

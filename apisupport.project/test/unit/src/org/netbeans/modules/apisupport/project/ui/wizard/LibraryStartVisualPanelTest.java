@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,7 @@ public class LibraryStartVisualPanelTest extends NbTestCase {
     }
 
     public void testPopulateProjectData() throws Exception {
-        Map/*<String,String>*/ contents = new HashMap();
+        Map<String, String> contents = new HashMap<String, String>();
         contents.put("org/apache/commons/logging/Log.class", "");
         contents.put("1.0-beta/X.class", ""); // #72669
         contents.put("org/apache/commons/logging/impl/NoOpLog.class", "");

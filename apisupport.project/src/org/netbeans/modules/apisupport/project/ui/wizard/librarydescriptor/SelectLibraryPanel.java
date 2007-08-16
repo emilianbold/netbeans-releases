@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -180,16 +180,15 @@ final class SelectLibraryPanel extends BasicWizardIterator.Panel {
         LibrariesModel model = (LibrariesModel) librariesValue.getModel();
         Collection oldLibraries = Arrays.asList(model.getLibraries());
         LibrariesCustomizer.showCustomizer((Library)librariesValue.getSelectedItem());
-        List currentLibraries = Arrays.asList(model.getLibraries());
-        Collection newLibraries = new ArrayList(currentLibraries);
+        List<Library> currentLibraries = Arrays.asList(model.getLibraries());
+        Collection<Library> newLibraries = new ArrayList<Library>(currentLibraries);
         
         newLibraries.removeAll(oldLibraries);
         int indexes[] = new int [newLibraries.size()];
         
         int i=0;
-        for (Iterator it = newLibraries.iterator(); it.hasNext();i++) {
-            Library lib = (Library) it.next();
-            indexes[i] = currentLibraries.indexOf(lib);
+        for (Iterator<Library> it = newLibraries.iterator(); it.hasNext(); i++) {
+            indexes[i] = currentLibraries.indexOf(it.next());
         }
         if (indexes.length > 0 && i > 0) {
             librariesValue.setSelectedIndex(indexes[i-1]);

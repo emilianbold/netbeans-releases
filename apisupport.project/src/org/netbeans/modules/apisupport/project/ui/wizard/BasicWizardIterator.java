@@ -366,7 +366,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
             return getPanel();
         }
         
-        public void storeSettings(Object settings) {
+        public @Override void storeSettings(Object settings) {
             WizardDescriptor wiz = (WizardDescriptor) settings;
             if (WizardDescriptor.NEXT_OPTION.equals(wiz.getValue()) ||
                     WizardDescriptor.FINISH_OPTION.equals(wiz.getValue())) {
@@ -376,7 +376,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
             ((WizardDescriptor) settings).putProperty("NewFileWizard_Title", null); // NOI18N
         }
         
-        public void readSettings(Object settings) {
+        public @Override void readSettings(Object settings) {
             WizardDescriptor wiz = (WizardDescriptor) settings;
             // mkleint - copied from someplace.. is definitely weird..
             // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
@@ -391,7 +391,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
             }
         }
         
-        public HelpCtx getHelp() {
+        public @Override HelpCtx getHelp() {
             return getPanel().getHelp();
         }
         

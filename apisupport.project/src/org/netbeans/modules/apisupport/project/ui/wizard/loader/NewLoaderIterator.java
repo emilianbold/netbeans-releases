@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,8 +37,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -78,7 +76,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
         };
     }
     
-    public void uninitialize(WizardDescriptor wiz) {
+    public @Override void uninitialize(WizardDescriptor wiz) {
         super.uninitialize(wiz);
         data = null;
     }
@@ -163,7 +161,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
         String namePrefix = model.getPrefix();
         String packageName = model.getPackageName();
         final String mime = model.getMimeType();
-        HashMap replaceTokens = new HashMap();
+        Map<String, String> replaceTokens = new HashMap<String, String>();
         replaceTokens.put("@@PREFIX@@", namePrefix);//NOI18N
         replaceTokens.put("@@PACKAGENAME@@", packageName);//NOI18N
         replaceTokens.put("@@MIMETYPE@@", mime);//NOI18N
@@ -271,7 +269,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
         
         fileChanges.add(fileChanges.layerModifications(new CreatedModifiedFiles.LayerOperation() {
             public void run(FileSystem layer) throws IOException {
-                List<String> actions = new ArrayList();
+                List<String> actions = new ArrayList<String>();
                 if (isEditable) {
                     actions.add("org.openide.actions.OpenAction"); // NOI18N
                 }
@@ -290,7 +288,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
                     "org.openide.actions.PropertiesAction", // NOI18N
                 }));
                 FileObject folder = FileUtil.createFolder(layer.getRoot(), "Loaders/" + mime + "/Actions"); // NOI18N
-                List<DataObject> kids = new ArrayList();
+                List<DataObject> kids = new ArrayList<DataObject>();
                 Iterator it = actions.iterator();
                 int i = 0;
                 while (it.hasNext()) {
@@ -304,9 +302,9 @@ final class NewLoaderIterator extends BasicWizardIterator {
                     }
                     kids.add(DataObject.find(kid));
                 }
-                DataFolder.findFolder(folder).setOrder((DataObject[]) kids.toArray(new DataObject[kids.size()]));
+                DataFolder.findFolder(folder).setOrder(kids.toArray(new DataObject[kids.size()]));
             }
-        }, Collections.EMPTY_SET));
+        }, Collections.<String>emptySet()));
         
         //9. create sample template
         String suffix = null;
@@ -322,7 +320,7 @@ final class NewLoaderIterator extends BasicWizardIterator {
                 assert false: ex;
             }
         }
-        Map attrs = new HashMap();
+        Map<String, Object> attrs = new HashMap<String, Object>();
         attrs.put("template", Boolean.TRUE); // NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + namePrefix + suffix, //NOI18N
                 template,

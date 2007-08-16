@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -66,7 +65,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         };
     }
     
-    public void uninitialize(WizardDescriptor wiz) {
+    public @Override void uninitialize(WizardDescriptor wiz) {
         super.uninitialize(wiz);
         data = null;
     }
@@ -153,7 +152,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
             return checkFirstPanel();
         }
         
-        public String getPackageName() {
+        public @Override String getPackageName() {
             String retValue;
             retValue = super.getPackageName();
             if (retValue == null) {
@@ -173,8 +172,8 @@ final class NewOptionsIterator extends BasicWizardIterator {
             return errCode;
         }
         
-        private Map getTokenMap() {
-            Map retval = new HashMap();
+        private Map<String, String> getTokenMap() {
+            Map<String, String> retval = new HashMap<String, String>();
             for (int i = 0; i < TOKENS.length; i++) {
                 if (isAdvanced() && "@@ICON_PATH@@".equals(TOKENS[i])) { // NOI18N
                     continue;
@@ -399,7 +398,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
         private CreatedModifiedFiles.Operation createJavaFileCopyOperation(final String templateSuffix) {
             URL template = NewOptionsIterator.class.getResource(JAVA_TEMPLATE_PREFIX+templateSuffix);
             assert template != null : JAVA_TEMPLATE_PREFIX+templateSuffix;
-            return files.createFileWithSubstitutions(getFilePath(templateSuffix), template,getTokenMap());
+            return files.createFileWithSubstitutions(getFilePath(templateSuffix), template, getTokenMap());
         }
         
         private String getFilePath(final String templateSuffix) {

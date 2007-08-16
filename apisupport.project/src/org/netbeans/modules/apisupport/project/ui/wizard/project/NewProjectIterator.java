@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,7 +39,6 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -90,7 +89,7 @@ final class NewProjectIterator extends BasicWizardIterator {
         };
     }
     
-    public void uninitialize(WizardDescriptor wiz) {
+    public @Override void uninitialize(WizardDescriptor wiz) {
         super.uninitialize(wiz);
         data = null;
     }
@@ -167,7 +166,7 @@ final class NewProjectIterator extends BasicWizardIterator {
         final String name = model.getName();
         final String packageName = model.getPackageName();
         
-        HashMap replaceTokens = new HashMap();
+        HashMap<String, String> replaceTokens = new HashMap<String, String>();
         replaceTokens.put("@@CATEGORY@@", category);//NOI18N
         replaceTokens.put("@@DISPLAYNAME@@", displayName);//NOI18N
         replaceTokens.put("@@TEMPLATENAME@@", name);//NOI18N
@@ -195,7 +194,7 @@ final class NewProjectIterator extends BasicWizardIterator {
         FileObject parent = xml != null ? xml.getParent() : null;
         // XXX this is not fully accurate since if two ops would both create the same file,
         // really the second one would automatically generate a uniquified name... but close enough!
-        Set externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, name + "Project.zip")); // NOI18N
+        Set<String> externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, name + "Project.zip")); // NOI18N
         fileChanges.add(fileChanges.layerModifications(
                 new CreateProjectZipOperation(model.getTemplate(), name, packageName,
                 category, ManifestManager.getInstance(Util.getManifest(moduleInfo.getManifestFile()), false)),externalFiles));
@@ -242,13 +241,13 @@ final class NewProjectIterator extends BasicWizardIterator {
         // assuming we got 1-sized array, should be enforced by UI.
         SourceGroup[] grps = srcs.getSourceGroups(Sources.TYPE_GENERIC);
         SourceGroup group = grps[0];
-        Collection files = new ArrayList();
+        Collection<FileObject> files = new ArrayList<FileObject>();
         collectFiles(group.getRootFolder(), files,
                 SharabilityQuery.getSharability(FileUtil.toFile(group.getRootFolder())));
         createZipFile(target, group.getRootFolder(), files);
     }
     
-    private static void collectFiles(FileObject parent, Collection accepted, int parentSharab) {
+    private static void collectFiles(FileObject parent, Collection<FileObject> accepted, int parentSharab) {
         FileObject[] fos = parent.getChildren();
         for (int i = 0; i < fos.length; i++) {
             if (!VisibilityQuery.getDefault().isVisible(fos[i])) {

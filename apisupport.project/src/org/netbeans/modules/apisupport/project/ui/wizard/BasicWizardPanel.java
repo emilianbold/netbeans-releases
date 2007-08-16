@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -113,11 +113,11 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
             return data;
         }
         
-        public void readSettings(Object settings) {
+        public @Override void readSettings(Object settings) {
             reloadData();
         }
         
-        public void storeSettings(Object settings) {
+        public @Override void storeSettings(Object settings) {
             storeData();
         }
         

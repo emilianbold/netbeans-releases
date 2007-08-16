@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -60,7 +60,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }
         
         // generate .java file for ModuleInstall
-        Map basicTokens = new HashMap();
+        Map<String, String> basicTokens = new HashMap<String, String>();
         basicTokens.put("@@PACKAGE_NAME@@", getPackageName()); // NOI18N
         basicTokens.put("@@CLASS_NAME@@", className); // NOI18N
         // XXX use nbresloc URL protocol rather than
@@ -72,7 +72,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
         
         // add manifest attribute
-        Map attribs = new HashMap();
+        Map<String, String> attribs = new HashMap<String, String>();
         attribs.put(OPENIDE_MODULE_INSTALL, getPackageName().replace('.','/') + '/' + className + ".class"); // NOI18N
         cmf.add(cmf.manifestModification(null, attribs));
     }
@@ -81,7 +81,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf = null;
     }
     
-    public void setPackageName(String packageName) {
+    public @Override void setPackageName(String packageName) {
         super.setPackageName(packageName);
         reset();
     }

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -222,12 +222,12 @@ final class LibraryStartVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         return wrongOnes;
     }
     
-    public void addNotify() {
+    public @Override void addNotify() {
         super.addNotify();
         attachDocumentListeners();
     }
     
-    public void removeNotify() {
+    public @Override void removeNotify() {
         // prevent checking when the panel is not "active"
         removeDocumentListeners();
         super.removeNotify();

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -61,7 +61,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     private void regenerate() {
         cmf = new CreatedModifiedFiles(getProject());
         
-        Map basicTokens = new HashMap();
+        Map<String, String> basicTokens = new HashMap<String, String>();
         basicTokens.put("@@PACKAGE_NAME@@", getPackageName()); // NOI18N
         basicTokens.put("@@WIZARD_PREFIX@@", prefix); // NOI18N
         
@@ -73,7 +73,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             String visualPanelClass = prefix + "VisualPanel" + stepNumber; // NOI18N
             String wizardPanelClass = prefix + "WizardPanel" + stepNumber; // NOI18N
             
-            Map replaceTokens = new HashMap(basicTokens);
+            Map<String, String> replaceTokens = new HashMap<String, String>(basicTokens);
             replaceTokens.put("@@VISUAL_PANEL_CLASS@@", visualPanelClass); // NOI18N
             replaceTokens.put("@@WIZARD_PANEL_CLASS@@", wizardPanelClass); // NOI18N
             replaceTokens.put("@@STEP_NAME@@", "Step #" + stepNumber); // NOI18N
@@ -108,7 +108,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         // generate .java for wizard iterator
         if (fileTemplateType || branching) {
             String iteratorClass = prefix + "WizardIterator"; // NOI18N
-            Map replaceTokens = new HashMap(basicTokens);
+            Map<String, String> replaceTokens = new HashMap<String, String>(basicTokens);
             replaceTokens.put("@@PANELS_DEFINITION_BLOCK@@", panelsDefinitionBlock.toString()); // NOI18N
             replaceTokens.put("@@ITERATOR_CLASS@@", iteratorClass); // NOI18N
             String path = getDefaultPackagePath(iteratorClass + ".java", false); // NOI18N
@@ -149,7 +149,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 }
             }
         } else {
-            Map replaceTokens = new HashMap(basicTokens);
+            Map<String, String> replaceTokens = new HashMap<String, String>(basicTokens);
             replaceTokens.put("@@PANELS_DEFINITION_BLOCK@@", panelsDefinitionBlock.toString()); // NOI18N
             String path = getDefaultPackagePath(prefix + "WizardAction.java", false); // NOI18N
             URL template = DataModel.class.getResource("sampleAction.javx"); // NOI18N
@@ -199,7 +199,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         this.origIconPath = origIconPath;
     }
     
-    public void setPackageName(String packageName) {
+    public @Override void setPackageName(String packageName) {
         super.setPackageName(packageName);
         reset();
     }
