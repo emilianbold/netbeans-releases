@@ -59,24 +59,18 @@ import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.geometry.FStroke;
 import org.openide.util.NbBundle;
 
-
 /**
- *
  * @author aa160298
  */
-public class GlassPane extends JPanel implements ActionListener, 
-        FocusListener, MouseListener {
-    
+public class GlassPane extends JPanel implements ActionListener, FocusListener, MouseListener {
     
     private JPanel labelPane;
     private JButton hideButton;
-    
     private JEditorPane editorPane;
     private JScrollPane scrollPane;
-    
     private StringBuffer html = new StringBuffer();
     
-    public GlassPane() {
+    public GlassPane(String text, ActionListener actionListener, boolean editable) {
         setLayout(new BorderLayout(0, 1));
         setBorder(new EmptyBorder(6, 36, 6, 6)); 
         setPreferredSize(new Dimension(320, 180)); 
@@ -91,14 +85,24 @@ public class GlassPane extends JPanel implements ActionListener,
                 g2.dispose();
             }
         };
-        editorPane.setEditable(false);
-        editorPane.setEditorKitForContentType("text/html", new HTMLEditorKit());
-        editorPane.setContentType("text/html");
+        // vlv
+        String type;
+        editorPane.setEditable(editable);
+
+        if (editable) {
+          type = "text/plain";
+        }
+        else {
+          type = "text/html";
+        }
+        editorPane.setEditorKitForContentType(type, new HTMLEditorKit());
+        editorPane.setContentType(type);
+
         editorPane.setBackground(null);
         editorPane.setBorder(null);
         editorPane.setOpaque(false);
         scrollPane = createScrollPane(editorPane);
-        
+
         InputMap oldIM = editorPane.getInputMap();
         InputMap newIM = new InputMap();
         
@@ -119,14 +123,23 @@ public class GlassPane extends JPanel implements ActionListener,
             }
             newIM.put(ks, oldIM.get(ks));
         }
-        
-        editorPane.setInputMap(WHEN_FOCUSED, newIM);
-        
+        // vlv
+        if ( !editable) {
+          editorPane.setInputMap(WHEN_FOCUSED, newIM);
+        }
         labelPane = new JPanel(new BorderLayout(10, 0));
         labelPane.setBackground(null);
         labelPane.setOpaque(false);
-        labelPane.setBorder(new EmptyBorder(0, 8, 0, 8));
-        
+        int margin;
+
+        // vlv
+        if (editable) {
+          margin = 0;
+        }
+        else {
+          margin = 8;
+        }
+        labelPane.setBorder(new EmptyBorder(0, margin, 0, margin));
         hideButton = new HideButton();
         hideButton.setMargin(new Insets(2, 2, 2, 2));
         hideButton.addActionListener(this);
@@ -144,6 +157,13 @@ public class GlassPane extends JPanel implements ActionListener,
         this.addMouseListener(this);
         scrollPane.addMouseListener(this);
         editorPane.addMouseListener(this);
+
+        // vlv
+        if (text != null) {
+          editorPane.setText(text);
+          editorPane.setCaretPosition(editorPane.getDocument().getStartPosition().getOffset());
+        }
+        myActionListener = actionListener;
     }
     
     public boolean contains(int x, int y) {
@@ -151,7 +171,11 @@ public class GlassPane extends JPanel implements ActionListener,
     }
     
     public void addHeader(Icon icon, String text) {
-        HeaderLabel label = new HeaderLabel(icon, text);
+      addHeader(icon, text, TEXT_COLOR);
+    }
+
+    public void addHeader(Icon icon, String text, Color color) {
+        HeaderLabel label = new HeaderLabel(icon, text, color);
         
         int headersCount = labelPane.getComponentCount();
         
@@ -205,18 +229,15 @@ public class GlassPane extends JPanel implements ActionListener,
         if (html.length() == 0) {
             fillHTMLHeader();
         } 
-        
         fillHTMLFooter();
-        
         String newText = html.toString();
         String oldText = editorPane.getText();
 
-        if (!equals(newText, oldText)) {
+        if ( !equals(newText, oldText)) {
             editorPane.setText(newText);
             editorPane.setCaretPosition(editorPane.getDocument()
                 .getStartPosition().getOffset());
         }
-        
         html.delete(0, html.length());
     }
 
@@ -238,11 +259,9 @@ public class GlassPane extends JPanel implements ActionListener,
         html.append("</head><body>"); // NOI18N
     }
     
-    
     private void fillHTMLFooter() {
         html.append("</body></html>"); // NOI18N
     }
-    
     
     private void fillHTMLDivider() {
         html.append("<table cellpadding=0 cellspacing=0 border=0 width=100%>"); // NOI18N
@@ -250,7 +269,6 @@ public class GlassPane extends JPanel implements ActionListener,
         html.append(E_IMAGE_URL);
         html.append("\" width=1 height=1></td></tr></table>"); // NOI18N
     }
-    
     
     private void fillHTMLItem(URL iconURL, int iconSize, int iconSpace, 
             String text) 
@@ -262,7 +280,6 @@ public class GlassPane extends JPanel implements ActionListener,
             text = text.replace("<", "&lt;"); // NOI18N
             text = text.replace(">", "&gt;"); // NOI18N
         }
-        
         html.append("<table cellpadding=0 cellspacing=0 border=0 width=100%>"); // NOI18N
         html.append("<tr valign=top><td width=19 align=right>"); // NOI18N
         html.append("&nbsp;<img src=\""); // NOI18N
@@ -300,6 +317,16 @@ public class GlassPane extends JPanel implements ActionListener,
         
         designView.revalidate();
         designView.repaint();
+
+        // vlv
+        if (myActionListener != null) {
+          myActionListener.actionPerformed(
+            new ActionEvent(getText(), 0, null));
+        }
+    }
+
+    public String getText() {
+      return editorPane.getText();
     }
     
     public void paintThumbnail(Graphics g) {
@@ -320,7 +347,6 @@ public class GlassPane extends JPanel implements ActionListener,
         g2.draw(borderShape);
     }
     
-    
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
@@ -338,7 +364,6 @@ public class GlassPane extends JPanel implements ActionListener,
         
         g2.dispose();
     }
-    
     
     private Shape createBorderShape() {
         GeneralPath gp = new GeneralPath();
@@ -370,7 +395,6 @@ public class GlassPane extends JPanel implements ActionListener,
         return gp;
     }
     
-    
     private static JScrollPane createScrollPane(JComponent content) {
         JScrollPane res = new JScrollPane(content);
         res.getVerticalScrollBar().setUnitIncrement(16);
@@ -386,7 +410,6 @@ public class GlassPane extends JPanel implements ActionListener,
         return res;
     }
     
-    
     private static void prepareScrollBar(JScrollBar scrollBar) {
         scrollBar.setOpaque(false);
         for (int i = scrollBar.getComponentCount() - 1; i >= 0; i--) {
@@ -398,7 +421,6 @@ public class GlassPane extends JPanel implements ActionListener,
         }
     }
 
-    
     private void moveOnTop() {
         JComponent parent = (JComponent) getParent();
         if (parent == null) return;
@@ -433,15 +455,12 @@ public class GlassPane extends JPanel implements ActionListener,
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {}
     
-    
-    
     private static class HideButton extends JButton {
         public HideButton() {
             setFocusable(false);
             setOpaque(false);
             setToolTipText(NbBundle.getMessage(getClass(), "LBL_GlassPane_Hide")); // NOI18N
         }
-        
 
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -468,27 +487,23 @@ public class GlassPane extends JPanel implements ActionListener,
         }
     }
     
-    
     private static class HeaderLabel extends JLabel {
-        public HeaderLabel(Icon icon, String text) {
+        public HeaderLabel(Icon icon, String text, Color color) {
             this(text);
             setIcon(icon);
-            setForeground(TEXT_COLOR);
+            setForeground(color);
         }
 
-        
         public HeaderLabel(String text) {
             this();
             setText(text);
         }
         
-        
         public HeaderLabel() {
             setBackground(null);
             setOpaque(false);
         }
-        
-        
+
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
             
@@ -503,19 +518,13 @@ public class GlassPane extends JPanel implements ActionListener,
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     oldAntialiasing);
         }
-        
-        
-        private static final Color TEXT_COLOR = new Color(0xBB2200);
     }
     
-    
     private static class UnderlineBorder implements Border {
-        
         private int top;
         private int left;
         private int bottom;
         private int right;
-        
         private Color color;
         
         public UnderlineBorder(int top, int left, int bottom, int right,
@@ -528,7 +537,6 @@ public class GlassPane extends JPanel implements ActionListener,
             this.color = color;
         }
         
-        
         public void paintBorder(Component c, Graphics g, int x, int y, 
                 int w, int h) 
         {
@@ -539,7 +547,6 @@ public class GlassPane extends JPanel implements ActionListener,
             g.setColor(oldColor);
         }
         
-        
         public Insets getBorderInsets(Component c) {
             return new Insets(top, left, bottom, right);
         }
@@ -549,7 +556,9 @@ public class GlassPane extends JPanel implements ActionListener,
         }
     }
 
-    private static final URL E_IMAGE_URL = Decoration.class.getResource("resources/e.png"); // NOI18N
+    private ActionListener myActionListener;
     private static final Color FILL = Color.WHITE;
     private static final Color STROKE = new Color(0x444444);
+    private static final URL E_IMAGE_URL = Decoration.class.getResource("resources/e.png"); // NOI18N
+    private static final Color TEXT_COLOR = new Color(0xBB2200);
 }

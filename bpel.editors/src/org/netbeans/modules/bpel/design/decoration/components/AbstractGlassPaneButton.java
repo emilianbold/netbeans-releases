@@ -41,9 +41,14 @@ import org.netbeans.modules.bpel.design.DesignView;
 public class AbstractGlassPaneButton extends JToggleButton implements ActionListener, HierarchyListener, DecorationComponent {
     
     public AbstractGlassPaneButton(Icon icon) {
+      this(icon, null, null, false);
+    }
+
+    public AbstractGlassPaneButton(Icon icon, String text, ActionListener actionListener, boolean editable) {
         super(icon);
         myIcon = icon;
-        myGlassPane = new GlassPane();
+        myGlassPane = new GlassPane(text, actionListener, editable);
+        myActionListener = actionListener;
         addActionListener(this);
         addHierarchyListener(this);
         
@@ -83,11 +88,22 @@ public class AbstractGlassPaneButton extends JToggleButton implements ActionList
         myGlassPane.scrollRectToVisible(new Rectangle(0, 0, myGlassPane.getWidth(), myGlassPane.getHeight()));
     }
     
+    // vlv
+    protected void addTitle(Icon icon, String text, Color color) {
+        myGlassPane.addHeader(icon, text, color);
+    }
+
     private void hideGlassPane() {
         DesignView designView = (DesignView) myGlassPane.getParent();
         designView.remove(myGlassPane);
         designView.revalidate();
         designView.repaint();
+
+        // vlv
+        if (myActionListener != null) {
+          myActionListener.actionPerformed(
+            new ActionEvent(myGlassPane.getText(), 0, null));
+        }
     }
     
     private DesignView getDesignView() {
@@ -159,5 +175,6 @@ public class AbstractGlassPaneButton extends JToggleButton implements ActionList
 
     private Icon myIcon; 
     private GlassPane myGlassPane;
+    private ActionListener myActionListener;
     private static final Color BACKGROUND = new Color(0xCCFFFFFF, true);
 }
