@@ -641,10 +641,11 @@ public class MapperContextImpl implements MapperContext {
         }
 
         public void fileRenamed(FileRenameEvent fe) {
+             reinitContext();
         }
 
         public void fileDeleted(FileObject fo) {
-            reinitContext();
+           reinitContext();
         }
     }
 
