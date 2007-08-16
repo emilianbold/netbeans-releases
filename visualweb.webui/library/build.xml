@@ -5,103 +5,7 @@
     
     <import file="nbproject/build-impl.xml"/>
     
-    <target name="-pre-compile" depends="generate-baseclasses"/>
-    
     <target name="-post-compile" depends="copy-metadata"/>
-    
-    <target name="-post-clean">
-        <delete dir="${gen.dir}"/>
-    </target>
- 
-    <target name="generate-baseclasses" depends="init,pre-generate-baseclasses"
-      unless="generated-uptodate">   
-        <antcall target="validate"/>
-        <mkdir dir="${gen.dir}"/>
-        <mkdir dir="${gen.dir}/component"/>
-        <mkdir dir="${gen.dir}/taglib"/>
-        <echo>Generating component base classes...</echo>
-        <java classname="com.sun.rave.jsfmeta.generators.Main" fork="true">
-            <arg line="-d ${gen.dir}/component"/>
-            <arg line="-f ${gen.file.standard_faces_config}"/>
-            <arg line="-f ${gen.file.standard_faces_config_overlay}"/>
-            <arg line="-f ${gen.file.webui_faces_config_overlay}"/>
-            <arg line="-x"/>
-            <arg line="-f ${gen.file.webui_faces_config}"/>
-            <arg line="-f ${gen.file.webui_sun_faces_config}"/>
-            <arg line="-p ui"/>
-            <arg line="-t META-INF/webui.tld"/>
-            <arg line="-u http://www.sun.com/web/ui"/>
-            <arg line="-O"/>
-            <arg line="-v"/>
-            <arg line="--cpClassBase"/>
-            <classpath>
-                <pathelement path="${gen.classpath}"/>
-            </classpath>
-        </java>
-        <echo>Generating JSP tag classes...</echo>
-        <java classname="com.sun.rave.jsfmeta.generators.Main" fork="true">
-            <arg line="-d ${gen.dir}/taglib"/>
-            <arg line="-f ${gen.file.standard_faces_config}"/>
-            <arg line="-f ${gen.file.standard_faces_config_overlay}"/>
-            <arg line="-f ${gen.file.webui_faces_config_overlay}"/>
-            <arg line="-x"/>
-            <arg line="-f ${gen.file.webui_faces_config}"/>
-            <arg line="-f ${gen.file.webui_sun_faces_config}"/>
-            <arg line="-p ui"/>
-            <arg line="-T com.sun.rave.web.ui.taglib"/>
-            <arg line="-u http://www.sun.com/web/ui"/>
-            <arg line="-v"/>         
-            <arg line="-C com.sun.rave.web.ui.el"/>
-            <arg line="--tlClass"/>
-            <classpath>
-                <pathelement path="${gen.classpath}"/>
-            </classpath>
-        </java>
-        <echo>Generating JSP tag descriptors...</echo>
-        <java classname="com.sun.rave.jsfmeta.generators.Main" fork="true">
-            <arg line="-d ${gen.dir}"/>
-            <arg line="-f ${gen.file.standard_faces_config}"/>
-            <arg line="-f ${gen.file.standard_faces_config_overlay}"/>
-            <arg line="-f ${gen.file.webui_faces_config_overlay}"/>
-            <arg line="-x"/>
-            <arg line="-f ${gen.file.webui_faces_config}"/>
-            <arg line="-f ${gen.file.webui_sun_faces_config}"/>
-            <arg line="-p ui"/>
-            <arg line="-t META-INF/webui.tld"/>
-            <arg line="-T com.sun.rave.web.ui.taglib"/>
-            <arg line="-u http://www.sun.com/web/ui"/>
-            <arg line="-v"/>
-            <arg line="-c com.sun.rave.web.ui.design.CategoryDescriptors"/>
-            <arg line="--tlDescriptor"/>
-            <classpath>
-                <pathelement path="${gen.classpath}"/>
-            </classpath>
-        </java>
-        <touch file="${gen.timestamp.file}"/>
-    </target>
-    
-    <target name="pre-generate-baseclasses">
-        <uptodate property="generated-uptodate" targetfile="${gen.timestamp.file}">
-            <srcfiles dir="conf" includes="**/*.xml"/>
-        </uptodate>
-    </target>
-
-    <target name="validate" depends="init">
-        <xmlcatalog id="faces-catalog">
-            <dtd publicId="-//Sun Microsystems, Inc.//DTD JavaServer Faces Overlay 1.0//EN"
-              location="../../../ravelibs/jsf-api/conf/web-facesconfig-overlay_1_0.dtd"/>
-            <dtd publicId="-//Sun Microsystems, Inc.//DTD JavaServer Faces Overlay 1.1//EN"
-              location="../../../ravelibs/jsf-api/conf/web-facesconfig-overlay_1_1.dtd"/>
-            <dtd publicId="-//Sun Microsystems, Inc.//DTD JavaServer Faces Overlay 1.2//EN"
-              location="../../../ravelibs/jsf-api/conf/web-facesconfig-overlay_1_2.dtd"/>
-        </xmlcatalog>
-        <xmlvalidate file="conf/sun-faces-config.xml" failonerror="true">
-            <xmlcatalog refid="faces-catalog"/>
-        </xmlvalidate>
-        <xmlvalidate file="conf/sun-beans-config.xml" failonerror="true">
-            <xmlcatalog refid="faces-catalog"/>
-        </xmlvalidate>
-    </target>
     
     <target name="copy-metadata">
         <copy todir="${build.classes.dir}/META-INF">
@@ -109,7 +13,7 @@
                 <include name="**/*.dtd"/>
                 <include name="**/*.xml"/>
             </fileset>
-            <fileset dir="${gen.dir}/META-INF">
+            <fileset dir="conf/META-INF">
                 <include name="*.tld"/>
             </fileset>
         </copy>
@@ -130,7 +34,6 @@
    <patternset id="src-zip-file-pattern">
 	   <exclude name="com/sun/rave/web/ui/renderer/**"/>
 	   <exclude name="com/sun/rave/web/ui/component/util/**"/>
-	   <!--exclude name="com/sun/rave/web/ui/component/*Base.**"/-->
 	   <include name="com/sun/rave/web/ui/component/**"/>
 	   <include name="com/sun/rave/web/ui/model/**"/>
 	   <include name="com/sun/rave/web/ui/event/**"/>
@@ -140,9 +43,6 @@
    <target name="src-zip" depends="compile">
      <zip destfile="${src.zip}">
          <fileset dir="${src.dir}">
-            <patternset refid="src-zip-file-pattern"/>
-         </fileset>
-         <fileset dir="${gen.component.dir}">
             <patternset refid="src-zip-file-pattern"/>
          </fileset>
      </zip>

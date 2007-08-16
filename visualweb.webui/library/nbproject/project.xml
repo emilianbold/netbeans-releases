@@ -6,9 +6,7 @@
             <name>Sun Web UI Components Library</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
-                <root id="src.taglib.dir" name="Generated Tag Library"/>
                 <root id="src.dir"/>
-                <root id="src.component.dir" name="Generated Source Packages"/>
             </source-roots>
             <test-roots>
                 <root id="test.src.dir"/>
