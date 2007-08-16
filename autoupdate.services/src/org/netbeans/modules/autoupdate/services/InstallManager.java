@@ -60,38 +60,23 @@ public class InstallManager {
             // adjust isGlobal to forced global if present
             isGlobal |= update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ().booleanValue ();
             
-            String targetCluster = update.getInstallInfo ().getTargetCluster ();
+            final String targetCluster = update.getInstallInfo ().getTargetCluster ();
 
             // global or local
             if ((targetCluster != null && targetCluster.length () > 0) || isGlobal) {
-                
-                // is global or
-                // does have a target cluster?
-                for (File cluster : UpdateTracking.clusters (true)) {
-                    if (targetCluster != null && targetCluster.equals (cluster.getName ())) {
-                        if (! cluster.exists ()) {
-                            cluster.mkdirs ();
-                        }
-                        if (cluster.canWrite ()) {
-                            res = cluster;
-                            break;
-                        } else {
-                            ERR.log (Level.WARNING, "No write permision in target cluster " + targetCluster + 
-                                    " for " + update.getUpdateElement ());
-                        }
-                    }
-                }
+                res = checkTargetCluster(update, targetCluster);
                 
                 // handle non-existing clusters
                 if (res == null && targetCluster != null) {
                     res = createNonExistingCluster (targetCluster);
+                    res = checkTargetCluster(update, targetCluster);
                 }
                 
                 // target cluster still not found
                 if (res == null) {
                     
                     res = createNonExistingCluster (UpdateTracking.EXTRA_CLUSTER_NAME);
-                    
+                    res = checkTargetCluster(update, targetCluster);
                     // no new cluster was created => use userdir
                     res = res == null? getUserDir () : res;
                     
@@ -121,6 +106,27 @@ public class InstallManager {
             }
         }
         ERR.log (Level.FINEST, "UpdateElement " + update.getUpdateElement () + " has the target cluster " + res);
+        return res;
+    }
+
+    private static File checkTargetCluster(UpdateElementImpl update, String targetCluster) {
+        File res = null;
+        // is global or
+        // does have a target cluster?
+        for (File cluster : UpdateTracking.clusters(true)) {
+            if (targetCluster != null && targetCluster.equals(cluster.getName())) {
+                if (!cluster.exists()) {
+                    cluster.mkdirs();
+                }
+                if (cluster.canWrite()) {
+                    res = cluster;
+                    break;
+                } else {
+                    ERR.log(Level.WARNING, "No write permision in target cluster " + targetCluster + " for " + update.getUpdateElement());
+                }
+            }
+        }
+
         return res;
     }
     
