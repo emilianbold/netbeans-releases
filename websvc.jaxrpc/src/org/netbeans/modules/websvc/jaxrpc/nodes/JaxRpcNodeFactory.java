@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.websvc.jaxrpc.nodes;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,11 +36,10 @@ import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.openide.util.WeakListeners;
 
 /**
  *
@@ -143,16 +140,18 @@ public class JaxRpcNodeFactory implements NodeFactory {
                 SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                 if (groups!=null && groups.length>0) {
                     FileObject srcDir = groups[0].getRootFolder();
-                    srcDir.addFileChangeListener(WeakListeners.create(FileChangeListener.class, metaInfListener, srcDir));
+                    srcDir.addFileChangeListener(FileUtil.weakFileChangeListener(metaInfListener, srcDir ) );
                     FileObject metaInf = srcDir.getFileObject("META-INF");
-                    if (metaInf!=null) metaInf.addFileChangeListener(WeakListeners.create(FileChangeListener.class, metaInfListener, metaInf));
+                    if (metaInf!=null){ 
+                        metaInf.addFileChangeListener(FileUtil.weakFileChangeListener( metaInfListener, metaInf) );
+                    }
                 }
                 
             }
             FileObject projectDir = project.getProjectDirectory();
             FileObject webInf = projectDir.getFileObject("web/WEB-INF");
             if(webInf != null){
-                webInf.addFileChangeListener(WeakListeners.create(FileChangeListener.class, metaInfListener, webInf));
+                webInf.addFileChangeListener(FileUtil.weakFileChangeListener( metaInfListener, webInf) );
             }
             
             //XXX: Not very nice, the wsdlFolder should be hold by this class because it listens on it
@@ -165,27 +164,10 @@ public class JaxRpcNodeFactory implements NodeFactory {
                 ErrorManager.getDefault().notify(ex);
             }
             if (wsdlFolder != null) {
-                wsdlFolder.addFileChangeListener(WeakListeners.create(FileChangeListener.class,wsdlListener, wsdlFolder));
+                wsdlFolder.addFileChangeListener(FileUtil.weakFileChangeListener(wsdlListener, wsdlFolder) );
             }
         }
         
-        public void removeNotify() {
-            Sources sources = (Sources)project.getLookup().lookup(Sources.class);
-            if (sources!=null) {
-                SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                if (groups!=null && groups.length>0) {
-                    FileObject srcDir = groups[0].getRootFolder();
-                    srcDir.removeFileChangeListener(metaInfListener);
-                    FileObject metaInf = srcDir.getFileObject("META-INF");
-                    if (metaInf!=null) metaInf.removeFileChangeListener(metaInfListener);
-                }
-                
-            }
-            
-            if (wsdlFolder != null) {
-                wsdlFolder.removeFileChangeListener(wsdlListener);
-            }
-        }
         private final class WsdlCreationListener extends FileChangeAdapter {
             public void fileDataCreated(FileEvent fe) {
                 if (WSDL_FOLDER.equalsIgnoreCase(fe.getFile().getExt())) {
@@ -219,9 +201,9 @@ public class JaxRpcNodeFactory implements NodeFactory {
             public void fileFolderCreated(FileEvent fe) {
                 FileObject f = fe.getFile();
                 if (f.isFolder() && WSDL_FOLDER.equals(f.getName())) {
-                    f.addFileChangeListener(WeakListeners.create(FileChangeListener.class, wsdlListener , f));
+                    f.addFileChangeListener(FileUtil.weakFileChangeListener(wsdlListener, f) );
                 } else if (f.isFolder() && "META-INF".equals(f.getName())) { //NOI18N
-                    f.addFileChangeListener(WeakListeners.create(FileChangeListener.class, metaInfListener, f));
+                    f.addFileChangeListener(FileUtil.weakFileChangeListener(metaInfListener, f) );
                 }
             }
             
@@ -238,17 +220,11 @@ public class JaxRpcNodeFactory implements NodeFactory {
                 }
             }
         }
-        
-        
-        private final class JaxWsChangeListener implements PropertyChangeListener {
-            public void propertyChange(PropertyChangeEvent evt) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        fireChange();
-                    }
-                });
-            }
+
+        public void removeNotify() {
         }
+        
+        
     }
     
 }
