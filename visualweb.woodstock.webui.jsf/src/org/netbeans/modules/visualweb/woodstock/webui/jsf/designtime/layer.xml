@@ -180,7 +180,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>  
             
             <!-- Woodstock components not included in VWP. Add them here so that people can test the designtime code -->
-            <file name="WoodstockContentPageTitle.comp_palette_item" url="resources/WoodstockContentPageTitle.comp_palette_item">
+         <!--   <file name="WoodstockContentPageTitle.comp_palette_item" url="resources/WoodstockContentPageTitle.comp_palette_item">
                 <attr name="position" intvalue="500"/>
             </file>
             <file name="WoodstockMasthead.comp_palette_item" url="resources/WoodstockMasthead.comp_palette_item">
@@ -236,7 +236,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
 	    <file name="WoodstockEditableField.comp_palette_item" url="resources/WoodstockEditableField.comp_palette_item">
                 <attr name="position" intvalue="2300"/>
-            </file>
+            </file> -->
             <!-- End fo Woodstock components not included in VWP -->
         </folder>
         <folder name="Advanced">
