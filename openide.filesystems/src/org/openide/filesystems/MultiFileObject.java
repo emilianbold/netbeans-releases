@@ -740,14 +740,6 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         }
 
         FileSystem[] systems = getMultiFileSystem().getDelegates();
-        FileSystem leaderfs;
-
-        try {
-            leaderfs = getLeaderFileSystem();
-        } catch (FileStateInvalidException fsie) {
-            // Whatever.
-            leaderfs = null;
-        }
 
         //        boolean isLoaderAttr = /* DataObject.EA_ASSIGNED_LOADER */ "NetBeansAttrAssignedLoader".equals (attrName); // NOI18N                
         for (int i = 0; i < systems.length; i++) {
