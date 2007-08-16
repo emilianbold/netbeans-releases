@@ -389,7 +389,8 @@ is divided into following sections:
 
                 <xsl:comment> copy all files from project source directory to build directory. </xsl:comment>
                 <copy todir="${{build.dir}}" preservelastmodified="true" >
-                    <fileset includes="**/*.xsl,**/*.xslt,**/*.wsdl,**/*.xsd" dir="${{src.dir}}"/>
+                    <!--issue 112930- fileset includes="**/*.xsl,**/*.xslt,**/*.wsdl,**/*.xsd" dir="${{src.dir}}"/-->
+                    <fileset includes="**/*" dir="${{src.dir}}"/>
                 </copy>
                 
                 
@@ -407,7 +408,7 @@ is divided into following sections:
             
             
             
-            <xsl:comment> BUILD ALL SUB-PROJECTS and copy xsd/wsdl files</xsl:comment>
+            <xsl:comment> BUILD ALL SUB-PROJECTS and copy xsd/wsdl/xsl/xml files</xsl:comment>
             <xsl:call-template name="build-and-layout-sub-projects-template">
                 <xsl:with-param name="targetname" select="'deps-sub-project'"/>
             </xsl:call-template>            
@@ -422,7 +423,8 @@ is divided into following sections:
             <target name="dist_se">
                 <xsl:attribute name="depends">init,pre-dist</xsl:attribute>
                 <jar compress="${{jar.compress}}" jarfile="${{build.dir}}/SEDeployment.jar">
-                    <fileset includes="**/*.xsl,**/*.xslt,**/*.wsdl,**/*.xsd" dir="${{basedir}}/${{build.dir}}"/>
+                    <fileset includes="**/*" dir="${{basedir}}/${{build.dir}}"/>
+                    <!--issue 112930- fileset includes="**/*.xsl,**/*.xslt,**/*.wsdl,**/*.xsd" dir="${{basedir}}/${{build.dir}}"/>
                     
                     <fileset dir="${{basedir}}/${{build.dir}}">
                         <include name="**/jbi.xml" />
@@ -434,11 +436,12 @@ is divided into following sections:
                         <include name="*.xsl" />
                         <include name="*.wsdl" />
                         <include name="*.xsd" />
+                        <include name="*.xml" />
                     </fileset>
 
                     <fileset dir="${{src.dir}}/">
                         <include name="transformmap.xml"/>
-                    </fileset>
+                    </fileset-->
                 </jar>
             </target>
             
@@ -716,7 +719,7 @@ to simulate
                             <xsl:value-of select="$filetypes"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:value-of select="'**/*.xsl,**/*.xslt,**/*.wsdl,**/*.xsd'"/>
+                            <xsl:value-of select="'**/*.xsl,**/*.xslt,**/*.wsdl,**/*.xsd,**/*.xml'"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
@@ -749,6 +752,12 @@ to simulate
                 </move>
                 <delete quiet="true" failonerror="false">
                     <xsl:attribute name="dir">${build.dir}/<xsl:value-of select="$subproj"/>/WEB-INF</xsl:attribute>
+                </delete>
+                <delete quiet="true" failonerror="false">
+                    <xsl:attribute name="dir">${build.dir}/<xsl:value-of select="$subproj"/>/META-INF</xsl:attribute>
+                </delete>
+                <delete quiet="true" failonerror="false">
+                    <xsl:attribute name="file">${build.dir}/<xsl:value-of select="$subproj"/>/transformmap.xml</xsl:attribute>
                 </delete>
             </xsl:for-each>
         </target>
