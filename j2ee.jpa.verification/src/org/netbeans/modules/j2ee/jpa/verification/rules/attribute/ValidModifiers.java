@@ -79,12 +79,13 @@ public class ValidModifiers extends JPAEntityAttributeCheck {
                 errors.add(Rule.createProblem(attrib.getMutator(), ctx,
                         NbBundle.getMessage(ValidModifiers.class, "MSG_NonPublicMutator")));
             }
-            else if (attrib.getModelElement() instanceof Id
-                    && mutatorModifiers.contains(Modifier.PUBLIC)){
-                errors.add(Rule.createProblem(attrib.getMutator(), ctx,
-                        NbBundle.getMessage(ValidModifiers.class, "MSG_PublicIdMutatorDiscouraged"),
-                        Severity.WARNING));
-            }
+            // see issue #108876
+//            else if (attrib.getModelElement() instanceof Id
+//                    && mutatorModifiers.contains(Modifier.PUBLIC)){
+//                errors.add(Rule.createProblem(attrib.getMutator(), ctx,
+//                        NbBundle.getMessage(ValidModifiers.class, "MSG_PublicIdMutatorDiscouraged"),
+//                        Severity.WARNING));
+//            }
             
             if (mutatorModifiers.contains(Modifier.FINAL)){
                 errors.add(Rule.createProblem(attrib.getMutator(), ctx,
