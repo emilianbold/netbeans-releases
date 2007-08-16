@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="db/test" basedir="." default="all" >
@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../nbbuild/templates/xtest.xml"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
-    <property name="xtest.testtype" value="qa-functional"/>
+    <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable,pointbase"/>
 
     <property name="nbextra.home" value="../../../nbextra"/>
