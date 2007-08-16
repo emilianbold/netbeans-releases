@@ -5,7 +5,7 @@
 -->
 <html>
     <head>
-	<title>Subversion Import Wizard: Folder to Import</title>
+	<title>Subversion Import Wizard: Files to Import</title>
 	<link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" 
             rel="StyleSheet" type="text/css">
     </head>
@@ -13,32 +13,53 @@
     <body>
 	<h2>Subversion Import Wizard: Files to Import</h2>
         
-        <p>The Files to Import panel of the Subversion Import wizard enables you to:</p>
+        <p>The Files to Import panel of the Subversion Import wizard displays a table enabling you 
+            to view and specify actions on individual files prepared for import. This panel is an 
+            optional step in the Subversion Import wizard.</p> 
+            
+        <p>You access this panel by arriving at the third panel of the Subversion Import wizard 
+            (Versioning &gt; Subversion &gt; Import into Repository).</p>            
+            
+        <p>The following columns display in the table:
         
         <ul>
-            <li>specify the folder or project to import from your working directory, and</li>
-            <li>designate a target location in the repository.</li>
+            <li><strong>File.</strong> Lists the file or folder name of the item to be imported.</li>
+            <li><strong>Commit Action.</strong> Specifies the action to be taken on the item during import.</li>
+            <li><strong>Repository Path.</strong> Displays the path to the imported item, relative to the
+                repository URL.</li>
         </ul>
             
-        <p>You access this panel by arriving at the second panel of the Subversion Import wizard 
-            (Versioning &gt; Subversion &gt; Import into Repository).</p>
-            
-	<p>When importing into the repository, specify the following:</p>
-        
-	<ul>
-	    <li><strong>Repository Folder.</strong> Specify a location in the repository by
-                typing in a folder name. Note that you can create a new repository folder
-                by entering a new folder name. Alternatively, click Browse to open a dialog
-                enabling you to view and choose from existing repository folders.</li>
-	    <li><strong>Specify the Message.</strong> Enter a message describing the project you 
-                are importing.</li>
-	</ul>
-        
         <ul class="note">
-            <li>Click Next to preview all files that are to be imported and specify additional
-                actions (e.g. exclude individual files from the import), otherwise click Finish
-                to initiate the import.</li>
+            <li>All items listed under the File column are green, indicating their current 
+                <a href="../svn_status.html">file status</a>: files and folders that do not yet exist in 
+                the repository.</li>
+            <li>You can sort table items by column headings. For example, to list all files alphabetically,
+                click the <strong>File</strong> column heading.</li>
         </ul>
+        
+        <h4>To specify actions on individual files:</h4>
+        
+        <ol>
+            <li>Click the <strong>Commit Action</strong> field of a selected file or folder.</li>
+            <li>From the drop-down menu, select a listed action.</li>
+        </ol>
+        
+        <p>Depending on whether you are specifying an action for a file or folder, the following options
+            apply:</p>
+         
+	<ul>
+	    <li><strong>File</strong> 
+                <ul>
+                    <li><strong>Add as Text.</strong> MIME type for the item will be committed as text.</li>
+                    <li><strong>Add as Binary.</strong> MIME type for the item will be committed as non-text.</li>
+                    <li><strong>Exclude from Commit.</strong> Selected item will not be included in import.</li>                                        
+                </ul></li>
+	    <li><strong>Folder</strong>
+                <ul>
+                    <li><strong>Add Directory.</strong> The item will be committed as a directory in the repository.</li>
+                    <li><strong>Exclude from Commit.</strong> Selected item will not be included in import.</li>                                        
+                </ul></li>
+	</ul>
         
 	<hr>
 	<small><a href="../../credits.html">Legal Notices</a></small>
