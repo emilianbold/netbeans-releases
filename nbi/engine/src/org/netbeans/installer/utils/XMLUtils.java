@@ -125,23 +125,30 @@ public abstract class XMLUtils {
             final Document document,
             final OutputStream output) throws XMLException {
         try {
+	    LogManager.logEntry("... saving XML to output stream started");
             final Source source = new DOMSource(
                     document);
+	    LogManager.log("... DOMSource created");
             final Result result = new StreamResult(
                     output);
+	    LogManager.log("... StreamResult created");
             final Source xslt = new StreamSource(
                     FileProxy.getInstance().getFile(XSLT_REFORMAT_URI));
+	    LogManager.log("... XSLT loaded");
             final Transformer transformer = TransformerFactory.
                     newInstance().
                     newTransformer(xslt);
-            
+            LogManager.log("... transformer created");
             transformer.transform(source, result);
+	    LogManager.log("... transformation done");
         } catch (DownloadException e) {
             throw new XMLException("Cannot save XML document", e);
         } catch (TransformerConfigurationException e) {
             throw new XMLException("Cannot save XML document", e);
         } catch (TransformerException e) {
             throw new XMLException("Cannot save XML document", e);
+        } finally {
+	    LogManager.logExit("... saving XML to output stream ended (finally)");
         }
     }
     
