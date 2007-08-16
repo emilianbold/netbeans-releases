@@ -133,8 +133,8 @@ public interface TooltipManager {
                 : NbBundle.getMessage(BpelNode.class,
                 "LBL_LONG_TOOLTIP_WITHDOCS_HTML_TEMPLATE" , // NOI18N
                 new String[] {nodeType.getDisplayName(), 
-                docsStr,
                 refName,
+                docsStr,
                 Util.getAttributesTooltip(nodeType,reference)}
                 ); 
         }
