@@ -10,27 +10,55 @@ Use is subject to license terms.  *-->
     <body>
         <h2>Generating Java Classes from XML Documents</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-        <p>To come...
+
+        <p>You can use the JAXB Wizard to generate Java classes from an XML file.
+         Once you have the classes, you can use them in a variety of scenarios
+         to traverse the elements and attributes of the XML file.
         
+         <p><b>To generate Java classes from an XML document:</b> 
+         
         <ol>
             <li>Make sure that you have installed the Full distribution of the IDE, not
             Basic, and not Standard, since the JAXB Wizard is only provided
             with the Full distribution.
-            <li>Depending on the <a href="about_implement_ws.html">implementation form</a>, create a
+            <li>Depending on the <a href="../create/about_implement_ws.html">implementation form</a>, create a
                 project type for the code that you will generate from the XML file. Typically, you would
             create a standard Java application for this purpose.</li>
             <li>In the Projects window or Files window, right-click the project node
                 and choose New &gt; Other. In the New File wizard, choose JAXB Binding
-            from the XML category. Click Next.</li>
-            <li>Complete the wizard. Click Finish.</li>
+            from the XML category. Click Next.
+            <p>In the wizard, fill in the fields as described below:
+            <ul><li><b>Binding Name.</b> Specifies the name of the new JAXB binding, which will be used to identify it.
+                <li><b>Project.</b> Displays the name of the current project.
+                <li><b>Schema File.</b> The file that you want to work with can either be available locally or on-line.
+                <li><b>Schema Type.</b> The following types of XML document are supported:
+                <ul><li>XML Schema
+                    <li>Relax NG
+                    <li>Relax NG Compact
+                    <li>XML DTD
+                <li>WSDL </ul>
+                <li><b>Package Name.</b> Specifies the package to which the Java objects will be generated.
+                <li><b>Compiler Options.</b> Many compiler options are available, as described here in the Java EE 5 Tutorial. However, in relation to the JAXB Wizard, only the following are relevant and you can set them using checkboxes in the wizard:
+                <ul><li><b>nv.</b> Do not perform strict validation of the input schema(s). By default, strict validation of the source schema is performed before processing. Note that this does not mean the binding compiler will not perform any validation; it simply means that it will perform less-strict validation.
+                    <li><b>readOnly.</b> Force the compiler to mark the generated Java sources read-only. By default, the compiler does not write-protect the Java source files it generates.
+                    <li><b>npa.</b> Suppress the generation of package level annotations into **/package-info.java. Using this switch causes the generated code to internalize those annotations into the other generated classes.
+                    <li><b>verbose.</b> Produce maximum compiler output, such as progress information and warnings.
+                    <li><b>quiet.</b> Suppress compiler output, such as progress information and warnings.
+                    <li><b>Use Extension.</b> By default, the compiler strictly enforces 
+                    the rules outlined in the Compatibility chapter of the JAXB Specification. 
+                    In the default (strict) mode, you are also limited to using only the 
+                    binding customizations defined in the specification. By using this option,
+                you will be allowed to use the JAXB Vendor Extensions.</ul> 
+                <li><b>Use Binding File.</b> to come
+            <li><b>Use Catalog File.</b> to come</ul> 
+            <li>Click Finish.
             <li>Open the Files window, and notice that the Java classes have been
             generated in the <tt>build</tt> folder.
         </ol>
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="../about/ws_process.html">Working with Web Services</a></dd>
-            <dd><a href="../about/ws_quickref.html">Web Service Tasks: Quick Reference</a></dd>
-            <dd><a href="../consume/about_wsc.html">About Web Service Clients</a></dd>
+            <dd><a href="about_jaxb.html">About Mapping XML to Java/a></dd>
+            <dd><a href="marshall_unmarshall.html">Marshalling and Unmarshalling Java to XML</a></dd>
         </dl>
         
         <hr>
