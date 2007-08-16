@@ -219,7 +219,8 @@
             </tocitem>
              <tocitem text="Mapping XML to Java" >
                 <tocitem text="About Mapping XML to Java" target="about_jaxb" />
-                <tocitem text="Using the JAXB Wizard" target="jaxb_wizard" />
+                <tocitem text="Generating Java Classes from XML Documents" target="jaxb_wizard" />
+                <tocitem text="Marshalling and Unmarshalling Java to XML" target="marshall_unmarshall" />
             </tocitem>
                <tocitem text="Configuring Interoperability">
                    <tocitem text="About Web Service Policies" target="org.netbeans.modules.websvc.wsitconf.about"/>

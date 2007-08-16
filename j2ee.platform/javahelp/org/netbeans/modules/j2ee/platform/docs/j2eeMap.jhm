@@ -142,6 +142,7 @@
 	<!-- Start of "JAXB" section -->
 	<mapID target="about_jaxb" url="webservice/jaxb/about_jaxb.html" />
 	<mapID target="jaxb_wizard" url="webservice/jaxb/jaxb_wizard.html" />
+        <mapID target="marshall_unmarshall" url="webservice/jaxb/marshall_unmarshall.html" />
 	<!-- End of "JAXB" section -->
 
 <!-- Start of "WSIT" section -->
