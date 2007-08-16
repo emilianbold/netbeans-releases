@@ -156,7 +156,7 @@ public class CompletionTestPerformer {
             } finally {
                 doc.atomicUnlock();
             }
-            saveDocument((DataObject) doc.getProperty(doc.StreamDescriptionProperty));
+            saveDocument((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty));
             offset += textToInsert.length();
         }
         if (editor != null) {
@@ -226,7 +226,7 @@ public class CompletionTestPerformer {
     }
     
     private static void saveDocument(DataObject file) throws IOException { //!!!WARNING: if this exception is thrown, the test may be locked (the file in editor may be modified, but not saved. problems with IDE finishing are supposed in this case).
-        SaveCookie sc = (SaveCookie) file.getCookie(SaveCookie.class);
+        SaveCookie sc = file.getCookie(SaveCookie.class);
         
         if (sc != null) {
             sc.save();
