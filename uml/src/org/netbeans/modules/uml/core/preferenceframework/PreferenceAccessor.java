@@ -113,7 +113,8 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 */
 	public String getUnknownClassifierType() {
             //kris richards - "UnknownClassifierType" pref expunged. Set to "DataType"
-            return "DataType" ;
+            //change default to Class: see issue 110338
+            return "Class" ;
 	}
 
 	/**
