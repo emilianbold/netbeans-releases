@@ -7,7 +7,3 @@ AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/websvc/core/wseditor/support/WSFileLoader.class
 OpenIDE-Module-Class: Loader
-
-Name: org/netbeans/modules/websvc/wsdl/WsdlDataLoader.class
-OpenIDE-Module-Class: Loader
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject

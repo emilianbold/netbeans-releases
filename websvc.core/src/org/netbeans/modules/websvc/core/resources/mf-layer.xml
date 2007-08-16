@@ -119,14 +119,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder> <!-- GrammarQueryManagers -->
         </folder>
     </folder>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-websvc-core-resources-mime-resolver.xml" url="mime-resolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/resources/WebServiceSettings.png"/>
-            </file>
-        </folder>
-    </folder>
     
     <folder name="Loaders">
         <folder name="text">

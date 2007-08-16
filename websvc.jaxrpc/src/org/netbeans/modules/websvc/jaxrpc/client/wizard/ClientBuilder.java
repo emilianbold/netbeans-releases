@@ -39,7 +39,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 import org.netbeans.modules.websvc.jaxrpc.PortInformation;
 import org.netbeans.modules.websvc.jaxrpc.Utilities;
-import org.netbeans.modules.websvc.wsdl.WsdlDataObject;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -164,7 +163,7 @@ public class ClientBuilder {
             final FileObject wsdlFolder = projectSupport.getWsdlFolder(true);
 
             // First ensure neither the target wsdl or -config.xml files exist.
-            FileObject target = wsdlFolder.getFileObject(wsdlSource.getName(), WsdlDataObject.WSDL_EXTENSION);
+            FileObject target = wsdlFolder.getFileObject(wsdlSource.getName(), "wsdl"); //NOI18N
             if(target != null) {
                 target.delete();
             }
@@ -177,7 +176,7 @@ public class ClientBuilder {
             if (handler.isServiceNameConflict()) {
                 wsdlTarget = generateWSDL(wsdlFolder, wsdlSource.getName() , new StreamSource(wsdlSource.getInputStream()));
             } else {
-                wsdlTarget = wsdlSource.copy(wsdlFolder, wsdlSource.getName(), WsdlDataObject.WSDL_EXTENSION);
+                wsdlTarget = wsdlSource.copy(wsdlFolder, wsdlSource.getName(), "wsdl"); //NOI18N
             }
             
             // Also recursively copy the imported wsdl/schema files
