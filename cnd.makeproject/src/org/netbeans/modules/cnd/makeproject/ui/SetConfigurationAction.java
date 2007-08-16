@@ -98,7 +98,7 @@ public class SetConfigurationAction extends AbstractAction implements Presenter.
 	subMenu.add(profilesMenuItem);
 	profilesMenuItem.addActionListener(new ActionListener() {
 	    public void actionPerformed (ActionEvent event) {
-		CommonProjectActions.customizeProjectAction().actionPerformed(null);
+		CommonProjectActions.customizeProjectAction().actionPerformed(new ActionEvent(this, -1, null));
 	    }
 	});
 
