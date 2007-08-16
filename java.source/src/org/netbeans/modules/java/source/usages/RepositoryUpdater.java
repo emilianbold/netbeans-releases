@@ -2341,6 +2341,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         if (t instanceof ThreadDeath) {
                             throw (ThreadDeath) t;
                         }
+                        else if (t instanceof OutputFileManager.InvalidSourcePath) {
+                            //Handled above
+                            throw (OutputFileManager.InvalidSourcePath) t;
+                        }
                         else {
                             if (jt != null) {
                                 jt.finish();
