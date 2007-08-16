@@ -208,7 +208,7 @@ public class KeyStoreRepository implements java.io.Externalizable, PropertyChang
         transient private boolean opened = false;
         transient private KeyStore store;
         
-        transient private HashSet<KeyAliasBean> aliasses = new HashSet<KeyAliasBean>();
+        transient private TreeSet<KeyAliasBean> aliasses = new TreeSet<KeyAliasBean>();
         
         public static KeyStoreBean create(String pathToKeyStore) {
             if (pathToKeyStore == null)
@@ -376,7 +376,7 @@ public class KeyStoreRepository implements java.io.Externalizable, PropertyChang
         }
         
         public void refresh() throws IOException {
-            final HashSet<KeyAliasBean> oldAliasses = aliasses;
+            final TreeSet<KeyAliasBean> oldAliasses = aliasses;
             clearAliasses();
             if (getPassword() == null)
                 return;
@@ -396,11 +396,11 @@ public class KeyStoreRepository implements java.io.Externalizable, PropertyChang
         }
         
         private void clearAliasses() {
-            aliasses = new HashSet<KeyAliasBean>();
+            aliasses = new TreeSet<KeyAliasBean>();
         }
         
-        private void loadAliasses(final HashSet<KeyAliasBean> oldAliassesWithPasswords) {
-            aliasses = new HashSet<KeyAliasBean>();
+        private void loadAliasses(final TreeSet<KeyAliasBean> oldAliassesWithPasswords) {
+            aliasses = new TreeSet<KeyAliasBean>();
             try {
                 final Enumeration e = store.aliases();
                 while (e.hasMoreElements()) {
@@ -422,7 +422,7 @@ public class KeyStoreRepository implements java.io.Externalizable, PropertyChang
                     }
                 }
             } catch (KeyStoreException e1) {
-                aliasses = new HashSet<KeyAliasBean>();
+                aliasses = new TreeSet<KeyAliasBean>();
             }
         }
         
@@ -498,7 +498,7 @@ public class KeyStoreRepository implements java.io.Externalizable, PropertyChang
             return f != null ? FileUtil.normalizeFile(f).hashCode() : super.hashCode();
         }
         
-        public static class KeyAliasBean {
+        public static class KeyAliasBean implements Comparable {
             
             final private KeyStore store;
             final private String alias;
@@ -638,6 +638,10 @@ public class KeyStoreRepository implements java.io.Externalizable, PropertyChang
             
             public int hashCode() {
                 return getAlias().hashCode();
+            }
+
+            public int compareTo(Object o) {
+                return getAlias().compareTo(o instanceof String ? (String)o : ((KeyAliasBean) o).getAlias());
             }
             
         }
