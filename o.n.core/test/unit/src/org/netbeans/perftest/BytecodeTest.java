@@ -459,10 +459,11 @@ public class BytecodeTest extends NbTestCase {
                     || f.getName().endsWith("cdc-pp-awt-layout.jar")) // #105314
                 continue;
                     
-            if (f.getName().endsWith("javaee.jar") // #105328 
-                    || f.getName().endsWith("tsalljlayoutclient601dev.jar") // #105628 
+            if (f.getName().endsWith("tsalljlayoutclient601dev.jar") // #105628 
                     || f.getName().endsWith("tsalljlayoutserver601dev.jar") // #105628 
                     || f.getName().endsWith("lucene-core-2.1.0.jar") // #105329 
+                    || f.getName().endsWith("batik-mod.jar") // #100892
+                    || f.getName().endsWith("batik-all.jar") // #100892
                     || f.getName().endsWith("JGo5.1.jar") // #105319 
                     || f.getName().endsWith("JGoLayout5.1.jar") // #105319 
                     || f.getName().endsWith("JGoInstruments5.1.jar")) // #105319 
