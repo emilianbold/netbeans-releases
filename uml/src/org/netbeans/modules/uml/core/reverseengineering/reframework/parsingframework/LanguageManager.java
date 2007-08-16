@@ -1144,10 +1144,7 @@ public class LanguageManager implements ILanguageManager
 	private void getLibraries(Node pLanguageNode, ILanguage pLang) 
         {
             List pNodeList = pLanguageNode.selectNodes("Libraries/Library"); // NOI18N
-//            String home = getConfigLocation();
-//            home = InstalledFileLocator.getDefault().locate(
-//                "modules/languagedefs", "org.netbeans.modules.uml", false).getAbsolutePath();
-            
+
             if (pNodeList != null) 
             {
                 int count = pNodeList.size();
@@ -1174,24 +1171,6 @@ public class LanguageManager implements ILanguageManager
                     String fullPath = InstalledFileLocator.getDefault().locate(
                         fileName, "org.netbeans.modules.uml", false) // NOI18N
                         .getAbsolutePath();
-
-
-//                    String fulPath = "";
-//                    if (home != null && home.length() > 0) 
-//                    {
-//                        // Get the directory separator right:
-//                        // fulPath = new File(home, path).toString();
-//                        File aFile = new File(home, path);
-//                        if (aFile != null) 
-//                        {
-//                            try {
-//                                fulPath = aFile.getCanonicalPath();
-//                            } catch (IOException ex) {
-//                                ex.printStackTrace();
-//                            }
-//                        }
-//                        //System.out.println("fullPath(toString)="+fulPath);
-//                    }
 
                     pLang.addLibrary(name, fullPath);
                 }
