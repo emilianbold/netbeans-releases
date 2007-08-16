@@ -151,6 +151,9 @@ public class WLDeploymentFactory implements DeploymentFactory {
         } catch (Exception e) {
             dmce = new DeploymentManagerCreationException ("Cannot create weblogic DeploymentManager instance.");
             dmce.initCause(e);
+        } catch (NoClassDefFoundError err) {
+            dmce = new DeploymentManagerCreationException("Cannot create weblogic DeploymentManager instance.");
+            dmce.initCause(err);
         } finally {
             Thread.currentThread().setContextClassLoader(orig);
         }
@@ -182,6 +185,9 @@ public class WLDeploymentFactory implements DeploymentFactory {
         } catch (Exception e) {
             dmce = new DeploymentManagerCreationException ("Cannot create weblogic disconnected DeploymentManager instance.");
             dmce.initCause(e);
+        } catch (NoClassDefFoundError err) {
+            dmce = new DeploymentManagerCreationException("Cannot create weblogic DeploymentManager instance.");
+            dmce.initCause(err);            
         } finally {
             Thread.currentThread().setContextClassLoader(orig);
         }
