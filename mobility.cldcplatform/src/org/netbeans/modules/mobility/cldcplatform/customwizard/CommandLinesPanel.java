@@ -20,6 +20,9 @@
 package org.netbeans.modules.mobility.cldcplatform.customwizard;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.Document;
 import org.openide.ErrorManager;
@@ -48,7 +51,10 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
     
     protected WizardPanel wizardPanel;
     private String fileChooserValue;
-    
+    private static final Set<Character> INVALID_CHARACTERS = new HashSet();
+    {
+        for (char c : "\\^$?*+-!.;:,=<>|/\"'[]{}()".toCharArray()) INVALID_CHARACTERS.add(c); //NOI18N
+    }
     /** Creates new form CommandLinesPanel
      * @param detectWizardPanel*/
     public CommandLinesPanel() {
@@ -419,9 +425,18 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         
         if (deviceName.getText().length() <= 0)
             message = "ERR_EnterDeviceName"; // NOI18N
-        
+
         if (platformName.getText().length() <= 0)
             message = "ERR_EnterPlatformName"; // NOI18N
+
+        for (char c : platformName.getText().toCharArray())
+            if (INVALID_CHARACTERS.contains(c)) 
+                message = "ERR_InvalidPlatformName"; //NOI18N
+                        
+        for (char c : deviceName.getText().toCharArray()) 
+            if (INVALID_CHARACTERS.contains(c)) 
+                message = "ERR_InvalidDeviceName"; //NOI18N
+                        
         
         final String platformHomeString = platformHome.getText();
         if (platformHomeString == null  ||  ! new File(platformHomeString).isDirectory())
