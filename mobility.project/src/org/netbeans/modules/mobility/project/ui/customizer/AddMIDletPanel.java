@@ -75,7 +75,7 @@ public class AddMIDletPanel extends JPanel implements DocumentListener, ActionLi
     }
     
     public String getName() {
-        return jTextFieldName.getText().trim();
+        return jTextFieldName == null ? "" : jTextFieldName.getText().trim(); //NOI18N
     }
     
     public String getClazz() {
