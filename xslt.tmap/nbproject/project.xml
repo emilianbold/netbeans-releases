@@ -220,6 +220,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.xslt.project</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
+                <package>org.netbeans.modules.xslt.tmap.model.validation</package>
                 <package>org.netbeans.modules.xslt.tmap.model.api</package>
                 <package>org.netbeans.modules.xslt.tmap.model.spi</package>
                 <package>org.netbeans.modules.xslt.tmap.model.impl</package>

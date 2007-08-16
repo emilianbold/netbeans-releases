@@ -16,27 +16,21 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.xslt.tmap.model.xsltmap;
+package org.netbeans.modules.xslt.tmap.model.validation;
+
+import java.io.File;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface XsltMapConst {
-    
-    final String XSLTMAP = "xsltmap"; // NOI18N
-    final String XML = "xml"; // NOI18N
-    final String XSL = "xsl"; // NOI18N
-    final String XSLT = "xslt"; // NOI18N
-    
-    final String INPUT = "input"; // NOI18N
-    final String OUTPUT = "output"; // NOI18N
-    final String PARTNER_LINK = "partnerLink"; // NOI18N
-    final String ROLE_NAME = "roleName"; // NOI18N
-    final String PORT_TYPE = "portType"; // NOI18N
-    final String OPERATION = "operation"; // NOI18N
-    final String MESSAGE_TYPE = "messageType"; // NOI18N
-    final String FILE = "file"; // NOI18N
-    final String TRANSFORM_JBI = "transformJBI"; // NOI18N
+public interface TransformmapValidator {
+
+    String validate(File transformDescriptor);
+    String validate(Project project);
+    String validate(TMapModel model, FileObject xsltFo);
 }

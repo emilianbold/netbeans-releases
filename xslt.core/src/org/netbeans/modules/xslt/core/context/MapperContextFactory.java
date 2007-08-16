@@ -19,15 +19,10 @@
 package org.netbeans.modules.xslt.core.context;
 
 
-import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xml.axi.AXIModel;
-import org.netbeans.modules.xml.axi.AXIModelFactory;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
@@ -37,22 +32,15 @@ import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
-import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
-import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
-import org.netbeans.modules.xslt.tmap.model.api.TransformerDescriptor;
 import org.netbeans.modules.xslt.tmap.util.Util;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
-import org.netbeans.modules.xslt.model.Variable;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.tmap.model.api.OperationReference;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
-import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
-import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
-import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
+import org.netbeans.modules.xslt.tmap.util.TMapUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -86,7 +74,7 @@ public class MapperContextFactory {
             return new MapperContextImpl(xslModel, Util.getTMapModel(tMapFo));
         }
         
-        Transform transformContextComponent = getTransform(tMapModel, xsltFo);
+        Transform transformContextComponent = TMapUtil.getTransform(tMapModel, xsltFo);
         
         if (transformContextComponent == null) {
             // TODO m
@@ -95,8 +83,8 @@ public class MapperContextFactory {
         
         
         // TODO m
-        AXIComponent sourceComponent = getSourceComponent(transformContextComponent);
-        AXIComponent targetComponent = getTargetComponent(transformContextComponent);
+        AXIComponent sourceComponent = TMapUtil.getSourceComponent(transformContextComponent);
+        AXIComponent targetComponent = TMapUtil.getTargetComponent(transformContextComponent);
         // TODO m
         context = new MapperContextImpl( transformContextComponent, xslModel, sourceComponent, targetComponent);
         
@@ -107,7 +95,7 @@ public class MapperContextFactory {
             FileObject xsltFo, Project project) 
     {
         assert project != null;
-        
+     
         FileObject tMapFo = Util.getTMapFo(project);
         TMapModel tMapModel = tMapFo == null ? null : Util.getTMapModel(tMapFo);
         XslModel xslModel = xsltFo == null ? null 
@@ -118,7 +106,7 @@ public class MapperContextFactory {
             return;
         }
         
-        Transform transformContextComponent = getTransform(tMapModel, xsltFo);
+        Transform transformContextComponent = TMapUtil.getTransform(tMapModel, xsltFo);
         
         if (transformContextComponent == null) {
             context.reinit(tMapModel, null, xslModel, null, null);
@@ -126,8 +114,8 @@ public class MapperContextFactory {
         }
         
         // TODO m
-        AXIComponent sourceComponent = getSourceComponent(transformContextComponent);
-        AXIComponent targetComponent = getTargetComponent(transformContextComponent);
+        AXIComponent sourceComponent = TMapUtil.getSourceComponent(transformContextComponent);
+        AXIComponent targetComponent = TMapUtil.getTargetComponent(transformContextComponent);
         // TODO m
         context.reinit(tMapModel, 
                 transformContextComponent, 
@@ -136,131 +124,131 @@ public class MapperContextFactory {
                 targetComponent);
     }
 
-    // TODO m
-    private Transform getTransform(TMapModel tMapModel, FileObject xsltFo) {
-        assert tMapModel != null && xsltFo != null;
-        Transform transformOp = null;
-        
-        TransformMap root = tMapModel.getTransformMap();
-        List<Service> services = root == null ? null : root.getServices();
-        if (services != null) {
-            for (Service service : services) {
-                List<Operation> operations = service.getOperations();
-                if (operations == null) {
-                    break;
-                }
-                for (Operation oElem : operations) {
-                    List<Transform> transforms = oElem.getTransforms();
-                    for (Transform tElem : transforms) {
-                        if (isEqual(xsltFo, tElem.getFile())) {
-                            transformOp = tElem;
-                            break;
-                        }
-                    }
-                    if (transformOp != null) {
-                        break;
-                    }
-                }
-                if (transformOp != null) {
-                    break;
-                }
-            }
-        }
-        
-        return transformOp;
-    }
+//    // TODO m
+//    private Transform getTransform(TMapModel tMapModel, FileObject xsltFo) {
+//        assert tMapModel != null && xsltFo != null;
+//        Transform transformOp = null;
+//        
+//        TransformMap root = tMapModel.getTransformMap();
+//        List<Service> services = root == null ? null : root.getServices();
+//        if (services != null) {
+//            for (Service service : services) {
+//                List<Operation> operations = service.getOperations();
+//                if (operations == null) {
+//                    break;
+//                }
+//                for (Operation oElem : operations) {
+//                    List<Transform> transforms = oElem.getTransforms();
+//                    for (Transform tElem : transforms) {
+//                        if (isEqual(xsltFo, tElem.getFile())) {
+//                            transformOp = tElem;
+//                            break;
+//                        }
+//                    }
+//                    if (transformOp != null) {
+//                        break;
+//                    }
+//                }
+//                if (transformOp != null) {
+//                    break;
+//                }
+//            }
+//        }
+//        
+//        return transformOp;
+//    }
+//    
+//    // TODO m
+//    private boolean isEqual(FileObject xsltFo, String filePath) {
+//        assert xsltFo != null;
+//        if (filePath == null) {
+//            return false;
+//        }
+//        
+//        String xsltFoPath = xsltFo.getPath();
+//        if (xsltFoPath.equals(filePath)) {
+//            return true;
+//        }
+//        
+//        // may be relative ?
+//        File rootDir = FileUtil.toFile(xsltFo);
+//        File tmpDir = FileUtil.toFile(xsltFo);
+//        while ( (tmpDir = tmpDir.getParentFile()) != null){
+//            rootDir = tmpDir;
+//        }
+//        
+//        if (filePath != null && filePath.startsWith(rootDir.getPath())) {
+//            return false;
+//        }
+//        
+//        String pathSeparator = System.getProperty("path.separator");
+//        StringTokenizer tokenizer = new StringTokenizer(filePath, pathSeparator);
+//        
+//        boolean isEqual = true;
+//        isEqual = filePath != null && filePath.equals(xsltFo.getNameExt());
+//// TODO m
+//////        FileObject nextFileParent = xsltFo;
+//////        while (tokenizer.hasMoreElements()) {
+//////            if (nextFileParent == null || 
+//////                    !tokenizer.nextToken().equals(nextFileParent.getNameExt())) 
+//////            {
+//////                isEqual = false;
+//////                break;
+//////            }
+//////        }
+//        
+//        return isEqual;
+//    }
     
-    // TODO m
-    private boolean isEqual(FileObject xsltFo, String filePath) {
-        assert xsltFo != null;
-        if (filePath == null) {
-            return false;
-        }
-        
-        String xsltFoPath = xsltFo.getPath();
-        if (xsltFoPath.equals(filePath)) {
-            return true;
-        }
-        
-        // may be relative ?
-        File rootDir = FileUtil.toFile(xsltFo);
-        File tmpDir = FileUtil.toFile(xsltFo);
-        while ( (tmpDir = tmpDir.getParentFile()) != null){
-            rootDir = tmpDir;
-        }
-        
-        if (filePath != null && filePath.startsWith(rootDir.getPath())) {
-            return false;
-        }
-        
-        String pathSeparator = System.getProperty("path.separator");
-        StringTokenizer tokenizer = new StringTokenizer(filePath, pathSeparator);
-        
-        boolean isEqual = true;
-        isEqual = filePath != null && filePath.equals(xsltFo.getNameExt());
-// TODO m
-////        FileObject nextFileParent = xsltFo;
-////        while (tokenizer.hasMoreElements()) {
-////            if (nextFileParent == null || 
-////                    !tokenizer.nextToken().equals(nextFileParent.getNameExt())) 
-////            {
-////                isEqual = false;
-////                break;
-////            }
-////        }
-        
-        return isEqual;
-    }
-    
-    // TODO m
-    private AXIComponent getSourceComponent(Transform transform) {
-        AXIComponent source = null;
-//        source = getAXIComponent(getSourceType(transform));
-        source = getAXIComponent(getSchemaComponent(transform, true));
-        return source;
-    }
-    
-    // TODO m
-    private AXIComponent getTargetComponent(Transform transform) {
-        AXIComponent target = null;
-//        target = getAXIComponent(getTargetType(transform));
-        target = getAXIComponent(getSchemaComponent(transform, false));
-        return target;
-    }
-    
-    private AXIComponent getAXIComponent(ReferenceableSchemaComponent schemaComponent) {
-        if (schemaComponent == null) {
-            return null;
-        }
-        AXIComponent axiComponent = null;
-
-        AXIModel axiModel = AXIModelFactory.getDefault().getModel(schemaComponent.getModel());
-        if (axiModel != null ) {
-            axiComponent = AxiomUtils.findGlobalComponent(axiModel.getRoot(),
-                    null,
-                    schemaComponent);
-        }
-        
-        return axiComponent;
-    }
-
-    public ReferenceableSchemaComponent getSchemaComponent(Transform transform, boolean isInput) {
-        assert transform != null;
-        
-        ReferenceableSchemaComponent schemaComponent = null;
-
-        VariableReference usedVariable = isInput ? transform.getSource() : transform.getResult();
-        
-//        Message message = 
-//                getVariableMessage(usedVariable, transform);
-
-        if (usedVariable != null) {
-            schemaComponent = getMessageSchemaType(usedVariable);
-        }
-        
-        return schemaComponent;
-    }
-    
+//    // TODO m
+//    private AXIComponent getSourceComponent(Transform transform) {
+//        AXIComponent source = null;
+////        source = getAXIComponent(getSourceType(transform));
+//        source = getAXIComponent(getSchemaComponent(transform, true));
+//        return source;
+//    }
+//    
+//    // TODO m
+//    private AXIComponent getTargetComponent(Transform transform) {
+//        AXIComponent target = null;
+////        target = getAXIComponent(getTargetType(transform));
+//        target = getAXIComponent(getSchemaComponent(transform, false));
+//        return target;
+//    }
+//    
+//    private AXIComponent getAXIComponent(ReferenceableSchemaComponent schemaComponent) {
+//        if (schemaComponent == null) {
+//            return null;
+//        }
+//        AXIComponent axiComponent = null;
+//
+//        AXIModel axiModel = AXIModelFactory.getDefault().getModel(schemaComponent.getModel());
+//        if (axiModel != null ) {
+//            axiComponent = AxiomUtils.findGlobalComponent(axiModel.getRoot(),
+//                    null,
+//                    schemaComponent);
+//        }
+//        
+//        return axiComponent;
+//    }
+//
+//    public ReferenceableSchemaComponent getSchemaComponent(Transform transform, boolean isInput) {
+//        assert transform != null;
+//        
+//        ReferenceableSchemaComponent schemaComponent = null;
+//
+//        VariableReference usedVariable = isInput ? transform.getSource() : transform.getResult();
+//        
+////        Message message = 
+////                getVariableMessage(usedVariable, transform);
+//
+//        if (usedVariable != null) {
+//            schemaComponent = getMessageSchemaType(usedVariable);
+//        }
+//        
+//        return schemaComponent;
+//    }
+//    
     // TODO m
     public ReferenceableSchemaComponent getSourceType(Transform transform) {
         assert transform != null;
@@ -357,50 +345,50 @@ public class MapperContextFactory {
         return schemaComponent;
     }
 
-    /**
-     * returns first message part type with partName
-     */
-    private ReferenceableSchemaComponent getMessageSchemaType(VariableReference usedVariable) {
-        if (usedVariable == null) {
-            return null;
-        }
-        
-        ReferenceableSchemaComponent schemaComponent = null;
-
-        //        String partName = getVarPartName(usedVariable);
-//        if (partName == null) {
+//    /**
+//     * returns first message part type with partName
+//     */
+//    private ReferenceableSchemaComponent getMessageSchemaType(VariableReference usedVariable) {
+//        if (usedVariable == null) {
 //            return null;
 //        }
 //        
+//        ReferenceableSchemaComponent schemaComponent = null;
+//
+//        //        String partName = getVarPartName(usedVariable);
+////        if (partName == null) {
+////            return null;
+////        }
+////        
+////        
+////        // look at parts
+////        String elNamespace = null;
+////        Class<? extends ReferenceableSchemaComponent> elType = null; 
+////        Collection<Part> parts = message.getParts();
+////        Part part = null;
+////        if (parts != null && parts.size() > 0) {
+////            for (Part partElem : parts) {
+////                if (partElem != null && partName.equals(partElem.getName())) {
+////                    part = partElem;
+////                    break;
+////                }
+////            }
+////        }
+////        
+//        WSDLReference<Part> partRef = usedVariable.getPart();
+//        Part part = partRef == null ? null : partRef.get();
 //        
-//        // look at parts
-//        String elNamespace = null;
-//        Class<? extends ReferenceableSchemaComponent> elType = null; 
-//        Collection<Part> parts = message.getParts();
-//        Part part = null;
-//        if (parts != null && parts.size() > 0) {
-//            for (Part partElem : parts) {
-//                if (partElem != null && partName.equals(partElem.getName())) {
-//                    part = partElem;
-//                    break;
-//                }
+//        NamedComponentReference<? extends ReferenceableSchemaComponent> element = null;
+//        if (part != null) {
+//            element = part.getElement();
+//            if (element == null) {
+//                element = part.getType();
 //            }
+//
+//            schemaComponent = element.get();
 //        }
-//        
-        WSDLReference<Part> partRef = usedVariable.getPart();
-        Part part = partRef == null ? null : partRef.get();
-        
-        NamedComponentReference<? extends ReferenceableSchemaComponent> element = null;
-        if (part != null) {
-            element = part.getElement();
-            if (element == null) {
-                element = part.getType();
-            }
-
-            schemaComponent = element.get();
-        }
-        return schemaComponent;
-    }
+//        return schemaComponent;
+//    }
     
     private Message getVariableMessage(String usedVariable, Transform transform) {
         if (usedVariable == null || transform == null) {

@@ -143,7 +143,7 @@ public class Util {
     
     public static Project getProject(FileObject projectFo) {
         FileObject projectRoot = null;
-        return FileOwnerQuery.getOwner(projectFo);
+        return projectFo == null ? null : FileOwnerQuery.getOwner(projectFo);
     }
 
     
@@ -218,6 +218,14 @@ public class Util {
     
     public static FileObject getTMapFo(Project project) {
         return getProjectSource(project).getFileObject("transformmap.xml");
+    }
+    
+    public static File getTransformationDescriptor(Project project) {
+        FileObject fo = getProjectSource(project).getFileObject("transformmap.xml");
+        if (fo == null) {
+            fo = getProjectSource(project).getFileObject("xsltmap.xml");
+        }
+        return fo == null ? null : FileUtil.toFile(fo);
     }
     
     public static FileObject getXsltMapFo(Project project) {

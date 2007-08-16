@@ -160,7 +160,6 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.xslt.core</friend>
-                <friend>org.netbeans.modules.xslt.tmap</friend>
                 <package>org.netbeans.modules.xslt.mapper.palette</package>
                 <package>org.netbeans.modules.xslt.mapper.view</package>
                 <package>org.netbeans.modules.xslt.mapper.model</package>

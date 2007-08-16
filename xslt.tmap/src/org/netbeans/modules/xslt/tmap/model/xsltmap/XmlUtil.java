@@ -135,10 +135,18 @@ public class XmlUtil {
      * This method is used from anttask so it shouldn't use FileObject at all
      */
     public static Document getDocument(File file) {
+        return getDocument(file, false);
+    }
+
+    /**
+     * This method is used from anttask so it shouldn't use FileObject at all
+     */
+    public static Document getDocument(File file, boolean supportNamespace) {
 //        return getDocument(FileUtil.toFileObject(file));
         
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         docFactory.setValidating(false);
+        docFactory.setNamespaceAware(supportNamespace);
         DocumentBuilder docBuilder;
         try {
             docBuilder = docFactory.newDocumentBuilder();

@@ -39,4 +39,5 @@ public interface MapperContext {
     
     void removeMapperContextChangeListener(MapperContextChangeListener listener);
     
+    String getValidationMessage();
 }

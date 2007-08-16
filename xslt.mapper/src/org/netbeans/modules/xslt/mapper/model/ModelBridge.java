@@ -91,6 +91,11 @@ public abstract class ModelBridge implements ComponentListener, PropertyChangeLi
     protected boolean checkErrors() {
         String errorMessages = "";
         if (getMapper().getContext() != null) {
+            String valMessage = getMapper().getContext().getValidationMessage();
+            if (valMessage != null) {
+                errorMessages += valMessage;
+            }
+            
             XslModel xslModel = getMapper().getContext().getXSLModel();
             if (xslModel == null || xslModel.getState() != XslModel.State.VALID) {
                 errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_BadXSL"); // NOI18N
@@ -116,11 +121,11 @@ public abstract class ModelBridge implements ComponentListener, PropertyChangeLi
             //
             AXIComponent typeIn = getMapper().getContext().getSourceType();
             if (typeIn == null || typeIn.getModel() == null || typeIn.getModel().getState() != XslModel.State.VALID) {
-                errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_BadInputSchema"); // NOI18N
+//                errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_BadInputSchema"); // NOI18N
             }
             AXIComponent typeOut = getMapper().getContext().getTargetType();
             if (typeOut == null || typeOut.getModel() == null || typeOut.getModel().getState() != XslModel.State.VALID) {
-                errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_BadOutputSchema"); // NOI18N
+//                errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_BadOutputSchema"); // NOI18N
             }
         } else {
             errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_BadXSLTMAP"); // NOI18N
