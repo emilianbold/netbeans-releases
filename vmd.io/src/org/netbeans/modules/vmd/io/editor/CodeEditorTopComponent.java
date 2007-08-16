@@ -32,13 +32,19 @@ import javax.swing.*;
  */
 public class CodeEditorTopComponent extends EditorTopComponent implements CloneableEditorSupport.Pane {
 
+    private transient JEditorPane pane;
+
     public CodeEditorTopComponent (DataObjectContext context, Lookup lookup, JComponent view) {
         super (context, lookup, view);
     }
 
     public JEditorPane getEditorPane () {
-        JComponent view = getView ();
-        return view instanceof CloneableEditorSupport.Pane ? ((CloneableEditorSupport.Pane) view).getEditorPane () : null;
+        if (pane == null) {
+            JComponent view = getView ();
+            pane = view instanceof CloneableEditorSupport.Pane ? ((CloneableEditorSupport.Pane) view).getEditorPane () : null;
+            getActionMap ().setParent (pane.getActionMap ());
+        }
+        return pane;
     }
 
     public CloneableTopComponent getComponent () {
