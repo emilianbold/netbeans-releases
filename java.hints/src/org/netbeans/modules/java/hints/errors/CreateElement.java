@@ -49,6 +49,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateInnerClassFix;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateOuterClassFix;
@@ -68,7 +69,7 @@ import static org.netbeans.modules.java.hints.errors.CreateElementUtilities.*;
  * @author Jan Lahoda
  */
 public final class CreateElement implements ErrorRule<Void> {
-    
+
     /** Creates a new instance of CreateElement */
     public CreateElement() {
     }
@@ -305,7 +306,7 @@ public final class CreateElement implements ErrorRule<Void> {
             return result;
         }
 
-        if (fixTypes.contains(ElementKind.FIELD)) {
+        if (fixTypes.contains(ElementKind.FIELD) && isTargetWritable(target, info)) { //IZ 111048 -- don't offer anything if target file isn't writable
             result.add(new CreateFieldFix(info, simpleName, modifiers, target, type));
         }
 
@@ -340,6 +341,10 @@ public final class CreateElement implements ErrorRule<Void> {
         if (formalArguments == null || returnType != null && containsErrorsOrTypevarsRecursively(returnType)) {
             return Collections.<Fix>emptyList();
         }
+	
+	//IZ 111048 -- don't offer anything if target file isn't writable
+	if(!isTargetWritable(target, info))
+	    return Collections.<Fix>emptyList();
         
         return Collections.<Fix>singletonList(new CreateMethodFix(info, simpleName, modifiers, target, returnType, formalArguments.getA(), formalArguments.getB()));
     }
@@ -411,6 +416,10 @@ public final class CreateElement implements ErrorRule<Void> {
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
         }
+	
+	//IZ 111048 -- don't offer anything if target file isn't writable
+	if (!isTargetWritable(target, info))
+	    return Collections.<Fix>emptyList();
         
         return Collections.<Fix>singletonList(new CreateInnerClassFix(info, simpleName, modifiers, target, formalArguments.getA(), formalArguments.getB(), superType, kind, numTypeParameters));
     }
@@ -470,6 +479,19 @@ public final class CreateElement implements ErrorRule<Void> {
                 return false;
         }
     }
+    
+    /**
+     * Detects if targets file is non-null and writable
+     * @return true if target's file is writable
+     */ 
+    private static boolean isTargetWritable(TypeElement target, CompilationInfo info) {
+	FileObject fo = SourceUtils.getFile(ElementHandle.create(target.getEnclosingElement()), info.getClasspathInfo());
+	if(fo != null && fo.canWrite())
+	    return true;
+	else
+	    return false;
+    }
+    
     
     private static EnumSet<Modifier> getAccessModifiers(CompilationInfo info, TypeElement source, TypeElement target) {
         if (target.getKind().isInterface()) {
