@@ -179,6 +179,8 @@ public interface WizardConstants {
     
     public static final String __QUEUE = "javax.jms.Queue"; // NOI18N
     public static final String __TOPIC = "javax.jms.Topic"; // NOI18N
+    public static final String QUEUE_PROP = "PhysicalQueue"; // NOI18N
+    public static final String TOPIC_PROP = "PhysicalTopic"; // NOI18N
     
     public static final String __QUEUE_CNTN_FACTORY = "javax.jms.QueueConnectionFactory"; // NOI18N
     public static final String __TOPIC_CNTN_FACTORY = "javax.jms.TopicConnectionFactory"; // NOI18N

@@ -90,7 +90,8 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     public static final String JDBC_RESOURCE = "jdbc"; // NOI18N
     public static final String JMS_RESOURCE = "jms"; // NOI18N
-    
+    public static final String JMS_PREFIX = "jms/"; // NOI18N
+        
     ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.Bundle");// NOI18N
     
     /**
@@ -118,20 +119,24 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
 
     public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir) {
         SunMessageDestination msgDest = null;
+        if(! jndiName.startsWith(JMS_PREFIX)){ 
+            jndiName = JMS_PREFIX + jndiName;
+        }
         Resources resources = ResourceUtils.getServerResourcesGraph(dir);
         AdminObjectResource aoresource = resources.newAdminObjectResource();
         aoresource.setJndiName(jndiName);
+        PropertyElement prop = aoresource.newPropertyElement();
+        prop.setName("Name"); // NOI18N
         if (MessageDestination.Type.QUEUE.equals(type)) {
             aoresource.setResType(WizardConstants.__QUEUE);
+            prop.setValue(WizardConstants.QUEUE_PROP);
         } else if (MessageDestination.Type.TOPIC.equals(type)) {
             aoresource.setResType(WizardConstants.__TOPIC);
+            prop.setValue(WizardConstants.TOPIC_PROP);
         }
         aoresource.setResAdapter(WizardConstants.__JmsResAdapter);
         aoresource.setEnabled("true"); // NOI18N
         aoresource.setDescription(""); // NOI18N
-        PropertyElement prop = aoresource.newPropertyElement();
-        prop.setName("Name"); // NOI18N
-        prop.setValue(ejbName);
         aoresource.addPropertyElement(prop);
         resources.addAdminObjectResource(aoresource);
         
