@@ -1143,54 +1143,57 @@ public class LanguageManager implements ILanguageManager
 	 */
 	private void getLibraries(Node pLanguageNode, ILanguage pLang) 
         {
-            List pNodeList = pLanguageNode.selectNodes("Libraries/Library");
-            String home = getConfigLocation();
+            List pNodeList = pLanguageNode.selectNodes("Libraries/Library"); // NOI18N
+//            String home = getConfigLocation();
 //            home = InstalledFileLocator.getDefault().locate(
 //                "modules/languagedefs", "org.netbeans.modules.uml", false).getAbsolutePath();
             
             if (pNodeList != null) 
             {
                 int count = pNodeList.size();
-                for (int i=0; i<count; i++) 
+                for (int i=0; i < count; i++) 
                 {
                     Node pNode = (Node)pNodeList.get(i);
-                    String name = XMLManip.getAttributeValue(pNode, "name");
-                    String path = XMLManip.getAttributeValue(pNode, "path");
-                    //System.out.println("home="+home + " path="+path);
-                    
-                    // Convert file separator, if any, in the path to platform-specific file separator.
-                    // Fix for CR # 6389098
+                    String name = XMLManip.getAttributeValue(pNode, "name"); // NOI18N
+                    String path = XMLManip.getAttributeValue(pNode, "path"); // NOI18N
+
                     String token = null;
-                    if(path != null && path.length() > 0) 
+                    if (path != null && path.length() > 0) 
                     {
-                        if (path.indexOf("\\") != -1) {
-                            token = "\\";
-                        } else if (path.indexOf("/") != -1) {
-                            token = "/";
-                        }
-                        if (token != null) {
+                        if (path.indexOf("\\") != -1) // NOI18N 
+                            token = "\\"; // NOI18N
+
+                        else if (path.indexOf("/") != -1) // NOI18N
+                            token = "/"; // NOI18N
+
+                        if (token != null) 
                             path = path.replace(token, File.separator ).trim();
-                        }
                     }
-                    //System.out.println("path after="+path);
-                    
-                    String fulPath = "";
-                    if (home != null && home.length() > 0) 
-                    {
-                        // Get the directory separator right:
-                        // fulPath = new File(home, path).toString();
-                        File aFile = new File(home, path);
-                        if (aFile != null) 
-                        {
-                            try {
-                                fulPath = aFile.getCanonicalPath();
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                        //System.out.println("fullPath(toString)="+fulPath);
-                    }
-                    pLang.addLibrary(name, fulPath);
+
+                    String fileName = "modules" + token + path + ".etd"; // NOI18N
+                    String fullPath = InstalledFileLocator.getDefault().locate(
+                        fileName, "org.netbeans.modules.uml", false) // NOI18N
+                        .getAbsolutePath();
+
+
+//                    String fulPath = "";
+//                    if (home != null && home.length() > 0) 
+//                    {
+//                        // Get the directory separator right:
+//                        // fulPath = new File(home, path).toString();
+//                        File aFile = new File(home, path);
+//                        if (aFile != null) 
+//                        {
+//                            try {
+//                                fulPath = aFile.getCanonicalPath();
+//                            } catch (IOException ex) {
+//                                ex.printStackTrace();
+//                            }
+//                        }
+//                        //System.out.println("fullPath(toString)="+fulPath);
+//                    }
+
+                    pLang.addLibrary(name, fullPath);
                 }
             }
         }

@@ -44,7 +44,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <target name="netbeans-extra">      
         <antcall target="javahelp-images"/>                
         <antcall target="unzip-doors"/>
-        <!-- antcall target="languagedefs"/ -->
+        <antcall target="languagedefs"/>
 
         <!-- Add our cluster name in etc/netbeans.clusters -->
         <!--
@@ -69,7 +69,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     
     <property name="language.definition.dir" value="${basedir}/lib/languagedefs"/>
     <target name="languagedefs" description="language definition files for RE Operation">
-        <copydir src="${language.definition.dir}" dest="${cluster}/modules/languagedefs"/>
+        <copy todir="${cluster}/modules/Libraries">
+            <fileset dir="${language.definition.dir}" casesensitive="yes"/>
+        </copy>
     </target>
     
     <property name="src.images.dir" value="${basedir}/src/org/netbeans/modules/uml/"/>
