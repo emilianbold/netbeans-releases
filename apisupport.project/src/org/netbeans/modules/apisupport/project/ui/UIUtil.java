@@ -542,17 +542,15 @@ public final class UIUtil {
         NbModuleProject suiteComponent = null;
         Project project = chooseProject(parent);
         if (project != null) {
-            if (SuiteUtils.getSubProjects(suite).contains(project)) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(UIUtil.class, "MSG_SuiteAlreadyContainsProject",
-                        ProjectUtils.getInformation(suite).getDisplayName(),
-                        ProjectUtils.getInformation(project).getDisplayName())));
-                return null;
-            }
             NbModuleProvider nmtp = project.getLookup().lookup(NbModuleProvider.class);
             if (nmtp == null) { // not netbeans module
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage(UIUtil.class, "MSG_TryingToAddNonNBModule",
+                        ProjectUtils.getInformation(project).getDisplayName())));
+            } else if (SuiteUtils.getSubProjects(suite).contains(project)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(UIUtil.class, "MSG_SuiteAlreadyContainsProject",
+                        ProjectUtils.getInformation(suite).getDisplayName(),
                         ProjectUtils.getInformation(project).getDisplayName())));
             } else if (nmtp.getModuleType() == NbModuleProvider.SUITE_COMPONENT) {
                 Object[] params = new Object[] {
