@@ -159,7 +159,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <Button paletteid="106" name="Activity Group" id="ID_VIEWNODE_UML_COMPLEXACTIVITYGROUP" tooltip_key="HINT_Activity_Group" icon16="complex-activity-group.png" icon32="complex-activity-group-32.png"></Button>
     <Button paletteid="107" name="Initial Node" id="ID_VIEWNODE_UML_INITIALNODE" tooltip_key="HINT_Initial_Node" icon16="initial-node.png" icon32="initial-node-32.png"></Button>
     <Button paletteid="108" name="Activity Final Node" id="ID_VIEWNODE_UML_ACTIVITYFINALNODE" tooltip_key="HINT_Activity_Final_Node" icon16="activity-final-node.png" icon32="activity-final-node-32.png"></Button>
-    <Button paletteid="109" name="Flow Final" id="ID_VIEWNODE_UML_FLOWFINALNODE" tooltip_key="HINT_Flow_Final" icon16="flow-final-node.png" icon32="flow-final-node.png"></Button>
+    <Button paletteid="109" name="Flow Final" id="ID_VIEWNODE_UML_FLOWFINALNODE" tooltip_key="HINT_Flow_Final" icon16="flow-final-node.png" icon32="flow-final-node-32.png"></Button>
     <Button paletteid="110" name="Parameter Usage" id="ID_VIEWNODE_UML_PARAMETERUSAGENODE" tooltip_key="HINT_Parameter_Usage" icon16="parameter-usage-node.png" icon32="parameter-usage-node-32.png"></Button>
     <Button paletteid="111" name="Data Store" id="ID_VIEWNODE_UML_DATASTORENODE" tooltip_key="HINT_Data_Store" icon16="datastore-node.png" icon32="datastore-node-32.png"></Button>
     <Button paletteid="112" name="Signal" id="ID_VIEWNODE_UML_SIGNALNODE" tooltip_key="HINT_Signal" icon16="signal-node.png" icon32="signal-node-32.png"></Button>
