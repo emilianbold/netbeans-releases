@@ -3,5 +3,6 @@ OpenIDE-Module: org.netbeans.modules.visualweb.project.jsf/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/project/jsf/resources/Bundle.properties
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Layer: org/netbeans/modules/visualweb/project/jsf/resources/layer.xml
+OpenIDE-Module-Install: org/netbeans/modules/visualweb/project/jsf/Install.class
 OpenIDE-Module-Needs: javax.script.ScriptEngine.freemarker
 AutoUpdate-Show-In-Client: false
