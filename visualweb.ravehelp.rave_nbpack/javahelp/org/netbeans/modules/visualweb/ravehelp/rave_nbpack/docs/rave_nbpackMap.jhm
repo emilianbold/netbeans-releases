@@ -192,7 +192,6 @@
 	<mapID target="projrave_images_sort_name" url="images/sort_name.gif"/>
 	<mapID target="projrave_images_source_pkg" url="images/source_pkg.gif"/>
 	<mapID target="projrave_images_webapp" url="images/webapp.gif"/>
-	<mapID target="projrave_intro_web_walkthru" url="intro_web_walkthru.html"/>
 	<mapID target="projrave_jsp-jsfel_jsf_expression_language_intro" url="jsp-jsfel/jsf_expression_language_intro.html"/>
 	<mapID target="projrave_jsp-jsfel_jsf_expression_language_intro_literals" url="jsp-jsfel/jsf_expression_language_intro.html#literals"/>
 	<mapID target="projrave_jsp-jsfel_jsf_expression_language_intro_operators" url="jsp-jsfel/jsf_expression_language_intro.html#operators"/>
@@ -218,20 +217,13 @@
 	<mapID target="projrave_projects_howtoprojects_add_object" url="projects/howtoprojects/add_remove_object.html"/>
 	<mapID target="projrave_projects_howtoprojects_add_theme" url="projects/howtoprojects/add_theme.html"/>
 	<mapID target="projrave_projects_howtoprojects_clean_project" url="projects/howtoprojects/clean_project.html"/>
-	<mapID target="projrave_projects_howtoprojects_compile_file" url="projects/howtoprojects/compile_file.html"/>
-	<mapID target="projrave_projects_howtoprojects_copy_project" url="projects/howtoprojects/copy_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_create_sample_app" url="projects/howtoprojects/create_sample_app.html"/>
 	<mapID target="projrave_projects_howtoprojects_delete_lib_ref" url="projects/howtoprojects/delete_lib_ref.html"/>
 	<mapID target="projrave_projects_howtoprojects_delete_proj_item" url="projects/howtoprojects/delete_proj_item.html"/>
 	<mapID target="projrave_projects_howtoprojects_import_creator_project" url="projects/howtoprojects/import_creator_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_import_libraries" url="projects/howtoprojects/import_libraries.html"/>
 	<mapID target="projrave_projects_howtoprojects_modify_library" url="projects/howtoprojects/modify_library.html"/>
-	<mapID target="projrave_projects_howtoprojects_open_project" url="projects/howtoprojects/open_project.html"/>
-	<mapID target="projrave_projects_howtoprojects_rename_page" url="projects/howtoprojects/rename_page.html"/>
-	<mapID target="projrave_projects_howtoprojects_save_project" url="projects/howtoprojects/save_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_set_project_properties" url="projects/howtoprojects/set_project_properties.html"/>
-	<mapID target="projrave_projects_howtoprojects_set_start_page" url="projects/howtoprojects/set_start_page.html"/>
-	<mapID target="projrave_projects_howtoprojects_view_zoom_image" url="projects/howtoprojects/view_zoom_image.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_complib" url="ui_elements/dialogs/add_complib.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_data_source_db" url="ui_elements/dialogs/add_data_source_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_database_conn_db" url="ui_elements/dialogs/add_database_conn_db.html"/>
@@ -652,18 +644,17 @@
 	<mapID target="webapps_process" url="web/about/webapps_process.html"/>
 	<mapID target="webapps_quickref" url="web/about/webapps_quickref.html"/>
 	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html"/>
-	<mapID target="projraveejb_howtowebservices_accessing_websvc" url="ejb/howtowebservices/accessing_websvc.html"/>
-	<mapID target="projraveejb_howtowebservices_add_websvc_to_page" url="ejb/howtowebservices/add_websvc_to_page.html"/>
-	<mapID target="projraveejb_howtowebservices_create_websvc_group" url="ejb/howtowebservices/create_websvc_group.html"/>
-	<mapID target="projraveejb_howtowebservices_delete_websvc" url="ejb/howtowebservices/delete_websvc.html"/>
-	<mapID target="projraveejb_howtowebservices_viewing_wsdl_file" url="ejb/howtowebservices/viewing_wsdl_file.html"/>
-	<mapID target="projraveejb_howtowebservices_webservices_quickref" url="ejb/howtowebservices/webservices_quickref.html"/>
-	<mapID target="projraveejb_howtowebservices_ws_bind_list" url="ejb/howtowebservices/ws_bind_list.html"/>
-	<mapID target="projraveejb_howtowebservices_ws_bind_simple" url="ejb/howtowebservices/ws_bind_simple.html"/>
-	<mapID target="projraveejb_howtowebservices_ws_bind_table" url="ejb/howtowebservices/ws_bind_table.html"/>
-	<mapID target="projraveejb_aboutejbs" url="ejb/aboutejbs.html"/>
-	<mapID target="projraveejb_ejb_process" url="ejb/ejb_process.html"/>
-	<mapID target="projraveejb_ejb_web_walkthru" url="ejb/ejb_web_walkthru.html"/>
+	<mapID target="projrave_web_svc_howtowebservices_accessing_websvc" url="web_svc/howtowebservices/accessing_websvc.html"/>
+	<mapID target="projrave_web_svc_howtowebservices_add_websvc_to_page" url="web_svc/howtowebservices/add_websvc_to_page.html"/>
+	<mapID target="projrave_web_svc_howtowebservices_create_websvc_group" url="web_svc/howtowebservices/create_websvc_group.html"/>
+	<mapID target="projrave_web_svc_howtowebservices_delete_websvc" url="web_svc/howtowebservices/delete_websvc.html"/>
+	<mapID target="projrave_web_svc_howtowebservices_viewing_wsdl_file" url="web_svc/howtowebservices/viewing_wsdl_file.html"/>
+	<mapID target="projrave_web_svc howtowebservices_webservices_quickref" url="web_svc/howtowebservices/webservices_quickref.html"/>
+	<mapID target="projrave_web_svc_howtowebservices_ws_bind_list" url="web_svc/howtowebservices/ws_bind_list.html"/>
+	<mapID target="projrave_web_svc_howtowebservices_ws_bind_simple" url="web_svc/howtowebservices/ws_bind_simple.html"/>
+	<mapID target="projrave_web_svc_howtowebservices_ws_bind_table" url="web_svc/howtowebservices/ws_bind_table.html"/>
+	<mapID target="projrave_ejb_aboutejbs" url="ejb/aboutejbs.html"/>
+	<mapID target="projrave_ejb_process" url="ejb/ejb_process.html"/>
 	<mapID target="projraveejb_howtoejbs_ejb_add_to_IDE" url="ejb/howtoejbs/ejb_add_to_IDE.html"/>
 	<mapID target="projraveejb_howtoejbs_ejb_add_to_page" url="ejb/howtoejbs/ejb_add_to_page.html"/>
 	<mapID target="projraveejb_howtoejbs_ejb_bind_list" url="ejb/howtoejbs/ejb_bind_list.html"/>
@@ -674,7 +665,6 @@
 	<mapID target="projraveejb_howtoejbs_ejb_quickref" url="ejb/howtoejbs/ejb_quickref.html"/>
 	<mapID target="projraveweb_svc_aboutwebservices" url="web_svc/aboutwebservices.html"/>
 	<mapID target="projraveweb_svc_web_services_process" url="web_svc/web_services_process.html"/>
-	<mapID target="projraveweb_svc_web_services_web_walkthru" url="web_svc/web_services_web_walkthru.html"/>
 	<mapID target="projraveweb_svc_howtowebservices_accessing_websvc" url="web_svc/howtowebservices/accessing_websvc.html"/>
 	<mapID target="projraveweb_svc_howtowebservices_add_websvc_to_page" url="web_svc/howtowebservices/add_websvc_to_page.html"/>
 	<mapID target="projraveweb_svc_howtowebservices_create_websvc_group" url="web_svc/howtowebservices/create_websvc_group.html"/>

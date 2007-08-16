@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='ISO-8859-1'?>
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
@@ -10,25 +10,18 @@
 			<tocitem text="Web Application Tasks: Quick Reference" target="webapps_quickref" />
 			<tocitem text="About the IDE's Web Development Support" target="webapps_idesupport" />
 			<tocitem text="About the IDE's Technology Version Support" target="webapps_techsupport" />
-			<tocitem text="Web Introductory Tutorials" target="projrave_intro_web_walkthru" />
 		</tocitem>
 		<tocitem text="Creating and Editing Web Applications">
 			<tocitem text="About Creating Web Applications" target="about_create_webapps" />
+			<tocitem text="About Regular Expressions" target="projrave_projects_howtoprojects_aboutregularexpn" />
+			<tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
 			<tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
 			<tocitem text="Creating a Sample Visual Web Application" target="projrave_projects_howtoprojects_create_sample_app" />
-			<tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
-			<tocitem text="About Regular Expressions" target="projrave_projects_howtoprojects_aboutregularexpn" />
 			<tocitem text="Working with Projects">
-				<tocitem text="Copying a Project" target="projrave_projects_howtoprojects_copy_project" />
-				<tocitem text="Opening a Project" target="projrave_projects_howtoprojects_open_project" />
-				<tocitem text="Importing a Java Studio Creator Project" target="projrave_projects_howtoprojects_import_creator_project" />
 				<tocitem text="Starting With Web Projects" target="webapps_process" />
-				<tocitem text="Saving a Project" target="projrave_projects_howtoprojects_save_project" />
 				<tocitem text="Adding a Theme" target="projrave_projects_howtoprojects_add_theme" />
 				<tocitem text="Setting Project Properties" target="projrave_projects_howtoprojects_set_project_properties" />
 				<tocitem text="Deleting a Project Item" target="projrave_projects_howtoprojects_delete_proj_item" />
-				<tocitem text="Renaming a Page" target="projrave_projects_howtoprojects_rename_page" />
-				<tocitem text="Setting the Start Page in a Project" target="projrave_projects_howtoprojects_set_start_page" />
 				<tocitem text="Adding a CSS File to a Project" target="projrave_projects_howtoprojects_add_css_file" />
 				<tocitem text="Adding a Project Item" target="projrave_projects_howtoprojects_add_object" />
 				<tocitem text="Web Project Tasks: Quick Reference" target="webapps_quickref" />
@@ -304,7 +297,6 @@
 					<tocitem text="Selecting Components in a Page" target="projrave_components_howtocomponents_select_comp" />
 					<tocitem text="Deleting a Component From a Page" target="projrave_components_howtocomponents_delete_comp" />
 					<tocitem text="Previewing a Page" target="projrave_components_howtocomponents_preview_form" />
-					<tocitem text="Viewing and Zooming an Image" target="projrave_projects_howtoprojects_view_zoom_image" />
 					<tocitem text="Viewing a Page at Different Resolutions" target="projrave_components_howtocomponents_view_browser_size" />
 				</tocitem>
 				<tocitem text="Positioning Components">
@@ -404,7 +396,6 @@
 		<tocitem text="Building Web Applications">
 			<tocitem text="About Building Web Applications" target="about_build" />
 			<tocitem text="Packaging a Resource in a WAR File" target="build_externalresources" />
-			<tocitem text="Compiling a File" target="projrave_projects_howtoprojects_compile_file" />
 			<tocitem text="Building a WAR File" target="build_warfile" />
 			<tocitem text="Removing a WAR File" target="build_remove" />
 			<tocitem text="Cleaning a Project" target="projrave_projects_howtoprojects_clean_project" />

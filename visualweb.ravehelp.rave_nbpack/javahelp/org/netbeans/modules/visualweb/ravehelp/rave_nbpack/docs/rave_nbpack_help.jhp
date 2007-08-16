@@ -123,7 +123,6 @@
 				</directory>
 				<file title="aboutejbs.html"/>
 				<file title="ejb_process.html"/>
-				<file title="ejb_web_walkthru.html"/>
 			</directory>
 			<directory title="glossary">
 				<directory title="CVS">
@@ -409,20 +408,13 @@
 					<file title="add_remove_object.html"/>
 					<file title="add_theme.html"/>
 					<file title="clean_project.html"/>
-					<file title="compile_file.html"/>
-					<file title="copy_project.html"/>
 					<file title="create_sample_app.html"/>
 					<file title="delete_lib_ref.html"/>
 					<file title="delete_proj_item.html"/>
 					<file title="import_creator_project.html"/>
 					<file title="import_libraries.html"/>
 					<file title="modify_library.html"/>
-					<file title="open_project.html"/>
-					<file title="rename_page.html"/>
-					<file title="save_project.html"/>
 					<file title="set_project_properties.html"/>
-					<file title="set_start_page.html"/>
-					<file title="view_zoom_image.html"/>
 				</directory>
 				<file title="about_lib_refs.html"/>
 			</directory>
@@ -1212,10 +1204,8 @@
 				</directory>
 				<file title="aboutwebservices.html"/>
 				<file title="web_services_process.html"/>
-				<file title="web_services_web_walkthru.html"/>
 			</directory>
 			<file title="credits.html"/>
-			<file title="intro_web_walkthru.html"/>
 			<file title="no_topic.html"/>
 			<file title="rave_nbpack-idx.xml"/>
 			<file title="rave_nbpack-toc.xml"/>
