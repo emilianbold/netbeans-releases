@@ -62,8 +62,8 @@ public class TcgType implements Serializable {
      */
     public static final TcgType INTEGER_LIST = new TcgType("integerList") {
 
-        public String format(TcgProperty prop, Object value) {
-            return formatList(prop, INTEGER, value);
+        public String format(Object value) {
+            return formatList(INTEGER, value);
         }
 
         public Object parse(String value) {
@@ -100,7 +100,7 @@ public class TcgType implements Serializable {
     public static final TcgType LONG_LIST = new TcgType("longList") {
 
         public String format(TcgProperty prop, Object value) {
-            return formatList(prop, LONG, value);
+            return formatList(LONG, value);
         }
 
         public Object parse(String value) {
@@ -137,7 +137,7 @@ public class TcgType implements Serializable {
     public static final TcgType DOUBLE_LIST = new TcgType("doubleList") {
 
         public String format(TcgProperty prop, Object value) {
-            return formatList(prop, DOUBLE, value);
+            return formatList(DOUBLE, value);
         }
 
         public Object parse(String value) {
@@ -174,7 +174,7 @@ public class TcgType implements Serializable {
     public static final TcgType BOOLEAN_LIST = new TcgType("booleanList") {
 
         public String format(TcgProperty prop, Object value) {
-            return formatList(prop, BOOLEAN, value);
+            return formatList(BOOLEAN, value);
         }
 
         public Object parse(String value) {
@@ -205,7 +205,7 @@ public class TcgType implements Serializable {
     public static final TcgType STRING_LIST = new TcgType("stringList") {
 
         public String format(TcgProperty prop, Object value) {
-            return formatList(prop, STRING, value);
+            return formatList(STRING, value);
         }
 
         public Object parse(String value) {
@@ -244,7 +244,7 @@ public class TcgType implements Serializable {
     public static final TcgType DATE_LIST = new TcgType("dateList") {
 
         public String format(TcgProperty prop, Object value) {
-            return formatList(prop, DATE, value);
+            return formatList(DATE, value);
         }
 
         public Object parse(String value) {
@@ -350,7 +350,7 @@ public class TcgType implements Serializable {
      *
      * @return the string representationreal for the value
      */
-    public String format(TcgProperty prop, Object value) {
+    public String format(Object value) {
 
         return (value == null)
                ? ""
@@ -410,7 +410,7 @@ public class TcgType implements Serializable {
         return l;
     }
 
-    private static String formatList(TcgProperty prop, TcgType singleType, Object value) {
+    private static String formatList(TcgType singleType, Object value) {
 
         if (value == null) {
             return "";
@@ -424,7 +424,7 @@ public class TcgType implements Serializable {
                 sb.append("\\");
             }
 
-            sb.append(singleType.format(prop, l.get(i)));
+            sb.append(singleType.format(l.get(i)));
         }
 
         return sb.toString();

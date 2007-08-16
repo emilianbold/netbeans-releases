@@ -1,5 +1,6 @@
 package org.netbeans.modules.iep.model.impl;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.modules.iep.model.IEPComponent;
@@ -20,8 +21,20 @@ public class SchemaComponentImpl extends ComponentImpl implements SchemaComponen
 	
 	public IEPComponent createChild (Element childEl) {
 		IEPComponent child = null;
-		
-		return child;
+        
+        if (childEl != null) {
+            String localName = childEl.getLocalName();
+            if (localName == null || localName.length() == 0) {
+                    localName = childEl.getTagName();
+            }
+            if (localName.equals(COMPONENT_CHILD)) {
+            		child = new SchemaAttributeImpl(getModel(), childEl);
+            } else {
+            	child = super.createChild(childEl);
+            }
+        }
+        
+        return child;
 	}
 	
 	public SchemaComponent duplicateSchema(String name) {
@@ -29,26 +42,46 @@ public class SchemaComponentImpl extends ComponentImpl implements SchemaComponen
 		return null;
 	}
 
-	public int getAttributeCount() throws Exception {
+	public int getAttributeCount() {
 		return 0;
 	}
 
-	public SchemaAttribute getSchemaAttribute(int i) throws Exception {
+	public SchemaAttribute getSchemaAttribute(int i) {
 		return null;
 	}
 
-	public List<SchemaAttribute> getSchemaAttributes() throws Exception {
-		return null;
+	public List<SchemaAttribute> getSchemaAttributes() {
+		return getChildren(SchemaAttribute.class);
 	}
 
-	public boolean hasSameSchemaAttribute(List<SchemaAttribute> columns) throws Exception {
+	public boolean hasSameSchemaAttribute(List<SchemaAttribute> columns)  {
 		return false;
 	}
 
-	public void setSchemaAttributes(List<SchemaAttribute> columns) throws Exception {
+	public void setSchemaAttributes(List<SchemaAttribute> columns)  {
 		
 	}
 
-	
+	public SchemaAttribute findSchemaAttribute(String attributeName) {
+		SchemaAttribute attr = null;
+		
+		if(attributeName == null) {
+			return null;
+		}
+		
+		List<SchemaAttribute> schemaAttributes = getSchemaAttributes();
+		Iterator<SchemaAttribute> it = schemaAttributes.iterator();
+		
+		while(it.hasNext()) {
+			SchemaAttribute sa = it.next();
+			
+			if(attributeName.equals(sa.getName())) {
+				attr = sa;
+				break;
+			}
+		}
+		
+		return attr;
+	}
 
 }

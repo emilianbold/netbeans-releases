@@ -86,7 +86,7 @@ class TcgPropertyImpl implements TcgProperty {
      * @return The value in string format
      */
     public String getStringValue() {
-        return getType().getType().format(this, mValue);
+        return getType().getType().format(mValue);
     }
     
     /**

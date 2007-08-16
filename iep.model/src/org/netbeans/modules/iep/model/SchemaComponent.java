@@ -4,15 +4,17 @@ import java.util.List;
 
 public interface SchemaComponent extends Component {
 
-	int getAttributeCount() throws Exception;
+	int getAttributeCount();
 	
-    SchemaAttribute getSchemaAttribute(int i) throws Exception;
+    SchemaAttribute getSchemaAttribute(int i);
     
-    void setSchemaAttributes(List<SchemaAttribute> columns) throws Exception;
+    void setSchemaAttributes(List<SchemaAttribute> columns);
     
-    List<SchemaAttribute> getSchemaAttributes() throws Exception;
+    List<SchemaAttribute> getSchemaAttributes();
     
-    boolean hasSameSchemaAttribute(List<SchemaAttribute> columns) throws Exception;
+    boolean hasSameSchemaAttribute(List<SchemaAttribute> columns);
     
     SchemaComponent duplicateSchema(String name);
+    
+    SchemaAttribute findSchemaAttribute(String attributeName);
 }

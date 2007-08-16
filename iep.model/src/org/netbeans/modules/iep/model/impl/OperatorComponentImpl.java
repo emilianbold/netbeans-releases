@@ -68,8 +68,16 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 		return globalId;
 	}
 
-	public List<Property> getGroupByColumnList() {
-		return null;
+	//rit it can not be property it could be column name
+	public String getGroupByColumnList() {
+		String groupByColumnList = null;
+		
+		Property p = super.getProperty(PROP_GROUP_BY_COLUMNLIST);
+		if(p != null) {
+			groupByColumnList = p.getValue();
+		}
+		
+		return groupByColumnList;
 	}
 
 	public String getId() {
@@ -229,6 +237,18 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 		
 	}
 
+	public String getFromClause() {
+		String fromClause = null;
+		
+		Property p = super.getProperty(PROP_FROMCLAUSE);
+		if(p != null) {
+			fromClause = p.getValue();
+		}
+		
+		return fromClause;
+		
+	}
+	
 	public int getX() {
 		
 		String xStr = null;
@@ -333,7 +353,11 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 	public boolean isGlobal() {
 		return false;
 	}
-
+	
+	public boolean isSchemaOwner() {
+		return false;
+	}
+	
 	public String getDisplayName() {
 		
 		String displayName = null;

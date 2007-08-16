@@ -20,5 +20,5 @@ public interface SchemaAttribute extends Component {
     
     String getAttributeScale() throws Exception;
     
-    String getComment() throws Exception;
+    String getAttributeComment() throws Exception;
 }

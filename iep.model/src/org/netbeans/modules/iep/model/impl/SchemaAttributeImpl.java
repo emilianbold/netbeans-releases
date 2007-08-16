@@ -51,7 +51,7 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		return propValue;
 	}
 
-	public String getComment() throws Exception {
+	public String getAttributeComment() throws Exception {
 		String propValue = null;
 		Property p = super.getProperty(PROP_COMMENT);
 		if(p != null) {

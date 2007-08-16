@@ -1,5 +1,6 @@
 package org.netbeans.modules.iep.model.impl;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.modules.iep.model.IEPComponent;
@@ -48,4 +49,23 @@ public class SchemaComponentContainerImpl extends ComponentImpl implements Schem
 		removeChildComponent(schema);
 	}
 
+	public SchemaComponent findSchema(String name) {
+		SchemaComponent schema = null;
+		if(name == null) {
+			return null;
+		}
+		
+		List<SchemaComponent> schemas = getAllSchemaComponents();
+		Iterator<SchemaComponent> it = schemas.iterator();
+		
+		while(it.hasNext()) {
+			SchemaComponent sc = it.next();
+			if(name.equals(sc.getName())) {
+				schema = sc;
+				break;
+			}
+		}
+		
+		return schema;
+	}
 }

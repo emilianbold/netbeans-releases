@@ -70,4 +70,26 @@ public class OperatorComponentContainerImpl extends ComponentImpl implements Ope
     	return child;
     	
     }
+	
+	public OperatorComponent findOperator(String name) {
+		if(name == null) {
+			return null;
+		}
+		
+		OperatorComponent child = null;
+    	List<OperatorComponent> children = getAllOperatorComponent();
+    	Iterator<OperatorComponent> it = children.iterator();
+    	while(it.hasNext()) {
+    		OperatorComponent c = it.next();
+    		String nameProp = c.getDisplayName();
+    		if(name.equals(nameProp)) {
+    			child = c;
+    			break;
+    		}
+    	}
+    	
+    	return child;
+    	
+		
+	}
 }

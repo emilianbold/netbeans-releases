@@ -10,4 +10,5 @@ public interface SchemaComponentContainer extends Component {
 	
 	void removeSchemaComponent(SchemaComponent schema);
 	
+	SchemaComponent findSchema(String name);
 }

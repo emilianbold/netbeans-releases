@@ -38,7 +38,16 @@ public interface OperatorComponent extends Component {
 	
 	public static final String PROP_BATCHMODE = "batchMode";
 	
+	public static final String PROP_IS_SCHEMAOWNER = "isSchemaOwner";
+	
+	public static final String PROP_FROMCLAUSE = "fromClause";
+	
 	public static final String PROP_WHERECLAUSE = "whereClause";
+	
+	public static final String PROP_GROUP_BY_COLUMNLIST = "groupByColumnList";
+	
+	
+	
 	
 	int getX();
 	
@@ -84,12 +93,16 @@ public interface OperatorComponent extends Component {
 	
 	public boolean isBatchMode();
 	
+	public boolean isSchemaOwner();
+	
 	public List<OperatorComponent> getFromColumnList();
 	
 	public List<Property> getToColumnList();
 	
-	public List<Property> getGroupByColumnList();
+	public String getGroupByColumnList();
 	
 	public String getWhereClause();
+	
+	public String getFromClause();
 	
 }
