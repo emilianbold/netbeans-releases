@@ -110,7 +110,7 @@ public class OperationsWidget extends AbstractTitledWidget {
         
         headerLabelWidget = new ImageLabelWidget(getScene(), null,
                 NbBundle.getMessage(OperationWidget.class, "LBL_Operations"));
-        headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
+        headerLabelWidget.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
         BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.WEST);
         updateHeaderLabel();
         

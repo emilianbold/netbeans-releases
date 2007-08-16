@@ -34,7 +34,6 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
-import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
@@ -120,16 +119,14 @@ public class OperationWidget extends AbstractTitledWidget {
             image = IMAGE_NOTIFICATION;
         }
         headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getOperationName());
-        headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
-        final LabelWidget nameWidget = headerLabelWidget.getLabelWidget();
-        nameWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(
-                new TextFieldInplaceEditor(){
+        headerLabelWidget.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
+        headerLabelWidget.setLabelEditor(new TextFieldInplaceEditor(){
             public boolean isEnabled(Widget widget) {
                 return true;
             }
             
             public String getText(Widget widget) {
-                return nameWidget.getLabel();
+                return headerLabelWidget.getLabel();
             }
             
             public void setText(Widget widget, String text) {
@@ -137,9 +134,9 @@ public class OperationWidget extends AbstractTitledWidget {
                     OperationGeneratorHelper.changeWSDLOperationName(serviceModel, service, operation, text);
                 }
                 operation.setOperationName(text);
-                nameWidget.setLabel(text);
+                headerLabelWidget.setLabel(text);
             }
-        }));
+        });
         headerLabelWidget.setToolTipText(typeOfOperation);
         BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.WEST);
 

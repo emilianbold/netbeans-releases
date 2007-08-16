@@ -72,7 +72,7 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(0,1,1,1));
         headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle(), 
                 "("+method.getFaults().size()+")");
-        headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
+        headerLabelWidget.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
         BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.CENTER);
 
         buttons = new Widget(getScene());

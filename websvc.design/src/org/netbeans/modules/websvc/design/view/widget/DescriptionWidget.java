@@ -65,7 +65,7 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
     private void createContent() {
         populateContentWidget(getContentWidget());
         headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle());
-        headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
+        headerLabelWidget.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
         BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.CENTER);
         
         buttons = new Widget(getScene());

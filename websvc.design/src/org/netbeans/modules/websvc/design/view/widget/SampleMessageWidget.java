@@ -132,8 +132,8 @@ public class SampleMessageWidget extends AbstractTitledWidget {
 
 
         headerLabelWidget = new ImageLabelWidget(scene, null, operation.getOperationName()+": ",type.getTitle());
-        headerLabelWidget.getLabelWidget().setFont(scene.getFont().deriveFont(Font.BOLD));
-        headerLabelWidget.getCommentWidget().setPaintAsDisabled(false);
+        headerLabelWidget.setLabelFont(scene.getFont().deriveFont(Font.BOLD));
+        headerLabelWidget.setPaintAsDisabled(false);
         headerLabelWidget.setLabelForeground(type.getBorderColor());
         BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.CENTER);
         buttons = new Widget(getScene());
@@ -142,7 +142,7 @@ public class SampleMessageWidget extends AbstractTitledWidget {
         BorderLayout.addLayoutComponent(getHeaderWidget(), buttons, BorderLayout.Constraint.EAST);
         final ButtonWidget closeButton = new ButtonWidget(getScene(), "x");
         closeButton.setLabelForeground(new Color(255,95,95));
-        closeButton.getLabelWidget().setFont(scene.getFont().deriveFont(Font.BOLD));
+        closeButton.setLabelFont(scene.getFont().deriveFont(Font.BOLD));
         closeButton.setRoundedBorder(0, 4, 0,type.getBorderColor());
         closeButton.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {

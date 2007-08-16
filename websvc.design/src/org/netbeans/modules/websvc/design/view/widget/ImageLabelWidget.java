@@ -22,12 +22,15 @@ package org.netbeans.modules.websvc.design.view.widget;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
+import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.websvc.design.view.layout.FlowLayout;
 
 /**
  *
@@ -39,6 +42,7 @@ public class ImageLabelWidget extends Widget {
     private ImageWidget imageWidget;
     private LabelWidget labelWidget;
     private LabelWidget commentWidget;
+    private TextFieldInplaceEditor editor = null;
     
     public ImageLabelWidget(Scene scene, Image image, String text) {
         this(scene, image, text, null, DEFAULT_GAP);
@@ -62,8 +66,7 @@ public class ImageLabelWidget extends Widget {
             String comment, int hgap) {
         super(scene);
         
-        setLayout(LayoutFactory.createHorizontalFlowLayout(
-                SerialAlignment.JUSTIFY, hgap));
+        setLayout(new FlowLayout(false,FlowLayout.Alignment.CENTER,hgap));
         
         Font font = scene.getDefaultFont();
         setImage(image);
@@ -78,6 +81,9 @@ public class ImageLabelWidget extends Widget {
         if(imageWidget!=null) {
             return imageWidget.isPaintAsDisabled();
         }
+        if(commentWidget!=null) {
+            return commentWidget.isPaintAsDisabled();
+        }
         return false;
     }
     
@@ -87,6 +93,9 @@ public class ImageLabelWidget extends Widget {
         }
         if(imageWidget!=null) {
             imageWidget.setPaintAsDisabled(flag);
+        }
+        if(commentWidget!=null) {
+            commentWidget.setPaintAsDisabled(flag);
         }
     }
     
@@ -119,14 +128,26 @@ public class ImageLabelWidget extends Widget {
         }
     }
     
-    public LabelWidget getLabelWidget() {
+    protected LabelWidget getLabelWidget() {
         return labelWidget;
     }
     
-    public LabelWidget getCommentWidget() {
-        return commentWidget;
+    public void setLabelFont(Font font) {
+        labelWidget.setFont(font);
     }
     
+    public void setLabelEditor(TextFieldInplaceEditor editor) {
+        if (this.editor!=null) {
+            throw new IllegalStateException("An editor is already specified.");
+        }
+        this.editor = editor;
+        getActions().addAction(ActionFactory.createInplaceEditorAction(editor));
+    }
+    
+    public boolean isEditable() {
+        return editor!=null && editor.isEnabled(this);
+    }
+
     public void setImage(Image image) {
         if(image==null) {
             if (imageWidget!=null) {
@@ -179,6 +200,5 @@ public class ImageLabelWidget extends Widget {
         return commentWidget==null?null:commentWidget.getLabel();
     }
     
-    public static final Color COMMENT_COLOR = new Color(0x666666);
     public static final int DEFAULT_GAP = 4;
 }

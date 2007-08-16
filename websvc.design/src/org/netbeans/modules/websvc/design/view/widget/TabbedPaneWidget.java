@@ -102,16 +102,16 @@ public class TabbedPaneWidget extends Widget {
                 return false;
             }
         };
-        tab.setLayout(LayoutFactory.createOverlayLayout());
-        tab.getLabelWidget().setAlignment(LabelWidget.Alignment.CENTER);
+//        tab.setLayout(LayoutFactory.createOverlayLayout());
+//        tab.getLabelWidget().setAlignment(LabelWidget.Alignment.CENTER);
         tab.setBorder(new TabBorder(this,tab));
         tab.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 if(LayoutFactory.getActiveCard(contentWidget) != tabComponent) {
                     if(selectedTab!=null)
-                        selectedTab.getLabelWidget().setFont(getScene().getFont());
+                        selectedTab.setLabelFont(getScene().getFont());
                     selectedTab = tab;
-                    selectedTab.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
+                    selectedTab.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
                     LayoutFactory.setActiveCard(contentWidget, tabComponent);
                     contentWidget.revalidate(true);
                 }
@@ -121,7 +121,7 @@ public class TabbedPaneWidget extends Widget {
         tabs.setLayout(new TableLayout(tabs.getChildren().size(), 0, 0, 20));
         if(selectedTab==null) {
             selectedTab = tab;
-            selectedTab.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
+            selectedTab.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
             LayoutFactory.setActiveCard(contentWidget, tabComponent);
         }
     }

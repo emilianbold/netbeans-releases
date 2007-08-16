@@ -62,7 +62,7 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
     
     private void createContent() {
         headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle());
-        headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
+        headerLabelWidget.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
         BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.CENTER);
         
         buttons = new Widget(getScene());

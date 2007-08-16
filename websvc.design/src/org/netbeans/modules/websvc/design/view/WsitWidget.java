@@ -85,7 +85,7 @@ public class WsitWidget extends AbstractTitledWidget {
     private void createContent() {
         headerLabelWidget = new ImageLabelWidget(getScene(), null,
                 NbBundle.getMessage(WsitWidget.class, "LBL_Wsit"));
-        headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
+        headerLabelWidget.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
         BorderLayout.addLayoutComponent(getHeaderWidget(), headerLabelWidget, BorderLayout.Constraint.WEST);
         
         buttons = new Widget(getScene());
@@ -141,8 +141,7 @@ public class WsitWidget extends AbstractTitledWidget {
                 };
                 button.setAction(new ConfigWidgetAction(config));
                 button.setToolTipText(config.getDescription());
-                button.getLabelWidget().setFont(
-                        getScene().getFont().deriveFont(Font.BOLD));
+                button.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
                 configButtons.addChild(button);
             }
         }
