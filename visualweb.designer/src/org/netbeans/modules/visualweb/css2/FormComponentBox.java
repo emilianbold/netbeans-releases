@@ -111,8 +111,8 @@ public class FormComponentBox extends ContainerBox {
     private static final boolean MAC_STYLE_BUTTONS = System.getProperty("rave.macButtons") != null; // NOI18N
     private static boolean sCreateChildren; // static used before object create
 
-    /** UIDefaults to use when creating native components */
-    private static UIDefaults uidef = null;
+//    /** UIDefaults to use when creating native components */
+//    private static UIDefaults uidef = null;
     private JComponent createdC;
     private boolean nonrectangular;
     private boolean createChildren;
@@ -522,11 +522,12 @@ public class FormComponentBox extends ContainerBox {
                 
                 c = jp;
 
-                ScrollPaneUI ui = (ScrollPaneUI)createNativeUI(c);
-
-                if (ui != null) {
-                    jp.setUI(ui);
-                }
+                // XXX #110555 Java app can't mix two or more L&F's at the same time.
+//                ScrollPaneUI ui = (ScrollPaneUI)createNativeUI(c);
+//
+//                if (ui != null) {
+//                    jp.setUI(ui);
+//                }
             } else {
                 Vector<String> v = new Vector<String>();
                 int[] selected = populateOptions(element, v);
@@ -595,11 +596,12 @@ public class FormComponentBox extends ContainerBox {
             // or check CSS attribute first!
             area.setColumns(cols);
 
-            TextUI tui = (TextUI)createNativeUI(area);
-
-            if (tui != null) {
-                area.setUI(tui);
-            }
+            // XXX #110555 Java app can't mix two or more L&F's at the same time.
+//            TextUI tui = (TextUI)createNativeUI(area);
+//
+//            if (tui != null) {
+//                area.setUI(tui);
+//            }
 
             // On Windows, show a vertical scrollbar by default, since
             // that's what IE does. Mozilla does not so on other platforms
@@ -620,11 +622,12 @@ public class FormComponentBox extends ContainerBox {
                 vertical, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             c = jc;
 
-            ScrollPaneUI ui = (ScrollPaneUI)createNativeUI(c);
-
-            if (ui != null) {
-                jc.setUI(ui);
-            }
+            // XXX #110555 Java app can't mix two or more L&F's at the same time.
+//            ScrollPaneUI ui = (ScrollPaneUI)createNativeUI(c);
+//
+//            if (ui != null) {
+//                jc.setUI(ui);
+//            }
         }
 
         if (c != null) {
@@ -791,12 +794,13 @@ public class FormComponentBox extends ContainerBox {
             int size = HtmlAttribute.getIntegerAttributeValue(el, HtmlAttribute.SIZE, -1);
             field.setColumns((size > 0) ? size : DEFAULT_INPUT_COMPONENT_SIZE);
 
-            // Don't use IDE look and feel; use the platform's native l&f
-            TextUI ui = (TextUI)createNativeUI(c);
-
-            if (ui != null) {
-                field.setUI(ui);
-            }
+            // XXX #110555 Java app can't mix two or more L&F's at the same time.
+//            // Don't use IDE look and feel; use the platform's native l&f
+//            TextUI ui = (TextUI)createNativeUI(c);
+//
+//            if (ui != null) {
+//                field.setUI(ui);
+//            }
 
             String value = el.getAttribute(HtmlAttribute.VALUE);
 
@@ -826,8 +830,9 @@ public class FormComponentBox extends ContainerBox {
                         insets.bottom / 2, insets.right / 2));
             }
 
-            // Grrrr.. unlike JComboBox, setUI is not public in JButton
-            button.setUI((ButtonUI)createNativeUI(button));
+            // XXX #110555 Java app can't mix two or more L&F's at the same time.
+//            // Grrrr.. unlike JComboBox, setUI is not public in JButton
+//            button.setUI((ButtonUI)createNativeUI(button));
 
             if (org.openide.util.Utilities.getOperatingSystem() == org.openide.util.Utilities.OS_MAC) {
                 // Buttons are rounded to treat as nonrectangular
@@ -864,12 +869,13 @@ public class FormComponentBox extends ContainerBox {
                 jc.setSelected(true);
             }
 
-            // Don't use IDE look and feel; use the platform's native l&f
-            ButtonUI ui = (ButtonUI)createNativeUI(c);
-
-            if (ui != null) {
-                jc.setUI(ui);
-            }
+            // XXX #110555 Java app can't mix two or more L&F's at the same time.
+//            // Don't use IDE look and feel; use the platform's native l&f
+//            ButtonUI ui = (ButtonUI)createNativeUI(c);
+//
+//            if (ui != null) {
+//                jc.setUI(ui);
+//            }
 
             //maxIsPreferred = 3;
             jc.setOpaque(false); // will indicate nonrectangular
@@ -892,12 +898,12 @@ public class FormComponentBox extends ContainerBox {
                 jc.setSelected(true);
             }
 
-            // Don't use IDE look and feel; use the platform's native l&f
-            ButtonUI ui = (ButtonUI)createNativeUI(c);
-
-            if (ui != null) {
-                jc.setUI(ui);
-            }
+//            // Don't use IDE look and feel; use the platform's native l&f
+//            ButtonUI ui = (ButtonUI)createNativeUI(c);
+//
+//            if (ui != null) {
+//                jc.setUI(ui);
+//            }
 
             //maxIsPreferred = 3;
             jc.setOpaque(false); // will indicate nonrectangular
@@ -905,11 +911,12 @@ public class FormComponentBox extends ContainerBox {
             JPasswordField field = new JPasswordField();
             c = field;
 
-            TextUI ui = (TextUI)createNativeUI(c);
-
-            if (ui != null) {
-                field.setUI(ui);
-            }
+            // XXX #110555 Java app can't mix two or more L&F's at the same time.
+//            TextUI ui = (TextUI)createNativeUI(c);
+//
+//            if (ui != null) {
+//                field.setUI(ui);
+//            }
 
             int size = HtmlAttribute.getIntegerAttributeValue(el, HtmlAttribute.SIZE, -1);
             field.setColumns((size > 0) ? size : DEFAULT_INPUT_COMPONENT_SIZE);
@@ -930,16 +937,18 @@ public class FormComponentBox extends ContainerBox {
             int size = HtmlAttribute.getIntegerAttributeValue(el, HtmlAttribute.SIZE, -1);
             field.setColumns((size > 0) ? size : DEFAULT_INPUT_COMPONENT_SIZE);
 
-            TextUI ui = (TextUI)createNativeUI(field);
-
-            if (ui != null) {
-                field.setUI(ui);
-            }
+            // XXX #110555 Java app can't mix two or more L&F's at the same time.
+//            TextUI ui = (TextUI)createNativeUI(field);
+//
+//            if (ui != null) {
+//                field.setUI(ui);
+//            }
 
             // XXX Why am I using the Swing label here?
             JButton browseButton =
                 new JButton(UIManager.getString("FormView.browseFileButtonText"));
-            browseButton.setUI((ButtonUI)createNativeUI(browseButton));
+            // XXX #110555 Java app can't mix two or more L&F's at the same time.
+//            browseButton.setUI((ButtonUI)createNativeUI(browseButton));
 
             javax.swing.Box box = javax.swing.Box.createHorizontalBox();
             box.add(field);
@@ -1029,82 +1038,83 @@ public class FormComponentBox extends ContainerBox {
     }
 
 
-    /**
-     * Look up the native look and feel to use on this platform.
-     * This will return the current look and feel (if it calls itself
-     * native), otherwise it will pick an arbitrary native (& supported)
-     * look and feel. If none can be found, it just returns the current
-     * look and feel.
-     */
-    private static LookAndFeel findNativeLnF() {
-        // Check the current look and feel first, and give that one
-        // preference if it fits the bill
-        LookAndFeel feel = UIManager.getLookAndFeel();
-
-        if (feel.isNativeLookAndFeel()) {
-            return feel;
-        }
-
-        UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
-
-        if (info == null) {
-            return feel;
-        }
-
-        for (int i = 0; i < info.length; i++) {
-            String clsname = info[i].getClassName();
-            Class clz;
-
-            try {
-                clz = Class.forName(clsname);
-            } catch (ClassNotFoundException clf) {
-                clf.printStackTrace();
-
-                return feel;
-            }
-
-            if (clz != null) {
-                try {
-                    LookAndFeel f = (LookAndFeel)clz.newInstance();
-
-                    if (f.isSupportedLookAndFeel() && f.isNativeLookAndFeel()) {
-                        // Found one...
-                        return f;
-                    }
-                } catch (InstantiationException ie) {
-                    ie.printStackTrace();
-
-                    // continue
-                } catch (IllegalAccessException iae) {
-                    iae.printStackTrace();
-
-                    // continue
-                }
-            }
-        }
-
-        // Give up - no native look and feels found.
-        // Just use the current look and feel.
-        return feel;
-    }
-
-    /** Create a ComponentUI for the given JComponent. It will attempt
-     * to find a native look and feel for the component.
-     */
-    private static ComponentUI createNativeUI(JComponent c) {
-        if (uidef == null) {
-            LookAndFeel feel = findNativeLnF();
-            uidef = feel.getDefaults();
-
-            if (uidef == null) {
-                return null;
-            }
-        }
-
-        javax.swing.plaf.ComponentUI cu = uidef.getUI(c);
-
-        return cu;
-    }
+    // XXX #110555 Java app can't mix two or more L&F's at the same time.
+//    /**
+//     * Look up the native look and feel to use on this platform.
+//     * This will return the current look and feel (if it calls itself
+//     * native), otherwise it will pick an arbitrary native (& supported)
+//     * look and feel. If none can be found, it just returns the current
+//     * look and feel.
+//     */
+//    private static LookAndFeel findNativeLnF() {
+//        // Check the current look and feel first, and give that one
+//        // preference if it fits the bill
+//        LookAndFeel feel = UIManager.getLookAndFeel();
+//
+//        if (feel.isNativeLookAndFeel()) {
+//            return feel;
+//        }
+//
+//        UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels();
+//
+//        if (info == null) {
+//            return feel;
+//        }
+//
+//        for (int i = 0; i < info.length; i++) {
+//            String clsname = info[i].getClassName();
+//            Class clz;
+//
+//            try {
+//                clz = Class.forName(clsname);
+//            } catch (ClassNotFoundException clf) {
+//                clf.printStackTrace();
+//
+//                return feel;
+//            }
+//
+//            if (clz != null) {
+//                try {
+//                    LookAndFeel f = (LookAndFeel)clz.newInstance();
+//
+//                    if (f.isSupportedLookAndFeel() && f.isNativeLookAndFeel()) {
+//                        // Found one...
+//                        return f;
+//                    }
+//                } catch (InstantiationException ie) {
+//                    ie.printStackTrace();
+//
+//                    // continue
+//                } catch (IllegalAccessException iae) {
+//                    iae.printStackTrace();
+//
+//                    // continue
+//                }
+//            }
+//        }
+//
+//        // Give up - no native look and feels found.
+//        // Just use the current look and feel.
+//        return feel;
+//    }
+//
+//    /** Create a ComponentUI for the given JComponent. It will attempt
+//     * to find a native look and feel for the component.
+//     */
+//    private static ComponentUI createNativeUI(JComponent c) {
+//        if (uidef == null) {
+//            LookAndFeel feel = findNativeLnF();
+//            uidef = feel.getDefaults();
+//
+//            if (uidef == null) {
+//                return null;
+//            }
+//        }
+//
+//        javax.swing.plaf.ComponentUI cu = uidef.getUI(c);
+//
+//        return cu;
+//    }
 
     protected void paintBackground(Graphics g, int x, int y) {
         // We don't need any background painted - fully covered
