@@ -184,9 +184,9 @@ public final class Splash {
     /** Loads a splash image from its source 
      *  @param about if true then about image is loaded, if false splash image is loaded
      */
-    private static Image loadContent(boolean about) {
+    public static Image loadContent(boolean about) {
         if (about) {
-            Image img = Utilities.loadImage("org/netbeans/core/startup/about.gif", true);
+            Image img = Utilities.loadImage("org/netbeans/core/startup/about.png", true);
             if (img != null) {
                 return img;
             }
@@ -214,7 +214,6 @@ public final class Splash {
 	
 	private int progress = 0;
 	private int maxSteps = 0;
-	private int tmpSteps = 0;
 	private int barStart = 0;
 	private int barLength = 0;
 	

@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -48,8 +49,10 @@ import org.openide.util.Utilities;
 public class ProductInformationPanel extends JPanel implements HyperlinkListener {
 
     URL url = null;
+    Icon about;
     
     public ProductInformationPanel() {
+        about = new ImageIcon(org.netbeans.core.startup.Splash.loadContent(true));
         initComponents();
         netbeansOrg.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         description.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, 
@@ -106,11 +109,10 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         description.setText("<div style=\"font-size: 12pt; font-family: Verdana, 'Verdana CE',  Arial, 'Arial CE', 'Lucida Grande CE', lucida, 'Helvetica CE', sans-serif;\">\n    <b>Product Version:</b> {0}<br> <b>Java:</b> {1}; {2}<br> <b>System:</b> {3}; {4}; {5}<br><b>Userdir:</b> {6}</div>");
         jScrollPane2.setViewportView(description);
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/core/resources/about.png"))); // NOI18N
+        jLabel1.setIcon(about);
         jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jLabel1.setMaximumSize(new java.awt.Dimension(531, 254));
         jLabel1.setMinimumSize(new java.awt.Dimension(531, 254));
-        jLabel1.setPreferredSize(new java.awt.Dimension(531, 254));
         jLabel1.setBounds(0, 0, 531, 254);
         jLayeredPane1.add(jLabel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
