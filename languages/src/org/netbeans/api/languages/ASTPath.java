@@ -155,21 +155,19 @@ public abstract class ASTPath {
     private static final class Token2Path extends ASTPath {
 
         private List<ASTItem> path;
-        private int s;
         
         Token2Path (List<ASTItem> path) {
             this.path = path;
-            s = path.size ();
-            if (s < 1)
+            if (path.size () < 1)
                 throw new IllegalArgumentException ();
         }
         
         public ASTItem getLeaf () {
-            return path.get (s - 1);
+            return path.get (path.size () - 1);
         }
         
         public int size () {
-            return s;
+            return path.size ();
         }
         
         public ASTItem getRoot () {

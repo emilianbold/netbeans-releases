@@ -27,6 +27,7 @@ import java.util.List;
 public final class ASTToken extends ASTItem {
     
     private String      identifier;
+    private CharSequence identifierCharSequence;
     private String      type;
     
     
@@ -44,7 +45,7 @@ public final class ASTToken extends ASTItem {
     public static ASTToken create (
         String          mimeType,
         String          type,
-        String          identifier,
+        CharSequence    identifier,
         int             offset,
         int             length,
         List<? extends ASTItem> children
@@ -88,15 +89,18 @@ public final class ASTToken extends ASTItem {
 
     
     private ASTToken (
-        String  mimeType,
-        String  type, 
-        String  identifier, 
-        int     offset,
-        int     length,
+        String                  mimeType,
+        String                  type, 
+        CharSequence            identifier, 
+        int                     offset,
+        int                     length,
         List<? extends ASTItem> children
     ) {
         super (mimeType, offset, length, children);
-        this.identifier = identifier;
+        if (identifier instanceof String)
+            this.identifier = (String) identifier;
+        else
+            this.identifierCharSequence = identifier;
         this.type = type;
     }
 
@@ -116,6 +120,9 @@ public final class ASTToken extends ASTItem {
      * @return token identifier
      */
     public String getIdentifier () {
+        if (identifier != null) return identifier;
+        if (identifierCharSequence != null)
+            identifier = identifierCharSequence.toString ();
         return identifier;
     }
     
@@ -133,6 +140,11 @@ public final class ASTToken extends ASTItem {
             if (identifier != null)
                 sb.append (",'").
                    append (e (identifier)).
+                   append ("'");
+            else
+            if (identifierCharSequence != null)
+                sb.append (",'").
+                   append (e (identifierCharSequence)).
                    append ("'");
             sb.append ('>');
             toString = sb.toString ();

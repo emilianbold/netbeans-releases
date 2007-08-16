@@ -217,10 +217,10 @@ public class ParserManagerImpl extends ParserManager {
     private void refreshPanes() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                Iterator it = TopComponent.getRegistry ().getOpened ().iterator ();
+                Iterator<TopComponent> it = TopComponent.getRegistry ().getOpened ().iterator ();
                 while (it.hasNext ()) {
-                    TopComponent tc = (TopComponent) it.next ();
-                    EditorCookie ec = (EditorCookie) tc.getLookup ().lookup (EditorCookie.class);
+                    TopComponent tc = it.next ();
+                    EditorCookie ec = tc.getLookup ().lookup (EditorCookie.class);
                     if (ec == null) continue;
                     JEditorPane[] eps = ec.getOpenedPanes ();
                     if (eps == null) {
@@ -285,10 +285,10 @@ public class ParserManagerImpl extends ParserManager {
         String mimeType = (String) doc.getProperty ("mimeType");
         Language l = getLanguage (mimeType);
         LLSyntaxAnalyser a = l.getAnalyser ();
-        //long start = System.currentTimeMillis ();
+        long start = System.currentTimeMillis ();
 
         TokenInput input = createTokenInput ();
-        //long to = System.currentTimeMillis () - start;
+        long to = System.currentTimeMillis () - start;
         ASTNode n = a.read (input, true);
         //S ystem.out.println("parse " + doc.getProperty ("title") + " " + (System.currentTimeMillis () - start) + " " + to);
         return n;
@@ -323,14 +323,14 @@ public class ParserManagerImpl extends ParserManager {
                 tokens.add (ASTToken.create (
                     ts.language ().mimeType (),
                     type, 
-                    t.text ().toString (), 
+                    t.text (), 
                     offset,
                     t.length (),
                     children
                 ));
             } else
             if (ttype.equals ("S")) {
-                StringBuilder sb = new StringBuilder (t.text ().toString ());
+                StringBuilder sb = new StringBuilder (t.text ());
                 List<ASTToken> children = new ArrayList<ASTToken> ();
                 TokenSequence ts2 = ts.embedded ();
 //                if (ts2 != null)
@@ -378,7 +378,7 @@ public class ParserManagerImpl extends ParserManager {
                 tokens.add (ASTToken.create (
                     ts.language ().mimeType (),
                     type, 
-                    sb.toString (), 
+                    sb, 
                     offset,
                     no - offset,
                     children
