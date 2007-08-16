@@ -3,70 +3,86 @@
 Inc.  All rights reserved.  
 Use is subject to license terms.  *--> 
 <html> 
-<head> 
-    <title>About Web Services</title>
-    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head> 
-<body>
-    <h2>About Web Services</h2>
-    <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-    <p>Web services are distributed application components that conform to standards 
-        that make them externally available. They solve the problem of integrating diverse 
-        computer applications that have been developed independently and run on a variety 
-    of software and hardware platforms.</p>
-    <P>The promise of web services architecture is to allow you to
-    connect applications that were developed on different platforms and
-    in different programming languages. This can only work if vendors can
-    agree on common standards. 
-
-    <p>There are two distinct web service programming models, both of which
-    are supported by the IDE, the first is specific to the Java EE 5 specification,
-    while the second is specific to the J2EE 1.4 specification:
-    <ul><li><b>Java API for XML Web Services (JAX-WS).</b> This programming model
-        relates specifically to Java EE 5. A follow-on release of Java API for XML-based RPC 1.1 (JAX-RPC), JAX-WS 
-        simplifies the task of developing web services using Java technology. It addresses some of 
-        the issues in JAX-RPC 1.1 by providing, for example, annotations to simplify web service 
-        development and reduce the size of runtime JAR files. 
-
-        <li><b>Java API for XML-based RPC (JAX-RPC).</b> JAX-RPC is the 
-        programming model for creating web services and
-        clients in Java (not necessarily J2EE 1.4). The JSR 109 implementation facilitates the
-        creation of JAX-RPC web services and clients in the J2EE 1.4 environment. 
-    </ul> 
-
-    <p>Both programming models are based on
-    the following three specifications:</P>
-    <UL>
-        <LI><P><B>SOAP (Simple Object Access Protocol).</B> Defines the
-            mechanism by which a web service is called and how data is returned.
-            For detailed information, refer to the SOAP 1.1 Specification. 
-        </P>
-        <LI><P><B>WSDL (Web Service Definition Language).</B> Describes the
-            external interface of a web service. For detailed information, refer
-            to the WSDL 1.1 Specification. 
-        </P>
-        <LI><P><B>UDDI (Universal Discovery, Description, and Integration)</B>
-        Registries contain information about web services, including the
-        location of WSDL files and the location of the running services. The
-        IDE does not let you publish web services to or
-        browse from a UDDI registry, although the WSDL files that you
-        use can come from a variety of sources, including a UDDI registry.</P>
-    </UL>
-    
-    <dl>
-        <dt><a name="seealso">See Also</a></dt>
-        <dd><a href="ws_process.html">Working with Web Services</a></dd>
-        <dd><a href="ws_quickref.html">Web Service Tasks: Quick Reference</a></dd>
-        <dd><a href="../consume/about_wsc.html">About Web Service Clients</a></dd>
-    </dl>
-
-
-
-   <hr>
-<small><a href="../../credits.html">Legal Notices</a> 
-    <table cellpadding="20" border="0"> 
-        <tr><td>&nbsp;</td></tr> 
-        <tr><td>&nbsp;</td></tr> 
-        <tr><td>&nbsp;</td></tr> 
-    </table> 
+    <head> 
+        <title>About Web Services</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head> 
+    <body>
+        <h2>About Web Services</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+        <p>Web services are distributed application components that conform to standards 
+            that make them externally available. They solve the problem of integrating diverse 
+            computer applications that have been developed independently and run on a variety 
+        of software and hardware platforms.</p>
+        <P>The promise of web services architecture is to allow you to
+        connect applications that were developed on different platforms and
+        in different programming languages. This can only work if vendors can
+        agree on common standards. 
+        
+        <p>There are two distinct web service programming models, both of which
+        are supported by the IDE, the first is specific to the Java EE 5 specification,
+        while the second is specific to the J2EE 1.4 specification:
+        <ul><li><b>Java API for XML Web Services (JAX-WS).</b> This programming model
+            relates specifically to Java EE 5. A follow-on release of Java API for XML-based RPC 1.1 (JAX-RPC), JAX-WS 
+            simplifies the task of developing web services using Java technology. It addresses some of 
+            the issues in JAX-RPC 1.1 by providing, for example, annotations to simplify web service 
+            development and reduce the size of runtime JAR files.
+            
+            <p>Some JAX-WS web services can be described as being RESTful.
+            REpresentational State Transfer (REST) REST is an architectural style.
+            Elements of the REST archictectural style are its stateless client-server architecture
+            and the fact that web services are viewed as resources that can be identified by their URLs. 
+            The application of some or all of the constraints specified by the REST architectural style to 
+            a JAX-WS web service makes it a RESTful web service. 
+            
+            <li><b>Java API for XML-based RPC (JAX-RPC).</b> JAX-RPC is the 
+            programming model for creating web services and
+            clients in Java (not necessarily J2EE 1.4). The JSR 109 implementation facilitates the
+            creation of JAX-RPC web services and clients in the J2EE 1.4 environment. For legacy reasons,
+            the IDE continues to support JAX-RPC web services. 
+            
+            <ul class="note">
+                <li>JAX-RPC web services, though supported in the IDE, are not described
+            in this helpset, since you are assumed to be using JAX-WS web services instead,
+            when beginning to create new web services in the IDE.
+                </li>
+            </ul>
+            
+        </ul> 
+        
+        <p>Both programming models are based on
+        the following three specifications:</P>
+        <UL>
+            <LI><P><B>SOAP (Simple Object Access Protocol).</B> Defines the
+                mechanism by which a web service is called and how data is returned.
+                For detailed information, refer to the SOAP 1.1 Specification. 
+            </P>
+            <LI><P><B>WSDL (Web Service Definition Language).</B> Describes the
+                external interface of a web service. For detailed information, refer
+                to the WSDL 1.1 Specification. 
+            </P>
+            <LI><P><B>UDDI (Universal Discovery, Description, and Integration)</B>
+                Registries contain information about web services, including the
+                location of WSDL files and the location of the running services. The
+                IDE does not let you publish web services to or
+                browse from a UDDI registry, although the WSDL files that you
+            use can come from a variety of sources, including a UDDI registry.</P>
+        </UL>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="ws_process.html">Working with Web Services</a></dd>
+            <dd><a href="ws_quickref.html">Web Service Tasks: Quick Reference</a></dd>
+            <dd><a href="../consume/about_wsc.html">About Web Service Clients</a></dd>
+        </dl>
+        
+        
+        
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a> 
+            <table cellpadding="20" border="0"> 
+                <tr><td>&nbsp;</td></tr> 
+                <tr><td>&nbsp;</td></tr> 
+                <tr><td>&nbsp;</td></tr> 
+            </table> 
 </small></body></html>
