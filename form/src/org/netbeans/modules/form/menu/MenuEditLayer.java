@@ -180,7 +180,7 @@ public class MenuEditLayer extends JPanel {
         if(comp == null) return false;
         return isMenuRelatedComponentClass(comp.getBeanClass());
     }
-    
+        
     public static boolean isMenuBarContainer(RADComponent comp) {
         if(comp == null) return false;
         Class clas = comp.getBeanClass();
@@ -661,7 +661,7 @@ public class MenuEditLayer extends JPanel {
         try {
             //clear old bgs first
             for(RADComponent rad : selectedComponents) {
-                if(isMenuRelatedRADComponent(rad)) {
+                if(isMenuRelatedRADComponent(rad) && !isMenuBarContainer(rad)) { // don't mess w/ the menubar's background
                     JComponent c = (JComponent) formDesigner.getComponent(rad);
                     if(c != null) { // could be null if comp was just deleted
                         c.setBackground(getNormalBackground(c));
@@ -688,7 +688,9 @@ public class MenuEditLayer extends JPanel {
             for(RADComponent rad : selectedComponents) {
                 JComponent c = (JComponent) formDesigner.getComponent(rad);
                 if(c != null) {
-                c.setBackground(getSelectedBackground(c));
+                    if(!isMenuBarContainer(rad)) { // don't mess w/ the menubar's background
+                        c.setBackground(getSelectedBackground(c));
+                    }
                     makeSureShowingOnScreen(rad, c);
                     if (c instanceof JMenu) {
                         showMenuPopup((JMenu) c);
