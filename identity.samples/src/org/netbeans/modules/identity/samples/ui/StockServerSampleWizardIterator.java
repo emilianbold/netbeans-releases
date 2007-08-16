@@ -21,8 +21,10 @@ package org.netbeans.modules.identity.samples.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.modules.identity.samples.util.SoaSampleProjectProperties;
+import org.netbeans.modules.identity.samples.util.SoaSampleUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -72,6 +74,18 @@ public class StockServerSampleWizardIterator extends SampleWizardIterator {
             dirParent = FileUtil.toFileObject(FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR)));
         } 
         ProjectChooser.setProjectsFolder(FileUtil.toFile(dirParent.getParent()));
+        
+        Iterator iter = resultSet.iterator();
+        while (iter.hasNext()) {
+            FileObject dir = (FileObject) iter.next();
+            if (dir.getName().contains("war")) {
+                SoaSampleUtils.setPrivateProperty(dir, "project.StockQuoteService-ejb", 
+                    getProject().getProjectDirectory().getPath() + "/StockQuoteService-ejb");
+                
+                break;
+            }
+        }
+        
         return resultSet;
     }
 
