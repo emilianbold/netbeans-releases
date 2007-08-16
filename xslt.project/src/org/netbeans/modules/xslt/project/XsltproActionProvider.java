@@ -190,14 +190,16 @@ public class XsltproActionProvider implements ActionProvider{
         List items = (List) app.get(IcanproProjectProperties.JAVAC_CLASSPATH);
         ArrayList artifacts = new ArrayList();
 
-        for (int i = 0, size = items.size(); i < size; i++) {
-            VisualClassPathItem vi = (VisualClassPathItem) items.get(i);
-            AntArtifact aa = (AntArtifact) vi.getObject();
-            String loc =  aa.getProject().getProjectDirectory().getPath() + "/" +  aa.getArtifactLocation().getPath();
-            File asa = new File(loc);
-            log(" Dependent Project artifact jar: "+ loc + ", [" + (asa.exists()?"exist":"missing") + "]");
-            if (! asa.exists()) {
-            	artifacts.add(aa);
+        if (items != null) {
+            for (int i = 0, size = items.size(); i < size; i++) {
+                VisualClassPathItem vi = (VisualClassPathItem) items.get(i);
+                AntArtifact aa = (AntArtifact) vi.getObject();
+                String loc =  aa.getProject().getProjectDirectory().getPath() + "/" +  aa.getArtifactLocation().getPath();
+                File asa = new File(loc);
+                log(" Dependent Project artifact jar: "+ loc + ", [" + (asa.exists()?"exist":"missing") + "]");
+                if (! asa.exists()) {
+                    artifacts.add(aa);
+                }
             }
         }
 
