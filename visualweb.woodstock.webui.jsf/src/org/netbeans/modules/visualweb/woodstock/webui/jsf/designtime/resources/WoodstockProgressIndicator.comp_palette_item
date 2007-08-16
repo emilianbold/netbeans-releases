@@ -2,8 +2,8 @@
 
 <palette_item version="1.0">
   <component classname="com.sun.webui.jsf.component.ProgressBar" type="visual" />
-  <!--icon16 urlvalue="nbres:/com/sun/webui/jsf/component/ProgressBar_C16.png" /-->
-  <!--icon32 urlvalue="nbres:/com/sun/webui/jsf/component/ProgressBar_C32.png" /-->
+  <icon16 urlvalue="nbres:/com/sun/webui/jsf/component/progress_bar_16.png" />
+  <icon32 urlvalue="nbres:/com/sun/webui/jsf/component/progress_bar_32.png" />
   <description localizing-bundle="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"
                display-name-key="NAME_com-sun-webui-jsf-component-ProgressBar"
 		       help-key="projrave_ui_elements_palette_wdstk-jsf1_2_progressbar"

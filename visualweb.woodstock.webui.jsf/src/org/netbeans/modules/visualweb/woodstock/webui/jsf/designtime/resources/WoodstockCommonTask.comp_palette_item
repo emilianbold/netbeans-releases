@@ -2,8 +2,8 @@
 
 <palette_item version="1.0">
   <component classname="com.sun.webui.jsf.component.CommonTask" type="visual" />
-  <!--icon16 urlvalue="nbres:/com/sun/webui/jsf/component/CommonTask_C16.png" /-->
-  <!--icon32 urlvalue="nbres:/com/sun/webui/jsf/component/CommonTask_C32.png" /-->
+  <icon16 urlvalue="nbres:/com/sun/webui/jsf/component/component_16.png" />
+  <icon32 urlvalue="nbres:/com/sun/webui/jsf/component/component_32.png" />
   <description localizing-bundle="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"
                display-name-key="NAME_com-sun-webui-jsf-component-CommonTask"
                tooltip-key="HINT_com-sun-webui-jsf-component-CommonTask" 
