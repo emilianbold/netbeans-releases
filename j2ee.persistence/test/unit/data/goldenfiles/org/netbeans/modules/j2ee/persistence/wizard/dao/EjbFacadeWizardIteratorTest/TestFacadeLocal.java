@@ -1,13 +1,17 @@
-@javax.ejb.Local
+package foo;
+
+import javax.ejb.Local;
+
+@Local
 public interface TestFacadeLocal {
 
-void create(Test test) ;
+    void create(Test test);
 
-void edit(Test test) ;
+    void edit(Test test);
 
-void destroy(Test test) ;
+    void remove(Test test);
 
-void find(Test test) ;
+    Test find(Object id);
 
-void findAll(Test test) ;
+    java.util.List findAll();
 }

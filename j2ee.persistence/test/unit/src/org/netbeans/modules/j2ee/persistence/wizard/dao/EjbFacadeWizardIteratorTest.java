@@ -22,12 +22,12 @@ package org.netbeans.modules.j2ee.persistence.wizard.dao;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -45,19 +45,29 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
     
     public void setUp() throws Exception{
         super.setUp();
+        File javaxEjb = new File(getWorkDir(), "javax" + File.separator + "ejb");
+        javaxEjb.mkdirs();
+        TestUtilities.copyStringToFile(new File(javaxEjb, "Stateless.java"), "package javax.ejb; public @interface Stateless{}");
+        TestUtilities.copyStringToFile(new File(javaxEjb, "Local.java"), "package javax.ejb; public @interface Local{}");
+        TestUtilities.copyStringToFile(new File(javaxEjb, "Remote.java"), "package javax.ejb; public @interface Remote{}");
     }
     
     public void testCreateInterface() throws Exception {
         
         final String name = "Test";
         final String annotationType = "javax.ejb.Remote";
+        final String pkgName = "foo";
+        File pkg = new File(getWorkDir(), pkgName);
+        pkg.mkdir();
         EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
         
         String golden =
-                "@" + annotationType + "\n" +
+                "package " + pkgName +";\n\n" + 
+                "import " + annotationType + ";\n\n" +
+                "@" + Util.simpleClassName(annotationType) + "\n" +
                 "public interface " + name + " {\n" +
-                "}\n";
-        FileObject result = wizardIterator.createInterface(name, annotationType, FileUtil.toFileObject(getWorkDir()));
+                "}";
+        FileObject result = wizardIterator.createInterface(name, annotationType, FileUtil.toFileObject(pkg));
         assertEquals(golden, TestUtilities.copyFileObjectToString(result));
     }
     
@@ -75,7 +85,7 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
                 "package org.netbeans.test;\n\n" +
                 "import java.util.*;\n\n" +
                 "public interface Test {\n\n" +
-                "void testMethod(Object entity) ;\n" +
+                "    void testMethod(Object entity);\n" +
                 "}";
         
         EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
@@ -91,15 +101,15 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
     
     public void testGetUniqueClassName() throws IOException{
         File testFile = new File(getWorkDir(), "Test.java");
-        
+        testFile.mkdir();
         EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
         String result = wizardIterator.getUniqueClassName("Test", FileUtil.toFileObject(getWorkDir()));
-        System.out.println("Result: " + result);
-        assertEquals("Test2", result);
+        assertEquals("Test_1", result);
         
-        File testFile2 = new File(getWorkDir(), "Test2.java");
-        wizardIterator.getUniqueClassName("Test", FileUtil.toFileObject(getWorkDir()));
-        assertEquals("Test3", result);
+        File testFile2 = new File(getWorkDir(), "Test_1.java");
+        testFile2.mkdir();
+        result = wizardIterator.getUniqueClassName("Test", FileUtil.toFileObject(getWorkDir()));
+        assertEquals("Test_2", result);
     }
     
     public void testGenerate() throws Exception {
@@ -111,13 +121,16 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
                 "public class Test {\n" +
                 "}";
         
+        final String pkgName = "foo";
+        File pkg = new File(getWorkDir(), pkgName);
+        pkg.mkdir();
+
         TestUtilities.copyStringToFile(testFile, originalContent);
         EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
-        Set<FileObject> result = new HashSet<FileObject>();
-        wizardIterator.generate(FileUtil.toFileObject(getWorkDir()), "Test", 
-                "org.netbeans.test", true, true, ContainerManagedJTAInjectableInEJB.class);
-        
-        
+        Set<FileObject> result = wizardIterator.generate(
+                FileUtil.toFileObject(pkg), "Test", pkgName,
+                true, true, ContainerManagedJTAInjectableInEJB.class);
+               
         assertEquals(3, result.size());
         
         for (FileObject each : result){

@@ -156,9 +156,19 @@ import org.openide.util.NbBundle;
         final String variableName = entitySimpleName.toLowerCase().charAt(0) + entitySimpleName.substring(1);
         
         // create the facade
-        final FileObject facade = GenerationUtils.createClass(EJB30_STATELESS_EJBCLASS, targetFolder, entitySimpleName + FACADE_SUFFIX, null);
+        final FileObject facade = GenerationUtils.createClass(targetFolder, entitySimpleName + FACADE_SUFFIX, null);
         createdFiles.add(facade);
-        
+        // add the @stateless annotation 
+        JavaSource source = JavaSource.forFileObject(facade);
+        source.runModificationTask(new AbstractTask<WorkingCopy>(){
+            public void run(WorkingCopy parameter) throws Exception {
+                GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
+                AnnotationTree stateless = genUtils.createAnnotation(EJB_STATELESS);
+                parameter.rewrite(genUtils.getClassTree(), 
+                        genUtils.addAnnotation(genUtils.getClassTree(), stateless));
+            }
+        }).commit();
+
         // generate methods for the facade
         EntityManagerGenerator generator = new EntityManagerGenerator(facade, entityFQN);
         List<GenerationOptions> methodOptions = getMethodOptions(entityFQN, variableName);
@@ -182,7 +192,6 @@ import org.openide.util.NbBundle;
         }
 
         // add implements clauses to the facade
-        JavaSource source = JavaSource.forFileObject(facade);
         source.runModificationTask(new AbstractTask<WorkingCopy>() {
 
             public void run(WorkingCopy parameter) throws Exception {
@@ -264,20 +273,16 @@ import org.openide.util.NbBundle;
             
             public void run(WorkingCopy workingCopy) throws Exception {
                 
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
-                CompilationUnitTree cut = workingCopy.getCompilationUnit();
-                
-                for (Tree typeDeclaration : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDeclaration.getKind()) {
-                        ClassTree clazz = (ClassTree) typeDeclaration;
-                        AnnotationTree annotations = make.Annotation(make.Identifier(annotationType), Collections.<ExpressionTree>emptyList());
+                        ClassTree clazz = genUtils.getClassTree();
+                        AnnotationTree annotations = genUtils.createAnnotation(annotationType);
                         ModifiersTree modifiers = make.Modifiers(clazz.getModifiers(), Collections.<AnnotationTree>singletonList(annotations));
                         ClassTree modifiedClass = make.Class(modifiers, clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), Collections.<ExpressionTree>emptyList(), Collections.<Tree>emptyList());
                         workingCopy.rewrite(clazz, modifiedClass);
                     }
-                }
-            }
         });
         result.commit();
         return source.getFileObjects().iterator().next();

@@ -1,97 +1,32 @@
-public class TestFacade {
+package foo;
 
-public TestFacade() {
-}
+import java.util.List;
+import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
-public void create(final Object object) {
-    javax.persistence.EntityManager em = emf.createEntityManager();
+@Stateless
+public class TestFacade implements TestFacadeLocal, TestFacadeRemote {
+    @PersistenceContext
+    private EntityManager em;
 
-    em.getTransaction().begin();
-    try {
+    public void create(Test test) {
         em.persist(test);
-        em.getTransaction().commit();
     }
-    catch (Exception e) {
-        e.printStackTrace();
-        em.getTransaction().rollback();
-    }
-    finally {
-        em.close();
-    }
-}
 
-public void edit(final Object object) {
-    javax.persistence.EntityManager em = emf.createEntityManager();
-
-    em.getTransaction().begin();
-    try {
-        em.persist(test);
-        em.getTransaction().commit();
+    public void edit(Test test) {
+        em.merge(test);
     }
-    catch (Exception e) {
-        e.printStackTrace();
-        em.getTransaction().rollback();
-    }
-    finally {
-        em.close();
-    }
-}
 
-public void create(final Object object) {
-    javax.persistence.EntityManager em = emf.createEntityManager();
-
-    em.getTransaction().begin();
-    try {
+    public void remove(Test test) {
         em.remove(em.merge(test));
-        em.getTransaction().commit();
     }
-    catch (Exception e) {
-        e.printStackTrace();
-        em.getTransaction().rollback();
+
+    public Test find(Object id) {
+        return em.find(Test.class, id);
     }
-    finally {
-        em.close();
-    }
-}
 
-public void find(final Object object) {
-    javax.persistence.EntityManager em = emf.createEntityManager();
-
-    em.getTransaction().begin();
-    try {
-        return null;
-        em.find(null.<error>);
-        class <error> {
-
-            em.getTransaction <error>() ;
-        }
-
-        (ERROR);
-        (ERROR);
-    }
-    catch (Exception e) {
-        e.printStackTrace();
-        em.getTransaction().rollback();
-    }
-    finally {
-        em.close();
-    }
-}
-
-public void findAll(final Object object) {
-    javax.persistence.EntityManager em = emf.createEntityManager();
-
-    em.getTransaction().begin();
-    try {
+    public List findAll() {
         return em.createQuery("select object(o) from null as o").getResultList();
-        em.getTransaction().commit();
     }
-    catch (Exception e) {
-        e.printStackTrace();
-        em.getTransaction().rollback();
-    }
-    finally {
-        em.close();
-    }
-}
 }

@@ -1,13 +1,17 @@
-@javax.ejb.Remote
+package foo;
+
+import javax.ejb.Remote;
+
+@Remote
 public interface TestFacadeRemote {
 
-void create(Test test) ;
+    void create(Test test);
 
-void edit(Test test) ;
+    void edit(Test test);
 
-void destroy(Test test) ;
+    void remove(Test test);
 
-void find(Test test) ;
+    Test find(Object id);
 
-void findAll(Test test) ;
+    java.util.List findAll();
 }
