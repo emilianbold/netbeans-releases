@@ -86,9 +86,6 @@ public class PickNode extends BpelNode<Pick> {
         PropertyUtils.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
         //
-        Sheet.Set expertPropertySet =
-                getPropertySet(sheet, Constants.PropertiesGroups.EXPERT_SET);
-        //
         return sheet;
     }
     

@@ -75,9 +75,6 @@ public class ScopeNode extends BaseScopeNode<Scope> {
 //                "getExitOnStandardFault", "setExitOnStandardFault",  // NOI18N
 //                "removeExitOnStandardFault"); // NOI18N
         //
-        Sheet.Set expertPropertySet = 
-                getPropertySet(sheet, Constants.PropertiesGroups.EXPERT_SET);
-        //
         return sheet;
     }
 

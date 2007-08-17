@@ -65,10 +65,7 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
         PropertyUtils.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
         //
-        Sheet.Set expertPropertySet = 
-                getPropertySet(sheet, Constants.PropertiesGroups.EXPERT_SET);
-        //
-        PropertyUtils.registerAttributeProperty(this, expertPropertySet,
+        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
                 Process.TARGET_NAMESPACE, TARGET_NAMESPACE, 
                 "getTargetNamespace", "setTargetNamespace", null); // NOI18N
 
