@@ -31,6 +31,7 @@ import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.lib.lexer.token.AbstractToken;
+import org.netbeans.spi.lexer.EmbeddingPresence;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 
 /**
@@ -129,20 +130,12 @@ public final class LexerUtilsConstants {
         }
     }
     
-    public static <T extends TokenId> LanguageHierarchy<T> languageHierarchy(Language<T> language) {
-        return LexerApiPackageAccessor.get().languageHierarchy(language);
-    }
-
-    public static <T extends TokenId> LanguageOperation<T> languageOperation(Language<T> language) {
-        return LexerSpiPackageAccessor.get().operation(languageHierarchy(language));
-    }
-
     /**
      * Returns the most embedded language in the given language path.
      * <br/>
      * The method casts the resulting language to the generic type requested by the caller.
      */
-    public static <T extends TokenId> Language<T> mostEmbeddedLanguage(LanguagePath languagePath) {
+    public static <T extends TokenId> Language<T> innerLanguage(LanguagePath languagePath) {
         @SuppressWarnings("unchecked")
         Language<T> l = (Language<T>)languagePath.innerLanguage();
         return l;
@@ -153,10 +146,9 @@ public final class LexerUtilsConstants {
      * <br/>
      * The method casts the resulting language hierarchy to the generic type requested by the caller.
      */
-    public static <T extends TokenId> LanguageHierarchy<T> mostEmbeddedLanguageHierarchy(LanguagePath languagePath) {
-        @SuppressWarnings("unchecked")
-        LanguageHierarchy<T> lh = (LanguageHierarchy<T>)languageHierarchy(languagePath.innerLanguage());
-        return lh;
+    public static <T extends TokenId> LanguageHierarchy<T> innerLanguageHierarchy(LanguagePath languagePath) {
+        Language<T> language = innerLanguage(languagePath);
+        return LexerApiPackageAccessor.get().languageHierarchy(language);
     }
     
     /**
@@ -164,11 +156,9 @@ public final class LexerUtilsConstants {
      * <br/>
      * The method casts the resulting language operation to the generic type requested by the caller.
      */
-    public static <T extends TokenId> LanguageOperation<T> mostEmbeddedLanguageOperation(LanguagePath languagePath) {
-        @SuppressWarnings("unchecked")
-        LanguageOperation<T> lo = (LanguageOperation<T>)LexerSpiPackageAccessor.get().operation(
-                mostEmbeddedLanguageHierarchy(languagePath));
-        return lo;
+    public static <T extends TokenId> LanguageOperation<T> innerLanguageOperation(LanguagePath languagePath) {
+        Language<T> language = innerLanguage(languagePath);
+        return LexerApiPackageAccessor.get().languageOperation(language);
     }
     
     /**
@@ -178,8 +168,8 @@ public final class LexerUtilsConstants {
      * and if no embedding is found then the <code>LanguageProvider.findLanguageEmbedding()</code>.
      */
     public static <T extends TokenId> LanguageEmbedding<? extends TokenId>
-    findEmbedding(Token<T> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-        LanguageHierarchy<T> languageHierarchy = mostEmbeddedLanguageHierarchy(languagePath);
+    findEmbedding(LanguageHierarchy<T> languageHierarchy, Token<T> token,
+    LanguagePath languagePath, InputAttributes inputAttributes) {
         LanguageEmbedding<? extends TokenId> embedding =
                 LexerSpiPackageAccessor.get().embedding(
                 languageHierarchy, token, languagePath, inputAttributes);
@@ -189,9 +179,10 @@ public final class LexerUtilsConstants {
             embedding = LanguageManager.getInstance().findLanguageEmbedding(
                     token, languagePath, inputAttributes);
         }
+        
         return embedding;
     }
-
+    
     /**
      * Returns token from the given object which is either the token
      * or an embedding container.
@@ -253,7 +244,7 @@ public final class LexerUtilsConstants {
     public static <T extends TokenId, ET extends TokenId> TokenList<ET> embeddedTokenList(
     TokenList<T> tokenList, int tokenIndex, Language<ET> embeddedLanguage) {
         TokenList<ET> embeddedTokenList
-                = EmbeddingContainer.getEmbedding(tokenList, tokenIndex, embeddedLanguage);
+                = EmbeddingContainer.embeddedTokenList(tokenList, tokenIndex, embeddedLanguage);
         if (embeddedTokenList != null) {
             TokenList<T> tl = tokenList;
             if (tokenList.getClass() == SubSequenceTokenList.class) {

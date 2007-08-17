@@ -22,6 +22,7 @@ package org.netbeans.spi.lexer;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.LanguageOperation;
+import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 
 /**
@@ -82,7 +83,7 @@ public final class LanguageEmbedding<T extends TokenId> {
             throw new IllegalArgumentException("endSkipLength=" + endSkipLength + " < 0");
         }
 
-        LanguageOperation<T> op = LexerUtilsConstants.languageOperation(language);
+        LanguageOperation<T> op = LexerApiPackageAccessor.get().languageOperation(language);
         return op.getEmbedding(startSkipLength, endSkipLength, joinSections);
     }
     

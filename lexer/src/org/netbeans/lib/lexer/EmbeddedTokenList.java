@@ -56,6 +56,13 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     
     /** Flag for additional correctness checks (may degrade performance). */
     private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
+    
+    /**
+     * Marker value that represents that an attempt to create default embedding was
+     * made but was unsuccessful.
+     */
+    public static final EmbeddedTokenList<TokenId> NO_DEFAULT_EMBEDDING
+            = new EmbeddedTokenList<TokenId>(null, null, null, null);
 
     /**
      * Embedding container carries info about the token into which this
@@ -94,11 +101,13 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         this.embedding = embedding;
         this.nextEmbeddedTokenList = nextEmbedding;
 
-        if (modCount() != -1 || testing) {
-            this.laState = LAState.empty(); // Store lookaheads and states
+        if (embeddingContainer != null) { // ec may be null for NO_DEFAULT_EMBEDDING
+            if (modCount() != -1 || testing) {
+                this.laState = LAState.empty(); // Store lookaheads and states
+            }
+
+            init();
         }
-        
-        init();
     }
 
     private void init() {

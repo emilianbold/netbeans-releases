@@ -27,6 +27,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.CharPreprocessor;
+import org.netbeans.spi.lexer.EmbeddingPresence;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -80,15 +81,15 @@ public abstract class LexerSpiPackageAccessor {
     LanguageHierarchy<T> languageHierarchy, Token<T> token,
     LanguagePath languagePath, InputAttributes inputAttributes);
     
+    public abstract <T extends TokenId> EmbeddingPresence embeddingPresence(LanguageHierarchy<T> languageHierarchy, T id);
+    
     public abstract <T extends TokenId> TokenValidator<T> createTokenValidator(LanguageHierarchy<T> languageHierarchy, T id);
 
     public abstract CharPreprocessor createCharPreprocessor(LanguageHierarchy<? extends TokenId> languageHierarchy);
 
     public abstract <T extends TokenId> boolean isRetainTokenText(LanguageHierarchy<T> languageHierarchy, T id);
 
-    public abstract <T extends TokenId> LanguageOperation<T> operation(LanguageHierarchy<T> languageHierarchy);
-    
-public abstract LexerInput createLexerInput(CharProvider charProvider);
+    public abstract LexerInput createLexerInput(CharProvider charProvider);
     
     public abstract void init(CharPreprocessor preprocessor, CharPreprocessorOperation operation);
     

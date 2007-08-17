@@ -64,6 +64,9 @@ public abstract class LexerApiPackageAccessor {
     public abstract <T extends TokenId> LanguageHierarchy<T> languageHierarchy(
     Language<T> language);
 
+    public abstract <T extends TokenId> LanguageOperation<T> languageOperation(
+    Language<T> language);
+    
     public abstract <I> TokenHierarchy<I> createTokenHierarchy(
     TokenHierarchyOperation<I,?> tokenHierarchyOperation);
     

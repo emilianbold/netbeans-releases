@@ -28,6 +28,8 @@ import org.netbeans.lib.lexer.inc.TokenChangeInfo;
 import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.lib.lexer.token.AbstractToken;
+import org.netbeans.spi.lexer.EmbeddingPresence;
+import org.netbeans.spi.lexer.LanguageHierarchy;
 
 
 /**
@@ -60,23 +62,42 @@ public final class EmbeddingContainer<T extends TokenId> {
      * @param language whether only language embeddding of the particular language
      *  was requested. It may be null if any embedding should be returned.
      */
-    public static <T extends TokenId, ET extends TokenId> EmbeddedTokenList<ET> getEmbedding(
-    TokenList<T> tokenList, int index, Language<ET> language) {
+    public static <T extends TokenId, ET extends TokenId> EmbeddedTokenList<ET> embeddedTokenList(
+    TokenList<T> tokenList, int index, Language<ET> embeddedLanguage) {
         EmbeddingContainer<T> ec;
         AbstractToken<T> token;
-        EmbeddedTokenList<? extends TokenId> lastEtl = null;
-        synchronized (tokenList.root()) {
-            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
-            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
-                // Embedding container exists
-                @SuppressWarnings("unchecked")
-                EmbeddingContainer<T> ecUC = (EmbeddingContainer<T>)tokenOrEmbeddingContainer;
-                ec = ecUC;
-                ec.updateStatus();
+        Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
+        EmbeddingPresence ep;
+        if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
+            // Embedding container exists
+            @SuppressWarnings("unchecked")
+            EmbeddingContainer<T> ecUC = (EmbeddingContainer<T>)tokenOrEmbeddingContainer;
+            ec = ecUC;
+            token = ec.token();
+            ep = null;
 
+        } else { // No embedding was created yet
+            ec = null;
+            @SuppressWarnings("unchecked")
+            AbstractToken<T> t = (AbstractToken<T>)tokenOrEmbeddingContainer;
+            token = t;
+            // Check embedding presence
+            ep = LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath()).embeddingPresence(token.id());
+            if (ep == EmbeddingPresence.NONE) {
+                return null;
+            }
+        }
+
+        // Now either ec == null for no embedding yet or linked list of embedded token lists of ec
+        // need to be processed to find the embedded token list for requested language.
+        synchronized (tokenList.root()) {
+            EmbeddedTokenList<? extends TokenId> lastEtl;
+            if (ec != null) {
+                ec.updateStatus();
                 EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
+                lastEtl = null;
                 while (etl != null) {
-                    if (language == null || etl.languagePath().innerLanguage() == language) {
+                    if (embeddedLanguage == null || etl.languagePath().innerLanguage() == embeddedLanguage) {
                         @SuppressWarnings("unchecked")
                         EmbeddedTokenList<ET> etlUC = (EmbeddedTokenList<ET>)etl;
                         return etlUC;
@@ -84,25 +105,26 @@ public final class EmbeddingContainer<T extends TokenId> {
                     lastEtl = etl;
                     etl = etl.nextEmbeddedTokenList();
                 }
-                token = ec.token();
-            } else {
-                ec = null;
-                @SuppressWarnings("unchecked")
-                AbstractToken<T> t = (AbstractToken<T>)tokenOrEmbeddingContainer;
-                token = t;
-                if (token.isFlyweight()) { // embedding cannot exist for this flyweight token
+                // Requested etl not found
+                if (ec.defaultEmbeddedTokenList() != null) { // Already created or NO_DEFAULT_EMBEDDING
                     return null;
                 }
+
+            } else { // No embedding yet
+                lastEtl = null;
             }
 
-            // Attempt to find default embedding
+            // Attempt to create the default embedding
             LanguagePath languagePath = tokenList.languagePath();
+            LanguageHierarchy<T> languageHierarchy = LexerUtilsConstants.innerLanguageHierarchy(languagePath);
             @SuppressWarnings("unchecked")
             LanguageEmbedding<ET> embedding = (LanguageEmbedding<ET>) LexerUtilsConstants.findEmbedding(
-                    token, languagePath, tokenList.inputAttributes());
-            if (embedding != null && (language == null || language == embedding.language())
-                    && embedding.startSkipLength() + embedding.endSkipLength() <= token.length()
-            ) {
+                    languageHierarchy, token, languagePath, tokenList.inputAttributes());
+            if (ep == null) { // Needs to be retrieved to check for CACHED_FIRST_QUERY
+                ep = LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath()).
+                        embeddingPresence(token.id());
+            }
+            if (embedding != null) {
                 if (ec == null) {
                     ec = new EmbeddingContainer<T>(token);
                     tokenList.wrapToken(index, ec);
@@ -111,11 +133,21 @@ public final class EmbeddingContainer<T extends TokenId> {
                         embedding.language());
                 EmbeddedTokenList<ET> etl = new EmbeddedTokenList<ET>(ec,
                         embeddedLanguagePath, embedding, null);
-                if (lastEtl != null)
+                if (lastEtl != null) {
                     lastEtl.setNextEmbeddedTokenList(etl);
-                else
+                } else {
                     ec.setFirstEmbeddedTokenList(etl);
-                return etl;
+                }
+                ec.setDefaultEmbeddedTokenList(etl);
+                if (ep == EmbeddingPresence.CACHED_FIRST_QUERY) {
+                    LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath()).
+                            setEmbeddingPresence(token.id(), EmbeddingPresence.ALWAYS_QUERY);
+                }
+                return (embeddedLanguage == null || embeddedLanguage == embedding.language()) ? etl : null;
+            }
+            if (ep == EmbeddingPresence.CACHED_FIRST_QUERY) {
+                LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath()).
+                        setEmbeddingPresence(token.id(), EmbeddingPresence.NONE);
             }
             return null;
         }
@@ -282,6 +314,13 @@ public final class EmbeddingContainer<T extends TokenId> {
      */
     private int rootTokenOffsetShift; // 36 bytes
     
+    /**
+     * Embedded token list that represents the default embedding.
+     * It may be <code>EmbeddedTokenList.NO_DEFAULT_EMBEDDING</code>
+     * for failed attempt to create a default embedding.
+     */
+    private EmbeddedTokenList<? extends TokenId> defaultEmbeddedTokenList; // 40 bytes
+    
     public EmbeddingContainer(AbstractToken<T> token) {
         this.token = token;
         TokenList<T> embeddedTokenList = token.tokenList();
@@ -328,7 +367,15 @@ public final class EmbeddingContainer<T extends TokenId> {
     void setFirstEmbeddedTokenList(EmbeddedTokenList<? extends TokenId> firstEmbeddedTokenList) {
         this.firstEmbeddedTokenList = firstEmbeddedTokenList;
     }
-
+    
+    public EmbeddedTokenList<? extends TokenId> defaultEmbeddedTokenList() {
+        return defaultEmbeddedTokenList;
+    }
+    
+    void setDefaultEmbeddedTokenList(EmbeddedTokenList<? extends TokenId> defaultEmbeddedTokenList) {
+        this.defaultEmbeddedTokenList = defaultEmbeddedTokenList;
+    }
+    
     public boolean updateStatus() {
         synchronized (rootTokenList) {
             rootToken = updateStatusImpl();

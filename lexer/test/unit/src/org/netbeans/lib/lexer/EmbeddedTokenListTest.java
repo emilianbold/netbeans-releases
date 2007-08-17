@@ -25,6 +25,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.lexer.lang.TestEmbeddingTokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.lang.TestJavadocTokenId;
 import org.netbeans.lib.lexer.lang.TestTokenId;
@@ -169,4 +170,33 @@ public class EmbeddedTokenListTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(inner,TestJavadocTokenId.OTHER_TEXT, " ");
         assertEquals(22, inner.offset());
     }
+    
+    public void testEmbeddingPresence() throws Exception {
+        Document d = new PlainDocument();
+        d.putProperty(Language.class,TestEmbeddingTokenId.language());
+        d.insertString(0, " acnacn", null);
+        
+        TokenHierarchy<?> h = TokenHierarchy.get(d);
+        TokenSequence<TestEmbeddingTokenId> ts = h.tokenSequence(TestEmbeddingTokenId.language());
+        TokenSequence<? extends TokenId> inner;
+        
+        LexerTestUtilities.assertNextTokenEquals(ts,TestEmbeddingTokenId.TEXT, " ");
+        inner = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(ts,TestEmbeddingTokenId.A, "a");
+        inner = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(ts,TestEmbeddingTokenId.C, "c");
+        inner = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(ts,TestEmbeddingTokenId.N, "n");
+        inner = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(ts,TestEmbeddingTokenId.A, "a");
+        inner = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(ts,TestEmbeddingTokenId.C, "c");
+        inner = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(ts,TestEmbeddingTokenId.N, "n");
+        inner = ts.embedded();
+        
+        assertEquals(1, TestEmbeddingTokenId.cEmbeddingQueryCount);
+        assertEquals(2, TestEmbeddingTokenId.aEmbeddingQueryCount);
+    }
+    
 }

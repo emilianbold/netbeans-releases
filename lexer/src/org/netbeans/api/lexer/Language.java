@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.lib.lexer.LanguageManager;
+import org.netbeans.lib.lexer.LanguageOperation;
 import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.lib.lexer.LexerSpiPackageAccessor;
 import org.netbeans.lib.lexer.TokenIdSet;
@@ -71,6 +72,8 @@ public final class Language<T extends TokenId> {
     }
     
     private final LanguageHierarchy<T> languageHierarchy;
+    
+    private final LanguageOperation<T> languageOperation;
     
     private String mimeType;
     
@@ -148,6 +151,7 @@ public final class Language<T extends TokenId> {
      */
     Language(LanguageHierarchy<T> languageHierarchy) {
         this.languageHierarchy = languageHierarchy;
+        this.languageOperation = new LanguageOperation<T>(languageHierarchy, this);
         mimeType = LexerSpiPackageAccessor.get().mimeType(languageHierarchy);
         checkMimeTypeValid(mimeType);
         // Create ids and find max ordinal
@@ -542,6 +546,10 @@ public final class Language<T extends TokenId> {
     LanguageHierarchy<T> languageHierarchy() {
         return languageHierarchy;
     }
+    
+    LanguageOperation<T> languageOperation() {
+        return languageOperation;
+    }
         
     /**
      * Accessor of package-private things in this package
@@ -557,6 +565,11 @@ public final class Language<T extends TokenId> {
         public <T extends TokenId> LanguageHierarchy<T> languageHierarchy(
         Language<T> language) {
             return language.languageHierarchy();
+        }
+        
+        public <T extends TokenId> LanguageOperation<T> languageOperation(
+        Language<T> language) {
+            return language.languageOperation();
         }
         
         public <I> TokenHierarchy<I> createTokenHierarchy(

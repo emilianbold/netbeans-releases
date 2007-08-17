@@ -109,7 +109,7 @@ public final class TokenListUpdater {
 
         // Fetch offset where the modification occurred
         int modOffset = eventInfo.modificationOffset();
-        LanguageOperation<T> languageOperation = LexerUtilsConstants.mostEmbeddedLanguageOperation(
+        LanguageOperation<T> languageOperation = LexerUtilsConstants.innerLanguageOperation(
                 tokenList.languagePath());
 
         int tokenCount = tokenList.tokenCountCurrent(); // presently created token count

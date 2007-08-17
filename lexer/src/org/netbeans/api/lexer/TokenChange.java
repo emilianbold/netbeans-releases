@@ -89,7 +89,7 @@ public final class TokenChange<T extends TokenId> {
      * used by tokens contained in this token change.
      */
     public Language<T> language() {
-        return LexerUtilsConstants.mostEmbeddedLanguage(languagePath());
+        return LexerUtilsConstants.innerLanguage(languagePath());
     }
     
     /**

@@ -32,6 +32,7 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.ComplexToken;
+import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
@@ -111,12 +112,11 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
         }
         
         LanguagePath languagePath = tokenList.languagePath();
-        LanguageOperation<T> languageOperation = LexerUtilsConstants.mostEmbeddedLanguageOperation(languagePath);
+        LanguageHierarchy<T> languageHierarchy = LexerUtilsConstants.innerLanguageHierarchy(languagePath);
         TokenFactory<T> tokenFactory = LexerSpiPackageAccessor.get().createTokenFactory(this);
         
         // Check whether character preprocessing is necessary
-        CharPreprocessor p = LexerSpiPackageAccessor.get().createCharPreprocessor(
-                languageOperation.languageHierarchy());
+        CharPreprocessor p = LexerSpiPackageAccessor.get().createCharPreprocessor(languageHierarchy);
         if (p != null) {
             preprocessingLevelCount++;
             preprocessorOperation = new CharPreprocessorOperation(
@@ -134,8 +134,7 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
         LexerRestartInfo<T> info = LexerSpiPackageAccessor.get().createLexerRestartInfo(
                 lexerInput, tokenFactory, lexerRestartState,
                 tokenList.languagePath(), inputAttributes());
-        lexer = LexerSpiPackageAccessor.get().createLexer(
-                languageOperation.languageHierarchy(), info);
+        lexer = LexerSpiPackageAccessor.get().createLexer(languageHierarchy, info);
     }
 
     public abstract int read(int index);
@@ -332,7 +331,7 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
     }
     
     public final LanguageOperation<T> languageOperation() {
-        return LexerUtilsConstants.mostEmbeddedLanguageOperation(tokenList.languagePath());
+        return LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath());
     }
     
     public final Object lexerState() {

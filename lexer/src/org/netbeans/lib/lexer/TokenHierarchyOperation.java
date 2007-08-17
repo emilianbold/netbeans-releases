@@ -439,7 +439,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             lps = languagePaths;
         }
         if (lps == null) {
-            LanguageOperation<T> langOp = LexerUtilsConstants.languageOperation(language());
+            LanguageOperation<T> langOp = LexerApiPackageAccessor.get().languageOperation(language());
             @SuppressWarnings("unchecked")
             Set<LanguagePath> clps = (Set<LanguagePath>)
                     ((HashSet<LanguagePath>)langOp.languagePaths()).clone();
@@ -651,7 +651,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         for (int i = 0; i < indexes.length; i++) {
             LexerUtilsConstants.appendTokenInfo(sb, tokenList, i,
                     tokenHierarchy(), false, 0);
-            tokenList = EmbeddingContainer.getEmbedding(tokenList, indexes[i], languagePath.language(i));
+            tokenList = EmbeddingContainer.embeddedTokenList(tokenList, indexes[i], languagePath.language(i));
         }
         return sb.toString();
     }

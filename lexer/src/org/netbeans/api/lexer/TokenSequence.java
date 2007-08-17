@@ -136,7 +136,7 @@ public final class TokenSequence<T extends TokenId> {
      * used by tokens in this token sequence.
      */
     public Language<T> language() {
-        return LexerUtilsConstants.mostEmbeddedLanguage(languagePath());
+        return LexerUtilsConstants.innerLanguage(languagePath());
     }
 
     /**
@@ -285,6 +285,8 @@ public final class TokenSequence<T extends TokenId> {
     }
     
     private <ET extends TokenId> TokenSequence<ET> embeddedImpl(Language<ET> embeddedLanguage) {
+        if (token.isFlyweight())
+            return null;
         TokenList<ET> embeddedTokenList = LexerUtilsConstants.embeddedTokenList(
                 tokenList, tokenIndex, embeddedLanguage);
         return (embeddedTokenList != null)

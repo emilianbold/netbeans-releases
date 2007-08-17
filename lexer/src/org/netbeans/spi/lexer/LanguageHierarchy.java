@@ -29,6 +29,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.CharPreprocessorOperation;
 import org.netbeans.lib.lexer.CharProvider;
 import org.netbeans.lib.lexer.LanguageOperation;
+import org.netbeans.lib.lexer.LexerApiPackageAccessor;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerSpiPackageAccessor;
 import org.netbeans.lib.lexer.TokenIdImpl;
@@ -124,10 +125,11 @@ public abstract class LanguageHierarchy<T extends TokenId> {
         return new TokenIdImpl(name, ordinal, primaryCategory);
     }
 
+    /**
+     * Language that belongs to this language hierarchy.
+     */
+    private Language<T> language;
     
-    /** Operation containing impls of additional services for this language hierarchy. */
-    LanguageOperation<T> operation = new LanguageOperation<T>(this);
-
     /**
      * Provide a collection of token ids that comprise the language.
      * <br>
@@ -224,6 +226,28 @@ public abstract class LanguageHierarchy<T extends TokenId> {
     }
     
     /**
+     * Determine whether embedding may be present for a token with the given token id.
+     * The embedding for the particular token may either never be present, always present or sometimes
+     * present (depending on token's text or properties).
+     * <br/>
+     * By default the method returns {@link EmbeddingPresence#CACHED_FIRST_QUERY}
+     * so the {@link #embedding(Token,LanguagePath,InputAttributes)}
+     * will be called once (for a first token instance with the given token id)
+     * and if there is no embedding then the embedding creation will not be attempted
+     * for any other token with the same token id. This should be appropriate
+     * for most cases.
+     * <br/>
+     * This method allows to avoid frequent queries checking
+     * whether particular token might contain embedding or not.
+     * 
+     * @param id non-null token id.
+     * @return embedding presence for the given token id.
+     */
+    protected EmbeddingPresence embeddingPresence(T id) {
+        return EmbeddingPresence.CACHED_FIRST_QUERY;
+    }
+    
+    /**
      * Create character preprocessor that translates certain character sequences
      * into characters (for example Unicode escape sequences).
      *
@@ -285,7 +309,19 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      * @return non-null language.
      */
     public final Language<T> language() {
-        return operation.language();
+        if (language == null) {
+            // Cause api accessor impl to get initialized
+            try {
+                Class.forName(Language.class.getName(), true, LanguageOperation.class.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                //cannot happen
+            }
+            
+            // Both tokenIds() and tokenCategories() should impose no locks
+            // so call in synchronized block
+            language = LexerApiPackageAccessor.get().createLanguage(this);
+        }
+        return language;
     }
     
     /** Enforce default implementation of <code>hashCode()</code>. */
@@ -317,13 +353,13 @@ public abstract class LanguageHierarchy<T extends TokenId> {
             return languageHierarchy.mimeType();
         }
 
-        public <T extends TokenId> LanguageOperation<T> operation(LanguageHierarchy<T> languageHierarchy) {
-            return languageHierarchy.operation;
-        }
-        
         public <T extends TokenId> LanguageEmbedding<? extends TokenId> embedding(LanguageHierarchy<T> languageHierarchy,
         Token<T> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             return languageHierarchy.embedding(token, languagePath, inputAttributes);
+        }
+
+        public <T extends TokenId> EmbeddingPresence embeddingPresence(LanguageHierarchy<T> languageHierarchy, T id) {
+            return languageHierarchy.embeddingPresence(id);
         }
 
         public <T extends TokenId> Lexer<T> createLexer(

@@ -30,6 +30,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.lexer.token.DefaultToken;
+import org.netbeans.spi.lexer.EmbeddingPresence;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.lib.lexer.token.TextToken;
 import org.netbeans.spi.lexer.LanguageEmbedding;
@@ -94,8 +95,10 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
             for (T id : ids) {
                 // Create a fake empty token
                 DefaultToken<T> emptyToken = new DefaultToken<T>(id);
-                LanguageEmbedding<? extends TokenId> embedding
-                        = LexerUtilsConstants.findEmbedding(emptyToken, lp, null);
+                // Find embedding for non-flyweight token
+                LanguageHierarchy<T> languageHierarchy = LexerUtilsConstants.innerLanguageHierarchy(lp);
+                LanguageEmbedding<? extends TokenId> embedding = LexerUtilsConstants.findEmbedding(
+                        languageHierarchy, emptyToken, lp, null);
                 if (embedding != null) {
                     LanguagePath elp = LanguagePath.get(lp, embedding.language());
                     findLanguagePaths(existingLanguagePaths, newLanguagePaths,
@@ -106,12 +109,17 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
     }
     
 
-    private LanguageHierarchy<T> languageHierarchy;
+    private final LanguageHierarchy<T> languageHierarchy;
     
-    private Language<T> language;
+    private final Language<T> language;
     
-    /** Embeddings caached by start skip length and end skip length. */
+    /** Embeddings cached by start skip length and end skip length. */
     private LanguageEmbedding<T>[][] cachedEmbeddings;
+    
+    /**
+     * Possibility of embedding presence for token ids.
+     */
+    private EmbeddingPresence[] embeddingPresences;
     
     private LanguageEmbedding<T>[][] cachedJoinSectionsEmbeddings;
     
@@ -123,37 +131,13 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
     
     private FlyItem<T>[] flyItems;
     
-    public LanguageOperation(LanguageHierarchy<T> languageHierarchy) {
+    public LanguageOperation(LanguageHierarchy<T> languageHierarchy, Language<T> language) {
         this.languageHierarchy = languageHierarchy;
+        this.language = language; // Should not be operated during constructor (not inited yet)
+
         // Listen on changes in language manager
         LanguageManager.getInstance().addPropertyChangeListener(
         WeakListeners.create(PropertyChangeListener.class, this, LanguageManager.getInstance()));
-    }
-    
-    public LanguageHierarchy<T> languageHierarchy() {
-        return languageHierarchy;
-    }
-    
-    /**
-     * Get language at this level of language hierarchy.
-     *
-     * @return non-null language.
-     */
-    public synchronized Language<T> language() {
-        if (language == null) {
-            // Cause api accessor impl to get initialized
-            try {
-                Class.forName(Language.class.getName(), true, LanguageOperation.class.getClassLoader());
-            } catch (ClassNotFoundException e) {
-                //cannot happen
-            }
-            
-            // Both tokenIds() and tokenCategories() should impose no locks
-            // so call in synchronized block
-            language = LexerApiPackageAccessor.get().createLanguage(
-                    languageHierarchy);
-        }
-        return language;
     }
     
     public synchronized TokenValidator<T> tokenValidator(T id) {
@@ -163,7 +147,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
         // Not synced intentionally (no problem to create dup instances)
         TokenValidator<T> validator = tokenValidators[id.ordinal()];
         if (validator == null) {
-            validator = LexerSpiPackageAccessor.get().createTokenValidator(languageHierarchy(), id);
+            validator = LexerSpiPackageAccessor.get().createTokenValidator(languageHierarchy, id);
             if (validator == null) {
                 validator = nullValidator();
             }
@@ -207,6 +191,23 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
         }
         assert (token != null); // Should return non-null token
         return token;
+    }
+    
+    public synchronized EmbeddingPresence embeddingPresence(T id) {
+        if (embeddingPresences == null) {
+            embeddingPresences = new EmbeddingPresence[language.maxOrdinal() + 1];
+        }
+        EmbeddingPresence ep = embeddingPresences[id.ordinal()];
+        if (ep == null) { // Not initialized yet
+            ep = LexerSpiPackageAccessor.get().embeddingPresence(languageHierarchy, id);
+            embeddingPresences[id.ordinal()] = ep;
+        }
+        return ep;
+    }
+    
+    public synchronized void setEmbeddingPresence(T id, EmbeddingPresence ep) {
+        // No check embeddingPresences==null since always called after embeddingPresence(T id)
+        embeddingPresences[id.ordinal()] = ep;
     }
     
     /**
@@ -253,7 +254,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
     
     private LanguageEmbedding<T> createEmbedding(int startSkipLength, int endSkipLength, boolean joinSections) {
         return LexerSpiPackageAccessor.get().createLanguageEmbedding(
-                language(), startSkipLength, endSkipLength, joinSections);
+                language, startSkipLength, endSkipLength, joinSections);
     }
     
     /**
@@ -268,7 +269,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
             lps = new HashSet<LanguagePath>();
             Set<LanguagePath> existingLps = Collections.emptySet();
             Set<Language<? extends TokenId>> exploredLangs = new HashSet<Language<? extends TokenId>>();
-            findLanguagePaths(existingLps, lps, exploredLangs, LanguagePath.get(language()));
+            findLanguagePaths(existingLps, lps, exploredLangs, LanguagePath.get(language));
             synchronized (this) {
                 languagePaths = lps;
                 exploredLanguages = exploredLangs;
