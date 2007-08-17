@@ -38,6 +38,7 @@ import org.netbeans.modules.bpel.core.multiview.BpelMultiViewSupport;
 import org.netbeans.modules.bpel.core.util.BadgedIconCache;
 import org.netbeans.modules.bpel.core.validation.BPELValidationController;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.TransformableSupport;
@@ -157,6 +158,7 @@ public class BPELDataObject extends MultiDataObject {
 ////                    getEditorSupport().getBpelModel(),
                     // Helper is also needed by design. It used in property editors.
                     new BusinessProcessHelperImpl(this),
+                    XmlFileEncodingQueryImpl.singleton()
                     // Add Validation Controller.
 ////                    new BPELValidationController(getEditorSupport().getBpelModel())
                     }));

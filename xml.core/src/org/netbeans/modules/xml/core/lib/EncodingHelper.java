@@ -30,7 +30,7 @@ import javax.swing.text.*;
 public class EncodingHelper extends Object {
 
     // heuristic constant guessing max prolog length
-    private static final int EXPECTED_PROLOG_LENGTH = 1000;
+    public static final int EXPECTED_PROLOG_LENGTH = 1000;
 
     /** Detect input stream encoding.
     * The stream stays intact.
