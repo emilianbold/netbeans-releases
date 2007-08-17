@@ -22,7 +22,7 @@
 <wizard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wizard-components.xsd">
     <component class="org.netbeans.installer.wizard.components.actions.SetInstallationLocationAction">
         <properties>
-            <property name="source.component">nb-base</property>
+            <property name="source.component">nb-javaee</property>
             <property name="relative.location">{enterprise-cluster}/update/download</property>
         </properties>
     </component>
