@@ -13,12 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JFrame;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
@@ -66,7 +67,13 @@ public class AddModulePanelTest extends TestBase {
             }
         });
         // wait until filter is applied
-        while (CustomizerComponentFactory.isWaitModel(amp.moduleList.getModel())) {
+        final AtomicBoolean done = new AtomicBoolean();
+        while (!done.get()) {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    done.set(!CustomizerComponentFactory.isWaitModel(amp.moduleList.getModel()));
+                }
+            });
             Thread.sleep(200);
         }
         ListModel model = amp.moduleList.getModel();
