@@ -18,7 +18,6 @@
 	<mapID target="about_jstl" url="web/create/tag/about/about_jstl.html"/>
 	<mapID target="about_listener" url="web/create/listener/about_listener.html"/>
 	<mapID target="about_servlet" url="web/create/servlet/about_servlet.html"/>
-	<mapID target="about_struct_webapps" url="web/create/about/about_struct_webapps.html"/>
 	<mapID target="about_tagfile" url="web/create/tag/tagfile/about_tagfile.html"/>
 	<mapID target="about_taglib" url="web/create/tag/about/about_taglib.html"/>
 	<mapID target="about_tld" url="web/create/tag/tld/about_tld.html"/>

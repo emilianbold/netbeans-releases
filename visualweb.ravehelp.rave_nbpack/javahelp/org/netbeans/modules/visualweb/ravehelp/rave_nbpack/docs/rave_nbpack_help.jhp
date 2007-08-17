@@ -969,7 +969,6 @@
 					<directory title="about">
 						<file title="about_create_webapps.html"/>
 						<file title="about_create_webcomps.html"/>
-						<file title="about_struct_webapps.html"/>
 						<file title="create_webapps_proj.html"/>
 					</directory>
 					<directory title="applet">

@@ -132,7 +132,9 @@ Sets the HTML <code>title</code> attribute for date entry field. The text value 
 	<li><b>onBlur.</b><code> Type: String</code><br>
 		JavaScript to be executed when the component loses focus. </li>
 	<li><b>onChange.</b><code> Type: String</code><br>
-		JavaScript to be executed when the component loses focus and its value was modified after it gained focus. </li>
+		JavaScript to be executed when the component loses focus and its value was modified after it gained focus. 
+		<ul class="note"><li>Note: onChange triggers only when the user types values into the text entry field of the calendar. It does not trigger when the user selects a value from the pop-up calendar. </li></ul>
+		</li>
 	<li><b>onClick.</b><code> Type: String</code><br>
 		JavaScript to be executed when the user clicks the component.</li>
 	<li><b>onDblClick.</b> <code> Type: String</code><br>
@@ -156,7 +158,8 @@ Sets the HTML <code>title</code> attribute for date entry field. The text value 
 	<li><b>onMouseUp.</b><code> Type: String</code><br>
 		JavaScript to be executed when the mouse cursor is over the component and the user releases the mouse button.</li>
 	<li><b>onSelect.</b><code> Type: String</code><br>
-		JavaScript to be executed when the user selects text in the component.</li>
+		JavaScript to be executed when the user selects text in the component.
+		<ul class="note"><li>Note: onSelect triggers only when you select a value in the text entry field of the calendar. This event triggers if you type a value and select it in the text field or you choose a value from the pop-up calendar and then select it in the text field with the mouse. </li>
 </ul>
 
 <h3>Advanced</h3>
