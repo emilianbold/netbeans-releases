@@ -1018,11 +1018,11 @@ public class JavaCompletionProviderBasicTest extends CompletionTestBase {
     }
     
     public void testEmptyFileAfterTypingFieldDeclaration() throws Exception {
-        performTest("MethodStart", 40, "public int field = hashCode() / 10;", "memberModifiersTypesAndGenElements.pass");
+        performTest("MethodStart", 40, "public int field = hashCode() / 10;", "memberModifiersTypesAndGenElements3.pass");
     }
     
     public void testAfterFieldDeclaration() throws Exception {
-        performTest("Field", 75, null, "memberModifiersTypesAndGenElements.pass");
+        performTest("Field", 75, null, "memberModifiersTypesAndGenElements4.pass");
     }
     
     public void testTypingStaticFieldAfterErrorInPreviousFieldDeclaration() throws Exception {
