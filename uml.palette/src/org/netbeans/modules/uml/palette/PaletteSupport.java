@@ -74,6 +74,10 @@ public class PaletteSupport {
         if (pController != null) {
 	    pController.removePropertyChangeListener(propertyChangeListener);
 	}
+	if (propertyChangeListener != null) {
+	    propertyChangeListener.setDrawingAreaControl(null);
+	    propertyChangeListener = null;
+	}
     }
     
     private String findPaletteRepository(int diagramType) {
@@ -130,12 +134,16 @@ public class PaletteSupport {
     
     private class PalettePropertyChangeListener implements PropertyChangeListener {
         
-        private IDrawingAreaControl drawingAreaContrl;
+        private IDrawingAreaControl drawingAreaContrl1;
        
         public PalettePropertyChangeListener (IDrawingAreaControl daController) {
-            drawingAreaContrl = daController;
+            drawingAreaContrl1 = daController;
         }
         
+	public void setDrawingAreaControl(IDrawingAreaControl daController) {
+	    drawingAreaContrl1 = daController;
+	}
+
         public void propertyChange(PropertyChangeEvent event) {
             String propName = event.getPropertyName();
             Log.out("PalettePropertyChangeListener():propertyChange(): event is on " + propName); // NOI18N
@@ -153,7 +161,7 @@ public class PaletteSupport {
                         Node selectedNode = (Node) lkup.lookup(Node.class);
                         
                         if (selectedNode == null) {    // when the same node is selected. i.e. the node is deselected                
-                            drawingAreaContrl.enterMode(IDrawingToolKind.DTK_SELECTION);
+                            drawingAreaContrl1.enterMode(IDrawingToolKind.DTK_SELECTION);
                             return;
                         }
                         
@@ -173,18 +181,18 @@ public class PaletteSupport {
                                 Log.out("Button ID is " + paletteItemID); // NOI18N
                                 //System.out.println("Button ID is " + paletteItemID);
                                 
-                                if(drawingAreaContrl != null) {
-                                    drawingAreaContrl.setSelectedPaletteButton(paletteItemID);
+                                if(drawingAreaContrl1 != null) {
+                                    drawingAreaContrl1.setSelectedPaletteButton(paletteItemID);
                                     //System.out.println("PalettePropertyChangeListener(): paletteItemID="+drawingAreaContrl.getSelectedPaletteButton());
                                     Log.out("PalettePropertyChangeListener(): Calling entermodefromButton()"); // NOI18N
-                                    drawingAreaContrl.enterModeFromButton(paletteItemID);
+                                    drawingAreaContrl1.enterModeFromButton(paletteItemID);
                                 }
                             }
                         }
                     }
                 } else {    // No item is selected.
                     // set the state of the graph window to select
-                    drawingAreaContrl.enterMode(IDrawingToolKind.DTK_SELECTION);
+                    drawingAreaContrl1.enterMode(IDrawingToolKind.DTK_SELECTION);
                 }
             }
         }

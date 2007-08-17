@@ -55,7 +55,7 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
 public class ADDrawingAreaActions extends Object implements ActionListener, TSGraphChangeListener, TSESelectionChangeListener, TSEViewportChangeListener
 {
     
-    ADDrawingAreaControl m_drawingArea;
+    private ADDrawingAreaControl m_drawingArea;
     
     private static final String BUNDLE_NAME = "org.netbeans.modules.uml.ui.swing.drawingarea.Bundle"; //$NON-NLS-1$
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
@@ -1396,4 +1396,10 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
     {
         m_drawingArea.onHandleCancel();
     }
+
+    protected void clearDrawingAreaControlRefs() 
+    {
+	m_drawingArea = null;
+    }
+
 }

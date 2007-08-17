@@ -116,6 +116,7 @@ public class ADGraphWindow extends TSEGraphWindow implements ActionListener, Acc
     private TSEHitTesting m_hitTesting;
     
 	
+
    protected class ADDrawingPreferences extends com.tomsawyer.editor.TSEPreferences
    {
       ADDrawingPreferences(TSEGraphWindow graphWindow)

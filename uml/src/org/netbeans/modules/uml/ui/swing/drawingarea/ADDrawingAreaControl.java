@@ -13009,42 +13009,4 @@ public class ADDrawingAreaControl extends ApplicationView
 //        
 //        node.invalidate();
 //    }
-    public boolean distributeLeftEdge()
-    {
-	return true;
-        //        return distribute(DISTRIBUTE_LEFT_EDGE);
-    }
-
-    public boolean distributeHorizontalCenter()
-    {
-	return true;
-        //        return distribute(DISTRIBUTE_HCENTER);
-    }
-    
-    public boolean distributeRightEdge()
-    {
-	return true;
-        //        return distribute(DISTRIBUTE_RIGHT_EDGE);
-    }
-
-    public boolean distributeTopEdge()
-    {
-	return true;
-        //        return distribute(DISTRIBUTE_TOP_EDGE);
-    }
-
-    public boolean distributeVerticalCenter()
-    {
-	return true;
-        //        return distribute(DISTRIBUTE_VCENTER);
-    }
-    public boolean distributeBottomEdge()
-    {
-	return true;
-        //return distribute(DISTRIBUTE_BOTTOM_EDGE);
-    }
-    private boolean distribute(int distributeHow)
-    {
-	return true;
-    }
 }

@@ -455,4 +455,12 @@ public abstract class ADDrawingAreaResourceBundle extends ListResourceBundle
         if (button != null && !button.isSelected())
             button.setSelected(true);
     }
+
+    void clearDrawingAreaControlRefs() {
+	setParameterReader(null);
+	setDrawingArea(null);
+	appButtons = new Vector(90, 10);
+	defaultButton = null;
+	layoutButtonMap = new HashMap<String, AbstractButton>();
+    }
 }

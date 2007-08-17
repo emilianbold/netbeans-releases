@@ -528,6 +528,10 @@ public class DiagramTopComponent extends CloneableTopComponent
             public void run()
             {
                 selectedElements(null, null, null);
+		remove(mControl);
+		mControl = null;
+		if (getDiagramDO() != null)
+		    getDiagramDO().removePropertyChangeListener(listener);
             }
         });
         
@@ -976,10 +980,13 @@ public class DiagramTopComponent extends CloneableTopComponent
         if (paletteSupport == null) {
 	    paletteSupport = new PaletteSupport();
         }
+	if (getDrawingAreaControl() != null) {
         PaletteController pController =
                 paletteSupport.getPalette(getDrawingAreaControl());
         
         return pController;
+	} 
+	return null;
     }
 
     private void detachAssociatedPalette()
@@ -987,7 +994,6 @@ public class DiagramTopComponent extends CloneableTopComponent
         if (paletteSupport != null) {
 	    paletteSupport.unregisterListeners();
 	}
-	paletteContrl = null;
     }
     
     
