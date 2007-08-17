@@ -22,6 +22,7 @@ package org.netbeans.modules.mobility.project.deployment;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -94,6 +95,15 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
             manager.setExploredContextAndSelection(selType, new Node[]{selInstance == null ? selType : selInstance});
         } catch (PropertyVetoException pve) {}
     }
+
+    public void addNotify() {
+        super.addNotify();
+        Point p = btw.getViewport().getViewPosition();
+        if (p.x != 0) {
+            p.setLocation(0, p.y);
+            btw.getViewport().setViewPosition(p);
+        }
+    }
     
     public String getSelectedInstanceName() {
         if (initialTypeName == null) return null;
@@ -130,7 +140,7 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jPanel1.setMaximumSize(new java.awt.Dimension(270, 350));
         jPanel1.setOpaque(false);
-        jPanel1.setPreferredSize(new java.awt.Dimension(270, 350));
+        jPanel1.setPreferredSize(new java.awt.Dimension(350, 350));
         jPanel1.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
