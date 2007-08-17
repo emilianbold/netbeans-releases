@@ -650,9 +650,7 @@ public class MetaComponentCreator {
                     newComp.setAuxValue(auxName,
                                         FormUtils.cloneObject(auxValue, formModel));
                 }
-                catch (Exception e) { // ignore problem with aux value
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
+                catch (Exception e) {} // ignore problem with aux value
             }	    
 	
         // 5th - copy layout constraints

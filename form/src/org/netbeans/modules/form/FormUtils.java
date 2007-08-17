@@ -26,9 +26,17 @@ import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.KeyStroke;
+import javax.swing.ListModel;
 import javax.swing.border.TitledBorder;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.Keymap;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.java.source.ui.DialogBinding;
@@ -36,6 +44,7 @@ import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
+import org.netbeans.modules.form.editors2.TableModelEditor;
 
 import org.openide.ErrorManager;
 import org.openide.util.*;
@@ -51,6 +60,8 @@ import org.openide.text.CloneableEditorSupport;
 
 public class FormUtils
 {
+    public static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.form"); // NOI18N
+
     // constants for CopyProperties method
     public static final int CHANGED_ONLY = 1;
     public static final int DISABLE_CHANGE_FIRING = 2;
@@ -471,8 +482,29 @@ public class FormUtils
             GradientPaint gp = (GradientPaint)o;
             return new GradientPaint(gp.getPoint1(), gp.getColor1(), gp.getPoint2(), gp.getColor2(), gp.isCyclic());
         }
-        if (o instanceof Serializable)
+        if (o.getClass() == DefaultListModel.class) {
+            // avoid potential problems with serialization of listeners (#72802)
+            ListModel listModel = (ListModel)o;
+            DefaultListModel newListModel = new DefaultListModel();
+            for (int i=0; i < listModel.getSize(); i++) {
+                newListModel.addElement(cloneObject(listModel.getElementAt(i), formModel));
+            }
+            return newListModel;
+        }
+        if (o.getClass() == DefaultComboBoxModel.class) {
+            // avoid potential problems with serialization of listeners (#72802)
+            ListModel comboModel = (ListModel)o;
+            DefaultComboBoxModel newComboModel = new DefaultComboBoxModel();
+            for (int i=0; i < comboModel.getSize(); i++) {
+                newComboModel.addElement(cloneObject(comboModel.getElementAt(i), formModel));
+            }
+            return newComboModel;
+        }
+        // for TableModel we use TableModelEditor.NbTableModel which takes care of its serialization
+
+        if (o instanceof Serializable) {
             return cloneBeanInstance(o, null, formModel);
+        }
 
         throw new CloneNotSupportedException();
     }
@@ -489,20 +521,22 @@ public class FormUtils
             return null;
 
         if (bean instanceof Serializable) {
+            OOS oos = null;
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ObjectOutputStream oos = new ObjectOutputStream(baos);
+                oos = new OOS(baos);
                 oos.writeObject(bean);
                 oos.close();
 
                 ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
                 return new OIS(bais, bean.getClass().getClassLoader(), formModel).readObject();                
-            }
-            catch (Exception ex) {
-                ErrorManager em = ErrorManager.getDefault();
-                em.annotate(ex, "Cannot clone "+bean.getClass().getName()); // NOI18N
-                em.notify(ErrorManager.INFORMATIONAL, ex);
-                throw new CloneNotSupportedException(ex.getMessage());
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, "Cannot clone "+bean.getClass().getName(), ex); // NOI18N
+                throw new CloneNotSupportedException();
+            } finally {
+                if (oos != null) {
+                    oos.checkJComponentSerialization();
+                }
             }
         }
 
@@ -517,8 +551,8 @@ public class FormUtils
                 bInfo = Utilities.getBeanInfo(bean.getClass());
         }
         catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            throw new CloneNotSupportedException(ex.getMessage());
+            LOGGER.log(Level.INFO, "Cannot clone "+bean.getClass().getName(), ex); // NOI18N
+            throw new CloneNotSupportedException();
         }
 
         // default instance successfully created, now copy properties
@@ -548,6 +582,109 @@ public class FormUtils
         }
 
         return clone;
+    }
+
+    /**
+     * Special ObjectOutputStream subclass that takes care of possible failure in
+     * serialization of JComponent which may leave the component with uninstalled
+     * ComponentUI. This may happen when serializing property values like
+     * DefaultComboBoxModel which reference the component they are set to.
+     * See issue 72802. [In future it would be nice to have a better way of
+     * copying the property values, minimizing the use of serialization.]
+     */
+    private static class OOS extends ObjectOutputStream {
+        private Set<SerializationMarker> placedMarkers = new HashSet<SerializationMarker>();
+
+        private OOS(OutputStream os) throws IOException {
+            super(os);
+            enableReplaceObject(true);
+        }
+
+        /**
+         * This method allows us to monitor objects going into the stream.
+         * If the object is a JComponent, we add our special marker object to
+         * its client properties. The marker keeps track of whether it was
+         * serialized or not.
+         */
+        protected Object replaceObject(Object obj) throws IOException {
+            if (obj instanceof JComponent) {
+                JComponent comp = (JComponent) obj;
+                SerializationMarker sm = new SerializationMarker(comp);
+                comp.putClientProperty(SerializationMarker.KEY, sm);
+                placedMarkers.add(sm);
+            }
+            return obj;
+        }
+
+        /**
+         * Go through all markers added to components during serialization.
+         * If a marker was serialized, it means the component's client properties
+         * serialization was at least started - which is done after installing
+         * the ComponentUI back after serializing the component itself (see
+         * JComponent.writeObject). If the marker was not serialized, it is 
+         * likely that the ComponentUI was left uninstalled (from
+         * JComponent.compWriteObjectNotify).
+         */
+        private void checkJComponentSerialization() {
+            for (SerializationMarker sm : placedMarkers) {
+                JComponent comp = sm.component;
+                if (!sm.serialized) {
+                    fixUnserializedJComponent(comp);
+                }
+                comp.putClientProperty(SerializationMarker.KEY, null);
+            }
+        }
+
+        /**
+         * Hack: Mimics the code of JComponent.writeObject() to install back
+         * ComponentUI of the component if it was not done due to interrupted
+         * serialization. Calling private methods and accessing private field
+         * via reflection, yuck...
+         */
+        private static void fixUnserializedJComponent(JComponent comp) {
+            try {
+                Method getWriteObjCounter_Method = JComponent.class
+                    .getDeclaredMethod("getWriteObjCounter", JComponent.class); // NOI18N
+                getWriteObjCounter_Method.setAccessible(true);
+                Method setWriteObjCounter_Method = JComponent.class
+                    .getDeclaredMethod("setWriteObjCounter", JComponent.class, Byte.TYPE); // NOI18N
+                setWriteObjCounter_Method.setAccessible(true);
+                Field ui_Field = JComponent.class.getDeclaredField("ui"); // NOI18N
+                ui_Field.setAccessible(true);
+
+                byte count = ((Byte)getWriteObjCounter_Method.invoke(null, comp)).byteValue();
+                if (count > 0) { // counter not 0, serialization has not finished
+                    count = 0;
+                    setWriteObjCounter_Method.invoke(null, comp, count);
+                    // reinstall ComponentUI
+                    LOGGER.log(Level.INFO, "Reinstalling ComponentUI after interrupted serialization of component: "+comp); // NOI18N
+                    ComponentUI ui = (ComponentUI) ui_Field.get(comp);
+                    ui.installUI(comp);
+                }
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, "Reinstalling ComponentUI after interrupted serialization of JComponent failed", ex); // NOI18N
+            }
+        }
+    }
+
+    /**
+     * Special object added to JComponent's client properties to track whether
+     * the client properties were sucessfully serialized (or at least started).
+     */
+    private static class SerializationMarker implements Serializable {
+        private static final Object KEY = new Object();
+
+        transient boolean serialized;
+        transient JComponent component;
+
+        private SerializationMarker(JComponent comp) {
+            component = comp;
+        }
+
+        public Object writeReplace() {
+            serialized = true;
+            return new Object();
+        }
     }
 
     /** This method provides copying of property values from one array of
@@ -693,14 +830,14 @@ public class FormUtils
                     if (realValue == FormDesignValue.IGNORED_VALUE)
                         continue; // ignore this value, as it is not a real value
 
-                    newValue = FormUtils.cloneObject(realValue, props[i].getPropertyContext().getFormModel());
+                    newValue = FormUtils.cloneObject(realValue, prop.getPropertyContext().getFormModel());
                 }
                 writeMethod.invoke(targetBean, new Object[] { newValue });
             }
             catch (CloneNotSupportedException ex) { // ignore, don't report
             }
             catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                LOGGER.log(Level.INFO, null, ex); // NOI18N
             }
         }
     }
