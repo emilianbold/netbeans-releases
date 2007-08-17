@@ -27,6 +27,8 @@ import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 
 /**
@@ -36,7 +38,13 @@ import org.netbeans.modules.refactoring.java.api.MemberInfo;
 public class PushDownTransformer extends RefactoringVisitor {
 
     private MemberInfo<ElementHandle<? extends Element>>[] members;
-    public PushDownTransformer(MemberInfo<ElementHandle<? extends Element>> members[]) {
+    private Problem problem;
+ 
+    public Problem getProblem() {
+		return problem;
+	}
+
+	public PushDownTransformer(MemberInfo<ElementHandle<? extends Element>> members[]) {
         this.members = members;
     }
 
@@ -100,10 +108,17 @@ public class PushDownTransformer extends RefactoringVisitor {
             TypeMirror tm = el.asType();
             if (workingCopy.getTypes().isSubtype(tm, p.asType())) {
                 for (int i = 0; i<members.length; i++) {
+                    Element member = members[i].getElementHandle().resolve(workingCopy);
                     if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {
-                        njuClass = make.addClassImplementsClause(njuClass, make.Identifier(members[i].getElementHandle().resolve(workingCopy)));
+                        if (((TypeElement) el).getInterfaces().contains(member.asType())) {
+                            problem = MoveTransformer.createProblem(problem, false, org.openide.util.NbBundle.getMessage(PushDownTransformer.class, "ERR_PushDown_AlreadyExists", member.getSimpleName(), el.getSimpleName()));
+                        }
+                        njuClass = make.addClassImplementsClause(njuClass, make.Identifier(member));
                     } else {
-                        njuClass = make.addClassMember(njuClass, workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)));
+                        if (RetoucheUtils.elementExistsIn((TypeElement) el, member, workingCopy)) {
+                            problem = MoveTransformer.createProblem(problem, false, org.openide.util.NbBundle.getMessage(PushDownTransformer.class, "ERR_PushDown_AlreadyExists", member.getSimpleName(), el.getSimpleName()));
+                        }
+                        njuClass = make.addClassMember(njuClass, workingCopy.getTrees().getTree(member));
                     }
                 }
                 rewrite(tree, njuClass);

@@ -435,11 +435,12 @@ public class RetoucheUtils {
     
     public static boolean elementExistsIn(TypeElement target, Element member, CompilationInfo info) {
         for (Element currentMember: target.getEnclosedElements()) {
-            if (info.getElements().hides(member, currentMember))
+            if (info.getElements().hides(member, currentMember) || info.getElements().hides(currentMember, member))
                 return true;
             if (member instanceof ExecutableElement 
                     && currentMember instanceof ExecutableElement 
-                    && info.getElements().overrides((ExecutableElement)member, (ExecutableElement)currentMember, target)) {
+                    && (info.getElements().overrides((ExecutableElement)member, (ExecutableElement)currentMember, target) ||
+                       (info.getElements().overrides((ExecutableElement)currentMember, (ExecutableElement)member, target)))) {
                 return true;
             }
         }

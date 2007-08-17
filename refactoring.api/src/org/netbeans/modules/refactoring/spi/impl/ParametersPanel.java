@@ -276,7 +276,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             return;
         }
         
-        if (currentState == POST_CHECK && previewAll) {
+        if (currentState == POST_CHECK && previewAll && currentProblemAction!=null) {
             Cancellable doCloseParent = new Cancellable() {
                 public boolean cancel() {
                     cancelActionPerformed(null);
