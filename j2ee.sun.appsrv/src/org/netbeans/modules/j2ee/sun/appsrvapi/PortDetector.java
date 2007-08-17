@@ -92,6 +92,18 @@ public class PortDetector {
             isSecure = false;
         } else if (response.indexOf("<html") != -1) {
             isSecure = false;
+        } else if (response.indexOf("</html") != -1) {
+            // New test added to resolve 106245
+            // when the user has the IDE use a proxy (like webcache.foo.bar.com),
+            // the response comes back as "d><title>....</html>".  It looks like
+            // something eats the "<html><hea" off the front of the data that 
+            // gets returned.
+            //
+            // This test makes an allowance for that behavior. I figure testing
+            // the likely "last bit" is better than testing a bit that is close
+            // to the data that seems to get eaten.
+            //
+            isSecure = false;
         } else if (response.indexOf("connection: ") != -1) {
             isSecure = false;
         }
