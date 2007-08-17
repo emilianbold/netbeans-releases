@@ -75,8 +75,20 @@ public class Reformatter implements ReformatTask {
     }
 
     public void reformat() throws BadLocationException {
-        if (controller == null)
-            return;
+        if (controller == null) {
+            try {
+                javaSource.runUserActionTask(new Task<CompilationController>() {
+                    public void run(CompilationController controller) throws Exception {
+                        controller.toPhase(Phase.PARSED);
+                        Reformatter.this.controller = controller;
+                    }
+                }, true);            
+            } catch (IOException ioe) {
+                JavaSourceAccessor.INSTANCE.unlockJavaCompiler();
+            }
+            if (controller == null)
+                return;
+        }
         this.startOffset = context.startOffset() - shift;
         this.endOffset = context.endOffset() - shift;
         PositionConverter converter = controller.getPositionConverter();
@@ -435,16 +447,6 @@ public class Reformatter implements ReformatTask {
 
         public void lock() {
             JavaSourceAccessor.INSTANCE.lockJavaCompiler();
-            try {
-                javaSource.runUserActionTask(new Task<CompilationController>() {
-                    public void run(CompilationController controller) throws Exception {
-                        controller.toPhase(Phase.PARSED);
-                        Reformatter.this.controller = controller;
-                    }
-                }, true);            
-            } catch (IOException ioe) {
-                JavaSourceAccessor.INSTANCE.unlockJavaCompiler();
-            }
         }
 
         public void unlock() {
