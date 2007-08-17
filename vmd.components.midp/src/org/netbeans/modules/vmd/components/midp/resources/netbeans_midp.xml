@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 
 <library version="1.0">
-    <name>netbeans_midp_components_basic</name>
+    <name>NetBeans MIDP Components</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.vmd.components.midp.resources.Bundle</localizing-bundle>
     <volume>
