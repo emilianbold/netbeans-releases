@@ -67,6 +67,10 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     
     private LanguagePath languagePath;
     
+    /** This class creates lexer embeddings of CSS or JAVASCRIPT language in HTML code.
+     * The HTML code may be either the top level language (.html file) or
+     * may be embedded as FIRST level embedding language in other language like JSP, RHTML.
+     */
     public EmbeddingUpdater(Document doc) {
         this.doc = doc;
         
@@ -83,7 +87,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         
         if("text/html".equals(topLevelLanguageMimeType)) {
             languagePath = LanguagePath.get(lang);
-        } else if("text/x-jsp".equals(topLevelLanguageMimeType)) {
+        } else {
             languagePath = LanguagePath.get(LanguagePath.get(lang), Language.find("text/html"));
         }
         //eof hack
