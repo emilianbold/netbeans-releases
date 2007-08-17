@@ -719,15 +719,16 @@ public class ResourceSupport {
     }
 
     public static ResourceValue findResource(String key, FormProperty property) {
-        if (!isResourceableProperty(property))
-            return null;
-
-        return getResourceSupport(property).findResource0(key, property);
+        return findResource(property.getPropertyContext().getFormModel(), key, property.getValueType());
     }
 
-    private ResourceValue findResource0(String key, FormProperty prop) {
+    public static ResourceValue findResource(FormModel formModel, String key, Class valueType) {
+        return FormEditor.getResourceSupport(formModel).findResource0(key, valueType);
+    }
+
+    private ResourceValue findResource0(String key, Class valueType) {
         return getResourceService() != null ?
-            resourceService.get(key, prop.getValueType(), designLocale, getSourceFile()) : null;
+            resourceService.get(key, valueType, designLocale, getSourceFile()) : null;
     }
 
     /**
@@ -1246,7 +1247,7 @@ public class ResourceSupport {
     }
 
     private String getDefaultKey0(FormProperty prop, int type) {
-        return getDefaultKey(getSrcDataObject().getName(), getPropertyPath(prop, null)/*prop.getPropertyContext().getContextPath(), prop.getName()*/, type);
+        return getDefaultKey(getSrcDataObject().getName(), getPropertyPath(prop, null), type);
     }
 
     static String getDefaultKey(FormProperty prop, int type) {

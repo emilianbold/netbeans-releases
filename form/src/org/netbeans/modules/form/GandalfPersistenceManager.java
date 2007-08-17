@@ -5283,6 +5283,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.w3c.dom.Node typeNode = attrs.getNamedItem(ATTR_PROPERTY_TYPE);
         org.w3c.dom.Node editorNode = attrs.getNamedItem(ATTR_PROPERTY_EDITOR);
         org.w3c.dom.Node valueNode = attrs.getNamedItem(ATTR_PROPERTY_VALUE);
+        org.w3c.dom.Node resourceNode = attrs.getNamedItem(ATTR_PROPERTY_RES_KEY);
 
         // get the type of stored property value
         if (typeNode == null) {
@@ -5384,6 +5385,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 nonfatalErrors.add(ex);
                 return NO_VALUE;
             }
+        } else if (resourceNode != null) {
+            value = ResourceSupport.findResource(formModel, resourceNode.getNodeValue(), propertyType);
+            return value != null ? value : NO_VALUE;
         }
         else { // the value is serialized or saved by XMLPropertyEditor
             org.w3c.dom.NodeList children = node.getChildNodes();
