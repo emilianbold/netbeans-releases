@@ -99,6 +99,9 @@ Microsystems, Inc. All Rights Reserved.
                     <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
                         <classpath path="${{java.home}}/../lib/tools.jar:${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}"/>                       
                     </taskdef>
+                    <condition property="conf-dir" value="${{conf.dir}}/" else="">
+                        <isset property="conf.dir"/>
+                    </condition>
                 </target>
             </xsl:if>
             <!-- END: wsimport task initialization -->
@@ -195,7 +198,7 @@ Microsystems, Inc. All Rights Reserved.
                             <xsl:with-param name="Catalog" select="$catalog"/>  
                         </xsl:call-template>
                         <copy todir="${{build.web.dir.real}}/WEB-INF/wsdl/{$wsname}">
-                            <fileset dir="${{basedir}}/${{conf.dir}}/xml-resources/web-services/{$wsname}/wsdl/" />
+                            <fileset dir="${{basedir}}/${{conf-dir}}xml-resources/web-services/{$wsname}/wsdl/" />
                         </copy>                            
                     </target>
                     <target name="wsimport-service-clean-{$wsname}" depends="-init-project">
@@ -288,7 +291,7 @@ Microsystems, Inc. All Rights Reserved.
                     </xsl:otherwise>
                 </xsl:choose>  
             </xsl:variable>
-            <xsl:attribute name="wsdl">${basedir}/${conf.dir}/xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/wsdl/<xsl:value-of select="$wsdlUrl"/></xsl:attribute>
+            <xsl:attribute name="wsdl">${basedir}/${conf-dir}xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/wsdl/<xsl:value-of select="$wsdlUrl"/></xsl:attribute>
             <xsl:if test="$isService = 'false'">
                 <xsl:attribute name="wsdlLocation"><xsl:value-of select="$wsdlUrlActual" /></xsl:attribute>
             </xsl:if> 
@@ -296,7 +299,7 @@ Microsystems, Inc. All Rights Reserved.
             
             <xsl:if test="jaxws:binding">
                 <binding>
-                    <xsl:attribute name="dir">${conf.dir}/xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/bindings</xsl:attribute>
+                    <xsl:attribute name="dir">${conf-dir}xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/bindings</xsl:attribute>
                     <xsl:attribute name="includes">
                         <xsl:for-each select="jaxws:binding">
                             <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>

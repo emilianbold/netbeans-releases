@@ -90,7 +90,8 @@ public class WebProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*im
     /** return root folder for xml artifacts
      */
     protected FileObject getXmlArtifactsRoot() {
-        return project.getWebModule().getConfDir();
+        FileObject confDir = project.getWebModule().getConfDir();
+        return confDir == null ? super.getXmlArtifactsRoot():confDir;
     }
 
     public String addServiceClient(String clientName, String wsdlUrl, String packageName, boolean isJsr109) {
