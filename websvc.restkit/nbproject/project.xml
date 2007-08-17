@@ -33,6 +33,13 @@
                         <specification-version>0.2</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.rest.samples</code-name-base>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>0.2</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages/>
         </data>
