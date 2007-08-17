@@ -60,14 +60,15 @@ public class PFENotModifiableScheme extends VMDColorScheme {
 
  
     public void updateUI (VMDConnectionWidget widget, ObjectState previousState, ObjectState state) {
-        if (state.isSelected ())
+        if (state.isSelected ()) {
             widget.setForeground (COLOR60_SELECT);
-        else if (state.isHighlighted ())
+        } else if (state.isHighlighted ()) {
             widget.setForeground (COLOR_HIGHLIGHTED);
-        else if (state.isHovered ()  ||  state.isFocused ())
+        } else if (state.isHovered ()  ||  state.isFocused ()) {
             widget.setForeground (COLOR60_HOVER);
-        else
+        } else {
             widget.setForeground (COLOR_NORMAL);
+        }
 
         if (state.isSelected ()  ||  state.isHovered ()) {
             widget.setControlPointShape (PointShape.SQUARE_FILLED_SMALL);
@@ -87,10 +88,11 @@ public class PFENotModifiableScheme extends VMDColorScheme {
 
     public void updateUI (VMDPinWidget widget, ObjectState previousState, ObjectState state) {
         widget.setOpaque (state.isHovered ()  ||  state.isFocused ());
-        if (state.isSelected ())
+        if (state.isSelected ()) {
             widget.setBorder (BORDER60_PIN_SELECT);
-        else
+        } else {
             widget.setBorder (BORDER_PIN);
+        }
     }
 
     public int getNodeAnchorGap (VMDNodeAnchor anchor) {

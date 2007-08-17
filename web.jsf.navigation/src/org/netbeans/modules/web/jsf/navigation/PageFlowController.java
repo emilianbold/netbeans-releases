@@ -599,7 +599,7 @@ public class PageFlowController {
             }
         }
     }
-    private final Logger LOGGER = Logger.getLogger(this.getClass().getName());
+    private static final Logger LOGGER = Logger.getLogger(PageFlowController.class.toString());
 
     public Page removePageName2Page(Page pageNode, boolean destroy) {
         return removePageName2Page(pageNode.getDisplayName(), destroy);

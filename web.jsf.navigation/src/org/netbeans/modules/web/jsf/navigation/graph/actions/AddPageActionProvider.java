@@ -36,7 +36,7 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
     
     
     public Action createContextAwareInstance(Lookup lookup) {
-        PageFlowScene scene = lookup.lookup(PageFlowScene.class);
+        final PageFlowScene scene = lookup.lookup(PageFlowScene.class);
         if( scene != null) {
             setEnabled(true);
             return new AddPageAction(scene);
@@ -79,9 +79,9 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
         
         public void actionPerformed(ActionEvent e) {
             try {
-                PageFlowController pfc = scene.getPageFlowView().getPageFlowController();
+                final PageFlowController pfc = scene.getPageFlowView().getPageFlowController();
                 
-                FileObject webFileObject = pfc.getWebFolder();
+                final FileObject webFileObject = pfc.getWebFolder();
                 
                 String name = FileUtil.findFreeFileName(webFileObject, "page", "jsp");
                 name = JOptionPane.showInputDialog("Select Page Name", name);
@@ -96,14 +96,14 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
         
         private void createIndexJSP(FileObject targetFolder, String name ) throws IOException {
             
-            FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
+            final FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
             
             if (jspTemplate == null)
                 return; // Don't know the template
             
             
-            DataObject mt = DataObject.find(jspTemplate);
-            DataFolder webDf = DataFolder.findFolder(targetFolder);
+            final DataObject mt = DataObject.find(jspTemplate);
+            final DataFolder webDf = DataFolder.findFolder(targetFolder);
             mt.createFromTemplate(webDf, name); // NOI18N
         }
     }

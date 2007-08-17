@@ -40,7 +40,6 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;

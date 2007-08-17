@@ -68,8 +68,10 @@ public final class FreePlaceNodesLayouter {
             Widget nodeWidget = scene.findWidget(node);
             
             if( nodeWidget == null ) {
-                //Do nothing.
-            } else if ( nodeWidget.getPreferredLocation() != null ) {
+                return;
+            } 
+
+            if ( nodeWidget.getPreferredLocation() != null ) {
                 /* If the getPreferredLocation has already been set by something else. */
                 /* The unique ID for a node is it's display name defined by: node.getDisplayName() */
                 positions.put(node.getDisplayName(), nodeWidget.getPreferredLocation());
@@ -141,32 +143,32 @@ public final class FreePlaceNodesLayouter {
         
         public void objectStateChanged(ObjectSceneEvent event,
                 Object changedObject,
-                ObjectState previousState,
+                ObjectState prevState,
                 ObjectState newState) {
             System.out.println("State Changed");
             throw uoe;
         }
         
         public void selectionChanged(ObjectSceneEvent event,
-                Set<Object> previousSelection,
+                Set<Object> prevSelection,
                 Set<Object> newSelection) {
             throw uoe;
         }
         
         public void highlightingChanged(ObjectSceneEvent event,
-                Set<Object> previousHighlighting,
+                Set<Object> prevHighlighting,
                 Set<Object> newHighlighting) {
             throw uoe;
         }
         
         public void hoverChanged(ObjectSceneEvent event,
-                Object previousHoveredObject,
+                Object prevHoveredObject,
                 Object newHoveredObject) {
             throw uoe;
         }
         
         public void focusChanged(ObjectSceneEvent event,
-                Object previousFocusedObject,
+                Object prevFocusedObject,
                 Object newFocusedObject) {
             throw uoe;
         }

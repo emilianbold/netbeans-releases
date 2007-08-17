@@ -115,7 +115,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         }
     }
     private final void replaceFromOutcomeEventHandler( NavigationCase navCase, String oldName, String newName ){
-        NavigationCaseEdge edge = pfc.getNavCase2NavCaseEdge(navCase);
+        final NavigationCaseEdge edge = pfc.getNavCase2NavCaseEdge(navCase);
         view.renameEdgeWidget(edge, newName, oldName);
         view.validateGraph();
     }
@@ -128,8 +128,8 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         final NavigationRule navRule = (source instanceof NavigationRule ? (NavigationRule)source : null);
         
         /* Going to have to do this another day. */
-        Page oldPageNode = pfc.getPageName2Page(oldName);
-        Page newPageNode = pfc.getPageName2Page(newName);
+        final Page oldPageNode = pfc.getPageName2Page(oldName);
+        final Page newPageNode = pfc.getPageName2Page(newName);
         LOGGER.finest("OldPageNode: " + oldPageNode + "\n" +
                 "NewPageNode: " + newPageNode + "\n");
         boolean isNewPageLinked = false;
@@ -152,10 +152,10 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         } */
         if ( oldPageNode != null && !pfc.isPageInAnyFacesConfig(oldName) && !isNewPageLinked ) {
             LOGGER.finest("CASE 1: OldPage is not null and does not exist in the facesconfig anymore.  This is the firsttime the new page is linked.");
-            FileObject fileObj = pfc.getWebFolder().getFileObject(newName);
+            final FileObject fileObj = pfc.getWebFolder().getFileObject(newName);
             if ( fileObj != null && pfc.containsWebFile(fileObj) ){
                 try                 {
-                    Node delegate = DataObject.find(fileObj).getNodeDelegate();
+                    final Node delegate = DataObject.find(fileObj).getNodeDelegate();
                     oldPageNode.replaceWrappedNode(delegate);
                     view.resetNodeWidget(oldPageNode, true); /*** JUST PUT TRUE HERE AS A HOLDER */
                     view.validateGraph();
@@ -184,7 +184,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             //            }
         } else if ( navRule != null && pfc.isPageInAnyFacesConfig(oldName) ) {
             LOGGER.finest("CASE 4: NavRule is not null.");
-            List<NavigationCase> navCases = navRule.getNavigationCases();
+            final List<NavigationCase> navCases = navRule.getNavigationCases();
             pfc.putNavRule2String(navRule, FacesModelUtility.getViewIdFiltiered(newName));
             for( NavigationCase thisNavCase : navCases ){
                 LOGGER.finest("CASE 4: Redrawing NavRules Case.");
@@ -217,7 +217,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 "Old Value: " + ev.getOldValue() + NEWLINE +
                 "Source: " + ev.getSource());
         
-        LogRecord record = new LogRecord(Level.FINE, "Faces Config Change Re-Setting Graph");
+        final LogRecord record = new LogRecord(Level.FINE, "Faces Config Change Re-Setting Graph");
         record.setSourceClassName("org.netbeans.modules.web.jsf.navigation.FacesModelPropertyChangeListener");
         record.setSourceMethodName("setupGraph(PropertyChangeEvent)");
         record.setParameters(new Object[] {ev});
@@ -282,8 +282,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             if( oldCaseEdge != null ) {
                 view.removeEdge(oldCaseEdge);
                 
-                String toPage = oldCaseEdge.getToViewId();
-                removePageIfNoReference(toPage);
+                removePageIfNoReference(oldCaseEdge.getToViewId());
             }
         }
         view.validateGraph();
@@ -291,7 +290,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
     
     private final void removePageIfNoReference(String page) {
         if( page != null ){
-            Page pageNode = pfc.getPageName2Page(page);
+            final Page pageNode = pfc.getPageName2Page(page);
             if( pageNode != null && !pfc.isPageInAnyFacesConfig(page)){
                 if( !pageNode.isDataNode() || pfc.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_FACESCONFIG)){
                     if ( pfc.isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG)  && !pfc.isPageInAnyFacesConfig(page)) {

@@ -40,9 +40,6 @@ public class GridGraphLayoutUtility {
     }
 
     public static <N,E,P> void performLayout( GraphPinScene<N, E, P> graph, boolean checker, int horizontalGap, int verticalGap ){
-        //        boolean checker = false;
-        //        int horizontalGap = horizontalGap;
-        //        int verticalGap = verticalGap;
         
         Collection<N> allNodes = graph.getNodes();
         HashSet<N> unresolvedNodes = new HashSet<N> (allNodes);
@@ -62,24 +59,6 @@ public class GridGraphLayoutUtility {
                     connected.add(node);
                 }
             }
-            //            for( P pin : graph.getNodePins(node )){
-            //                for (E edge : graph.findPinEdges(pin, true, false)) {
-            //                    P p = graph.getEdgeSource(edge);
-            //                    N n = graph.getPinNode(p);
-            //                    //                    N n = graph.getEdgeTarget(edge);
-            //                    if (n != null)
-            //                        connected.add(n);
-            //                }
-            //            }
-            //
-            //            for( P pin : graph.getNodePins(node )){
-            //                for (E edge : graph.findPinEdges(pin, false, true)) {
-            //                    P p = graph.getEdgeTarget(edge);
-            //                    N n = graph.getPinNode(p);
-            //                    if (n != null)
-            //                        connected.add(n);
-            //                }
-            //            }
             node2connected.put(node, connected);
         }
         
@@ -224,16 +203,17 @@ public class GridGraphLayoutUtility {
     private static Point index2point(Point index) {
         int indexPos = index.x;
         int indexLevel = index.y;
-        if (indexPos < indexLevel)
+        if (indexPos < indexLevel) {
             return new Point(indexLevel, indexPos);
-        else if (indexPos < 3 * indexLevel)
+        } else if (indexPos < 3 * indexLevel) {
             return new Point(indexLevel - (indexPos - indexLevel), indexLevel);
-        else if (indexPos < 5 * indexLevel)
+        } else if (indexPos < 5 * indexLevel) {
             return new Point(- indexLevel, indexLevel - (indexPos - 3 * indexLevel));
-        else if (indexPos < 7 * indexLevel)
+        } else if (indexPos < 7 * indexLevel) {
             return new Point((indexPos - 5 * indexLevel) - indexLevel, - indexLevel);
-        else if (indexPos < 8 * indexLevel)
+        } else if (indexPos < 8 * indexLevel) {
             return new Point(indexLevel, (indexPos - 7 * indexLevel) - indexLevel);
+        }
         throw new InternalError("Index: " + indexPos);
     }
     
