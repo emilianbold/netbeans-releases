@@ -123,8 +123,8 @@ public class CheckedTreeBeanView extends BeanTreeView {
             data.remove(FileUtil.getRelativePath(root, fo));
             fo = fo.getParent();
         }
-        if (properties != null || propertyName != null) properties.put(propertyName, getExcludesRegex());
         updateState(root); // renew the path from parent
+        if (properties != null && propertyName != null) properties.put(propertyName, getExcludesRegex());
     }
     
     public String getExcludesRegex() {
