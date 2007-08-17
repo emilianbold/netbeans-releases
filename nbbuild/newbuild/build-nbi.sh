@@ -40,8 +40,8 @@ rmdir $DIST/installers
 
 #Check if Mac installer was OK, 10 "BUILD SUCCESSFUL" messages should be in Mac log
 if [ ! -z $NATIVE_MAC_MACHINE ]; then
-    IS_MAC_OK=`cat $MAC_LOG | grep "BUILD SUCCESSFUL" | wc -l | tr " " "\n" | grep -v '^$'`
-    if [ $IS_MAC_OK -ge 10 ]; then
+    IS_MAC_FAILED=`cat $MAC_LOG | grep "BUILD FAILED" | wc -l | tr " " "\n" | grep -v '^$'`
+    if [ $IS_MAC_FAILED -eq 0 ]; then
         #copy the bits back
         mkdir -p $DIST/bundles
         scp $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/dist/* $DIST/bundles
