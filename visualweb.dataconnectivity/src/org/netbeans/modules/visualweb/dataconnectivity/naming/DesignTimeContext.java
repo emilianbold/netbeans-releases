@@ -263,7 +263,7 @@ class DesignTimeContext implements Context {
     }
     
     public void close() throws NamingException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // not used by visual web
     }
     
     public String getNameInNamespace() throws NamingException {
@@ -301,18 +301,9 @@ class DesignTimeContext implements Context {
         DataSourceInfo dsInfo = null;
         for (int i = 0; i < bindings.size(); i++) {
             dsInfo = (DataSourceInfo) bindings.get(i);
-            
+
             // check if driverclass is derby and if it hasn't been started then try to start derby
-            
         }
-        
-//        if (bindings.isEmpty()) {
-//            if (!dsHelper.isFound(dsInfo)) {
-//                if (ImportDataSource.isLegacyProject(CurrentProject.getInstance().getProject())) {
-//                    ImportDataSource.showAlert();
-//                }
-//            }
-//        }
-}
+    }
     
 }
