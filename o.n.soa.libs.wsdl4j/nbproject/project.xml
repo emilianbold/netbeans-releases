@@ -29,6 +29,7 @@
                 <friend>org.netbeans.modules.compapp.projects.jbi</friend>
                 <friend>org.netbeans.modules.sql.project</friend>
                 <friend>org.netbeans.modules.jdbcwizard</friend>
+                <friend>org.netbeans.modules.workflow.project</friend>
                 <package>com.ibm.wsdl</package>
                 <package>com.ibm.wsdl.extensions</package>
                 <package>com.ibm.wsdl.extensions.http</package>
