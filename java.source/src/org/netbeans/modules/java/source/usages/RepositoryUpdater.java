@@ -53,6 +53,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1352,7 +1353,27 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             
             final ClassPath sourcePath = ClassPath.getClassPath(rootFo,ClassPath.SOURCE);
             final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
-            final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);
+            final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);                        
+            
+            if (sourcePath == null) {
+                LOGGER.warning("No source path for folder: " +  FileUtil.getFileDisplayName(rootFo)); // NOI18N
+                return;
+            }
+            
+            if (bootPath == null) {
+                LOGGER.warning("No boot path for folder: " +  FileUtil.getFileDisplayName(rootFo)); // NOI18N
+                return;
+            }
+            
+            if (compilePath == null) {
+                LOGGER.warning("No compile path for folder: " +  FileUtil.getFileDisplayName(rootFo)); // NOI18N
+                return;
+            }
+            
+            if (!Arrays.asList(sourcePath.getRoots()).contains(rootFo)) {
+                LOGGER.warning("Source root: " +  FileUtil.getFileDisplayName(rootFo) + " not on its sourcepath."); // NOI18N
+                return;
+            }                        
             
             ClassPath.Entry entry = null;
             final ClasspathInfo cpInfo;

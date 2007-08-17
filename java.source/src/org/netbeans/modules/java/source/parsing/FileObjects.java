@@ -228,6 +228,11 @@ public class FileObjects {
         return (dot == -1 ? fileName : fileName.substring(0, dot));
     }    
     
+    public static String getExtension (final String fileName) {
+        int dot = fileName.lastIndexOf('.');
+        return (dot == -1 || dot == fileName.length() -1 ) ? "" : fileName.substring(dot+1);    //NOI18N
+    }
+    
     
     /**
      * Returns the name of JavaFileObject, similar to
@@ -391,6 +396,28 @@ public class FileObjects {
     }            
     
     
+    /**
+     * Determines {@link JavaFileObject.Kind} for given extension
+     * @param extension
+     * @return the found kind
+     */ 
+    public static JavaFileObject.Kind getKind (final String extension) {
+        if (extension == null) {
+            return JavaFileObject.Kind.OTHER;
+        }
+        String lcextension = extension.toLowerCase();
+        if (FileObjects.JAVA.equals(lcextension)) {
+                return JavaFileObject.Kind.SOURCE;
+        }
+        if (FileObjects.CLASS.equals(lcextension) || FileObjects.SIG.equals(lcextension)) {
+                return JavaFileObject.Kind.CLASS;
+        }
+        if (FileObjects.HTML.equals(lcextension)) {
+                return JavaFileObject.Kind.HTML;
+        }
+        return JavaFileObject.Kind.OTHER;
+    }
+    
     public static void deleteRecursively (final File folder) {
         assert folder != null;        
         if (folder.isDirectory()) {
@@ -422,18 +449,7 @@ public class FileObjects {
             String[] res = getNameExtPair(name);
             this.nameWithoutExt = res[0];
             this.ext = res[1];
-            if (FileObjects.JAVA.equalsIgnoreCase(ext)) { //NOI18N
-                this.kind = Kind.SOURCE;
-            }
-            else if (FileObjects.CLASS.equalsIgnoreCase(ext) || "sig".equals(ext)) {   //NOI18N
-                this.kind = Kind.CLASS;
-            }
-            else if (FileObjects.HTML.equalsIgnoreCase(ext)) {    //NOI18N
-                this.kind = Kind.HTML;
-            }
-            else {
-                this.kind = Kind.OTHER;
-            }
+            this.kind = FileObjects.getKind (this.ext);
         }
         
         public JavaFileObject.Kind getKind() {

@@ -80,7 +80,7 @@ public class CachingFileManager implements JavaFileManager {
             try {
                 Archive archive = provider.getArchive( entry.getURL(), cacheFile );
                 if (archive != null) {
-                    Iterable<JavaFileObject> entries = archive.getFiles( folderName, ignoreExcludes?null:entry, filter);
+                    Iterable<JavaFileObject> entries = archive.getFiles( folderName, ignoreExcludes?null:entry, kinds, filter);
                     idxs.add( entries.iterator() );
                 }
             } catch (IOException e) {
@@ -97,7 +97,7 @@ public class CachingFileManager implements JavaFileManager {
             try {
                 Archive  archive = provider.getArchive (root.getURL(), cacheFile);
                 if (archive != null) {
-                    Iterable<JavaFileObject> files = archive.getFiles(FileObjects.convertPackage2Folder(pkgName), ignoreExcludes?null:root, filter);
+                    Iterable<JavaFileObject> files = archive.getFiles(FileObjects.convertPackage2Folder(pkgName), ignoreExcludes?null:root, null, filter);
                     for (JavaFileObject e : files) {
                         if (relativeName.equals(e.getName())) {
                             return e;
@@ -121,7 +121,7 @@ public class CachingFileManager implements JavaFileManager {
             try {
                 Archive  archive = provider.getArchive (root.getURL(), cacheFile);
                 if (archive != null) {
-                    Iterable<JavaFileObject> files = archive.getFiles(namePair[0], ignoreExcludes?null:root, filter);
+                    Iterable<JavaFileObject> files = archive.getFiles(namePair[0], ignoreExcludes?null:root, null, filter);
                     for (JavaFileObject e : files) {
                         if (namePair[1].equals(e.getName())) {
                             return e;

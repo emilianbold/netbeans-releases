@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
@@ -41,7 +42,7 @@ public class FileObjectArchive implements Archive {
         this.root = root;
     }
     
-    public Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, JavaFileFilterImplementation filter) throws IOException {
+    public Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter) throws IOException {
         FileObject folder = root.getFileObject(folderName);        
         if (folder == null || !(entry == null || entry.includes(folder))) {
             return Collections.<JavaFileObject>emptySet();
@@ -50,7 +51,9 @@ public class FileObjectArchive implements Archive {
         List<JavaFileObject> result = new ArrayList<JavaFileObject>(children.length);
         for (FileObject fo : children) {
             if (fo.isData() && (entry == null || entry.includes(fo))) {
-                result.add(FileObjects.nbFileObject(fo,filter,false));
+                if (kinds == null || kinds.contains (FileObjects.getKind(fo.getExt()))) {
+                    result.add(FileObjects.nbFileObject(fo,filter,false));
+                }
             }
         }
         return result;

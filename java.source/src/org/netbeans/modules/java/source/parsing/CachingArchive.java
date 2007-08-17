@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -60,7 +61,7 @@ public class CachingArchive implements Archive {
    
     /** Gets all files in given folder
      */
-    public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry entry, JavaFileFilterImplementation filter ) throws IOException {
+    public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter ) throws IOException {
         doInit();        
         Folder files = folders.get( folderName );        
         if (files == null) {
@@ -69,8 +70,8 @@ public class CachingArchive implements Archive {
         else {
             assert !keepOpened || zipFile != null;
             List<JavaFileObject> l = new ArrayList<JavaFileObject>(files.idx / files.delta);
-            for (int i = 0; i < files.idx; i += files.delta){
-                l.add(create(folderName, files, i));
+            for (int i = 0; i < files.idx; i += files.delta){                
+                create(folderName, files, i, kinds, l);
             }
             return l;
         }
@@ -91,20 +92,22 @@ public class CachingArchive implements Archive {
         return (((long)higher) << 32) | (((long) lower) & 0xFFFFFFFFL);
     }
     
-    private JavaFileObject create(String pkg, Folder f, int off) {
+    private void create(String pkg, Folder f, int off, Set<JavaFileObject.Kind> kinds, List<? super JavaFileObject> l) {
         String baseName = getString(f.indices[off], f.indices[off+1]);
-        long mtime = join(f.indices[off+3], f.indices[off+2]);
-        if (zipFile == null) {
-            if (f.delta == 4) {
-                return FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime);
+        if (kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(baseName)))) {
+            long mtime = join(f.indices[off+3], f.indices[off+2]);
+            if (zipFile == null) {
+                if (f.delta == 4) {
+                    l.add (FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime));
+                }
+                else {
+                    assert f.delta == 6;
+                    long offset = join(f.indices[off+5], f.indices[off+4]);
+                    l.add (FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime, offset));
+                }
+            } else {
+                l.add (FileObjects.zipFileObject( zipFile, pkg, baseName, mtime));
             }
-            else {
-                assert f.delta == 6;
-                long offset = join(f.indices[off+5], f.indices[off+4]);
-                return FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime, offset);
-            }
-        } else {
-            return FileObjects.zipFileObject( zipFile, pkg, baseName, mtime);
         }
     }
     
