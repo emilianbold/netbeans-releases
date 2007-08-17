@@ -24,11 +24,24 @@
                     public int getStatus() {
                         return STATE_VALID;
                     }
+                    // Map 2.4.0 style naming ("myclassloader") to 2.3.0 style ("classloader")
                     public void setMyClassLoader(boolean value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
-                       throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+                        setClassLoader(value);
                     }
                     public boolean isMyClassLoader() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+                        return isClassLoader();
+                    }
+                    public void setMyClassLoaderExtraClassPath(java.lang.String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                       setClassLoaderExtraClassPath(value);
+                    }
+                    public java.lang.String getMyClassLoaderExtraClassPath() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                       return getClassLoaderExtraClassPath();
+                    }
+                    public void setMyClassLoaderDelegate(java.lang.String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                       setClassLoaderDelegate(value);
+                    }
+                    public java.lang.String getMyClassLoaderDelegate() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                       return getClassLoaderDelegate();
                     }
                     public void setMyClassLoader(org.netbeans.modules.j2ee.sun.dd.api.web.MyClassLoader value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
                          throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);

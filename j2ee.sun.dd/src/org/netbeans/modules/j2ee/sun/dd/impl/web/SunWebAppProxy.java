@@ -159,6 +159,14 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
     public org.netbeans.modules.j2ee.sun.dd.api.web.MyClassLoader getMyClassLoader() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
         return webRoot==null?null:webRoot.getMyClassLoader();
     }
+    
+	public java.lang.String getMyClassLoaderExtraClassPath() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?null:webRoot.getMyClassLoaderExtraClassPath();
+    }
+    
+	public java.lang.String getMyClassLoaderDelegate() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?null:webRoot.getMyClassLoaderDelegate();
+    }
 
     public String getParameterEncodingDefaultCharset() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
         return webRoot==null?null:webRoot.getParameterEncodingDefaultCharset();
@@ -403,7 +411,15 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
     public void setMyClassLoader(org.netbeans.modules.j2ee.sun.dd.api.web.MyClassLoader myClassLoader) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
         if (webRoot!=null) webRoot.setMyClassLoader(myClassLoader);
     }
-
+    
+	public void setMyClassLoaderExtraClassPath(java.lang.String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        if (webRoot!=null) webRoot.setMyClassLoaderExtraClassPath(value);
+    }
+    
+	public void setMyClassLoaderDelegate(java.lang.String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        if (webRoot!=null) webRoot.setMyClassLoaderDelegate(value);
+    }
+    
     public void setParameterEncoding(boolean param) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
         if (webRoot!=null) webRoot.setParameterEncoding(param);
     }
