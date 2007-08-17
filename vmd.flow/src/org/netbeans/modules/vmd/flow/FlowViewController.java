@@ -53,7 +53,21 @@ public class FlowViewController implements DesignDocumentAwareness {
     public FlowViewController (DataObjectContext context) {
 //        this.context = context;
         loadingPanel = IOUtils.createLoadingPanel ();
-        visual = new JPanel (new BorderLayout ());
+        visual = new JPanel (new BorderLayout ()) {
+            public void requestFocus() {
+                super.requestFocus();
+                if (view != null)
+                    view.requestFocus();
+            }
+
+            public boolean requestFocusInWindow() {
+                if (view != null) {
+                    super.requestFocusInWindow();
+                    return view.requestFocusInWindow();
+                } else
+                    return super.requestFocusInWindow();
+            }
+        };
         toolbar = new JToolBar ();
         toolbar.setFloatable (false);
         toolbar.setRollover (true);
@@ -183,6 +197,8 @@ public class FlowViewController implements DesignDocumentAwareness {
                     scroll.getVerticalScrollBar ().setUnitIncrement (64);
                     scroll.getVerticalScrollBar ().setBlockIncrement (256);
                     visual.add (scroll, BorderLayout.CENTER);
+                    if (visual.hasFocus ())
+                        view.requestFocus ();
                 } else
                     visual.add (loadingPanel, BorderLayout.CENTER);
                 visual.validate ();
