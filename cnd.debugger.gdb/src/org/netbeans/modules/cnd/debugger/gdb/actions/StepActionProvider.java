@@ -35,7 +35,7 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
  * Implements non visual part of stepping through code in gdb debugger.
@@ -80,8 +80,8 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
     }
     
     /**
-     * Runs the action. This method invokes the appropriate method in GdbDebuggerImpl
-     *
+     * Runs the action. This method invokes the appropriate method in GdbDebugger
+     * 
      * @param action an action which has been called
      */    
     public void runAction(final Object action) {

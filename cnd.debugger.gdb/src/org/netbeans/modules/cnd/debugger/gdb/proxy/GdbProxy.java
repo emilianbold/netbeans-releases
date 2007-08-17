@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 import org.openide.util.Utilities;
 
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 
 /**
@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
  */
 public class GdbProxy implements GdbMiDefinitions {
     
-    private GdbDebuggerImpl debugger;
+    private GdbDebugger debugger;
     private GdbProxyEngine engine;
     private GdbLogger gdbLogger;
     
@@ -82,14 +82,14 @@ public class GdbProxy implements GdbMiDefinitions {
     
     /**
      * Creates a new instance of GdbProxy
-     *
-     * @param debugger The GdbDebuggerImpl
+     * 
+     * @param debugger The GdbDebugger
      * @param debuggerCommand The gdb command to use
      * @param debuggerEnvironment The overrides to the user's environment
      * @param workingDirectory The directory to start the debugger from
      * @throws IOException Pass this on to the caller
      */
-    public GdbProxy(GdbDebuggerImpl debugger, String debuggerCommand,
+    public GdbProxy(GdbDebugger debugger, String debuggerCommand,
             String[] debuggerEnvironment, String workingDirectory, String termpath) throws IOException {
         this.debugger = debugger;
         
@@ -128,6 +128,11 @@ public class GdbProxy implements GdbMiDefinitions {
     /** Ask gdb for its version */
     public int gdb_version() {
         return engine.sendCommand("-gdb-version"); // NOI18N
+    }
+    
+    /** Ask gdb about a variable (currently used to find the current language) */
+    public int gdb_show(String arg) {
+        return engine.sendCommand("-gdb-show " + arg); // NOI18N
     }
     
     /**

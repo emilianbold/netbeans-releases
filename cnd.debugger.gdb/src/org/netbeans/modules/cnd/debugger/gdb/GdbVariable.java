@@ -25,6 +25,7 @@ import java.util.Map;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import org.openide.util.NbBundle;
 
 /**
  * Defines a variable as gdb sees it. Each variable has a name, type, and value.
@@ -82,6 +83,14 @@ public class GdbVariable {
             }
         }
         return realtype;
+    }
+    
+    /**
+     * We may not have enough type information to correctly set realtype. So we have a
+     * way of resetting it so it can get correctly updated.
+     */
+    public void resetRealType() {
+        realtype = null;
     }
     
     public String getValue() {
@@ -189,6 +198,21 @@ public class GdbVariable {
             } else if (name.startsWith("mutable ")) { // NOI18N
                 name = name.substring(8).trim();
             }
+
+            Object o = map.get(name);
+            if (o instanceof String) {
+                type = o.toString();
+                getDebugger().addTypeCompletion(type);
+            } else if (name.charAt(0) == '<' && name.charAt(name.length() - 1) == '>') {
+                String superclass = name.substring(1, name.length() - 1);
+                getDebugger().addTypeCompletion(superclass);
+                name = NbBundle.getMessage(GdbVariable.class, "LBL_BaseClass"); // NOI18N
+                type = superclass; // NOI18N
+            } else if (name.startsWith("_vptr")) { // NOI18N
+                name = null; // skip this - its not a real field
+                type = "";
+            }
+            
             start = GdbUtils.firstNonWhite(info, pos + 1);
             if (info.charAt(start) == '{') {
                 pos = GdbUtils.findMatchingCurly(info, start);
@@ -198,31 +222,42 @@ public class GdbVariable {
                     value = info.substring(start, pos);
                 }
             } else {
-                pos = GdbUtils.findNextComma(info, start);
+                if (type.startsWith("char[")) {
+                    pos = findCorrectComma(info, start);
+                } else {
+                    pos = GdbUtils.findNextComma(info, start);
+                }
                 if (pos == -1) {
                     value = info.substring(start);
                 } else {
                     value = info.substring(start, pos - 1);
                 }
             }
-
-            Object o = map.get(name);
-            if (o instanceof String) {
-                type = o.toString();
-                getDebugger().addTypeCompletion(type);
-            } else if (name.charAt(0) == '<' && name.charAt(name.length() - 1) == '>') {
-                String superclass = name.substring(1, name.length() - 1);
-                getDebugger().addTypeCompletion(superclass);
-                name = "super"; // NOI18N
-                type = "class " + superclass; // NOI18N
-            } else if (name.startsWith("_vptr$")) { // NOI18N
-                name = null; // skip this - its not a real field
-            }
             if (name != null) {
                 children.add(new GdbVariable(name, type, value));
             }
             start = GdbUtils.firstNonWhite(info, start + value.length() + 1);
         }
+    }
+    
+    /**
+     * Special case - char arrays can have an extra comma if the value string
+     * contains both a double quoted string and some number of repeated chars
+     * (usually zeros).
+     *
+     * For instance (in struct stat on Solaris):
+     *   ... st_fstype = \"ufs\", '\\0' <repeats 12 times>, ...
+     */
+    private int findCorrectComma(String info, int start) {
+        int pos = info.indexOf('=', start);
+        if (pos != -1) {
+            // at least 1 more field...
+            pos = info.substring(0, pos).lastIndexOf(',');
+            if (pos != -1) {
+                return pos + 1;
+            }
+        }
+        return -1;
     }
     
     /** We need the debugger to get the current stack to get struct type completion... */

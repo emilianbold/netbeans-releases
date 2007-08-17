@@ -26,13 +26,15 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 
 import org.netbeans.modules.cnd.debugger.gdb.InvalidExpressionException;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
-import org.netbeans.modules.cnd.debugger.gdb.utils.ValueTokenizer;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import org.openide.util.NbBundle;
 
 /*
  * An AbstractVariable is an array, pointer, struct, or union.
@@ -42,25 +44,35 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.ValueTokenizer;
 public class AbstractVariable implements LocalVariable, Customizer {
     
     private GdbDebugger debugger;
+    private CallStackFrame csf;
     protected String name;
     protected String type;
     protected String value;
-    private Field[] fields;
+    protected Field[] fields;
     
     private Set listeners = new HashSet();
     
     public AbstractVariable(String n, String t, String v) {
+        assert n.indexOf('{') == -1; // this means a mis-parsed gdb response...
         name = n;
         type = t;
         value = v;
     }
     
+    /**
+     * Create the AV from a GV. If the GV has children then create similar children for the AV.
+     * Since the GV's children may have been created before all type information was available,
+     * we reset the GV's realtype so its guaranteed to be correct (if it was set before type info
+     * was returned from gdb, it might be the same as type).
+     */
     public AbstractVariable(GdbVariable var) {
         this(var.getName(), var.getType(), var.getValue());
         
+        getDebugger().waitForTypeCompletionCompletion();
+        var.resetRealType();
         for (GdbVariable child : var.getChildren()) {
-            AbstractField field = new AbstractField(this, child.getName(), child.getType(), child.getValue());
-            addField(field);
+            child.resetRealType();
+            addField(new AbstractField(this, child.getName(), child.getType(), child.getValue()));
         }
     }
     
@@ -186,48 +198,101 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return debugger;
     }
     
-    public boolean expandChildren() {
-        int fcount = fields.length;
-        for (Field child : fields) {
-            expandChildrenFromValue((AbstractField) child);
+    private CallStackFrame getCurrentCallStackFrame() {
+        if (csf == null) {
+            GdbDebugger debugger = getDebugger();
+            csf = getDebugger().getCurrentCallStackFrame();
         }
-//        expandChildrenFromValue(this);
-        return fcount != fields.length;
+        return csf;
     }
     
-    private void expandChildrenFromValue(AbstractVariable var) {
-        Object o = getDebugger().getCurrentCallStackFrame().getType(var.type);
-        int i = 0;
-        int flen = var.fields == null ? 0 : var.fields.length;
-        
-        if (o instanceof Map) {
-            AbstractField field;
-            Map<String, Object> map = (Map) o;
-            ValueTokenizer tok = new ValueTokenizer(var.value);
-            while (tok.hasMoreTokens()) {
-                String[] token = tok.nextToken();
-                if (i >= flen) {
-                    String type;
-                    if (token[0].startsWith("<") && token[0].endsWith(">")) { // NOI18N
-                        type = "super"; // NOI18N
-                    } else {
-                        type = token[1];
-                    }
-                    field = new AbstractField(this, token[0], type, token[1]);
-                    var.addField(field);
-                } else {
-                    field = (AbstractField) var.fields[i];
-                }
-//                expandChildrenFromValue(field);
-                i++;
-            }
-//        } else if (o instanceof String) {
-//            System.err.println("AV.expandChildrenFromValue: Type is string [" + o + "]");
-//        } else if (o == null) {
-//            System.err.println("AV.expandChildrenFromValue: Type is Null");
-//        } else {
-//            System.err.println("AV.expandChildrenFromValue: Type is unexpected class [" + o.getClass().getName() + "]");
+    public boolean expandChildren() {
+        int fcount = 0;
+        for (Field child : fields) {
+            fcount += expandChildrenFromValue((AbstractField) child);
         }
+        return fcount != 0;
+    }
+    
+    private int expandChildrenFromValue(AbstractField var) {
+        int count = 0; // we really only care if its 0 or >0
+        
+        var.fields = null; // Always recompute children. This fixes various timing problems
+        if (var.value != null && var.value.length() > 0 && var.value.charAt(0) == '{') {
+            if (GdbUtils.isArray(var.type)) {
+                count += parseArray(var, var.name, var.type, var.value.substring(1, var.value.length() - 1));
+            } else {
+                Object o = getCurrentCallStackFrame().getType(var.type);
+                if (o instanceof Map && ((Map) o).size() > 0) {
+                    Map map = (Map) o;
+                    String v = var.value.substring(1, var.value.length() - 1);
+                    int opos = 0;
+                    int pos = GdbUtils.findNextComma(v, opos);
+                    while (pos != -1) {
+                        var.addField(completeFieldDefinition(var, map, v.substring(opos, pos - 1)));
+                        opos = pos;
+                        pos = GdbUtils.findNextComma(v, opos);
+                    }
+                    var.addField(completeFieldDefinition(var, map, v.substring(opos)));
+                    count++;
+                } else if (o instanceof String) {
+                    if (GdbUtils.isArray(o.toString())) {
+                        count += parseArray(var, var.name, o.toString(), var.value.substring(1, var.value.length() - 1));
+                    }
+                }
+            }
+        }
+        return count;
+    }
+    
+    private AbstractField completeFieldDefinition(AbstractVariable parent, Map<String, String> map, String info) {
+        String name, type, value;
+        int pos = info.indexOf('=');
+        if (pos != -1) {
+            if (info.charAt(0) == '<') {
+                name = NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"); // NOI18N
+                type = info.substring(1, pos - 2).trim();
+            } else {
+                name = info.substring(0, pos - 1).trim();
+                type = map.get(name);
+            }
+            value = info.substring(pos + 1).trim();
+            if (!name.startsWith("_vptr")) { // NOI18N
+                return new AbstractField(parent, name, type, value);
+            }
+        } else if (info.trim().equals("<No data fields>")) { // NOI18N
+            return new AbstractField(parent, "", "", info.trim());
+        }
+        return null;
+    }
+    
+    private int parseArray(AbstractVariable var, String basename, String type, String value) {
+        int pos = type.lastIndexOf('[');
+        int vpos = 0;
+        int size = 0;
+        int count = 0;
+        
+        try {
+            size = Integer.valueOf(type.substring(pos + 1, type.length() - 1));
+        } catch (Exception ex) {
+        }
+        for (int i = 0; i < size && vpos != -1; i++) {
+            int nvpos;
+            
+            if (value.charAt(vpos) == ' ') {
+                vpos++;
+            }
+            if (value.charAt(vpos) == '{') {
+                nvpos = GdbUtils.findMatchingCurly(value, vpos) + 1;
+            } else {
+                nvpos = GdbUtils.findNextComma(value, vpos);
+            }
+            var.addField(new AbstractField(var, basename + "[" + i + "]", type.substring(0, pos), // NOI18N
+                    nvpos == -1 ? value.substring(vpos).trim() : value.substring(vpos, nvpos - 1).trim()));
+            vpos = nvpos;
+            count++;
+        }
+        return count;
     }
 
     private void initFields() {
@@ -240,6 +305,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * @parameter field A field to add.
      */
     public void addField(Field field) {
+        if (field == null) {
+            return;
+        }
         if (fields == null) {
             initFields();
         }

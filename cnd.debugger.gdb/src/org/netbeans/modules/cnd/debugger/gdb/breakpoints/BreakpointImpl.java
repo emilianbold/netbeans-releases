@@ -32,7 +32,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.InvalidExpressionException;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.expr.Expression;
 import org.netbeans.modules.cnd.debugger.gdb.expr.ParseException;
 
@@ -45,7 +45,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     
     private static boolean verbose = System.getProperty("netbeans.debugger.breakpoints") != null;
 
-    private GdbDebuggerImpl     debugger;
+    private GdbDebugger     debugger;
     private GdbBreakpoint       breakpoint;
     private BreakpointsReader   reader;
     private final Session       session;
@@ -54,7 +54,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 
 
     protected BreakpointImpl(GdbBreakpoint breakpoint, BreakpointsReader reader,
-                                GdbDebuggerImpl debugger, Session session) {
+                                GdbDebugger debugger, Session session) {
         this.debugger = debugger;
         this.reader = reader;
         this.breakpoint = breakpoint;
@@ -106,7 +106,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         return breakpoint;
     }
 
-    protected GdbDebuggerImpl getDebugger() {
+    protected GdbDebugger getDebugger() {
         return debugger;
     }
 

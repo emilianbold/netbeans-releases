@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 
 import org.netbeans.spi.debugger.ContextProvider;
@@ -43,13 +43,13 @@ import org.openide.util.RequestProcessor;
  * @author Gordon Prieur (copied from Jan Jancura's and Martin Entlicher's JPDA implementation)
  */
 public class CallStackTreeModel implements TreeModel {
-    private GdbDebuggerImpl     debugger;
+    private GdbDebugger     debugger;
     private Collection          listeners = new HashSet();
     private Listener            listener;
     
    
     public CallStackTreeModel(ContextProvider lookupProvider) {
-        debugger = (GdbDebuggerImpl) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     /** 

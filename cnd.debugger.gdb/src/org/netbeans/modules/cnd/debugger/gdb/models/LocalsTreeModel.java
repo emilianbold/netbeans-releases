@@ -35,7 +35,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrameImpl;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariableImpl;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
@@ -52,7 +52,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
     /** Nest array elements when array length is bigger then this. */
     private static final int ARRAY_CHILDREN_NESTED_LENGTH = 100;
     
-    private GdbDebuggerImpl     debugger;
+    private GdbDebugger     debugger;
     private Listener            listener;
     private Vector              listeners = new Vector();
     private Map                 cachedLocals = new WeakHashMap();
@@ -61,7 +61,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
     private Set                 collapsedNodes = new WeakSet();
         
     public LocalsTreeModel(ContextProvider lookupProvider) {
-        debugger = (GdbDebuggerImpl) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
     }    
     
     public Object getRoot() {
@@ -193,7 +193,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
         } // synchronized
     }
     
-    GdbDebuggerImpl getDebugger() {
+    GdbDebugger getDebugger() {
         return debugger;
     }
     

@@ -35,7 +35,7 @@ import org.openide.text.Line.Part;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.InvalidExpressionException;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 import org.netbeans.modules.cnd.debugger.gdb.Variable;
@@ -58,8 +58,8 @@ public class ToolTipAnnotation extends Annotation {
         if (currentEngine == null) {
             return null;
         }
-        GdbDebuggerImpl d = (GdbDebuggerImpl) currentEngine.lookupFirst(null, GdbDebugger.class);
-        if (d == null) {
+        GdbDebugger debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+        if (debugger == null) {
             return null;
         }
         Part lp = (Part) getAttachedAnnotatable();
@@ -89,8 +89,12 @@ public class ToolTipAnnotation extends Annotation {
                     return null;
                 }
             }
-            int token = d.getGdbProxy().data_evaluate_expression(expression);
-            d.completeToolTip(token, this);
+            try {
+                // There is a small window during debugger startup when getGdbProxy() returns null
+                int token = debugger.getGdbProxy().data_evaluate_expression(expression);
+                debugger.completeToolTip(token, this);
+            } catch (NullPointerException npe) {
+            }
         } catch (IOException e) {
         }
         return null;

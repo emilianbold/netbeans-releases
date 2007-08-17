@@ -40,7 +40,7 @@ import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
  * Termination of a debugging session.
@@ -49,10 +49,10 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
 public class KillActionProvider extends ActionsProvider {
     
     private ContextProvider lookupProvider;
-    private GdbDebuggerImpl debuggerImpl;
+    private GdbDebugger debuggerImpl;
     
     public KillActionProvider(ContextProvider lookupProvider) {
-        debuggerImpl = (GdbDebuggerImpl) lookupProvider.lookupFirst
+        debuggerImpl = (GdbDebugger) lookupProvider.lookupFirst
                 (null, GdbDebugger.class);
         //super (debuggerImpl);
         this.lookupProvider = lookupProvider;
@@ -79,8 +79,8 @@ public class KillActionProvider extends ActionsProvider {
     }
     
     /**
-     * Runs the action. This method invokes the appropriate method in GdbDebuggerImpl
-     *
+     * Runs the action. This method invokes the appropriate method in GdbDebugger
+     * 
      * @param action an action which has been called
      */
     public void runAction(final Object action) {

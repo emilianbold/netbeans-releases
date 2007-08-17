@@ -40,29 +40,35 @@ import org.netbeans.api.debugger.DebuggerManager;
 public class GdbDebuggerModule extends ModuleInstall {
     
     private CustomizerNode debugCustomizerNode;
+    private boolean isDbxLoaded;
     
     public void restored() {
         // Profiles
-        
-        // Moved to services...
-//        ConfigurationDescriptorProvider.addAuxObjectProvider(new GdbProfileProvider());
-        debugCustomizerNode = new ProfileNodeProvider().createDebugNode();
-        CustomizerRootNodeProvider.getInstance().addCustomizerNode(debugCustomizerNode);
+        if (!isDbxGuiLoaded()) {
+            debugCustomizerNode = new ProfileNodeProvider().createDebugNode();
+            CustomizerRootNodeProvider.getInstance().addCustomizerNode(debugCustomizerNode);
 
-        // Set project action handler
-        DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(
-                    new GdbActionHandlerProvider());
+            // Set project action handler
+            DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(
+                        new GdbActionHandlerProvider());  
+        }
     }
 
     public void uninstalled() {
         // Profiles
-        CustomizerRootNodeProvider.getInstance().removeCustomizerNode(debugCustomizerNode);
-        DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(null);
+        if (!isDbxGuiLoaded()) {
+            CustomizerRootNodeProvider.getInstance().removeCustomizerNode(debugCustomizerNode);
+            DefaultProjectActionHandler.getInstance().setCustomDebugActionHandlerProvider(null);
+        }
     }
     
     public void close() {
         // Kill all debug sessions
         DebuggerManager.getDebuggerManager().finishAllSessions();
         super.close();
+    }
+    
+    private boolean isDbxGuiLoaded() {
+        return false;
     }
 }

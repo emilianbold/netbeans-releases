@@ -37,7 +37,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
@@ -117,7 +117,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
             removeAnnotation(fb);
             int bpn = fb.getBreakpointNumber();
             if (bpn > 0) {
-                GdbDebuggerImpl debugger = fb.getDebugger();
+                GdbDebugger debugger = fb.getDebugger();
                 if ((debugger != null) && (debugger.getGdbProxy() != null)){
                     debugger.getGdbProxy().break_delete(bpn);
                 }

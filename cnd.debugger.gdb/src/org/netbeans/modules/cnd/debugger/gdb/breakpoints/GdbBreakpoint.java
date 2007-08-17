@@ -30,7 +30,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointListener;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /*
  * Note: This class may need to become abstracto with a GdbBreakpoint and
@@ -76,7 +76,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
     private int                         state = UNVALIDATED;
     private static Map                  pending = Collections.synchronizedMap(new HashMap());
     private static Map                  bplist = Collections.synchronizedMap(new HashMap());
-    private GdbDebuggerImpl		debugger;
+    private GdbDebugger		debugger;
     private Object			LOCK = new Object();
     private int				id = 0;
     
@@ -289,11 +289,11 @@ public abstract class GdbBreakpoint extends Breakpoint {
         }
     }
     
-    protected void setDebugger(GdbDebuggerImpl debugger) {
+    protected void setDebugger(GdbDebugger debugger) {
 	this.debugger = debugger;
     }
     
-    public GdbDebuggerImpl getDebugger() {
+    public GdbDebugger getDebugger() {
 	return debugger;
     }
 }

@@ -21,7 +21,7 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
 * Implementation of breakpoint on method.
@@ -36,7 +36,7 @@ public class LineBreakpointImpl extends BreakpointImpl {
 
     
     public LineBreakpointImpl(LineBreakpoint breakpoint, BreakpointsReader reader,
-                GdbDebuggerImpl debugger, Session session) {
+                GdbDebugger debugger, Session session) {
         super(breakpoint, reader, debugger, session);
         this.reader = reader;
         this.breakpoint = breakpoint;

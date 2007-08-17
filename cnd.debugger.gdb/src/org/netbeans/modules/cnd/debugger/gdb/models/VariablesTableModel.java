@@ -59,7 +59,7 @@ public class VariablesTableModel implements TableModel, Constants {
             }
         } else if (columnID.equals(LOCALS_TYPE_COLUMN_ID) || columnID.equals(WATCH_TYPE_COLUMN_ID)) {
             if (row instanceof Variable)
-                return getShort(((Variable) row).getType());
+                return ((Variable) row).getType();
             } else if ( columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
                 if (row instanceof Variable) {
                     return ((Variable) row).getValue();
@@ -153,13 +153,6 @@ public class VariablesTableModel implements TableModel, Constants {
      * @param l the listener to remove
      */
     public void removeModelListener(ModelListener l) {
-    }
-    
-    static String getShort(String c) {
-        if (c == null) return null;
-        int i = c.lastIndexOf('.');
-        if (i < 0) return c;
-        return c.substring(i + 1);
     }
     
     /*NM TEMPORARY COMMENTED OUT

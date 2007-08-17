@@ -34,7 +34,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 
 /**
@@ -46,13 +46,13 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
 public class BreakpointsEngineListener extends LazyActionsManagerListener 
 		implements PropertyChangeListener, DebuggerManagerListener {
     
-    private GdbDebuggerImpl	    debugger;
+    private GdbDebugger	    debugger;
     private Session                 session;
     private BreakpointsReader       breakpointsReader;
 
 
     public BreakpointsEngineListener(ContextProvider lookupProvider) {
-        debugger = (GdbDebuggerImpl) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         session = (Session) lookupProvider.lookupFirst(null, Session.class);
         debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, this);
         breakpointsReader = PersistenceManager.findBreakpointsReader();

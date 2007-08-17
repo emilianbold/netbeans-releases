@@ -40,6 +40,7 @@ public class GdbActionHandler implements CustomProjectActionHandler {
     
     public void execute(final ProjectActionEvent ev, InputOutput io) {
         GdbProfile profile = (GdbProfile) ev.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
+        if (profile != null) { // profile can be null if dbxgui is enabled
         String gdb = profile.getGdbPath(profile.getGdbCommand(), ev.getProfile().getRunDirectory());
         if (gdb != null) {
             executionStarted();
@@ -62,6 +63,7 @@ public class GdbActionHandler implements CustomProjectActionHandler {
                 NbBundle.getMessage(GdbActionHandler.class, "Err_NoGdbFound"))); // NOI18N
 
         }
+    }
     }
     
     public void addExecutionListener(ExecutionListener l) {

@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -51,7 +51,7 @@ public class GdbProxyEngine {
     private static final int MIN_TOKEN = 100;
     
     private PrintStream toGdb;
-    private GdbDebuggerImpl debugger;
+    private GdbDebugger debugger;
     private GdbProxy gdbProxy;
     private int nextToken = MIN_TOKEN;
     
@@ -65,7 +65,7 @@ public class GdbProxyEngine {
      * @param workingDirectory - a directory where the debugger should run
      * @param stepIntoProject - a flag to stop at first source line
      */
-    public GdbProxyEngine(GdbDebuggerImpl debugger, GdbProxy gdbProxy, List debuggerCommand,
+    public GdbProxyEngine(GdbDebugger debugger, GdbProxy gdbProxy, List debuggerCommand,
                     String[] debuggerEnvironment, String workingDirectory, String termpath) throws IOException {
         
         if (Utilities.isUnix() && termpath != null) {
@@ -123,7 +123,7 @@ public class GdbProxyEngine {
         toGdb = new PrintStream(proc.getOutputStream(), true);
         
         final Process waitProc = proc;
-        final GdbDebuggerImpl gdi = debugger;
+        final GdbDebugger gdi = debugger;
         new RequestProcessor("GdbReaperThread").post(new Runnable() { // NOI18N
             public void run() {
                 int rc;
@@ -182,6 +182,10 @@ public class GdbProxyEngine {
             gdbProxy.getLogger().logMessage(msg);
         }
         msg = stripToken(msg);
+        if (msg.length() == 0) {
+            log.warning("Empty message received from gdb");
+            return;
+        }
         
         switch (msg.charAt(0)) {
             case '^': // result-record

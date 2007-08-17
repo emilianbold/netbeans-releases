@@ -30,7 +30,7 @@ import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 
 /**
@@ -39,7 +39,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
  */
 public class StartActionProvider extends ActionsProvider {
     
-    private GdbDebuggerImpl debuggerImpl;
+    private GdbDebugger debuggerImpl;
     private ContextProvider lookupProvider;
     private static final boolean startVerbose =
                 System.getProperty("netbeans.debugger.start") != null;
@@ -49,7 +49,7 @@ public class StartActionProvider extends ActionsProvider {
      */
     public StartActionProvider(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
-        debuggerImpl = (GdbDebuggerImpl) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debuggerImpl = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         
     }
     

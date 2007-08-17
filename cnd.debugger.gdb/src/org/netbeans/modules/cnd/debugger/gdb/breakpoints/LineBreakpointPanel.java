@@ -405,7 +405,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 	    if (!file.exists()) {
 		return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_File_Name_Does_Not_Exist"); // NOI18N
 	    }
-	    // need a way to find the active GdbDebuggerImpl to do the following validation...
+	    // need a way to find the active GdbDebugger to do the following validation...
 //	} else {
 //	    if (debugger != null) {
 //		String rundir = debugger.getRunDirectory();

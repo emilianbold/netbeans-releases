@@ -33,7 +33,7 @@ public class LocalVariableImpl implements LocalVariable, Field {
     private String previousValueText;
     private String currentValueText;
     private String type;
-    private GdbDebuggerImpl debugger;
+    private GdbDebugger debugger;
     
     /**
      * Creates a new instance of LocalVariableImpl
@@ -72,7 +72,7 @@ public class LocalVariableImpl implements LocalVariable, Field {
         if (debugger == null) {
 	    // Don't set it unless its needed...
 	    DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-	    debugger = (GdbDebuggerImpl) currentEngine.lookupFirst(null, GdbDebugger.class);
+	    debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
 	}
         
         debugger.getGdbProxy().data_evaluate_expression(name + "=" + expression);

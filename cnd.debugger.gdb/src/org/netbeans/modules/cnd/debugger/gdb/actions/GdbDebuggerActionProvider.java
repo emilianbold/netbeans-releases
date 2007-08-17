@@ -23,7 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -35,12 +35,12 @@ import org.netbeans.spi.debugger.ContextProvider;
 abstract class GdbDebuggerActionProvider extends ActionsProviderSupport 
                 implements PropertyChangeListener {
     
-    private GdbDebuggerImpl debugger;
+    private GdbDebugger debugger;
     
     private volatile boolean disabled;
     
     GdbDebuggerActionProvider(ContextProvider lookupProvider) {
-        debugger = (GdbDebuggerImpl) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         this.debugger = debugger;
         debugger.addPropertyChangeListener(debugger.PROP_STATE, this);
     }
@@ -58,7 +58,7 @@ abstract class GdbDebuggerActionProvider extends ActionsProviderSupport
         return super.isEnabled(action);
     }
     
-    GdbDebuggerImpl getDebuggerImpl() {
+    GdbDebugger getDebuggerImpl() {
         return debugger;
     }
     

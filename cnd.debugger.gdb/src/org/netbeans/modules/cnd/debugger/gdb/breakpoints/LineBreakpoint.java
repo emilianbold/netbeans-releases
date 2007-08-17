@@ -21,7 +21,7 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;

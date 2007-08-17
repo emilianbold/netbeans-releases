@@ -33,7 +33,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
  * Class GdbLogger is used to log all incoming and outgoing messages
@@ -45,7 +45,7 @@ public class GdbLogger {
     private Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
     
     /** Creates a new instance of GdbLogger */
-    public GdbLogger(GdbDebuggerImpl debugger, GdbProxy gdbProxy) {
+    public GdbLogger(GdbDebugger debugger, GdbProxy gdbProxy) {
         File tmpfile;
         try {
             tmpfile = File.createTempFile("gdb-cmds", ".log"); // NOI18N

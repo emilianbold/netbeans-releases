@@ -461,7 +461,7 @@ public class GdbUtils {
                 }
             } else if (ch == rbrace && count == 0) {
                 return idx;
-            } else if (ch == '\"') {
+            } else if (ch == '\"' && last != '\\') {
                 if (inDoubleQuote) {
                     inDoubleQuote = false;
                 } else {
@@ -491,19 +491,22 @@ public class GdbUtils {
     public static int findNextComma(String s, int idx) {
         char last = ' ';
         int len = s.length() - idx;
+        char ch;
+        int i;
         boolean inDoubleQuote = false;
         boolean inSingleQuote = false;
         
         assert s != null && s.length() > 0;
         assert idx >= 0 && idx < s.length();
         
-        if (s.charAt(idx) == ',') { // skip ',' if 1st char is comma
+        ch = s.charAt(idx);
+        if (ch == ',' || ch == '{') { // skip 1st char in this case
             idx++;
             len--;
         }
         
         while (len-- > 0) {
-            char ch = s.charAt(idx++);
+            ch = s.charAt(idx++);
             if (inDoubleQuote) {
                 if (ch == '"' && last != '\\') {
                     inDoubleQuote = false;
@@ -511,6 +514,30 @@ public class GdbUtils {
             } else if (inSingleQuote) {
                 if (ch == '\'' && last != '\\') {
                     inSingleQuote = false;
+                }
+            } else if (ch == '{') {
+                i = GdbUtils.findMatchingCurly(s, idx);
+                if (i == -1) {
+                    len = 0;
+                } else {
+                    len -= (i - idx + 1);
+                    idx = i;
+                }
+            } else if (ch == '<') {
+                i = GdbUtils.findMatchingLtGt(s, idx);
+                if (i == -1) {
+                    len = 0;
+                } else {
+                    len -= (i - idx + 1);
+                    idx = i;
+                }
+            } else if (ch == '[') {
+                i = GdbUtils.findMatchingBrace(s, idx);
+                if (i == -1) {
+                    len = 0;
+                } else {
+                    len -= (i - idx + 1);
+                    idx = i;
                 }
             } else if (ch == ',') {
                 return idx;
