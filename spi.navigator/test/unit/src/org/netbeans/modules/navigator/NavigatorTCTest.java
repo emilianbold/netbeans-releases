@@ -235,7 +235,7 @@ public class NavigatorTCTest extends NbTestCase {
         assertTrue("Expected 1 provider panel, but got " + panels.size(), panels != null && panels.size() == 1);
         assertTrue("Panel class not expected", panels.get(0) instanceof ActNodeLookupProvider);
         ActNodeLookupProvider provider = (ActNodeLookupProvider)panels.get(0);
-        
+                
         // wait for selected node change to be applied, because changes are
         // reflected with little delay
         waitForChange();
@@ -244,20 +244,30 @@ public class NavigatorTCTest extends NbTestCase {
         // activated nodes of navigator TopComponent
         Node[] actNodes = navTC.getActivatedNodes();
         Node realContent = provider.getCurLookupContent();
+        String tcDisplayName = navTC.getDisplayName();
+        String providerDisplayName = provider.getDisplayName();
         
         assertNotNull("Activated nodes musn't be null", actNodes);
         assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
         assertTrue("Incorrect instance of activated node " + actNodes[0].getName(), actNodes[0] == realContent);
+        assertTrue("Expected display name starting with '" + providerDisplayName +
+                    "', but got '" + tcDisplayName + "'",
+                    (tcDisplayName != null) && tcDisplayName.startsWith(providerDisplayName));
         
         // change provider's lookup content and check again, to test infrastructure
         // ability to listen to client's lookup content change
         provider.changeLookup();
         actNodes = navTC.getActivatedNodes();
         realContent = provider.getCurLookupContent();
+        tcDisplayName = navTC.getDisplayName();
+        providerDisplayName = provider.getDisplayName();
         
         assertNotNull("Activated nodes musn't be null", actNodes);
         assertTrue("Expected 1 activated node, but got " + actNodes.length, actNodes.length == 1);
         assertTrue("Incorrect instance of activated node " + actNodes[0].getName(), actNodes[0] == realContent);
+        assertTrue("Expected display name starting with '" + providerDisplayName +
+                    "', but got '" + tcDisplayName + "'",
+                    (tcDisplayName != null) && tcDisplayName.startsWith(providerDisplayName));
         
         // cleanup
         ic.remove(actNodesHint);
@@ -454,10 +464,15 @@ public class NavigatorTCTest extends NbTestCase {
         private Node node1, node2;
         private boolean flag = false;
         private InstanceContent ic;
+        
+        private static final String FIRST_NAME = "first";
+        private static final String SECOND_NAME = "second";
                 
         public ActNodeLookupProvider () {
             this.node1 = new AbstractNode(Children.LEAF);
+            this.node1.setDisplayName(FIRST_NAME);
             this.node2 = new AbstractNode(Children.LEAF);
+            this.node2.setDisplayName(SECOND_NAME);
             
             ic = new InstanceContent();
             ic.add(node1);
@@ -484,7 +499,7 @@ public class NavigatorTCTest extends NbTestCase {
         }
     
         public String getDisplayName() {
-            return "Activated Node provider";
+            return flag ? SECOND_NAME : FIRST_NAME;
         }
 
         public String getDisplayHint() {

@@ -299,8 +299,7 @@ public final class NavigatorController implements LookupListener, ActionListener
                 navigatorTC.getPanelSelector().addActionListener(this);
             }
             // #100122: update activated nodes of Navigator TC
-            navigatorTC.setActivatedNodes(obtainActivatedNodes());
-            updateTCTitle(areNewProviders ? node : null);
+            updateActNodesAndTitle();
             
             inUpdate = false;
             return;
@@ -325,23 +324,30 @@ public final class NavigatorController implements LookupListener, ActionListener
         navigatorTC.setPanels(providers);
         navigatorTC.getPanelSelector().addActionListener(this);
         
-        navigatorTC.setActivatedNodes(obtainActivatedNodes());
-        updateTCTitle(areNewProviders ? node : null);
+        updateActNodesAndTitle();
         
         inUpdate = false;
     }
 
+    /** Updates activated nodes of Navigator TopComponent and updates its
+     * display name to reflect activated nodes */
+    private void updateActNodesAndTitle () {
+        Node[] actNodes = obtainActivatedNodes();
+        navigatorTC.setActivatedNodes(actNodes);
+        updateTCTitle(actNodes);
+    }
+
     /** Sets navigator title according to active context */
-    private void updateTCTitle (Node node) {
+    private void updateTCTitle (Node[] nodes) {
         String newTitle;
-        if (node != null) {
+        if (nodes != null && nodes.length > 0) {
             newTitle = NbBundle.getMessage(
-                    NavigatorTC.class, "FMT_Navigator", node.getDisplayName()  //NOI18N
+                    NavigatorTC.class, "FMT_Navigator", nodes[0].getDisplayName()  //NOI18N
             );
         } else {
             newTitle = NbBundle.getMessage(NavigatorTC.class, "LBL_Navigator");  //NOI18N
         }
-        navigatorTC.setName(newTitle);
+        navigatorTC.setDisplayName(newTitle);
     }
     
     /** Searches and return a list of providers which are suitable for given
@@ -547,7 +553,8 @@ public final class NavigatorController implements LookupListener, ActionListener
     private final class PanelLookupListener implements LookupListener {
         
         public void resultChanged(LookupEvent ev) {
-            navigatorTC.setActivatedNodes(obtainActivatedNodes());
+            // #103981: update also display name of Navigator TopComp
+            updateActNodesAndTitle();
         }
         
     } // end of PanelLookupListener
