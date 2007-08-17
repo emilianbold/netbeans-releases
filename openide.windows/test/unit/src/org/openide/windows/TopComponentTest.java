@@ -23,6 +23,9 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ObjectInputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -32,19 +35,22 @@ import javax.swing.text.Keymap;
 import junit.framework.TestCase;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.CookieAction;
-import org.openide.util.actions.NodeAction;
 import org.openide.util.io.NbMarshalledObject;
 
 /**
  *
  * @author mkleint
  */
-public class TopComponentTest extends TestCase {
-
+public class TopComponentTest extends NbTestCase {
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
+    
     public TopComponentTest(String testName) {
         super(testName);
     }
@@ -164,6 +170,18 @@ public class TopComponentTest extends TestCase {
             fail(log.toString());
         }
     }
+    
+    public void testCanGCTopComponentWhenItsActionMapIsHeld() throws Exception {
+        TopComponent tc = new TopComponent();
+        
+        Object map = tc.getActionMap();
+        Reference<Object> ref = new WeakReference<Object>(tc);
+        tc = null;
+        
+        assertGC("TC can disappear", ref, Collections.singleton(map));
+    }
+    
+    
     public static final class SaveAction extends CookieAction {
         static int cnt;
         

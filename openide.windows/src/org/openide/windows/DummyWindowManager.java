@@ -26,6 +26,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -277,7 +279,7 @@ final class DummyWindowManager extends WindowManager {
     }
 
     protected boolean topComponentIsOpened(TopComponent tc) {
-        return tc.isShowing();
+        return tc.isShowing() || registry().opened.contains(tc);
     }
 
     protected void topComponentActivatedNodesChanged(TopComponent tc, Node[] nodes) {
@@ -588,7 +590,7 @@ final class DummyWindowManager extends WindowManager {
     }
 
     private static final class R implements TopComponent.Registry {
-        private TopComponent active;
+        private Reference<TopComponent> active = new WeakReference<TopComponent>(null);
         private final Set<TopComponent> opened;
         private Node[] nodes;
         private PropertyChangeSupport pcs;
@@ -629,7 +631,7 @@ final class DummyWindowManager extends WindowManager {
                 pcs.firePropertyChange(PROP_OPENED, null, null);
             }
 
-            if (active == tc) {
+            if (getActive() == tc) {
                 setActive(null);
             }
         }
@@ -639,7 +641,7 @@ final class DummyWindowManager extends WindowManager {
         }
 
         synchronized void setActive(TopComponent tc) {
-            active = tc;
+            active = new WeakReference<TopComponent>(tc);
 
             Node[] _nodes = (tc == null) ? new Node[0] : tc.getActivatedNodes();
 
@@ -658,7 +660,7 @@ final class DummyWindowManager extends WindowManager {
         }
 
         synchronized void setActivatedNodes(TopComponent tc, Node[] _nodes) {
-            if (tc == active) {
+            if (tc == getActive()) {
                 if (_nodes != null) {
                     nodes = _nodes;
 
@@ -674,7 +676,7 @@ final class DummyWindowManager extends WindowManager {
         }
 
         public TopComponent getActivated() {
-            return active;
+            return getActive();
         }
 
         public Node[] getActivatedNodes() {
@@ -682,11 +684,15 @@ final class DummyWindowManager extends WindowManager {
         }
 
         public synchronized Node[] getCurrentNodes() {
-            if (active != null) {
-                return active.getActivatedNodes();
+            if (getActive() != null) {
+                return getActive().getActivatedNodes();
             } else {
                 return null;
             }
+        }
+
+        private TopComponent getActive() {
+            return active.get();
         }
     }
 }

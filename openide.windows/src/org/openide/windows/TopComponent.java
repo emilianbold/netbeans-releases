@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
@@ -207,28 +208,18 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             inner = new ActionMap();
         }
         
-        javax.swing.ActionMap am = new DelegateActionMap(this, inner);
+        DelegateActionMap am = new DelegateActionMap(this, inner);
 
         if (this instanceof TopComponent.Cloneable) {
             am.put(
-                "cloneWindow",
-                new javax.swing.AbstractAction() { // NOI18N
-                    public void actionPerformed(ActionEvent evt) {
-                        TopComponent cloned = ((TopComponent.Cloneable) TopComponent.this).cloneComponent();
-                        cloned.open();
-                        cloned.requestActive();
-                    }
-                }
+                "cloneWindow", // NOI18N
+                new CloneWindowAction(am)
             );
         }
 
         am.put(
-            "closeWindow",
-            new javax.swing.AbstractAction() { // NOI18N
-                public void actionPerformed(ActionEvent evt) {
-                    TopComponent.this.close();
-                }
-            }
+            "closeWindow", // NOI18N
+            new CloseWindowAction(am)
         );
 
         setActionMap(am);
@@ -1533,6 +1524,38 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
                 LOG.fine("setting nodes done for " + TopComponent.this + " to " + nodes); // NOI18N
             }
         }
-    }
-     // end of SynchronizeNodes
+    } // end of SynchronizeNodes
+
+    private static class CloneWindowAction extends AbstractAction {
+        DelegateActionMap am;
+
+        public CloneWindowAction(DelegateActionMap am) {
+            this.am = am;
+        }
+        
+
+        public void actionPerformed(ActionEvent evt) {
+            TopComponent.Cloneable self = (TopComponent.Cloneable) am.getComponent();
+            if (self != null) {
+                TopComponent cloned = self.cloneComponent();
+                cloned.open();
+                cloned.requestActive();
+            }
+        }
+    } // end of CloneWindowAction
+
+    private static class CloseWindowAction extends AbstractAction {
+        DelegateActionMap am;
+
+        public CloseWindowAction(DelegateActionMap am) {
+            this.am = am;
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            TopComponent self = (TopComponent) am.getComponent();
+            if (self != null) {
+                self.close();
+            }
+        }
+    } // end of CloseWindowAction
 }

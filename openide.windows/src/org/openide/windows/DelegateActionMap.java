@@ -18,6 +18,8 @@
  */
 package org.openide.windows;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
@@ -33,15 +35,15 @@ import javax.swing.JComponent;
  * @author Peter Zavadsky
  */
 final class DelegateActionMap extends ActionMap {
-    private JComponent component;
+    private Reference<JComponent> component;
     private ActionMap delegate;
 
     public DelegateActionMap(JComponent c) {
-        this.component = c;
+        setComponent(c);
     }
 
     public DelegateActionMap(TopComponent c, ActionMap delegate) {
-        this.component = c;
+        setComponent(c);
         this.delegate = delegate;
     }
 
@@ -50,7 +52,18 @@ final class DelegateActionMap extends ActionMap {
     }
 
     public Action get(Object key) {
-        javax.swing.ActionMap m = (delegate == null) ? component.getActionMap() : delegate;
+        javax.swing.ActionMap m;
+
+        if (delegate == null) {
+            JComponent comp = getComponent();
+            if (comp == null) {
+                m = null;
+            } else {
+                m = comp.getActionMap();
+            }
+        } else {
+            m = delegate;
+        }
 
         if (m != null) {
             Action a = m.get(key);
@@ -63,7 +76,7 @@ final class DelegateActionMap extends ActionMap {
         java.awt.Component owner = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
         Action found = null;
 
-        while ((owner != null) && (owner != component)) {
+        while ((owner != null) && (owner != getComponent())) {
             if ((found == null) && (owner instanceof JComponent)) {
                 m = ((JComponent) owner).getActionMap();
 
@@ -75,7 +88,7 @@ final class DelegateActionMap extends ActionMap {
             owner = owner.getParent();
         }
 
-        return (owner == component) ? found : null;
+        return (owner == getComponent()) ? found : null;
     }
 
     public Object[] allKeys() {
@@ -89,7 +102,19 @@ final class DelegateActionMap extends ActionMap {
     private Object[] keys(boolean all) {
         java.util.Set<Object> keys = new java.util.HashSet<Object>();
 
-        javax.swing.ActionMap m = (delegate == null) ? component.getActionMap() : delegate;
+        
+        javax.swing.ActionMap m;
+
+        if (delegate == null) {
+            JComponent comp = getComponent();
+            if (comp == null) {
+                m = null;
+            } else {
+                m = comp.getActionMap();
+            }
+        } else {
+            m = delegate;
+        }
 
         if (m != null) {
             java.util.List<Object> l;
@@ -138,6 +163,14 @@ final class DelegateActionMap extends ActionMap {
     }
 
     public String toString() {
-        return super.toString() + " for " + this.component;
+        return super.toString() + " for " + this.getComponent();
+    }
+
+    JComponent getComponent() {
+        return component.get();
+    }
+
+    private void setComponent(JComponent component) {
+        this.component = new WeakReference<JComponent>(component);
     }
 }

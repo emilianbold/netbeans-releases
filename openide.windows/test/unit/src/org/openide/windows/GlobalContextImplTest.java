@@ -19,9 +19,15 @@
 
 package org.openide.windows;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -35,11 +41,9 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class GlobalContextImplTest extends NbTestCase
 implements org.openide.util.LookupListener {
+    private static Object KEY = new Object();
 
-    private javax.swing.Action sampleAction = new javax.swing.AbstractAction () {
-        public void actionPerformed (java.awt.event.ActionEvent ev) {
-        }
-    };
+    private javax.swing.Action sampleAction = new AbstractActionImpl ();
     private TopComponent tc;
     private Lookup lookup;
     private Lookup.Result result;
@@ -50,9 +54,15 @@ implements org.openide.util.LookupListener {
         super(testName);
     }
     
+    public static Test suite() {
+        //return new NbTestSuite(GlobalContextImplTest.class);
+        return new GlobalContextImplTest("testRequestVisibleBlinksTheActionMapForAWhile");
+    }
+    
+    @Override
     protected void setUp () throws Exception {
         tc = new TopComponent ();
-        tc.getActionMap ().put (this, sampleAction);
+        tc.getActionMap ().put (KEY, sampleAction);
         tc.requestActive();
         
         
@@ -70,10 +80,10 @@ implements org.openide.util.LookupListener {
     }
     
     private void assertActionMap () {
-        ActionMap map = (ActionMap)lookup.lookup (ActionMap.class);
+        ActionMap map = lookup.lookup(ActionMap.class);
         assertNotNull ("Map has to be there", map);
         
-        javax.swing.Action action = map.get (this);
+        javax.swing.Action action = map.get (KEY);
         assertEquals ("It is really our action", sampleAction, action);
     }
         
@@ -143,16 +153,25 @@ implements org.openide.util.LookupListener {
 
         myListener.assertNode ();
 
-        ActionMap m1 = (ActionMap)myListener.maps.get (0);
-        ActionMap m2 = (ActionMap)myListener.maps.get (1);
+        ActionMap m1 = myListener.maps.get(0);
+        ActionMap m2 = myListener.maps.get(1);
         
-        assertNull ("Our action is not in first map", m1.get (this));
-        assertEquals ("Our action is in second map", sampleAction, m2.get (this));
+        assertNull ("Our action is not in first map", m1.get (KEY));
+        assertEquals ("Our action is in second map", sampleAction, m2.get (KEY));
 
         assertActionMap ();
         
         res.removeLookupListener(myListener);
+
+        my.close();
         
+     //   new TopComponent ().open();
+        
+        Reference<Object> ref = new WeakReference<Object>(my);
+        my = null;
+        tc = null;
+        
+        assertGC("Can be GCed", ref);
     }
     
     public void testComponentChangeActionMapIsPropagatedToGlobalLookup() throws Exception {
@@ -167,7 +186,7 @@ implements org.openide.util.LookupListener {
         
         
         ActionMap myMap = new ActionMap();
-        myMap.put (this, sampleAction);
+        myMap.put (KEY, sampleAction);
         assertEquals("test3", 0, cnt);
 
         tc.requestActive();
@@ -188,6 +207,15 @@ implements org.openide.util.LookupListener {
     
     public void resultChanged(org.openide.util.LookupEvent ev) {
         cnt++;
+    }
+
+    private static class AbstractActionImpl extends AbstractAction {
+
+        private AbstractActionImpl() {
+        }
+
+        public void actionPerformed(java.awt.event.ActionEvent ev) {
+        }
     }
 
 }

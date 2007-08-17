@@ -25,6 +25,8 @@ import java.awt.Image;
 import java.awt.Window;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +64,7 @@ public abstract class WindowManager extends Object implements Serializable {
     static final long serialVersionUID = -4133918059009277602L;
 
     /** The top component which is currently active */
-    private TopComponent activeComponent;
+    private Reference<TopComponent> activeComponent = new WeakReference<TopComponent>(null);
 
     /** the registry */
     private TopComponent.Registry registry;
@@ -235,33 +237,37 @@ public abstract class WindowManager extends Object implements Serializable {
     */
     protected void activateComponent(TopComponent tc) {
         // check
-        if (activeComponent == tc) {
+        if (getActiveComponent() == tc) {
             return;
         }
 
+        TopComponent old = getActiveComponent();
         // deactivate old if possible
-        if (activeComponent != null) {
+        if (old != null) {
             try {
-                activeComponent.componentDeactivated();
+                old.componentDeactivated();
             } catch (RuntimeException re) {
                 IllegalStateException ise = new IllegalStateException(
-                        "[Winsys] TopComponent " + activeComponent // NOI18N
+                        "[Winsys] TopComponent " + old // NOI18N
                          +" throws runtime exception from its componentDeactivated() method. Repair it!"
+                    
                     ); // NOI18N
                 ise.initCause(re);
                 Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
             }
         }
 
-        activeComponent = tc;
+        setActiveComponent(tc);
+        TopComponent newTC = getActiveComponent();
 
-        if (activeComponent != null) {
+        if (newTC != null) {
             try {
-                activeComponent.componentActivated();
+                newTC.componentActivated();
             } catch (RuntimeException re) {
                 IllegalStateException ise = new IllegalStateException(
-                        "[Winsys] TopComponent " + activeComponent // NOI18N
+                        "[Winsys] TopComponent " + newTC // NOI18N
                          +" throws runtime exception from its componentActivated() method. Repair it!"
+                    
                     ); // NOI18N
                 ise.initCause(re);
                 Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
@@ -306,7 +312,7 @@ public abstract class WindowManager extends Object implements Serializable {
             Logger.getLogger(WindowManager.class.getName()).log(Level.WARNING, null, ise);
         }
 
-        if (tc == activeComponent) {
+        if (tc == getActiveComponent()) {
             activateComponent(null);
         }
     }
@@ -571,6 +577,14 @@ public abstract class WindowManager extends Object implements Serializable {
      */
     public boolean isEditorMode( Mode mode ) {
         return false;
+    }
+
+    private TopComponent getActiveComponent() {
+        return activeComponent.get();
+    }
+
+    private void setActiveComponent(TopComponent activeComponent) {
+        this.activeComponent = new WeakReference<TopComponent>(activeComponent);
     }
     
     /** A manager that handles operations on top components.
