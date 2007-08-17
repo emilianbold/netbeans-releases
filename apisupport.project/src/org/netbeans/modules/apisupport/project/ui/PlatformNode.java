@@ -152,7 +152,7 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
         return new PlatformNode(pp);
     }
     
-    private static class PlatformContentChildren extends Children.Keys {
+    private static class PlatformContentChildren extends Children.Keys<SourceGroup> {
         
         PlatformContentChildren() {
         }
@@ -162,22 +162,21 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
         }
         
         protected void removeNotify() {
-            this.setKeys(Collections.EMPTY_SET);
+            this.setKeys(Collections.<SourceGroup>emptySet());
         }
         
-        protected Node[] createNodes(Object key) {
-            SourceGroup sg = (SourceGroup) key;
+        protected Node[] createNodes(SourceGroup sg) {
             return new Node[] { ActionFilterNode.create(PackageView.createPackageView(sg)) };
         }
         
-        private List getKeys() {
+        private List<SourceGroup> getKeys() {
             JavaPlatform platform = ((PlatformNode)this.getNode()).pp.getPlatform();
             if (platform == null) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
             //Todo: Should listen on returned classpath, but now the bootstrap libraries are read only
             FileObject[] roots = platform.getBootstrapLibraries().getRoots();
-            List result = new ArrayList(roots.length);
+            List<SourceGroup> result = new ArrayList<SourceGroup>(roots.length);
             for (int i=0; i<roots.length; i++) {
                 try {
                     FileObject file;
@@ -286,13 +285,13 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
         }
         
         private static URL[]  getJavadocRoots(JavaPlatform platform) {
-            Set result = new HashSet();
+            Set<URL> result = new HashSet<URL>();
             List<ClassPath.Entry> l = platform.getBootstrapLibraries().entries();
             for (Iterator it = l.iterator(); it.hasNext();) {
                 ClassPath.Entry e = (ClassPath.Entry) it.next();
                 result.addAll(Arrays.asList(JavadocForBinaryQuery.findJavadoc(e.getURL()).getRoots()));
             }
-            return (URL[]) result.toArray(new URL[result.size()]);
+            return result.toArray(new URL[result.size()]);
         }
         
     }

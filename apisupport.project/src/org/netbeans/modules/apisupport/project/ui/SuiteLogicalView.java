@@ -112,8 +112,8 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         }
         
         /** Package private for unit test only. */
-        Set getProjectFiles() {
-            Set files = new HashSet();
+        Set<FileObject> getProjectFiles() {
+            Set<FileObject> files = new HashSet<FileObject>();
             Enumeration en = suite.getProjectDirectory().getChildren(false);
             while (en.hasMoreElements()) {
                 FileObject child = (FileObject) en.nextElement();

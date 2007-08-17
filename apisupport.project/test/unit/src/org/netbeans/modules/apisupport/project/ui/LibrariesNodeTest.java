@@ -37,7 +37,7 @@ public class LibrariesNodeTest extends TestBase {
     
     public void testLibrariesNodeListening() throws Exception {
         NbModuleProject p = generateStandaloneModule("module");
-        LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
+        LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
         Node root = lvp.createLogicalView();
         Node libraries = root.getChildren().findChild(LibrariesNode.LIBRARIES_NAME);

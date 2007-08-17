@@ -138,7 +138,7 @@ public class ModulesNodeFactory implements NodeFactory {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         // #70112: sort them.
-                        SortedSet<NbModuleProject> subModules = new TreeSet(Util.projectDisplayNameComparator());
+                        SortedSet<NbModuleProject> subModules = new TreeSet<NbModuleProject>(Util.projectDisplayNameComparator());
                         subModules.addAll(SuiteUtils.getSubProjects(suite));
                         setKeys(subModules);
                     }
@@ -147,7 +147,7 @@ public class ModulesNodeFactory implements NodeFactory {
             
             protected void removeNotify() {
                 suite.getLookup().lookup(SubprojectProvider.class).removeChangeListener(this);
-                setKeys(Collections.EMPTY_SET);
+                setKeys(Collections.<NbModuleProject>emptySet());
             }
             
             protected Node[] createNodes(NbModuleProject p) {
@@ -178,7 +178,7 @@ public class ModulesNodeFactory implements NodeFactory {
             if (project != null) {
                 if (!SuiteUtils.contains(suite, project)) {
                     try {
-                        SuiteUtils.addModule(suite, (NbModuleProject) project);
+                        SuiteUtils.addModule(suite, project);
                         ProjectManager.getDefault().saveProject(suite);
                     } catch (IOException ex) {
                         ErrorManager.getDefault().notify(ex);
@@ -277,7 +277,7 @@ public class ModulesNodeFactory implements NodeFactory {
         protected void performAction(Node[] activatedNodes) {
             for (int i = 0; i < activatedNodes.length; i++) {
                 final NbModuleProject suiteComponent =
-                        (NbModuleProject) activatedNodes[i].getLookup().lookup(NbModuleProject.class);
+                        activatedNodes[i].getLookup().lookup(NbModuleProject.class);
                 assert suiteComponent != null : "NbModuleProject in lookup"; // NOI18N
                 try {
                     NbModuleProject[] modules = SuiteUtils.getDependentModules(suiteComponent);
@@ -327,7 +327,7 @@ public class ModulesNodeFactory implements NodeFactory {
         protected void performAction(Node[] activatedNodes) {
             final Project[] projects = new Project[activatedNodes.length];
             for (int i = 0; i < activatedNodes.length; i++) {
-                Project project = (Project) activatedNodes[i].getLookup().lookup(Project.class);
+                Project project = activatedNodes[i].getLookup().lookup(Project.class);
                 projects[i] = project;
             }
             RequestProcessor.getDefault().post(new Runnable() {

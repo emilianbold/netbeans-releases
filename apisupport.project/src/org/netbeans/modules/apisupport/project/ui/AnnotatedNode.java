@@ -88,7 +88,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         Image annotatedImg = img;
         if (files != null && files.iterator().hasNext()) {
             try {
-                FileObject fo = (FileObject) files.iterator().next();
+                FileObject fo = files.iterator().next();
                 annotatedImg = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);

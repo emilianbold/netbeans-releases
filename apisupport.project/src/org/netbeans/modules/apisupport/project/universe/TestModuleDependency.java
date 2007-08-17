@@ -40,9 +40,9 @@ public class TestModuleDependency implements Comparable {
     // compilation dependency 
     private boolean compile;
     
-    public static final Comparator CNB_COMPARATOR = new Comparator() {
-        public int compare(Object tmd1,Object tmd2) {
-            return ((TestModuleDependency)tmd1).module.getCodeNameBase().compareTo(((TestModuleDependency)tmd2).module.getCodeNameBase());
+    public static final Comparator<TestModuleDependency> CNB_COMPARATOR = new Comparator<TestModuleDependency>() {
+        public int compare(TestModuleDependency tmd1, TestModuleDependency tmd2) {
+            return (tmd1).module.getCodeNameBase().compareTo((tmd2).module.getCodeNameBase());
         }
     };
     

@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -67,7 +66,7 @@ import org.openide.util.lookup.Lookups;
 public final class SuiteOperations implements DeleteOperationImplementation,
         MoveOperationImplementation {
     
-    private static final Map<String,Set<NbModuleProject>> TEMPORARY_CACHE = new HashMap();
+    private static final Map<String,Set<NbModuleProject>> TEMPORARY_CACHE = new HashMap<String,Set<NbModuleProject>>();
     
     private final SuiteProject suite;
     private final FileObject projectDir;
@@ -82,7 +81,7 @@ public final class SuiteOperations implements DeleteOperationImplementation,
         ActionUtils.runTarget(buildXML, new String[] { ActionProvider.COMMAND_CLEAN }, null).waitFinished();
         
         // remove all suite components from the suite - i.e. make them standalone
-        SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider spp = suite.getLookup().lookup(SubprojectProvider.class);
         for (Iterator it = spp.getSubprojects().iterator(); it.hasNext();) {
             NbModuleProject suiteComponent = (NbModuleProject) it.next();
             SuiteUtils.removeModuleFromSuite(suiteComponent);
@@ -111,9 +110,9 @@ public final class SuiteOperations implements DeleteOperationImplementation,
             suite.getHelper().notifyDeleted();
         } else { // called on the new project
             String name = ProjectUtils.getInformation(suite).getName();
-            Set<Project> subprojects = (Set) TEMPORARY_CACHE.remove(name);
+            Set<NbModuleProject> subprojects = TEMPORARY_CACHE.remove(name);
             if (subprojects != null) {
-                Set toOpen = new HashSet();
+                Set<Project> toOpen = new HashSet<Project>();
                 for (Iterator it = subprojects.iterator(); it.hasNext();) {
                     NbModuleProject originalComp = (NbModuleProject) it.next();
                     
@@ -131,7 +130,7 @@ public final class SuiteOperations implements DeleteOperationImplementation,
                         SuiteUtils.addModule(suite, originalComp);
                     }
                 }
-                OpenProjects.getDefault().open((Project[]) toOpen.toArray(new Project[toOpen.size()]), false);
+                OpenProjects.getDefault().open(toOpen.toArray(new Project[toOpen.size()]), false);
             }
             boolean isRename = original.getProjectDirectory().getParent().equals(
                     suite.getProjectDirectory().getParent());
@@ -146,7 +145,7 @@ public final class SuiteOperations implements DeleteOperationImplementation,
     }
     
     public List<FileObject> getMetadataFiles() {
-        List<FileObject> files = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
         addFile(GeneratedFilesHelper.BUILD_XML_PATH, files);
         addFile("nbproject", files); // NOI18N
         addFile(".cvsignore", files); // NOI18N
@@ -154,7 +153,7 @@ public final class SuiteOperations implements DeleteOperationImplementation,
     }
     
     public List<FileObject> getDataFiles() {
-        List<FileObject> files = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
         addFile(suite.getEvaluator().getProperty(BrandingSupport.BRANDING_DIR_PROPERTY), files);
         return files;
     }
@@ -171,7 +170,7 @@ public final class SuiteOperations implements DeleteOperationImplementation,
                 suite.getEvaluator(), SuiteUtils.getSubProjects(suite));
         final BasicBrandingModel branding = sp.getBrandingModel();
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Object>() {
                 public Object run() throws IOException {
                     if (branding.isBrandingEnabled()) { // application
                         branding.setTitle(nueName);
@@ -271,7 +270,7 @@ public final class SuiteOperations implements DeleteOperationImplementation,
     }
     
     private static void close(final Project prj) {
-        Mutex.EVENT.readAccess(new Mutex.Action() {
+        Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
             public Object run() {
                 LifecycleManager.getDefault().saveAll();
                 

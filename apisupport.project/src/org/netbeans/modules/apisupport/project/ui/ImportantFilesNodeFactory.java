@@ -159,13 +159,13 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     /**
      * Actual list of important files.
      */
-    private static final class ImportantFilesChildren extends Children.Keys {
+    private static final class ImportantFilesChildren extends Children.Keys<Object> {
         
-        private List visibleFiles = new ArrayList();
+        private List<Object> visibleFiles = new ArrayList<Object>();
         private FileChangeListener fcl;
         
         /** Abstract location to display name. */
-        private static final java.util.Map<String,String> FILES = new LinkedHashMap();
+        private static final java.util.Map<String,String> FILES = new LinkedHashMap<String,String>();
         static {
             FILES.put("${manifest.mf}", NbBundle.getMessage(ModuleLogicalView.class, "LBL_module_manifest"));
             FILES.put("${javadoc.arch}", NbBundle.getMessage(ModuleLogicalView.class, "LBL_arch_desc"));
@@ -194,7 +194,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
         
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<String>emptyList());
             removeListeners();
             super.removeNotify();
         }
@@ -206,7 +206,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 FileObject file = project.getHelper().resolveFileObject(locEval);
                 try {
                     Node orig = DataObject.find(file).getNodeDelegate();
-                    return new Node[] {new SpecialFileNode(orig, (String) FILES.get(loc))};
+                    return new Node[] {new SpecialFileNode(orig, FILES.get(loc))};
                 } catch (DataObjectNotFoundException e) {
                     throw new AssertionError(e);
                 }
@@ -220,8 +220,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
         
         private void refreshKeys() {
-            Set<FileObject> files = new HashSet();
-            List newVisibleFiles = new ArrayList();
+            Set<FileObject> files = new HashSet<FileObject>();
+            List<Object> newVisibleFiles = new ArrayList<Object>();
             LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
             FileObject layerFile = handle.getLayerFile();
             if (layerFile != null) {
@@ -319,9 +319,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         
         public String getHtmlDisplayName() {
             String result = null;
-            DataObject dob = (DataObject) getLookup().lookup(DataObject.class);
+            DataObject dob = getLookup().lookup(DataObject.class);
             if (dob != null) {
-                Set files = dob.files();
+                Set<FileObject> files = dob.files();
                 result = computeAnnotatedHtmlDisplayName(getDisplayName(), files);
             }
             return result;
@@ -334,7 +334,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
      * result; <code>null</code> otherwise.
      */
     private static String computeAnnotatedHtmlDisplayName(
-            final String htmlDisplayName, final Set files) {
+            final String htmlDisplayName, final Set<? extends FileObject> files) {
         
         String result = null;
         if (files != null && files.iterator().hasNext()) {
@@ -363,11 +363,11 @@ public class ImportantFilesNodeFactory implements NodeFactory {
      */
     private static final class SuiteImportantFilesChildren extends Children.Keys<String> {
         
-        private List<String> visibleFiles = new ArrayList();
+        private List<String> visibleFiles = new ArrayList<String>();
         private FileChangeListener fcl;
         
         /** Abstract location to display name. */
-        private static final java.util.Map<String,String> FILES = new LinkedHashMap();
+        private static final java.util.Map<String,String> FILES = new LinkedHashMap<String,String>();
         static {
             FILES.put("master.jnlp", NbBundle.getMessage(SuiteLogicalView.class,"LBL_jnlp_master"));
             FILES.put("build.xml", NbBundle.getMessage(SuiteLogicalView.class,"LBL_build.xml"));
@@ -390,7 +390,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
         
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<String>emptySet());
             removeListeners();
             super.removeNotify();
         }
@@ -401,16 +401,16 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             
             try {
                 Node orig = DataObject.find(file).getNodeDelegate();
-                return new Node[] {new SpecialFileNode(orig, (String) FILES.get(loc))};
+                return new Node[] {new SpecialFileNode(orig, FILES.get(loc))};
             } catch (DataObjectNotFoundException e) {
                 throw new AssertionError(e);
             }
         }
         
         private void refreshKeys() {
-            List<String> newVisibleFiles = new ArrayList();
+            List<String> newVisibleFiles = new ArrayList<String>();
             Iterator it = FILES.keySet().iterator();
-            Set files = new HashSet();
+            Set<FileObject> files = new HashSet<FileObject>();
             while (it.hasNext()) {
                 String loc = (String) it.next();
                 String locEval = project.getEvaluator().evaluate(loc);

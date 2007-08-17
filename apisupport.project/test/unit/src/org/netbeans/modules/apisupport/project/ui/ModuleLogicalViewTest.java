@@ -46,7 +46,7 @@ public class ModuleLogicalViewTest extends TestBase {
     public void testFindPath() throws Exception {
         Project freeform = ProjectManager.getDefault().findProject(FileUtil.toFileObject(file("ant/freeform")));
         assertNotNull("have project in ant/freeform", freeform);
-        LogicalViewProvider lvp = (LogicalViewProvider) freeform.getLookup().lookup(LogicalViewProvider.class);
+        LogicalViewProvider lvp = freeform.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
         assertNotNull("found arch.xml", find(lvp, "ant/freeform/arch.xml"));
         assertNotNull("found FreeformProject.java", find(lvp, "ant/freeform/src/org/netbeans/modules/ant/freeform/FreeformProject.java"));
@@ -58,7 +58,7 @@ public class ModuleLogicalViewTest extends TestBase {
     
     public void testImportantFilesListening() throws Exception {
         Project p = generateStandaloneModule("module");
-        LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
+        LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
         Node root = lvp.createLogicalView();
         Node iFiles = root.getChildren().findChild(ImportantFilesNodeFactory.IMPORTANT_FILES_NAME);
@@ -99,7 +99,7 @@ public class ModuleLogicalViewTest extends TestBase {
     
     public void testNewlyCreatedSourceRootsDisplayed() throws Exception { // #72476
         Project p = generateStandaloneModule("module");
-        LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
+        LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
         Node root = lvp.createLogicalView();
         p.getProjectDirectory().getFileObject("test").delete();
         Children ch = root.getChildren();
@@ -117,8 +117,8 @@ public class ModuleLogicalViewTest extends TestBase {
         assertEquals(Arrays.asList(new String[] {"${src.dir}", "javahelp", "important.files", "libraries"}), findKids(ch));
     }
     
-    private static List/*<String>*/ findKids(Children ch) {
-        List l = new ArrayList();
+    private static List<String> findKids(Children ch) {
+        List<String> l = new ArrayList<String>();
         Node[] kids = ch.getNodes(true);
         for (int i = 0; i < kids.length; i++) {
             l.add(kids[i].getName());

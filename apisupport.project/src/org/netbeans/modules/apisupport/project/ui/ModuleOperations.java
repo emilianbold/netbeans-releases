@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 public final class ModuleOperations implements DeleteOperationImplementation,
         MoveOperationImplementation, CopyOperationImplementation {
     
-    private static final Map<String, SuiteProject> TEMPORARY_CACHE = new HashMap();
+    private static final Map<String, SuiteProject> TEMPORARY_CACHE = new HashMap<String, SuiteProject>();
     
     private final NbModuleProject project;
     private final FileObject projectDir;
@@ -100,7 +100,7 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         if (original == null) { // called on the original project
             project.getHelper().notifyDeleted();
         } else { // called on the new project
-            SuiteProject suite = (SuiteProject) TEMPORARY_CACHE.remove(project.getCodeNameBase());
+            SuiteProject suite = TEMPORARY_CACHE.remove(project.getCodeNameBase());
             if (suite != null) {
                 SuiteUtils.addModule(suite, project);
             }
@@ -126,11 +126,11 @@ public final class ModuleOperations implements DeleteOperationImplementation,
     
     public void notifyCopied(Project original, File originalPath, String nueName) throws IOException {
         if (original == null) { // called on the original project
-            SuiteProject suite = (SuiteProject) TEMPORARY_CACHE.remove(project.getCodeNameBase());
+            SuiteProject suite = TEMPORARY_CACHE.remove(project.getCodeNameBase());
             if (suite != null) {
                 // Let's readd the original suite component to its suite. Look
                 // into notifyCopying() commens for more details.
-                SuiteUtils.addModule(suite, (NbModuleProject) project);
+                SuiteUtils.addModule(suite, project);
             }
         } else {
             // Adjust display name so the copy can be recognized from the original.
@@ -139,7 +139,7 @@ public final class ModuleOperations implements DeleteOperationImplementation,
     }
     
     public List<FileObject> getMetadataFiles() {
-        List<FileObject> files = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
         addFile(GeneratedFilesHelper.BUILD_XML_PATH, files);
         addFile("manifest.mf", files); // NOI18N
         addFile("nbproject", files); // NOI18N
@@ -148,7 +148,7 @@ public final class ModuleOperations implements DeleteOperationImplementation,
     }
     
     public List<FileObject> getDataFiles() {
-        List<FileObject> files = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
         
         Sources srcs = ProjectUtils.getSources(project);
         SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -178,7 +178,7 @@ public final class ModuleOperations implements DeleteOperationImplementation,
     
     private void setDisplayName(String nueName) throws IOException {
         LocalizedBundleInfo.Provider lbiProvider =
-                (LocalizedBundleInfo.Provider) project.getLookup().lookup(LocalizedBundleInfo.Provider.class);
+                project.getLookup().lookup(LocalizedBundleInfo.Provider.class);
         if (lbiProvider != null) {
             LocalizedBundleInfo info = lbiProvider.getLocalizedBundleInfo();
             if (info != null) {

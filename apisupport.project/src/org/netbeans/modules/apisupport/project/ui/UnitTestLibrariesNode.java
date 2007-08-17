@@ -134,7 +134,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
     }
     
     
-    private static final class LibrariesChildren extends Children.Keys implements AntProjectListener {
+    private static final class LibrariesChildren extends Children.Keys<Object> implements AntProjectListener {
         
         private static final String JUNIT = "junit"; //NOI18N
         
@@ -164,17 +164,17 @@ final class UnitTestLibrariesNode extends AbstractNode {
         }
         
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.emptySet());
             project.getHelper().removeAntProjectListener(this);
             super.removeNotify();
         }
         
         private void refreshKeys() {
             try {
-                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
+                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Object>() {
                     public Object run() throws Exception {
                         ProjectXMLManager pxm = new ProjectXMLManager(project);
-                        List keys = new ArrayList();
+                        List<Object> keys = new ArrayList<Object>();
                         if(isModuleInModuleList(JUNIT_CNB)) {
                             keys.add(JUNIT);
                         }
@@ -312,14 +312,14 @@ final class UnitTestLibrariesNode extends AbstractNode {
         public Action[] getActions(boolean context) {
             
             if (actions == null) {
-                Set result = new LinkedHashSet();
+                Set<Action> result = new LinkedHashSet<Action>();
                 // Open project action
                 result.add(SystemAction.get(LibrariesNode.OpenProjectAction.class));
                 // Edit dependency action
                 result.add(new EditTestDependencyAction(dep, project));
                 // Remove dependency
                 result.add(LibrariesChildren.REMOVE_DEPENDENCY_ACTION);
-                actions = (Action[]) result.toArray(new Action[result.size()]);
+                actions = result.toArray(new Action[result.size()]);
             }
             return actions;
         }
@@ -349,7 +349,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         
         public Action[] getActions(boolean context) {
             if (actions == null) {
-                Set result = new LinkedHashSet();
+                Set<Action> result = new LinkedHashSet<Action>();
                 result.add(new EditTestDependencyAction(dep, project));
                 Action[] superActions = super.getActions(false);
                 for (int i = 0; i < superActions.length; i++) {
@@ -358,7 +358,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                     }
                 }
                 result.add(LibrariesChildren.REMOVE_DEPENDENCY_ACTION);
-                actions = (Action[]) result.toArray(new Action[result.size()]);
+                actions = result.toArray(new Action[result.size()]);
             }
             return actions;
         }
@@ -423,19 +423,18 @@ final class UnitTestLibrariesNode extends AbstractNode {
     }
     
     
-    
     static final class RemoveDependencyAction extends CookieAction {
         
         protected void performAction(Node[] activatedNodes) {
-            Map/*<NbModuleProject, Set<ModuleDependency>>*/ map = new HashMap();
+            Map<NbModuleProject, Set<TestModuleDependency>> map = new HashMap<NbModuleProject, Set<TestModuleDependency>>();
             for (int i = 0; i < activatedNodes.length; i++) {
-                TestModuleDependency dep = (TestModuleDependency) activatedNodes[i].getLookup().lookup(TestModuleDependency.class);
+                TestModuleDependency dep = activatedNodes[i].getLookup().lookup(TestModuleDependency.class);
                 assert dep != null;
-                NbModuleProject project = (NbModuleProject) activatedNodes[i].getLookup().lookup(NbModuleProject.class);
+                NbModuleProject project = activatedNodes[i].getLookup().lookup(NbModuleProject.class);
                 assert project != null;
-                Set deps = (Set) map.get(project);
+                Set<TestModuleDependency> deps = map.get(project);
                 if (deps == null) {
-                    deps = new HashSet();
+                    deps = new HashSet<TestModuleDependency>();
                     map.put(project, deps);
                 }
                 deps.add(dep);
