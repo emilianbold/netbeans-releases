@@ -25,10 +25,14 @@ import org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationContro
 import org.netbeans.modules.vmd.api.io.serialization.PropertyElement;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSerializationController;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGAnimatorWrapperCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
+import org.netbeans.modules.vmd.midpnb.components.displayables.FileBrowserCD;
+import org.netbeans.modules.vmd.midpnb.components.displayables.PIMBrowserCD;
+import org.netbeans.modules.vmd.midpnb.components.displayables.SMSComposerCD;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +41,10 @@ import java.util.Collection;
  * @author David Kaspar
  */
 public class MidpCustomDocumentSerializationController extends DocumentSerializationController {
+
+    private static TypeID TYPEID_OLD_FILE_BROWSER = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.FileBrowser"); // NOI18N
+    private static TypeID TYPEID_OLD_PIM_BROWSER = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.PIMBrowser"); // NOI18N
+    private static TypeID TYPEID_OLD_SMS_COMPOSER = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.SMSComposer"); // NOI18N
 
     public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, Collection<ComponentElement> componentElements) {
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! MidpDocumentSerializationController.VERSION_1.equals (documentVersion))
@@ -47,6 +55,15 @@ public class MidpCustomDocumentSerializationController extends DocumentSerializa
             if (SVGAnimatorWrapperCD.TYPEID.equals (element.getTypeID ())) {
                 elementsToRemove.add (element);
                 elementsToAdd.add (ComponentElement.create (element.getParentUID (), element.getUID (), SVGPlayerCD.TYPEID, element.getNode ()));
+            } else if (TYPEID_OLD_FILE_BROWSER.equals (element.getTypeID ())) {
+                elementsToRemove.add (element);
+                elementsToAdd.add (ComponentElement.create (element.getParentUID (), element.getUID (), FileBrowserCD.TYPEID, element.getNode ()));
+            } else if (TYPEID_OLD_PIM_BROWSER.equals (element.getTypeID ())) {
+                elementsToRemove.add (element);
+                elementsToAdd.add (ComponentElement.create (element.getParentUID (), element.getUID (), PIMBrowserCD.TYPEID, element.getNode ()));
+            } else if (TYPEID_OLD_SMS_COMPOSER.equals (element.getTypeID ())) {
+                elementsToRemove.add (element);
+                elementsToAdd.add (ComponentElement.create (element.getParentUID (), element.getUID (), SMSComposerCD.TYPEID, element.getNode ()));
             }
         }
         componentElements.removeAll (elementsToRemove);
