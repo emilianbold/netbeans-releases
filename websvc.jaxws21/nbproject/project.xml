@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.jaxb.project</friend>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
+                <friend>org.netbeans.modules.websvc.manager</friend>
                 <package>com.sun.tools.ws.processor</package>
                 <package>com.sun.tools.ws.processor.generator</package>
                 <package>com.sun.tools.ws.processor.model</package>

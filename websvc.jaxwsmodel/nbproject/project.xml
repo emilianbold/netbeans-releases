@@ -183,6 +183,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.websvc.design</friend>
                 <friend>org.netbeans.modules.websvc.editor.hints</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsapi</friend>
+                <friend>org.netbeans.modules.websvc.manager</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.websvc.api.jaxws.project</package>
