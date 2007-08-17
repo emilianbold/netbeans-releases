@@ -224,7 +224,9 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         domainLabel.setLabelFor(domainField);
         org.openide.awt.Mnemonics.setLocalizedText(domainLabel, org.openide.util.NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain")); // NOI18N
         
-        hostLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host"));//NOI18N
+        hostLabel = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host")); // NOI18N
+        
         hostField = new JTextField();
         hostField.setColumns(20);
         hostField.setEditable(false);
@@ -234,7 +236,9 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         
         hostLabel.setLabelFor(hostField);
         
-        portLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port"));//NOI18N
+        portLabel = new JLabel();
+        org.openide.awt.Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port")); // NOI18N
+        
         portField = new JTextField();
         portField.setColumns(20);
         portField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Port"));
