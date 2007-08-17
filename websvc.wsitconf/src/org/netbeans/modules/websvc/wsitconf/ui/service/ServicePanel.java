@@ -191,6 +191,7 @@ public class ServicePanel extends SectionInnerPanel {
             setSecurityProfile(profile);
             boolean defaults = ProfilesModelHelper.isServiceDefaultSetupUsed(profile, binding, project);
             setChBox(devDefaultsChBox, defaults);
+            oldProfile = profile;
         } else {
             setSecurityProfile(ComboConstants.PROF_USERNAME);
             setChBox(devDefaultsChBox, true);
