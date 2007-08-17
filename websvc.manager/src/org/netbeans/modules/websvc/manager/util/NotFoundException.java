@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.websvc.manager.util;
 
-public class NotFoundException extends Exception implements java.io.Serializable {
+class NotFoundException extends Exception implements java.io.Serializable {
     public String thingNotFound = null;
     
     public NotFoundException(String msg, String thingNotFound) {
