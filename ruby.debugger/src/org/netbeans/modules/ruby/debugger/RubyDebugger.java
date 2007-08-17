@@ -197,7 +197,9 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             String rDebugPath = Util.findRDebugExecutable();
             if (rDebugPath == null) {
                 Util.showMessage(NbBundle.getMessage(RubyDebugger.class,
-                        "RubyDebugger.wrong.rdebug-ide", Util.rdebugPattern(), rDebugPath)); // NOI18N
+                        "RubyDebugger.wrong.rdebug-ide", // NOI18N
+                        RubyInstallation.getInstance().getRuby(), 
+                        Util.rdebugPattern()));
                 return false;
             }
         }
