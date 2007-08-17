@@ -278,22 +278,20 @@ public final class ElementUtilities {
                         }
                     }
                 }
-            }
-            scope = scope.getEnclosingScope();
-        }
-        while(scope != null) {
-            for (Element local : scope.getLocalElements()) {
-                if (!local.getKind().isClass() && !local.getKind().isInterface() &&
-                    (acceptor == null || acceptor.accept(local, local.getEnclosingElement().asType()))) {
-                    String name = local.getSimpleName().toString();
-                    ArrayList<Element> h = hiders.get(name);
-                    if (!isHidden(local, h, elements, types)) {
-                        members.add(local);
-                        if (h == null) {
-                            h = new ArrayList<Element>();
-                            hiders.put(name, h);
+            } else {
+                for (Element local : scope.getLocalElements()) {
+                    if (!local.getKind().isClass() && !local.getKind().isInterface() &&
+                        (acceptor == null || acceptor.accept(local, local.getEnclosingElement().asType()))) {
+                        String name = local.getSimpleName().toString();
+                        ArrayList<Element> h = hiders.get(name);
+                        if (!isHidden(local, h, elements, types)) {
+                            members.add(local);
+                            if (h == null) {
+                                h = new ArrayList<Element>();
+                                hiders.put(name, h);
+                            }
+                            h.add(local);
                         }
-                        h.add(local);
                     }
                 }
             }
