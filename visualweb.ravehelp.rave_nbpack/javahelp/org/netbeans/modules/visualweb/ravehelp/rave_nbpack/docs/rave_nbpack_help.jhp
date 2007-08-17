@@ -402,19 +402,9 @@
 						<file title="Root"/>
 						<file title="Template"/>
 					</directory>
-					<file title="aboutregularexpn.html"/>
-					<file title="add_css_file.html"/>
-					<file title="add_image.html"/>
-					<file title="add_remove_object.html"/>
 					<file title="add_theme.html"/>
-					<file title="clean_project.html"/>
 					<file title="create_sample_app.html"/>
-					<file title="delete_lib_ref.html"/>
-					<file title="delete_proj_item.html"/>
 					<file title="import_creator_project.html"/>
-					<file title="import_libraries.html"/>
-					<file title="modify_library.html"/>
-					<file title="set_project_properties.html"/>
 				</directory>
 				<file title="about_lib_refs.html"/>
 			</directory>

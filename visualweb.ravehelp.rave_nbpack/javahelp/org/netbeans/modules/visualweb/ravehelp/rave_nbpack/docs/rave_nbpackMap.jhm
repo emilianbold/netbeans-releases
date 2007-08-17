@@ -211,19 +211,9 @@
 	<mapID target="projrave_multiple_forms_multiform_process" url="multiple_forms/multiform_process.html"/>
 	<mapID target="projrave_no_topic" url="no_topic.html"/>
 	<mapID target="projrave_projects_about_lib_refs" url="projects/about_lib_refs.html"/>
-	<mapID target="projrave_projects_howtoprojects_aboutregularexpn" url="projects/howtoprojects/aboutregularexpn.html"/>
-	<mapID target="projrave_projects_howtoprojects_add_css_file" url="projects/howtoprojects/add_css_file.html"/>
-	<mapID target="projrave_projects_howtoprojects_add_image" url="projects/howtoprojects/add_image.html"/>
-	<mapID target="projrave_projects_howtoprojects_add_object" url="projects/howtoprojects/add_remove_object.html"/>
 	<mapID target="projrave_projects_howtoprojects_add_theme" url="projects/howtoprojects/add_theme.html"/>
-	<mapID target="projrave_projects_howtoprojects_clean_project" url="projects/howtoprojects/clean_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_create_sample_app" url="projects/howtoprojects/create_sample_app.html"/>
-	<mapID target="projrave_projects_howtoprojects_delete_lib_ref" url="projects/howtoprojects/delete_lib_ref.html"/>
-	<mapID target="projrave_projects_howtoprojects_delete_proj_item" url="projects/howtoprojects/delete_proj_item.html"/>
 	<mapID target="projrave_projects_howtoprojects_import_creator_project" url="projects/howtoprojects/import_creator_project.html"/>
-	<mapID target="projrave_projects_howtoprojects_import_libraries" url="projects/howtoprojects/import_libraries.html"/>
-	<mapID target="projrave_projects_howtoprojects_modify_library" url="projects/howtoprojects/modify_library.html"/>
-	<mapID target="projrave_projects_howtoprojects_set_project_properties" url="projects/howtoprojects/set_project_properties.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_complib" url="ui_elements/dialogs/add_complib.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_data_source_db" url="ui_elements/dialogs/add_data_source_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_database_conn_db" url="ui_elements/dialogs/add_database_conn_db.html"/>
@@ -655,14 +645,14 @@
 	<mapID target="projrave_web_svc_howtowebservices_ws_bind_table" url="web_svc/howtowebservices/ws_bind_table.html"/>
 	<mapID target="projrave_ejb_aboutejbs" url="ejb/aboutejbs.html"/>
 	<mapID target="projrave_ejb_process" url="ejb/ejb_process.html"/>
-	<mapID target="projraveejb_howtoejbs_ejb_add_to_IDE" url="ejb/howtoejbs/ejb_add_to_IDE.html"/>
-	<mapID target="projraveejb_howtoejbs_ejb_add_to_page" url="ejb/howtoejbs/ejb_add_to_page.html"/>
-	<mapID target="projraveejb_howtoejbs_ejb_bind_list" url="ejb/howtoejbs/ejb_bind_list.html"/>
-	<mapID target="projraveejb_howtoejbs_ejb_bind_simple" url="ejb/howtoejbs/ejb_bind_simple.html"/>
-	<mapID target="projraveejb_howtoejbs_ejb_bind_table" url="ejb/howtoejbs/ejb_bind_table.html"/>
-	<mapID target="projraveejb_howtoejbs_ejb_delete" url="ejb/howtoejbs/ejb_delete.html"/>
-	<mapID target="projraveejb_howtoejbs_ejb_export" url="ejb/howtoejbs/ejb_export.html"/>
-	<mapID target="projraveejb_howtoejbs_ejb_quickref" url="ejb/howtoejbs/ejb_quickref.html"/>
+	<mapID target="projrave_ejb_howtoejbs_ejb_add_to_IDE" url="ejb/howtoejbs/ejb_add_to_IDE.html"/>
+	<mapID target="projrave_ejb_howtoejbs_ejb_add_to_page" url="ejb/howtoejbs/ejb_add_to_page.html"/>
+	<mapID target="projrave_ejb_howtoejbs_ejb_bind_list" url="ejb/howtoejbs/ejb_bind_list.html"/>
+	<mapID target="projrave_ejb_howtoejbs_ejb_bind_simple" url="ejb/howtoejbs/ejb_bind_simple.html"/>
+	<mapID target="projrave_ejb_howtoejbs_ejb_bind_table" url="ejb/howtoejbs/ejb_bind_table.html"/>
+	<mapID target="projrave_ejb_howtoejbs_ejb_delete" url="ejb/howtoejbs/ejb_delete.html"/>
+	<mapID target="projrave_ejb_howtoejbs_ejb_export" url="ejb/howtoejbs/ejb_export.html"/>
+	<mapID target="projrave_ejb_howtoejbs_ejb_quickref" url="ejb/howtoejbs/ejb_quickref.html"/>
 	<mapID target="projraveweb_svc_aboutwebservices" url="web_svc/aboutwebservices.html"/>
 	<mapID target="projraveweb_svc_web_services_process" url="web_svc/web_services_process.html"/>
 	<mapID target="projraveweb_svc_howtowebservices_accessing_websvc" url="web_svc/howtowebservices/accessing_websvc.html"/>

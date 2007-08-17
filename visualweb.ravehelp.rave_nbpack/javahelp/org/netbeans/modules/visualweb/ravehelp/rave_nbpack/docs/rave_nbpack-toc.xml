@@ -13,18 +13,11 @@
 		</tocitem>
 		<tocitem text="Creating and Editing Web Applications">
 			<tocitem text="About Creating Web Applications" target="about_create_webapps" />
-			<tocitem text="About Regular Expressions" target="projrave_projects_howtoprojects_aboutregularexpn" />
-			<tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
 			<tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
-			<tocitem text="Creating a Sample Visual Web Application" target="projrave_projects_howtoprojects_create_sample_app" />
+			<tocitem text="Creating a Web Application with Visual Web JSF " target="projrave_projects_howtoprojects_create_sample_app" />
+			<tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
 			<tocitem text="Working with Projects">
-				<tocitem text="Starting With Web Projects" target="webapps_process" />
 				<tocitem text="Adding a Theme" target="projrave_projects_howtoprojects_add_theme" />
-				<tocitem text="Setting Project Properties" target="projrave_projects_howtoprojects_set_project_properties" />
-				<tocitem text="Deleting a Project Item" target="projrave_projects_howtoprojects_delete_proj_item" />
-				<tocitem text="Adding a CSS File to a Project" target="projrave_projects_howtoprojects_add_css_file" />
-				<tocitem text="Adding a Project Item" target="projrave_projects_howtoprojects_add_object" />
-				<tocitem text="Web Project Tasks: Quick Reference" target="webapps_quickref" />
 			</tocitem>
 			<tocitem text="Web Application Frameworks">
 				<tocitem text="About Web Application Frameworks" target="about_framework" />
@@ -227,10 +220,7 @@
 			</tocitem>
 			<tocitem text="Library References">
 				<tocitem text="About Library References in Visual Web Projects" target="projrave_projects_about_lib_refs" />
-				<tocitem text="Adding a Library Reference to a Project" target="projrave_projects_howtoprojects_import_libraries" />
 				<tocitem text="Creating a Library Reference" target="taglib_manage" />
-				<tocitem text="Modifying a Library Reference" target="projrave_projects_howtoprojects_modify_library" />
-				<tocitem text="Removing a Library Reference" target="projrave_projects_howtoprojects_delete_lib_ref" />
 			</tocitem>
 			<tocitem text="Connecting Components to Data" expand="false">
 				<tocitem text="About Binding Components to Data" target="projrave_connect_data_about_data_binding" />
@@ -278,6 +268,31 @@
 			<tocitem text="Working With JSP Source Code" expand="false">
 				<tocitem text="About the JSP Editor" target="projrave_ui_elements_editors_about_jsp_editor" />
 				<tocitem text="JavaServer Faces Expression Language" target="projrave_jsp-jsfel_jsf_expression_language_intro" />
+			</tocitem>
+			<tocitem text="Enterprise JavaBeans">
+				<tocitem text="About Enterprise JavaBeans" target="projrave_ejb_aboutejbs" />
+				<tocitem text="Working with Enterprise JavaBean Components" target="projrave_ejb_process" />
+				<tocitem text="Enterprise JavaBean Components: Quick Reference" target="projrave_ejb_howtoejbs_ejb_quickref" />
+				<tocitem text="Adding a Set of Enterprise JavaBean Components to a Visual Web JSF Application" target="projrave_ejb_howtoejbs_ejb_add_to_IDE" />
+				<tocitem text="Adding an Enterprise JavaBean Object to a Visual Web JSF Page" target="projrave_ejb_howtoejbs_ejb_add_to_page" />
+				<tocitem text="Binding a List Component to an Enterprise JavaBean Method" target="projrave_ejb_howtoejbs_ejb_bind_list" />
+				<tocitem text="Binding a Simple Component to an Enterprise JavaBean Method" target="projrave_ejb_howtoejbs_ejb_bind_simple" />
+				<tocitem text="Binding a Table Component to an Enterprise JavaBean Method" target="projrave_ejb_howtoejbs_ejb_bind_table" />
+				<tocitem text="Deleting an Enterprise JavaBean Component" target="projrave_ejb_howtoejbs_ejb_delete" />
+				<tocitem text="Exporting a Set of Enterprise JavaBean Components" target="projrave_ejb_howtoejbs_ejb_export" />
+			</tocitem>
+			<tocitem text="Web Services">
+				<tocitem text="About Web Services" target="projraveweb_svc_aboutwebservices" />
+				<tocitem text="Working with Web Services" target="projraveweb_svc_web_services_process" />
+				<tocitem text="Visual Web JSF Web Service Tasks: Quick Reference" target="projraveweb_svc_howtowebservices_webservices_quickref" />
+				<tocitem text="Adding a Web Service to a Visual Web JSF Project" target="projraveweb_svc_howtowebservices_accessing_websvc" />
+				<tocitem text="Deleting a Web Service" target="projraveweb_svc_howtowebservices_delete_websvc" />
+				<tocitem text="Adding a Web Service to a Visual Web JSF Page" target="projraveweb_svc_howtowebservices_add_websvc_to_page" />
+				<tocitem text="Creating a  Web Service Group" target="projraveweb_svc_howtowebservices_create_websvc_group" />
+				<tocitem text="Viewing the WSDL File" target="projraveweb_svc_howtowebservices_viewing_wsdl_file" />
+				<tocitem text="Binding a List Component to a Web Service Method" target="projrave_web_svc_howtowebservices_ws_bind_list" />
+				<tocitem text="Binding a Simple Component to a Web Service Method" target="projraveweb_svc_howtowebservices_ws_bind_simple" />
+				<tocitem text="Binding a Table Component to a Web Service Method" target="projraveweb_svc_howtowebservices_ws_bind_table" />
 			</tocitem>
 		</tocitem>
 		<tocitem text="Creating and Editing Web Components">
@@ -398,7 +413,6 @@
 			<tocitem text="Packaging a Resource in a WAR File" target="build_externalresources" />
 			<tocitem text="Building a WAR File" target="build_warfile" />
 			<tocitem text="Removing a WAR File" target="build_remove" />
-			<tocitem text="Cleaning a Project" target="projrave_projects_howtoprojects_clean_project" />
 		</tocitem>
 		<tocitem text="Deploying Web Applications">
 			<tocitem text="About Deploying Web Applications" target="about_deploy" />
@@ -418,7 +432,7 @@
 			<tocitem text="Properties Window" target="projrave_ui_elements_propsheets_propsheet_win" />
 			<tocitem text="Editors" mergetype="javax.help.SortMerge" expand="false">
 				<tocitem text="About the JSP Editor" target="projrave_ui_elements_editors_about_jsp_editor" />
-				<tocitem text="About the Page Navigation Editor" target="projrave_ui_elements_editors_about_navigation_editor" />
+				<tocitem text="About the Page Flow Editor" target="projrave_ui_elements_editors_about_navigation_editor" />
 				<tocitem text="About the Properties Editor" target="propfiles.prop" />
 				<tocitem text="About the Visual SQL Editor">
 					<tocitem text="About the Visual SQL Editor" target="projrave_ui_elements_editors_about_query_editor" />
