@@ -24,19 +24,19 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="jmunit4cldc10.xml" url="jmunit4cldc10.xml"/>
-            <file name="jmunit4cldc11.xml" url="jmunit4cldc11.xml"/>
         </folder>
     </folder>
     <folder name="Templates">
         <folder name="MIDP">
             <file name="EmptyJ2MEUnitTest.java" url="resources/templates/EmptyJ2MEUnitTest.java.template">
+                <attr name="position" intvalue="590"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.j2meunit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/j2meunit/resources/templates/EmptyJ2MEUnitTest.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/j2meunit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="MIDP" boolvalue="true"/>
-                <attr name="position" intvalue="590"/>
             </file>
         </folder>
     </folder>

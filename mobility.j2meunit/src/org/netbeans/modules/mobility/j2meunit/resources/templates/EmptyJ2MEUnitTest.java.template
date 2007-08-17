@@ -1,21 +1,27 @@
 /*
- * __NAME__.java
+ * ${name}.java
  * J2MEUnit based test
  *
- * Created on __DATE__, __TIME__
+ * Created on ${date}, ${time}
  */
 
-package Template.Classes;
+<#if package?? && package != "">
+package ${package};
+
+</#if>
 
 import jmunit.framework.cldc10.*;
 
 /**
- *
- * @author __USER__
+ * @author ${user}
  */
-public class EmptyJ2MEUnitTest extends TestCase {
+public class ${name} extends TestCase {
     
-    public EmptyJ2MEUnitTest() {
+    public ${name}() {
+        //The first parameter of inherited constructor is the number of test cases
+        super(0,"${name}");
     }            
-    
+
+    public void test(int testNumber) throws Throwable {
+    }    
 }
