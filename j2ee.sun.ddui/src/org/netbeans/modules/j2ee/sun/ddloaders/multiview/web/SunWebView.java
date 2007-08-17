@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.web;
 
+import java.util.LinkedList;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.xml.multiview.SectionNode;
 
@@ -30,11 +32,12 @@ public class SunWebView extends SunWebBaseView {
     public SunWebView(SunDescriptorDataObject dataObject) {
         super(dataObject);
 
-        SectionNode [] children = new SectionNode [] { 
-            new SunWebDetailsNode(this, sunWebApp, version),
-            new SunWebClassLoaderNode(this, sunWebApp, version),
-//            new SunWebJspConfigPropertyNode(this, sunWebApp, version)
-        };
+        LinkedList<SectionNode> children = new LinkedList<SectionNode>();
+        if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(version) <= 0) {
+            children.add(new SunWebDetailsNode(this, sunWebApp, version));
+        }
+        children.add(new SunWebClassLoaderNode(this, sunWebApp, version));
+//        children.add(new SunWebJspConfigPropertyNode(this, sunWebApp, version));
 
         setChildren(children);
     }

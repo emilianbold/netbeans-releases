@@ -27,6 +27,7 @@ import org.netbeans.modules.j2ee.sun.ddloaders.multiview.TextItemEditorModel;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 
@@ -47,14 +48,21 @@ public class SunWebDetailsPanel extends BaseSectionNodeInnerPanel {
     }
 
     private void initUserComponents(SectionNodeView sectionNodeView) {
+        showAS80Fields(as80FeaturesVisible);
         showAS81Fields(as81FeaturesVisible);
         showAS90Fields(as90FeaturesVisible);
         
         SunDescriptorDataObject dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
         XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
-        addRefreshable(new ItemEditorHelper(jTxtContextRoot, new ContextRootEditorModel(synchronizer)));
-        addRefreshable(new ItemEditorHelper(jTxtErrorUrl, new ErrorUrlEditorModel(synchronizer)));
-        addRefreshable(new ItemEditorHelper(jTxtHttpservletSecurityProvider, new HttpServletSecurityEditorModel(synchronizer)));
+        if(as80FeaturesVisible) {
+            addRefreshable(new ItemEditorHelper(jTxtContextRoot, new ContextRootEditorModel(synchronizer)));
+        }
+        if(as81FeaturesVisible) {
+            addRefreshable(new ItemEditorHelper(jTxtErrorUrl, new ErrorUrlEditorModel(synchronizer)));
+        }
+        if(as90FeaturesVisible) {
+            addRefreshable(new ItemEditorHelper(jTxtHttpservletSecurityProvider, new HttpServletSecurityEditorModel(synchronizer)));
+        }
     }
 	
     /** This method is called from within the constructor to
@@ -200,9 +208,12 @@ public class SunWebDetailsPanel extends BaseSectionNodeInnerPanel {
     // of AsDDVersion that corresponds with the needed appserver version.  Could later tag
     // with "MaxVersion", or even "ExcludeVersion", if necessary.
     //
-    private void showAS81Fields(boolean visible) {
+    private void showAS80Fields(boolean visible) {
         jLblContextRoot.setVisible(visible);
         jTxtContextRoot.setVisible(visible);
+    }
+    
+    private void showAS81Fields(boolean visible) {
         jLblErrorUrl.setVisible(visible);
         jTxtErrorUrl.setVisible(visible);
     }
@@ -239,7 +250,7 @@ public class SunWebDetailsPanel extends BaseSectionNodeInnerPanel {
             try {
                 return sunWebApp.getErrorUrl();
             } catch(VersionNotSupportedException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
             return null;
         }
@@ -248,7 +259,7 @@ public class SunWebDetailsPanel extends BaseSectionNodeInnerPanel {
             try {
                 sunWebApp.setErrorUrl(value);
             } catch(VersionNotSupportedException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
@@ -263,7 +274,7 @@ public class SunWebDetailsPanel extends BaseSectionNodeInnerPanel {
             try {
                 return sunWebApp.getHttpservletSecurityProvider();
             } catch(VersionNotSupportedException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
             return null;
         }
@@ -272,7 +283,7 @@ public class SunWebDetailsPanel extends BaseSectionNodeInnerPanel {
             try {
                 sunWebApp.setHttpservletSecurityProvider(value);
             } catch(VersionNotSupportedException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
