@@ -83,7 +83,7 @@ public class TransportSecurity extends javax.swing.JPanel {
         WSDLComponent tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, TransportToken.class);
         HttpsToken token = (HttpsToken) SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
         if (token instanceof HttpsToken) {
-            setChBox(requireCertificateChBox, SecurityTokensModelHelper.isRequireClientCertificate((HttpsToken) token));
+            setChBox(requireCertificateChBox, SecurityTokensModelHelper.isRequireClientCertificate(token));
         }
 
         setCombo(algoSuiteCombo, AlgoSuiteModelHelper.getAlgorithmSuite(secBinding));
