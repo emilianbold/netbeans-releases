@@ -96,9 +96,6 @@ public interface MessageSecurityProvider {
      * @param serviceRefName Value from the service-ref-name field in sun-web.xml, sun-ejb-jar.xml,
      *  sun-application-client.xml, or equivalent annotation for the pertinent webservice client.
      *
-     * FIXME How to differentiate the errors "service ref found", and "no binding" from each
-     * other?  Currently implementation does not distinguish them.
-     *
      * @deprecated
      */
     public MessageSecurityBinding getServiceRefBinding(File sunDD, String serviceRefName);
@@ -178,6 +175,9 @@ public interface MessageSecurityProvider {
      *  or if the serviceRefName, namespaceURI, or localpart fields are empty (null or "").
      * @throws IllegalStateException if the SJSAS configuration has not been initialized.
      *  This could occur if SJSAS is not the current selected server for the project.
+     * @throws UnsupportedOperationException if called for an EJB jar project and a
+     *  service-ref of the correct name does not already exist.  (Need to know ejb-name
+     *  to create assocated service-ref.)
      */
     public boolean setServiceRefBinding(File sunDD, String serviceRefName, String namespaceURI, 
             String localpart, MessageSecurityBinding binding);
