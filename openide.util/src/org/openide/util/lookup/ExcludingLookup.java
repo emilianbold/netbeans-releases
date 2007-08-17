@@ -18,10 +18,13 @@
  */
 package org.openide.util.lookup;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 
 import java.util.*;
+import org.openide.util.LookupEvent;
 
 
 /** Allows exclusion of certain instances from lookup.
@@ -49,6 +52,7 @@ final class ExcludingLookup extends org.openide.util.Lookup {
         }
     }
 
+    @Override
     public String toString() {
         return "ExcludingLookup: " + delegate + " excludes: " + Arrays.asList(classes()); // NOI18N
     }
@@ -80,6 +84,7 @@ final class ExcludingLookup extends org.openide.util.Lookup {
         }
     }
 
+    @Override
     public <T> Lookup.Item<T> lookupItem(Lookup.Template<T> template) {
         if (areSubclassesOfThisClassAlwaysExcluded(template.getType())) {
             return null;
@@ -244,12 +249,14 @@ BIG:
      */
     private final class R<T> extends WaitableResult<T> implements LookupListener {
         private Result<T> result;
+        private WeakResult<T> weak;
         private Object listeners;
         private Class<?> from;
 
         R(Class<?> from, Result<T> delegate) {
             this.from = from;
             this.result = delegate;
+            this.weak = new WeakResult<T>(this, delegate);
         }
 
         protected void beforeLookup(Template t) {
@@ -267,7 +274,7 @@ BIG:
             }
 
             if (add) {
-                result.addLookupListener(this);
+                result.addLookupListener(weak);
             }
         }
 
@@ -280,7 +287,7 @@ BIG:
             }
 
             if (remove) {
-                result.removeLookupListener(this);
+                result.removeLookupListener(weak);
             }
         }
 
@@ -292,10 +299,12 @@ BIG:
             return filter(classes(), from, c, type, new ArrayList<S>(c.size()));
         }
 
+        @Override
         public Set<Class<? extends T>> allClasses() {
             return filter(classes(), from, result.allClasses(), 1, new HashSet<Class<? extends T>>());
         }
 
+        @Override
         public Collection<? extends Item<T>> allItems() {
             return openCol(result.allItems(), 2);
         }
@@ -326,5 +335,67 @@ BIG:
             final org.openide.util.LookupEvent newev = new org.openide.util.LookupEvent(this);
             AbstractLookup.notifyListeners(ll, newev, evAndListeners);
         }
-    }
+    } // end of R
+    
+    private final class WeakResult<T> extends WaitableResult<T> implements LookupListener {
+        private Lookup.Result source;
+        private Reference<R<T>> result;
+        
+        public WeakResult(R<T> r, Lookup.Result<T> s) {
+            this.result = new WeakReference<R<T>>(r);
+            this.source = s;
+        }
+        
+        protected void beforeLookup(Lookup.Template t) {
+            R r = (R)result.get();
+            if (r != null) {
+                r.beforeLookup(t);
+            } else {
+                source.removeLookupListener(this);
+            }
+        }
+
+        protected void collectFires(Collection<Object> evAndListeners) {
+            R<T> r = result.get();
+            if (r != null) {
+                r.collectFires(evAndListeners);
+            } else {
+                source.removeLookupListener(this);
+            }
+        }
+
+        public void addLookupListener(LookupListener l) {
+            assert false;
+        }
+
+        public void removeLookupListener(LookupListener l) {
+            assert false;
+        }
+
+        public Collection<T> allInstances() {
+            assert false;
+            return null;
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            R r = (R)result.get();
+            if (r != null) {
+                r.resultChanged(ev);
+            } else {
+                source.removeLookupListener(this);
+            }
+        }
+
+        @Override
+        public Collection<? extends Item<T>> allItems() {
+            assert false;
+            return null;
+        }
+
+        @Override
+        public Set<Class<? extends T>> allClasses() {
+            assert false;
+            return null;
+        }
+    } // end of WeakResult
 }

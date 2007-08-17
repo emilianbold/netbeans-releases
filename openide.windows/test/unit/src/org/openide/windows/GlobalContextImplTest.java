@@ -19,16 +19,17 @@
 
 package org.openide.windows;
 
+import java.awt.event.ActionEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -55,8 +56,8 @@ implements org.openide.util.LookupListener {
     }
     
     public static Test suite() {
-        //return new NbTestSuite(GlobalContextImplTest.class);
-        return new GlobalContextImplTest("testRequestVisibleBlinksTheActionMapForAWhile");
+        return new NbTestSuite(GlobalContextImplTest.class);
+        //return new GlobalContextImplTest("testRequestVisibleBlinksTheActionMapForAWhileWithOwnComponentAndAction");
     }
     
     @Override
@@ -115,14 +116,17 @@ implements org.openide.util.LookupListener {
     }
     
     public void testRequestVisibleBlinksTheActionMapForAWhile () throws Exception {
+        doRequestVisibleBlinksTheActionMapForAWhile(new TopComponent());
+    }
+    
+    private void doRequestVisibleBlinksTheActionMapForAWhile(TopComponent my) throws Exception {
         final org.openide.nodes.Node n = new org.openide.nodes.AbstractNode (org.openide.nodes.Children.LEAF);
         tc.setActivatedNodes(new Node[] { n });
         
         assertActionMap ();
-        final Lookup.Result<ActionMap> res = lookup.lookup (new Lookup.Template<ActionMap> (ActionMap.class));
-        assertEquals ("One action map", 1, res.allItems ().size ());
         
         class L implements org.openide.util.LookupListener {
+            Lookup.Result<ActionMap> res = lookup.lookup (new Lookup.Template<ActionMap> (ActionMap.class));
             ArrayList<ActionMap> maps = new ArrayList<ActionMap> ();
             
             public void resultChanged (org.openide.util.LookupEvent ev) {
@@ -140,11 +144,11 @@ implements org.openide.util.LookupListener {
             }
         }
         L myListener = new L ();
+        assertEquals ("One action map", 1, myListener.res.allItems ().size ());
         myListener.assertNode ();
         
-        res.addLookupListener (myListener);
+        myListener.res.addLookupListener (myListener);
                 
-        TopComponent my = new TopComponent ();
         my.requestVisible ();
         
         if (myListener.maps.size () != 2) {
@@ -161,7 +165,7 @@ implements org.openide.util.LookupListener {
 
         assertActionMap ();
         
-        res.removeLookupListener(myListener);
+        myListener.res.removeLookupListener(myListener);
 
         my.close();
         
@@ -169,9 +173,36 @@ implements org.openide.util.LookupListener {
         
         Reference<Object> ref = new WeakReference<Object>(my);
         my = null;
-        tc = null;
+        m1 = null;
+        m2 = null;
+        myListener.maps.clear();
+
+        //this.tc = null;
+        //this.lookup = null;
+        //this.result = null;
+        //myListener.res = null;
+        //myListener = null;
+        //this.sampleAction = null;
         
         assertGC("Can be GCed", ref);
+    }
+    
+    private static class OwnTopComponent extends TopComponent {
+        public OwnTopComponent() {
+            getActionMap().put("ahoj", new OwnAction());
+        }
+
+        class OwnAction extends AbstractAction {
+
+            public void actionPerformed(ActionEvent e) {
+                OwnTopComponent.this.open();
+            }
+
+        }
+    }
+    
+    public void testRequestVisibleBlinksTheActionMapForAWhileWithOwnComponentAndAction() throws Exception {
+        doRequestVisibleBlinksTheActionMapForAWhile(new OwnTopComponent());
     }
     
     public void testComponentChangeActionMapIsPropagatedToGlobalLookup() throws Exception {

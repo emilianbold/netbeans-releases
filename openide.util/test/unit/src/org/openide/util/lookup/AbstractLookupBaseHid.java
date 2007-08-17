@@ -28,6 +28,7 @@ import java.util.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import java.io.Serializable;
+import java.lang.ref.Reference;
 import org.openide.util.Lookup.Template;
 
 public class AbstractLookupBaseHid extends NbTestCase {
@@ -1567,10 +1568,46 @@ public class AbstractLookupBaseHid extends NbTestCase {
         Collection c = lookup.lookup(new Lookup.Template(String.class)).allInstances();
         assertTrue("It is empty: " + c, c.isEmpty());
     }
+
+    public void testCanGCResults() throws Exception {
+        class L implements LookupListener {
+            int cnt;
+            
+            public void resultChanged(LookupEvent ev) {
+                cnt++;
+            }
+            
+        }
+        L listener1 = new L();
+        L listener2 = new L();
+        
+        Lookup.Result<String> res1 = this.instanceLookup.lookupResult(String.class);
+        Lookup.Result<String> res2 = this.lookup.lookupResult(String.class);
+        
+        assertEquals("Empty1", 0, res1.allItems().size());
+        assertEquals("Empty2", 0, res2.allItems().size());
+        
+        res1.addLookupListener(listener1);
+        res2.addLookupListener(listener2);
+        
+        addInstances(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+        this.ic.add("Ahoj");
+        
+        assertEquals("Change1", 1, listener1.cnt);
+        assertEquals("Change2", 1, listener2.cnt);
+        
+        assertEquals("Full1", 1, res1.allItems().size());
+        assertEquals("Full2", 1, res2.allItems().size());
+        
+        
+        Reference<Object> ref2 = new WeakReference<Object>(res2);
+        res2 = null;
+        assertGC("Result can disappear", ref2);
+    }
     
     /** Adds instances to the instance lookup.
      */
-    private void addInstances (Object[] instances) {
+    private void addInstances (Object... instances) {
         for (int i = 0; i < instances.length; i++) {
             ic.add(instances[i]);
         }
