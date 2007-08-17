@@ -414,8 +414,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 if (SUPER_KEYWORD.equals(name) && enclClass != null) {
                                     TypeMirror superclass = enclClass.getSuperclass();
                                     params = getMatchingParams(superclass, controller.getElementUtilities().getMembers(superclass, acceptor), INIT, types, controller.getTypes());
+                                } else if (THIS_KEYWORD.equals(name) && enclClass != null) {
+                                    TypeMirror thisclass = enclClass.asType();
+                                    params = getMatchingParams(thisclass, controller.getElementUtilities().getMembers(thisclass, acceptor), INIT, types, controller.getTypes());
                                 } else {
-                                    params = getMatchingParams(enclClass != null ? enclClass.asType() : null, controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), THIS_KEYWORD.equals(name) ? INIT : name, types, controller.getTypes());
+                                    params = getMatchingParams(enclClass != null ? enclClass.asType() : null, controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), name, types, controller.getTypes());
                                 }
                                 break;
                             }
