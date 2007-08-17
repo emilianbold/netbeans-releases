@@ -30,8 +30,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
-import org.netbeans.modules.css.visual.ui.preview.CssPreviewable.Content;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -69,7 +69,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     };
     
     private CssPreviewable.Listener PREVIEWABLE_LISTENER = new CssPreviewable.Listener() {
-        public void activate(final Content content) {
+        public void activate(final CssRuleContext content) {
             LOGGER.log(Level.FINE, "Previewable activated - POSTING activate task " + content);//NOI18N
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -196,14 +196,14 @@ public final class CssPreviewTopComponent extends TopComponent {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
     
-    private String getTitle(CssPreviewable.Content content) {
+    private String getTitle(CssRuleContext content) {
         if(content != null && content.selectedRule() != null) {
             return content.selectedRule().name() + " - " + DEFAULT_TC_NAME; //NOI18N
         }
         return DEFAULT_TC_NAME;
     }
     
-    private void preview(CssPreviewable.Content content) {
+    private void preview(CssRuleContext content) {
         //set window title according to the selected rule
         setName(getTitle(content));
         

@@ -34,7 +34,7 @@ public class CssPreviewPanel extends javax.swing.JPanel {
         jScrollPane1.setViewportView(xhtmlPanel);
     }
     
-    XHTMLPanel panel() {
+    public XHTMLPanel panel() {
         return xhtmlPanel;
     }
         

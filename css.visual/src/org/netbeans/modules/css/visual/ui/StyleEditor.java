@@ -31,6 +31,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.Icon;
 import javax.swing.JPanel;
+import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 
 /**
@@ -46,15 +47,15 @@ abstract public class StyleEditor extends JPanel {
 
     boolean listenerAdded = false;
 
-    private CssPreviewable.Content content;
+    private CssRuleContext content;
     
     /** Called by StyleBuilderPanel to set the UI panel property values. */
-    public void setContent(CssPreviewable.Content content) {
+    public void setContent(CssRuleContext content) {
         this.content = content;
         setCssPropertyValues(content.selectedRule().ruleContent());
     }
     
-    protected CssPreviewable.Content content() {
+    protected CssRuleContext content() {
         return content;
     }
     

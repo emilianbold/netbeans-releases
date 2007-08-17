@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.modules.css.model.CssModel;
 import org.netbeans.modules.css.model.CssRule;
+import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.openide.util.NbBundle;
 
 /**
@@ -50,12 +51,12 @@ public class CssPreviewGenerator {
     private static final String SAMPLE_TEXT =
             NbBundle.getMessage(CssPreviewTopComponent.class, "Sample_Text"); //NOI18N
     
-    public static CharSequence getPreviewCode(CssPreviewable.Content content) {
+    public static CharSequence getPreviewCode(CssRuleContext content) {
         StringBuilder preview = new StringBuilder();
         preview.append(HTML_PREFIX);
         
         //generate the <script> ... </script> tag content
-        CssModel model = CssModel.get(content.document());
+        CssModel model = content.model();
         StringBuilder sb = new StringBuilder();
         for(CssRule rule : model.rules()) {
             //pseudo classes hack ( A:link { color: red; }

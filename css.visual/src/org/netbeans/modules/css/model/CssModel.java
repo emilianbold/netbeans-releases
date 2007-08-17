@@ -78,6 +78,9 @@ public final class CssModel {
      * @param doc source of the model
      */
     public static CssModel get(Document doc) {
+        if (doc == null) {
+            throw new NullPointerException("Passed null document!");
+        }
         CssModel model = (CssModel)doc.getProperty(CssModel.class);
         if(model == null) {
             model = new CssModel(doc);
@@ -108,8 +111,15 @@ public final class CssModel {
     
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     
+    private boolean immutable;
+    
     private CssModel(Document doc) {
         this.doc = doc;
+        
+        //all domain model objects provided by this model are immutable
+        //changes are done by propagating the modifications to the underlying document
+        //and subsequent regeneration of the model
+        this.immutable = true; 
         
         final ParserManager parser = getCssParser();
         if(parser == null) {
@@ -121,11 +131,7 @@ public final class CssModel {
         CssModelASTEvaluator evaluator = new CssModelASTEvaluator(new CssModelASTEvaluatorListener() {
             public void evaluated(ASTNode root, boolean error) {
                 //parser finished, AST evaluated
-                if(error) {
-                     support.firePropertyChange(MODEL_INVALID, null, null);
-                } else {
-                    updateModel(root);
-                }
+                updateModel(root);
             }
         });
         parser.addASTEvaluator(evaluator);
@@ -150,6 +156,10 @@ public final class CssModel {
     }
     
     private CssModel(ASTNode root) {
+        //the domain model object may mutate during their livecycle 
+        //based on user modifications since the underlying source of this model
+        //is immutable
+        this.immutable = false;
         updateModel(root);
     }
     
@@ -193,6 +203,10 @@ public final class CssModel {
     
     private ParserManager getCssParser() {
         return ParserManager.get(doc);
+    }
+    
+    private boolean isImmutable() {
+        return immutable;
     }
     
     private void updateModel(ASTNode root) {
@@ -267,7 +281,7 @@ public final class CssModel {
                                 }
                             }
                             
-                            CssRuleContent styleData = new CssRuleContent(items);
+                            CssRuleContent styleData = new CssRuleContent(items, isImmutable());
                             String ruleName = selectors.getAsText().trim(); //do we really need a structural info about the selector???
                             CssRule rule = new CssRule(ruleName, selectors.getOffset(), openBracket.getOffset(), closeBracket.getOffset(), styleData);
                             newRules.add(rule);

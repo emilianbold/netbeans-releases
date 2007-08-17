@@ -25,6 +25,10 @@
 
 package org.netbeans.modules.css.visual.ui;
 
+import java.awt.Color;
+import java.awt.FocusTraversalPolicy;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.css.visual.model.CssProperties;
 import org.netbeans.modules.css.model.CssRuleContent;
 import java.awt.BorderLayout;
@@ -34,6 +38,7 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.awt.Component;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.*;
 import javax.swing.table.*;
 import javax.swing.event.*;
@@ -73,17 +78,15 @@ public class MarginStyleEditor extends StyleEditor {
 
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         marginPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout(0, 5));
 
+        marginPanel.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5), javax.swing.BorderFactory.createEtchedBorder()));
         marginPanel.setLayout(new java.awt.BorderLayout());
-
-        marginPanel.setBorder(new javax.swing.border.CompoundBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)), new javax.swing.border.EtchedBorder()));
         add(marginPanel, java.awt.BorderLayout.NORTH);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     /**
      * Margin Data Table that holds the margin style info
      * @author  Winston Prakash
@@ -369,11 +372,31 @@ public class MarginStyleEditor extends StyleEditor {
         }
         
         private class JComponentCellRenderer implements TableCellRenderer {
-            public Component getTableCellRendererComponent(JTable table, Object value,
-                    boolean isSelected, boolean hasFocus, int row, int column) {
-                JComponent comp = (JComponent)value;
-                comp.setMinimumSize(new Dimension(100,25));
+            private Border noFocusBorder = new EmptyBorder(1, 1, 1, 1); 
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JComponent comp = (JComponent) value;
+                    if (hasFocus) {
+                        comp.setBorder( UIManager.getBorder("Table.focusCellHighlightBorder") );
+                        if (!isSelected && table.isCellEditable(row, column)) {
+                            Color col;
+                            col = UIManager.getColor("Table.focusCellForeground");
+                            if (col != null) {
+                                comp.setForeground(col);
+                            }
+                            col = UIManager.getColor("Table.focusCellBackground");
+                            if (col != null) {
+                                comp.setBackground(col);
+                            }
+                        }
+                        table.editCellAt(row, column);
+                    } else {
+                        comp.setBorder(noFocusBorder);
+                    }
+                comp.setMinimumSize(new Dimension(100, 25));
                 return comp;
+            }
+
+            protected void setValue(Object o) {
             }
         }
         
@@ -478,7 +501,7 @@ public class MarginStyleEditor extends StyleEditor {
             public Component getTableCellEditorComponent(JTable table, Object value,
                     boolean isSelected, int row, int column) {
                 
-                editorComponent = (JComponent)value;
+                        editorComponent = (JComponent)value;
                 container = table;
                 return editorComponent;
             }

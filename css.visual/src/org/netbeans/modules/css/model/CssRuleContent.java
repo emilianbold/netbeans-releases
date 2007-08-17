@@ -52,8 +52,11 @@ public class CssRuleContent {
     
     private List<CssRuleItem> items;
     
-    public CssRuleContent(List<CssRuleItem> items) {
+    private boolean immutable;
+    
+    CssRuleContent(List<CssRuleItem> items, boolean immutable) {
         this.items = items;
+        this.immutable = immutable;
     }
     
     /** @return a list of Css rule items. */
@@ -82,16 +85,27 @@ public class CssRuleContent {
         if(item == null && newValue.length() == 0) {
             return ; //TODO: marek - should be fixed in the UI so it doesn't fire such stupid events
         }
-        
         if (item != null && newValue.length() == 0) {
             //property remove
+            if(!immutable) {
+                items.remove(item);
+            }
             firePropertyChange(item, null); //NOI18N
         } else {
             String oldVal = item == null ? null : item.value().name();
             //do not fire events when the old and new values are the same
             if(oldVal == null || !newValue.equals(oldVal)) {
                 //property add or modify
-                firePropertyChange(item, new CssRuleItem(property, -1, newValue, -1)); //NOI18N
+                CssRuleItem newRuleItem = new CssRuleItem(property, -1, newValue, -1);
+                if (!immutable) {
+                    if (item == null) {
+                        items.add(newRuleItem);
+                    } else {
+                        item.key = new CssRuleItem.Item(property, -1);
+                        item.value = new CssRuleItem.Item(newValue, -1);
+                    }
+                }
+                firePropertyChange(item, newRuleItem); //NOI18N
             }
         }
     }

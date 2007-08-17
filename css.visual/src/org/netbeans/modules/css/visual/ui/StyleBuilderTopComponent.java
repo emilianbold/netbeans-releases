@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.css.visual.ui;
 
+import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.css.visual.api.StyleBuilderPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -160,7 +161,7 @@ public final class StyleBuilderTopComponent extends TopComponent {
         }
     }
     
-    public void setContent(CssPreviewable.Content content){
+    public void setContent(CssRuleContext content){
         CssRule rule = content.selectedRule();
         setName((rule != null ? rule.name() + " - " : "") + DEFAULT_TC_NAME);//NOI18N
         styleBuilderPanel.setContent(content);

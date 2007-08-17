@@ -36,6 +36,7 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import org.netbeans.modules.css.model.CssRule;
 import org.netbeans.modules.css.model.CssRuleItem;
+import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.css.visual.ui.StyleBuilderTopComponent;
 import org.netbeans.modules.css.visual.ui.preview.CSSTCController;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
@@ -342,8 +343,8 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
             
             
             //update the css preview
-            CssPreviewable.Content content =
-                    new CssPreviewable.Content(selectedRule, document, getDataObject().getPrimaryFile());
+            CssRuleContext content =
+                    new CssRuleContext(selectedRule, model, document, getDataObject().getPrimaryFile());
 
             //activate the selected rule in stylebuilder
             StyleBuilderTopComponent sbTC = StyleBuilderTopComponent.findInstance();
@@ -363,7 +364,7 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
         previewableListeners.remove(l);
     }
     
-    public CssPreviewable.Content content() {
+    public CssRuleContext content() {
         Document document = getDocument();
         if(document == null) {
             //already unloaded
@@ -372,11 +373,11 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
         if(selected == null) {
             return null;
         } else {
-            return new CssPreviewable.Content(selected, document, getDataObject().getPrimaryFile());
+            return new CssRuleContext(selected, CssModel.get(document), document, getDataObject().getPrimaryFile());
         }
     }
     
-    private void firePreviewableActivated(CssPreviewable.Content content) {
+    private void firePreviewableActivated(CssRuleContext content) {
         for(CssPreviewable.Listener l : previewableListeners) {
             l.activate(content);
         }

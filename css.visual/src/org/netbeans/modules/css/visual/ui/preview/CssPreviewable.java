@@ -19,9 +19,7 @@
 
 package org.netbeans.modules.css.visual.ui.preview;
 
-import javax.swing.text.Document;
-import org.netbeans.modules.css.model.CssRule;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.openide.nodes.Node;
 
 /**
@@ -36,50 +34,15 @@ public interface CssPreviewable extends Node.Cookie {
     
     public void removeListener(Listener l);
     
-    public Content content();
+    public CssRuleContext content();
     
     public interface Listener {
         
         /** called when the css model or selected rule has changed. */
-        public void activate(Content content);
+        public void activate(CssRuleContext content);
         
         /** called when the css model is broken or no rule selected. */
         public void deactivate();
     }
     
-    public final class Content {
-        
-        private FileObject source;
-        private Document doc;
-        private CssRule selectedRule;
-        
-        public Content(CssRule selectedRule, Document doc, FileObject source) {
-            this.selectedRule = selectedRule;
-            this.source = source;
-            this.doc = doc;
-        }
-        
-        public CssRule selectedRule() {
-            return selectedRule;
-        }
-        
-        public FileObject fileObject() {
-            return source;
-        }
-        
-        public Document document() {
-            return doc;
-        }
-        
-        public boolean equals(Object o) {
-            if(!(o instanceof Content)) {
-                return false;
-            } else {
-                Content c = (Content)o;
-                return c.document() == document() 
-                        && c.fileObject() == fileObject()
-                        && c.selectedRule() == selectedRule();
-            }
-        }
-    }
 }
