@@ -47,6 +47,8 @@ import java.math.BigInteger;
 import java.net.*;
 import java.util.*;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -765,7 +767,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                     subTypeValue = ReflectionHelper.getStructureValue((NodeData)parentData,member,this.getRuntimeClassLoader(),
                             this.getPackageName());
                 } catch(WebServiceReflectionException wsfe) {
-                    
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, wsfe.getLocalizedMessage(), wsfe);
                 }
             }
             ResultNodeData data = new ResultNodeData(memberType,subTypeValue);
@@ -914,7 +916,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                 try {
                     value = new URI("http://java.sun.com");
                 } catch(URISyntaxException uri) {
-                    
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, uri.getLocalizedMessage(), uri);
                 }
             } else if(currentType.equals(Calendar.class.getName())) {
                 value = Calendar.getInstance();

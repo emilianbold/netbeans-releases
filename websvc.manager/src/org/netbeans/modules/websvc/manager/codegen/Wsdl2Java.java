@@ -40,6 +40,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ProxySelector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 
 
@@ -120,6 +122,7 @@ public class Wsdl2Java {
                 
             }catch (Exception ex) {
                 properties.put(PROXY_SERVER, "");
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
             
             boolean jaxWsCreated = createJaxWsProxyJars(properties);
@@ -170,6 +173,7 @@ public class Wsdl2Java {
                     
                     deleteWsDir(home);
                 }catch (NullPointerException ex) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             }
             
@@ -198,6 +202,7 @@ public class Wsdl2Java {
                     
                     deleteWsDir(home);
                 }catch (NullPointerException ex) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             }
             

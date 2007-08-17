@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeWillExpandListener;
@@ -99,6 +101,7 @@ public final class TreePathSupport {
             layout.setExpandedState(path, true);
             fireTreeExpansion(e, true);
         } catch (ExpandVetoException eve) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, eve.getLocalizedMessage(), eve);
             fireTreeExpansionVetoed (e, eve);
         }
     }
@@ -119,6 +122,7 @@ public final class TreePathSupport {
             layout.setExpandedState(path, false);
             fireTreeExpansion(e, false);
         } catch (ExpandVetoException eve) {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, eve.getLocalizedMessage(), eve);
             fireTreeExpansionVetoed (e, eve);
         }
     }

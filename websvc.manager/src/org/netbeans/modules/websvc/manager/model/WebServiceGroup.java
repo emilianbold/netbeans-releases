@@ -21,6 +21,8 @@ package org.netbeans.modules.websvc.manager.model;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A model to keep track of web service group
@@ -154,6 +156,7 @@ public class WebServiceGroup {
             WebServiceGroup g2 = (WebServiceGroup)o;
             return g2.getId().equals(getId());
         }catch (Exception ex) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             return false;
         }
     }

@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 
 /**
@@ -91,6 +93,7 @@ public class WebServiceDescriptor {
         try {
             return new java.net.URL(wsdl);
         } catch (MalformedURLException ex) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             return null;
         }
     }
@@ -193,6 +196,7 @@ public class WebServiceDescriptor {
                 JarEntry entry = (JarEntry)o;
                 return entry.name.equals(name) && entry.type.equals(type);
             }catch (Exception ex) {
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
                 return false;
             }
         }
