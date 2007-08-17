@@ -89,17 +89,33 @@ public final class DDType {
         return factory;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if(obj == null) {
             return false;
         }
+        if(obj == this) {
+            return true;
+        }
         if(getClass() != obj.getClass()) {
             return false;
         }
+
         final DDType other = (DDType) obj;
+        if(!viewFactoryClass.equals(other.viewFactoryClass)) {
+            return false;
+        }
+        if(!moduleType.equals(other.moduleType)) {
+            return false;
+        }
+        if(!descriptorName.equals(other.descriptorName)) {
+            return false;
+        }
+        
         return true;
     }
 
+    @Override
     public int hashCode() {
         int hash = 7;
         hash = 37 * hash + (descriptorName != null ? descriptorName.hashCode() : 0);
