@@ -23,9 +23,7 @@ package org.netbeans.modules.uml.core.metamodel.core.foundation;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.Namespace;
 import org.dom4j.Node;
-import org.dom4j.QName;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -35,7 +33,6 @@ import java.util.List;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
-import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.URILocator;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
@@ -43,14 +40,7 @@ import org.netbeans.modules.uml.core.eventframework.EventBlocker;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
-/**
- * <p>Title: </p>
- * <p>Description: </p>
- * <p>Copyright: Copyright (c) 2003</p>
- * <p>Company: </p>
- * @author not attributable
- * @version 1.0
- */
+
 
 public class VersionableElement implements IVersionableElement
 {
@@ -59,8 +49,8 @@ public class VersionableElement implements IVersionableElement
      * through its accessor and mutator, so that subclasses can point our 
      * methods at other Nodes.
      */
-	 protected Node m_Node = null;
-	 protected org.dom4j.Node m_DOMNode = null;
+    protected Node m_Node = null;
+    protected org.dom4j.Node m_DOMNode = null;
     private WeakReference aggregator = new WeakReference( this );
     private boolean m_IsCloned = false;
 	
@@ -614,7 +604,7 @@ private void fullDelete(List list) {
 							// Find out where this element is being referenced
 							// throughout the document 
 							cleanReferences(doc, xmiid);
-						}
+						} 
 					}
 				}
 				

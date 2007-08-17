@@ -1041,6 +1041,21 @@ public class ETClassDrawEngine extends ETNodeDrawEngine
                 if (addedOrRemovedCompartment || checkTemplate())
                     setIsDirty();
             }
+            
+            // Fixed iz=78803. Update the operation compartment when there's 
+            // any change to the Operation element, e.g. parameter deleted, modified...)
+            String featureType = feature != null ? feature.getElementType() : "";
+            
+            if ( nKind == ModelElementChangedKind.MECK_ELEMENTMODIFIED  &&
+                    featureType.equals("Operation") )
+            {    
+                IADOperationListCompartment operationsCompartment = 
+                        getCompartmentByKind(IADOperationListCompartment.class);
+                if ( operationsCompartment != null)
+                {
+                    operationsCompartment.modelElementHasChanged(pTargets);
+                }
+            }
         }
         
         if ((nKind != ModelElementChangedKind.MECK_ELEMENTMODIFIED || isTaggedValue) && !addedOrRemovedCompartment)

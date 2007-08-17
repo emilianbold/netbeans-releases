@@ -48,6 +48,7 @@ import org.netbeans.modules.uml.project.ui.nodes.actions.NewPackageType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewElementType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewAttributeType;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewOperationType;
+import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.netbeans.modules.uml.ui.swing.drawingarea.DiagramEngine;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -643,11 +644,14 @@ public class UMLModelElementNode extends UMLElementNode
         // defensive null checks; getParentItem was returning null for sure
         // causing NPEs and InvocationTargetExceptions
         if (element != null && element.isSame(getModelElement()))
-        {
-            if (getParentItem() != null)
-                getParentItem().removeChild(this);
+        {   
+            ITreeItem parentItem = getParentItem();
+            if (parentItem != null)
+            {
+                parentItem.removeChild(this);
+            }
         }
-    }
+   }
     
     public void onElementCreated(
         IVersionableElement element, IResultCell cell) {}

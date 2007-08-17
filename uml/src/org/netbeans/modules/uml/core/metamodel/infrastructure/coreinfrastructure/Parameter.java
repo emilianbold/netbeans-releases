@@ -26,9 +26,11 @@ import org.dom4j.Node;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementChangeDispatchHelper;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementCollector;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementChangeDispatchHelper;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IExpression;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
@@ -37,7 +39,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableEleme
 import org.netbeans.modules.uml.core.metamodel.core.foundation.NamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
-import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
@@ -410,6 +411,23 @@ public class Parameter extends NamedElement implements
     }
 
     /**
+    * Fires an event to update the operation that owns this paramter.
+    * This method is called when there's any change made to the parameter.
+    * @param thisElement[in] The COM object representing this element
+    */
+    @Override
+    public void performDependentElementCleanup(IVersionableElement elem) 
+    {
+        super.performDependentElementCleanup(elem);
+        IElement opElem = getOwner();
+        if (opElem != null) 
+        {
+            IElementChangeDispatchHelper helper = new ElementChangeDispatchHelper();
+            helper.dispatchElementModified(opElem);
+        }
+    }
+
+    /**
      * Establishes the appropriate XML elements for this UML type.
      *
      * [in] The document where this element will reside
@@ -574,6 +592,4 @@ public class Parameter extends NamedElement implements
         
         return true;
     }
-
-    
 }
