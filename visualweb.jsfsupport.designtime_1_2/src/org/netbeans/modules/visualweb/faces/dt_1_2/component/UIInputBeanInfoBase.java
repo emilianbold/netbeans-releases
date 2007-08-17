@@ -146,7 +146,7 @@ public abstract class UIInputBeanInfoBase extends UIOutputBeanInfoBase {
             try {
                 eventSetDescriptors = new EventSetDescriptor[] {
                     
-                    new EventSetDescriptor("validator", Validator.class,  //NOI18N
+                    new EventSetDescriptor("validate", Validator.class,  //NOI18N
                             new Method[] {
                         Validator.class.getMethod("validate",  //NOI18N
                                 new Class[] {FacesContext.class, UIComponent.class, Object.class})},
