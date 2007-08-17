@@ -24,7 +24,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Checkout the rest of required modules for the NB IDE itself
-ant -f nbbuild/build.xml checkout >> $CVS_CHECKOUT_LOG 2>&1
+ant -f nbbuild/build.xml checkout -Dcluster.config=stableuc >> $CVS_CHECKOUT_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then

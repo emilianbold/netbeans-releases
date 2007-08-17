@@ -24,7 +24,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Get the list of modules for the update/checkout
-CVS_MODULES=`ant -f nbbuild/build.xml print-cvs-modules | grep "cvsmodules=" | cut -f 2 -d "=" | tr "[" " " | tr "]" " " | tr "," " "` 
+CVS_MODULES=`ant -f nbbuild/build.xml print-cvs-modules -Dcluster.config=stableuc | grep "cvsmodules=" | cut -f 2 -d "=" | tr "[" " " | tr "]" " " | tr "," " "` 
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
