@@ -26,31 +26,8 @@
 <!-- End of "About" section -->
 
         <!-- Start of "Create" section -->
-		<!-- Start of "Create/About" subsection -->
-		<!--
-                <mapID target="about_create_webapps" url="web/create/about/about_create_webapps.html" />
-		<mapID target="about_create_webcomps" url="web/create/about/about_create_webcomps.html" />
-		<mapID target="about_struct_webapps" url="web/create/about/about_struct_webapps.html" />
-		<mapID target="create_webapps_proj" url="web/create/about/create_webapps_proj.html" />
-                -->
-		<!-- End of "Create/About" subsection -->
-	        
-		<!-- Start of "Create/JSP" subsection -->
-		<!-- <mapID target="about_jsp_edit" url="web/create/jsp/about_jsp_edit.html" />
-		<mapID target="about_jsp_syntax" url="web/create/jsp/about_jsp_syntax.html" />
-		<mapID target="about_jsp_technology" url="web/create/jsp/about_jsp_technology.html" />
-		<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html" />
-        	<mapID target="jsp_create" url="web/create/jsp/jsp_create.html" />
-		<mapID target="jsp_edit" url="web/create/jsp/jsp_edit.html" />
-		<mapID target="jsp_queryparams" url="web/create/jsp/jsp_queryparams.html" />
-		<mapID target="jsp_run" url="web/create/jsp/jsp_run.html" />
-		<mapID target="jsp_servletview" url="web/create/jsp/jsp_servletview.html" />
-		<mapID target="jsp_usetaglib" url="web/create/jsp/jsp_usetaglib.html" />
-		<mapID target="jsp_useapplet" url="web/create/jsp/jsp_useapplet.html" />
-		<mapID target="about_jsp_encoding" url="web/create/jsp/about_jsp_encoding.html" />
-		<mapID target="jsp_encoding_page" url="web/create/jsp/jsp_encoding_page.html" />
-		<mapID target="jsp_encoding_request" url="web/create/jsp/jsp_encoding_request.html" />
-		<mapID target="jsp_encoding_response" url="web/create/jsp/jsp_encoding_response.html" />
+
+
 <mapID target="jsp_connectionpool_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
 <mapID target="jsp_compilation_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_enable_1_5.html" />
 <mapID target="tomcat_jwsdp" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_websvc_jwsdp.html" />
