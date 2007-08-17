@@ -27,6 +27,7 @@ package org.netbeans.modules.mobility.project.ui.wizard;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.MissingResourceException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -46,10 +47,15 @@ import org.openide.util.NbBundle;
 public class PlatformInstallPanel extends javax.swing.JPanel {
     
     ActionListener listener = null;
-    final private String platformType;
+    private String platformType;
     /** Creates new form PlatformInstallPanel */
     public PlatformInstallPanel(String pt) {
-        platformType=pt;
+        platformType=pt.toUpperCase();
+        try {
+            platformType = NbBundle.getMessage(PlatformInstallPanel.class, "LBL_PlatformType_" + platformType);//NOI18N
+        } catch (MissingResourceException mre) {
+            //ignore
+        }
         initComponents();
         initAccessibility();
     }
@@ -86,7 +92,7 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jLabel1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(PlatformInstallPanel.class, "LBL_Platform_Info2",platformType.toUpperCase())); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(PlatformInstallPanel.class, "LBL_Platform_Info2",platformType)); // NOI18N
         jLabel2.setMaximumSize(new java.awt.Dimension(500, 60));
         jLabel2.setMinimumSize(new java.awt.Dimension(500, 30));
         jLabel2.setPreferredSize(new java.awt.Dimension(500, 30));

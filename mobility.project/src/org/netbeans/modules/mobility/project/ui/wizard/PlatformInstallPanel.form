@@ -43,7 +43,7 @@
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/wizard/Bundle.properties" key="LBL_Platform_Info2" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;,platformType.toUpperCase())"/>
+          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/wizard/Bundle.properties" key="LBL_Platform_Info2" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;,platformType)"/>
         </Property>
         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[500, 60]"/>
