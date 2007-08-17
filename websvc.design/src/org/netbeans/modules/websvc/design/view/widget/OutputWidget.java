@@ -36,8 +36,8 @@ import org.openide.util.Utilities;
  */
 public class OutputWidget extends AbstractTitledWidget implements TabWidget{
     
-    private static final Image IMAGE  = Utilities.loadImage
-            ("org/netbeans/modules/websvc/design/view/resources/output.png"); // NOI18N
+//    private static final Image IMAGE  = Utilities.loadImage
+//            ("org/netbeans/modules/websvc/design/view/resources/output.png"); // NOI18N
     
     private MethodModel method;
     private transient Widget buttons;

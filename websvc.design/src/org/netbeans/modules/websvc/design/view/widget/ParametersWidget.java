@@ -37,8 +37,8 @@ import org.openide.util.Utilities;
  */
 public class ParametersWidget extends AbstractTitledWidget implements TabWidget {
     
-    private static final Image IMAGE  = Utilities.loadImage
-            ("org/netbeans/modules/websvc/design/view/resources/input.png"); // NOI18N   
+//    private static final Image IMAGE  = Utilities.loadImage
+//            ("org/netbeans/modules/websvc/design/view/resources/input.png"); // NOI18N   
 
     private transient MethodModel method;
 
