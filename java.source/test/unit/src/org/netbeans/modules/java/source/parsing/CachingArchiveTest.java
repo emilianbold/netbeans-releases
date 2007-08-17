@@ -112,7 +112,7 @@ public class CachingArchiveTest extends NbTestCase {
                     if (basename.length() == 0) {
                         continue;
                     }
-                    Iterable<? extends JavaFileObject> res = a.getFiles(dirname, null, null);
+                    Iterable<? extends JavaFileObject> res = a.getFiles(dirname, null, null, null);
                     for (JavaFileObject jfo : res) {
                         if (jfo.toUri().toString().endsWith('/'+basename)) {
                             assertEquals (entry.getTime(),jfo.getLastModified());
@@ -131,7 +131,7 @@ public class CachingArchiveTest extends NbTestCase {
                     if (basename.length() == 0) {
                         continue;
                     }
-                    Iterable<? extends JavaFileObject> res = a.getFiles(dirname, null, null);
+                    Iterable<? extends JavaFileObject> res = a.getFiles(dirname, null, null, null);
                     for (JavaFileObject jfo : res) {
                         if (jfo.toUri().toString().endsWith('/'+basename)) {
                             assertEquals (entry.getTime(),jfo.getLastModified());
