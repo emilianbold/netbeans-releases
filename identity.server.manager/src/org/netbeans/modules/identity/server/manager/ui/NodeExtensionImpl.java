@@ -37,14 +37,12 @@ public class NodeExtensionImpl extends NodeExtension {
         try {
             SunDeploymentManagerInterface deployMgr = (SunDeploymentManagerInterface) controller.getDeploymentManager();
             String root = deployMgr.getPlatformRoot().getPath();
-            System.out.println("root = " + root);
             String host = deployMgr.getHost();
             int port = deployMgr.getPort();
-            String url = "[" + root + "]deployer:Sun:AppServer::" + host + ":" + port;
-
-            System.out.println("url = " + url);
-
+            String url = "[" + root + "]deployer:Sun:AppServer::" + host + ":" + port;      //NOI18N
+            
             ServerInstance instance = ServerManager.getDefault().getServerInstance(url);
+            
             return new ServerInstanceNode(instance);
         } catch (ConfiguratorException ex) {
             return null;
