@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:attribute name="name">xjc-typedef-target</xsl:attribute>
                 <xsl:attribute name="depends">-init-project</xsl:attribute>
                 <typedef classname="com.sun.tools.xjc.XJCTask" name="xjc">
-                    <classpath path="${{libs.jaxb20.classpath}}"/>
+                    <classpath path="${{libs.jaxb21.classpath}}"/>
                 </typedef>
             </xsl:element>
             <xsl:element name="target">
@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
                 <mkdir dir="${{build.classes.dir}}"/>
                 <xsl:apply-templates select="s:schemas/s:schema"/>
                 <javac destdir="${{build.classes.dir}}" srcdir="build/generated/addons/jaxb" source="${{javac.source}}"  target="${{javac.target}}">
-                    <classpath path="${{libs.jaxb20.classpath}}"/>
+                    <classpath path="${{libs.jaxb21.classpath}}"/>
                 </javac>
             </xsl:element>             
         </xsl:element>
