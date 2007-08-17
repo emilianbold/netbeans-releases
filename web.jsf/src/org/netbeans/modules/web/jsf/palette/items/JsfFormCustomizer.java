@@ -125,11 +125,9 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         jFileChooser1.setCurrentDirectory(null);
 
         populate.add(empty);
-        empty.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_rbEmptyForm").charAt(0));
         empty.setSelected(true);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(empty, bundle.getString("LBL_Empty_Form")); // NOI18N
-        empty.setLabel(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "LBL_rbEmptyForm")); // NOI18N
         empty.setMargin(new java.awt.Insets(0, 0, 0, 0));
         empty.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -138,7 +136,6 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         });
 
         populate.add(fromBean);
-        fromBean.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_Form_From_Entity").charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(fromBean, bundle.getString("LBL_Form_From_Entity")); // NOI18N
         fromBean.setMargin(new java.awt.Insets(0, 0, 0, 0));
         fromBean.addItemListener(new java.awt.event.ItemListener() {
@@ -147,11 +144,9 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
             }
         });
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_tfEntityClass").charAt(0));
         jLabel1.setLabelFor(classTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("LBL_GetProperty_Bean")); // NOI18N
 
-        jButton1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_Browse").charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, bundle.getString("LBL_Browse")); // NOI18N
         jButton1.setEnabled(false);
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -161,13 +156,11 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         });
 
         viewType.add(detail);
-        detail.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_View_Detail").charAt(0));
         detail.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(detail, bundle.getString("LBL_View_Detail")); // NOI18N
         detail.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         viewType.add(edit);
-        edit.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_View_Edit").charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(edit, bundle.getString("LBL_View_Edit")); // NOI18N
         edit.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -206,8 +199,13 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
                     .add(detail)))
         );
 
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSL_EntytyClass")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_EntytyClass")); // NOI18N
+        jButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSL_Browse")); // NOI18N
+        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_Browse")); // NOI18N
+        detail.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "RB_ReadOnly")); // NOI18N
         detail.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_ReadOnly")); // NOI18N
-        edit.getAccessibleContext().setAccessibleName("Editable");
+        edit.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSN_Editable")); // NOI18N
         edit.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_Editable")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(errorField, bundle.getString("MSG_No_Managed_Beans")); // NOI18N

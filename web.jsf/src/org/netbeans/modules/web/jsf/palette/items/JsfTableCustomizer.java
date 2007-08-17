@@ -121,12 +121,10 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
 
         jFileChooser1.setCurrentDirectory(null);
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_EntytyClass").charAt(0));
         jLabel1.setLabelFor(classTextField);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("LBL_GetProperty_Bean")); // NOI18N
 
-        jButton1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_Browse").charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, bundle.getString("LBL_Browse")); // NOI18N
         jButton1.setEnabled(false);
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -136,7 +134,6 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
         });
 
         populate.add(empty);
-        empty.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_Empty_Table").charAt(0));
         empty.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(empty, bundle.getString("LBL_Empty_Table")); // NOI18N
         empty.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -147,7 +144,6 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
         });
 
         populate.add(fromBean);
-        fromBean.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_Table_From_Entity").charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(fromBean, bundle.getString("LBL_Table_From_Entity")); // NOI18N
         fromBean.setMargin(new java.awt.Insets(0, 0, 0, 0));
         fromBean.addItemListener(new java.awt.event.ItemListener() {
@@ -171,7 +167,7 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
                         .add(17, 17, 17)
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
+                        .add(classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jButton1))
                     .add(errorField))
@@ -194,6 +190,10 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfTableCustomizer.class, "ACSN_EntytyClass")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfTableCustomizer.class, "ACSD_EntytyClass")); // NOI18N
+        jButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfTableCustomizer.class, "ACSL_Browse")); // NOI18N
+        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfTableCustomizer.class, "ACSD_Browse")); // NOI18N
         empty.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfTableCustomizer.class, "ACSN_EmptyTable")); // NOI18N
         empty.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfTableCustomizer.class, "ACSD_EmptyTable")); // NOI18N
         fromBean.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfTableCustomizer.class, "ACSN_GeneratedTable")); // NOI18N
