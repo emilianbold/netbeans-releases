@@ -19,8 +19,9 @@
 package org.netbeans.modules.refactoring.java.api;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.TreeSet;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -140,8 +141,11 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
 
         TypeMirror subtypeMirror = subTypeElement.asType();
         Types types = compCtlr.getTypes();
-        HashSet<TypeMirror> finalSuperTypeMirrors = new HashSet<TypeMirror>();
-        HashSet<TypeMirror> workingTypeMirrors = new HashSet<TypeMirror>();
+        Comparator<TypeMirror> comparator = new TypeMirrorComparator();
+        //TODO:The working set (workingTypeMirrors) doesn't have to be a TreeSet. 
+        //Why unnecessarily do the additional work of ordering in an intermediate Set?
+        TreeSet<TypeMirror> finalSuperTypeMirrors = new TreeSet<TypeMirror>(comparator);
+        TreeSet<TypeMirror> workingTypeMirrors = new TreeSet<TypeMirror>(comparator);
         workingTypeMirrors.add(subtypeMirror);
         getAllSuperIFs(subtypeMirror, workingTypeMirrors, finalSuperTypeMirrors,
                 compCtlr);
@@ -169,6 +173,15 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
             }
         }
         return;
+    }
+
+    //Compares two types alphabetically based on their fully qualified name
+    private static class TypeMirrorComparator implements Comparator<TypeMirror>{
+
+        public int compare(TypeMirror type1, TypeMirror type2) {
+            return type1.toString().compareTo(type2.toString());
+        }
+        
     }
     
 }

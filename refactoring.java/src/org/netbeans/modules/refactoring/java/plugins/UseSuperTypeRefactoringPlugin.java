@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -18,13 +18,17 @@
  */
 
 package org.netbeans.modules.refactoring.java.plugins;
+
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -52,9 +56,9 @@ import org.openide.util.NbBundle;
  * behalf of the use super type refactoring
  */
 public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
-    
+
     private final UseSuperTypeRefactoring refactoring;
-    
+
     /**
      * Creates a new instance of UseSuperTypeRefactoringPlugin
      * @param refactoring The refactoring to be used by this plugin
@@ -62,7 +66,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
     public UseSuperTypeRefactoringPlugin(UseSuperTypeRefactoring refactoring) {
         this.refactoring = refactoring;
     }
-    
+
     /**
      * Prepares the underlying where used query & checks
      * for the visibility of the target type.
@@ -72,13 +76,14 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         replaceSubtypeUsages(subClassHandle, refactoringElements);
         return null;
     }
-    
+
     protected JavaSource getJavaSource(Phase p) {
         switch (p) {
-        default: 
-            return JavaSource.forFileObject(refactoring.getTypeElement().getFileObject());
+            default:
+                return JavaSource.forFileObject(refactoring.getTypeElement().getFileObject());
         }
     }
+
     /**
      *Checks whether the candidate element is a valid Type.
      *@return Problem The problem instance indicating that an invalid element was selected.
@@ -93,7 +98,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         //        }
         return null;
     }
-    
+
     /**
      * @return A problem indicating that no super type was selected.
      */
@@ -104,7 +109,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         }
         return null;
     }
-    
+
     /**
      * A no op. Returns null
      */
@@ -112,44 +117,36 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
     public Problem checkParameters() {
         return null;
     }
-    
+
     //---------private  methods follow--------
-    
-    private void replaceSubtypeUsages(final TreePathHandle subClassHandle,
-            final RefactoringElementsBag elemsBag){
+
+    private void replaceSubtypeUsages(final TreePathHandle subClassHandle, final RefactoringElementsBag elemsBag) {
         JavaSource javaSrc = JavaSource.forFileObject(subClassHandle.getFileObject());
-        
-        
-        try{
+
+
+        try {
             javaSrc.runUserActionTask(new CancellableTask<CompilationController>() {
-                
+
                 public void cancel() {
                 }
-                
+
                 public void run(CompilationController complController) throws IOException {
                     complController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    
+
                     FileObject fo = subClassHandle.getFileObject();
                     ClasspathInfo classpathInfo = getClasspathInfo(refactoring);
-                    
+
                     ClassIndex clsIndx = classpathInfo.getClassIndex();
                     TypeElement javaClassElement = (TypeElement) subClassHandle.
                             resolveElement(complController);
-                    EnumSet<ClassIndex.SearchKind> typeRefSearch = EnumSet.of(ClassIndex.SearchKind.
-                            TYPE_REFERENCES);
-                    Set<FileObject> refFileObjSet = clsIndx.getResources(ElementHandle.
-                            create(javaClassElement), typeRefSearch,
-                            EnumSet.of(ClassIndex.SearchScope.SOURCE));
-                    
-                    
-                    if(! refFileObjSet.isEmpty()){
-                        fireProgressListenerStart(AbstractRefactoring.PREPARE,
-                                refFileObjSet.size());
-                        
-                        Collection<ModificationResult> results =
-                                processFiles(refFileObjSet,
-                                new FindRefTask(subClassHandle,
-                                refactoring.getTargetSuperType()));
+                    EnumSet<ClassIndex.SearchKind> typeRefSearch = EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES);
+                    Set<FileObject> refFileObjSet = clsIndx.getResources(ElementHandle.create(javaClassElement), typeRefSearch, EnumSet.of(ClassIndex.SearchScope.SOURCE));
+
+
+                    if (!refFileObjSet.isEmpty()) {
+                        fireProgressListenerStart(AbstractRefactoring.PREPARE, refFileObjSet.size());
+
+                        Collection<ModificationResult> results = processFiles(refFileObjSet, new FindRefTask(subClassHandle, refactoring.getTargetSuperType()));
                         elemsBag.registerTransaction(new RetoucheCommit(results));
                         for (ModificationResult result : results) {
                             for (FileObject fileObj : result.getModifiedFileObjects()) {
@@ -164,30 +161,30 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                     }
                 }
             }, false);
-        }catch(IOException ioex){
+        } catch (IOException ioex) {
             ioex.printStackTrace();
-        }finally{
+        } finally {
             fireProgressListenerStop();
         }
         return;
     }
-    
-    private final class FindRefTask implements CancellableTask<WorkingCopy>{
-        
+
+    private final class FindRefTask implements CancellableTask<WorkingCopy> {
+
         private final TreePathHandle subClassHandle;
         private final ElementHandle superClassHandle;
-        private FindRefTask(TreePathHandle subClassHandle, ElementHandle
-                superClassHandle){
+
+        private FindRefTask(TreePathHandle subClassHandle, ElementHandle superClassHandle) {
             this.subClassHandle = subClassHandle;
             this.superClassHandle = superClassHandle;
         }
-        
+
         public void cancel() {
         }
-        
+
         public void run(WorkingCopy compiler) throws Exception {
-            try{
-                if (compiler.toPhase(JavaSource.Phase.RESOLVED)!= JavaSource.Phase.RESOLVED) {
+            try {
+                if (compiler.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
                     return;
                 }
                 CompilationUnitTree cu = compiler.getCompilationUnit();
@@ -198,61 +195,119 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                 Element subClassElement = subClassHandle.resolveElement(compiler);
                 Element superClassElement = superClassHandle.resolve(compiler);
                 assert subClassElement != null;
-                ReferencesVisitor findRefVisitor = new ReferencesVisitor(compiler,
-                        subClassElement, superClassElement);
+                ReferencesVisitor findRefVisitor = new ReferencesVisitor(compiler, subClassElement, superClassElement);
                 findRefVisitor.scan(compiler.getCompilationUnit(), subClassElement);
-            }finally{
+            } finally {
                 fireProgressListenerStep();
             }
         }
     }
-    
-    private static class ReferencesVisitor extends RefactoringVisitor{
-        private final Element superTypeElement;
-        private final Element subTypeElement;
-        private ReferencesVisitor(WorkingCopy workingCopy, Element subClassElement,
-                Element superClassElement){
+
+    private static class ReferencesVisitor extends RefactoringVisitor {
+
+        private final TypeElement superTypeElement;
+        private final TypeElement subTypeElement;
+
+        private ReferencesVisitor(WorkingCopy workingCopy, Element subClassElement, Element superClassElement) {
             try {
                 setWorkingCopy(workingCopy);
             } catch (ToPhaseException phase) {
                 //should never be thrown;
                 Exceptions.printStackTrace(phase);
             }
-            this.superTypeElement = superClassElement;
-            this.subTypeElement = subClassElement;
+            this.superTypeElement = (TypeElement) superClassElement;
+            this.subTypeElement = (TypeElement) subClassElement;
         }
-        
+
+        @Override
+        public Tree visitMemberSelect(MemberSelectTree memSelTree, Element elemToFind) {
+            Element elem = asElement(memSelTree);
+            if (isStatic(elem)) {
+                Element expreElem = asElement(memSelTree.getExpression());
+                //If a static member was referenced using the object instead 
+                //of the class, don't handle it here.
+                if(! (ElementKind.CLASS.equals(expreElem.getKind()) || 
+                        ElementKind.INTERFACE.equals(expreElem.getKind()))){
+                    return super.visitMemberSelect(memSelTree, elemToFind);
+                }
+                TypeElement type = (TypeElement) expreElem;
+                if (!subTypeElement.equals(type)) {
+                    return super.visitMemberSelect(memSelTree, elemToFind);
+                }
+                if (hidesSupTypeMember(elem, superTypeElement)) {
+                    replaceType(memSelTree, superTypeElement);
+                }
+            }
+            return super.visitMemberSelect(memSelTree, elemToFind);
+        }
+
+
         @Override
         public Tree visitVariable(VariableTree varTree, Element elementToMatch) {
-            Element typeElement = workingCopy.getTrees().getElement(getCurrentPath());
             TreePath treePath = getCurrentPath();
             VariableElement varElement = (VariableElement) workingCopy.
                     getTrees().getElement(treePath);
+
+
+            //This check shouldn't be needed (ideally).
+            if (varElement == null) {
+                return super.visitVariable(varTree, elementToMatch);
+            }
             TypeMirror varType = varElement.asType();
-            if(varType.equals(elementToMatch.asType())){
-                if(isReplaceCandidate(varElement)){
+            Types types = workingCopy.getTypes();
+            TypeMirror typeToMatch = elementToMatch.asType();
+            if (types.isSameType(varType, elementToMatch.asType())) {
+                if (isReplaceCandidate(varElement)) {
                     replaceWithSuperType(varTree, superTypeElement);
                 }
             }
             return super.visitVariable(varTree, elementToMatch);
         }
-        
-        private boolean isReplaceCandidate(VariableElement varElement){
-            VarUsageVisitor varUsagesVisitor = new VarUsageVisitor(workingCopy,
-                    (TypeElement) superTypeElement);
-            varUsagesVisitor.scan(workingCopy.getCompilationUnit(),
-                    varElement);
+
+        private boolean hidesSupTypeMember(Element methElement, TypeElement superTypeElement) {
+            Elements elements = workingCopy.getElements();
+            List<? extends Element> containedElements = elements.getAllMembers(superTypeElement);
+            for (Element elem : containedElements) {
+                if (isStatic(elem) && elements.hides(methElement, elem)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean isReplaceCandidate(VariableElement varElement) {
+            VarUsageVisitor varUsagesVisitor = new VarUsageVisitor(subTypeElement,
+                    workingCopy, superTypeElement);
+            varUsagesVisitor.scan(workingCopy.getCompilationUnit(), varElement);
             return varUsagesVisitor.isReplaceCandidate();
         }
-        
-        private void replaceWithSuperType(VariableTree oldVarTree, Element superClassElement){
-            Tree superTypeTree = make.Type(superClassElement.asType());
+
+        private boolean isStatic(Element element) {
+            Set<Modifier> modifiers = element.getModifiers();
+            return modifiers.contains(Modifier.STATIC);
+        }
+
+        private void replaceType(MemberSelectTree memSelTree, Element superTypeElement) {
+            MemberSelectTree newTree = make.MemberSelect(
+                    make.Identifier(superTypeElement), memSelTree.getIdentifier());
+            rewrite(memSelTree, newTree);
+        }
+
+        private void replaceWithSuperType(VariableTree oldVarTree, Element superTypeElement) {
+            Tree superTypeTree = make.Type(superTypeElement.asType());
             ExpressionTree oldInitTree = oldVarTree.getInitializer();
             ModifiersTree oldModifiers = oldVarTree.getModifiers();
-            Tree newTree = make.Variable(oldModifiers, oldVarTree.getName(),
+            Tree newTree = make.Variable(oldModifiers, oldVarTree.getName(), 
                     superTypeTree, oldInitTree);
             rewrite(oldVarTree, newTree);
         }
-        
+
+        private Element asElement(Tree tree) {
+            Trees treeUtil = workingCopy.getTrees();
+            TreePath treePath = treeUtil.getPath(workingCopy.getCompilationUnit(), tree);
+            Element element = treeUtil.getElement(treePath);
+            return element;
+        }
+
     }
 }
