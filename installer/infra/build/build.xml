@@ -230,7 +230,13 @@
 	    file="${temp.file}" 
             prefix="wsrp"/>
 
-        
+        <get
+            src="${portalpack.builds.host}/hudson/job/PortalPack_trunk_Nightly_Build/lastSuccessfulBuild/buildNumber"
+            dest="${temp.file}"/>
+        <loadfile property="portalpack.build.number"
+      	    srcFile="${temp.file}"/>
+
+
         <property name="javaeesdk-javadocs.build.number" value="20060907"/>
         
         <!--
@@ -286,6 +292,7 @@ nb.builds.host=${nb.builds.host}
 glassfish.builds.host=${glassfish.builds.host}
 openesb.builds.host=${openesb.builds.host}
 sjsam.builds.host=${sjsam.builds.host}
+portalpack.builds.host=${portalpack.builds.host}
 
 remote.work.dir=~/.netbeans-trunk-nightly-${build.number}
 	</echo>
@@ -346,6 +353,7 @@ portletcontainer.micro.number=${portletcontainer.micro.number}
 
 wsrp.milestone.number=${wsrp.milestone.number}
 wsrp.build.number=${wsrp.build.number}
+portalpack.build.number=${portalpack.build.number}
         </echo>
 
 	<!-- SJSAS Image properties -->
@@ -416,6 +424,7 @@ jarsigner.storepass=${jarsigner.storepass}
 		<exclude name="**/portletcontainer*${portletcontainer.milestone.number}.${portletcontainer.build.number}*"/>
 		<exclude name="**/wsrp*${wsrp.milestone.number}.${wsrp.build.number}*"/>
                 <exclude name="**/sjsas*${sjsas.milestone.number}.${sjsas.build.number}*"/>
+		<exclude name="**/nb-portalpack*${portalpack.build.number}*"/>
 
             </fileset>
         </delete>
@@ -995,7 +1004,6 @@ jarsigner.storepass=${jarsigner.storepass}
         </ant>
 
         <echo message="BUILDING WSRP ================================"/>
-        
         <ant dir="${nbi.netbeans.dir}/infra/build/products/wsrp" target="release-all">
             <property 
                 name="basedir" 
@@ -1011,6 +1019,30 @@ jarsigner.storepass=${jarsigner.storepass}
             <property
                 name="release.parent.uid"
                 value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+
+	<echo message="BUILDING PORTAL PACK PLUGIN ================================"/>        
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-portalpack" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/nb-portalpack"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+                
+            <property
+                name="release.parent.uid"
+                value=""/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -1288,6 +1320,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>	                
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
@@ -1305,6 +1338,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
@@ -1322,6 +1356,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>            
+            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>            
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
@@ -1339,6 +1374,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
@@ -1356,6 +1392,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
@@ -1373,6 +1410,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
