@@ -140,6 +140,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 	if (searchAndReplace) {
             lblReplacement = new JLabel();
             cboxReplacement = new JComboBox();
+            cboxReplacement.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.cbox.Replacement.AccessibleDescription"));
             lblReplacement.setLabelFor(cboxReplacement);
             lblDummyReplacement = new JLabel();
 	} else {
@@ -333,7 +334,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     /**
      */
     private void initAccessibility() {
-        //PENDING
+        chkCaseSensitive.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.chkCaseSensitive.AccessibleDescription"));
+        chkRegexp.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.chkRegexp.AccessibleDescription"));
+        chkWholeWords.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.chkWholeWords.AccessibleDescription"));
     }
 
     /**
@@ -642,6 +645,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             SearchScope searchScope = entry.getKey();
             AbstractButton button = new JRadioButton();
             Mnemonics.setLocalizedText(button, searchScope.getDisplayName());
+            button.getAccessibleContext().setAccessibleDescription(searchScope.getDisplayName());
             button.putClientProperty("searchScope", searchScope);
             button.addItemListener(buttonStateListener);
             
