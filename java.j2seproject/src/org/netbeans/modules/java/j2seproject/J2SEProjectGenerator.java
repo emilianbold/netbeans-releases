@@ -230,7 +230,8 @@ public class J2SEProjectGenerator {
         ep.setProperty("javac.test.classpath", new String[] { // NOI18N
             "${javac.classpath}:", // NOI18N
             "${build.classes.dir}:", // NOI18N
-            "${libs.junit.classpath}", // NOI18N
+            "${libs.junit.classpath}:", // NOI18N
+            "${libs.junit_4.classpath}",  //NOI18N
         });
         ep.setProperty("run.test.classpath", new String[] { // NOI18N
             "${javac.test.classpath}:", // NOI18N
