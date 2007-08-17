@@ -391,7 +391,7 @@ public class SymbolClassReader extends JavadocClassReader {
     
     private void markInnerClassOwner(ClassSymbol owner, ClassSymbol innerClass, long flags) {
         innerClass.complete();
-        innerClass.flags_field = flags;
+        innerClass.flags_field = flags | FROMCLASS;
         if ((innerClass.flags_field & STATIC) == 0) {
             ((ClassType)innerClass.type).setEnclosingType(owner.type);
             if (innerClass.erasure_field != null)
