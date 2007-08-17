@@ -37,6 +37,16 @@ public class MyActionMapAction extends WidgetAction.Adapter {
     public MyActionMapAction (InputMap inputMap, ActionMap actionMap) {
         this.inputMap = inputMap;
         this.actionMap = actionMap;
+        //System.out.println("Creating My Action Map");
+        //printKeys();
+    }
+    
+    private void printKeys() {
+        System.out.println("Keys");
+        for( KeyStroke keyStroke : inputMap.keys()){
+            System.out.println(keyStroke.toString());
+        }
+        Thread.dumpStack();
     }
 
     public State keyPressed (Widget widget, WidgetKeyEvent event) {
@@ -66,5 +76,16 @@ public class MyActionMapAction extends WidgetAction.Adapter {
         }
         return State.REJECTED;
     }
+
+    /*
+    @Override
+    protected void finalize() throws Throwable {
+        System.out.println("Destroy MyActionMapAction");
+        printKeys();
+        super.finalize();
+    }*/
+    
+    
+
 
 }

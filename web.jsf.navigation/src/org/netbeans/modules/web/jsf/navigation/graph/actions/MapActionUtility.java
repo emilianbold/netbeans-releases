@@ -274,6 +274,7 @@ public class MapActionUtility {
             set.add(nextElement);
             scene.setHoveredObject(nextElement); //Do this because the popup action is looking for hovered.
             scene.setSelectedObjects(set);
+            scene.setFocusedObject(nextElement);
         } else {
             scene.setSelectedObjects(new HashSet());
             scene.setHoveredObject(null); //Not sure if I can do this yet.
