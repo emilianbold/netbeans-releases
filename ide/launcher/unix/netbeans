@@ -135,6 +135,25 @@ if uname | grep 'Darwin' > /dev/null; then
         netbeans_default_options=`echo $netbeans_default_options |tr " " "\n" |grep -v -E CMS\|[+]UseConcMarkSweep |tr "\n" " "`
 fi
 
+# add or update service tag record to allow discovery
+case "`uname`" in
+    SunOS*)
+        if [ -x /usr/bin/stclient -a -d "${userdir}" ]; then
+            if [ -f "${userdir}/servicetag" ]; then
+                stclient -u -i `cat "${userdir}/servicetag"` -F urn:uuid:32dcfb52-224e-11d6-8935-9117368824fa -I product.defined.id
+            else
+                RC=`stclient -a -p "NetBeans Integrated Development Environment" -e "6.0" -t urn:uuid:dd484b15-2f25-11dc-9482-080020a9ed93 -P "Development Tools" -F urn:uuid:32dcfb52-224e-11d6-8935-9117368824fa -m "NetBeans.org" -A Unknown -z Unknown -S Unknown`
+                if [ $? = 0 ]; then
+                   echo "$RC" | awk -F=  '{print $2}' >"${userdir}/servicetag"
+                fi
+            fi
+        fi
+        ;;
+    *) 
+        ;;
+esac
+
+
 launchNbexec() {
     nbexec=`grep -v "^#" "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep platform | while read X; do
         if [ -f "$progdir"/../$X/lib/nbexec ]; then
