@@ -70,6 +70,8 @@ import org.openide.util.Utilities;
  */
 public class RubyInstallation {
     
+    private static final Logger LOGGER = Logger.getLogger(RubyInstallation.class.getName());
+    
     private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
 
     /** NOTE: Keep this in sync with ruby/jruby/nbproject/project.properties */
@@ -136,7 +138,7 @@ public class RubyInstallation {
     public void setJRubyLoadPaths() {
         String jh = getJRubyHome();
         if (jh != null) {
-            System.setProperty("jruby.home", jh);
+            System.setProperty("jruby.home", jh); // NOI18N
         }
     }
 
@@ -234,7 +236,7 @@ public class RubyInstallation {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             String chosen = askForRuby(rubies);
-                            if (chosen != null && !chosen.equals("jruby") && !chosen.equals(ruby)) {
+                            if (chosen != null && !chosen.equals("jruby") && !chosen.equals(ruby)) { // NOI18N
                                 setRuby(chosen);
                             }
                         }
@@ -243,11 +245,11 @@ public class RubyInstallation {
                 
             } else {
                 // No rubies found - just default to using the bundled JRuby
-                return "jruby";
+                return "jruby"; // NOI18N
             }
         }
             
-        return "jruby";
+        return "jruby"; // NOI18N
     }
     
     private String askForRuby(final Set<String> rubies) {
@@ -270,7 +272,7 @@ public class RubyInstallation {
             new javax.swing.JButton(NbBundle.getMessage(RubyInstallation.class, "CTL_Close"));
         closeButton.getAccessibleContext()
                    .setAccessibleDescription(NbBundle.getMessage(RubyInstallation.class,
-                "AD_Close"));
+                "AD_Close")); // NOI18N
 
         Object[] options = new Object[] { closeButton };
         DialogDescriptor descriptor =
@@ -298,7 +300,7 @@ public class RubyInstallation {
             displayRubyOptions();
         } else {
             if (displayItem.equals(jrubyLabel)) {
-                return "jruby";
+                return "jruby"; // NOI18N
             } else {
                 assert displayItem.startsWith(nativeRubyLabel);
                 String path = displayItem.substring(nativeRubyLabel.length());
@@ -313,7 +315,7 @@ public class RubyInstallation {
             }
         }
 
-        return "jruby";
+        return "jruby"; // NOI18N
     }
     
     /**
@@ -343,7 +345,7 @@ public class RubyInstallation {
             if (rubyHome == null) {
                 String jrubyLib = getJRubyLib();
                 if (jrubyLib != null) {
-                    return jrubyLib + File.separator + "ruby" + File.separator +
+                    return jrubyLib + File.separator + "ruby" + File.separator + // NOI18N
                         DEFAULT_RUBY_RELEASE;
                 } else {
                     return null;
@@ -567,7 +569,7 @@ public class RubyInstallation {
                 new javax.swing.JButton(NbBundle.getMessage(RubyInstallation.class, "CTL_Close"));
             closeButton.getAccessibleContext()
                        .setAccessibleDescription(NbBundle.getMessage(RubyInstallation.class,
-                    "AD_Close"));
+                    "AD_Close")); // NOI18N
 
             final JButton optionsButton =
                 new JButton(NbBundle.getMessage(RubyInstallation.class, "EditOptions"));
@@ -615,14 +617,19 @@ public class RubyInstallation {
         String exec = null;
         String bin = getRubyBin();
         if (bin != null) {
+            LOGGER.finest("Looking for '" + toFind + "' gem executable; used intepreter: '" + bin + "'"); // NOI18N
             exec = bin + File.separator + toFind;
             if (!new File(exec).isFile()) {
+                LOGGER.finest("'" + exec + "' is not a file."); // NOI18N
                 exec = null;
             }
+        } else {
+            LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
         }
         if (exec == null) {
-            exec = getRubyLibGemDir() + File.separator + "bin" + File.separator + toFind;
+            exec = getRubyLibGemDir() + File.separator + "bin" + File.separator + toFind; // NOI18N
             if (!new File(exec).isFile()) {
+                LOGGER.fine("'" + exec + "' is not a file."); // NOI18N
                 exec = null;
             }
         }
@@ -646,7 +653,7 @@ public class RubyInstallation {
             }
         }
         if (gem == null) {
-            gem = RubyInstallation.findOnPath("gem");
+            gem = RubyInstallation.findOnPath("gem"); // NOI18N
         }
         return gem;
     }
@@ -667,9 +674,9 @@ public class RubyInstallation {
     
     public String getRake() {
         if (rake == null) {
-            rake = findGemExecutable("rake");
+            rake = findGemExecutable("rake"); // NOI18N
 
-            if (rake != null && !(new File(rake).exists()) && getVersion("rake") != null) {
+            if (rake != null && !(new File(rake).exists()) && getVersion("rake") != null) { // NOI18N
                 // On Windows, rake does funny things - you may only get a rake.bat
                 InstalledFileLocator locator = InstalledFileLocator.getDefault();
                 File f =
@@ -677,7 +684,7 @@ public class RubyInstallation {
                         null, false); // NOI18N
 
                 if (f == null) {
-                    throw new RuntimeException("Can't find cluster");
+                    throw new RuntimeException("Can't find cluster"); // NOI18N
                 }
 
                 f = new File(f.getParentFile().getParentFile().getAbsolutePath() + File.separator +
@@ -709,7 +716,7 @@ public class RubyInstallation {
     }
 
     public String getAutoTest() {
-        return findGemExecutable("autotest");
+        return findGemExecutable("autotest"); // NOI18N
     }
 
     public boolean isValidAutoTest(boolean warn) {
@@ -730,7 +737,7 @@ public class RubyInstallation {
         if (jrubyHome == null) {
             File jrubyDir =
                 InstalledFileLocator.getDefault()
-                                    .locate(JRUBY_RELEASEDIR, "org.netbeans.modules.ruby.project",
+                                    .locate(JRUBY_RELEASEDIR, "org.netbeans.modules.ruby.project", // NOI18N
                     false); // NOI18N
 
             if ((jrubyDir == null) || !jrubyDir.isDirectory()) {
@@ -798,7 +805,7 @@ public class RubyInstallation {
             // Core classes: Stubs generated for the "builtin" Ruby libraries.
             File clusterFile =
                 InstalledFileLocator.getDefault()
-                                    .locate("modules/org-netbeans-modules-ruby-project.jar", null,
+                                    .locate("modules/org-netbeans-modules-ruby-project.jar", null, // NOI18N
                     false); // NOI18N
 
             if (clusterFile != null) {
@@ -816,7 +823,7 @@ public class RubyInstallation {
 
     public String getRDoc() {
         if (rdoc == null) {
-            rdoc = findGemExecutable("rdoc");
+            rdoc = findGemExecutable("rdoc"); // NOI18N
         }
         return rdoc;
     }
@@ -943,7 +950,7 @@ public class RubyInstallation {
                 }
             } catch (Throwable e) {
                 // 108252 - no loud complaints
-                Logger.getLogger(RubyInstallation.class.getName()).log(Level.INFO, "Can't chmod+x JRuby bits", e);
+                LOGGER.log(Level.INFO, "Can't chmod+x JRuby bits", e);
             }
         }
     }
@@ -973,7 +980,7 @@ public class RubyInstallation {
         org.netbeans.modules.retouche.source.usages.Index.setPreindexRootUrl(getRubyHomeUrl());
 
         if (pcs != null) {
-            pcs.firePropertyChange("roots", null, null);
+            pcs.firePropertyChange("roots", null, null); // NOI18N
         }
 
         //        // Force ClassIndex registration
