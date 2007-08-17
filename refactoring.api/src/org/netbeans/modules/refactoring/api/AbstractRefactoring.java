@@ -287,10 +287,12 @@ public abstract class AbstractRefactoring {
     
     private Context scope;
     
+    private volatile boolean cancel;
     /**
      * Asynchronous request to cancel ongoing long-term request (such as preCheck(), checkParameters() or prepare())
      */
     public final void cancelRequest() {
+        cancel = true;
         Iterator pIt=getPlugins().iterator();
         
         while(pIt.hasNext()) {
@@ -303,6 +305,8 @@ public abstract class AbstractRefactoring {
         Iterator pIt=getPlugins().iterator();
         
         while(pIt.hasNext()) {
+            if (cancel)
+                return null;
             RefactoringPlugin plugin=(RefactoringPlugin)pIt.next();
             
             try {
@@ -346,6 +350,8 @@ public abstract class AbstractRefactoring {
         Iterator pIt=getPlugins().iterator();
         
         while(pIt.hasNext()) {
+            if (cancel)
+                return null;
             RefactoringPlugin plugin=(RefactoringPlugin)pIt.next();
             
             try {
@@ -405,6 +411,9 @@ public abstract class AbstractRefactoring {
         Iterator pIt=getPlugins().iterator();
         
         while(pIt.hasNext()) {
+            if (cancel)
+                return null;
+            
             RefactoringPlugin plugin=(RefactoringPlugin)pIt.next();
             
             try {
@@ -422,6 +431,9 @@ public abstract class AbstractRefactoring {
         Iterator pIt=getPlugins().iterator();
         
         while(pIt.hasNext()) {
+           if (cancel)
+                return null;
+
             RefactoringPlugin plugin=(RefactoringPlugin)pIt.next();
             
             try {

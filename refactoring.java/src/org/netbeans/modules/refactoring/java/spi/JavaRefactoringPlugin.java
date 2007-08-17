@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.refactoring.java.spi;
 
+import java.util.Collections;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.IOException;
@@ -182,6 +183,9 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     private Iterable<? extends List<FileObject>> groupByRoot (Iterable<? extends FileObject> data) {
         Map<FileObject,List<FileObject>> result = new HashMap<FileObject,List<FileObject>> ();
         for (FileObject file : data) {
+            if (cancelRequest) {
+                return Collections.emptyList();
+            }
             ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
             if (cp != null) {
                 FileObject root = cp.findOwnerRoot(file);
@@ -204,6 +208,9 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         try {
             Iterable<? extends List<FileObject>> work = groupByRoot(files);
             for (List<FileObject> fos : work) {
+                if (cancelRequest) {
+                    return Collections.<ModificationResult>emptyList();
+                }
                 final JavaSource javaSource = JavaSource.create(ClasspathInfo.create(fos.get(0)), fos);
                 try {
                     results.add(javaSource.runModificationTask(task));
