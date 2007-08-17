@@ -21,14 +21,12 @@ package org.netbeans.modules.web.jsf.navigation.graph;
 import org.netbeans.modules.web.jsf.navigation.graph.layout.FreePlaceNodesLayouter;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
@@ -626,6 +624,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         }
     }
 
+    private final static UnsupportedOperationException uoe = new  UnsupportedOperationException("Not supported yet.");
 
 
     private class MyObjectSceneListener implements ObjectSceneListener {
@@ -633,15 +632,15 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         List<NavigationCaseEdge> directlyRoutedLinks = new ArrayList<NavigationCaseEdge>();
 
         public void objectAdded(ObjectSceneEvent event, Object addedObject) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw uoe;
         }
 
         public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw uoe;
         }
 
         public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState previousState, ObjectState newState) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw uoe;
         }
 
         public void selectionChanged(ObjectSceneEvent event, Set<Object> previousSelection, Set<Object> newSelection) {
@@ -663,15 +662,15 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         }
 
         public void highlightingChanged(ObjectSceneEvent event, Set<Object> previousHighlighting, Set<Object> newHighlighting) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw uoe;
         }
 
         public void hoverChanged(ObjectSceneEvent event, Object previousHoveredObject, Object newHoveredObject) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw uoe;
         }
 
         public void focusChanged(ObjectSceneEvent event, Object previousFocusedObject, Object newFocusedObject) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw uoe;
         }
     }
 

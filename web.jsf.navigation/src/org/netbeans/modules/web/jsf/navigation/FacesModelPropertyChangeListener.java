@@ -53,17 +53,12 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                     setupGraph(ev);
                 }
             });
-        } else if( ev.getPropertyName().equals("managed-bean-class") ) {
-            /* Can I guarentee that Insync will call this and then managed-bean-name? */
-            //            managedBeanClassModified = true;
+        } else if( ev.getPropertyName().equals("managed-bean-class") ||
+                ev.getPropertyName().equals("managed-bean-name")     ||
+                ev.getNewValue() == State.NOT_SYNCED ) {
+            /* Do Nothing */
             
-        } else if ( ev.getPropertyName().equals("managed-bean-name") ) {
-            
-            //Use this to notice that refactoring may have happened.
-            //            oldManagedBeanInfo = (String) ev.getOldValue();
-            //            newManagedBeanInfo = (String) ev.getNewValue();
-            
-        } else if ( ev.getPropertyName() == "navigation-case") {
+        } else if ( ev.getPropertyName().equals("navigation-case")) {
             final NavigationCase myNewCase = (NavigationCase)ev.getNewValue();  //Should also check if the old one is null.
             final NavigationCase myOldCase = (NavigationCase)ev.getOldValue();
             EventQueue.invokeLater(new Runnable() {
@@ -72,7 +67,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 }
             });
             
-        } else if (ev.getPropertyName() == "navigation-rule" ) {
+        } else if (ev.getPropertyName().equals("navigation-rule") ) {
             //You can actually do nothing.
             final NavigationRule myNewRule = (NavigationRule) ev.getNewValue();
             final NavigationRule myOldRule = (NavigationRule) ev.getOldValue();
@@ -81,9 +76,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                     navigationRuleEventHandler(myNewRule, myOldRule);
                 }
             });
-            
-        } else if ( ev.getNewValue() == State.NOT_SYNCED ) {
-            // Do nothing.
+      
         } else if (ev.getNewValue() == State.NOT_WELL_FORMED ){
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
@@ -91,9 +84,9 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                     view.warnUserMalFormedFacesConfig();
                 }
             });
-        } else if (ev.getPropertyName() == "textContent" ){
+        } else if (ev.getPropertyName().equals("textContent") ){
             setupGraphInAWTThread(ev);
-        } else if ( ev.getPropertyName() == "from-view-id"  || ev.getPropertyName() == "to-view-id"){
+        } else if ( ev.getPropertyName().equals("from-view-id")  || ev.getPropertyName().equals("to-view-id")){
             
             final String oldName = FacesModelUtility.getViewIdFiltiered( (String) ev.getOldValue() );
             final String newName = FacesModelUtility.getViewIdFiltiered( (String) ev.getNewValue() );
@@ -107,7 +100,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                     //                    replaceFromViewIdToViewIdEventHandler(oldName, newName, refactoringIsLikely);
                 }
             });
-        } else if ( ev.getPropertyName() == "from-outcome" ){
+        } else if ( ev.getPropertyName().equals("from-outcome") ){
             final String oldName = (String) ev.getOldValue();
             final String newName = (String) ev.getNewValue();
             final NavigationCase navCase = (NavigationCase)ev.getSource();
