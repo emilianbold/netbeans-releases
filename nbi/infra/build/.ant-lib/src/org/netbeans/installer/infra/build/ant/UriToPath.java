@@ -77,7 +77,7 @@ public class UriToPath extends Task {
             
             String path = uri.getSchemeSpecificPart();
             while (path.startsWith("/")) { // NOI18N
-                path = path.substring(1);
+                path = path.substring(1).replace(":", "_");
             }
             
             if (uri.getScheme().equals("file")) {
