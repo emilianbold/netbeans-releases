@@ -20,9 +20,7 @@
 
 package org.netbeans.core.windows.actions;
 
-import java.awt.Frame;
 import java.awt.Image;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -43,7 +41,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * Invokes Recent View List
@@ -89,10 +86,6 @@ public final class RecentViewListAction extends AbstractAction
                 
                 if(releaseKey != 0) {
                     if (!KeyboardPopupSwitcher.isShown()) {
-                        Frame owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow()
-                        instanceof Frame ?
-                            (Frame) KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow()
-                            : WindowManager.getDefault().getMainWindow();
                         KeyboardPopupSwitcher.selectItem(
                                 createSwitcherItems(documents),
                                 releaseKey, triggerKey, (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0);
@@ -102,7 +95,8 @@ public final class RecentViewListAction extends AbstractAction
             }
         }
         
-        TopComponent tc = documents[1];
+        int documentIndex = (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0 ? 1 : documents.length-1;
+        TopComponent tc = documents[documentIndex];
         // #37226 Unmaximized the other mode if needed.
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         ModeImpl mode = (ModeImpl) wm.findMode(tc);

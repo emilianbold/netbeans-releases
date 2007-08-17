@@ -280,7 +280,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             AbstractAction rva = new RecentViewListAction();
             rva.actionPerformed(new ActionEvent(kev.getSource(),
                     ActionEvent.ACTION_PERFORMED,
-                    "immediately")); // NOI18N
+                    "immediately", kev.getModifiers())); // NOI18N
             kev.consume();
         // #88931: Need to react to KEY_PRESSED, not KEY_RELEASED, to not miss the hit    
         } else if (keyCode == triggerKey
