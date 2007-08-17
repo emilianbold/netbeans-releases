@@ -150,6 +150,10 @@ public class PageContentItem {
      */
     private Image toBufferedImage(Image img) {
         // load the image
+        if( img == null ){
+            System.out.println("Image is null for Bean: " + toString());
+            return null;
+        }
         new javax.swing.ImageIcon(img);
         BufferedImage rep = createBufferedImage(img.getWidth(null), img.getHeight(null));
         Graphics g = rep.createGraphics();
