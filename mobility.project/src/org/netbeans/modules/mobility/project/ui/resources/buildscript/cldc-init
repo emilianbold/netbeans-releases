@@ -6,6 +6,7 @@
         </condition>
     </target>
     <target name="cldc-init" depends="cldc-pre-init" if="cldc-platform.trigger">
+        <property name="preverify.sources.dir" location="${{build.dir}}/preverifysrc"/>
         <property name="manifest.build.file" location="${{build.dir}}/manifest.mf"/>
         <property name="platform.device" value=""/>
         <property name="dist.jad.url" value="file://"/>

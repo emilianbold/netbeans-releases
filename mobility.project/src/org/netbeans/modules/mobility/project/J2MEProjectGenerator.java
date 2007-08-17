@@ -370,6 +370,7 @@ public class J2MEProjectGenerator {
         ep.setProperty("obfuscator.srcjar", "${build.dir}/before-obfuscation.jar");  //NOI18N
         ep.setProperty("obfuscator.destjar", "${build.dir}/obfuscated.jar");  //NOI18N
         ep.setProperty("obfuscated.classes.dir", "${build.dir}/obfuscated");  //NOI18N
+        ep.setProperty("preverify.sources.dir", "${build.dir}/preverifysrc");  //NOI18N
         ep.setProperty("preverify.classes.dir", "${build.dir}/preverified");  //NOI18N
         final String usablePropertyName = PropertyUtils.getUsablePropertyName(name);
         ep.setProperty(DefaultPropertiesDescriptor.DIST_JAR, usablePropertyName + ".jar");  //NOI18N

@@ -4,8 +4,12 @@
     
     <target name="do-preverify" if="cldc-platform.trigger">
         <fail unless="preverify.classes.dir">Must set preverify.classes.dir</fail>
+        <mkdir dir="${{preverify.sources.dir}}"/>
+        <copy todir="${{preverify.sources.dir}}">
+            <fileset dir="${{buildsystem.baton}}" includes="**/*.class"/>
+        </copy>
         <mkdir dir="${{preverify.classes.dir}}"/>
-        <nb-preverify srcdir="${{buildsystem.baton}}" destdir="${{preverify.classes.dir}}" classpath="${{platform.bootclasspath}}:${{extra.classpath}}" configuration="${{platform.configuration}}" platformhome="${{platform.home}}" platformtype="${{platform.type}}" commandline="${{platform.preverifycommandline}}"/>
+        <nb-preverify srcdir="${{preverify.sources.dir}}" destdir="${{preverify.classes.dir}}" classpath="${{platform.bootclasspath}}:${{extra.classpath}}" configuration="${{platform.configuration}}" platformhome="${{platform.home}}" platformtype="${{platform.type}}" commandline="${{platform.preverifycommandline}}"/>
         <copy todir="${{preverify.classes.dir}}">
             <fileset dir="${{buildsystem.baton}}" defaultexcludes="${{filter.use.standard}}" excludes="${{filter.excludes.evaluated}},${{build.classes.excludes}}"/>
         </copy>
