@@ -68,14 +68,14 @@ public class JBEarModulesChildren extends Children.Keys {
                     while(it.hasNext()) {
                         try {
                             ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
-                            String name = elem.getKeyProperty("name");
-
+                            String name = elem.getKeyProperty("name");                            
+                            
                             if(elem.getKeyProperty("j2eeType").equals("EJBModule"))
                                 keys.add(new JBEjbModuleNode(name, lookup));
                             else if(elem.getKeyProperty("j2eeType").equals("WebModule")) {
                                 String url = "http://"+dm.getHost()+":"+dm.getPort();
-                                String context = Util.getWebContextRoot((String)Util.getMBeanParameter(dm, "jbossWebDeploymentDescriptor",
-                                        elem.getCanonicalName()));
+                                String descr = (String)Util.getMBeanParameter(dm, "jbossWebDeploymentDescriptor", elem.getCanonicalName());
+                                String context = Util.getWebContextRoot(descr, name);
                                 keys.add(new JBWebModuleNode(name, lookup, (context == null) ? null : url+context));
                             }
                         } catch (Exception ex) {

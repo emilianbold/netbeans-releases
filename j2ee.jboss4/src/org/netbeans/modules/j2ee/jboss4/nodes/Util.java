@@ -19,8 +19,8 @@
 
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -43,6 +43,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -52,21 +53,23 @@ import org.xml.sax.SAXException;
 public class Util {
     public static final String WAIT_NODE = "wait_node"; //NOI18N
     public static final String INFO_NODE = "info_node"; //NOI18N
-    
+
+    private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
+
     /**
      * Lookup a JBoss4 RMI Adaptor
      */
     public static MBeanServerConnection getRMIServer(Lookup lookup) {
         return getRMIServer((JBDeploymentManager)lookup.lookup(JBDeploymentManager.class));
     }
-    
+
     /**
      * Lookup a JBoss4 RMI Adaptor
      */
     public static MBeanServerConnection getRMIServer(JBDeploymentManager manager) {
         return manager.getRMIServer();
     }
-    
+
     /* Creates and returns the instance of the node
      * representing the status 'WAIT' of the node.
      * It is used when it spent more time to create elements hierarchy.
@@ -78,7 +81,7 @@ public class Util {
         n.setIconBaseWithExtension("org/netbeans/modules/j2ee/jboss4/resources/wait.gif"); // NOI18N
         return n;
     }
-    
+
     /* Creates and returns the instance of the node
      * representing the status 'INFO' of the node.
      * It is used when it spent more time to create elements hierarchy.
@@ -91,20 +94,20 @@ public class Util {
         n.setIconBaseWithExtension("org/netbeans/core/resources/exception.gif"); // NOI18N
         return n;
     }
-    
+
     /*
      * Checks if the Jboss installation has installed remote management package
      *
      * @return is remote management supported
      */
     public static boolean isRemoteManagementSupported(Lookup lookup) {
-        
+
         try {
             Object server = Util.getRMIServer(lookup);
             ObjectName searchPattern;
             searchPattern = new ObjectName("jboss.management.local:*");
             Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null});
-            
+
             if(managedObj.size() == 0)
                 return false;
         } catch (SecurityException ex) {
@@ -122,10 +125,10 @@ public class Util {
         } catch (NullPointerException ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
         }
-        
+
         return true;
     }
-    
+
     /*
      * Checks if the specified object is deployed in JBoss Application Server
      *
@@ -134,7 +137,7 @@ public class Util {
     public static boolean isObjectDeployed(Object server, ObjectName searchPattern) {
         try {
             Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null});
-            
+
             if(managedObj.size() > 0)
                 return true;
         } catch (IllegalArgumentException ex) {
@@ -148,10 +151,10 @@ public class Util {
         } catch (NoSuchMethodException ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
         }
-        
+
         return false;
     }
-    
+
     /*
      * It only returns string representation of the ModuleType (accorded to the JBoss JMX requirements)
      *
@@ -164,10 +167,10 @@ public class Util {
             return "WebModule";
         else if(mt.equals(ModuleType.EJB))
             return "EJBModule";
-        
+
         return "undefined";
     }
-    
+
     /*
      * Returns MBean attribute which you can specify via method parameters
      *
@@ -176,7 +179,7 @@ public class Util {
     public static Object getMBeanParameter(JBDeploymentManager dm, String name, String targetObject) {
         MBeanServerConnection server = dm.refreshRMIServer();
         try {
-            return server.getAttribute(new ObjectName(targetObject), name);            
+            return server.getAttribute(new ObjectName(targetObject), name);
         } catch (InstanceNotFoundException ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (AttributeNotFoundException ex) {
@@ -193,39 +196,76 @@ public class Util {
             Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (IOException ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
-        }            
-        
+        }
+
         return null;
     }
-    
+
     /*
-     * Parse web application's deployment descriptor and returns context root
+     * Parse web application's deployment descriptor and returns context root.
+     * According to the jboss specification, if no context root specification exists,
+     * the context root will be the base name of the WAR file.
      *
+     * @param descriptor deployment descriptor
+     * @param warName name of the war
      * @return context-root of web application
      */
-    public static String getWebContextRoot(String dd) {
-        
-        if (dd == null) {
+    public static String getWebContextRoot(String descriptor, String warName) {
+        String context = getDescriptorContextRoot(descriptor);
+        if (context == null) {
+            context = getWarContextRoot(warName);
+        }
+
+        if ("/ROOT".equals(context)) {
+            return "/";
+        }
+
+        return context;
+    }
+
+    private static String getDescriptorContextRoot(String descriptor) {
+        if (descriptor == null || "".equals(descriptor.trim())) {
             return null;
         }
-        
+
         Document doc = null;
-        
+
         try {
-            doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new ByteArrayInputStream(dd.getBytes()));
+            doc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                    .parse(new InputSource(new StringReader(descriptor)));
         } catch (SAXException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
             return null;
         } catch (IOException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
             return null;
         } catch (ParserConfigurationException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
             return null;
         }
-        
+
         org.w3c.dom.Node node = doc.getElementsByTagName("context-root").item(0);
-        
-        return node.getTextContent();
+
+        if (node == null || node.getTextContent() == null) {
+            return null;
+        }
+
+        String text = node.getTextContent();
+        if (!text.startsWith("/")) {
+            text = "/" + text;
+        }
+
+        return text;
+    }
+
+    private static String getWarContextRoot(String warName) {
+        if (warName == null) {
+            return null;
+        }
+        if (!warName.endsWith(".war")) {
+            return "/" + warName;
+        }
+
+        return "/" + warName.substring(0, warName.lastIndexOf(".war"));
     }
 }

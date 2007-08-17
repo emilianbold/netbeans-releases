@@ -83,11 +83,11 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
                             String url = "http://" + dm.getHost() + ":" + dm.getPort();
                             String context = "";
                             if (isRemoteManagementSupported() && isJB4x()) {
-                                if("jmx-console.war".equals(name)) { // Excluding it. It's system package
+                                if("jbossws-context.war".equals(name) || "jmx-console.war".equals(name)) { // Excluding it. It's system package
                                     continue;
-                                }
-                                String descr = (String)Util.getMBeanParameter(dm, "jbossWebDeploymentDescriptor", elem.getCanonicalName()); // NOI18N
-                                context = Util.getWebContextRoot(descr);
+                                }                                
+                                String descr = (String)Util.getMBeanParameter(dm, "jbossWebDeploymentDescriptor", elem.getCanonicalName()); // NOI18N                                
+                                context = Util.getWebContextRoot(descr, name);
                             }
                             else {
                                 if (name.startsWith("//localhost/")) { // NOI18N
@@ -95,7 +95,7 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
                                 }
                                 // excluding system packages
                                 if("".equals(name) || "jmx-console".equals(name) || "jbossws".equals(name) ||
-                                   "web-console".equals(name) || "invoker".equals(name)) {
+                                   "jbossws-context".equals(name) || "web-console".equals(name) || "invoker".equals(name)) {
                                     continue;
                                 }
                                 name +=  ".war"; // NOI18N

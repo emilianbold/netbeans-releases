@@ -140,13 +140,6 @@ public class JBDeployer implements ProgressObject, Runnable {
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
         
         try{
-            wait(2000);
-        }catch(Exception e){
-        }
-        
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
-        
-        try{
             org.openide.filesystems.FileUtil.copyFile(foIn, foDestDir, fileName); // copy version
             TargetModuleID moduleID = module_id;
             String webUrl = module_id.getWebURL();
