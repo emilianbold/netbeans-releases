@@ -67,8 +67,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.TooManyListenersException;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -127,6 +125,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 
@@ -569,7 +568,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         if (fo == null) {
             return null;
         }
-        List<URL> clone = new ArrayList (this.scannedRoots);
+        List<URL> clone = new ArrayList<URL> (this.scannedRoots);
         for (URL root : clone) {
             FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null && FileUtil.isParentOf(rootFo,fo)) {
@@ -2048,21 +2047,21 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private final class Delay {
         
-        private final Timer timer;
+        private final RequestProcessor rp;
         private final List<Work> tasks;
         
         public Delay () {
-            this.timer = new Timer(RepositoryUpdater.class.getName());
+            this.rp = new RequestProcessor(this.getClass().getName(),1);
             this.tasks = new LinkedList<Work> ();
         }
         
         public synchronized void post (final Work work) {
             assert work != null;
             this.tasks.add (work);
-            this.timer.schedule(new DelayTask (work),DELAY);
+            this.rp.post(new DelayTask (work),DELAY);
         }
                        
-        private class DelayTask extends TimerTask {
+        private class DelayTask implements Runnable {
             
             final Work work;
             
@@ -2077,18 +2076,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     Delay.this.notifyAll();
                 }                
             }
-
-            public @Override boolean cancel() {
-                boolean retValue = super.cancel();
-                if (retValue) {
-                    synchronized (Delay.this) {
-                        Delay.this.tasks.remove (work);
-                        Delay.this.notifyAll();
-                        
-                    }
-                }
-                return retValue;
-            }                        
         }                
     }
     
