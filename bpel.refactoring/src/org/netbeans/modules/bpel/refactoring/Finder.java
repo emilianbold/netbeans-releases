@@ -79,9 +79,9 @@ final class Finder extends Plugin {
     return null;
   }
 
+  public void doRefactoring(List<RefactoringElementImplementation> elements)
+    throws IOException
+  {}
 
- public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
-        //do nothing
- }
   private WhereUsedQuery myQuery;
 }

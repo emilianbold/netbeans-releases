@@ -31,6 +31,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -39,6 +40,8 @@ import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.refactoring.WSDLRefactoringEngine;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 
@@ -48,12 +51,8 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.spi.BpelModelFactory;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Process;
-import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.ModelSource;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -77,7 +76,7 @@ abstract class Plugin implements RefactoringPlugin, XMLRefactoringPlugin {
     return roots;
   }
 
-  protected final List<Element> find(Referenceable target, Component root){
+  protected final List<Element> find(Referenceable target, Component root) {
     List<Component> componets = new ArrayList<Component>();
     List<Element> elements = new ArrayList<Element>();
 
@@ -147,37 +146,38 @@ abstract class Plugin implements RefactoringPlugin, XMLRefactoringPlugin {
 
   public void cancelRequest() {}
 
-
-public String getModelReference(Component component) {
+  public String getModelReference(Component component) {
     if (component instanceof Import) {
       return ((Import) component).getLocation();
     }
     return null;
   }
 
-public void setModelReference(Component component, String location) {
-        if(component instanceof Import) {
-            try {
-                ((org.netbeans.modules.bpel.model.api.Import) component).setLocation(location);
-            } catch (VetoException ex) {
-                //do nothign
-            }
-        }
+  public void setModelReference(Component component, String location) {
+    if (component instanceof Import) {
+      try {
+        ((Import) component).setLocation(location);
+      }
+      catch (VetoException ex) {
+        return;
+      }
     }
+  }
 
-public Collection<Component> getExternalReferences(Model model) {
-      Collection<Component> refs = new ArrayList<Component>();
-      return refs;
-    }
+  public Collection<Component> getExternalReferences(Model model) {
+    return new ArrayList<Component>();
+  }
 
-public Model getModel(ModelSource source) {
-       FileObject fo = source.getLookup().lookup(FileObject.class);
-       if ( BPEL_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
-           BpelModelFactory factory = (BpelModelFactory) Lookup.getDefault().lookup(BpelModelFactory.class);
-           BpelModel model = factory.getModel(source);
-           return model;
-       }
-       return null;
-    }
-    private String BPEL_MIME_TYPE = "x-bpel+xml";
+  public Model getModel(ModelSource source) {
+    FileObject file = source.getLookup().lookup(FileObject.class);
+    
+    if (BPEL_MIME_TYPE.equals(FileUtil.getMIMEType(file))) {
+      BpelModelFactory factory = (BpelModelFactory) Lookup.getDefault().
+        lookup(BpelModelFactory.class);
+      return factory.getModel(source);
+     }
+     return null;
+  }
+
+  private static final String BPEL_MIME_TYPE = "x-bpel+xml"; // NOI18N
 }

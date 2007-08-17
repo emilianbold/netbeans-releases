@@ -35,7 +35,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 
 import org.netbeans.modules.xml.refactoring.ErrorItem;
-import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringUtil;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
@@ -179,8 +178,8 @@ final class Renamer extends Plugin {
     return null;
   }
       
-  private Problem processErrors(List<ErrorItem> items){
-    if (items == null || items.size()== 0){
+  private Problem processErrors(List<ErrorItem> items) {
+    if (items == null || items.size()== 0) {
       return null;
     }
     Problem parent = null;
@@ -188,10 +187,10 @@ final class Renamer extends Plugin {
     Problem head = null;
     Iterator<ErrorItem> iterator = items.iterator();
             
-    while(iterator.hasNext()) {
+    while (iterator.hasNext()) {
       ErrorItem error = iterator.next();
 
-      if (parent == null ){
+      if (parent == null) {
         parent = new Problem(isFatal(error), error.getMessage());
         child = parent;
         head = parent;
@@ -257,13 +256,13 @@ final class Renamer extends Plugin {
   {
     List<Component> component = new ArrayList<Component>(elements.size());
   
-    for (RefactoringElementImplementation element : elements){
+    for (RefactoringElementImplementation element : elements) {
       component.add(element.getLookup().lookup(Component.class));
     }
     return component;
   }
        
-  private List<Model> getModels(List<Element> elements){
+  private List<Model> getModels(List<Element> elements) {
     List<Model> models = new ArrayList<Model>();
 
     for (Element element : elements) {
@@ -272,7 +271,7 @@ final class Renamer extends Plugin {
     return models;
   }
 
-  private boolean isFatal(ErrorItem error){
+  private boolean isFatal(ErrorItem error) {
     return error.getLevel() == ErrorItem.Level.FATAL;
   }  
 
@@ -287,7 +286,7 @@ final class Renamer extends Plugin {
     }
     myXPath = new XPath(null, target, oldName);
     myOldName = oldName;
-    boolean doTransaction = !model.isIntransaction(); 
+    boolean doTransaction = !model.isIntransaction();
     
     try {
       if (doTransaction) {

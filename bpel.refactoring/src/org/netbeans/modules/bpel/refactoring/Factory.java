@@ -35,9 +35,10 @@ public final class Factory implements RefactoringPluginFactory {
    
   /**{@inheritDoc}*/
   public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-    Referenceable referenceable = refactoring.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable referenceable =
+      refactoring.getRefactoringSource().lookup(Referenceable.class);
   
-    if (referenceable == null){
+    if (referenceable == null) {
       // this is not my object, don't participate in refactoring
       return null;
     }
@@ -51,8 +52,8 @@ public final class Factory implements RefactoringPluginFactory {
       // do nothing
       return null;
     }
-    if (refactoring instanceof MoveRefactoring ){
-        return new Mover((MoveRefactoring)refactoring);
+    if (refactoring instanceof MoveRefactoring) {
+      return new Mover((MoveRefactoring) refactoring);
     }
     return null;
   }

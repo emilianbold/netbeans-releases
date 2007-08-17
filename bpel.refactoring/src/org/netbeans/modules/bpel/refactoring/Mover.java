@@ -20,6 +20,7 @@ package org.netbeans.modules.bpel.refactoring;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,14 +28,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.bpel.model.api.BpelModel;
+
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 
 import org.netbeans.modules.xml.refactoring.ErrorItem;
-import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringUtil;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
@@ -42,12 +45,9 @@ import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Referenceable;
+
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
-import org.netbeans.modules.refactoring.api.MoveRefactoring;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
@@ -57,18 +57,20 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
  */
 final class Mover extends Plugin {
     
-    
   Mover(MoveRefactoring refactoring) {
     myRequest = refactoring;
   }
   
   public Problem fastCheckParameters() {
-    URL url = ((MoveRefactoring)myRequest).getTarget().lookup(URL.class);
-        if(url == null)
-            return null;
-    FileObject targetF = URLMapper.findFileObject(url);  
-    if ((targetF!=null && !targetF.canWrite())) {
-        return new Problem(true,NbBundle.getMessage(Mover.class,"ERR_PackageIsReadOnly"));                   
+    URL url = ((MoveRefactoring) myRequest).getTarget().lookup(URL.class);
+
+    if (url == null) {
+      return null;
+    }
+    FileObject target = URLMapper.findFileObject(url);
+
+    if (target != null && !target.canWrite()) {
+      return new Problem(true, i18n(Mover.class,"ERR_PackageIsReadOnly")); // NOI18N
     }
     return null;
   }
@@ -117,8 +119,8 @@ final class Mover extends Plugin {
     return null;
   }
       
-  private Problem processErrors(List<ErrorItem> items){
-    if (items == null || items.size()== 0){
+  private Problem processErrors(List<ErrorItem> items) {
+    if (items == null || items.size()== 0) {
       return null;
     }
     Problem parent = null;
@@ -129,7 +131,7 @@ final class Mover extends Plugin {
     while(iterator.hasNext()) {
       ErrorItem error = iterator.next();
 
-      if (parent == null ){
+      if (parent == null) {
         parent = new Problem(isFatal(error), error.getMessage());
         child = parent;
         head = parent;
@@ -149,13 +151,12 @@ final class Mover extends Plugin {
     Set<Model> models = map.keySet();
     Referenceable reference =
       myRequest.getRefactoringSource().lookup(Referenceable.class);
-    //System.out.println("BPEL doRefactoring called");
+
     for (Model model : models) {
       if (reference instanceof Model) {
         rename(model, getComponents( map.get(model)));
       }
     }    
-    //System.out.println("BPEL doRefactoring done");
   }
     
   public String getModelReference(Component component) {
@@ -192,13 +193,13 @@ final class Mover extends Plugin {
   {
     List<Component> component = new ArrayList<Component>(elements.size());
   
-    for (RefactoringElementImplementation element : elements){
+    for (RefactoringElementImplementation element : elements) {
       component.add(element.getLookup().lookup(Component.class));
     }
     return component;
   }
        
-  private List<Model> getModels(List<Element> elements){
+  private List<Model> getModels(List<Element> elements) {
     List<Model> models = new ArrayList<Model>();
 
     for (Element element : elements) {
@@ -207,10 +208,9 @@ final class Mover extends Plugin {
     return models;
   }
 
-  private boolean isFatal(ErrorItem error){
+  private boolean isFatal(ErrorItem error) {
     return error.getLevel() == ErrorItem.Level.FATAL;
   }  
-
   
   private void rename(Model model, List<Component> components) throws IOException {
     if (components == null) {
@@ -230,18 +230,19 @@ final class Mover extends Plugin {
     try {
       Import _import = (Import) component;
       String location = _import.getLocation();
+
       try {
-          location = SharedUtils.calculateNewLocationString(model, myRequest);
-      } catch (Exception e){}
-      
+        location = SharedUtils.calculateNewLocationString(model, myRequest);
+      }
+      catch (URISyntaxException e) {
+        return;
+      }
       _import.setLocation(location);
     }
     catch(VetoException e) {
       throw new IOException(e.getMessage());
     }
   }
-  
-  
   
   private MoveRefactoring myRequest;
 }
