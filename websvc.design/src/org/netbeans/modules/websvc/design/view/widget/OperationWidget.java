@@ -76,7 +76,6 @@ public class OperationWidget extends AbstractTitledWidget {
     private FaultsWidget faultWidget;
     private DescriptionWidget descriptionWidget;
     
-    private boolean tabbedView;
     /**
      * Creates a new instance of OperationWidget
      * @param scene
@@ -153,10 +152,11 @@ public class OperationWidget extends AbstractTitledWidget {
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
-        viewButton = new ButtonWidget(getScene(),null,null);
+        viewButton = new ButtonWidget(getScene(),IMAGE_LIST,null);
+        viewButton.setSelectedImage(IMAGE_TABBED);
         viewButton.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
-                setTabbedView(!isTabbedView());
+                setTabbedView(!viewButton.isSelected());
             }
         });
         buttons.addChild(viewButton);
@@ -176,10 +176,12 @@ public class OperationWidget extends AbstractTitledWidget {
                                 getObjectScene(), operation, type) {
                             protected void notifyAdded() {
                                 super.notifyAdded();
+                                sampleButton.setOpaque(true);
                                 sampleButton.setSelected(true);
                             }
                             protected void notifyRemoved() {
                                 super.notifyRemoved();
+                                sampleButton.setOpaque(false);
                                 sampleButton.setSelected(false);
                             }
                         };
@@ -211,10 +213,7 @@ public class OperationWidget extends AbstractTitledWidget {
         tabbedWidget.addTab(faultWidget);
         tabbedWidget.addTab(descriptionWidget);
         
-        getContentWidget().addChild(listWidget);
-        getContentWidget().addChild(tabbedWidget);
-        tabbedView = false;
-        setTabbedView(!tabbedView);
+        setTabbedView(!viewButton.isSelected());
     }
 
     protected void collapseWidget() {
@@ -241,21 +240,17 @@ public class OperationWidget extends AbstractTitledWidget {
         return operation;
     }
 
-    private boolean isTabbedView() {
-        return tabbedView;
-    }
-    
     private void setTabbedView(boolean tabbedView) {
-        if(isTabbedView()!=tabbedView) {
-            this.tabbedView = tabbedView;
+        if(viewButton.isSelected()!=tabbedView) {
+            viewButton.setSelected(tabbedView);
             if(tabbedView) {
-                tabbedWidget.setVisible(true);
-                listWidget.setVisible(false);
-                viewButton.setImage(IMAGE_LIST);
+                if(listWidget.getParentWidget()==getContentWidget())
+                    getContentWidget().removeChild(listWidget);
+                getContentWidget().addChild(tabbedWidget);
             } else {
-                tabbedWidget.setVisible(false);
-                listWidget.setVisible(true);
-                viewButton.setImage(IMAGE_TABBED);
+                if(tabbedWidget.getParentWidget()==getContentWidget())
+                    getContentWidget().removeChild(tabbedWidget);
+                getContentWidget().addChild(listWidget);
             }
         }
     }

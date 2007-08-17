@@ -299,7 +299,8 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
             if (button.isButtonEnabled()) {
                 
                 if (button.isOpaque()){
-                    g2.setPaint(new GradientPaint(
+                    g2.setPaint(button.isSelected()?BACKGROUND_COLOR_PRESSED:
+                        new GradientPaint(
                             0, rect.y , BACKGROUND_COLOR_1,
                             0, rect.y + rect.height * 0.5f,
                             BACKGROUND_COLOR_2, true));
@@ -309,10 +310,6 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
                     g2.setPaint(BACKGROUND_COLOR_PRESSED);
                     g2.fill(buttonRect);
                 } else {
-                    if(button.isSelected()) {
-                        g2.setPaint(BACKGROUND_COLOR_PRESSED);
-                        g2.fill(buttonRect);
-                    }
                     Area s = new Area(buttonRect);
                     Area inner = new Area(new RoundRectangle2D.Double(rect.x + 2.5f, rect.y + 2.5f,
                                 rect.width - 5f, rect.height - 5f, radius*2, radius*2));
