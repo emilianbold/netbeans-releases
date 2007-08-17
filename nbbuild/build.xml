@@ -1703,10 +1703,19 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <taskdef name="genau" classname="org.netbeans.nbbuild.aucenter.CatalogGenerator" classpath="nbauext.jar"/>
   </target>
     
-  <target name="generate-uc-catalog" depends="generate-uc-catalog.init">
+  <target name="generate-uc-catalog" depends="bootstrap">
+    <taskdef name="makeupdatedesc"
+         classname="org.netbeans.nbbuild.MakeUpdateDesc"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
       <property name="nbms.location" location="nbms"/>
       <property name="catalog.file" location="catalog.xml"/>
       <property name="catalog.base.url" value="http://bits.netbeans.org/"/>
-      <genau config="ausrc/modules.setup" nbmLocation="${nbms.location}" catalog="${catalog.file}" catalogDeploymentLocation="${catalog.base.url}"/>
+<!--      <genau config="ausrc/modules.setup" nbmLocation="${nbms.location}" catalog="${catalog.file}" catalogDeploymentLocation="${catalog.base.url}"/>-->
+      <makeupdatedesc desc="${catalog.file}" distbase="${catalog.base.url}" automaticgrouping="true">
+          <fileset dir="${nbms.location}">
+              <include name="**/*.nbm"/>
+          </fileset>
+      </makeupdatedesc>
+      <gzip src="${catalog.file}" destfile="${catalog.file}.gz"/>
   </target>
 </project>

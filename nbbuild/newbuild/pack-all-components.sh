@@ -34,6 +34,8 @@ find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|
 
 mkdir $DIST/zip/moduleclusters
 
+rm -rf $NB_ALL/nbbuild/netbeans/extra
+
 #Pack all the NetBeans
 pack_component $DIST/zip/moduleclusters $BASENAME all-in-one netbeans
 
