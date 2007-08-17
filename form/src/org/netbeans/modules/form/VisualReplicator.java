@@ -249,9 +249,11 @@ public class VisualReplicator {
                     comp.getParent().remove(comp);
             }
 
-            // make the component visible, but preserve explicit or original visibility
+            // make the component visible according to the explicitly set property
+            // or component's original visibility
             Boolean visible = null;
-            FormProperty visibilityProp = metacomp.getBeanProperty("visible"); // NOI18N
+            FormProperty visibilityProp = (RADProperty) metacomp.getPropertyByName(
+                    "visible", RADProperty.class, false); // NOI18N
             if (visibilityProp != null && visibilityProp.isChanged()) {
                 Object value;
                 try {
@@ -572,11 +574,12 @@ public class VisualReplicator {
 
             writeMethod.invoke(targetComp, new Object[] { value });
 
-            if (targetComp instanceof Component)
+            if (targetComp instanceof Component) {
                 ((Component)targetComp).invalidate();
-        }
-        catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        } catch (CloneNotSupportedException ex) { // ignore cloning failure
+        } catch (Exception ex) {
+            Logger.getLogger(VisualReplicator.class.getName()).log(Level.INFO, null, ex); // NOI18N
         }
     }
 
