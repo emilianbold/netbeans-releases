@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
         <resource>jar:nbinst:///modules/ext/rest/jsp-api-2.0-20040521.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/persistence-api-1.0.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/activation.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/jsr250-api.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr250-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/localizer.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxrpc16/mail.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/wadl2java.jar!/</resource>
