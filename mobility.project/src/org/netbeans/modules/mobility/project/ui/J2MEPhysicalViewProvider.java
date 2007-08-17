@@ -23,10 +23,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import org.netbeans.api.project.*;
 import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.mobility.project.J2MEActionProvider;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
@@ -47,7 +45,10 @@ import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -60,19 +61,21 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ProxyLookup;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.ResourceBundle;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 
@@ -247,22 +250,31 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
     
     /** Filter node containin additional features for the J2ME physical
      */
-    final class J2MEProjectRootNode extends AbstractNode implements AntProjectListener, PropertyChangeListener {
+    final class J2MEProjectRootNode extends AbstractNode implements AntProjectListener, PropertyChangeListener, FileStatusListener, Runnable {
         
         private Action[] actions, actionsBroken;
         
         boolean broken;
         Image icon;
-        final boolean brokenSources;
-        
+        final Task nodeUpdateTask;
+        PropertyChangeListener ref1;
+        FileStatusListener ref2;
         
         public J2MEProjectRootNode() {
             super(new LogicalViewChildren(project), Lookups.singleton(project));
             this.broken = hasBrokenLinks();
-            this.brokenSources = Children.LEAF == getChildren();
+            this.nodeUpdateTask = RequestProcessor.getDefault().create(this);
             setName( ProjectUtils.getInformation( project ).getDisplayName() );
             helper.addAntProjectListener(this);
-            JavaPlatformManager.getDefault().addPropertyChangeListener(this);
+            this.ref1 = WeakListeners.propertyChange(this, JavaPlatformManager.getDefault());
+            JavaPlatformManager.getDefault().addPropertyChangeListener(ref1);
+            try {
+                FileSystem fs = helper.getProjectDirectory().getFileSystem();
+                this.ref2 = FileUtil.weakFileStatusListener(this, fs);
+                fs.addFileStatusListener(ref2);
+            } catch (FileStateInvalidException fsie) {
+                ErrorManager.getDefault().notify(fsie);
+            }
         }
      
         protected boolean testSourceRoot() {
@@ -270,40 +282,29 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
         }
         
         protected void checkBroken() {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    if (brokenSources && testSourceRoot()) scheduleReOpen();
-                    boolean br=hasBrokenLinks();
-                    boolean changed = false;
-                    synchronized(J2MEProjectRootNode.this)
-                    {
-                        if (broken != br) {
-                            broken ^= true; //faster way of negation
-                            changed=true;
-                        }
-                    }
-                    if (changed) {
-                        icon = createIcon();
-                        fireIconChange();
-                        fireOpenedIconChange();
-                        fireDisplayNameChange(null, null);
-                    }
-                }
-            });
+            nodeUpdateTask.schedule(50);
         }
         
-        protected boolean isBroken()
-        {
+        public void run() {
+            boolean br=hasBrokenLinks();
+            boolean changed = false;
+            synchronized(J2MEProjectRootNode.this)
+            {
+                if (broken != br) {
+                    broken ^= true; //faster way of negation
+                    changed=true;
+                }
+            }
+            if (changed) {
+                icon = createIcon();
+            }
+            fireIconChange();
+            fireOpenedIconChange();
+            fireDisplayNameChange(null, null);
+        }
+
+        protected boolean isBroken() {
             return hasBrokenLinks();
-        }
-        
-        protected void scheduleReOpen() {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    OpenProjects.getDefault().close(new Project[]{project});
-                    OpenProjects.getDefault().open(new Project[]{project}, false);
-                }
-            });
         }
         
         public boolean canCopy() {
@@ -333,25 +334,13 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             }
             final Sources src = ProjectUtils.getSources(project);
             if (src != null) {
-                final SourceGroup sg[] = src.getSourceGroups(Sources.TYPE_GENERIC);
-                if (sg.length > 0) {
-                    final Set<FileObject> files = new HashSet<FileObject>();
-                    for (int i=0; i<sg.length; i++) {
-                        FileObject ch[] = sg[i].getRootFolder().getChildren();
-                        if (ch.length == 0) {
-                            files.add(sg[i].getRootFolder());
-                        } else {
-                            for (int j=0; j<ch.length; j++) {
-                                if (FileOwnerQuery.getOwner(ch[j]) == J2MEPhysicalViewProvider.this.project) files.add(ch[j]);
-                            }
-                        }
-                    }
-                    try {
-                        final FileSystem.Status ann = sg[0].getRootFolder().getFileSystem().getStatus();
-                        return ann.annotateIcon(icon, type, files);
-                    } catch (FileStateInvalidException fsie) {
-                        ErrorManager.getDefault().notify(fsie);
-                    }
+                HashSet<FileObject> files = new HashSet(); 
+                for (SourceGroup sg : src.getSourceGroups(Sources.TYPE_GENERIC)) files.add(sg.getRootFolder());
+                try {
+                    final FileSystem.Status ann = helper.getProjectDirectory().getFileSystem().getStatus();
+                    return ann.annotateIcon(icon, type, files);
+                } catch (FileStateInvalidException fsie) {
+                    ErrorManager.getDefault().notify(fsie);
                 }
             }
             return icon;
@@ -379,7 +368,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             return new HelpCtx(J2MEPhysicalViewProvider.J2MEProjectRootNode.class);
         }
         
-		public synchronized Action[] getActions( final boolean context ) {
+        public synchronized Action[] getActions( final boolean context ) {
             if (context) return new Action[0];
             if (actions == null) {
                 final ArrayList<Action> act = new ArrayList<Action>();
@@ -464,18 +453,18 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             return action;
         }
         
-        public void configurationXmlChanged(@SuppressWarnings("unused")
-		final AntProjectEvent ev) {
+        public void configurationXmlChanged(AntProjectEvent ev) {
+        }
+        
+        public void propertiesChanged(AntProjectEvent ev) {
             checkBroken();
         }
         
-        public void propertiesChanged(@SuppressWarnings("unused")
-		final AntProjectEvent ev) {
+        public void propertyChange(PropertyChangeEvent evt) {
             checkBroken();
         }
-        
-        public void propertyChange(@SuppressWarnings("unused")
-		final PropertyChangeEvent evt) {
+
+        public void annotationChanged(FileStatusEvent ev) {
             checkBroken();
         }
         
