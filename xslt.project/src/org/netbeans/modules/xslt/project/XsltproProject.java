@@ -409,6 +409,7 @@ public class XsltproProject implements Project, AntProjectListener {
             checkEncoding();
             
             myProjectsChangeHandler.subscribes();
+            helper.removeAntProjectListener(XsltproProject.this);
         }
         
         private void checkEncoding() {

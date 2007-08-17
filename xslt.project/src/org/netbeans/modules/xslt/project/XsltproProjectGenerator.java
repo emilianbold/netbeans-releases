@@ -84,13 +84,13 @@ public class XsltproProjectGenerator {
         FileObject bpelasaRoot = srcRoot;
         FileObject transformmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/transformmap.xml"), bpelasaRoot, "transformmap"); //NOI18N
 
-// TODO a
-        FileObject nbProjectRoot = FileUtil.toFileObject(new File(dir, DEFAULT_NBPROJECT_DIR)); // NOI18N
-        FileObject genPortmap = Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/genPortmap.xsl");
+// TODO r
+//        FileObject nbProjectRoot = FileUtil.toFileObject(new File(dir, DEFAULT_NBPROJECT_DIR)); // NOI18N
+//        FileObject genPortmap = Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/genPortmap.xsl");
 //        System.out.println("genPortmap: "+genPortmap);
-        if (genPortmap != null) {
-            FileObject genPortmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/genPortmap.xsl"), nbProjectRoot, "genPortmap"); //NOI18N
-        }
+//        if (genPortmap != null) {
+//            FileObject genPortmapFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/genPortmap.xsl"), nbProjectRoot, "genPortmap"); //NOI18N
+//        }
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put (IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
