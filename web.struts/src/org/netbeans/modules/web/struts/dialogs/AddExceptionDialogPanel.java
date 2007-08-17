@@ -217,7 +217,6 @@ public class AddExceptionDialogPanel extends javax.swing.JPanel implements Valid
         jRadioButtonResFile.setMnemonic(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "MNE_AddFwdDialog_ResFile").charAt(0));
         jRadioButtonResFile.setSelected(true);
         jRadioButtonResFile.setText(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "RB_ResourceFile")); // NOI18N
-        jRadioButtonResFile.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButtonResFile.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRadioButtonResFile.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -260,7 +259,6 @@ public class AddExceptionDialogPanel extends javax.swing.JPanel implements Valid
         buttonGroup1.add(jRadioButtonCallAction);
         jRadioButtonCallAction.setMnemonic(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "MNE_AddFwdDialog_FwdAction").charAt(0));
         jRadioButtonCallAction.setText(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "RB_Action")); // NOI18N
-        jRadioButtonCallAction.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButtonCallAction.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -277,6 +275,7 @@ public class AddExceptionDialogPanel extends javax.swing.JPanel implements Valid
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         add(jComboBoxCallAction, gridBagConstraints);
+        jComboBoxCallAction.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "ACSN_EDAction")); // NOI18N
         jComboBoxCallAction.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jComboBoxCallAction")); // NOI18N
 
         jLabelScope.setText(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "LBL_AddExcDialog_Scope")); // NOI18N
@@ -299,7 +298,6 @@ public class AddExceptionDialogPanel extends javax.swing.JPanel implements Valid
         jRadioButtonGlobalExc.setMnemonic(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "MNE_AddExcDialog_GlobalExc").charAt(0));
         jRadioButtonGlobalExc.setSelected(true);
         jRadioButtonGlobalExc.setText(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "LBL_AddExcDialog_GlobalExc")); // NOI18N
-        jRadioButtonGlobalExc.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButtonGlobalExc.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRadioButtonGlobalExc.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -317,7 +315,6 @@ public class AddExceptionDialogPanel extends javax.swing.JPanel implements Valid
         buttonGroup3.add(jRadioButtonActionExc);
         jRadioButtonActionExc.setMnemonic(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "MNE_AddExcDialog_ActionExc").charAt(0));
         jRadioButtonActionExc.setText(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "LBL_AddExcDialog_ActionExc")); // NOI18N
-        jRadioButtonActionExc.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButtonActionExc.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -334,13 +331,13 @@ public class AddExceptionDialogPanel extends javax.swing.JPanel implements Valid
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(jComboBoxActionExc, gridBagConstraints);
+        jComboBoxActionExc.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "ACSN_EDAction")); // NOI18N
         jComboBoxActionExc.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jComboBoxActionExc")); // NOI18N
 
         buttonGroup2.add(jRadioButtonSession);
         jRadioButtonSession.setMnemonic(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "MNE_AddExcDialog_Session").charAt(0));
         jRadioButtonSession.setSelected(true);
         jRadioButtonSession.setText(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "LBL_AddExcDialog_Session")); // NOI18N
-        jRadioButtonSession.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButtonSession.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jPanel1.add(jRadioButtonSession);
         jRadioButtonSession.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jRadioButtonSession")); // NOI18N
@@ -348,7 +345,6 @@ public class AddExceptionDialogPanel extends javax.swing.JPanel implements Valid
         buttonGroup2.add(jRadioButtonRequest);
         jRadioButtonRequest.setMnemonic(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "MNE_AddExcDialog_Request").charAt(0));
         jRadioButtonRequest.setText(org.openide.util.NbBundle.getMessage(AddExceptionDialogPanel.class, "LBL_AddExcDialog_Request")); // NOI18N
-        jRadioButtonRequest.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButtonRequest.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jPanel1.add(jRadioButtonRequest);
         jRadioButtonRequest.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jRadioButtonReques")); // NOI18N

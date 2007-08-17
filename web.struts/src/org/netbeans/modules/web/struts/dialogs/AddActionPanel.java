@@ -149,6 +149,7 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(CBInputAction, gridBagConstraints);
+        CBInputAction.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "ACSN_TFInputAction")); // NOI18N
         CBInputAction.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CBInputAction")); // NOI18N
 
         TFInputResource.setText("/");
@@ -165,7 +166,6 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         CHBUseFormBean.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_UseFormBean_mnem").charAt(0));
         CHBUseFormBean.setSelected(true);
         CHBUseFormBean.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "CB_UseFormBean")); // NOI18N
-        CHBUseFormBean.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         CHBUseFormBean.setMargin(new java.awt.Insets(0, 0, 0, 0));
         CHBUseFormBean.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -223,7 +223,6 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         CHBValidate.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "CB_Validate_mnem").charAt(0));
         CHBValidate.setSelected(true);
         CHBValidate.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "CB_Validate")); // NOI18N
-        CHBValidate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         CHBValidate.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -256,7 +255,6 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         RBInputResource.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputResource_mnem").charAt(0));
         RBInputResource.setSelected(true);
         RBInputResource.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputResource")); // NOI18N
-        RBInputResource.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBInputResource.setMargin(new java.awt.Insets(0, 0, 0, 0));
         RBInputResource.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -274,7 +272,6 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         buttonGroup1.add(RBInputAction);
         RBInputAction.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputAction_mnem").charAt(0));
         RBInputAction.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_InputAction")); // NOI18N
-        RBInputAction.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBInputAction.setMargin(new java.awt.Insets(0, 0, 0, 0));
         RBInputAction.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -293,7 +290,6 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         RBSession.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Session_mnem").charAt(0));
         RBSession.setSelected(true);
         RBSession.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Sesson")); // NOI18N
-        RBSession.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBSession.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jPanel1.add(RBSession);
         RBSession.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RBSession")); // NOI18N
@@ -301,7 +297,6 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
         buttonGroup2.add(RBRequest);
         RBRequest.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Request_mnem").charAt(0));
         RBRequest.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "RB_Request")); // NOI18N
-        RBRequest.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         RBRequest.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jPanel1.add(RBRequest);
         RBRequest.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RBRequest")); // NOI18N

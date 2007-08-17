@@ -107,13 +107,12 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         jRadioButtonLocationAction = new javax.swing.JRadioButton();
         jComboBoxLocationAction = new javax.swing.JComboBox();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_AddForwardDialog"));
         jLabelFwdName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "MNE_AddFwdDialog_FwdName").charAt(0));
         jLabelFwdName.setLabelFor(jTextFieldFwdName);
-        jLabelFwdName.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "LBL_AddFwdDialog_ForwardName"));
+        jLabelFwdName.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "LBL_AddFwdDialog_ForwardName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -129,9 +128,10 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jTextFieldFwdName, gridBagConstraints);
-        jTextFieldFwdName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jTextFieldFwdName"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle"); // NOI18N
+        jTextFieldFwdName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jTextFieldFwdName")); // NOI18N
 
-        jLabelFwdTo.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "LBL_AddFwdDialog_ForwardTo"));
+        jLabelFwdTo.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "LBL_AddFwdDialog_ForwardTo")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -143,22 +143,20 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         buttonGroup1.add(jRadioButtonResFile);
         jRadioButtonResFile.setMnemonic(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "MNE_AddFwdDialog_ResFile").charAt(0));
         jRadioButtonResFile.setSelected(true);
-        jRadioButtonResFile.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "RB_ResourceFile"));
-        jRadioButtonResFile.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jRadioButtonResFile.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "RB_ResourceFile")); // NOI18N
         jRadioButtonResFile.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRadioButtonResFile.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jRadioButtonResFileItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(jRadioButtonResFile, gridBagConstraints);
-        jRadioButtonResFile.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jRadioButtonResFile_Forward"));
+        jRadioButtonResFile.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jRadioButtonResFile_Forward")); // NOI18N
 
         jTextFieldResFile.setColumns(30);
         jTextFieldResFile.setText("/");
@@ -168,29 +166,27 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jTextFieldResFile, gridBagConstraints);
-        jTextFieldResFile.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSN_jTextFieldResFile"));
-        jTextFieldResFile.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jTextFieldResFile_F"));
+        jTextFieldResFile.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_jTextFieldResFile")); // NOI18N
+        jTextFieldResFile.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jTextFieldResFile_F")); // NOI18N
 
         jButtonBrowse.setMnemonic(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "MNE_AddFwdDialog_Browse").charAt(0));
-        jButtonBrowse.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "LBL_BrowseButton"));
+        jButtonBrowse.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "LBL_BrowseButton")); // NOI18N
         jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonBrowseActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jButtonBrowse, gridBagConstraints);
-        jButtonBrowse.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jButtonBrowse"));
+        jButtonBrowse.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jButtonBrowse")); // NOI18N
 
         buttonGroup1.add(jRadioButtonFwdAction);
         jRadioButtonFwdAction.setMnemonic(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "MNE_AddFwdDialog_FwdAction").charAt(0));
-        jRadioButtonFwdAction.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "RB_Action"));
-        jRadioButtonFwdAction.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jRadioButtonFwdAction.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "RB_Action")); // NOI18N
         jRadioButtonFwdAction.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -198,7 +194,7 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
         add(jRadioButtonFwdAction, gridBagConstraints);
-        jRadioButtonFwdAction.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jRadioButtonFwdAction"));
+        jRadioButtonFwdAction.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jRadioButtonFwdAction")); // NOI18N
 
         jComboBoxFwdAction.setEditable(true);
         jComboBoxFwdAction.setEnabled(false);
@@ -208,11 +204,10 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jComboBoxFwdAction, gridBagConstraints);
-        jComboBoxFwdAction.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jComboBoxFwdAction"));
+        jComboBoxFwdAction.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jComboBoxFwdAction")); // NOI18N
 
         jCheckBoxRedirect.setMnemonic(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "MNE_AddFwdDialog_Redirect").charAt(0));
-        jCheckBoxRedirect.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "LBL_AddFwdDialog_Redirect"));
-        jCheckBoxRedirect.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jCheckBoxRedirect.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "LBL_AddFwdDialog_Redirect")); // NOI18N
         jCheckBoxRedirect.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -221,9 +216,9 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jCheckBoxRedirect, gridBagConstraints);
-        jCheckBoxRedirect.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jCheckBoxRedirect"));
+        jCheckBoxRedirect.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jCheckBoxRedirect")); // NOI18N
 
-        jLabelLocation.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "LBL_AddFwdDialog_Location"));
+        jLabelLocation.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "LBL_AddFwdDialog_Location")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -235,15 +230,13 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         buttonGroup2.add(jRadioButtonGlobal);
         jRadioButtonGlobal.setMnemonic(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "MNE_AddFwdDialog_Global").charAt(0));
         jRadioButtonGlobal.setSelected(true);
-        jRadioButtonGlobal.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "LBL_AddFwdDialog_Global"));
-        jRadioButtonGlobal.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jRadioButtonGlobal.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "LBL_AddFwdDialog_Global")); // NOI18N
         jRadioButtonGlobal.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRadioButtonGlobal.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jRadioButtonGlobalItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -251,12 +244,11 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jRadioButtonGlobal, gridBagConstraints);
-        jRadioButtonGlobal.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jRadioButtonGlobal"));
+        jRadioButtonGlobal.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jRadioButtonGlobal")); // NOI18N
 
         buttonGroup2.add(jRadioButtonLocationAction);
         jRadioButtonLocationAction.setMnemonic(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "MNE_AddFwdDialog_LocationAction").charAt(0));
-        jRadioButtonLocationAction.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "RB_Action"));
-        jRadioButtonLocationAction.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jRadioButtonLocationAction.setText(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "RB_Action")); // NOI18N
         jRadioButtonLocationAction.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -264,7 +256,7 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(jRadioButtonLocationAction, gridBagConstraints);
-        jRadioButtonLocationAction.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jRadioButtonLocationAction"));
+        jRadioButtonLocationAction.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jRadioButtonLocationAction")); // NOI18N
 
         jComboBoxLocationAction.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -272,10 +264,11 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jComboBoxLocationAction, gridBagConstraints);
-        jComboBoxLocationAction.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("ACSD_jComboBoxLocationAction"));
+        jComboBoxLocationAction.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddForwardDialogPanel.class, "ACSN_FAction")); // NOI18N
+        jComboBoxLocationAction.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_jComboBoxLocationAction")); // NOI18N
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AddForwardDialog")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jRadioButtonGlobalItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jRadioButtonGlobalItemStateChanged
 // TODO add your handling code here:
