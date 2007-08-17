@@ -32,6 +32,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="position" intvalue="590"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.j2meunit.Bundle"/> 
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.j2meunit.J2MEUnitFileIterator.createIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/j2meunit/resources/templates/EmptyJ2MEUnitTest.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/j2meunit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
