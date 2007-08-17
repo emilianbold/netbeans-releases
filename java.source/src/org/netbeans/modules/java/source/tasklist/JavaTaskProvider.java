@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +42,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.TaskListener;
 import org.openide.util.WeakSet;
 
 /**
@@ -123,22 +122,34 @@ public final class JavaTaskProvider extends PushTaskScanner {
         }
     }
     
-    private static final LinkedHashSet<Work> WORK_QUEUE = new LinkedHashSet<Work>();
+    private static final Set<RequestProcessor.Task> TASKS = new HashSet<RequestProcessor.Task>();
+    private static final RequestProcessor WORKER = new RequestProcessor("Java Task Provider");
     private static Map<FileObject, Set<FileObject>> root2FilesWithAttachedErrors = new WeakHashMap<FileObject, Set<FileObject>>();
     
     private static void enqueue(Work w) {
-        synchronized (WORK_QUEUE) {
-            WORK_QUEUE.add(w);
-            WORK_QUEUE.notifyAll();
+        synchronized (TASKS) {
+            final RequestProcessor.Task task = WORKER.post(w);
+            
+            TASKS.add(task);
+            task.addTaskListener(new TaskListener() {
+                public void taskFinished(org.openide.util.Task task) {
+                    synchronized (TASKS) {
+                        TASKS.remove(task);
+                    }
+                }
+            });
+            if (task.isFinished()) {
+                TASKS.remove(task);
+            }
         }
     }
     
     private static void cancelAllCurrent() {
-        synchronized (WORK_QUEUE) {
-            for (Work w : WORK_QUEUE) {
-                w.cancel();
+        synchronized (TASKS) {
+            for (RequestProcessor.Task t : TASKS) {
+                t.cancel();
             }
-            WORK_QUEUE.clear();
+            TASKS.clear();
         }
         
         synchronized (JavaTaskProvider.class) {
@@ -150,12 +161,14 @@ public final class JavaTaskProvider extends PushTaskScanner {
     //only for tests:
     static void waitWorkFinished() throws Exception {
         while (true) {
-            synchronized (WORK_QUEUE) {
-                if (WORK_QUEUE.isEmpty())
+            RequestProcessor.Task t = null;
+            synchronized (TASKS) {
+                if (TASKS.isEmpty())
                     return;
+                t = TASKS.iterator().next();
             }
             
-            Thread.sleep(50);
+            t.waitFinished();
         }
     }
 
@@ -204,79 +217,15 @@ public final class JavaTaskProvider extends PushTaskScanner {
         filesWithErrors.addAll(nueFilesWithErrors);
     }
     
-    static {
-        new RequestProcessor("Java Task Provider").post(new Runnable() {
-            public void run() {
-                //XXX: should not block the thread forever:
-                while (true) {
-                    Work w = null;
-                    synchronized (WORK_QUEUE) {
-                        while (WORK_QUEUE.isEmpty()) {
-                            try {
-                                WORK_QUEUE.wait();
-                            } catch (InterruptedException e) {
-                                Exceptions.printStackTrace(e);
-                            }
-                        }
-                        
-                        Iterator<Work> it = WORK_QUEUE.iterator();
-                        
-                        w = it.next();
-                        it.remove();
-                    }
-                    
-                    FileObject file = w.getFileOrRoot();
-                    
-                    LOG.log(Level.FINE, "dequeued work for: {0}", file);
-                    
-                    ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
-                    
-                    if (cp == null) {
-                        LOG.log(Level.FINE, "cp == null");
-                        return ;
-                    }
-                    
-                    FileObject root = cp.findOwnerRoot(file);
-                    
-                    if (file.isData()) {
-                        List<? extends Task> tasks = TaskCache.getDefault().getErrors(file);
-                        Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
-                        
-                        if (tasks.isEmpty()) {
-                            filesWithErrors.remove(file);
-                        } else {
-                            filesWithErrors.add(file);
-                        }
-                        
-                        LOG.log(Level.FINE, "setting {1} for {0}", new Object[] {file, tasks});
-                        w.getCallback().setTasks(file, tasks);
-                    } else {
-                        updateErrorsInRoot(w.getCallback(), root);
-                    }
-                }
-            }
-        });
-    }
-
-    private static final class Work {
+    private static final class Work implements Runnable {
         private FileObject fileOrRoot;
         private Callback callback;
-        private AtomicBoolean cancelled;
 
         public Work(FileObject fileOrRoot, Callback callback) {
             this.fileOrRoot = fileOrRoot;
             this.callback = callback;
-            this.cancelled = new AtomicBoolean(false);
         }
         
-        public void cancel() {
-            cancelled.set(true);
-        }
-        
-        public boolean isCancelled() {
-            return cancelled.get();
-        }
-
         public FileObject getFileOrRoot() {
             return fileOrRoot;
         }
@@ -285,6 +234,35 @@ public final class JavaTaskProvider extends PushTaskScanner {
             return callback;
         }
         
-        
+        public void run() {
+            FileObject file = getFileOrRoot();
+
+            LOG.log(Level.FINE, "dequeued work for: {0}", file);
+
+            ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+
+            if (cp == null) {
+                LOG.log(Level.FINE, "cp == null");
+                return;
+            }
+
+            FileObject root = cp.findOwnerRoot(file);
+
+            if (file.isData()) {
+                List<? extends Task> tasks = TaskCache.getDefault().getErrors(file);
+                Set<FileObject> filesWithErrors = getFilesWithAttachedErrors(root);
+
+                if (tasks.isEmpty()) {
+                    filesWithErrors.remove(file);
+                } else {
+                    filesWithErrors.add(file);
+                }
+
+                LOG.log(Level.FINE, "setting {1} for {0}", new Object[]{file, tasks});
+                getCallback().setTasks(file, tasks);
+            } else {
+                updateErrorsInRoot(getCallback(), root);
+            }
+        }
     }
 }
