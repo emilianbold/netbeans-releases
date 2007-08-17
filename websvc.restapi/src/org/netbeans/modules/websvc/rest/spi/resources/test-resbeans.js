@@ -141,6 +141,7 @@ function createTree(wadlDoc) {
             var r = rarr[i];   
             var path = r.attributes.getNamedItem('path');
             var pathVal = path.nodeValue;
+            pathVal = addSeperator(pathVal);
             var cName = trimSeperator(pathVal);
             topUrls[i] = pathVal;
             var start = new item(pathVal, cName, i);
@@ -148,6 +149,13 @@ function createTree(wadlDoc) {
         }
     }
     return myTree;
+}
+function addSeperator(cName) {
+    if(cName != null) {
+        if(cName.substring(0, 1) != '/')
+            cName = '/' + cName;
+    }
+    return cName;
 }
 function trimSeperator(cName) {
     if(cName != null) {
