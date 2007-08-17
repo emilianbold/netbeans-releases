@@ -415,6 +415,8 @@ public class LineBoxGroup extends ContainerBox {
                     super.layoutChild(box, context, true);
 
                     //No: positionBox(box, context);
+                    // XXX #113117 To be sure also the position is set.
+                    positionBox(box, context);
                 }
 
                 if (!wrap || (lineBox == null) || lineBox.isEmpty() || 
@@ -555,6 +557,9 @@ public class LineBoxGroup extends ContainerBox {
                     // XXX true here - what if we're doing this layout as part
                     // of a child notify - in that case we shouldn't relayout the children!
                     super.layoutChild(box, context, true);
+                    
+                    // XXX #113117 To be sure also the position is set.
+                    positionBox(box, context); // TEMP
                 }
                 
                 int theY = targetY;

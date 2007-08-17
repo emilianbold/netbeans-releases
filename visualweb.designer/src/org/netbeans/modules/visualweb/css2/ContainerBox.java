@@ -1151,8 +1151,11 @@ public class ContainerBox extends CssBox {
 
                 layoutChild(box, context, true);
 
-                if ((box.getBoxType() != BoxType.LINEBOX) &&
-                        (box.isBlockLevel() || box.getBoxType().isAbsolutelyPositioned())) {
+//                if ((box.getBoxType() != BoxType.LINEBOX) &&
+//                        (box.isBlockLevel() || box.getBoxType().isAbsolutelyPositioned())) {
+                // XXX #113117 To be sure also the normal flow elements have position set.
+                if ((box.getBoxType() != BoxType.LINEBOX)
+                && (box.isBlockLevel() || box.getBoxType().isAbsolutelyPositioned() || box.getBoxType().isNormalFlow())) {
                     positionBox(box, context);
                 }
             }
