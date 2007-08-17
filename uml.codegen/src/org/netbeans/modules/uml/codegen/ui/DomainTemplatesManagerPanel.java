@@ -44,7 +44,6 @@ import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.DomainObject;
 import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.Family;
 import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.TemplateFamilies;
 import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.TemplateFamiliesHandler;
-import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -66,7 +65,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
     
     private static final Icon DOMAIN_OBJECT_NODE_ICON =
         new ImageIcon(Utilities.loadImage(
-        "org/netbeans/modules/uml/resources/NewDiagrams.gif")); // NOI18N
+        "org/netbeans/modules/uml/resources/images/templates.gif")); // NOI18N
     
     private static final Icon TEMPLATE_FAMILY_NODE_ICON =
         new ImageIcon(Utilities.loadImage(
