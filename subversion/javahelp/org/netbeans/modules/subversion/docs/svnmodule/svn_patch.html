@@ -1,6 +1,7 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
 <!--
-*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -20,17 +21,17 @@
             enables you to create and apply patches that update copies of source files so 
             that you do not have to incorporate the changes manually.</p>
 
-        <p><strong>To create a patch file:</strong></p>
+        <h4>To create a patch file:</h4>
    
         <ol>
-            <li>In the Projects, Files, or Search History window, select a versioned file
+            <li>Select a versioned file (e.g. in the Projects, Files, or Favorites window)
                 for which you want to create a patch.</li>
-            <li>Choose Versioning &gt; Subversion &gt; Export Diff Patch from the main menu.
-                The Export Diff Patch dialog displays.</li>
+            <li>Choose Versioning &gt; Export Diff Patch from the main menu. The Export Diff 
+                Patch dialog opens.</li>
             <li>In the dialog, enter a name for the patch file and specify the location where
                 you want to save the patch.</li>
-            <li>Click Export. A patch file is created in the specified location containing the
-                differences between the source file versions.</li>
+            <li>Click Export. A patch file is created in the specified location containing 
+                the differences between the source file versions.</li>
         </ol>
         
         <ul class="note">
@@ -38,20 +39,20 @@
                 which contain local or remote changes that have not already been merged.</li>
         </ul>
         
-        <p><strong>To apply a patch to a local file:</strong></p>
+        <h4>To apply a patch to a local file or folder:</h4>
         
         <ol>
-            <li>In the Projects, Files, or Search History window, select the file or 
-                folder on which you want to apply the patch.</li>
-            <li>Choose Versioning &gt; Subversion &gt; Apply Diff Patch from the main menu.
-                The Apply Diff Patch dialog displays.</li>
+            <li>Select a versioned file or folder (e.g. in the Projects, Files, or Favorites 
+                window) on which you want to apply the patch.</li>
+            <li>Choose Versioning &gt; Apply Diff Patch from the main menu. The Apply Diff 
+                Patch dialog displays.</li>
             <li>In the dialog, type the path or navigate to the patch file you want to apply.</li>
             <li>Click Patch. The patch is applied to the selected file and a dialog opens, 
-                confirming that the patch was applied successfully. Click Yes to view 
-                changes in a diff window.</li>
+                confirming that the patch was applied successfully. Click Yes to view changes
+                in the IDE's <a href="svn_diff.html">Diff Viewer</a>.</li>
         </ol>
 
-        <p><strong>Notes:</strong></p>
+        <h4>Notes:</h4>
         
         <ul>
             <li>Because patches on folders use relative paths to the files within
@@ -65,9 +66,9 @@
         
         <dl>
             <dt> <a name="seealso">See Also</a></dt>
+            <dd><a href="svn_diff.html">Comparing File Revisions in Subversion</a></dd>            
             <dd><a href="svn_merge.html">Merging File Revisions in Subversion</a></dd>
             <dd><a href="svn_mergeresolve.html">Resolving Merge Conflicts in Subversion</a></dd>
-            <dd><a href="svn_diff.html">Comparing File Revisions in Subversion</a></dd>
         </dl>
         <hr> <small><a href="../credits.html">Legal Notices</a></small>
         <br><br><br>

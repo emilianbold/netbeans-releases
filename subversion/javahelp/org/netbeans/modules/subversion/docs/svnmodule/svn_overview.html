@@ -1,134 +1,116 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
 <!--
-*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
     <head>
         <title>Working with Subversion</title>
         <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
-            rel="StyleSheet" type="text/css">
+              rel="StyleSheet" type="text/css">
     </head>
     
     <body>
         <h2>Working with Subversion</h2>
-    
+        
         <p><small><a href="#seealso">See Also</a></small></p>
         
         <p>The following table outlines the basic workflow when working with Subversion 
             in the IDE.</p>
         
         <table cellpadding="5">
-            <tbody>
-                <tr valign="center">
-                    <td align="center"><img src="images/circle1.gif" alt="Number One"><br>
+            <tr>
+                <td align="center"><img src="images/circle1.gif" alt="Number One"><br>
                     <strong>Set Up Subversion</strong></td>
-                    <td>
-                        <ul>
-                            <li><a href="svn_setup.html">Set up Subversion.</a></li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                    <hr align="center" width="80%"></td>
-                </tr>
-                <tr valign="center">
-                    <td align="center"><img src="images/circle2.gif" alt="Number Two"><br>
+                <td>
+                    <ul>
+                        <li><a href="svn_setup.html">Set up</a> Subversion.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                <hr align="center" width="80%"></td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/circle2.gif" alt="Number Two"><br>
                     <strong>Check Out Sources</strong></td>
-                    <td>
-                        <ul>
-                            <li><a href="svn_checkout.html">Check out files from a Subversion
-                                repository.</a></li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                    <hr align="center" width="80%"></td>
-                </tr>
-                <tr valign="center">
-                    <td align="center"><img src="images/circle3.gif" alt="Number Three"><br>
-                    <strong>Update Local Versions</strong></td>
-                    <td>
-                        <ul>
-                            <li><a href="svn_updating.html">Update</a> local versions
-                            of files with changes committed to the Subversion repository.</li>
-                        </ul>
-                    </td>
-                </tr>                
-                <tr>
-                    <td colspan="2">
-                    <hr align="center" width="80%"></td>
-                </tr>
-                <tr valign="center">
-                    <td align="center"><img src="images/circle4.gif" alt="Number Four"><br>
-                    <strong>Build</strong></td>
-                    <td>
-                        <ul>
-                            <li>Compile sources to ensure that local versions of files 
-                            contain the appropriate changes prior to committing them 
-                            to the Subversion repository.</li>
-                        </ul>
-                    </td>
-                </tr> 
-                <tr>
-                    <td colspan="2">
-                    <hr align="center" width="80%"> </td>
-                </tr>
-                <tr valign="center">
-                    <td align="center"><img src="images/circle5.gif" alt="Number Five"><br>
+                <td>
+                    <ul>
+                        <li><a href="svn_checkout.html">Check out</a> files from a 
+                            Subversion repository.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                <hr align="center" width="80%"></td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/circle3.gif" alt="Number Three"><br>
                     <strong>Edit Sources</strong></td>
-                    <td>
-                        <ul>
-                            <li>Make changes to local copies of versioned files.</li>
-                            
-                            <li><a href="svn_merge.html">Merge</a> changes in
-                            repository revisions with the local copy of a file.</li>
-                            <li><a href="svn_mergeresolve.html">Resolve Conflicts</a>
-                            between local versions of files with changes committed to Subversion
+                <td>
+                    <ul>
+                        <li>Make changes to local copies of versioned files.</li>
+                        <li><a href="svn_diff.html">Diff</a> file revisions between 
+                            repository versions and your local working copies.</li>
+                        <li><a href="svn_merge.html">Merge</a> changes in repository
+                            revisions with the local copies.</li>
+                    </ul>                
+                </td>
+            </tr>                             
+            <tr>
+                <td colspan="2">
+                <hr align="center" width="80%"></td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/circle4.gif" alt="Number Four"><br>
+                    <strong>Update Local Versions</strong></td>
+                <td>
+                    <ul>
+                        <li><a href="svn_updating.html">Update</a> local versions of files 
+                            with changes committed to the Subversion repository.</li>
+                    </ul>
+                </td>
+            </tr>   
+            <tr>
+                <td colspan="2">
+                <hr align="center" width="80%"> </td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/circle5.gif" alt="Number Five"><br>
+                    <strong>Resolve Conflicts</strong></td>
+                <td>
+                    <ul>
+                        <li><a href="svn_mergeresolve.html">Resolve</a> conflicts between 
+                            local versions of files with changes committed to Subversion
                             repository revisions.</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                    <hr align="center" width="80%"></td>
-                </tr>
-                <tr valign="center">
-                    <td align="center"><img src="images/circle6.gif"
-                    alt="Number Six"><br>
-                    <strong>Diff File Revisions</strong> </td>
-                    <td>
-                        <ul>
-                            <li><a href="svn_diff.html">View the differences</a> between
-                            the repository version and the local working copy of a file.</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                    <hr align="center" width="80%"></td>
-                </tr>
-                <tr valign="top">
-                    <td align="center"><img src="images/circle7.gif"
-                    alt="Number Seven"><br>
-                    <strong>Commit </strong><strong>Sources</strong> </td>
-                    <td> <br>
-                        <ul>
-                            <li><a href="svn_commit.html">Commit</a> local changes to
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                <hr align="center" width="80%"></td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/circle6.gif" alt="Number Six"><br>
+                    <strong>Commit Sources</strong></td>
+                <td>
+                    <ul>
+                        <li><a href="svn_commit.html">Commit</a> local changes to
                             files into the repository.</li>
-                        </ul>
-                    </td>
-                </tr>
-            </tbody>
+                    </ul>
+                </td>
+            </tr>
         </table>
+        
         <dl>
-            <dt> <a name="seealso">See Also</a></dt>
-            <dd> <a href="svn_about.html">About the IDE's Subversion Support</a></dd>
-            <dd> <a href="svn_quickref.html">Subversion Tasks: Quick Reference</a></dd>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="svn_about.html">About the IDE's Subversion Support</a></dd>
+            <dd><a href="svn_quickref.html">Subversion Tasks: Quick Reference</a></dd>
         </dl>
-        <hr> <small><a href="../credits.html">Legal Notices</a></small>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
         <br><br><br>
     </body>
 </html>

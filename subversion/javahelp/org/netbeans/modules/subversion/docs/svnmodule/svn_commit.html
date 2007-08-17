@@ -1,6 +1,7 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
 <!--
-*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -16,28 +17,35 @@
         <p><small><a href="#seealso">See Also</a></small></p>
         
         <p>Once your working copies of version-controlled files have been edited, 
-            you can then place your changes into the repository using the
-            Commit command (from the Versioning &gt; Subversion menu, or from a
-            version-controlled file's right-click menu).</p>
+            you can then place changes into the repository using the Subversion 
+            Commit action.</p>
 
         <ul class="note">
-            <li>Project directories must be located within a local working directory 
-                that is registered with the IDE in order to call Subversion commands
-                on them.</li>
+            <li>Subversion versioned files and folders must be recognized by the IDE
+                as such in order to call Subversion actions on them. To do so, you 
+                must first <a href="svn_checkout.html">checkout</a> sources from a 
+                Subversion repository.</li>
         </ul>
         
         <h4>To commit changes in local files to a remote repository:</h4>
         
         <ol>
-            <li>Select a version-controlled file or folder and choose Subversion &gt; 
-                Commit from the right-click menu. The Commit Dialog opens, listing all
-                files that contain local changes. If the files you want to commit do 
-                not already exist in the repository, the commit action will add them.</li>
+            <li>Select a version-controlled file or folder (e.g. from the Projects,
+                Files, or Favorites window) and choose Subversion &gt; Commit from 
+                the right-click menu. The Commit Dialog opens, listing all files that 
+                contain local changes. If the files you want to commit do not already 
+                exist in the repository, the commit action will add them.</li>
             <li>Enter a commit message in the Commit Message text area, indicating the 
-                purpose of the commit.</li>
-            <li>Click Commit. 
-                <br>The IDE executes the commit and sends your local changes to the 
-                repository.</li>
+                purpose of the commit.
+            
+                <ul>
+                    <li>Click the Recent Messages icon (<img src="images/recent_msgs.png" 
+                        alt="recent messages button">) in the upper right corner of the 
+                        dialog to view recent commit messages.</li>
+                </ul></li>
+                
+            <li>Click Commit. The IDE executes the commit and sends your local changes to 
+                the repository.</li>
         </ol>
         
         <ul class="note">
@@ -45,9 +53,10 @@
                 any files prior to committing them to the repository. By doing so, you will 
                 be able to identify and handle any conflicts arising from repository changes 
                 prior to performing your commit.</li>
-            <li>When working in the Commit dialog, you can exclude individual files from a commit.
-                To do so, click on the Commit Action column for the specific file and choose 
-                Exclude from Commit. The file name responds by displaying in strike-through text.</li>
+            <li>When working in the Commit dialog, you can exclude individual files from a 
+                commit. To do so, click on the Commit Action column for the specific file 
+                and choose Exclude from Commit. The file name responds by displaying in 
+                strike-through text.</li>
         </ul>
         
         <h3>Ignoring Files</h3>
@@ -55,16 +64,22 @@
         <p>If your local working directory includes files or directories that you do not 
             want to place under version control, you can set the IDE to ignore them 
             permanantly using the Ignore command.</p>
+            
+        <ul class="note">
+            <li>You cannot employ the Ignore command on files that already exist in the 
+                repository.</li>
+        </ul>
         
         <h4>To ignore local files in your working directory:</h4>
         
         <ol>
-            <li>Select the files or directories you wish to ignore in the
-                Versioning window, Projects window, Files window, or Favorites window.</li>
-            <li>Right-click and choose Subversion &gt; Ignore. Note that the Ignore
-                command is unavailable for files that already exist in the repository.
-                <br>The IDE ignores the file or directory whenever Subversion commands are
-                called on them or the directories within which they are stored.</li>
+            <li>Select the file or directory you wish to ignore from the
+                Projects, Files, Favorites, or 
+                <a href="csh/svn_versioning_window.html">Versioning</a> window.</li>
+            <li>Choose Ignore (or Subversion &gt; Ignore) from the right-click 
+                menu of selected file or directory. The IDE ignores the file 
+                or directory whenever Subversion commands are called on it or 
+                on the directory within which it is stored.</li>
         </ol>
         
         <ul class="note">

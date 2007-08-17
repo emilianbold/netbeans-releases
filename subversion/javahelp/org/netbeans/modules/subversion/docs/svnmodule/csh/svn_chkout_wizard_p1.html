@@ -1,6 +1,7 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
 <!--
-*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -16,7 +17,7 @@
         <p><small><a href="#seealso">See Also</a></small></p>
         
         <p>The Subversion Repository panel of the Subversion Checkout wizard enables you to specify 
-            the root path for your Subversion repository when checking out files from the repository. 
+            the root path to your Subversion repository when checking out files from the repository. 
             If no root locations are listed in the drop-down list, you can enter the information 
             directly into the text field.</p>
         
@@ -24,9 +25,8 @@
             Files or Favorites window) and choosing either Subversion &gt; Checkout from the right-click 
             menu or Versioning &gt; Checkout from the main menu.</p>
             
-        <p>When checking out files or importing a project into a repository, you need to specify the 
-            location of the repository as defined by the Subversion root. To specify the Subversion 
-            root, do the following:</p>
+        <p>When checking out files from a repository, you need to specify the location of the repository 
+            as defined by the Subversion root. To specify the Subversion root, do the following:</p>
             
         <ul>
             <li><strong>Repository URL.</strong> Select a Subversion root protocol and location from 
@@ -37,10 +37,22 @@
                 for <tt>http</tt>, <tt>https</tt>, and <tt>svn</tt> protocols.)</li>            
             <li><strong>Password.</strong> Enter your password for access to the repository. (Required 
                 for <tt>http</tt>, <tt>https</tt>, and <tt>svn</tt> protocols.)</li>
-            <li><strong>Proxy configuration.</strong> Click the Proxy configuration button to specify 
-                details of your proxy configuration to connect to the Subversion repository.</li>
+            <li><strong>Tunnel Command.</strong> If you are accessing a repository through the svn+ssh 
+                protocol, you must supply the tunnel command to establish the external tunnel.</li>  
         </ul>
         
+        <br>
+        <ul class="note">
+            <li>For protocols such as <tt>http://</tt>, <tt>https://</tt>, and <tt>svn://</tt>, enter 
+                your required username and password for repository access in the User and Password 
+                fields.</li>
+            <li>Select the Save Username and Password option to allow the IDE to remember your username
+                and password for future use.</li>
+            <li>If you need to enter proxy settings for connecting to the repository, click the Proxy 
+                configuration button to specify connection details of your proxy configuration.</li>                    
+        </ul>
+        
+        <br>
         <p><a name="protocolTypes"></a>The IDE supports the following Subversion protocol types:</p>
         
         <table border="1" cellpadding="5">
@@ -54,7 +66,7 @@
             <tr><td align="center"><strong>svn</strong></td><td>Access via custom protocol to an 
                 <tt>svnserve</tt> server</td><td><tt>svn://hostname/repository_path[@REV]</tt></td></tr>
             <tr><td align="center"><strong>svn+ssh</strong></td><td>Access via SVN protocol through 
-                an SSH tunnel</td><td><tt>svn+ssh://hostname/repository_path[@REV]</tt></td></tr>
+                an external SSH tunnel</td><td><tt>svn+ssh://hostname/repository_path[@REV]</tt></td></tr>
         </table>   
         
         <dl>

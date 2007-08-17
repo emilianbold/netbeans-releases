@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
+
 <!--
-*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -27,15 +28,18 @@
     <mapID target="svn_mergeresolve" url="svnmodule/svn_mergeresolve.html" />
     <mapID target="svn_patch" url="svnmodule/svn_patch.html" />
 
-<!-- ========================== -->
+<!-- ======================================================================= -->
 
 <!--CSH topics-->
 
     <!--TODO find out what this is for-->
     <mapID target="org.netbeans.modules.subversion.client.SvnClientExceptionHandler" url="pending.html" />
 
-    <!--browser for selecting modules (called from Checkout wizard) - consider removing Help button; make sure not called for other purposes-->	
-    <mapID target="org.netbeans.modules.subversion.ui.browser.Browser" url="pending.html" />
+    <!-- Browse Repository Folders dialog (called from Checkout wizard, 2nd panel) -->
+    <mapID target="org.netbeans.modules.subversion.ui.browser.checkout" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
+
+    <!-- Search Revisions dialog (called from Checkout wizard, 2nd panel) -->
+    <mapID target="org.netbeans.modules.subversion.ui.search.checkout" url="svnmodule/csh/svn_search_rev_dialog.html" />
 
     <!--Checkout wizard, step 1-->	
     <mapID target="org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.checkout" url="svnmodule/csh/svn_chkout_wizard_p1.html" />
@@ -71,7 +75,7 @@
     <mapID target="org.netbeans.modules.subversion.ui.update.RevertModifications" url="svnmodule/csh/svn_revert_mod_dialog.html" />
 
     <!--Subversion Search History window-->
-    <mapID target="org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent" url="svnmodule/csh/svn_history_viewer.html" />
+    <mapID target="org.netbeans.modules.subversion.ui.browser.searchhistory" url="svnmodule/csh/svn_history_viewer.html" />
  
     <!--Subversion Switch To dialog-->
     <mapID target="org.netbeans.modules.subversion.ui.copy.SwitchTo" url="svnmodule/csh/svn_switch_dialog.html" />

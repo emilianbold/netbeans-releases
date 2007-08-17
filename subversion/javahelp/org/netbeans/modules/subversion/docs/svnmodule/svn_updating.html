@@ -1,6 +1,7 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
 <!--
-*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -13,30 +14,39 @@
     <body>
         <h2>Updating Files in a Local Working Directory</h2>
         
-        <p>Updating files enables you to incorporate any changes that other developers 
-            have committed to the repository prior to committing your local changes.</p>
+        <p>Updating files or folders enables you to incorporate any changes that other 
+            developers have committed to the repository since your previous checkout or 
+            update.</p>
 
-        <h4>To update a local version of a file:</h4>
+        <h4>To update a local version of a file or folder:</h4>
         
         <ul>
-            <li>Select a file node in the Subversion, Projects, Files, or Favorites window
-                and choose Subversion &gt; Update. The IDE incorporates any changes existing 
-                in the repository version of the file.</li>
+            <li>Select a versioned file (e.g. in the Projects, Files, or Favorites
+                window) and choose Subversion &gt; Update. Alternately, select a file in 
+                the <a href="csh/svn_versioning_window.html">Versioning</a> window and 
+                choose Update from the right-click menu. The IDE incorporates any changes 
+                existing in the repository version of the file.</li>
+        </ul>
+        
+        <ul class="note">
+            <li>It is recommended that you perform an update on all files prior to 
+                committing them to the repository. Doing so allows you to become aware 
+                of any conflicts prior to performing the commit.</li>
         </ul>
         
         <h3>Updating Projects with Dependencies</h3>
         
-        <p>If you are working on a project for which there are other required
-            projects, you can update both the main project and all dependent
-            projects using the IDE's Update with Dependencies command.</p>
+        <p>If you are working on a project for which there are other required projects, 
+            you can update both the main project and all dependent projects using the 
+            IDE's Update with Dependencies command.</p>
             
         <h4>To update an entire project and all dependent projects:</h4>
         
         <ol>
             <li>Right-click the project node in the Projects window.</li>
-            <li>Choose Subversion &gt; Update With Project Dependencies. The 
-                IDE incorporates any changes existing in the repository
-                version of all of the projects with the local copies.</li>
+            <li>Choose Subversion &gt; Update With Dependencies. The IDE incorporates 
+                any changes existing in the repository version of all of the projects 
+                with your local working copy.</li>
         </ol>
         
         <dl>
