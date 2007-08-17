@@ -120,7 +120,7 @@ public class Reformatter implements ReformatTask {
         if (text == null)
             return;
         int endPos = context.endOffset();
-        for (Diff diff : getDiffs(sourceText, text, start)) {
+        for (Diff diff : getDiffs(sourceText, text.trim(), start)) {
             int offset = diff.start.getOffset();
             doc.remove(offset, diff.end.getOffset() - offset);
             if (diff.text != null)
