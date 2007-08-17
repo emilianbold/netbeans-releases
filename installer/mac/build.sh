@@ -1,5 +1,22 @@
 #!/bin/bash
 
+# The contents of this file are subject to the terms of the Common Development
+# and Distribution License (the License). You may not use this file except in
+# compliance with the License.
+
+# You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+# or http://www.netbeans.org/cddl.txt.
+
+# When distributing Covered Code, include this CDDL Header Notice in each file
+# and include the License file at http://www.netbeans.org/cddl.txt.
+# If applicable, add the following below the CDDL Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyrighted [year] [name of copyright owner]"
+
+# The Original Software is NetBeans. The Initial Developer of the Original
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+# Microsystems, Inc. All Rights Reserved.
+
 set -e 
 
 if [ -z "$1" ] || [ -z "$2" ] ; then
@@ -38,15 +55,7 @@ rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
 # build dmg
 ant -f $progdir/build.xml -Ddmgname=$basename.dmg -Dnb.dir=$progdir/build/netbeans build-dmg
 
-ant -f $progdir/build.xml clean
-mkdir $progdir/build
-unzip -d $progdir/build $zipdir/$basename-java.zip
-ant -f $progdir/build.xml -Ddmgname=$basename-java.dmg -Dnb.dir=$progdir/build/netbeans build-dmg 
-
-ant -f $progdir/build.xml clean
-mkdir $progdir/build
-unzip -d $progdir/build $zipdir/$basename-ruby.zip
-ant -f $progdir/build.xml -Ddmgname=$basename-ruby.dmg -Dnb.dir=$progdir/build/netbeans build-dmg 
+# javaee
 
 ant -f $progdir/build.xml clean
 mkdir $progdir/build
@@ -55,3 +64,12 @@ unzip -d $progdir/build $zipdir/$basename-javaee.zip
 mkdir -p $progdir build/pkg
 rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
 ant -f $progdir/build.xml -Ddmgname=$basename-javaee.dmg -Dnb.dir=$progdir/build/netbeans build-dmg 
+
+# all others
+
+for pkg in java ruby cnd ; do
+    ant -f $progdir/build.xml clean
+    mkdir $progdir/build
+    unzip -d $progdir/build $zipdir/$basename-$pkg.zip
+    ant -f $progdir/build.xml -Ddmgname=$basename-$pkg.dmg -Dnb.dir=$progdir/build/netbeans build-dmg 
+done
