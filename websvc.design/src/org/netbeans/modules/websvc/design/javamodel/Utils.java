@@ -656,8 +656,7 @@ public class Utils {
             StreamResult result = new StreamResult(new StringWriter());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             message.writeTo(bos);
-            String output = bos.toString();
-            InputStream bis = new ByteArrayInputStream(output.getBytes());
+            InputStream bis = new ByteArrayInputStream(bos.toByteArray());
             StreamSource source = new StreamSource(bis);
             
             transformer.transform(source, result);
