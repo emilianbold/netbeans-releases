@@ -22,6 +22,7 @@ package org.netbeans.modules.websvc.wsitconf.ui.client.subpanels;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
+import org.netbeans.modules.websvc.wsitconf.ui.client.PanelEnabler;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -31,7 +32,7 @@ import org.netbeans.modules.xml.wsdl.model.Binding;
  * @author  Martin Grebac
  */
 
-public class DynamicCredsPanel extends javax.swing.JPanel {
+public class DynamicCredsPanel extends javax.swing.JPanel implements PanelEnabler {
     
     private boolean inSync = false;
 
@@ -97,12 +98,20 @@ public class DynamicCredsPanel extends javax.swing.JPanel {
     }
 
     private void enableDisable() {        
-        passwdBrowseButton.setEnabled(enable);
-        passwdHandlerField.setEnabled(enable);
-        passwdHandlerLabel.setEnabled(enable);
-        usernameBrowseButton.setEnabled(enable);
-        usernameHandlerField.setEnabled(enable);
-        usernameHandlerLabel.setEnabled(enable);
+        passwdBrowseButton.setEnabled(isPanelEnabled());
+        passwdHandlerField.setEnabled(isPanelEnabled());
+        passwdHandlerLabel.setEnabled(isPanelEnabled());
+        usernameBrowseButton.setEnabled(isPanelEnabled());
+        usernameHandlerField.setEnabled(isPanelEnabled());
+        usernameHandlerLabel.setEnabled(isPanelEnabled());
+    }
+
+    public boolean isPanelEnabled() {
+        return enable;
+    }
+    
+    public void enablePanel(boolean doEnable) {
+        enable = doEnable;
     }
     
     private String getCallbackHandler(String type) {

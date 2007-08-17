@@ -202,8 +202,11 @@ public class CallbackPanel extends SectionInnerPanel {
                 ProfilesModelHelper.setClientDefaults(profile, binding, serviceBinding, project);
                 sync();
                 refreshLayout();
+                ((PanelEnabler)credPanel).enablePanel(false);
                 credPanel.revalidate();
                 credPanel.repaint();
+            } else {
+                ((PanelEnabler)credPanel).enablePanel(true);
             }
         }
 

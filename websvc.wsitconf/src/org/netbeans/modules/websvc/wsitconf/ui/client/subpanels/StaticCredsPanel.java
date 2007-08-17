@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.client.subpanels;
 
+import org.netbeans.modules.websvc.wsitconf.ui.client.PanelEnabler;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -28,7 +29,7 @@ import org.netbeans.modules.xml.wsdl.model.Binding;
  * @author  Martin Grebac
  */
 
-public class StaticCredsPanel extends javax.swing.JPanel {
+public class StaticCredsPanel extends javax.swing.JPanel implements PanelEnabler {
     
     private boolean inSync = false;
 
@@ -105,10 +106,18 @@ public class StaticCredsPanel extends javax.swing.JPanel {
     }
 
     private void enableDisable() {        
-        defaultPasswordField.setEnabled(enable);
-        defaultPasswordLabel.setEnabled(enable);
-        defaultUsernameLabel.setEnabled(enable);
-        defaultUsernameTextField.setEnabled(enable);
+        defaultPasswordField.setEnabled(isPanelEnabled());
+        defaultPasswordLabel.setEnabled(isPanelEnabled());
+        defaultUsernameLabel.setEnabled(isPanelEnabled());
+        defaultUsernameTextField.setEnabled(isPanelEnabled());
+    }
+    
+    public boolean isPanelEnabled() {
+        return enable;
+    }
+    
+    public void enablePanel(boolean doEnable) {
+        enable = doEnable;
     }
     
     /** This method is called from within the constructor to
