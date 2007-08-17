@@ -20,6 +20,7 @@ package org.netbeans.modules.vmd.midp.components.sources;
 
 import org.netbeans.modules.vmd.api.codegen.CodeMultiGuardedLevelPresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionController;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.*;
@@ -31,17 +32,17 @@ import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerCD;
 import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
 import org.netbeans.modules.vmd.midp.components.points.PointCD;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
+import org.netbeans.modules.vmd.midp.general.AcceptContextResolver;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ChildrenByTypePC;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.eventhandler.PropertyEditorEventHandler;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -96,7 +97,9 @@ public final class EventSourceCD extends ComponentDescriptor {
             InspectorPositionPresenter.create(createPositionControllers()),
             // accept
             new AcceptTypePresenter(EventHandlerCD.TYPEID) {
-                @Override
+                protected boolean notifyAccepting (TypeID producerTypeID) {
+                    return super.notifyAccepting (producerTypeID)  &&  AcceptContextResolver.resolveAcceptAllowance (getComponent (), producerTypeID);
+                }
                 protected void notifyCreated (DesignComponent component) {
                     MidpDocumentSupport.updateEventHandlerWithNew (getComponent (), component);
                 }

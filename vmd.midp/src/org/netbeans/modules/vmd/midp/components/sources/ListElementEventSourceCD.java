@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.midp.components.sources;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.RenameAction;
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.*;
@@ -31,14 +30,11 @@ import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midp.components.displayables.ListCD;
 import org.netbeans.modules.vmd.midp.components.elements.ElementSupport;
-import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerCD;
-import org.netbeans.modules.vmd.midp.components.handlers.ListEventHandlerCD;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowListElementPinOrderPresenter;
-import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
@@ -47,11 +43,11 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -97,7 +93,6 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, InspectorPositionPresenter.class);
         DocumentSupport.removePresentersOfClass (presenters, ActionsPresenter.class);
-        DocumentSupport.removePresentersOfClass (presenters, AcceptPresenter.class);
         MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, false, true, true);
         MidpActionsSupport.addMoveActionPresenter(presenters, ListCD.PROP_ELEMENTS);
         presenters.addAll(ActionsSupport.createByParent(DeleteAction.class, RenameAction.class));
@@ -112,50 +107,30 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
             createPropertiesPresenter (),
             // inspector
             InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),new ScreenMoveArrayAcceptPresenter(ListCD.PROP_ELEMENTS, ListElementEventSourceCD.TYPEID),
+            // accept
             new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"), // NOI18N
             MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter(),
             MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter(),
-            new AcceptTypePresenter(EventHandlerCD.TYPEID) {
-                @Override
-                protected boolean notifyAccepting (TypeID producerTypeID) {
-                    DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
-                    return ! registry.isInHierarchy (ListEventHandlerCD.TYPEID, producerTypeID);
-                }
-                @Override
-                protected void notifyCreated (DesignComponent component) {
-                    MidpDocumentSupport.updateEventHandlerWithNew (getComponent (), component);
-                }
-            },
             // flow
             new FlowEventSourcePinPresenter () {
                 protected DesignComponent getComponentForAttachingPin () {
                     return getComponent ().getParentComponent ();
                 }
-
                 protected String getDisplayName () {
                     return MidpValueSupport.getHumanReadableString (getComponent ().readProperty (PROP_STRING));
                 }
-
                 protected String getOrder () {
                     return FlowListElementPinOrderPresenter.CATEGORY_ID;
                 }
-
-                @Override
                 protected boolean canRename () {
                     return getComponent () != null;
                 }
-
-                @Override
                 protected String getRenameName () {
                     return (String) getComponent ().readProperty (PROP_STRING).getPrimitiveValue ();
                 }
-
-                @Override
                 protected void setRenameName (String name) {
                     getComponent ().writeProperty (PROP_STRING, MidpTypes.createStringValue (name));
                 }
-
-                @Override
                 protected DesignEventFilter getEventFilter () {
                     return super.getEventFilter ().addParentFilter (getComponent (), 1, false);
                 }
