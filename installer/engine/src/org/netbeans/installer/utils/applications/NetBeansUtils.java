@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -22,6 +22,7 @@ package org.netbeans.installer.utils.applications;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -31,8 +32,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.FilesList;
 
 /**
@@ -93,7 +96,7 @@ public class NetBeansUtils {
             id = FileUtils.readFile(productid).trim();
         }
         
-        final List<String> ids = 
+        final List<String> ids =
                 new LinkedList(Arrays.asList(id.split(PACK_ID_SEPARATOR)));
         
         boolean packAdded = false;
@@ -114,7 +117,7 @@ public class NetBeansUtils {
         }
         
         return FileUtils.writeFile(
-                productid, 
+                productid,
                 StringUtils.asString(ids, PACK_ID_SEPARATOR));
     }
     
@@ -485,6 +488,71 @@ public class NetBeansUtils {
                 nbLocation.getAbsolutePath());
     }
     
+    public static void runUpdater(File nbLocation) throws IOException {
+        File jdkLocation = new File(getJavaHome(nbLocation));
+        LogManager.log("running the NetBeans updater : ");
+        LogManager.log("    nbLocation = " + nbLocation);
+        LogManager.log("    jdkLocation = " + jdkLocation);
+        
+        List <File> classes = new ArrayList <File> ();
+        List <File> nbDirs = new ArrayList <File> ();
+        
+        
+        File netbeansclusters = new File(nbLocation, NETBEANS_CLUSTERS);
+        List<String> list = FileUtils.readStringList(netbeansclusters);
+        List<String> clusters = new ArrayList <String> ();
+        
+        File platformCluster = null;
+        
+        for(String s : list) {
+            String cluster = s.trim();
+            if(!cluster.startsWith("#") &&
+                    cluster.equals("etc")) {
+                nbDirs.add(new File(nbLocation, cluster));
+                if(cluster.startsWith("platform")) {
+                    platformCluster= new File(nbLocation, cluster);
+                }
+            }
+        }
+        
+        String nbDirsString = StringUtils.asString(nbDirs, File.pathSeparator);
+        
+        LogManager.log("    adding classes to classpath");
+        classes.add(new File(platformCluster,
+                "lib" + File.separator + "boot.jar"));
+        if(!SystemUtils.isMacOS()) {
+            classes.add(new File(jdkLocation,
+                    "lib" + File.separator + "tools.jar" ));
+        }
+        classes.add(new File(jdkLocation,
+                "lib" + File.separator + "dt.jar"));
+        classes.add(new File(platformCluster,
+                "modules" + File.separator +
+                "ext" + File.separator +
+                "updater.jar"));
+        String classpath = StringUtils.asString(classes, File.pathSeparator);
+        
+        String importClassProp = "netbeans.importclass";
+        String nbHomeProp = "netbeans.home";
+        String nbHome = platformCluster.getPath();
+        String nbUserdir = getNetBeansUserDirFile(nbLocation).getPath();
+        String nbUserdirProp = "netbeans.user";
+        String nbDirsProp = "netbeans.dirs";
+        String sysProp ="-D";
+        String eq = "=";
+        String java = JavaUtils.getExecutable(jdkLocation).getPath();
+        LogManager.log("    executing updater...");
+        SystemUtils.executeCommand(nbLocation, new String [] {
+            java,
+            sysProp + importClassProp + eq + UPDATER_CLASSNAME,
+            sysProp + nbHomeProp    + eq + nbHome,
+            sysProp + nbUserdirProp + eq + nbUserdir,
+            sysProp + nbDirsProp    + eq + nbDirsString,
+            "-Xms32m", "-XX:MaxPermSize=96m", "-Xverify:none", "-Xmx128m",
+            "-cp", classpath,
+            UPDATER_FRAMENAME, "--nosplash"});
+    }
+    
     // private //////////////////////////////////////////////////////////////////////
     private static long getJavaMemorySize(String string) {
         String suffix = string.substring(string.length() - 1);
@@ -579,6 +647,10 @@ public class NetBeansUtils {
             "${HOME}"; // NOI18N
     public static final String NETBEANS_HOME_TOKEN =
             "${NETBEANS_HOME}"; // NOI18N
+    public static final String UPDATER_FRAMENAME = 
+            "org.netbeans.updater.UpdaterFrame";
+    public static final String UPDATER_CLASSNAME = 
+            "org.netbeans.upgrade.AutoUpgrade";
     
     public static final long K =
             1024; // NOMAGI
