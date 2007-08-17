@@ -96,8 +96,9 @@ public class TreeGraphLayoutUtility <N,E,P> {
      * @param rootNode the root node
      */
     public final void layout(N rootNode) {
-        if (rootNode == null)
+        if (rootNode == null) {
             return;
+        }
         Collection<N> allNodes = scene.getNodes();
         ArrayList<N> nodesToResolve = new ArrayList<N> (allNodes);
         
@@ -164,9 +165,11 @@ public class TreeGraphLayoutUtility <N,E,P> {
             
             Collection<N> list = resolveChildren(node);
             children = new ArrayList<Node> ();
-            for (N child : list)
-                if (! loadedSet.contains(child))
+            for (N child : list) {
+                if (! loadedSet.contains(child)) {
                     children.add(new Node(child, loadedSet));
+                }
+            }
         }
         
         private int allocateHorizontally() {
@@ -175,8 +178,9 @@ public class TreeGraphLayoutUtility <N,E,P> {
             relativeBounds = widget.getPreferredBounds();
             space = 0;
             for (int i = 0; i < children.size(); i++) {
-                if (i > 0)
+                if (i > 0) {
                     space += horizontalGap;
+                }
                 space += children.get(i).allocateHorizontally();
             }
             totalSpace = Math.max(space, relativeBounds.width);
@@ -201,8 +205,9 @@ public class TreeGraphLayoutUtility <N,E,P> {
             relativeBounds = widget.getPreferredBounds();
             space = 0;
             for (int i = 0; i < children.size(); i++) {
-                if (i > 0)
+                if (i > 0) {
                     space += verticalGap;
+                }
                 space += children.get(i).allocateVertically();
             }
             totalSpace = Math.max(space, relativeBounds.height);

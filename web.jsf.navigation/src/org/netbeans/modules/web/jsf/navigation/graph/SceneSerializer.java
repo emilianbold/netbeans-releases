@@ -261,8 +261,9 @@ public class SceneSerializer {
             Exceptions.printStackTrace(e);
         } finally {
             try {
-                if (is != null)
+                if (is != null) {
                     is.close();
+                }
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
@@ -276,8 +277,9 @@ public class SceneSerializer {
                 NamedNodeMap map = node.getAttributes();
                 if (map != null) {                   
                     Node mynode = map.getNamedItem(attr);
-                    if (mynode != null)
+                    if (mynode != null) {
                         return mynode.getNodeValue();
+                    }
                 }
             }
         } catch (DOMException e) {

@@ -98,8 +98,9 @@ public final class FreePlaceNodesLayouter {
             for (int b = 0; b <= a; b++) {
                 int x =  SEP_Y + SEP_X * (a - b);
                 int y =  SEP_Y * (1 + b);
-                if (isThereEmptyPlace(scene, positions, nodes, x, y))
+                if (isThereEmptyPlace(scene, positions, nodes, x, y)) {
                     return new Point(x, y);
+                }
             }
         }
     }
@@ -109,13 +110,17 @@ public final class FreePlaceNodesLayouter {
         if (nodes != null) {
             for( Page node : nodes) {
                 Point location = (Point) positions.get(node.getDisplayName());
-                if (location == null)
+                if (location == null) {
                     location = scene.findWidget(node).getLocation();
-                if (location != null && rectangle.contains(location))
+                }
+                if (location != null && rectangle.contains(location)) {
                     return false;
+                }
+                
                 final Rectangle bounds = scene.findWidget(node).getBounds();
-                if (bounds != null && rectangle.contains(bounds))
+                if (bounds != null && rectangle.contains(bounds)) {
                     return false;
+                }
             }
         }
         return true;

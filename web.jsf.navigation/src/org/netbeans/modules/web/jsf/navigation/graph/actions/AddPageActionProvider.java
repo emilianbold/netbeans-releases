@@ -98,9 +98,9 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
             
             final FileObject jspTemplate = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
             
-            if (jspTemplate == null)
+            if (jspTemplate == null) {
                 return; // Don't know the template
-            
+            }
             
             final DataObject mt = DataObject.find(jspTemplate);
             final DataFolder webDf = DataFolder.findFolder(targetFolder);

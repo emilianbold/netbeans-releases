@@ -68,8 +68,9 @@ public class GridGraphLayoutUtility {
         
         for (;;) {
             N node = queue.isEmpty() ? findNodeWithMaxEdges(unresolvedNodes, node2connected) : queue.poll();
-            if (node == null)
+            if (node == null) {
                 break;
+            }
             unresolvedNodes.remove(node);
             Point center = node2grid.get(node);
             if (center == null) {
@@ -86,10 +87,12 @@ public class GridGraphLayoutUtility {
             });
             
             for (N conn : connected) {
-                if (unresolvedNodes.contains(conn))
+                if (unresolvedNodes.contains(conn)) {
                     queue.offer(conn);
-                if (node2grid.containsKey(conn))
+                }
+                if (node2grid.containsKey(conn)) {
                     continue;
+                }
                 Point grid = resolvePoint(node2grid, center, index, checker);
                 node2grid.put(conn, grid);
                 gridBounds.add(grid);
@@ -100,11 +103,13 @@ public class GridGraphLayoutUtility {
         
         for (N node : allNodes) {
             Widget widget = graph.findWidget(node);
-            if (widget == null)
+            if (widget == null) {
                 continue;
+            }
             Rectangle bounds = widget.getBounds();
-            if (bounds == null)
+            if (bounds == null) {
                 continue;
+            }
             Point grid = node2grid.get(node);
             xAxis[grid.x - gridBounds.x] = Math.max(xAxis[grid.x - gridBounds.x], bounds.width);
             yAxis[grid.y - gridBounds.y] = Math.max(yAxis[grid.y - gridBounds.y], bounds.height);
@@ -127,11 +132,13 @@ public class GridGraphLayoutUtility {
         
         for (N node : allNodes) {
             Widget widget = graph.findWidget(node);
-            if (widget == null)
+            if (widget == null) {
                 continue;
+            }
             Rectangle bounds = widget.getBounds();
-            if (bounds == null)
+            if (bounds == null) {
                 continue;
+            }
             Point grid = node2grid.get(node);
             widget.setPreferredLocation(new Point(xAxis[grid.x - gridBounds.x] - bounds.x, yAxis[grid.y - gridBounds.y]));
             //            setResolvedNodeLocation(graph, node, new Point(xAxis[grid.x - gridBounds.x] - bounds.x, yAxis[grid.y - gridBounds.y]));
@@ -165,15 +172,17 @@ public class GridGraphLayoutUtility {
         int add = checker ? 2 : 1;
         for (int x = 0; ; x += add) {
             Point point = new Point(x, 0);
-            if (! isOccupied(node2grid, point))
+            if (! isOccupied(node2grid, point)) {
                 return point;
+            }
         }
     }
     
     private static <N> boolean isOccupied(HashMap<N, Point> node2grid, Point point) {
         for (Point p : node2grid.values()) {
-            if (point.x == p.x  &&  point.y == p.y)
+            if (point.x == p.x  &&  point.y == p.y) {
                 return true;
+            }
         }
         return false;
     }
@@ -192,12 +201,14 @@ public class GridGraphLayoutUtility {
             point.x += center.x;
             point.y += center.y;
             
-            if (checker)
-                if (((point.x + point.y) & 1) != 0)
+            if (checker) {
+                if (((point.x + point.y) & 1) != 0) {
                     continue;
-            
-            if (! isOccupied(node2grid, point))
+                }
+            }
+            if (! isOccupied(node2grid, point)) {
                 return point;
+            }
         }
     }
     private static Point index2point(Point index) {

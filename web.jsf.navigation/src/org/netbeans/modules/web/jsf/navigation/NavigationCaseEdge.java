@@ -80,8 +80,9 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
     }
     
     public String getFromOuctome() {
-        if( navCase != null && navCase.getModel() != null )
+        if( navCase != null && navCase.getModel() != null ) {
             return navCase.getFromOutcome();
+        }
         return null;
     }
     
@@ -125,8 +126,9 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
     }
     
     public String getName() {
-        if( navCase.getModel() != null )
+        if( navCase.getModel() != null ) {
             return ( navCase.getFromOutcome() != null ? navCase.getFromOutcome() : navCase.getFromAction());
+        }
         return "";
     }
     
@@ -152,8 +154,9 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
     }
     
     public Node getNode() {
-        if( navNode == null )
+        if( navNode == null ) {
             navNode = new NavNode(this);
+        }
         return navNode;
     }
     

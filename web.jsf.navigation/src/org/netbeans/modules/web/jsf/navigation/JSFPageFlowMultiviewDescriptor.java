@@ -237,8 +237,9 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         
         private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
             Object object = in.readObject();
-            if (! (object instanceof JSFConfigEditorContext))
+            if (! (object instanceof JSFConfigEditorContext)) {
                 throw new ClassNotFoundException("JSFConfigEditorContext expected but not found");
+            }
             context = (JSFConfigEditorContext) object;
             /* deserialization of node locations is completed in the PageFlowView constructor (in init() ) */
             init();

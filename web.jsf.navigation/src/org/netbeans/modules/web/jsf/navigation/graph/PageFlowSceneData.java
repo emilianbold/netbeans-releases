@@ -101,8 +101,9 @@ public class PageFlowSceneData {
     
     public Point getPageLocation( String pageDisplayName ){
         Map<String,Point> map = getCurrentSceneData();
-        if( map != null )
+        if( map != null ) {
             return getCurrentSceneData().get(pageDisplayName);
+        }
         return null;
     }
     
