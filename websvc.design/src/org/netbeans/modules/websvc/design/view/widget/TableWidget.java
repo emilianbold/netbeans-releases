@@ -167,9 +167,13 @@ public class TableWidget extends Widget{
             }
         }
         protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
-            if (previousState.isSelected() != state.isSelected()) {
-                setBorder(state.isSelected() ? BorderFactory.createLineBorder
-                        (1,SELECTED_BORDER_COLOR) : new LineBorder(1,0,0,0,BORDER_COLOR));
+            if (previousState.isSelected() != state.isSelected() ||
+                    previousState.isFocused() != state.isFocused()) {
+                setBorder(state.isSelected() ? state.isFocused()?
+                    BorderFactory.createDashedBorder(SELECTED_BORDER_COLOR, 2, 2, true):
+                    BorderFactory.createLineBorder(1,SELECTED_BORDER_COLOR) : 
+                    state.isFocused() ? BorderFactory.createDashedBorder
+                    (BORDER_COLOR, 2, 2, true):new LineBorder(1,0,0,0,BORDER_COLOR));
                 revalidate(true);
             }
         }

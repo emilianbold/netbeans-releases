@@ -79,7 +79,15 @@ public class DesignView extends JPanel  {
         this.implementationClass = implementationClass;
         this.serviceModel = ServiceModel.getServiceModel(implementationClass);
         
-        scene = new ObjectScene();
+        scene = new ObjectScene() {
+            @Override
+            /**
+             * Use our own traversal policy
+             */
+            public Comparable<DesignerWidgetIdentityCode> getIdentityCode(Object object) {
+                return new DesignerWidgetIdentityCode(scene,object);
+            }
+        };
         final JComponent sceneView = scene.createView();
         zoomer = new ZoomManager(scene);
 

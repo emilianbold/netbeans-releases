@@ -143,7 +143,7 @@ public class OperationWidget extends AbstractTitledWidget {
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
-        viewButton = new ButtonWidget(getScene(),"");
+        viewButton = new ButtonWidget(getScene(),null,null);
         viewButton.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 setTabbedView(!isTabbedView());
@@ -183,8 +183,6 @@ public class OperationWidget extends AbstractTitledWidget {
         buttons.addChild(getExpanderWidget());
 
         getHeaderWidget().addChild(buttons);
-
-        getContentWidget().setLayout(LayoutFactory.createCardLayout(getContentWidget()));
 
         listWidget = new Widget(getScene());
         listWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, RADIUS/2));
@@ -241,10 +239,12 @@ public class OperationWidget extends AbstractTitledWidget {
         if(isTabbedView()!=tabbedView) {
             this.tabbedView = tabbedView;
             if(tabbedView) {
-                LayoutFactory.setActiveCard(getContentWidget(), tabbedWidget);
+                tabbedWidget.setVisible(true);
+                listWidget.setVisible(false);
                 viewButton.setImage(IMAGE_LIST);
             } else {
-                LayoutFactory.setActiveCard(getContentWidget(), listWidget);
+                tabbedWidget.setVisible(false);
+                listWidget.setVisible(true);
                 viewButton.setImage(IMAGE_TABBED);
             }
         }

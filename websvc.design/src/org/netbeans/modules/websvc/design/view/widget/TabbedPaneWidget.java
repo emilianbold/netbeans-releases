@@ -63,6 +63,7 @@ public class TabbedPaneWidget extends Widget {
     private Widget contentWidget;
     
     private ButtonWidget selectedTab;
+    private Widget selectedTabComponent;
     
     /**
      *
@@ -74,7 +75,7 @@ public class TabbedPaneWidget extends Widget {
         tabs = new Widget(scene);
         addChild(tabs);
         contentWidget = new Widget(scene);
-        contentWidget.setLayout(LayoutFactory.createCardLayout(contentWidget));
+        contentWidget.setLayout(LayoutFactory.createOverlayLayout());
         contentWidget.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 1, 1, 1, TAB_BORDER_COLOR));
         addChild(contentWidget);
     }
@@ -95,6 +96,7 @@ public class TabbedPaneWidget extends Widget {
      */
     public void addTab(String tabTitle, Image tabIcon, final Widget tabComponent) {
         contentWidget.addChild(tabComponent);
+        tabComponent.setVisible(false);
         final ButtonWidget tab = new ButtonWidget(getScene(), tabIcon, tabTitle) {
             protected boolean isAimingAllowed() {
                 return false;
@@ -103,12 +105,15 @@ public class TabbedPaneWidget extends Widget {
         tab.setBorder(new TabBorder(this,tab));
         tab.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
-                if(LayoutFactory.getActiveCard(contentWidget) != tabComponent) {
+                if(selectedTabComponent != tabComponent) {
                     if(selectedTab!=null)
                         selectedTab.setLabelFont(getScene().getFont());
                     selectedTab = tab;
                     selectedTab.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
-                    LayoutFactory.setActiveCard(contentWidget, tabComponent);
+                    if(selectedTabComponent!=null)
+                        selectedTabComponent.setVisible(false);
+                    selectedTabComponent = tabComponent;
+                    selectedTabComponent.setVisible(true);
                     contentWidget.revalidate(true);
                 }
             }
@@ -118,7 +123,8 @@ public class TabbedPaneWidget extends Widget {
         if(selectedTab==null) {
             selectedTab = tab;
             selectedTab.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
-            LayoutFactory.setActiveCard(contentWidget, tabComponent);
+            selectedTabComponent = tabComponent;
+            selectedTabComponent.setVisible(true);
         }
     }
     
