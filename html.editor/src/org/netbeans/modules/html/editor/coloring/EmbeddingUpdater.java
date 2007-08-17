@@ -256,7 +256,15 @@ public class EmbeddingUpdater implements SyntaxParserListener {
                         if(!ts.createEmbedding(lang, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0)) {
                             LOGGER.log(Level.WARNING, "Cannot create embedding for " + mimeType + " [" + startOffset + " - "  + endOffset + "] (" + item.text().toString() + ")\n");
                         } else {
-                            LOGGER.log(Level.INFO, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "] (" + printEmbeddedText(item, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0) + ")\n");
+                            CharSequence text = item.text();
+                            if(text == null) {
+                                //according to the Token.text() javadoc this shouldn't happen => 
+                                //notify user about the situation and provide some debug info.
+                                LOGGER.log(Level.WARNING, null, new IllegalStateException("Token.text() of " + item.toString() + " == null without any previous modification of the underlying document! This seems to be a bug in lexer. Please report the issue to lexer module and attach the info dumped into the log, the document and possibly steps to reproduce."));
+                                LOGGER.log(Level.WARNING, "TokenSequence:\n" + ts.toString());
+                            } else {
+                                LOGGER.log(Level.INFO, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "] (" + printEmbeddedText(text, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0) + ")\n");
+                            }
                         }
                     }
                     iAmFirstToken = false;
@@ -270,8 +278,8 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         }
     }
     
-    private CharSequence printEmbeddedText(Token item, int startSkipLength, int endSkipLength) {
-        StringBuffer sb = new StringBuffer(item.text());
+    private CharSequence printEmbeddedText(CharSequence text, int startSkipLength, int endSkipLength) {
+        StringBuffer sb = new StringBuffer(text);
         if(startSkipLength > 0) {
             sb.insert(startSkipLength, '[');
         }
