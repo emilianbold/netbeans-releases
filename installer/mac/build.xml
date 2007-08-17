@@ -83,7 +83,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-pkg" depends="build-app">
     <mkdir dir="build/pkg"/>
     <delete dir="build/pkg/NetBeans.pkg"/>
-<!-- temporarily disable pack200 to debug problems on oxygen.czech
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
       <arg value='cd "${appdir}/Contents/Resources/NetBeans"; find . -name \*.jar -exec pack200 -g {}.pack {} \;'/>
@@ -92,7 +91,6 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="-c"/>
       <arg value='cd "${appdir}/Contents/Resources/NetBeans"; find . -name \*.jar -exec rm {} \;'/>
     </exec>
--->    
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
       <arg value="/Developer/Tools/packagemaker -build -v -p build/pkg/NetBeans.pkg -proj pkg/installer.pmproj"/>
