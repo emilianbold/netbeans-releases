@@ -75,7 +75,7 @@ ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-cat
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build catalog FU for NBMs"
+    echo "ERROR: $ERROR_CODE - Can't build stable UC catalog for NBMs"
 #    exit $ERROR_CODE;
 fi
 
