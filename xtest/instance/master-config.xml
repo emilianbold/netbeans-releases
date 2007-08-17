@@ -239,4 +239,8 @@ Microsystems, Inc. All Rights Reserved.
       <module name="uml" testtypes="qa-functional" attributes="commit"/>
   </config>
 
+  <config name="commit-validation-ruby">
+      <module name="ide" testtypes="qa-functional" attributes="ruby"/>
+  </config>
+
 </testconfig>
