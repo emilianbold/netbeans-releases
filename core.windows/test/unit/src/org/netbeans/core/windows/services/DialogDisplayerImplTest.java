@@ -59,6 +59,12 @@ public class DialogDisplayerImplTest extends NbTestCase {
         pane = new JOptionPane ("", JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[] {openChild, closeChild});
     }
 
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
+
+    @Override
     protected boolean runInEQ () {
         return false;
     }
