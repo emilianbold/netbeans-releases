@@ -180,7 +180,7 @@ public class WSGenerationUtil {
         try {
             fl = cFile.lock();
             os = new BufferedOutputStream(cFile.getOutputStream(fl));
-            getTransformer(template).transform(source, new StreamResult(new OutputStreamWriter(os)));
+            getTransformer(template).transform(source, new StreamResult(new OutputStreamWriter(os,"UTF8")));
             os.close();
             fl.releaseLock();
             DataObject dobj = DataObject.find(cFile);
