@@ -640,10 +640,24 @@ public class EditorContextImpl extends EditorContext {
     ) {
         final DataObject dataObject = getDataObject (url);
         if (dataObject == null) return -1;
-        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
+        return getFieldLineNumber(dataObject.getPrimaryFile(), className, fieldName);
+    }
+    
+    static int getFieldLineNumber (
+        FileObject fo,
+        final String className,
+        final String fieldName
+    ) {
+        JavaSource js = JavaSource.forFileObject(fo);
         if (js == null) return -1;
         final int[] result = new int[] {-1};
         
+        final DataObject dataObject;
+        try {
+            dataObject = DataObject.find (fo);
+        } catch (DataObjectNotFoundException ex) {
+            return -1;
+        }
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
                 public void cancel() {
@@ -724,10 +738,31 @@ public class EditorContextImpl extends EditorContext {
     ) {
         final DataObject dataObject = getDataObject (url);
         if (dataObject == null) return -1;
-        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-        if (js == null) return -1;
-        final int[] result = new int[] {-1};
+        int[] lns = getMethodLineNumbers(dataObject.getPrimaryFile(), className, null, methodName, methodSignature);
+        if (lns.length == 0) {
+            return -1;
+        } else {
+            return lns[0];
+        }
+    }
+    
+    static int[] getMethodLineNumbers(
+        FileObject fo,
+        final String className,
+        final String[] classExcludeNames,
+        final String methodName,
+        final String methodSignature
+    ) {
+        JavaSource js = JavaSource.forFileObject(fo);
+        if (js == null) return new int[] {};
+        final List<Integer> result = new ArrayList<Integer>();
         
+        final DataObject dataObject;
+        try {
+            dataObject = DataObject.find (fo);
+        } catch (DataObjectNotFoundException ex) {
+            return new int[] {};
+        }
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
                 public void cancel() {
@@ -735,37 +770,76 @@ public class EditorContextImpl extends EditorContext {
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
                         return;
-                    Elements elms = ci.getElements();
-                    TypeElement classElement = elms.getTypeElement(className);
-                    if (classElement == null) return ;
-                    List classMemberElements = elms.getAllMembers(classElement);
-                    for (Iterator it = classMemberElements.iterator(); it.hasNext(); ) {
-                        Element elm = (Element) it.next();
-                        if (elm.getKind() == ElementKind.METHOD || elm.getKind() == ElementKind.CONSTRUCTOR) {
-                            String name;
-                            if (elm.getKind() == ElementKind.CONSTRUCTOR && !methodName.equals("<init>")) {
-                                name = elm.getEnclosingElement().getSimpleName().toString();
-                            } else {
-                                name = elm.getSimpleName().toString();
-                            }
-                            if (name.equals(methodName)) {
-                                if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
-                                    SourcePositions positions =  ci.getTrees().getSourcePositions();
-                                    Tree tree = ci.getTrees().getTree(elm);
-                                    int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
-                                    EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-                                    result[0] = NbDocument.findLineNumber(editor.openDocument(), pos) + 1;
-                                }
-                            }
-                        }
+                    
+                    List<? extends TypeElement> typeElements = ci.getTopLevelElements();
+                    for (TypeElement te : typeElements) {
+                        addMethodLineNumbers(dataObject, ci, te,
+                                             className, classExcludeNames,
+                                             methodName, methodSignature, result);
                     }
                 }
             },true);
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
-            return -1;
+            return new int[] {};
         }
-        return result[0];
+        int[] resultArray = new int[result.size()];
+        for (int i = 0; i < resultArray.length; i++) {
+            resultArray[i] = result.get(i).intValue();
+        }
+        return resultArray;
+    }
+    
+    private static void addMethodLineNumbers(
+        DataObject dataObject,
+        CompilationController ci,
+        Element element,
+        String className,
+        String[] classExcludeNames,
+        String methodName,
+        String methodSignature,
+        List<Integer> result
+    ) throws IOException {
+        ElementKind kind = element.getKind();
+        if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE) {
+            TypeElement classElement = (TypeElement) element;
+            Elements elms = ci.getElements();
+            String binaryClassName = elms.getBinaryName(classElement).toString();
+            if (match(binaryClassName, className)) {
+                if (classExcludeNames != null) {
+                    for (String classExcludeName : classExcludeNames) {
+                        if (match(binaryClassName, classExcludeName)) {
+                            continue;
+                        }
+                    }
+                }
+                List classMemberElements = elms.getAllMembers(classElement);
+                for (Iterator it = classMemberElements.iterator(); it.hasNext(); ) {
+                    Element elm = (Element) it.next();
+                    if (elm.getKind() == ElementKind.METHOD || elm.getKind() == ElementKind.CONSTRUCTOR) {
+                        String name;
+                        if (elm.getKind() == ElementKind.CONSTRUCTOR && !methodName.equals("<init>")) {
+                            name = elm.getEnclosingElement().getSimpleName().toString();
+                        } else {
+                            name = elm.getSimpleName().toString();
+                        }
+                        if (name.equals(methodName)) {
+                            if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
+                                SourcePositions positions =  ci.getTrees().getSourcePositions();
+                                Tree tree = ci.getTrees().getTree(elm);
+                                int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
+                                EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+                                result.add(new Integer(NbDocument.findLineNumber(editor.openDocument(), pos) + 1));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        List<? extends Element> enclosed = element.getEnclosedElements();
+        for (Element e : enclosed) {
+            addMethodLineNumbers(dataObject, ci, e, className, classExcludeNames, methodName, methodSignature, result);
+        }
     }
     
     private static boolean egualMethodSignatures(String s1, String s2) {
@@ -823,7 +897,7 @@ public class EditorContextImpl extends EditorContext {
                             }
                             currentMethodPtr[1] = createSignature((ExecutableElement) el);
                             Element enclosingClassElement = el;
-                            TypeElement te = null;
+                            TypeElement te = null; // SourceUtils.getEnclosingTypeElement(el);
                             while (enclosingClassElement != null) {
                                 ElementKind kind = enclosingClassElement.getKind();
                                 if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE) {
@@ -1616,6 +1690,17 @@ public class EditorContextImpl extends EditorContext {
         } catch (DataObjectNotFoundException ex) {
             return null;
         }
+    }
+    
+    private static boolean match (String name, String pattern) {
+        if (pattern.startsWith ("*"))
+            return name.endsWith (pattern.substring (1));
+        else
+        if (pattern.endsWith ("*"))
+            return name.startsWith (
+                pattern.substring (0, pattern.length () - 1)
+            );
+        return name.equals (pattern);
     }
     
     private static class Registry {
