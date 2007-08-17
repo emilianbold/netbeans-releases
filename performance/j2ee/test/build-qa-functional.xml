@@ -295,7 +295,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <property name="tomcat.ext.dir" location="${nball.dir}/tomcatint/tomcat5/bundled/external"/>
-    <import file="${tomcat.ext.dir}/build.xml"/>
+    <import file="${tomcat.ext.dir}/../build.xml"/>
     <property name="tomcat.home" value="${xtest.tmpdir}/apache-tomcat-${tomcat_version}"/>
     
     <target name="install-tomcat" depends="init">
