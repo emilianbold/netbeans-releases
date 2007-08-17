@@ -119,6 +119,7 @@ public final class FreePlaceNodesLayouter {
         return true;
     }
     
+    private static final UnsupportedOperationException uoe = new UnsupportedOperationException("Not supported yet");
     
     
     Collection<Page> nodesAdded = new HashSet<Page>();
@@ -135,7 +136,7 @@ public final class FreePlaceNodesLayouter {
         }
         
         public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw uoe;
         }
         
         public void objectStateChanged(ObjectSceneEvent event,
@@ -143,31 +144,31 @@ public final class FreePlaceNodesLayouter {
                 ObjectState previousState,
                 ObjectState newState) {
             System.out.println("State Changed");
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw uoe;
         }
         
         public void selectionChanged(ObjectSceneEvent event,
                 Set<Object> previousSelection,
                 Set<Object> newSelection) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw uoe;
         }
         
         public void highlightingChanged(ObjectSceneEvent event,
                 Set<Object> previousHighlighting,
                 Set<Object> newHighlighting) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw uoe;
         }
         
         public void hoverChanged(ObjectSceneEvent event,
                 Object previousHoveredObject,
                 Object newHoveredObject) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw uoe;
         }
         
         public void focusChanged(ObjectSceneEvent event,
                 Object previousFocusedObject,
                 Object newFocusedObject) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw uoe;
         }
         
     }

@@ -53,6 +53,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
      * @param original
      */
     public Page(PageFlowController pc, Node original) {
+        super();
         this.pc = pc;
         setNode(original);
         /* Update the page only at request

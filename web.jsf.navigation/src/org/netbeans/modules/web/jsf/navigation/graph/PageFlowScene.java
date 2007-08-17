@@ -148,6 +148,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
      * @param tc or TopComponent/container.
      */
     public PageFlowScene(PageFlowView tc) {
+        super();
         this.tc = tc;
 
         setOpaque(true);

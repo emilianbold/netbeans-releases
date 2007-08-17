@@ -47,6 +47,7 @@ public class PageFlowDeleteAction extends AbstractAction{
      * @param scene
      */
     public PageFlowDeleteAction(PageFlowScene scene) {
+        super();
         this.scene = scene;
         putValue("ACCELERATOR_KEY", KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
     }

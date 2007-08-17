@@ -274,10 +274,10 @@ public class SceneSerializer {
         try {
             if (node != null) {
                 NamedNodeMap map = node.getAttributes();
-                if (map != null) {
-                    node = map.getNamedItem(attr);
-                    if (node != null)
-                        return node.getNodeValue();
+                if (map != null) {                   
+                    Node mynode = map.getNamedItem(attr);
+                    if (mynode != null)
+                        return mynode.getNodeValue();
                 }
             }
         } catch (DOMException e) {

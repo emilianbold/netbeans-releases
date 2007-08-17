@@ -43,15 +43,21 @@ public class SceneElementComparator implements Comparator<SceneElement> {
 
     @SuppressWarnings(value = "unchecked")
     public int compare(SceneElement s1, SceneElement s2) {
+        assert s1 != null;
+        assert s2 != null;
 
         Point p1 = s1.p;
         Point p2 = s2.p;
+
+        assert p1 != null;
+        assert p2 != null;
+
         PageFlowSceneElement e1 = s1.element;
         PageFlowSceneElement e2 = s2.element;
 
-        if (p1 == null || p2 == null) {
-            throw new NullPointerException("Can not compare null value");
-        }
+        /* if (p1 == null || p2 == null) {
+        throw new IllegalArgumentException("Can not compare null value");
+        }*/
 
         if (p1.x == p2.x) {
             if (p1.y == p2.y) {
@@ -61,7 +67,6 @@ public class SceneElementComparator implements Comparator<SceneElement> {
         }
         return p1.x - p2.x;
     }
-
 
     public static class SceneElement {
 
@@ -76,7 +81,7 @@ public class SceneElementComparator implements Comparator<SceneElement> {
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {
-                throw new NullPointerException("Can not compare null object");
+                throw new IllegalArgumentException("Can not compare null object");
             }
             if (!(obj instanceof SceneElement)) {
                 return false;
@@ -93,7 +98,6 @@ public class SceneElementComparator implements Comparator<SceneElement> {
             return element.toString() + ":" + p.toString();
         }
     }
-
 
     public static PageFlowSceneElement getNextSelectableElement(PageFlowScene scene, boolean reverse, boolean nodesSelectable, boolean edgesSelectable, boolean pinsSelectable) {
         List<Object> selectedObjs = new ArrayList<Object>(scene.getSelectedObjects());

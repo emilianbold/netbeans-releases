@@ -27,6 +27,7 @@ import org.openide.filesystems.MIMEResolver;
 public class JSFConfigMimeResovler extends MIMEResolver{
 
     public JSFConfigMimeResovler() {
+        super();
     }
 
     public String findMIMEType(FileObject fo) {

@@ -77,7 +77,7 @@ public class MapActionUtility {
     public static ActionMap initActionMap() {
         ActionMap actionMap = new ActionMap();
         // Install the actions
-        actionMap.put("handleTab", handleTab);
+        actionMap.put("handleTab", handleTabAction);
         actionMap.put("handleCtrlTab", handleCtrlTab);
         actionMap.put("handleEscape", handleEscape);
 
@@ -91,7 +91,7 @@ public class MapActionUtility {
         //        actionMap.put("handleNewWebForm", new TestAction("handleNewWebForm"));
         //
         actionMap.put("handleLeftArrowKey", handleCtrlTab);
-        actionMap.put("handleRightArrowKey", handleTab);
+        actionMap.put("handleRightArrowKey", handleTabAction);
         actionMap.put("handleUpArrowKey", handleUpArrow);
         actionMap.put("handleDownArrowKey", handleDownArrow);
 
@@ -227,7 +227,7 @@ public class MapActionUtility {
         }
     };
 
-    public static final Action handleTab = new AbstractAction() {
+    public static final Action handleTabAction = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
             boolean reverse = false;

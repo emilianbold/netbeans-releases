@@ -64,6 +64,7 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
          * @param scene
          */
         public AddPageAction(PageFlowScene scene) {
+            super();
             putValue(NAME, getDisplayName());
             this.scene = scene;
         }

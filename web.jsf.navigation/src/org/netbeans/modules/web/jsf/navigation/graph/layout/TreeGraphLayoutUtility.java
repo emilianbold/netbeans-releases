@@ -183,7 +183,9 @@ public class TreeGraphLayoutUtility <N,E,P> {
             return totalSpace;
         }
         
-        private void resolveVertically(int x, int y) {
+        private void resolveVertically(int paramX, int paramY) {
+            int x = paramX;
+            int y = paramY;
             point = new Point(x + totalSpace / 2, y - relativeBounds.y);
             x += (totalSpace - space) / 2;
             y += relativeBounds.height + verticalGap;
@@ -207,7 +209,9 @@ public class TreeGraphLayoutUtility <N,E,P> {
             return totalSpace;
         }
         
-        private void resolveHorizontally(int x, int y) {
+        private void resolveHorizontally(int paramX, int paramY) {
+            int x = paramX;
+            int y = paramY;
             point = new Point(x - relativeBounds.x, y + totalSpace / 2);
             x += relativeBounds.width + horizontalGap;
             y += (totalSpace - space) / 2;

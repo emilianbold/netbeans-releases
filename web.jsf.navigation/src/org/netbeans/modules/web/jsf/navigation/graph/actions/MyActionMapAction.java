@@ -35,6 +35,7 @@ public class MyActionMapAction extends WidgetAction.Adapter {
     private ActionMap actionMap;
 
     public MyActionMapAction (InputMap inputMap, ActionMap actionMap) {
+        super();
         this.inputMap = inputMap;
         this.actionMap = actionMap;
         //System.out.println("Creating My Action Map");

@@ -211,14 +211,17 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         LOGGER.exiting("FacesModelPropertyChangeListener", "replaceFromViewIdToViewIdEventHandler");
     }
     
+    private static final String NEWLINE ="\n";
+    
     private void setupGraph(PropertyChangeEvent ev) {
-        LOGGER.fine("\n\nRe-setting Page Flow Editor because of change in faces config xml file.\n" +
-                "Source Class:  org.netbeans.modules.web.jsf.navigation.FacesModelPropertyChangeListener\n" +
-                "Method Name: setupGraph(PropertyChangeEvent ev)\n" +
-                "Event: " + ev + "\n "+
-                "PropertyName:" + ev.getPropertyName() + "\n "+
-                "New Value: " + ev.getNewValue() + "\n "+
-                "Old Value: " + ev.getOldValue() + "\n "+
+        LOGGER.fine(NEWLINE + NEWLINE +
+                "Re-setting Page Flow Editor because of change in faces config xml file." + NEWLINE +
+                "Source Class:  org.netbeans.modules.web.jsf.navigation.FacesModelPropertyChangeListener" + NEWLINE +
+                "Method Name: setupGraph(PropertyChangeEvent ev)" + NEWLINE +
+                "Event: " + ev + NEWLINE+
+                "PropertyName:" + ev.getPropertyName() + NEWLINE+
+                "New Value: " + ev.getNewValue() + NEWLINE+
+                "Old Value: " + ev.getOldValue() + NEWLINE +
                 "Source: " + ev.getSource());
         
         LogRecord record = new LogRecord(Level.FINE, "Faces Config Change Re-Setting Graph");

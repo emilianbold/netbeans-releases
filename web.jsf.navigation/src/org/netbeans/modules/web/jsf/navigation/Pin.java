@@ -50,13 +50,14 @@ import org.openide.util.NbBundle;
 public class Pin extends PageFlowSceneElement {
 
     private Page page;
-    private boolean isDefault = true;
+    private boolean bDefault = true;
     private PageContentItem pageContentItem;
 
     /** Creates a default PinNode
      * @param page
      */
     public Pin(Page page) {
+        super();
         this.page = page;
     }
 
@@ -66,11 +67,13 @@ public class Pin extends PageFlowSceneElement {
      * @param pageContentItem
      */
     public Pin(Page page, PageContentItem pageContentItem) {
+        super();
         assert pageContentItem != null;
 
+        
         this.page = page;
         this.pageContentItem = pageContentItem;
-        isDefault = false;
+        bDefault = false;
     }
 
     /**
@@ -78,7 +81,7 @@ public class Pin extends PageFlowSceneElement {
      * @return boolean is Default?
      */
     public boolean isDefault() {
-        return isDefault;
+        return bDefault;
     }
 
     @Override
@@ -128,7 +131,7 @@ public class Pin extends PageFlowSceneElement {
      * @return fromOutcome String
      */
     public String getFromOutcome() {
-        if (!isDefault) {
+        if (!bDefault) {
             return pageContentItem.getFromOutcome();
         }
         return null;

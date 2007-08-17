@@ -44,7 +44,8 @@ public class FacesModelUtility {
         return getViewIdFiltiered( viewId );
     }
     
-    public static String getViewIdFiltiered( String viewId ){
+    public static String getViewIdFiltiered( String paramViewId ){
+        String viewId = paramViewId;
         if( viewId != null && viewId.length() > 0 && viewId.charAt(0) == '/') {
             viewId = viewId.replaceFirst("/", "");
         }

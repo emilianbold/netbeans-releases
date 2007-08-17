@@ -106,7 +106,7 @@ public class PageFlowController {
         try {
             configDataObj = DataObject.find(configFile);
         } catch (DataObjectNotFoundException donfe) {
-            donfe.printStackTrace();
+            Exceptions.printStackTrace(donfe);
         }
         configModel = ConfigurationUtils.getConfigModel(configFile, true);
         Project project = FileOwnerQuery.getOwner(configFile);
@@ -550,9 +550,9 @@ public class PageFlowController {
                 //Do not remove the webFile page until it has been created with a data Node.  If the dataNode throws and exception, then it can be created with an Abstract node.
                 pages.remove(webFileName);
             } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (ClassCastException cce) {
-                cce.printStackTrace();
+                Exceptions.printStackTrace(cce);
             }
         }
 
@@ -597,7 +597,7 @@ public class PageFlowController {
                     try {
                         wrapNode = (DataObject.find(file)).getNodeDelegate();
                     } catch (DataObjectNotFoundException donfe) {
-                        donfe.printStackTrace();
+                        Exceptions.printStackTrace(donfe);
                     }
                 }
                 Page node = createPageFlowNode(wrapNode);
