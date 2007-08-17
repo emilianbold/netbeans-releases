@@ -459,6 +459,8 @@ public class ADDrawingAreaControl extends ApplicationView
    private TSEGraph m_graph;
    private WindowHandler windowHandler;
    private MouseHandler mouseHandler;
+   private KeyHandler keyHandler;
+   private FocusAdapter focusAdapter;
    private JToolBar mainToolBar;
    private JToolBar umlToolBar;
    private JPanel northPanel;
@@ -2694,23 +2696,26 @@ public class ADDrawingAreaControl extends ApplicationView
       
       // add a mouse listener to the canvas that requests focus for the root pane whenever it is clicked on.
       
-      getGraphWindow().getCanvas().addMouseListener(new MouseHandler(this));
+      mouseHandler = new MouseHandler(this);
+      getGraphWindow().getCanvas().addMouseListener(mouseHandler);
       
       
       //add a key listener too - this will be used to edit the name of the dropped classes
-      getGraphWindow().addKeyListener(new KeyHandler());
+      keyHandler = new KeyHandler();
+      getGraphWindow().addKeyListener(keyHandler);
       getGraphWindow().getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.SHIFT_DOWN_MASK), "Edit");
       getGraphWindow().getActionMap().put("Edit", new TestAction());
       
       // now, when the canvas receives the focus, transfer it to the root pane.
       
-      getGraphWindow().getCanvas().addFocusListener(new FocusAdapter()
+      focusAdapter = new FocusAdapter()
       {
          public void focusGained(FocusEvent event)
          {
             requestFocus();
          }
-      });
+      };
+      getGraphWindow().getCanvas().addFocusListener(focusAdapter);
       
 //      getGraphWindow().setBorder(new SoftBevelBorder(BevelBorder.LOWERED));
       
@@ -8048,6 +8053,7 @@ public class ADDrawingAreaControl extends ApplicationView
       {
 	 if (kbAccessProvider != null) {
 	     if (kbAccessProvider.getDiagramDrawingCtrl() == this) {
+		 kbAccessProvider.unregisterKeyCommands(this);
 		 kbAccessProvider.setDiagramDrawingCtrl(null);
 	     }
 	     kbAccessProvider = null;
@@ -8111,7 +8117,6 @@ public class ADDrawingAreaControl extends ApplicationView
          
          //m_GraphWindow.removeGraphChangeListener(getActions());
          
-         m_GraphWindow = null;
          m_Diagram = null;
           
          //JM: cleaning up service input data table..
@@ -8121,6 +8126,39 @@ public class ADDrawingAreaControl extends ApplicationView
           
          //         m_PresentationsTypesMgr = null;
 
+	 if (m_GraphWindow != null)
+	 {
+	     m_GraphWindow.m_drawingAreaCtrl = null;
+	     m_GraphWindow.removeMouseWheelListener(this);
+	     m_GraphWindow.getCanvas().removeFocusListener(focusAdapter);
+	     m_GraphWindow.getCanvas().removeMouseListener(mouseHandler);
+	     m_GraphWindow.removeKeyListener(keyHandler);
+	     
+	     m_GraphWindow.getInputMap(WHEN_FOCUSED).clear();
+	     m_GraphWindow.getInputMap(WHEN_IN_FOCUSED_WINDOW).clear();
+	     m_GraphWindow.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).clear();
+	     m_GraphWindow.getActionMap().clear();
+	     
+	     m_GraphWindow = null;
+	 }
+	 xmlReader = null;
+	 if (resourceBundle != null) 
+	 {
+	     this.resourceBundle.clearDrawingAreaControlRefs();
+	     this.resourceBundle = null;
+	 }
+	 
+	 getInputMap(WHEN_FOCUSED).clear();
+	 getInputMap(WHEN_IN_FOCUSED_WINDOW).clear();
+	 getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).clear();
+	 getActionMap().clear();
+	 
+	 actions.clearDrawingAreaControlRefs();
+	 actions = null;
+	 this.removeKeyListener(this);
+	 remove(centerPanel);
+	 remove(northPanel);
+	 
       }
       finally
       {
@@ -12971,5 +13009,42 @@ public class ADDrawingAreaControl extends ApplicationView
 //        
 //        node.invalidate();
 //    }
+    public boolean distributeLeftEdge()
+    {
+	return true;
+        //        return distribute(DISTRIBUTE_LEFT_EDGE);
+    }
 
+    public boolean distributeHorizontalCenter()
+    {
+	return true;
+        //        return distribute(DISTRIBUTE_HCENTER);
+    }
+    
+    public boolean distributeRightEdge()
+    {
+	return true;
+        //        return distribute(DISTRIBUTE_RIGHT_EDGE);
+    }
+
+    public boolean distributeTopEdge()
+    {
+	return true;
+        //        return distribute(DISTRIBUTE_TOP_EDGE);
+    }
+
+    public boolean distributeVerticalCenter()
+    {
+	return true;
+        //        return distribute(DISTRIBUTE_VCENTER);
+    }
+    public boolean distributeBottomEdge()
+    {
+	return true;
+        //return distribute(DISTRIBUTE_BOTTOM_EDGE);
+    }
+    private boolean distribute(int distributeHow)
+    {
+	return true;
+    }
 }
