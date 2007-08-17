@@ -56,8 +56,8 @@ public class J2EE14CommonClassloaderProvider implements CommonClassloaderProvide
         "jar:nbinst:///modules/org-netbeans-modules-visualweb-webui-designtime.jar!/", // NOI18N
         // The following two jars are here for special handling of JSF1.1 Standard components
         // and renderkits
-        "jar:nbinst:///modules/ext/jsf-api.jar!/", // NOI18N
-        "jar:nbinst:///modules/ext/jsf-impl.jar!/", // NOI18N
+        "jar:nbinst:///modules/ext/jsf-1_2/jsf-api.jar!/", // NOI18N
+        "jar:nbinst:///modules/ext/jsf-1_2/jsf-impl.jar!/", // NOI18N
     };
 
     private URLClassLoader urlClassLoader;

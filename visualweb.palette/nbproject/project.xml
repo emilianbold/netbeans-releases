@@ -127,7 +127,6 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.complib</friend>
                 <friend>org.netbeans.modules.visualweb.dataprovider.designtime</friend>
-                <friend>org.netbeans.modules.visualweb.ejbsupport</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfloader</friend>
                 <friend>com.sun.rave.sampleapps.bundled</friend>
                 <package>org.netbeans.modules.visualweb.palette.api</package>
