@@ -19,12 +19,15 @@
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
+import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefGroupNode;
 import org.netbeans.modules.xml.multiview.SectionNode;
 
 
@@ -38,14 +41,23 @@ public class WebServiceView extends DDSectionNodeView {
     public WebServiceView(SunDescriptorDataObject dataObject) {
         super(dataObject);
         
-        if(!(rootDD instanceof SunWebApp || rootDD instanceof SunEjbJar)) {
-            throw new IllegalArgumentException("Data object is not a root that contains webservice-description elements (" + rootDD + ")");
+        if(!(rootDD instanceof SunWebApp || rootDD instanceof SunEjbJar || rootDD instanceof SunApplicationClient)) {
+            throw new IllegalArgumentException("Data object is not a root that contains webservice elements (" + rootDD + ")");
         }
         
-        SectionNode [] children = new SectionNode [] { 
-            new WebServiceGroupNode(this, rootDD, version)
-        };
-       
+        // web apps and ejb jars support web services.
+        boolean hasWebServices = (rootDD instanceof SunWebApp || rootDD instanceof SunEjbJar);
+        // ejb jars show the clients under the ejb node so hide them here.
+        boolean hasGlobalClients = (rootDD instanceof SunWebApp || rootDD instanceof SunApplicationClient);
+        
+        LinkedList<SectionNode> children = new LinkedList<SectionNode>();
+        if(hasWebServices) {
+            children.add(new WebServiceGroupNode(this, rootDD, version));
+        }
+        if(hasGlobalClients) {
+            children.add(new ServiceRefGroupNode(this, rootDD, version));
+        }
+        
         setChildren(children);
     }
     
