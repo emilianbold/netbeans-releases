@@ -509,7 +509,7 @@ public final class JavaSource {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
         
-        assert !holdsDocumentWriteLock(files) : "JavaSource.runCompileControlTask called under Document write lock.";    //NOI18N
+        assert javacLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(files) : "JavaSource.runCompileControlTask called under Document write lock.";    //NOI18N
         
         boolean a = false;
         assert a = true;
@@ -745,7 +745,7 @@ public final class JavaSource {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
         
-        assert !holdsDocumentWriteLock(files) : "JavaSource.runModificationTask called under Document write lock.";    //NOI18N
+        assert javacLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(files) : "JavaSource.runModificationTask called under Document write lock.";    //NOI18N
         
         boolean a = false;
         assert a = true;        
