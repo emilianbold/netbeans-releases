@@ -212,7 +212,7 @@ public class DataSourceResolver implements DataSourceInfoListener {
             // make sure the sources are modeled
             for (Model mModel : modelSets) {
                 String filenameExt = mModel.getFile().getExt();
-                if (filenameExt.equals("jsp") || filenameExt.equals("java") ) {
+                if (filenameExt.equals("java")) {
                     FacesModelSet.getFacesModelIfAvailable(mModel.getFile());                   
                 }
             }            
