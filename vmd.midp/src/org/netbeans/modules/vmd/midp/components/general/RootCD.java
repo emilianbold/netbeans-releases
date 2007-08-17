@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.midp.components.general;
 
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.modules.vmd.api.codegen.CodeNamePresenter;
 import org.netbeans.modules.vmd.api.flow.FlowScenePresenter;
 import org.netbeans.modules.vmd.api.flow.visual.FlowDescriptor;
@@ -36,8 +37,8 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.palette.PaletteSupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfoPresenter;
-import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.actions.ExportFlowAsImageAction;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -58,6 +59,7 @@ import org.openide.util.actions.SystemAction;
 
 import java.awt.datatransfer.Transferable;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -181,7 +183,7 @@ public final class RootCD extends ComponentDescriptor {
         );
     }
 
-    private static class RootActionBehavior implements FlowDescriptor.AcceptActionBehaviour, FlowDescriptor.SelectActionBehaviour {
+    private static class RootActionBehavior implements FlowDescriptor.AcceptActionBehaviour, FlowDescriptor.SelectActionBehaviour, FlowDescriptor.KeyActionBehaviour {
 
         public boolean isAcceptable (FlowDescriptor descriptor, Transferable transferable) {
             DesignComponent categoryComponent = MidpDocumentSupport.getCategoryComponent (descriptor.getRepresentedComponent ().getDocument (), DisplayablesCategoryCD.TYPEID);
@@ -225,6 +227,13 @@ public final class RootCD extends ComponentDescriptor {
             return ret;
         }
 
+        public boolean keyPressed (WidgetAction.WidgetKeyEvent e) {
+            if (e.getKeyCode () == KeyEvent.VK_DELETE) {
+                SystemAction.findObject (org.netbeans.modules.vmd.api.model.presenters.actions.DeleteAction.class).actionPerformed (null);
+                return true;
+            }
+            return false;
+        }
     }
 
 }

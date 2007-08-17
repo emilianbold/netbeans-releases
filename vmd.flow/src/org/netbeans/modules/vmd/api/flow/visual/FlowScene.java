@@ -85,6 +85,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
     private WidgetAction popupMenuAction;
     private WidgetAction editAction;
     private WidgetAction sceneSelectAction;
+    private WidgetAction sceneKeyAction;
 
     private Router edgeRouter;
 
@@ -126,6 +127,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         editAction = ActionFactory.createEditAction (new FlowEditProvider ());
         popupMenuAction = ActionFactory.createPopupMenuAction (new FlowPopupMenuProvider ());
         sceneSelectAction = new FlowSceneSelectAction ();
+        sceneKeyAction = new FlowSceneKeyAction (); // HINT - FlowDescriptor.KeyActionBehaviour is used for FlowScene/rootComponent only
 
         edgeRouter = RouterFactory.createOrthogonalSearchRouter (mainLayer, connectionLayer);
 
@@ -137,6 +139,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         getActions ().addAction (popupMenuAction);
         getActions ().addAction (ActionFactory.createRectangularSelectAction (this, backgroundLayer));
         getActions ().addAction (ActionFactory.createCycleObjectSceneFocusAction ());
+        getActions ().addAction (sceneKeyAction);
 
         graphLayout = new GridGraphLayout<FlowNodeDescriptor, FlowEdgeDescriptor> ().setChecker (true);
         sceneLayout = LayoutFactory.createSceneGraphLayout (this, graphLayout);
@@ -823,6 +826,28 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
                 userSelectionSuggested (Collections.singleton (descriptor), false);
 
             return Utilities.actionsToPopup (ActionsSupport.createActionsArray (descriptor.getRepresentedComponent ()), component);
+        }
+    }
+
+    private class FlowSceneKeyAction extends WidgetAction.Adapter {
+
+        public State keyPressed (Widget widget, WidgetKeyEvent event) {
+            // HINT - FlowDescriptor.KeyActionBehaviour is used for FlowScene/rootComponent only
+            final FlowDescriptor.KeyActionBehaviour[] ret = new FlowDescriptor.KeyActionBehaviour[1];
+            document.getTransactionManager ().readAccess (new Runnable() {
+                public void run () {
+                    DesignComponent root = document.getRootComponent ();
+                    if (root != null) {
+                        FlowScenePresenter presenter = root.getPresenter (FlowScenePresenter.class);
+                        if (presenter != null) {
+                            FlowDescriptor.Behaviour behavior = presenter.getBehavior ();
+                            if (behavior instanceof FlowDescriptor.KeyActionBehaviour)
+                                ret[0] = (FlowDescriptor.KeyActionBehaviour) behavior;
+                        }
+                    }
+                }
+            });
+            return ret[0] != null  &&  ret[0].keyPressed (event)  ? State.CONSUMED : State.REJECTED;
         }
     }
 

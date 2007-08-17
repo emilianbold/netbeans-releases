@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.api.flow.visual;
 
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 import java.awt.datatransfer.Transferable;
@@ -104,6 +105,13 @@ public abstract class FlowDescriptor {
 
         void edit (FlowDescriptor descriptor);
         
+    }
+
+    // HINT - FlowDescriptor.KeyActionBehaviour is used for FlowScene/rootComponent only
+    public interface KeyActionBehaviour extends Behaviour {
+
+        boolean keyPressed (WidgetAction.WidgetKeyEvent e);
+
     }
 
 }
