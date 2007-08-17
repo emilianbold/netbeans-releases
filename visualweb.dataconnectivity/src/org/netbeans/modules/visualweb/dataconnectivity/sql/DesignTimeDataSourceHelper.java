@@ -541,8 +541,8 @@ public class DesignTimeDataSourceHelper {
                             dataSourceService = (DesignTimeDataSourceService)Lookup.getDefault().lookup(DesignTimeDataSourceService.class);
                             dataSourceService.updateProjectDataSource(currentProj, new RequestedJdbcResource("jdbc/" + //NOI18N
                                     dsInfo.getName(),
-                                    dsInfo.getDriverClassName(), dsInfo.getUrl(), null, dsInfo.getUsername(),
-                                    dsInfo.getPassword(), null));
+                                    dsInfo.getDriverClassName(), dsInfo.getUrl(), dsInfo.getUsername(),
+                                    dsInfo.getPassword()));
                             // create a JNDI name for resource reference name
                             dataSourceService.updateResourceReference(currentProj, jdbcResource);
                         }

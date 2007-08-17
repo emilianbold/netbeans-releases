@@ -25,42 +25,17 @@ public class RequestedJdbcResource extends RequestedResource {
     private String driverClassName;
     private String url;
     private String username;
-    private String password;
-    private String validationQuery;
-    private List driverJars;
-    private String validationTable;
-
-
+    private String password;    
+    
     public RequestedJdbcResource(String name, String driverClassName,
-                                 String url, String validationQuery) {
-        this(name, driverClassName, url, validationQuery, null, null,
-             null, null);
-    }
-
-
-    public RequestedJdbcResource(String name, String driverClassName,
-                                 String url, String validationQuery,
-                                 String username, String password,
-                                 List jarNames) {
-        this(name, driverClassName, url, validationQuery, username,
-             password, jarNames, null);
-    }
-
-
-    public RequestedJdbcResource(String name, String driverClassName,
-                                 String url, String validationQuery,
-                                 String username, String password,
-                                 List jarNames, String validationTable) {
+                                 String url, 
+                                 String username, String password) {
         super(name);
         this.driverClassName = (driverClassName == null)? null:
             new String(driverClassName);
         this.url = (url == null)? null: new String(url);
         this.username = (username == null)? null: new String(username);
-        this.password = (password == null)? null: new String(password);
-        this.validationQuery = (validationQuery == null)? null:
-            new String(validationQuery);
-        this.driverJars = jarNames;
-        this.validationTable = validationTable;
+        this.password = (password == null)? null: new String(password);        
     }
 
 
@@ -102,42 +77,5 @@ public class RequestedJdbcResource extends RequestedResource {
     public void setPassword(String password) {
         this.password = new String(password);
     }
-
-
-    public String getValidationQuery() {
-        return validationQuery;
-    }
-
-
-    public void setValidationQuery(String validationQuery) {
-        this.validationQuery = new String(validationQuery);
-    }
-
-
-    public String getValidationTable() {
-        return validationTable;
-    }
-
-
-    public void setValidationTable(String validationTable) {
-        this.validationTable = validationTable;
-    }
-
-
-    public List getDriverJars() {
-        return driverJars;
-    }
-
-
-    public void setDriverJars(List jars) {
-        this.driverJars = jars;
-    }
-
-
-    public String getDriverPath(String driverName){
-        String userDir = System.getProperty("netbeans.user");
-        String jdbcDriverDir = userDir + "/jdbc-drivers/";
-        File driverFile = new File (jdbcDriverDir, driverName);
-        return driverFile.getAbsolutePath();
-    }
+  
 }

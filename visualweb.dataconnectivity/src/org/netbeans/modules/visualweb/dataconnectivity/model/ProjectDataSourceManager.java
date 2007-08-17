@@ -93,8 +93,8 @@ public class ProjectDataSourceManager  {
         if ((project != null) && (dataSourceService != null)) {
             RequestedJdbcResource reqResource = new RequestedJdbcResource("jdbc/" + // NOI18N
                     dsInfo.getName(),
-                    dsInfo.getDriverClassName(), dsInfo.getUrl(), null, dsInfo.getUsername(),
-                    dsInfo.getPassword(), null);
+                    dsInfo.getDriverClassName(), dsInfo.getUrl(),  dsInfo.getUsername(),
+                    dsInfo.getPassword());
 
             if (!dataSourceService.updateProjectDataSource(project, reqResource)) {
                 return false;

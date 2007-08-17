@@ -32,7 +32,6 @@ import org.netbeans.modules.visualweb.project.jsf.services.RefreshService;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
 import org.netbeans.modules.visualweb.dataconnectivity.explorer.ProjectDataSourceNode;
-import org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfoManager;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -56,6 +55,7 @@ import java.util.TreeSet;
 import javax.naming.NamingException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 
 import org.w3c.dom.Element;
 
@@ -603,20 +603,18 @@ public class ProjectDataSourceTracker{
             for (Iterator i = namesList.iterator(); i.hasNext();) {
                 String dsName = (String)i.next();
                 try {
-                    DesignTimeDataSource ds = dsh.getDataSourceFromFullName(dsName) ;
-                    
-                    String validationTable = ds.getValidationTable() ;
+                    DesignTimeDataSource ds = dsh.getDataSourceFromFullName(dsName) ;                                        
                     
                      // stripDATASOURCE_PREFIX is a hack for JBoss and other application servers due to differences in JNDI string format
                      // for issue 101812
                     retList.add( new RequestedJdbcResource( stripDATASOURCE_PREFIX(dsName),
-                                                            ds.getDriverClassName(), ds.getUrl(), ds.getValidationQuery(),
-                                                            ds.getUsername(), ds.getPassword(), JdbcDriverInfoManager.getInstance().findDriverJarNames(ds.getDriverClassName()), validationTable));
+                                                            ds.getDriverClassName(), ds.getUrl(), 
+                                                            ds.getUsername(), ds.getPassword()));
                 } catch (NamingException e) {
                      // stripDATASOURCE_PREFIX is a hack for JBoss and other application servers due to differences in JNDI string format
                      // for issue 101812
                     retList.add( new RequestedJdbcResource(stripDATASOURCE_PREFIX(dsName), null, null,
-                                                           null, null, null, null));
+                                                           null, null));
                 }
             }
             
@@ -628,8 +626,7 @@ public class ProjectDataSourceTracker{
                 logInfo("  url            : " + rjr.getUrl() + " ");             // NOI18N
                 logInfo("  username       : " + rjr.getUsername() + " ");        // NOI18N
                 logInfo("  password       : " + DesignTimeDataSource.encryptPassword(  // NOI18N
-                            rjr.getPassword()) + " ");        // NOI18N
-                logInfo("  validatonTable : " + rjr.getValidationTable());       // NOI18N
+                            rjr.getPassword()) + " ");        // NOI18N                
             }
             
             return (RequestedJdbcResource[])retList.toArray(new RequestedJdbcResource[retList.size()]);

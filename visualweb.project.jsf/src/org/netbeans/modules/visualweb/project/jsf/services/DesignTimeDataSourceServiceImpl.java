@@ -168,7 +168,7 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         while (it.hasNext()) {
             Datasource ds = it.next();
             RequestedJdbcResource r = new RequestedJdbcResource(stripDATASOURCE_PREFIX(ds.getJndiName()),ds.getDriverClassName(),
-                    ds.getUrl(), null, ds.getUsername(), ds.getPassword(), null);
+                    ds.getUrl(), ds.getUsername(), ds.getPassword());
                         
             reqDss.add(r);
         }
@@ -196,7 +196,7 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         while (it.hasNext()) {
             Datasource ds = it.next();
             RequestedJdbcResource r = new RequestedJdbcResource(stripDATASOURCE_PREFIX(ds.getJndiName()),ds.getDriverClassName(),
-                    ds.getUrl(), null, ds.getUsername(), ds.getPassword(), null);
+                    ds.getUrl(), ds.getUsername(), ds.getPassword());
             
             reqDss.add(r);
         }
@@ -252,7 +252,7 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         while (it.hasNext()) {
             Datasource ds = it.next();
             RequestedJdbcResource r = new RequestedJdbcResource(ds.getJndiName(),ds.getDriverClassName(),
-                    ds.getUrl(), null, ds.getUsername(), ds.getPassword(), null);
+                    ds.getUrl(), ds.getUsername(), ds.getPassword());
             
             brokenReqDss.add(r);
         }
