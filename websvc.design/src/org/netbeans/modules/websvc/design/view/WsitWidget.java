@@ -126,7 +126,7 @@ public class WsitWidget extends AbstractTitledWidget {
                     }
 
                     @Override
-                    public void notifyAdded() {
+                    protected void notifyAdded() {
                         super.notifyAdded();
                         config.registerListener(configListener);
                         setSelected(config.isSet());
@@ -134,7 +134,7 @@ public class WsitWidget extends AbstractTitledWidget {
                         determineVisibility();
                     }
                     @Override
-                    public void notifyRemoved() {
+                    protected void notifyRemoved() {
                         super.notifyRemoved();
                         config.unregisterListener(configListener);
                     }

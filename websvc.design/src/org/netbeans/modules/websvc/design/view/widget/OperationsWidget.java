@@ -151,7 +151,7 @@ public class OperationsWidget extends AbstractTitledWidget {
         return serviceModel;
     }
     
-    public void notifyAdded() {
+    protected void notifyAdded() {
         super.notifyAdded();
         operationSelectionListener = new ObjectSceneAdapter() {
             public void selectionChanged(ObjectSceneEvent event,
@@ -171,7 +171,7 @@ public class OperationsWidget extends AbstractTitledWidget {
                 ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
     }
     
-    public void notifyRemoved() {
+    protected void notifyRemoved() {
         super.notifyRemoved();
         if(operationSelectionListener!=null) {
             getObjectScene().removeObjectSceneListener(operationSelectionListener,

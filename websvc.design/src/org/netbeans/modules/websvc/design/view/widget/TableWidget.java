@@ -90,7 +90,31 @@ public class TableWidget extends Widget{
             Widget rowWidget = new RowWidget(scene,noCols,model.getUserObject(j));
             addChild(rowWidget);
             for (int i = 0; i<noCols;i++) {
-                final LabelWidget cellWidget = new LabelWidget(scene, model.getValueAt(j, i));
+                final int ii = i;
+                final LabelWidget cellWidget = new LabelWidget(scene, model.getValueAt(j, i)) {
+                    private Object key = new Object();
+                    protected void notifyAdded() {
+                        super.notifyAdded();
+                        ObjectScene scene =(ObjectScene) getScene();
+                        scene.addObject(key,this);
+                    }
+                    protected void notifyRemoved() {
+                        super.notifyRemoved();
+                        ObjectScene scene =(ObjectScene) getScene();
+                        scene.removeObject(key);
+                    }
+                    protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
+                        if (previousState.isSelected() != state.isSelected() ||
+                                previousState.isFocused() != state.isFocused()) {
+                            setBorder(state.isSelected() ? state.isFocused()?
+                                BorderFactory.createDashedBorder(SELECTED_BORDER_COLOR, 2, 2, true):
+                                BorderFactory.createLineBorder(1,SELECTED_BORDER_COLOR) : 
+                                state.isFocused() ? BorderFactory.createDashedBorder
+                                (BORDER_COLOR, 2, 2, true):new LineBorder(0,ii!=0?1:0,0,0,BORDER_COLOR));
+                            revalidate(true);
+                        }
+                    }
+                };
                 if(i!=0) {
                     cellWidget.setBorder(new LineBorder(0, 1, 0, 0, BORDER_COLOR));
                 }
@@ -134,7 +158,7 @@ public class TableWidget extends Widget{
             }
         }
         
-        public void notifyAdded() {
+        protected void notifyAdded() {
             super.notifyAdded();
             if(getScene() instanceof ObjectScene && userObject!=null) {
                 ObjectScene scene =(ObjectScene) getScene();
@@ -149,7 +173,7 @@ public class TableWidget extends Widget{
                 }
             }
         }
-        public void notifyRemoved() {
+        protected void notifyRemoved() {
             super.notifyRemoved();
             if(getScene() instanceof ObjectScene && userObject!=null) {
                 ObjectScene scene =(ObjectScene) getScene();

@@ -211,7 +211,7 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         return true;
     }
     
-    public void notifyAdded() {
+    protected void notifyAdded() {
         super.notifyAdded();
         final Object key = hashKey();
         if(key!=null) {
@@ -219,7 +219,7 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         }
     }
     
-    public void notifyRemoved() {
+    protected void notifyRemoved() {
         super.notifyRemoved();
         Object key = hashKey();
         if(key!=null&&getObjectScene().isObject(key)) {

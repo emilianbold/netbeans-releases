@@ -234,7 +234,7 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
     }
     
     @Override
-    public void notifyAdded() {
+    protected void notifyAdded() {
         super.notifyAdded();
         Scene scene = getScene();
         if(scene instanceof ObjectScene) {
@@ -244,7 +244,7 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
     }
     
     @Override
-    public void notifyRemoved() {
+    protected void notifyRemoved() {
         super.notifyRemoved();
         Scene scene = getScene();
         if(scene instanceof ObjectScene) {

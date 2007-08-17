@@ -117,7 +117,17 @@ public class OperationWidget extends AbstractTitledWidget {
             typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_Notification");
             image = IMAGE_NOTIFICATION;
         }
-        headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getOperationName());
+        headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getOperationName()) {
+            private Object key = new Object();
+            protected void notifyAdded() {
+                super.notifyAdded();
+                getObjectScene().addObject(key,headerLabelWidget);
+            }
+            protected void notifyRemoved() {
+                super.notifyRemoved();
+                getObjectScene().removeObject(key);
+            }
+        };
         headerLabelWidget.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));
         headerLabelWidget.setLabelEditor(new TextFieldInplaceEditor(){
             public boolean isEnabled(Widget widget) {
@@ -164,11 +174,11 @@ public class OperationWidget extends AbstractTitledWidget {
                         messageLayer.removeChildren();
                         messageWidget = new SampleMessageWidget(
                                 getObjectScene(), operation, type) {
-                            public void notifyAdded() {
+                            protected void notifyAdded() {
                                 super.notifyAdded();
                                 sampleButton.setSelected(true);
                             }
-                            public void notifyRemoved() {
+                            protected void notifyRemoved() {
                                 super.notifyRemoved();
                                 sampleButton.setSelected(false);
                             }

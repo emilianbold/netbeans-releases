@@ -24,7 +24,9 @@ import java.awt.Font;
 import java.awt.Image;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
@@ -169,5 +171,14 @@ public class ImageLabelWidget extends Widget {
         return labelWidget;
     }
     
+    @Override
+    protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
+        if (previousState.isFocused() != state.isFocused()) {
+            labelWidget.setBorder(state.isFocused()?BorderFactory.createDashedBorder
+                    (getForeground(), 2, 2, true):BorderFactory.createEmptyBorder());
+            revalidate(true);
+        }
+    }
+
     public static final int DEFAULT_GAP = 4;
 }
