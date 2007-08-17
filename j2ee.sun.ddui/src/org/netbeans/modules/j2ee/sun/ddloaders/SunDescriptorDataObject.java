@@ -70,6 +70,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.enterprise.deploy.shared.ModuleType;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
@@ -114,8 +115,7 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
     private PropertyChangeListener ddRootChangeListener;
 //    private Map entityHelperMap = new HashMap();
 //    private Map sessionHelperMap = new HashMap();
-//    private int descriptorType;
-        DDType descriptorType;
+    private DDType descriptorType;
     
     public SunDescriptorDataObject(FileObject pf, SunDescriptorDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
@@ -210,6 +210,12 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
 //        }
 //        return null;
 //    }
+
+    public ASDDVersion getASDDVersion() {
+        // !PW FIXME default version ought to be current project server version,
+        // if any, otherwise, current installed server, if any.
+        return DDProvider.getASDDVersion(getDDModel(), ASDDVersion.SUN_APPSERVER_8_1);
+    }
     
     public RootInterface getDDRoot() {
         return getDDRootImpl(true);
@@ -234,6 +240,7 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
         return localProxy;
     }
     
+    @Override
     protected Node createNodeDelegate() {
         return new SunDescriptorDataNode(this);
     }
@@ -260,6 +267,7 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
         return Utils.ICON_BASE_DD_INVALID; // NOI18N
     }
     
+    @Override
     protected DataObject handleCopy(DataFolder f) throws IOException {
         DataObject dataObject = super.handleCopy(f);
         try {
@@ -498,6 +506,7 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
         return result;
     }
     
+    @Override
     public void showElement(final Object element) {
 //        if (element instanceof Relationships || element instanceof EjbRelation) {
 //            openView(1);
