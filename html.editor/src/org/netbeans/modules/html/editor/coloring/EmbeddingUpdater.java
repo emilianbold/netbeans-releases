@@ -23,10 +23,8 @@ package org.netbeans.modules.html.editor.coloring;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
@@ -37,12 +35,13 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.netbeans.editor.ext.html.parser.SyntaxParserListener;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 
 /**
- * Listens on HTML parser changes and updates embedding of nested languages accordingly.
- *
+ * This class creates lexer embeddings of CSS or JAVASCRIPT language in HTML code.
+ * The HTML code may be either the top level language (.html file) or
+ * may be embedded as FIRST level embedding language in other language like JSP, RHTML.
+ *   
  * @author Marek.Fukala@Sun.com
  */
 public class EmbeddingUpdater implements SyntaxParserListener {
@@ -60,21 +59,13 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     
     private final Document doc;
     
-    private int scriptStart = -1;
     private int styleStart = -1;
-    
-    private boolean embeddingChanged;
     
     private LanguagePath languagePath;
     
-    /** This class creates lexer embeddings of CSS or JAVASCRIPT language in HTML code.
-     * The HTML code may be either the top level language (.html file) or
-     * may be embedded as FIRST level embedding language in other language like JSP, RHTML.
-     */
     public EmbeddingUpdater(Document doc) {
         this.doc = doc;
         
-        //hack
         String topLevelLanguageMimeType = NbEditorUtilities.getMimeType(doc);
         if(topLevelLanguageMimeType == null) {
             throw new IllegalArgumentException("Cannot determine document mimetype " + doc);
@@ -90,24 +81,16 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         } else {
             languagePath = LanguagePath.get(LanguagePath.get(lang), Language.find("text/html"));
         }
-        //eof hack
         
     }
     
     public void parsingFinished(List<SyntaxElement> elements) {
-        embeddingChanged = false;
         for(SyntaxElement sel : elements) {
             if(sel.getType() == SyntaxElement.TYPE_TAG) {
                 startTag((SyntaxElement.Tag)sel);
             } else if(sel.getType() == SyntaxElement.TYPE_ENDTAG) {
                 endTag((SyntaxElement.Named)sel);
             }
-        }
-        if(embeddingChanged) {
-            //tell Hanz the document embedding has changed
-            //remove this once Hanz listens on the document token hierarchy
-            //instead on the document itself
-            //            ParserManager.get(doc).reparse();
         }
     }
     
@@ -233,9 +216,6 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     }
     
     private void createEmbedding(String mimeType, int startOffset, int endOffset, int startSkipLength, int endSkipLength ) {
-        
-        //        System.out.println("* Creating embedding for " + mimeType + " (" + startOffset + " - " + endOffset + ")");
-        
         if(startOffset >= endOffset) {
             LOGGER.log(Level.WARNING, "startOffset >= endOffset: "+ startOffset + " >= " + endOffset);
             return ;
@@ -251,13 +231,6 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         try {
             TokenHierarchy th = TokenHierarchy.get(doc);
             List<TokenSequence> tokenSequenceList = th.tokenSequenceList(languagePath, startOffset, endOffset);
-            //TokenSequence ts = tokenSequence(th, startOffset);
-            
-//            if(ts == null) {
-//                LOGGER.log(Level.WARNING, "Trying to create embedding for " + mimeType + " [" + startOffset + " - " + endOffset + "]: cannot get HTML token sequence!");
-//                return ;
-//            }
-            
             for (TokenSequence ts : tokenSequenceList) {
                 ts.move(startOffset);
                 if(!ts.moveNext() && !ts.movePrevious()) {
@@ -284,7 +257,6 @@ public class EmbeddingUpdater implements SyntaxParserListener {
                             LOGGER.log(Level.WARNING, "Cannot create embedding for " + mimeType + " [" + startOffset + " - "  + endOffset + "] (" + item.text().toString() + ")\n");
                         } else {
                             LOGGER.log(Level.INFO, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "] (" + printEmbeddedText(item, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0) + ")\n");
-                            embeddingChanged = true;
                         }
                     }
                     iAmFirstToken = false;
