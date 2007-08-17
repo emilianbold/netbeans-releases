@@ -131,7 +131,7 @@ final class InspectorFolderWrapper {
             DataObjectContext dc = ProjectUtils.getDataObjectContextForDocument(document);
             if (dc != null) {
                 node = new InspectorFolderNode(dc);
-            } else  //TODO No Lookup for root node cause its creates inside of constructor
+            } else  //TODO No Lookup for root node only
                 node = new InspectorFolderNode();
         }
         if (folder.getComponentID() != null)

@@ -37,6 +37,7 @@ import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.IOUtils;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSupport;
@@ -131,7 +132,11 @@ final class InspectorFolderNode extends AbstractNode {
                 }
             });
         }
-        ((InspectorChildren) getChildren()).setKeys(folderWrapper.getChildrenNodes());
+        IOUtils.runInAWTNoBlocking(new Runnable() {
+            public void run() {
+                ((InspectorChildren) getChildren()).setKeys(folderWrapper.getChildrenNodes());
+            }
+        });
     }
     
     protected void createPasteTypes(Transferable t, java.util.List s) {

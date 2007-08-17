@@ -38,7 +38,6 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
- * Controls view of Navigator
  * @author Karol Harezlak
  */
 final class InspectorManagerView implements DesignDocumentAwareness, ActiveDocumentSupport.Listener, DesignListener {
@@ -69,10 +68,14 @@ final class InspectorManagerView implements DesignDocumentAwareness, ActiveDocum
             this.document = document;
             ui = new InspectorUI(document);
             folderWrapperTree = new InspectorWrapperTree(document, ui);
-            ui.getExplorerManager().setRootContext(folderWrapperTree.getRootWrapperFolder().getNode());
             ActiveDocumentSupport.getDefault().addActiveDocumentListener(this);
             document.getListenerManager().addDesignListener(this, new DesignEventFilter().setGlobal(true));
-            folderWrapperTree.buildTree(null);
+            IOUtils.runInAWTNoBlocking(new Runnable() {
+                public void run() {
+                     folderWrapperTree.buildTree(null);
+                     ui.getExplorerManager().setRootContext(folderWrapperTree.getRootWrapperFolder().getNode());
+                }
+            });         
         } else if (this.document != null && document == null) {
             ActiveDocumentSupport.getDefault().removeActiveDocumentListener(this);
             this.document.getListenerManager().removeDesignListener(this);
@@ -99,7 +102,6 @@ final class InspectorManagerView implements DesignDocumentAwareness, ActiveDocum
 
     private void notifyUISelectionChanged() {
         IOUtils.runInAWTNoBlocking(new Runnable() {
-
             public void run() {
                 if (folderWrapperTree.isLocked()) {
                     throw new IllegalStateException("Access to the Navigator is locked"); //NOI18N

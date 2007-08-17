@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.inspector;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,27 +32,30 @@ final class InspectorChildren extends Children.Keys<AbstractNode> {
 
     private List<AbstractNode> keys = new ArrayList<AbstractNode>();
 
-    protected Node[] createNodes (AbstractNode key) {
-        return new Node[] { key };
+    protected Node[] createNodes(AbstractNode key) {
+        return new Node[]{key};
     }
 
-    void setKeys(List<AbstractNode> keys){
-        if (keys == null)
+    void setKeys(List<AbstractNode> keys) {
+        if (keys == null) {
             return;
+        }
         this.keys = keys;
         addNotify();
     }
-    
+
+    @Override
     protected void addNotify() {
-        if (keys == null)
+        if (keys == null) {
             return;
+        }
         super.setKeys(keys);
         super.addNotify();
     }
-    
+
+    @Override
     protected void removeNotify() {
-        keys = Collections.emptyList ();
+        keys = Collections.emptyList();
         super.removeNotify();
     }
-
 }
