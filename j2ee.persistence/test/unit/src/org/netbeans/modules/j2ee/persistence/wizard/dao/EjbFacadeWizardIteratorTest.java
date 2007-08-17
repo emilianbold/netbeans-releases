@@ -19,27 +19,17 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.dao;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.j2ee.persistence.sourcetestsupport.RepositoryImpl;
+import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  * Tests for <code>EjbFacadeWizardIterator</code>.
@@ -55,12 +45,6 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
     
     public void setUp() throws Exception{
         super.setUp();
-    }
-    
-    
-    
-    public void testInstantiate() throws Exception {
-        fail("Test not implemented");
     }
     
     public void testCreateInterface() throws Exception {
@@ -95,8 +79,12 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
                 "}";
         
         EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
-        wizardIterator.addMethodToInterface("testMethod", "void", "entity", "Object", FileUtil.toFileObject(testFile));
-        
+        GenerationOptions options = new GenerationOptions();
+        options.setMethodName("testMethod");
+        options.setReturnType("void");
+        options.setParameterName("entity");
+        options.setParameterType("Object");
+        wizardIterator.addMethodToInterface(Collections.<GenerationOptions>singletonList(options), FileUtil.toFileObject(testFile));
         assertEquals(golden, TestUtilities.copyFileToString(testFile));
         
     }
@@ -125,8 +113,9 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
         
         TestUtilities.copyStringToFile(testFile, originalContent);
         EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
-        Set<FileObject> result =
-                wizardIterator.generate(FileUtil.toFileObject(testFile), FileUtil.toFileObject(getWorkDir()), "Test", "org.netbeans.test", true, true);
+        Set<FileObject> result = new HashSet<FileObject>();
+        wizardIterator.generate(FileUtil.toFileObject(getWorkDir()), "Test", 
+                "org.netbeans.test", true, true, ContainerManagedJTAInjectableInEJB.class);
         
         
         assertEquals(3, result.size());
@@ -134,8 +123,6 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
         for (FileObject each : result){
             assertFile(FileUtil.toFile(each), getGoldenFile(each.getNameExt()));
         }
-        
-        fail("Test is not complete");
         
     }
     

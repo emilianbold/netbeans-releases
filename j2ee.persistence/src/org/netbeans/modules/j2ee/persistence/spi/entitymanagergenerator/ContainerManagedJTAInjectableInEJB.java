@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategySupport;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -28,7 +27,6 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeKind;
 
 /**
  * Generates the code needed for invoking an <code>EntityManager</code> in EJB 3 
@@ -52,7 +50,7 @@ public final class ContainerManagedJTAInjectableInEJB extends EntityManagerGener
         MethodTree newMethod = getTreeMaker().Method(
                 methodModifiers,
                 computeMethodName(),
-                getTreeMaker().PrimitiveType(TypeKind.VOID),
+                getReturnTypeTree(),
                 Collections.<TypeParameterTree>emptyList(),
                 getParameterList(),
                 Collections.<ExpressionTree>emptyList(),

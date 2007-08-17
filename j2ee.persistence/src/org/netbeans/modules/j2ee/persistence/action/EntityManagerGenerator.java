@@ -42,6 +42,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  * Generates appropriate code for retrieving and invoking <code>javax.persistence.EntityManager</code>.
@@ -82,18 +83,20 @@ public final class EntityManagerGenerator {
         this.targetSource = JavaSource.forFileObject(targetFo);
         this.project = FileOwnerQuery.getOwner(targetFo);
     }
-    
+
     /**
      * Generates the code needed for retrieving and invoking
-     * <code>javax.persistence.EntityManager</code>. The generated code depends
-     * on the target class' environment.
-     * @param options the options for the generation.
+     * an instance of <code>javax.persistence.EntityManager</code>. The generated 
+     * code depends on the environment of the target class (e.g. whether
+     * it supports injection or not).
+     * 
+     * @param options the options for the generation. Must not be null.
      * @return the modified file object of the target java class.
      */
     public FileObject generate(final GenerationOptions options) throws IOException{
         
         final Class<? extends EntityManagerGenerationStrategy> strategyClass = getStrategy();
-        
+    
         if (strategyClass == null){
             NotifyDescriptor d = new NotifyDescriptor.Message(
                     NbBundle.getMessage(EntityManagerGenerator.class, "ERR_NotSupportedAMJTA"), NotifyDescriptor.INFORMATION_MESSAGE);
@@ -101,6 +104,25 @@ public final class EntityManagerGenerator {
             
             return targetFo;
         }
+        
+        return generate(options, strategyClass);
+        
+    }
+        
+    /**
+     * Generates the code needed for retrieving and invoking
+     * an instance of <code>javax.persistence.EntityManager</code>. The generated 
+     * code depends on the given <code>strategyClass</code>. 
+     * 
+     * @param options the options for the generation. Must not be null.
+     * @param strategyClass the generation strategy that should be used. Must not be null.
+     * @return the modified file object of the target java class.
+     */
+    public FileObject generate(final GenerationOptions options, 
+            final Class<? extends EntityManagerGenerationStrategy> strategyClass) throws IOException{
+    
+        Parameters.notNull("options", options); //NO18N
+        Parameters.notNull("strategyClass", strategyClass); //NO18N
         
         AbstractTask task = new AbstractTask<WorkingCopy>() {
             

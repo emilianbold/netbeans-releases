@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator;
 
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.persistence.action.*;
-import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -91,8 +90,15 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
         return Collections.<VariableTree>singletonList(parameter);
     }
     
+    protected Tree getReturnTypeTree(){
+        if (getGenerationOptions().getReturnType() == null || "void".equals(getGenerationOptions().getReturnType())){ //NO18N
+            return getTreeMaker().PrimitiveType(TypeKind.VOID);
+        }
+        return getGenUtils().createType(getGenerationOptions().getReturnType());
+    }
+    
     protected String computeMethodName(){
-        return  makeUnique(getGenerationOptions().getMethodName());
+        return makeUnique(getGenerationOptions().getMethodName());
     }
     
     private String makeUnique(String methodName){
@@ -198,7 +204,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
     }
     
     protected String getEmInitCode(FieldInfo em, FieldInfo emf){
-        String text = "javax.persistence.EntityManager {0} = {1}.createEntityManager();\n";
+        String text = "javax.persistence.EntityManager {0} = {1}.createEntityManager();\n"; //NO18N
         return MessageFormat.format(text, em.getName(), emf.getName());
     }
     
@@ -213,7 +219,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
             emName,
             getGenerationOptions().getParameterName(),
             getGenerationOptions().getParameterType(),
-            getGenerationOptions().getQueryAttribute()});
+            getGenerationOptions().getReturnType()});
     }
     
     protected VariableTree createUserTransaction(){

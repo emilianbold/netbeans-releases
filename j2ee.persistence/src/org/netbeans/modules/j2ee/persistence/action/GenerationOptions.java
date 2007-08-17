@@ -29,14 +29,14 @@ public final class GenerationOptions {
     
     public enum Operation {
         // {0} the name of the entity manager instance
-        // {1} the name of the entity variable
-        // {2} ? 
-        // {3} the class of the entity
+        // {1} the name of the given parameter
+        // {2} the class of the given parameter
+        // {3} the return type of the method
         PERSIST("{0}.persist({1});"),
         MERGE("{0}.merge({1});"),
-        REMOVE("{0}.remove({1}.merge({1}));"),
-        FIND("return ({3}) {0}.find({3}.class, {1});"),
-        FIND_ALL("return {0}.createQuery(\"select object(o) from {3} as o\").getResultList();");
+        REMOVE("{0}.remove({0}.merge({1}));"),
+        FIND("return {0}.find({3}.class, {1});"),
+        FIND_ALL("return {0}.createQuery(\"select object(o) from {2} as o\").getResultList();");
     
         private String body;
         

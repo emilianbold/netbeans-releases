@@ -52,7 +52,7 @@ public class ContainerManagedJTAInjectableInEJBTest extends EntityManagerGenerat
         options.setParameterName("object");
         options.setParameterType("Object");
         options.setQueryAttribute("");
-        options.setReturnType("Object");
+        options.setReturnType("void");
         
         FileObject result = generate(FileUtil.toFileObject(testFile), options);
         assertFile(result);
@@ -77,7 +77,7 @@ public class ContainerManagedJTAInjectableInEJBTest extends EntityManagerGenerat
         options.setParameterName("object");
         options.setParameterType("Object");
         options.setQueryAttribute("");
-        options.setReturnType("Object");
+        options.setReturnType("void");
         
         FileObject result = generate(FileUtil.toFileObject(testFile), options);
         assertFile(getGoldenFile("testGenerateWithExistingEM.pass"), FileUtil.toFile(result));
