@@ -143,12 +143,14 @@ public class CatalogModelImpl implements CatalogModel {
             exn = ex;
         }
         if( (absResourceFile == null) || (exn != null) ){
-            //means there was no entry found in catalog or relative path resolution
-            
-            //check in the system wide catalog (Runtime tab), if entry found, return that
-            ModelSource rms = getModelSourceFromSystemWideCatalog(locationURI, modelSourceOfSourceDocument);
-            if(rms != null)
-                return rms;
+            //means there was no entry found in catalog or relative path resolution            
+            if(fetchSynchronous) {
+                //check in the system wide catalog (Runtime tab), if entry found, return that
+                ModelSource rms = getModelSourceFromSystemWideCatalog(locationURI, modelSourceOfSourceDocument);
+                if (rms != null) {
+                    return rms;
+                }
+            }
             try {
                 //we did not get any matching entry by conventional way..So try retrieve and cache
                 absResourceFile = retrieveCacheAndLookup(locationURI, fob);
