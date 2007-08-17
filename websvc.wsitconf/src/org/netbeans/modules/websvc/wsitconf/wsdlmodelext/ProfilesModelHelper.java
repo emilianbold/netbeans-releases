@@ -615,6 +615,7 @@ public class ProfilesModelHelper {
                     sc.setUserDataConstraint(udc);
 
                     String urlPattern = "/";
+                    boolean exit = false;
                     if (c instanceof Binding) {
                         Collection<Service> ss = c.getModel().getDefinitions().getServices();
                         for (Service s : ss) {
@@ -624,8 +625,11 @@ public class ProfilesModelHelper {
                                 String bName = ((Binding)c).getName();
                                 if (bName.equals(qname.getLocalPart())) {
                                     urlPattern = urlPattern.concat(s.getName() + "/*");
+                                    exit = true;
+                                    break;
                                 }
                             }
+                            if (exit) break;
                         }
                     }   
                     WebResourceCollection wrc = (WebResourceCollection) 
