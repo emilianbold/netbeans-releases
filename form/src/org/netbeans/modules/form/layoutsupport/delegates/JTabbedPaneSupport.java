@@ -437,7 +437,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                         }
                     },
 
-                    new FormProperty("TabConstraints tabIcon", // NOI18N
+                    new FormProperty("TabConstraints.tabIcon", // NOI18N
                                      Icon.class,
                                  getBundle().getString("PROP_tabIcon"), // NOI18N
                                  getBundle().getString("HINT_tabIcon")) { // NOI18N
@@ -465,7 +465,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                         }
                     },
 
-                    new FormProperty("TabConstraints tabToolTip", // NOI18N
+                    new FormProperty("TabConstraints.tabToolTip", // NOI18N
                                      String.class,
                                  getBundle().getString("PROP_tabToolTip"), // NOI18N
                                  getBundle().getString("HINT_tabToolTip")) { // NOI18N
