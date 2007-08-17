@@ -63,7 +63,9 @@ public class SunWebClassLoaderPanel extends BaseSectionNodeInnerPanel {
         XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
         addRefreshable(new ClassLoaderCheckboxHelper(synchronizer, jChkClassLoader));
         addRefreshable(new ItemEditorHelper(jTxtExtraClassPath, new ExtraClasspathEditorModel(synchronizer)));
-        addRefreshable(new ItemEditorHelper(jTxtDynamicReloadInterval, new DynamicReloadIntervalEditorModel(synchronizer)));
+        if(as81FeaturesVisible) {
+            addRefreshable(new ItemEditorHelper(jTxtDynamicReloadInterval, new DynamicReloadIntervalEditorModel(synchronizer)));
+        }
         addRefreshable(new DelegateCheckboxHelper(synchronizer, jChkDelegate));
     }
 
@@ -263,21 +265,30 @@ public class SunWebClassLoaderPanel extends BaseSectionNodeInnerPanel {
         }
 
         protected String getValue() {
+            String result = null;
             try {
-                MyClassLoader cl = sunWebApp.getMyClassLoader();
-                return (cl != null) ? cl.getExtraClassPath() : null;
+                if(as81FeaturesVisible) {
+                    MyClassLoader cl = sunWebApp.getMyClassLoader();
+                    result = (cl != null) ? cl.getExtraClassPath() : null;
+                } else {
+                    result = sunWebApp.getMyClassLoaderExtraClassPath();
+                }
             } catch(VersionNotSupportedException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
-            return null;
+            return result;
         }
 
         protected void setValue(String value) {
             try {
-                MyClassLoader cl = getMyClassLoader(sunWebApp, true);
-                cl.setExtraClassPath(value);
+                if(as81FeaturesVisible) {
+                    MyClassLoader cl = getMyClassLoader(sunWebApp, true);
+                    cl.setExtraClassPath(value);
+                } else {
+                    sunWebApp.setMyClassLoaderExtraClassPath(value);
+                }
             } catch(VersionNotSupportedException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
@@ -293,7 +304,7 @@ public class SunWebClassLoaderPanel extends BaseSectionNodeInnerPanel {
                 MyClassLoader cl = sunWebApp.getMyClassLoader();
                 return (cl != null) ? cl.getDynamicReloadInterval() : null;
             } catch(VersionNotSupportedException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
             return null;
         }
@@ -303,7 +314,7 @@ public class SunWebClassLoaderPanel extends BaseSectionNodeInnerPanel {
                 MyClassLoader cl = getMyClassLoader(sunWebApp, true);
                 cl.setDynamicReloadInterval(value);
             } catch(VersionNotSupportedException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
@@ -316,15 +327,15 @@ public class SunWebClassLoaderPanel extends BaseSectionNodeInnerPanel {
         
         public boolean getItemValue() {
             boolean state = false;
+            
             try {
-                state = sunWebApp.getMyClassLoader() != null;
-            } catch(VersionNotSupportedException ex1) {
-                try {
+                if(as81FeaturesVisible) {
+                    state = sunWebApp.getMyClassLoader() != null;
+                } else {
                     state = sunWebApp.isMyClassLoader();
-                } catch(VersionNotSupportedException ex2) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex1);
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex2);
                 }
+            } catch(VersionNotSupportedException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
             
     		enableClassLoaderFields(state);        
@@ -333,18 +344,17 @@ public class SunWebClassLoaderPanel extends BaseSectionNodeInnerPanel {
 
         public void setItemValue(boolean value) {
             try {
-                if(value) {
-                    getMyClassLoader(sunWebApp, true);
+                if(as81FeaturesVisible) {
+                    if(value) {
+                        getMyClassLoader(sunWebApp, true);
+                    } else {
+                        sunWebApp.setMyClassLoader(null);
+                    }
                 } else {
-                    sunWebApp.setMyClassLoader(null);
-                }
-            } catch(VersionNotSupportedException ex1) {
-                try {
                     sunWebApp.setMyClassLoader(value);
-                } catch(VersionNotSupportedException ex2) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex1);
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex2);
                 }
+            } catch(VersionNotSupportedException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
             
     		enableClassLoaderFields(value);
@@ -358,21 +368,30 @@ public class SunWebClassLoaderPanel extends BaseSectionNodeInnerPanel {
         }
 
         public boolean getItemValue() {
+            boolean result = false;
             try {
-                MyClassLoader cl = sunWebApp.getMyClassLoader();
-                return (cl != null) ? Utils.booleanValueOf(cl.getDelegate()) : false;
+                if(as81FeaturesVisible) {
+                    MyClassLoader cl = sunWebApp.getMyClassLoader();
+                    result = (cl != null) ? Utils.booleanValueOf(cl.getDelegate()) : false;
+                } else {
+                    result = Utils.booleanValueOf(sunWebApp.getMyClassLoaderDelegate());
+                }
             } catch(VersionNotSupportedException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
-            return false;
+            return result;
         }
 
         public void setItemValue(boolean value) {
             try {
-                MyClassLoader cl = getMyClassLoader(sunWebApp, true);
-                cl.setDelegate(Boolean.toString(value));
+                if(as81FeaturesVisible) {
+                    MyClassLoader cl = getMyClassLoader(sunWebApp, true);
+                    cl.setDelegate(Boolean.toString(value));
+                } else {
+                    sunWebApp.setMyClassLoaderDelegate(Boolean.toString(value));
+                }
             } catch(VersionNotSupportedException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
