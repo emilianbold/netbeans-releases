@@ -613,8 +613,18 @@ public final class DDProvider {
     /**
      * @param rootDD Graph to obtain the version for.
      * @return ASDDVersion for the current graph or null if it cannot be determined.
+     * @deprecated
      */
     public static ASDDVersion getASDDVersion(RootInterface rootDD) {
+        return getASDDVersion(rootDD, null);
+    }
+    
+    /**
+     * @param rootDD Graph to obtain the version for.
+     * @param default ASDDVersion to return in case true version is unavailable or unknown.
+     * @return ASDDVersion for the current graph or null if it cannot be determined.
+     */
+    public static ASDDVersion getASDDVersion(RootInterface rootDD, ASDDVersion defaultVersion) {
         ASDDVersion version = null;
         
         if(rootDD instanceof RootInterfaceImpl) {
@@ -622,7 +632,7 @@ public final class DDProvider {
             version = rootDDImpl.getASDDVersion();
         }
         
-        return version;
+        return version != null ? version : defaultVersion;
     }
     
     private static class SunDDResolver implements EntityResolver {
