@@ -69,7 +69,9 @@ public class ServletPanel extends BaseSectionNodeInnerPanel {
         XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
         addRefreshable(new ItemEditorHelper(jTxtName, new ServletTextFieldEditorModel(synchronizer, Servlet.SERVLET_NAME)));
         addRefreshable(new ItemEditorHelper(jTxtPrincipalName, new ServletTextFieldEditorModel(synchronizer, Servlet.PRINCIPAL_NAME)));
-        addRefreshable(new ItemEditorHelper(jTxtClassName, new ServletTextFieldEditorModel(synchronizer, Servlet.PRINCIPAL_NAME, ATTR_CLASSNAME)));
+        if(as90FeaturesVisible) {
+            addRefreshable(new ItemEditorHelper(jTxtClassName, new ServletTextFieldEditorModel(synchronizer, Servlet.PRINCIPAL_NAME, ATTR_CLASSNAME)));
+        }
 
         jTxtName.setEditable(!servletNode.getBinding().isBound());
         handleRoleFields(servletNode.getBinding());

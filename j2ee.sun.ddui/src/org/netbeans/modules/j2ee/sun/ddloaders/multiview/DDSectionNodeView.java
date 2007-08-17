@@ -18,8 +18,8 @@
  */
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview;
 
+import java.util.LinkedList;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
-import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.xml.multiview.SectionNode;
@@ -40,7 +40,7 @@ public class DDSectionNodeView extends SectionNodeView {
         super(dataObject);
         
         rootDD = dataObject.getDDRoot();
-        version = DDProvider.getASDDVersion(rootDD);
+        version = dataObject.getASDDVersion();
     }
     
     /** API to set the child nodes (subpanels) of this view node without creating
@@ -63,6 +63,24 @@ public class DDSectionNodeView extends SectionNodeView {
             }
         }
     }
+    
+    public void setChildren(LinkedList<SectionNode> children) {
+        if(children.peek() != null) {
+            SectionNode firstNode = children.removeFirst();
+            setRootNode(firstNode);
+
+            if(children.peek() != null) {
+                SectionNode [] remainingNodes = children.toArray(new SectionNode[0]);
+                
+                Node rootNode = getRoot();
+                rootNode.getChildren().add(remainingNodes);
+                for(int i = 0; i < remainingNodes.length; i++) {
+                    addSection(remainingNodes[i].getSectionNodePanel());
+                }
+            }
+        }
+    }
+    
     
     @Override
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {

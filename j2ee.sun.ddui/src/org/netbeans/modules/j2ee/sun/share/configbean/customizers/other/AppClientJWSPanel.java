@@ -58,9 +58,11 @@ public class AppClientJWSPanel extends BaseSectionNodeInnerPanel {
 
         SunDescriptorDataObject dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
         XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
-        addRefreshable(new ItemEditorHelper(jTxtContextRoot, new SunAppClientTextFieldEditorModel(synchronizer, JavaWebStartAccess.CONTEXT_ROOT)));
-        addRefreshable(new ItemEditorHelper(jTxtVendor, new SunAppClientTextFieldEditorModel(synchronizer, JavaWebStartAccess.VENDOR)));
-        addRefreshable(new EligibleCheckboxHelper(synchronizer, jChkEligible));
+        if(as90FeaturesVisible) {
+            addRefreshable(new ItemEditorHelper(jTxtContextRoot, new SunAppClientTextFieldEditorModel(synchronizer, JavaWebStartAccess.CONTEXT_ROOT)));
+            addRefreshable(new ItemEditorHelper(jTxtVendor, new SunAppClientTextFieldEditorModel(synchronizer, JavaWebStartAccess.VENDOR)));
+            addRefreshable(new EligibleCheckboxHelper(synchronizer, jChkEligible));
+        }
     }
 
     /** This method is called from within the constructor to

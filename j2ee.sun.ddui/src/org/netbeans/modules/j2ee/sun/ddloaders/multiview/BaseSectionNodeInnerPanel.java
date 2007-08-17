@@ -42,6 +42,9 @@ public class BaseSectionNodeInnerPanel extends SectionNodeInnerPanel {
     // Current descriptor version.
     protected final ASDDVersion version;
     
+    // true if AS 8.0+ fields are visible.
+    protected final boolean as80FeaturesVisible;
+    
     // true if AS 8.1+ fields are visible.
     protected final boolean as81FeaturesVisible;
 
@@ -53,6 +56,7 @@ public class BaseSectionNodeInnerPanel extends SectionNodeInnerPanel {
         super(sectionNodeView);
         
         this.version = version;
+        this.as80FeaturesVisible = ASDDVersion.SUN_APPSERVER_8_0.compareTo(version) <= 0;
         this.as81FeaturesVisible = ASDDVersion.SUN_APPSERVER_8_1.compareTo(version) <= 0;
         this.as90FeaturesVisible = ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0;
     }

@@ -46,8 +46,12 @@ public class ReferencesNode extends BaseSectionNode {
         addChild(new EjbRefGroupNode(sectionNodeView, ejb, version));
         addChild(new ResourceRefGroupNode(sectionNodeView, ejb, version));
         addChild(new ResourceEnvRefGroupNode(sectionNodeView, ejb, version));
-        addChild(new ServiceRefGroupNode(sectionNodeView, ejb, version));
-        addChild(new MessageDestinationRefGroupNode(sectionNodeView, ejb, version));
+        if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(version) <= 0) {
+            addChild(new ServiceRefGroupNode(sectionNodeView, ejb, version));
+            if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
+                addChild(new MessageDestinationRefGroupNode(sectionNodeView, ejb, version));
+            }
+        }
     }
     
 }

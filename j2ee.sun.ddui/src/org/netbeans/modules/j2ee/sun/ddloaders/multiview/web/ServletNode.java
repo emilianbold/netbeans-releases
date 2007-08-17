@@ -38,7 +38,9 @@ public class ServletNode extends NamedBeanNode {
 
         enableRemoveAction();
         
-        addChild(new EndpointGroupNode(sectionNodeView, binding.getSunBean(), version));
+        if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(version) <= 0) {
+            addChild(new EndpointGroupNode(sectionNodeView, binding.getSunBean(), version));
+        }
     }
     
     protected SectionNodeInnerPanel createNodeInnerPanel() {

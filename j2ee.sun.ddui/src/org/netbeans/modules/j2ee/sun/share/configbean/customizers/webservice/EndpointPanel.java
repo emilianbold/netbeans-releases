@@ -126,10 +126,14 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
 
         addRefreshable(new ItemEditorHelper(jTxtName, new EndpointTextFieldEditorModel(synchronizer, WebserviceEndpoint.PORT_COMPONENT_NAME)));
         addRefreshable(new ItemEditorHelper(jTxtEndpointAddressURI, new EndpointTextFieldEditorModel(synchronizer, WebserviceEndpoint.ENDPOINT_ADDRESS_URI)));
-//        addRefreshable(new ItemEditorHelper(jTxtRealm, new EndpointTextFieldEditorModel(synchronizer, LoginConfig.REALM)));
+        if(!isWebApp && as90FeaturesVisible) {
+            addRefreshable(new ItemEditorHelper(jTxtRealm, new EndpointTextFieldEditorModel(synchronizer, LoginConfig.REALM)));
+        }
         addRefreshable(new TransportComboBoxHelper(synchronizer, jCbxTransportGuarantee));
         addRefreshable(new AuthMethodComboBoxHelper(synchronizer, jCbxAuthentication));
-        addRefreshable(new DebugEnabledCheckboxHelper(synchronizer, jChkDebugEnabled));
+        if(as90FeaturesVisible) {
+            addRefreshable(new DebugEnabledCheckboxHelper(synchronizer, jChkDebugEnabled));
+        }
 
         jTxtName.setEditable(!endpointNode.getBinding().isBound());
     }
@@ -140,16 +144,15 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         // Relies on version field initialization from handleAS90FieldVisibility(), above
         showSecurityUI(isWebApp, !isWebApp);
 
-//        // debug enabled
-//        if(as90FeaturesVisible) {
-//            boolean debugEnabled;
-//            try {
-//                debugEnabled = Utils.booleanValueOf(endpoint.getDebuggingEnabled());
-//            } catch (VersionNotSupportedException ex) {
-//                debugEnabled = false;
-//            }
-//            jChkDebugEnabled.setSelected(debugEnabled);
-//        }
+        if(as90FeaturesVisible) {
+            boolean debugEnabled;
+            try {
+                debugEnabled = Utils.booleanValueOf(endpoint.getDebuggingEnabled());
+            } catch (VersionNotSupportedException ex) {
+                debugEnabled = false;
+            }
+            jChkDebugEnabled.setSelected(debugEnabled);
+        }
 
         // security (all)
         boolean authenticationEnabled = false;

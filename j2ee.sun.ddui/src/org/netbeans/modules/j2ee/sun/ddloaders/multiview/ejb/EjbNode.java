@@ -39,17 +39,11 @@ public class EjbNode extends NamedBeanNode {
         enableRemoveAction();
         
         Ejb ejb = (Ejb) binding.getSunBean();
-        
-//        // References (should be blocked in a group)
-//        addChild(new EjbRefGroupNode(sectionNodeView, ejb, version));
-//        addChild(new ResourceRefGroupNode(sectionNodeView, ejb, version));                
-//        addChild(new ResourceEnvRefGroupNode(sectionNodeView, ejb, version));
-//        addChild(new ServiceRefGroupNode(sectionNodeView, ejb, version));
-//        addChild(new MessageDestinationRefGroupNode(sectionNodeView, ejb, version));
         addChild(new ReferencesNode(sectionNodeView, ejb, version));
-
-        // Webservice endpoints.
-        addChild(new EndpointGroupNode(sectionNodeView, binding.getSunBean(), version));
+        if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(version) <= 0) {
+            // Webservice endpoints.
+            addChild(new EndpointGroupNode(sectionNodeView, binding.getSunBean(), version));
+        }
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {

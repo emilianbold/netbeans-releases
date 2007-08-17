@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
+import java.util.LinkedList;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
@@ -37,14 +39,14 @@ public class EnvironmentView extends DDSectionNodeView {
         if(!(rootDD instanceof SunWebApp || rootDD instanceof SunApplicationClient)) {
             throw new IllegalArgumentException("Data object is not a root that contains service-ref elements (" + rootDD + ")");
         }
-        
-        SectionNode [] children = new SectionNode [] { 
-            new EjbRefGroupNode(this, rootDD, version),
-            new ResourceRefGroupNode(this, rootDD, version),
-            new ResourceEnvRefGroupNode(this, rootDD, version),
-            new MessageDestinationRefGroupNode(this, rootDD, version)
-        };
-       
+
+        LinkedList<SectionNode> children = new LinkedList<SectionNode>();
+        children.add(new EjbRefGroupNode(this, rootDD, version));
+        children.add(new ResourceRefGroupNode(this, rootDD, version));
+        children.add(new ResourceEnvRefGroupNode(this, rootDD, version));
+        if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
+            children.add(new MessageDestinationRefGroupNode(this, rootDD, version));
+        }
         setChildren(children);
     }
 
