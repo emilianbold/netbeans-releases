@@ -24,7 +24,7 @@ import java.io.IOException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.websvc.manager.WebServiceManager;
+import org.netbeans.modules.websvc.manager.api.WebServiceManager;
 
 
 import java.awt.Dialog;

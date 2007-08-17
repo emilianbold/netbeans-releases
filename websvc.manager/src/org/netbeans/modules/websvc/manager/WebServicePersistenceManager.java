@@ -20,6 +20,8 @@
 
 package org.netbeans.modules.websvc.manager;
 
+import org.netbeans.modules.websvc.manager.api.WebServiceManager;
+import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import java.beans.DefaultPersistenceDelegate;
 import java.beans.Encoder;
 import javax.xml.parsers.DocumentBuilder;

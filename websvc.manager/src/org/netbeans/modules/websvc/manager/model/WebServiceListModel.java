@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import org.netbeans.modules.websvc.manager.WebServiceManager;
+import org.netbeans.modules.websvc.manager.api.WebServiceManager;
 import org.netbeans.modules.websvc.manager.WebServicePersistenceManager;
 
 /**

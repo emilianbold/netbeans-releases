@@ -22,7 +22,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import javax.swing.Action;
-import org.netbeans.modules.websvc.manager.WebServiceManager;
+import org.netbeans.modules.websvc.manager.api.WebServiceManager;
 import org.netbeans.modules.websvc.manager.actions.DeleteWebServiceAction;
 import org.netbeans.modules.websvc.manager.actions.ViewWSDLAction;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;

@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.websvc.manager.nodes;
 
-import org.netbeans.modules.websvc.manager.WebServiceTransferManager;
+import org.netbeans.modules.websvc.manager.spi.WebServiceTransferManager;
 
 import org.netbeans.modules.websvc.manager.actions.AddDataProviderToFormAction;
 import org.netbeans.modules.websvc.manager.actions.TestMethodAction;
@@ -54,7 +54,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.Action;
-import org.netbeans.modules.websvc.manager.WebServiceMetaDataTransfer;
+import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**

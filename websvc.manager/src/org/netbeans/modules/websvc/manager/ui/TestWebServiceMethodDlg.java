@@ -56,7 +56,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
-import org.netbeans.modules.websvc.manager.WebServiceDescriptor;
+import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.util.Util;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;

@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.websvc.manager.WebServiceManager;
+import org.netbeans.modules.websvc.manager.api.WebServiceManager;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 import org.netbeans.modules.websvc.manager.model.WebServiceGroupListener;

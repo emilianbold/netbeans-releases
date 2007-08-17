@@ -27,7 +27,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.modules.websvc.manager.WebServiceManager;
+import org.netbeans.modules.websvc.manager.api.WebServiceManager;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;

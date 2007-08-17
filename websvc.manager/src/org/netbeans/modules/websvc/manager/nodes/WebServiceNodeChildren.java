@@ -17,7 +17,7 @@
 package org.netbeans.modules.websvc.manager.nodes;
 
 import java.util.Collections;
-import org.netbeans.modules.websvc.manager.WebServiceManager;
+import org.netbeans.modules.websvc.manager.api.WebServiceManager;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.model.WebServiceDataEvent;
 import org.netbeans.modules.websvc.manager.model.WebServiceDataListener;

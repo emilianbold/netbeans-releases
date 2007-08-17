@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.util.Properties;
 import java.io.File;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 
+import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.manager.nodes.WebServiceGroupNode;
 import org.netbeans.modules.websvc.manager.nodes.WebServicesRootNode;

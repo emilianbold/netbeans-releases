@@ -22,9 +22,9 @@ package org.netbeans.modules.websvc.manager.nodes;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.util.Collection;
 
-import org.netbeans.modules.websvc.manager.WebServiceManager;
-import org.netbeans.modules.websvc.manager.WebServiceMetaDataTransfer;
-import org.netbeans.modules.websvc.manager.WebServiceTransferManager;
+import org.netbeans.modules.websvc.manager.api.WebServiceManager;
+import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
+import org.netbeans.modules.websvc.manager.spi.WebServiceTransferManager;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.openide.nodes.Node;
 
