@@ -21,9 +21,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.appclient.SunAppClientOverviewMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EnvironmentMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingMultiViewElement;
@@ -52,7 +55,7 @@ public abstract class DDViewFactory implements Serializable {
     public static final String SERVLET = "Servlet"; // NOI18N
     public static final String EJB = "EJB"; // NOI18N
     public static final String SECURITY = "Security"; // NOI18N
-    public static final String WSCLIENT = "WSClient"; // NOI18N
+//    public static final String WSCLIENT = "WSClient"; // NOI18N
     public static final String WSSERVICE = "WSService"; // NOI18N
     public static final String JMS = "JMS"; // NOI18N
     public static final String ENVIRONMENT = "Environment"; // NOI18N
@@ -73,9 +76,6 @@ public abstract class DDViewFactory implements Serializable {
         return factory;
     }
     
-    DDViewFactory() {
-    }
-    
     public abstract DesignMultiViewDesc[] getMultiViewDesc(SunDescriptorDataObject dataObject);
     
     public MultiViewElement createElement(SunDescriptorDataObject dataObject, final String name) {
@@ -83,8 +83,8 @@ public abstract class DDViewFactory implements Serializable {
             return new SecurityRoleMappingMultiViewElement(dataObject);
         } else if(name.equals(ENVIRONMENT)) {
             return new EnvironmentMultiViewElement(dataObject);
-        } else if(name.equals(WSCLIENT)) {
-            return new ServiceRefMultiViewElement(dataObject);
+//        } else if(name.equals(WSCLIENT)) {
+//            return new ServiceRefMultiViewElement(dataObject);
         } else if(name.equals(WSSERVICE)) {
             return new WebServiceMultiViewElement(dataObject);
         } else if(name.equals(JMS)) {
@@ -110,15 +110,18 @@ public abstract class DDViewFactory implements Serializable {
         
         public DesignMultiViewDesc[] getMultiViewDesc(SunDescriptorDataObject dataObject) {
             // TODO complete set of sun-web.xml multiview panels.
-            return new DDView[] {
-                new DDView(dataObject, OVERVIEW),
-                new DDView(dataObject, SERVLET),
-                new DDView(dataObject, SECURITY),
-                new DDView(dataObject, WSSERVICE),
-                new DDView(dataObject, WSCLIENT),
-                new DDView(dataObject, JMS),
-                new DDView(dataObject, ENVIRONMENT)
-            };
+            ASDDVersion version = dataObject.getASDDVersion();
+            List<DDView> views = new ArrayList<DDView>(8);
+            views.add(new DDView(dataObject, OVERVIEW));
+            views.add(new DDView(dataObject, SERVLET));
+            views.add(new DDView(dataObject, SECURITY));
+            if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(version) <= 0) {
+                views.add(new DDView(dataObject, WSSERVICE));
+//                views.add(new DDView(dataObject, WSCLIENT));
+                views.add(new DDView(dataObject, JMS));
+            }
+            views.add(new DDView(dataObject, ENVIRONMENT));
+            return views.toArray(new DDView[views.size()]);
         }
         
         @Override
@@ -143,13 +146,16 @@ public abstract class DDViewFactory implements Serializable {
         
         public DesignMultiViewDesc[] getMultiViewDesc(SunDescriptorDataObject dataObject) {
             // TODO complete set of sun-ejb-jar.xml multiview panels.
-            return new DDView[] {
-                new DDView(dataObject, OVERVIEW),
-                new DDView(dataObject, EJB),
-                new DDView(dataObject, SECURITY),
-                new DDView(dataObject, WSSERVICE),
-                new DDView(dataObject, JMS)
-            };
+            ASDDVersion version = dataObject.getASDDVersion();
+            List<DDView> views = new ArrayList<DDView>(6);
+            views.add(new DDView(dataObject, OVERVIEW));
+            views.add(new DDView(dataObject, EJB));
+            views.add(new DDView(dataObject, SECURITY));
+            if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(version) <= 0) {
+                views.add(new DDView(dataObject, WSSERVICE));
+                views.add(new DDView(dataObject, JMS));
+            }
+            return views.toArray(new DDView[views.size()]);
         }
         
         @Override
@@ -199,12 +205,17 @@ public abstract class DDViewFactory implements Serializable {
         
         public DesignMultiViewDesc[] getMultiViewDesc(SunDescriptorDataObject dataObject) {
             // TODO complete set of sun-application-client.xml multiview panels.
-            return new DDView[] {
-                new DDView(dataObject, OVERVIEW),
-                new DDView(dataObject, ENVIRONMENT),
-                new DDView(dataObject, WSCLIENT),
-                new DDView(dataObject, JMS)
-            };
+            ASDDVersion version = dataObject.getASDDVersion();
+            List<DDView> views = new ArrayList<DDView>();
+            if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
+                views.add(new DDView(dataObject, OVERVIEW));
+            }
+            views.add(new DDView(dataObject, ENVIRONMENT));
+            if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(version) <= 0) {
+                views.add(new DDView(dataObject, WSSERVICE));
+                views.add(new DDView(dataObject, JMS));
+            }
+            return views.toArray(new DDView[views.size()]);
         }
         
         @Override
