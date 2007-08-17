@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+    <head>
+        <title>Navigator Window</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+
+        <h2>Navigator Window </h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+        <p>The Navigator window provides a compact view of the currently selected file 
+        and simplifies navigation between different parts of the file.</p>
+        <p>For Java files, constructors, methods, and 
+        fields are displayed. You can view these members either 
+        as a simple list or as an inheritance tree. </p>
+        <p>For some kinds of XML files, you can use the Navigator to view the 
+        structure of the file. The Navigator window works with standard XML documents, XML 
+        schema files, and Ant scripts.
+
+        <p>You can open the Navigator window by choosing 
+        Window&nbsp; &gt; Navigator (Ctrl-7). 
+        By default, the Navigator window opens in the lower left corner of the IDE. To 
+        display a source file in the Navigator window, select the file in the Source 
+        Editor, the Projects window, the Files window, or the Favorites window.</p> 
+        <h3>Java Files</h3>
+        <p>When a Java file is selected, a drop-down list appears at the top of the 
+        Navigator window to enable you to choose between
+        the following two views:</p>
+
+        <ul>
+            <li><b>Members view.</b> Alphabetical listing of the selected source file's members 
+            (constructors, methods, and fields). </li>
+            <li><b>Inheritance view.</b> Hierarchical tree view of the selected source file's
+            members.</li>
+        </ul>
+        <p>You can display the Javadoc documentation for a member by 
+        hovering the mouse over the member's node.</p>
+
+        <p>In the both the Members view and the Inheritance view, you can right-click a node 
+        and choose the following command:</p>
+        <ul>
+            <li><b>Go to Source.</b> Opens the class in the Source Editor and places the insertion point at the beginning of the 
+            constructor, method, or field that the node represents.</li>
+        </ul>
+        
+        <p>In the Members view, you can also choose the following commands when you 
+right-click a node:</p>
+        <ul>
+            <li><b>Create Javadoc.</b> Generates missing standard Javadoc tags for 
+            the selected member.</li>
+            <li><b>Sort by Name.</b> Displays the members in alphabetical order.</li>
+            <li><b>Sort by Source.</b> Displays the members in the order in which they 
+            appear in the code.</li>
+            <li><b>Filters.</b> Opens a submenu that enables you to select some 
+                common filters for the types of members to display. You can select any combination of the 
+                following filters:
+                <ul><li><b>Show Inherited Members.</b> Displays members 
+                    that come from classes that the current class extends.</li>
+                    <li><b>Show Fields.</b> Displays the class's fields.</li>
+                    <li><b>Show Static Members.</b> Displays static fields and methods.</li>
+                    <li><b>Show Non Public Members.</b> Displays members that do not 
+                    provide public access.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <p>You can also activate and disable filters using the buttons at the bottom of 
+        the Navigator window.</p>
+
+        <h3>XML Files</h3>
+
+        <p>For XML files, the Navigator view displays a tree of elements.</p>
+        <p>You can right-click an element node and choose the following options for the level of
+        detail to have displayed on the lines in the Navigator window:
+        <ul>
+            <li><b>Show Attributes.</b> Displays the attributes of each element.</li>
+            <li><b>Show Content.</b> Displays the text content of each element.</li>
+        </ul>
+        
+        <h3>Ant Build Scripts</h3>
+
+        <p>When an Ant build script is selected, a drop-down list appears at the top of the 
+        Navigator window to enable you to choose between the following two views:</p>
+        <ul>
+        <li><b>Ant Targets.</b> Alphabetical listing of build targets. </li>
+        <li><b>XML View.</b> Hierarchical tree view XML elements in the build script.</li>
+        </ul>
+        
+        <p>When the Ant Targets view is selected, you can right-click a node and choose 
+        one of the following commands:</p>
+       
+        <ul>
+        <li><b>Open.</b> Opens the file in the Source Editor and places the insertion 
+        point at the beginning of the selected target's line.</li>
+        <li><b>Run Target.</b> Runs the selected target.</li>
+        <li><b><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ant/ant_shortcut.html">Create Shortcut</a>.</b> Opens a wizard that enables you to create a menu 
+        item, a toolbar item, a keyboard shortcut, and custom code for running the target.</li>
+        <li><b>Properties.</b> Displays properties for the target in a property sheet. These properties are not editable.</li>
+        </ul> 
+        
+        <p>When XML View is selected, you can right-click a node and choose 
+        one of the following options for the level of
+        detail to have displayed:</p>
+        
+        <ul>
+        <li><b>Show Attributes.</b> Displays the attributes of each element.</li>
+        <li><b>Show Content.</b> Displays the text content of each element.</li>
+        </ul>       
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/editor_navigation.html">Code Navigation: Quick Reference</a></dd>            
+            <dd><a href="../../project/csh/proj_project_window.html">Projects Window</a></dd>
+            <dd><a href="../../project/csh/proj_files_window.html">Files Window</a></dd>
+            <dd><a href="../../project/csh/proj_fav_window.html">Favorites Window</a></dd>
+        </dl>
+
+
+        <hr>
+        <font size=-2><a href="../../credits.html">Legal Notices</a></font>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

@@ -162,6 +162,12 @@
 <mapID target="org.netbeans.modules.favorites.Actions$View" url="project/csh/proj_fav_window.html" />
 
 
+<!-- Navigator window :-->
+<mapID target="navigator.java" url="editing/csh/nav_window.html" />
+
+<!--Task List window -->
+<mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView" url="tasklist-csh.html" />
+
 
 
 <!-- Projects window nodes -->
@@ -221,15 +227,6 @@
 
 <!--Add New Interface dialog box-->
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewInterface" url="pending.html"/>
-
-
-
-
-
-
-<!-- To Do window help :-->
-<mapID target="org.netbeans.modules.tasklist.docscan.Settings" url="configure/options_todo_settings.html" /> 
-
 
 
 <!-- Common palette ID-->
