@@ -72,7 +72,7 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
         super();
 
         this.tc = tc;
-        this.listener = (LookupListener) WeakListeners.create(LookupListener.class, this, null);
+        this.listener = WeakListeners.create(LookupListener.class, this, null);
         this.actionMap = Lookups.singleton(new DelegateActionMap(tc));
 
         updateLookups(tc.getActivatedNodes());
@@ -137,6 +137,7 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
         return Node.class.isAssignableFrom(c) || c.isAssignableFrom(Node.class);
     }
 
+    @Override
     protected synchronized void beforeLookup(Template<?> t) {
         if ((attachedTo == null) && isNodeQuery(t.getType())) {
             Lookup[] arr = getLookups();
@@ -195,8 +196,8 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
             delegate = del;
             verboten = new IdentityHashMap<Object,Object>();
 
-            for (int i = 0; i < exclude.length; verboten.put(exclude[i++], PRESENT))
-                ;
+            for (int i = 0; i < exclude.length; verboten.put(exclude[i++], PRESENT)) {
+            }
         }
 
         public <T> T lookup(Class<T> clazz) {
@@ -260,10 +261,12 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
                 return ret;
             }
 
+            @Override
             public Set<Class<? extends T>> allClasses() {
                 return delegate.allClasses(); // close enough
             }
 
+            @Override
             public Collection<? extends Lookup.Item<T>> allItems() {
                 Collection<? extends Lookup.Item<T>> c = delegate.allItems();
                 List<Lookup.Item<T>> ret = new ArrayList<Lookup.Item<T>>(c.size()); // upper bound
@@ -304,7 +307,7 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
                 LookupListener[] ls;
 
                 synchronized (listeners) {
-                    ls = (LookupListener[]) listeners.toArray(new LookupListener[listeners.size()]);
+                    ls = listeners.toArray(new LookupListener[listeners.size()]);
                 }
 
                 for (int i = 0; i < ls.length; i++) {
