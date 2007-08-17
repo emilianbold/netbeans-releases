@@ -50,7 +50,7 @@ public class CvsVisibilityQuery implements VisibilityQueryImplementation, Versio
         instance = this;
         refreshVisibilityTask = Utils.createTask(new Runnable() {
             public void run() {
-                instance.fireVisibilityChanged();
+                fireVisibilityChanged();
             }
         });        
     }
@@ -120,8 +120,10 @@ public class CvsVisibilityQuery implements VisibilityQueryImplementation, Versio
     }
 
     private static void refreshVisibility() {
-        instance.refreshVisibilityTask.schedule(100);
-    }
+        if (instance != null) {
+            instance.refreshVisibilityTask.schedule(100);
+        }
+   }
 
     static void hideFolder(File file) throws IOException {
         new File(file, MARKER_CVS_REMOVED).createNewFile();
