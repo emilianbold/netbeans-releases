@@ -118,7 +118,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="runidesetup" depends="init,init-cp,install-tomcat,ide_command_line_suffix,unzip-test-project">
+    <target name="runidesetup" depends="init,init-cp,ide_command_line_suffix,unzip-test-project">
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>
