@@ -10,29 +10,63 @@
 
 <map version="2.0">
 
+
+    <!-- About the IDE's Subversion Support -->
+    <mapID target="svn_about" url="svnmodule/svn_about.html" />
+
+    <!-- Working with Subversion -->
+    <mapID target="svn_overview" url="svnmodule/svn_overview.html" />
+
+    <!-- Subversion Tasks: Quick Reference -->
+    <mapID target="svn_quickref" url="svnmodule/svn_quickref.html" />
+
+    <!-- Viewing File Status Information -->
+    <mapID target="svn_status" url="svnmodule/svn_status.html" />
+
+    <!-- Working with Version Histories -->  
+    <mapID target="svn_histories" url="svnmodule/svn_histories.html" />
+
+    <!-- Setting Up Subversion -->           
+    <mapID target="svn_setup" url="svnmodule/svn_setup.html" />
+
+    <!-- Checking Out Files from a Subversion Repository -->   
+    <mapID target="svn_checkout" url="svnmodule/svn_checkout.html" />
+
+    <!-- Placing Projects Under Version Control -->
+    <mapID target="svn_import" url="svnmodule/svn_import.html" />
+
+    <!-- Updating Files in a Subversion Working Directory -->
+    <mapID target="svn_updating" url="svnmodule/svn_updating.html" />
+
+    <!-- Comparing File Revisions in Subversion -->
+    <mapID target="svn_diff" url="svnmodule/svn_diff.html" />
+
+    <!-- Committing Local Changes to a Remote Repository -->
+    <mapID target="svn_commit" url="svnmodule/svn_commit.html" />
+
+    <!-- Reverting Modifications -->
+    <mapID target="svn_revert" url="svnmodule/svn_revert.html" />
+
+    <!-- Merging File Revisions in Subversion -->
+    <mapID target="svn_merge" url="svnmodule/svn_merge.html" />
+
+    <!-- Resolving Merge Conflicts -->
+    <mapID target="svn_mergeresolve" url="svnmodule/svn_mergeresolve.html" />
+
+    <!-- Creating and Applying a Patch -->
+    <mapID target="svn_patch" url="svnmodule/svn_patch.html" />
+      
+
+    <!-- Legal Notices -->
     <mapID target="credits" url="credits.html" />
 
-    <mapID target="svn_about" url="svnmodule/svn_about.html" />
-    <mapID target="svn_overview" url="svnmodule/svn_overview.html" />
-    <mapID target="svn_quickref" url="svnmodule/svn_quickref.html" />
-    <mapID target="svn_status" url="svnmodule/svn_status.html" />      
-    <mapID target="svn_histories" url="svnmodule/svn_histories.html" />                  
-    <mapID target="svn_setup" url="svnmodule/svn_setup.html" />        
-    <mapID target="svn_checkout" url="svnmodule/svn_checkout.html" />
-    <mapID target="svn_updating" url="svnmodule/svn_updating.html" />
-    <mapID target="svn_diff" url="svnmodule/svn_diff.html" />
-    <mapID target="svn_commit" url="svnmodule/svn_commit.html" />
-    <mapID target="svn_revert" url="svnmodule/svn_revert.html" />
-    <mapID target="svn_projects" url="svnmodule/svn_project-system.html" />
-    <mapID target="svn_merge" url="svnmodule/svn_merge.html" />
-    <mapID target="svn_mergeresolve" url="svnmodule/svn_mergeresolve.html" />
-    <mapID target="svn_patch" url="svnmodule/svn_patch.html" />
 
 <!-- ======================================================================= -->
 
-<!--CSH topics-->
 
-    <!--TODO find out what this is for-->
+<!-- CSH topics -->
+
+    <!-- TODO find out what this is for -->
     <mapID target="org.netbeans.modules.subversion.client.SvnClientExceptionHandler" url="pending.html" />
 
     <!-- Browse Repository Folders dialog (called from Checkout wizard, 2nd panel) -->
@@ -41,52 +75,53 @@
     <!-- Search Revisions dialog (called from Checkout wizard, 2nd panel) -->
     <mapID target="org.netbeans.modules.subversion.ui.search.checkout" url="svnmodule/csh/svn_search_rev_dialog.html" />
 
-    <!--Checkout wizard, step 1-->	
+    <!-- Checkout wizard, panel 1 -->	
     <mapID target="org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.checkout" url="svnmodule/csh/svn_chkout_wizard_p1.html" />
 
-    <!--Checkout wizard, step 2-->	
+    <!-- Checkout wizard, panel 2 -->	
     <mapID target="org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep" url="svnmodule/csh/svn_chkout_wizard_p2.html" />
 
-    <!--Commit dialog-->
+    <!-- Commit dialog -->
     <mapID target="org.netbeans.modules.subversion.ui.commit.CommitAction" url="svnmodule/csh/svn_commit_dialog.html" />
 
-    <!--Create Copy dialog-->
+    <!-- Create Copy dialog -->
     <mapID target="org.netbeans.modules.subversion.ui.copy.CreateCopy" url="svnmodule/csh/svn_copyto_dialog.html" />
 
-    <!--Subversion Diff window-->
+    <!-- Subversion Diff window -->
     <mapID target="org.netbeans.modules.subversion.ui.diff.DiffTopComponent" url="svnmodule/svn_diff.html" />
     
-    <!--Subversion Import wizard, step 1-->
+    <!-- Subversion Import wizard, step 1 -->
     <mapID target="org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.import" url="svnmodule/csh/svn_import_wizard_p1.html" />
  
-    <!--Subversion Import wizard, step 2 TODO: FIX TARGET -->
+    <!-- Subversion Import wizard, step 2 TODO: FIX TARGET -->
     <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction$ImportStep" url="svnmodule/csh/svn_import_wizard_p2.html" />
 
-    <!--Subversion Property Editor-->
+    <!-- Subversion Property Editor -->
     <mapID target="org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction" url="svnmodule/csh/svn_prop_editor.html" />
 
-    <!--Subversion Merge dialog-->
+    <!-- Subversion Merge dialog -->
     <mapID target="org.netbeans.modules.subversion.ui.copy.Merge" url="svnmodule/csh/svn_merge_dialog.html" />
 
-    <!--Subversion Relocate dialog-->
+    <!-- Subversion Relocate dialog -->
     <mapID target="org.netbeans.modules.subversion.ui.relocate.RelocateAction" url="svnmodule/csh/svn_relocate_dialog.html" />
 
-    <!--Subversion Revert Modifications dialog-->
+    <!-- Subversion Revert Modifications dialog -->
     <mapID target="org.netbeans.modules.subversion.ui.update.RevertModifications" url="svnmodule/csh/svn_revert_mod_dialog.html" />
 
-    <!--Subversion Search History window-->
+    <!-- Subversion Search History window -->
     <mapID target="org.netbeans.modules.subversion.ui.browser.searchhistory" url="svnmodule/csh/svn_history_viewer.html" />
  
-    <!--Subversion Switch To dialog-->
+    <!-- Subversion Switch To dialog -->
     <mapID target="org.netbeans.modules.subversion.ui.copy.SwitchTo" url="svnmodule/csh/svn_switch_dialog.html" />
 
-    <!--Subversion Versioning window-->
+    <!-- Subversion Versioning window -->
     <mapID target="org.netbeans.modules.subversion.ui.status.SvnVersioningTopComponent" url="svnmodule/csh/svn_versioning_window.html" />
 
-    <!--Subversion Property Editor-->
+    <!-- Subversion Property Editor -->
     <mapID target="org.netbeans.modules.subversion.options.SvnOptionsController" url="svnmodule/csh/svn_prop_editor.html" />
 
-    <!--Subversion menu-->
+    <!-- Subversion menu -->
     <mapID target="org.netbeans.modules.subversion.ui.status.OpenVersioningAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+
 </map>
 

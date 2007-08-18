@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Placing Projects Under Version Control</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Placing Projects Under Version Control</h2>
+
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The IDE enables you to place any project you are working on under version
+            control. You effectively <em>import</em> your sources into the remote 
+            repository. To do so, you need to be able to access a Subversion repository
+            which you have write privileges for.</p>
+        
+        <h4>To place an IDE project under version control:</h4>
+        
+        <ol>
+            <li>In the Projects window, select an unversioned project and choose either:
+            
+                <ul>
+                    <li>Versioning &gt; Import into Subversion Repository from the node's 
+                        right-click menu.</li>
+                    <li>Versioning &gt; Subversion &gt; Import into Repository from the 
+                        IDE's main menu.</li>
+                </ul>The Subversion Import wizard opens.</li>
+                
+            <li>In the Subversion Repository page of the Import wizard, specify the
+                <a href="#protocolTypes">protocol</a> and location of the Subversion 
+                repository as defined by the Subversion URL. Depending on your selection, 
+                you may require to specify further settings, such as repository username 
+                and password, or, in the case of <tt>svn+ssh://</tt>, you must specify 
+                the tunnel command to establish the external tunnel. Click Next.</li>
+            <li>In the Repository Folder panel, specify the repository folder in which you 
+                want to place the project in the repository. A folder containing the name
+                of your project is suggested for you in the Repository Folder text field 
+                by default.</li>
+            <li>In the text area beneath Specify the Message, enter a description of the 
+                project you are importing into the repository.</li>
+            <li>Click Finish to initiate the import, or optionally, click Next to continue
+                to a third panel that enables you to preview all files that are prepared 
+                for import. From this panel, you can choose to exclude individual files
+                from import, or identify the MIME types of files before importing. Upon
+                clicking Finish, the IDE uploads the project files to the repository and 
+                the Ouput window opens to display the progress.</li>
+        </ol>
+        
+        <p><a name="protocolTypes"></a>The IDE supports the following Subversion protocol types:</p>
+        
+        <table border="1" cellpadding="5">
+            <tr align="center"><th>Protocol</th><th>Access Method</th><th>Example</th></tr>
+            <tr><td align="center"><strong>file</strong></td><td>Direct repository access (on local 
+                disk)</td><td><tt>file:///repository_path[@REV]</tt></td></tr>
+            <tr><td align="center"><strong>http</strong></td><td>Access via WebDAV protocol to a 
+                Subversion-aware server</td><td><tt>http://hostname/repository_path[@REV]</tt></td></tr>
+            <tr><td align="center"><strong>https</strong></td><td>Access via HTTP protocol with SSL 
+                encryption</td><td><tt>https://hostname/repository_path[@REV]</tt></td></tr>
+            <tr><td align="center"><strong>svn</strong></td><td>Access via custom protocol to an 
+                <tt>svnserve</tt> server</td><td><tt>svn://hostname/repository_path[@REV]</tt></td></tr>
+            <tr><td align="center"><strong>svn+ssh</strong></td><td>Access via SVN protocol through 
+                an external SSH tunnel</td><td><tt>svn+ssh://hostname/repository_path[@REV]</tt></td></tr>
+        </table>        
+         
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_about.html">About Projects</a></dd>            
+            <dd><a href="svn_overview.html">Working with Subversion</a></dd>
+        </dl>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>
