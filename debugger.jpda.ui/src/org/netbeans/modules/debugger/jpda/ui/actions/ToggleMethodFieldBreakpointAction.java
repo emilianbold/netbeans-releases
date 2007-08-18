@@ -20,19 +20,13 @@
 package org.netbeans.modules.debugger.jpda.ui.actions;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.net.URL;
-import java.net.MalformedURLException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
 import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.api.debugger.ActionsManagerListener;
-import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -42,8 +36,6 @@ import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.FieldBreakpointPanel;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.MethodBreakpointPanel;
 
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -176,7 +168,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
                     if (fn != null && fn.length() == 0) fn = null;
                     if (submitFieldOrMethodBreakpoint(cn, fn, mn, ms)) {
                         // We've submitted a field or method breakpoint, so delete the line one:
-                        LineBreakpoint lb = ToggleBreakpointActionProvider.getBreakpointAnnotationListener ().findBreakpoint (
+                        LineBreakpoint lb = ToggleBreakpointActionProvider.findBreakpoint (
                             url, ln
                         );
                         if (lb != null) {
@@ -224,11 +216,9 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
         // 2) find and remove existing line breakpoint
         JPDABreakpoint b;
         if (fieldName != null) {
-            b = ToggleBreakpointActionProvider.getBreakpointAnnotationListener().
-                findBreakpoint (className, fieldName);
+            b = findBreakpoint (className, fieldName);
         } else if (methodName != null) {
-            b = ToggleBreakpointActionProvider.getBreakpointAnnotationListener().
-                findBreakpoint (className, methodName, methodSignature);
+            b = findBreakpoint (className, methodName, methodSignature);
         } else {
             return false;
         }
@@ -270,13 +260,70 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
         // 2) find and remove existing line breakpoint
         JPDABreakpoint b;
         if (fieldName != null) {
-            b = ToggleBreakpointActionProvider.getBreakpointAnnotationListener().
-                findBreakpoint (className, fieldName);
+            b = findBreakpoint (className, fieldName);
         } else {
-            b = ToggleBreakpointActionProvider.getBreakpointAnnotationListener().
-                findBreakpoint (className, methodName, methodSignature);
+            b = findBreakpoint (className, methodName, methodSignature);
         }
         return b;
+    }
+    
+    private static FieldBreakpoint findBreakpoint(String className, String fieldName) {
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        for (int i = 0; i < breakpoints.length; i++) {
+            if (!(breakpoints[i] instanceof FieldBreakpoint)) {
+                continue;
+            }
+            FieldBreakpoint fb = (FieldBreakpoint) breakpoints[i];
+            if (!fb.getClassName().equals(className)) continue;
+            if (!fb.getFieldName().equals(fieldName)) continue;
+            return fb;
+        }
+        return null;
+    }
+
+    private static MethodBreakpoint findBreakpoint(String className, String methodName, String methodSignature) {
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        for (int i = 0; i < breakpoints.length; i++) {
+            if (!(breakpoints[i] instanceof MethodBreakpoint)) {
+                continue;
+            }
+            MethodBreakpoint mb = (MethodBreakpoint) breakpoints[i];
+            String[] classFilters = mb.getClassFilters();
+            int j;
+            for (j = 0; j < classFilters.length; j++) {
+                if (match(className, classFilters[j])) {
+                    break;
+                }
+            }
+            if (j < classFilters.length) {
+                if (!mb.getMethodName().equals(methodName)) continue;
+                String signature = mb.getMethodSignature();
+                if (signature == null || egualMethodSignatures(signature, methodSignature)) {
+                    return mb;
+                }
+            }
+        }
+        return null;
+    }
+    
+    // Compares whether the two signatures have the same arguments. We ignore return value.
+    private static boolean egualMethodSignatures(String s1, String s2) {
+        int i = s1.lastIndexOf(")");
+        if (i > 0) s1 = s1.substring(0, i);
+        i = s2.lastIndexOf(")");
+        if (i > 0) s2 = s2.substring(0, i);
+        return s1.equals(s2);
+    }
+    
+    private static boolean match (String name, String pattern) {
+        if (pattern.startsWith ("*"))
+            return name.endsWith (pattern.substring (1));
+        else
+        if (pattern.endsWith ("*"))
+            return name.startsWith (
+                pattern.substring (0, pattern.length () - 1)
+            );
+        return name.equals (pattern);
     }
     
 }

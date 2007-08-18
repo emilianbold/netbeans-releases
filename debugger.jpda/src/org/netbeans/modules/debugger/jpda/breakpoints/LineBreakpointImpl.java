@@ -32,6 +32,7 @@ import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -78,9 +79,19 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     ) {
         super (breakpoint, reader, debugger, session);
         this.reader = reader;
-        lineNumber = breakpoint.getLineNumber ();
+        updateLineNumber();
         setSourceRoot(sourcePath.getSourceRoot(breakpoint.getURL()));
         set ();
+    }
+    
+    private void updateLineNumber() {
+        int line = getBreakpoint().getLineNumber();
+        String url = getBreakpoint().getURL();
+        // We need to retrieve the original line number which is associated
+        // with the start of this session.
+        line = EditorContextBridge.getContext().getLineNumber(
+                new Object[] { url, new Integer(line) }, getDebugger());
+        lineNumber = line;
     }
 
     protected LineBreakpoint getBreakpoint() {
@@ -89,13 +100,13 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     
     void fixed () {
         logger.fine("LineBreakpoint fixed: "+this);
-        lineNumber = getBreakpoint().getLineNumber ();
+        updateLineNumber();
         super.fixed ();
     }
     
     protected void setRequests () {
         LineBreakpoint breakpoint = getBreakpoint();
-        lineNumber = breakpoint.getLineNumber ();
+        updateLineNumber();
         String[] preferredSourceRoot = new String[] { null };
         String sourcePath = getDebugger().getEngineContext().getRelativePath(breakpoint.getURL(), '/', true);
         if (!isEnabled(sourcePath, preferredSourceRoot)) {
@@ -205,6 +216,23 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         }
         return super.exec (event);
     }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (LineBreakpoint.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
+            int old = lineNumber;
+            updateLineNumber();
+            //System.err.println("LineBreakpointImpl.propertyChange("+evt+")");
+            //System.err.println("  old line = "+old+", new line = "+lineNumber);
+            //System.err.println("  BP line = "+getBreakpoint().getLineNumber());
+            if (lineNumber == old) {
+                // No change, skip it
+                return ;
+            }
+        }
+        super.propertyChange(evt);
+    }
+    
     
     private static List getLocations (
         ReferenceType referenceType,

@@ -90,6 +90,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                     if (!annotatedBreakpoints.contains(b)) {
                         b.addPropertyChangeListener (this);
                         breakpointToAnnotations.put(b, new Annotation[] {});
+                        if (b instanceof LineBreakpoint) {
+                            LineBreakpoint lb = (LineBreakpoint) b;
+                            LineTranslations.getTranslations().registerForLineUpdates(lb);
+                        }
                     }
                     addAnnotationTo(b, fo);
                 }
@@ -114,6 +118,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                     addAnnotationTo(b, fo);
                 }
             }
+            if (b instanceof LineBreakpoint) {
+                LineBreakpoint lb = (LineBreakpoint) b;
+                LineTranslations.getTranslations().registerForLineUpdates(lb);
+            }
         }
     }
 
@@ -131,7 +139,6 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName ();
         if (propertyName == null) return;
-        //if (!listen) return;
         if ( (!JPDABreakpoint.PROP_ENABLED.equals (propertyName)) &&
              (!JPDABreakpoint.PROP_VALIDITY.equals (propertyName)) &&
              (!LineBreakpoint.PROP_CONDITION.equals (propertyName)) &&

@@ -112,9 +112,6 @@ public class EditorContextImpl extends EditorContext {
     
     private PropertyChangeSupport   pcs;
     private Map                     annotationToURL = new HashMap ();
-    private ChangeListener          changedFilesListener;
-    private Map                     timeStampToRegistry = new HashMap ();
-    private Set                     modifiedDataObjects;
     private PropertyChangeListener  editorObservableListener;
 
     private Lookup.Result resDataObject;
@@ -150,7 +147,7 @@ public class EditorContextImpl extends EditorContext {
      * @param timeStamp a time stamp to be used
      */
     public boolean showSource (String url, int lineNumber, Object timeStamp) {
-        Line l = getLine (url, lineNumber, timeStamp); // false = use original ln
+        Line l = LineTranslations.getTranslations().getLine (url, lineNumber, timeStamp); // false = use original ln
         if (l == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING,
                     "Show Source: Have no line for URL = "+url+", line number = "+lineNumber);
@@ -174,7 +171,7 @@ public class EditorContextImpl extends EditorContext {
      * @param timeStamp a time stamp to be used
      */
     public boolean showSource (String url, int lineNumber, int column, int length, Object timeStamp) {
-        Line l = getLine (url, lineNumber, timeStamp); // false = use original ln
+        Line l = LineTranslations.getTranslations().getLine (url, lineNumber, timeStamp); // false = use original ln
         if (l == null) {
             ErrorManager.getDefault().log(ErrorManager.WARNING,
                     "Show Source: Have no line for URL = "+url+", line number = "+lineNumber);
@@ -213,18 +210,7 @@ public class EditorContextImpl extends EditorContext {
      * @param timeStamp a new time stamp
      */
     public void createTimeStamp (Object timeStamp) {
-        modifiedDataObjects = new HashSet (
-            DataObject.getRegistry ().getModifiedSet ()
-        );
-        Registry r = new Registry ();
-        timeStampToRegistry.put (timeStamp, r);
-        Iterator i = modifiedDataObjects.iterator ();
-        while (i.hasNext ())
-            r.register ((DataObject) i.next ());
-        if (changedFilesListener == null) {
-            changedFilesListener = new ChangedFilesListener ();
-            DataObject.getRegistry ().addChangeListener (changedFilesListener);
-        }
+        LineTranslations.getTranslations().createTimeStamp(timeStamp);
     }
 
     /**
@@ -233,11 +219,7 @@ public class EditorContextImpl extends EditorContext {
      * @param timeStamp a time stamp to be disposed
      */
     public void disposeTimeStamp (Object timeStamp) {
-        timeStampToRegistry.remove (timeStamp);
-        if (timeStampToRegistry.isEmpty ()) {
-            DataObject.getRegistry ().removeChangeListener (changedFilesListener);
-            changedFilesListener = null;
-        }
+        LineTranslations.getTranslations().disposeTimeStamp(timeStamp);
     }
     
     public Object annotate (
@@ -246,7 +228,7 @@ public class EditorContextImpl extends EditorContext {
         String annotationType,
         Object timeStamp
     ) {
-        Line l =  getLine (
+        Line l =  LineTranslations.getTranslations().getLine (
             url, 
             lineNumber, 
             timeStamp
@@ -324,16 +306,13 @@ public class EditorContextImpl extends EditorContext {
     
     private void removeAnnotation(DebuggerAnnotation annotation) {
         annotation.detach ();
-        
-        if (annotationToURL.remove (annotation) == null) {
-            return; // ??
-        }
+        annotationToURL.remove (annotation);
     }
 
     /**
      * Returns line number given annotation is associated with.
      *
-     * @param annotation a annotation
+     * @param annotation an annotation, or an array of "url" and new Integer(line number)
      * @param timeStamp a time stamp to be used
      *
      * @return line number given annotation is associated with
@@ -342,11 +321,18 @@ public class EditorContextImpl extends EditorContext {
         Object annotation,
         Object timeStamp
     ) {
+        if (annotation instanceof Object[]) {
+            // A sort of hack to be able to retrieve the original line.
+            Object[] urlLine = (Object[]) annotation;
+            String url = (String) urlLine[0];
+            int line = ((Integer) urlLine[1]).intValue();
+            return LineTranslations.getTranslations().getOriginalLineNumber(url, line, timeStamp);
+        }
         DebuggerAnnotation a = (DebuggerAnnotation) annotation;
         if (timeStamp == null) 
             return a.getLine ().getLineNumber () + 1;
         String url = (String) annotationToURL.get (a);
-        Line.Set lineSet = getLineSet (url, timeStamp);
+        Line.Set lineSet = LineTranslations.getTranslations().getLineSet (url, timeStamp);
         return lineSet.getOriginalLineNumber (a.getLine ()) + 1;
     }
     
@@ -357,8 +343,7 @@ public class EditorContextImpl extends EditorContext {
      * @param url an url
      */
     public void updateTimeStamp (Object timeStamp, String url) {
-        Registry registry = (Registry) timeStampToRegistry.get (timeStamp);
-        registry.register (getDataObject (url));
+        LineTranslations.getTranslations().updateTimeStamp(timeStamp, url);
     }
 
     /**
@@ -1642,40 +1627,6 @@ public class EditorContextImpl extends EditorContext {
         }
     }
     
-    private Line.Set getLineSet (String url, Object timeStamp) {
-        DataObject dataObject = getDataObject (url);
-        if (dataObject == null) return null;
-        
-        if (timeStamp != null) {
-            // get original
-            Registry registry = (Registry) timeStampToRegistry.get (timeStamp);
-            if (registry != null) {
-                Line.Set ls = registry.getLineSet (dataObject);
-                if (ls != null) return ls;
-            }
-        }
-        
-        // get current
-        LineCookie lineCookie = (LineCookie) dataObject.getCookie
-            (LineCookie.class);
-        if (lineCookie == null) return null;
-        return lineCookie.getLineSet ();
-    }
-
-    private Line getLine (String url, int lineNumber, Object timeStamp) {
-        Line.Set ls = getLineSet (url, timeStamp);
-        if (ls == null) return null;
-        try {
-            if (timeStamp == null)
-                return ls.getCurrent (lineNumber - 1);
-            else
-                return ls.getOriginal (lineNumber - 1);
-        } catch (IndexOutOfBoundsException e) {
-        } catch (IllegalArgumentException e) {
-        }
-        return null;
-    }
-
     private static DataObject getDataObject (String url) {
         FileObject file;
         try {
@@ -1701,40 +1652,6 @@ public class EditorContextImpl extends EditorContext {
                 pattern.substring (0, pattern.length () - 1)
             );
         return name.equals (pattern);
-    }
-    
-    private static class Registry {
-        
-        private Map dataObjectToLineSet = new HashMap ();
-        
-        void register (DataObject dataObject) {
-            LineCookie lc = (LineCookie) dataObject.getCookie (LineCookie.class);
-            if (lc == null) return;
-            dataObjectToLineSet.put (dataObject, lc.getLineSet ());
-        }
-        
-        Line.Set getLineSet (DataObject dataObject) {
-            return (Line.Set) dataObjectToLineSet.get (dataObject);
-        }
-    }
-    
-    private class ChangedFilesListener implements ChangeListener {
-        public void stateChanged (ChangeEvent e) {
-            Set newDOs = new HashSet (
-                DataObject.getRegistry ().getModifiedSet ()
-            );
-            newDOs.removeAll (modifiedDataObjects);
-            Iterator i1 = timeStampToRegistry.values ().iterator ();
-            while (i1.hasNext ()) {
-                Registry r = (Registry) i1.next ();
-                Iterator i2 = newDOs.iterator ();
-                while (i2.hasNext ())
-                    r.register ((DataObject) i2.next ());
-            }
-            modifiedDataObjects = new HashSet (
-                DataObject.getRegistry ().getModifiedSet ()
-            );
-        }
     }
     
     private class EditorLookupListener extends Object implements LookupListener, PropertyChangeListener {

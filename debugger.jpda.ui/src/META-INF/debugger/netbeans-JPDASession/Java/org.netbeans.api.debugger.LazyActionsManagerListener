@@ -1,3 +1,2 @@
 org.netbeans.modules.debugger.jpda.ui.DebuggerOutput
 org.netbeans.modules.debugger.jpda.ui.BreakpointOutput
-org.netbeans.modules.debugger.jpda.ui.breakpoints.BreakpointsUpdater

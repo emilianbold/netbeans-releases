@@ -34,7 +34,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
-import org.netbeans.modules.debugger.jpda.ui.breakpoints.BreakpointAnnotationListener;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -101,9 +100,7 @@ implements PropertyChangeListener {
         if ("".equals (url.trim ())) return;
         
         // 2) find and remove existing line breakpoint
-        LineBreakpoint lb = getBreakpointAnnotationListener ().findBreakpoint (
-            url, ln
-        );
+        LineBreakpoint lb = findBreakpoint(url, ln);
         if (lb != null) {
             d.removeBreakpoint (lb);
             return;
@@ -131,12 +128,19 @@ implements PropertyChangeListener {
         d.addBreakpoint (lb);
     }
     
-    private static BreakpointAnnotationListener breakpointAnnotationListener;
-    static BreakpointAnnotationListener getBreakpointAnnotationListener () {
-        if (breakpointAnnotationListener == null)
-            breakpointAnnotationListener = (BreakpointAnnotationListener) 
-                DebuggerManager.getDebuggerManager ().lookupFirst 
-                (null, BreakpointAnnotationListener.class);
-        return breakpointAnnotationListener;
+    static LineBreakpoint findBreakpoint (String url, int lineNumber) {
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        for (int i = 0; i < breakpoints.length; i++) {
+            if (!(breakpoints[i] instanceof LineBreakpoint)) {
+                continue;
+            }
+            LineBreakpoint lb = (LineBreakpoint) breakpoints[i];
+            if (!lb.getURL ().equals (url)) continue;
+            if (lb.getLineNumber() == lineNumber) {
+                return lb;
+            }
+        }
+        return null;
     }
+    
 }

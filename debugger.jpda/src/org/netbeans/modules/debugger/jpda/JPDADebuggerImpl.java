@@ -856,6 +856,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
         
         initGenericsSupport ();
+        EditorContextBridge.getContext().createTimeStamp(this);
+
         
         operator = o;
         
@@ -1046,6 +1048,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 starting = false;
                 LOCK2.notifyAll ();
             }
+            EditorContextBridge.getContext().disposeTimeStamp(this);
         //}
     }
 
