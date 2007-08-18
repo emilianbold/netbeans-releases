@@ -19,13 +19,8 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>Web applications have a <a href="about_struct_webapps.html">defined folder structure</a>.
-A web application is usually packaged and deployed as a web archive (WAR) file, 
-  although a web application does not always have to be packaged in order to be deployed. 
-</p>
-<p>A web application <i>must</i> contain a deployment descriptor file (<tt>WEB-INF/web.xml</tt>).
-A web application <i>can</i> contain one or more <a href="about_create_webcomps.html">web components</a>. </p>
-<p>A visual web application is a project that uses the Visual Web JavaServer Faces framework. When you create a Visual Web  project, the IDE does the following:</p>
+<p>Web applications have a <a href="about_struct_webapps.html">defined folder structure</a>. </p>
+<p>When you create a web  project, the IDE does the following:</p>
 <ul>
   <li>Displays the new project in the
 <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
@@ -38,15 +33,19 @@ A web application <i>can</i> contain one or more <a href="about_create_webcomps.
 
   If the Set as Main Project checkbox was selected in the New Project wizard, the new project becomes the main project. If necessary, you can <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_main.html">change the 
   main project</a>.</li>
-  <li>Opens a  page for you to edit in the Visual Designer.</li>
+  <li>Opens a  page for you to edit.</li>
   <li>Puts all the files   in the <code>$HOME/NetBeansProjects/<i>project-name</i></code> directory on 
   a UNIX&reg; or Mac OS system or in the <code>\Documents and Settings\<i>username</i>\My Documents\NetBeansProjects\<i>project-name</i> </code> folder on a Microsoft Windows system.</li>
+<ul class="note">
+  <li><b>Note:</b> You can also specify where the file are located.</li>
+</ul>
 </ul>
 <p>After you create the project, you can view the files in the 
 	<a href="../../ui_elements/project_nav/projectlogical.html">Projects window</a> or 
 		the <a href="../../ui_elements/project_nav/projectfilesystem.html">Files window</a>.</p>
+<p>When you import a web project from an earlier version of the IDE, the project is structured according to Sun Java BluePrints guidelines. A web application <i>must</i> also contain a deployment descriptor file (<tt>WEB-INF/web.xml</tt>), and <i>can</i> contain one or more <a href="about_create_webcomps.html">web components</a>. </p>
 <ul class="note">
-  <li>You can add Visual Web JavaServer Faces pages to a web application project that does not initially include the Visual Web JavaServer Faces framework. To do so, right-click the project name node in the Projects window and choose New > Visual Web JSF Page.</li>
+  <li>You can add a framework to a web application project after creating it. To do so, choose Tools &gt; Libraries to access the Library Manager.</li>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>

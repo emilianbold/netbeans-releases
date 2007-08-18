@@ -254,6 +254,7 @@
 				<file title="ejb_node_icon.gif"/>
 				<file title="ellipsisbtn.gif"/>
 				<file title="enum_in_navwin.gif"/>
+				<file title="enum_in_navwin1.gif"/>
 				<file title="errorBadge.gif"/>
 				<file title="folder.gif"/>
 				<file title="formattedoutputicon.gif"/>
@@ -406,7 +407,6 @@
 					<file title="create_sample_app.html"/>
 					<file title="import_creator_project.html"/>
 				</directory>
-				<file title="about_lib_refs.html"/>
 			</directory>
 			<directory title="ui_elements">
 				<directory title="CVS">
@@ -453,7 +453,6 @@
 						<file title="Template"/>
 					</directory>
 					<file title="about_css_editor.html"/>
-					<file title="about_jsp_editor.html"/>
 					<file title="about_navigation_editor.html"/>
 					<file title="about_properties_editor.html"/>
 					<file title="about_query_editor.html"/>
@@ -1021,6 +1020,7 @@
 						</directory>
 						<directory title="framework">
 							<directory title="jsf">
+								<file title="about_visweb_framework.html"/>
 								<file title="AddDataTable.html"/>
 								<file title="AddForm.html"/>
 								<file title="AddManagedBeanDialog.html"/>
@@ -1039,9 +1039,7 @@
 								<file title="file_ActionPanel1.html"/>
 								<file title="file_FormBeanNewPanel.html"/>
 							</directory>
-							<file title="about_crud.html"/>
 							<file title="about_framework.html"/>
-							<file title="framework_crud_generate.html"/>
 							<file title="framework_jsf_add.html"/>
 							<file title="framework_jsf_create.html"/>
 							<file title="framework_jsf_datatable.html"/>
@@ -1060,7 +1058,6 @@
 						<directory title="taglib">
 							<file title="csh_library_manager.html"/>
 							<file title="taglib_create_separate.html"/>
-							<file title="taglib_manage.html"/>
 						</directory>
 						<directory title="tld">
 							<file title="about_tld.html"/>
@@ -1192,9 +1189,9 @@
 					<file title="ws_bind_table.html"/>
 				</directory>
 				<file title="aboutwebservices.html"/>
-				<file title="web_services_process.html"/>
 			</directory>
 			<file title="credits.html"/>
+			<file title="general_process.html"/>
 			<file title="no_topic.html"/>
 			<file title="rave_nbpack-idx.xml"/>
 			<file title="rave_nbpack-toc.xml"/>
