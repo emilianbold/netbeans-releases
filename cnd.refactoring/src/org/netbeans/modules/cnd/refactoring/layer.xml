@@ -10,22 +10,34 @@
         <folder name="text">
             <folder name="x-c">
                 <folder name="Popup">
+                    <!--
                     <attr name="goto/org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.instance"/>
                     </file>
                     <attr name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow/SeparatorBeforeCut.instance" boolvalue="true"/>
                     <attr name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow/SeparatorAfterPaste.instance" boolvalue="true"/>
+                    -->
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>                    
                 </folder>
             </folder>
             <folder name="x-c++">
                 <folder name="Popup">
+                    <!--
                     <attr name="goto/org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.instance"/>
                     </file>
                     <attr name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow/SeparatorBeforeCut.instance" boolvalue="true"/>
                     <attr name="org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow/SeparatorAfterPaste.instance" boolvalue="true"/>
+                    -->
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>                  
                 </folder>
             </folder>            
         </folder>
