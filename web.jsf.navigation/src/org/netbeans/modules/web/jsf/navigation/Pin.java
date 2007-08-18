@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
  */
 public class Pin extends PageFlowSceneElement {
 
-    private Page page;
+    private final Page page;
     private boolean bDefault = true;
     private PageContentItem pageContentItem;
 

@@ -37,10 +37,10 @@ public final class FreePlaceNodesLayouter {
     }
     
     public static final void performLayout(PageFlowScene scene) {
-        FreePlaceNodesLayouter layout = new FreePlaceNodesLayouter(scene, true);
-        Collection<Page> pages = scene.getNodes();
+        final FreePlaceNodesLayouter layout = new FreePlaceNodesLayouter(scene, true);
+        final Collection<Page> pages = scene.getNodes();
         for( Page page: pages){
-            Widget widget = scene.findWidget(page);
+            final Widget widget = scene.findWidget(page);
             widget.setPreferredLocation(null);
         }
         scene.validate(); /* to make sure the nodes are set in a different place*/
@@ -63,9 +63,9 @@ public final class FreePlaceNodesLayouter {
     
     private final HashMap<String,Point> positions = new HashMap<String,Point> ();
     public void layoutNodesLocations( PageFlowScene scene, Collection<Page> nodes) {
-        Collection<Page> allNodes = scene.getNodes();
+        final Collection<Page> allNodes = scene.getNodes();
         for( Page node : nodes ) {
-            Widget nodeWidget = scene.findWidget(node);
+            final Widget nodeWidget = scene.findWidget(node);
             
             if( nodeWidget == null ) {
                 return;
@@ -96,8 +96,8 @@ public final class FreePlaceNodesLayouter {
     private Point getNewComponentLocation(PageFlowScene scene, HashMap positions, Collection<Page> nodes) {
         for (int a = 0; ; a++) {
             for (int b = 0; b <= a; b++) {
-                int x =  SEP_Y + SEP_X * (a - b);
-                int y =  SEP_Y * (1 + b);
+                final int x =  SEP_Y + SEP_X * (a - b);
+                final int y =  SEP_Y * (1 + b);
                 if (isThereEmptyPlace(scene, positions, nodes, x, y)) {
                     return new Point(x, y);
                 }
@@ -106,7 +106,7 @@ public final class FreePlaceNodesLayouter {
     }
     
     private boolean isThereEmptyPlace(PageFlowScene scene, HashMap positions, Collection<Page> nodes, int x, int y) {
-        Rectangle rectangle = new Rectangle(x, y, 100, 150);
+        final Rectangle rectangle = new Rectangle(x, y, 100, 150);
         if (nodes != null) {
             for( Page node : nodes) {
                 Point location = (Point) positions.get(node.getDisplayName());

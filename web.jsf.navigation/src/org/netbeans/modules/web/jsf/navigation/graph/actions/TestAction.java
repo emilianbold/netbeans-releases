@@ -27,7 +27,7 @@ import javax.swing.JOptionPane;
  * @author joelle
  */
 public class TestAction extends AbstractAction {
-    private String actionName;
+    private final String actionName;
     public TestAction(String actionName) {
         super();
         this.actionName = actionName;

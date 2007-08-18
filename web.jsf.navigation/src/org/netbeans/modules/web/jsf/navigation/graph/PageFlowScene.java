@@ -108,7 +108,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     private final LayerWidget connectionLayer = new LayerWidget(this);
     private final LayerWidget upperLayer = new LayerWidget(this);
 
-    private Router router;
+    private final Router router;
     /**
      * The maximum is used for determining which router to used.  If either
      * edges or pages exceed the max, the direct routing algorithm will be used
@@ -119,14 +119,14 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
     private final WidgetAction moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction();
     //    private WidgetAction popupNodeAction = ActionFactory.createPopupMenuAction (new NodePopupMenuProvider(this));
-    private WidgetAction moveAction = ActionFactory.createMoveAction();
-    private final WidgetAction dragNdropAction = ActionFactory.createAcceptAction(new PageFlowAcceptProvider());
+    private final WidgetAction moveAction = ActionFactory.createMoveAction();
+    //private final WidgetAction dragNdropAction = ActionFactory.createAcceptAction(new PageFlowAcceptProvider());
     private final WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
     private final WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     private final WidgetAction doubleClickAction = ActionFactory.createEditAction(new PageNodeEditAction());
 
     private PageFlowView tc;
-    private PopupMenuProvider popupProvider; //Please see POPUP_HACK below.
+    private final PopupMenuProvider popupProvider; //Please see POPUP_HACK below.
     private static Paint PAINT_BACKGROUND;
     static {
         Image sourceImage = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/paper_grid.png"); // NOI18N
@@ -307,7 +307,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         //return  ActionFactory.createActionMapAction(inputMap, actionMap);
     }
 
-    private Map<VMDNodeWidget, Point> nodeWidget2Point = new HashMap<VMDNodeWidget, Point>();
+    //private Map<VMDNodeWidget, Point> nodeWidget2Point = new HashMap<VMDNodeWidget, Point>();
 
     /* This is needed by PageFlowLayoutUtilities*/
     public Rectangle getVisibleRect() {
@@ -584,7 +584,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
     public final class PageNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
 
-        private VMDNodeWidget nodeWidget;
+        private final VMDNodeWidget nodeWidget;
 
         public PageNodeTextFieldInplaceEditor(VMDNodeWidget nodeWidget) {
             this.nodeWidget = nodeWidget;

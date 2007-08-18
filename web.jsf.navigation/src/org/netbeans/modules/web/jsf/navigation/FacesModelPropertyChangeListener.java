@@ -312,7 +312,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         //This has side effects in PageFlowNode destroy.
         //Because it does not consistantly work, I can't account for reactions.
         if( myOldRule != null ){
-            String fromPage = pfc.removeNavRule2String(myOldRule);            
+            final String fromPage = pfc.removeNavRule2String(myOldRule);            
             removePageIfNoReference(fromPage);
         }
         if( myNewRule != null ){

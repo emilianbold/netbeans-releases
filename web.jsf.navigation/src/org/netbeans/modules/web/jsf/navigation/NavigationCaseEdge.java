@@ -52,9 +52,9 @@ import org.openide.util.NbBundle;
  * @author joelle
  */
 public final class NavigationCaseEdge extends PageFlowSceneElement  {
-    private NavigationCase navCase = null;
-    private String toViewID;
-    private PageFlowController pc;
+    private final NavigationCase navCase;
+    private final String toViewID;
+    private final PageFlowController pc;
     
     
     

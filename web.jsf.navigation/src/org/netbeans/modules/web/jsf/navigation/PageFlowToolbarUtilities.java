@@ -79,7 +79,7 @@ public class PageFlowToolbarUtilities {
     
     private Scope currentScope;
     //    private PageFlowController pfc;
-    private PageFlowView view;
+    private final PageFlowView view;
     
     public static final String getScopeLabel( Scope scope ){
         return scope2String.get(scope);

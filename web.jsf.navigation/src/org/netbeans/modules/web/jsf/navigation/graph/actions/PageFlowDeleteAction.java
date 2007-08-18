@@ -35,7 +35,7 @@ import org.openide.util.Exceptions;
  * @author joelle
  */
 public class PageFlowDeleteAction extends AbstractAction{
-    private PageFlowScene scene;
+    private final PageFlowScene scene;
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowDeleteAction");
     //    private final static Logger LOG = Logger.getLogger("org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowDeleteAction");
     //    static {

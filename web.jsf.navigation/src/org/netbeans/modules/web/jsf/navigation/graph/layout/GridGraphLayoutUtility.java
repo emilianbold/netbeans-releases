@@ -179,12 +179,14 @@ public class GridGraphLayoutUtility {
     }
     
     private static <N> boolean isOccupied(HashMap<N, Point> node2grid, Point point) {
+        boolean occupied = false;
         for (Point p : node2grid.values()) {
             if (point.x == p.x  &&  point.y == p.y) {
-                return true;
+                occupied = true;
+                break;
             }
         }
-        return false;
+        return occupied;
     }
     
     

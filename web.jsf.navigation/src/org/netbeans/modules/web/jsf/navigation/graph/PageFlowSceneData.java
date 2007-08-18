@@ -31,7 +31,7 @@ import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities.Scope;
  * @author joelle
  */
 public class PageFlowSceneData {
-    private PageFlowToolbarUtilities utilities;
+    private final PageFlowToolbarUtilities utilities;
     //    private PageFlowScene scene;
     
     private final Map<String,Point> facesConfigSceneData = new HashMap<String,Point>();

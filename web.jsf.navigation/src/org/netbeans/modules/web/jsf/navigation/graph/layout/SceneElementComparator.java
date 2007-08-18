@@ -94,6 +94,14 @@ public class SceneElementComparator implements Comparator<SceneElement> {
         }
 
         @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 53 * hash + (this.element != null ? this.element.hashCode() : 0);
+            hash = 53 * hash + (this.p != null ? this.p.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
         public String toString() {
             return element.toString() + ":" + p.toString();
         }
@@ -101,7 +109,7 @@ public class SceneElementComparator implements Comparator<SceneElement> {
 
     public static PageFlowSceneElement getNextSelectableElement(PageFlowScene scene, boolean reverse, boolean nodesSelectable, boolean edgesSelectable, boolean pinsSelectable) {
         List<Object> selectedObjs = new ArrayList<Object>(scene.getSelectedObjects());
-        List objs = new ArrayList();
+        List<Object> objs = new ArrayList<Object>();
         List<SceneElement> sortedElements = new ArrayList<SceneElement>();
 
         if (nodesSelectable) {
@@ -111,7 +119,7 @@ public class SceneElementComparator implements Comparator<SceneElement> {
             objs.addAll(scene.getEdges());
         }
         if (pinsSelectable) {
-            objs.addAll(scene.getPins());
+            objs.addAll(scene.getPins()); 
             /* Remove all the page pins */
             for (Page page : scene.getNodes()) {
                 Pin pin = scene.getDefaultPin(page);

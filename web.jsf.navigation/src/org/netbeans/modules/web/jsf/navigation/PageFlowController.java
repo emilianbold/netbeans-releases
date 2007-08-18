@@ -78,17 +78,17 @@ import org.openide.util.Lookup;
  */
 public class PageFlowController {
 
-    private PageFlowView view;
-    private JSFConfigModel configModel;
-    private Collection<FileObject> webFiles;
+    private final PageFlowView view;
+    private final JSFConfigModel configModel;
+    private final Collection<FileObject> webFiles;
     private DataObject configDataObj;
     private final HashMap<NavigationCase, NavigationCaseEdge> navCase2NavCaseEdge = new HashMap<NavigationCase, NavigationCaseEdge>();
-    private HashMap<NavigationRule, String> navRule2String = new HashMap<NavigationRule, String>();
+    private final HashMap<NavigationRule, String> navRule2String = new HashMap<NavigationRule, String>();
     private final HashMap<String, Page> pageName2Page = new HashMap<String, Page>(); //Should this be synchronized.
     //    public static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
     private static final String NO_WEB_FOLDER_WARNING = NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder");
     private static final String NO_WEB_FOLDER_TITLE = NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder");
-
+    private final FileObject webFolder;
     /** Creates a new instance of PageFlowController
      * @param context
      * @param view
@@ -681,7 +681,6 @@ public class PageFlowController {
             return pageName2Page.get(displayName);
         }
     }
-    private Thread t = null;
 
     public void printThreadInfo() {
         if (!SwingUtilities.isEventDispatchThread()) {
@@ -739,7 +738,7 @@ public class PageFlowController {
             Exceptions.printStackTrace(ex);
         }
     }
-    private FileObject webFolder = null;
+
 
     /**
      * Gets the WebFolder which contains the jsp pages.

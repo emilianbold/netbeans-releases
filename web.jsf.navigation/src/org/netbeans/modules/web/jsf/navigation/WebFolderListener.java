@@ -28,9 +28,9 @@ import org.openide.util.Exceptions;
  */
 public class WebFolderListener extends FileChangeAdapter {
 
-    private PageFlowController pfc;
-    private PageFlowView view;
-    private FileObject webFolder;
+    private final PageFlowController pfc;
+    private final PageFlowView view;
+    private final FileObject webFolder;
 //    private final PageFlowUtilities pfUtil = PageFlowUtilities.getInstance();
 
     /**

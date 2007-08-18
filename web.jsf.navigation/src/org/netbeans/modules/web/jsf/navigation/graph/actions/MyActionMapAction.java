@@ -31,8 +31,8 @@ import java.awt.event.ActionListener;
  */
 public class MyActionMapAction extends WidgetAction.Adapter {
 
-    private InputMap inputMap;
-    private ActionMap actionMap;
+    private final InputMap inputMap;
+    private final ActionMap actionMap;
 
     public MyActionMapAction (InputMap inputMap, ActionMap actionMap) {
         super();

@@ -34,12 +34,12 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public class TreeGraphLayoutUtility <N,E,P> {
     
-        private GraphPinScene<N, E, P> scene;
-        private int originX;
-        private int originY;
-        private int verticalGap;
-        private int horizontalGap;
-        private boolean vertical;
+        private final GraphPinScene<N, E, P> scene;
+        private final int originX;
+        private final int originY;
+        private final int verticalGap;
+        private final int horizontalGap;
+        private final boolean vertical;
     
     /**
      * Creates a graph-oriented tree layout.
@@ -122,8 +122,9 @@ public class TreeGraphLayoutUtility <N,E,P> {
             resultPosition.put(node, position);
         }
         
-        for (Map.Entry<N, Point> entry : resultPosition.entrySet())
+        for (Map.Entry<N, Point> entry : resultPosition.entrySet()) {
             scene.findWidget(entry.getKey()).setPreferredLocation(entry.getValue());
+        }
         scene.validate();
     }
     
@@ -151,8 +152,8 @@ public class TreeGraphLayoutUtility <N,E,P> {
     
     private class Node {
         
-        private N node;
-        private ArrayList<Node> children;
+        private final N node;
+        private final ArrayList<Node> children;
         
         private Rectangle relativeBounds;
         private int space;
@@ -228,8 +229,9 @@ public class TreeGraphLayoutUtility <N,E,P> {
         
         private void upload(HashMap<N, Point> result) {
             result.put(node, point);
-            for (Node child : children)
+            for (Node child : children) {
                 child.upload(result);
+            }
         }
     }
     

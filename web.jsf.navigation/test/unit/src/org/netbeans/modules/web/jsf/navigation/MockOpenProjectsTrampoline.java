@@ -29,7 +29,7 @@ import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
  */
 public class MockOpenProjectsTrampoline implements OpenProjectsTrampoline {
 
-    private Collection<Project> openProjects = new ArrayList<Project>();
+    private final Collection<Project> openProjects = new ArrayList<Project>();
 
         public MockOpenProjectsTrampoline() {
         }

@@ -50,7 +50,7 @@ public abstract class PageContentModel {
      */
     public abstract void destroy() throws IOException;
     
-    private Set<? extends PageContentItem> pageContentItems = new HashSet<PageContentItem>();
+    private final Set<? extends PageContentItem> pageContentItems = new HashSet<PageContentItem>();
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
     /**

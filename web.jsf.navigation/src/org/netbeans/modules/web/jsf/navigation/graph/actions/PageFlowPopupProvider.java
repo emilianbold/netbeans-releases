@@ -44,7 +44,6 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 import javax.swing.Action;
 import org.netbeans.modules.web.jsf.navigation.Pin;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -53,12 +52,7 @@ import org.openide.nodes.Node;
 public class PageFlowPopupProvider implements PopupMenuProvider {
     
     PageFlowScene graphScene;
-    
-    private JMenuItem miAddWebPage;
-    private JPopupMenu graphPopup;
-    
-    private String addPage = NbBundle.getMessage(PageFlowPopupProvider.class, "MSG_AddPage");
-    private TopComponent tc;
+    private final TopComponent tc;
     /**
      * Creates a Popup for any right click on Page Flow Editor
      * @param graphScene The related PageFlow Scene.

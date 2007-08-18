@@ -36,13 +36,15 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
     
     
     public Action createContextAwareInstance(Lookup lookup) {
+        Action addPageAction = null;
         final PageFlowScene scene = lookup.lookup(PageFlowScene.class);
         if( scene != null) {
             setEnabled(true);
-            return new AddPageAction(scene);
+            addPageAction = new AddPageAction(scene);
+        } else {
+            setEnabled(false);
         }
-        setEnabled(false);
-        return null;
+        return addPageAction;
     }
   
 //    @Override
@@ -58,7 +60,7 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
     
     private class AddPageAction extends AbstractAction {
         
-        private PageFlowScene scene;
+        private final PageFlowScene scene;
         
         /** Creates a new instance of OpenPageAction
          * @param scene

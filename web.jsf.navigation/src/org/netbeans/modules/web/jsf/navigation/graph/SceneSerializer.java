@@ -291,8 +291,9 @@ public class SceneSerializer {
     private static Node[] getChildNode(Node node) {
         NodeList childNodes = node.getChildNodes();
         Node[] nodes = new Node[childNodes != null ? childNodes.getLength() : 0];
-        for (int i = 0; i < nodes.length; i++)
+        for (int i = 0; i < nodes.length; i++) {
             nodes[i] = childNodes.item(i);
+        }
         return nodes;
     }
     

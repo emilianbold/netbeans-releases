@@ -35,12 +35,12 @@ public class FacesModelUtility {
     public FacesModelUtility() {
     }
     public static String getToViewIdFiltered( NavigationCase navCase ) {
-        String viewId = navCase.getToViewId();
+        final String viewId = navCase.getToViewId();
         return getViewIdFiltiered( viewId );
     }
     
     public static String getFromViewIdFiltered( NavigationRule navRule ){
-        String viewId = navRule.getFromViewId();
+        final String viewId = navRule.getFromViewId();
         return getViewIdFiltiered( viewId );
     }
     
@@ -54,7 +54,7 @@ public class FacesModelUtility {
     
     public static void setToViewId(NavigationCase navCase, String filteredName ){
         if( filteredName != null && filteredName.length() > 0 ) {
-            String unfilteredName = "/".concat(filteredName);
+            final String unfilteredName = "/".concat(filteredName);
             navCase.setToViewId(unfilteredName);
         } else {
             navCase.setToViewId(filteredName);
@@ -65,7 +65,7 @@ public class FacesModelUtility {
     public static void setFromViewId( NavigationRule navRule, String filteredName ){
         
         if( filteredName != null && filteredName.length() > 0 ) {
-            String unfilteredName = "/".concat(filteredName);
+            final String unfilteredName = "/".concat(filteredName);
             navRule.setFromViewId(unfilteredName);
         } else {
             navRule.setFromViewId(filteredName);
@@ -79,18 +79,18 @@ public class FacesModelUtility {
      */
     public static void renamePageInModel(JSFConfigModel configModel, String oldDisplayName, String newDisplayName ) {
         configModel.startTransaction();
-        FacesConfig facesConfig = configModel.getRootComponent();
-        List<NavigationRule> navRules = facesConfig.getNavigationRules();
+        final FacesConfig facesConfig = configModel.getRootComponent();
+        final List<NavigationRule> navRules = facesConfig.getNavigationRules();
         for( NavigationRule navRule : navRules ){
-            String fromViewId = getFromViewIdFiltered(navRule);
+            final String fromViewId = getFromViewIdFiltered(navRule);
             if ( fromViewId != null && fromViewId.equals(oldDisplayName) ){
                 //                navRule.setFromViewId(newDisplayName);
                 setFromViewId(navRule, newDisplayName);
             }
-            List<NavigationCase> navCases = navRule.getNavigationCases();
+            final List<NavigationCase> navCases = navRule.getNavigationCases();
             for( NavigationCase navCase : navCases ) {
                 //                String toViewId = navCase.getToViewId();
-                String toViewId = getToViewIdFiltered(navCase);
+                final String toViewId = getToViewIdFiltered(navCase);
                 if ( toViewId != null && toViewId.equals(oldDisplayName) ) {
                     //                    navCase.setToViewId(newDisplayName);
                     setToViewId(navCase, newDisplayName);
