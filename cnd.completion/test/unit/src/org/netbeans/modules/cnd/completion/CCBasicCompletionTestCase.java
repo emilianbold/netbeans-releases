@@ -150,5 +150,13 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
 
     public void testErrorCompletionInFun7() throws Exception {
         super.performTest("file.cc", 7, 1, "->");
-    }      
+    }     
+
+    public void testCompletionInEmptyUsrInclude() throws Exception {
+        super.performTest("file.cc", 1, 1, "#include \"\"", -1);
+    }
+
+    public void testCompletionInEmptySysInclude() throws Exception {
+        super.performTest("file.cc", 1, 1, "#include <>", -1);
+    }
 }
