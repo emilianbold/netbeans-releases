@@ -48,6 +48,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.ErrorManager;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.LookupEvent;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 
@@ -410,6 +411,9 @@ abstract class Lookup implements ContextProvider {
         private final class ModuleChangeListener implements PropertyChangeListener, org.openide.util.LookupListener {
 
             private ClassLoader cl;
+            private RequestProcessor.Task refreshListEnabled;
+            private RequestProcessor.Task refreshListDisabled;
+            private RequestProcessor rp;
 
             public ModuleChangeListener(ClassLoader cl) {
                 this.cl = cl;
@@ -437,7 +441,30 @@ abstract class Lookup implements ContextProvider {
                         moduleChangeListeners.put(cl, this);
                     }
                 }
-                refreshLists(mi.isEnabled());
+                synchronized (this) {
+                    if (mi.isEnabled()) {
+                        if (refreshListEnabled == null) {
+                            if (rp == null) {
+                                rp = new RequestProcessor("Debugger Services Refresh", 1);
+                            }
+                            refreshListEnabled = rp.create(new Runnable() {
+                                public void run() { refreshLists(true); }
+                            });
+                        }
+                        refreshListEnabled.schedule(100);
+                    } else {
+                        if (refreshListDisabled == null) {
+                            if (rp == null) {
+                                rp = new RequestProcessor("Debugger Services Refresh", 1);
+                            }
+                            refreshListDisabled = rp.create(new Runnable() {
+                                public void run() { refreshLists(false); }
+                            });
+                        }
+                        refreshListDisabled.schedule(100);
+                    }
+                }
+                //refreshLists(mi.isEnabled());
             }
 
             // Some new modules installed or old uninstalled
@@ -452,6 +479,7 @@ abstract class Lookup implements ContextProvider {
             }
             
             private void clearCaches(ClassLoader cl) {
+                //System.err.println("clearCaches("+cl+")");
                 synchronized(registrationCache) {
                     registrationCache.clear();
                 }

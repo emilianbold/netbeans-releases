@@ -527,7 +527,7 @@ public final class DebuggerManager {
             breakpoints.removeElement (breakpoint);
             breakpoint.dispose();
         }
-        fireBreakpointRemoved (breakpoint, ignoreInitBreakpointsListeners);
+        fireBreakpointRemoved (breakpoint, ignoreInitBreakpointsListeners, null);
     }
 
     /** 
@@ -746,7 +746,9 @@ public final class DebuggerManager {
      *
      * @param breakpoint  a breakpoint that was removed
      */
-    private void fireBreakpointRemoved (final Breakpoint breakpoint, boolean ignoreInitBreakpointsListeners) {
+    private void fireBreakpointRemoved (final Breakpoint breakpoint,
+                                        boolean ignoreInitBreakpointsListeners,
+                                        DebuggerManagerListener ignoredListener) {
         initDebuggerManagerListeners ();
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_BREAKPOINTS, null, null
@@ -756,6 +758,7 @@ public final class DebuggerManager {
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             DebuggerManagerListener ml = (DebuggerManagerListener) l.elementAt(i);
+            if (ml == ignoredListener) continue;
             Breakpoint[] bps;
             if (ignoreInitBreakpointsListeners && (bps = ml.initBreakpoints()) != null && bps.length > 0) {
                 continue;
@@ -775,6 +778,7 @@ public final class DebuggerManager {
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 DebuggerManagerListener ml = (DebuggerManagerListener) l1.elementAt(i);
+                if (ml == ignoredListener) continue;
                 Breakpoint[] bps;
                 if (ignoreInitBreakpointsListeners && (bps = ml.initBreakpoints()) != null && bps.length > 0) {
                     continue;
@@ -897,6 +901,40 @@ public final class DebuggerManager {
         for (Breakpoint bp : breakpointsToAdd) {
             registerBreakpoint(bp);
             fireBreakpointCreated (bp, originatingListeners.get(bp));
+        }
+    }
+
+    private void removeBreakpoints(DebuggerManagerListener dl) {
+        if (!breakpointsInitialized) {
+            return ;
+        }
+        Breakpoint[] bps;
+        try {
+            java.lang.reflect.Method unloadMethod = dl.getClass().getMethod("unloadBreakpoints", new Class[] {});
+            bps = (Breakpoint[]) unloadMethod.invoke(dl, new Object[] {});
+        } catch (Exception exc) {
+            return ;
+        }
+        //Breakpoint[] bps = dl.unloadBreakpoints();
+        //System.err.println("\n removeBreakpoints("+dl+")\n");
+        breakpoints.removeAll(Arrays.asList(bps));
+        for (Breakpoint breakpoint : bps) {
+            Class c = breakpoint.getClass();
+            ClassLoader cl = c.getClassLoader();
+            synchronized (breakpointsByClassLoaders) {
+                Set<Breakpoint> lb = breakpointsByClassLoaders.get(cl);
+                if (lb != null) {
+                    lb.remove(breakpoint);
+                    if (lb.isEmpty()) {
+                        breakpointsByClassLoaders.remove(cl);
+                    }
+                }
+            }
+            breakpoint.disposeOut();
+        }
+        //System.err.println("removedBreakpoints = "+Arrays.asList(bps));
+        for (Breakpoint bp : bps) {
+            fireBreakpointRemoved(bp, false, dl);
         }
     }
 
@@ -1248,6 +1286,11 @@ public final class DebuggerManager {
             }
             Set<LazyDebuggerManagerListener> listenersToRemove = new HashSet<LazyDebuggerManagerListener>(loadedListeners);
             listenersToRemove.removeAll(listenersLookupList);
+            for (LazyDebuggerManagerListener l : listenersToRemove) {
+                if (loadedListeners.contains(l)) {
+                    removeBreakpoints(l);
+                }
+            }
             for (LazyDebuggerManagerListener l : listenersToRemove) {
                 if (loadedListeners.remove(l)) {
                     moduleUnloaded(l.getClass().getClassLoader());
