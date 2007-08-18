@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
-<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
-                     "http://java.sun.com/products/javahelp/map_2_0.dtd">
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
 
 <map version="1.0">
 	<mapID target="about_build" url="web/build/about_build.html"/>
@@ -648,8 +648,12 @@
 	<mapID target="webapps_process" url="web/about/webapps_process.html"/>
 	<mapID target="webapps_quickref" url="web/about/webapps_quickref.html"/>
 	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html"/>
+<<<<<<< rave_nbpackMap.jhm
+
+=======
 	<mapID target="projravegeneral_process" url="general_process.html"/>
 	<mapID target="projraveimages_enum_in_navwin1" url="images/enum_in_navwin1.gif"/>
 	<mapID target="projrave_web_svc_aboutwebservices" url="web_svc/aboutwebservices.html"/>
 	<mapID target="projrave_web_svc_web_services_process" url="web_svc/web_services_process.html"/>
+>>>>>>> 1.33
 </map>
