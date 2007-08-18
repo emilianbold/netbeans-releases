@@ -84,8 +84,12 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                 CCTokenContext.CHAR_LITERAL,
                 CCTokenContext.STRING_LITERAL,
                 CCTokenContext.USR_INCLUDE,
-                CCTokenContext.SYS_INCLUDE
+                CCTokenContext.SYS_INCLUDE,
+                CCTokenContext.INCOMPLETE_SYS_INCLUDE,
+                CCTokenContext.INCOMPLETE_USR_INCLUDE
             };
+
+    private static final TokenID[] COMPLETION_SKIP_TOKENS = BRACKET_SKIP_TOKENS;
 
     private static final char[] COMMAND_SEPARATOR_CHARS = new char[] {
                 ';', '{', '}', '#'
@@ -1134,7 +1138,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     
     public boolean isCompletionDisabled(int offset) {
         boolean completionDisabled = false;
-        TokenID[] disableTokenIds = BRACKET_SKIP_TOKENS;
+        TokenID[] disableTokenIds = COMPLETION_SKIP_TOKENS;
         if (disableTokenIds != null) {
             TokenItem token;
             try {
