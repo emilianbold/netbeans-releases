@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
  */
 public class Wsdl2Java {
     
-    private static final String wsImportCompileScriptName = "ws_import_compile.xml";
+    private static final String wsImportCompileScriptName = "modules/ext/build-ws.xml";
     private static File wsImportCompileScript;
 
     private static final String WEBSVC_HOME_PROP = "websvc.home";
@@ -263,7 +263,6 @@ public class Wsdl2Java {
     /**
      * Find the ant script file.
      * The file is at <websvcmgr>/external and placed at
-     * <nb-install>/visualweb1 during build time
      */
     private File getAntScript() {
         if (wsImportCompileScript == null) {

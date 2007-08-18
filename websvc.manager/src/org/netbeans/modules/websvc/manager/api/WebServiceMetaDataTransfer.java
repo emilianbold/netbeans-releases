@@ -45,8 +45,8 @@ public class WebServiceMetaDataTransfer {
     
     static {
         try {
-            PORT_FLAVOR = new DataFlavor("application/x-java-netbeans-websvcmgr-port;class=org.netbeans.modules.websvc.manager.WebServiceMetaDataTransfer$Port"); // NOI18N
-            METHOD_FLAVOR = new DataFlavor("application/x-java-netbeans-websvcmgr-method;class=org.netbeans.modules.websvc.manager.WebServiceMetaDataTransfer$Method"); // NOI18N
+            PORT_FLAVOR = new DataFlavor("application/x-java-netbeans-websvcmgr-port;class=org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer$Port"); // NOI18N
+            METHOD_FLAVOR = new DataFlavor("application/x-java-netbeans-websvcmgr-method;class=org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer$Method"); // NOI18N
         } catch (ClassNotFoundException e) {
             throw new AssertionError(e);
         }

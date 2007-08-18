@@ -54,12 +54,12 @@ public class WebServiceGroupNode extends AbstractNode implements Node.Cookie {
     
     @Override
     public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/visualweb/websvcmgr/resources/folder-closed.png");
+        return Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/folder-closed.png");
     }
     
     @Override
     public Image getOpenedIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/visualweb/websvcmgr/resources/folder-open.png");
+        return Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/folder-open.png");
     }
     
     public WebServiceGroup getWebServiceGroup(){

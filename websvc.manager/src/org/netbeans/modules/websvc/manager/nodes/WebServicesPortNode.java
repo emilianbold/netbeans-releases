@@ -100,11 +100,11 @@ public class WebServicesPortNode  extends AbstractNode implements Node.Cookie {
     }
     
     public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/visualweb/websvcmgr/resources/wsport-closed.png"); // NOI18N
+        return Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/wsport-closed.png"); // NOI18N
     }
     
     public Image getOpenedIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/visualweb/websvcmgr/resources/wsport-open.png"); // NOI18N
+        return Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/wsport-open.png"); // NOI18N
     }
     
     public void destroy() throws IOException{

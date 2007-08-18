@@ -74,12 +74,12 @@ public class WebServiceNode extends AbstractNode implements Node.Cookie {
     
     @Override
     public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/visualweb/websvcmgr/resources/webservice.png");
+        return Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/webservice.png");
     }
     
     @Override
     public Image getOpenedIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/visualweb/websvcmgr/resources/webservice.png");
+        return Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/webservice.png");
     }
     
     @Override

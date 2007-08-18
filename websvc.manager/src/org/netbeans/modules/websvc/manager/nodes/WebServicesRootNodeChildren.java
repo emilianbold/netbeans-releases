@@ -90,7 +90,7 @@ public class WebServicesRootNodeChildren extends Children.Keys<WebServiceGroup> 
                     WebServiceManager.getInstance().getRequestProcessor().post(modelWsdl);
                     AbstractNode waitNode = new AbstractNode(Children.LEAF);
                     waitNode.setName(NbBundle.getMessage(WebServiceGroupNodeChildren.class, "NODE_LOAD_MSG"));
-                    waitNode.setIconBaseWithExtension("org/netbeans/modules/visualweb/websvcmgr/resources/wait.gif"); // NOI18N
+                    waitNode.setIconBaseWithExtension("org/netbeans/modules/websvc/manager/resources/wait.gif"); // NOI18N
                     
                     nodes.add(waitNode);
                 }else {

@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -70,7 +71,6 @@ public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
     
     static {
         try {
-            //METHOD_NODE_FLAVOR = new java.awt.datatransfer.DataFlavor("application/x-java-netbeans-websvcmgr-method;class=org.netbeans.modules.websvc.manager.nodes.WebServiceMethodNode");
             METHOD_NODE_FLAVOR = new java.awt.datatransfer.DataFlavor("application/x-java-netbeans-websvcmgr-method;class=org.openide.nodes.Node");
         } catch (ClassNotFoundException ex) {
             throw new AssertionError(ex);
@@ -167,13 +167,13 @@ public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
     
     private Image getMethodIcon() {
         if(!"void".equals(javaMethod.getReturnType().getRealName())) {
-            Image image1 = Utilities.loadImage("org/netbeans/modules/visualweb/websvcmgr/resources/methodicon.png");
-            Image image2 = Utilities.loadImage("org/netbeans/modules/visualweb/websvcmgr/resources/table_dp_badge.png");
+            Image image1 = Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/methodicon.png");
+            Image image2 = Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/table_dp_badge.png");
             int x = image1.getWidth(null) - image2.getWidth(null);
             int y = image1.getHeight(null) - image2.getHeight(null);
             return Utilities.mergeImages( image1, image2, x, y);
         } else
-            return Utilities.loadImage("org/netbeans/modules/visualweb/websvcmgr/resources/methodicon.png");
+            return Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/methodicon.png");
     }
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;

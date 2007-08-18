@@ -115,7 +115,7 @@ public class AddWebServiceAction extends NodeAction {
     }
     
     protected String iconResource() {
-        return "org/netbeans/modules/visualweb/websvcmgr/resources/webservice.png"; // NOI18N
+        return "org/netbeans/modules/websvc/manager/resources/webservice.png"; // NOI18N
     }
     
 }

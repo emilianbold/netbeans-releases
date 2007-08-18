@@ -58,7 +58,7 @@ public class DeleteWebServiceGroupAction extends NodeAction {
     }
     
     protected String iconResource() {
-        return "org/netbeans/modules/visualweb/websvcmgr/resources/MyActionIcon.gif"; // NOI18N
+        return "org/netbeans/modules/websvc/manager/resources/MyActionIcon.gif"; // NOI18N
     }
     
     public String getName() {
