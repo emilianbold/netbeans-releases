@@ -38,10 +38,10 @@ Microsystems, Inc. All Rights Reserved.
                         <code-name-base>org.netbeans.modules.java.editor</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-                    <test-dependency>
+<!--                    <test-dependency>
                         <code-name-base>org.netbeans.modules.tomcat5</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>
+                    </test-dependency>       -->
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.web.core.syntax</code-name-base>
                         <compile-dependency/>
