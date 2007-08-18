@@ -129,7 +129,6 @@ public class WsitWidget extends AbstractTitledWidget {
                     protected void notifyAdded() {
                         super.notifyAdded();
                         config.registerListener(configListener);
-                        setSelected(config.isSet());
                         setVisible(config.isEnabled());
                         determineVisibility();
                     }
@@ -139,6 +138,7 @@ public class WsitWidget extends AbstractTitledWidget {
                         config.unregisterListener(configListener);
                     }
                 };
+                button.setSelected(config.isSet());
                 button.setAction(new ConfigWidgetAction(config));
                 button.setToolTipText(config.getDescription());
                 button.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));

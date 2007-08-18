@@ -152,8 +152,8 @@ public class OperationWidget extends AbstractTitledWidget {
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
-        viewButton = new ButtonWidget(getScene(),IMAGE_LIST,null);
-        viewButton.setSelectedImage(IMAGE_TABBED);
+        viewButton = new ButtonWidget(getScene(),IMAGE_TABBED,null);
+        viewButton.setSelectedImage(IMAGE_LIST);
         viewButton.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 setTabbedView(!viewButton.isSelected());

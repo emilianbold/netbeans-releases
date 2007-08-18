@@ -181,7 +181,7 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
         if(selected!=flag) {
             selected=flag;
             if(selectedImage!=null) 
-                super.setImage(selected ? image : selectedImage);
+                super.setImage(selected ? selectedImage: image);
             revalidate(true);
         }
     }
