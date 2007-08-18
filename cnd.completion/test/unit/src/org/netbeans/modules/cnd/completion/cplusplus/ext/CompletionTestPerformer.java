@@ -137,7 +137,7 @@ public class CompletionTestPerformer {
             JEditorPane editor,
             BaseDocument doc,
             boolean unsorted,
-            String textToInsert,
+            String textToInsert, int offsetAfterInsertion, 
             int lineIndex,
             int colIndex,
             int queryType) throws BadLocationException, IOException {
@@ -157,7 +157,7 @@ public class CompletionTestPerformer {
                 doc.atomicUnlock();
             }
             saveDocument((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty));
-            offset += textToInsert.length();
+            offset += textToInsert.length() + offsetAfterInsertion;
         }
         if (editor != null) {
             editor.grabFocus();
@@ -167,13 +167,13 @@ public class CompletionTestPerformer {
     }
     
     public CompletionItem[] test(final PrintWriter log,
-            final String textToInsert, final boolean unsorted,
+            final String textToInsert, int offsetAfterInsertion, final boolean unsorted,
             final File testSourceFile, final int line, final int col) throws Exception {
-        return test(log, textToInsert, unsorted, testSourceFile, line, col, CompletionProvider.COMPLETION_QUERY_TYPE);
+        return test(log, textToInsert, offsetAfterInsertion, unsorted, testSourceFile, line, col, CompletionProvider.COMPLETION_QUERY_TYPE);
     }
     
-    public CompletionItem[] test(final PrintWriter log,
-            final String textToInsert, final boolean unsorted,
+    private CompletionItem[] test(final PrintWriter log,
+            final String textToInsert, final int offsetAfterInsertion, final boolean unsorted,
             final File testSourceFile, final int line, final int col, final int queryType) throws Exception {
         try {
             final CompletionItem[][] array = new CompletionItem[][] {null};
@@ -190,7 +190,7 @@ public class CompletionTestPerformer {
                 Runnable run = new Runnable() {
                     public void run() {
                         try {
-                            array[0] = testPerform(log, null, doc, unsorted, textToInsert, line, col, queryType);
+                            array[0] = testPerform(log, null, doc, unsorted, textToInsert, offsetAfterInsertion, line, col, queryType);
                         } catch (IOException ex) {
                             ex.printStackTrace(log);
                         } catch (BadLocationException ex) {

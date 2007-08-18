@@ -55,25 +55,29 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
     }
     
     protected void performTest(String source, int lineIndex, int colIndex) throws Exception {
-        performTest(source, lineIndex, colIndex, "", getName()+".ref", null, null);// NOI18N
+        performTest(source, lineIndex, colIndex, "");// NOI18N
     }
     
     protected void performTest(String source, int lineIndex, int colIndex, String textToInsert) throws Exception {
-        performTest(source, lineIndex, colIndex, textToInsert, getName()+".ref", null, null);// NOI18N
+        performTest(source, lineIndex, colIndex, textToInsert, 0);// NOI18N
     }
     
-    protected void performTest(String source, int lineIndex, int colIndex, String textToInsert, String goldenFileName) throws Exception {
-        performTest(source, lineIndex, colIndex, textToInsert, goldenFileName, null, null);
+    protected void performTest(String source, int lineIndex, int colIndex, String textToInsert, int offsetAfterInsertion) throws Exception {
+        performTest(source, lineIndex, colIndex, textToInsert, offsetAfterInsertion, getName()+".ref");// NOI18N
     }
     
-    protected void performTest(String source, int lineIndex, int colIndex, String textToInsert, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
+    protected void performTest(String source, int lineIndex, int colIndex, String textToInsert, int offsetAfterInsertion, String goldenFileName) throws Exception {
+        performTest(source, lineIndex, colIndex, textToInsert, offsetAfterInsertion, goldenFileName, null, null);
+    }
+    
+    protected void performTest(String source, int lineIndex, int colIndex, String textToInsert, int offsetAfterInsertion, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
         File workDir = getWorkDir();
         File testFile = getDataFile(source);
         
         File output = new File(workDir, goldenFileName);
         PrintStream streamOut = new PrintStream(output);
         
-        CompletionItem[] array = new CompletionTestPerformer().test(logWriter, textToInsert, false, testFile, lineIndex, colIndex); // NOI18N        
+        CompletionItem[] array = new CompletionTestPerformer().test(logWriter, textToInsert, offsetAfterInsertion, false, testFile, lineIndex, colIndex); // NOI18N        
 
 	assertNotNull("Result should not be null", array);
         Arrays.sort(array, CompletionItemComparator.BY_PRIORITY);
@@ -84,6 +88,9 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
         streamOut.close();
         
         File goldenDataFile = getGoldenFile(goldenFileName);
+        if (!goldenDataFile.exists()) {
+            fail("No golden file " + goldenDataFile.getAbsolutePath() + "\n to check with output file " + output.getAbsolutePath());
+        }
         if (CndCoreTestUtils.diff(output, goldenDataFile, null)) {
             // copy golden
             File goldenCopyFile = new File(workDir, goldenFileName + ".golden");
