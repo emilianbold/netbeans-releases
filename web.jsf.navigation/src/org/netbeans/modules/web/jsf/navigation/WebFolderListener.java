@@ -43,7 +43,7 @@ public class WebFolderListener extends FileChangeAdapter {
         view = pfc.getView();
         webFolder = pfc.getWebFolder();
     }
-    Collection<? extends PageContentModelProvider> impls = PageFlowController.getPageContentModelProviders();
+    private Collection<? extends PageContentModelProvider> impls = PageFlowController.getPageContentModelProviders();
 
     private boolean isKnownFileEvent(FileObject potentialChild) {
         if (FileUtil.isParentOf(webFolder, potentialChild)) {

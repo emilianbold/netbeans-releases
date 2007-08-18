@@ -629,8 +629,6 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
     private class MyObjectSceneListener implements ObjectSceneListener {
 
-        List<NavigationCaseEdge> directlyRoutedLinks = new ArrayList<NavigationCaseEdge>();
-
         public void objectAdded(ObjectSceneEvent event, Object addedObject) {
             throw uoe;
         }

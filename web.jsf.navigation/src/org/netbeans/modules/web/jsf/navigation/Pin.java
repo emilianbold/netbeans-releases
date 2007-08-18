@@ -205,11 +205,11 @@ public class Pin extends PageFlowSceneElement {
         return pinNode;
     }
 
-    Node pinNode;
+    private Node pinNode;
 
     private class PinNode extends AbstractNode {
-        Page page;
-        Pin pin;
+        private final Page page;
+        private final Pin pin;
 
         public PinNode(Pin pin) {
             super(Children.LEAF);

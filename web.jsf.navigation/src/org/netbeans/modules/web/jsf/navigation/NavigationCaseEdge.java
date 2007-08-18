@@ -160,9 +160,9 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
         return navNode;
     }
     
-    Node navNode;
+    private Node navNode;
     private class NavNode extends AbstractNode{
-        NavigationCaseEdge edge;
+        private final NavigationCaseEdge edge;
         public NavNode(NavigationCaseEdge edge) {
             super(Children.LEAF);
             this.edge = edge;

@@ -26,7 +26,7 @@ import org.openide.util.HelpCtx;
  * @author joelle
  */
 public abstract class PageFlowSceneElement {
-    String name;
+    private String name;
     
     
     public PageFlowSceneElement(){

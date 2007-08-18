@@ -58,6 +58,7 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
+    private static final String LBL_AddPage =  NbBundle.getMessage(AddPageActionProvider.class, "LBL_AddPage");
     private class AddPageAction extends AbstractAction {
         
         private final PageFlowScene scene;
@@ -67,7 +68,7 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
          */
         public AddPageAction(PageFlowScene scene) {
             super();
-            putValue(NAME, getDisplayName());
+            putValue(NAME, LBL_AddPage);
             this.scene = scene;
         }
         
@@ -76,7 +77,7 @@ public class AddPageActionProvider extends AbstractAction implements ContextAwar
          * @return The Display Name of this option.
          */
         protected String getDisplayName() {
-            return NbBundle.getMessage(AddPageActionProvider.class, "LBL_AddPage");
+            return LBL_AddPage;
         }
         
         public void actionPerformed(ActionEvent e) {

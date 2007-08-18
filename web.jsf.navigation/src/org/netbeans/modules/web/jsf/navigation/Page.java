@@ -334,8 +334,8 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
 
     private class PageContentChangeListener implements ChangeListener {
 
-        final PageFlowController pc;
-        final Page pageNode;
+        private final PageFlowController pc;
+        private final Page pageNode;
 
         public PageContentChangeListener(PageFlowController pc, Page pageNode) {
             this.pc = pc;
@@ -387,7 +387,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
 
     public final class NonDataNode extends AbstractNode {
 
-        Page page;
+        private Page page;
 
         public NonDataNode(Page page, String pageName) {
             super(Children.LEAF);

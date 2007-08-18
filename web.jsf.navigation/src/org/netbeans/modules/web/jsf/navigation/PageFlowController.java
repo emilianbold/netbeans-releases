@@ -139,7 +139,7 @@ public class PageFlowController {
     }
     private static final String PROP_SHOW_NO_WEB_FOLDER = "showNoWebFolder"; // NOI18N
 
-    public void setShowNoWebFolderDialog(boolean show) {
+    public final void setShowNoWebFolderDialog(boolean show) {
         getPreferences().putBoolean(PROP_SHOW_NO_WEB_FOLDER, show);
     }
 
@@ -147,7 +147,7 @@ public class PageFlowController {
         return NbPreferences.forModule(PageFlowController.class);
     }
 
-    public boolean isShowNoWebFolderDialog() {
+    public final boolean isShowNoWebFolderDialog() {
         return getPreferences().getBoolean(PROP_SHOW_NO_WEB_FOLDER, true);
     }
     private PropertyChangeListener pcl;
@@ -280,7 +280,7 @@ public class PageFlowController {
         return null;
     }
 
-    private Collection<FileObject> getAllProjectRelevantFilesObjects() {
+    private final Collection<FileObject> getAllProjectRelevantFilesObjects() {
         return getProjectKnownFileOjbects(getWebFolder());
     }
 
@@ -338,7 +338,7 @@ public class PageFlowController {
         view.saveLocations();
         return setupGraphNoSaveData();
     }
-    PropertyChangeListener otherFacesConfigListener = null;
+    private PropertyChangeListener otherFacesConfigListener = null;
 
     private PropertyChangeListener getOtherFacesConfigListener() {
         if (otherFacesConfigListener == null) {

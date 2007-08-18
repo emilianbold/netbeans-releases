@@ -57,7 +57,7 @@ import org.openide.windows.WindowManager;
  */
 public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Serializable {
 
-    static final long serialVersionUID = -3101808890387485990L;
+    private static final long serialVersionUID = -3101808890387485990L;
     //    private static final long serialVersionUID = -6305897237371751567L;
     //        static final long serialVersionUID = -6305897237371751567L;
     private JSFConfigEditorContext context;
@@ -108,7 +108,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         //        private transient JScrollPane panel;
         private transient PageFlowView tc;
         private transient JComponent toolbar;
-        static final long serialVersionUID = 5454879177214643L;
+        private static final long serialVersionUID = 5454879177214643L;
         private JSFConfigEditorContext context;
 
         public PageFlowElement(JSFConfigEditorContext context) {

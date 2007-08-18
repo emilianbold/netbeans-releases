@@ -35,7 +35,7 @@ import org.netbeans.modules.web.jsf.navigation.graph.layout.SceneElementComparat
  */
 public class SceneElementComparator implements Comparator<SceneElement> {
 
-    PageFlowScene scene;
+    private final PageFlowScene scene;
 
     public SceneElementComparator(PageFlowScene scene) {
         this.scene = scene;

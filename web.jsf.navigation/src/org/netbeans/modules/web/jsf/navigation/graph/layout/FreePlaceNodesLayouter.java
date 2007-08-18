@@ -31,7 +31,7 @@ import org.netbeans.modules.web.jsf.navigation.Page;
  */
 // TODO - perfomance - scalability problem
 public final class FreePlaceNodesLayouter {
-    PageFlowScene scene;
+    private final PageFlowScene scene;
     public FreePlaceNodesLayouter(PageFlowScene scene ) {
         this(scene, false);
     }
@@ -91,8 +91,8 @@ public final class FreePlaceNodesLayouter {
         nodesAdded.add(node);
     }
     
-    int SEP_X = 250;
-    int SEP_Y = 150;
+    private int SEP_X = 250;
+    private int SEP_Y = 150;
     private Point getNewComponentLocation(PageFlowScene scene, HashMap positions, Collection<Page> nodes) {
         for (int a = 0; ; a++) {
             for (int b = 0; b <= a; b++) {
@@ -129,9 +129,9 @@ public final class FreePlaceNodesLayouter {
     private static final UnsupportedOperationException uoe = new UnsupportedOperationException("Not supported yet");
     
     
-    Collection<Page> nodesAdded = new HashSet<Page>();
+    private Collection<Page> nodesAdded = new HashSet<Page>();
     private class PageFlowObjectSceneListener implements ObjectSceneListener{
-        PageFlowScene scene;
+        private final PageFlowScene scene;
         public PageFlowObjectSceneListener(PageFlowScene scene) {
             this.scene = scene;
         }
@@ -184,7 +184,7 @@ public final class FreePlaceNodesLayouter {
      * gets called one last time.
      */
     private class PageFlowSceneListener implements SceneListener {
-        PageFlowScene scene;
+        private final PageFlowScene scene;
         public PageFlowSceneListener(PageFlowScene scene) {
             this.scene = scene;
         }

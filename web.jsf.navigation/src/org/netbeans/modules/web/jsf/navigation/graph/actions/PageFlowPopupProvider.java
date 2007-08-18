@@ -51,7 +51,7 @@ import org.netbeans.modules.web.jsf.navigation.Pin;
  */
 public class PageFlowPopupProvider implements PopupMenuProvider {
     
-    PageFlowScene graphScene;
+    private final PageFlowScene graphScene;
     private final TopComponent tc;
     /**
      * Creates a Popup for any right click on Page Flow Editor
