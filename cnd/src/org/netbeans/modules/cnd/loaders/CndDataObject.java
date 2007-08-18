@@ -85,6 +85,7 @@ public abstract class CndDataObject extends MultiDataObject {
     }
 
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return HelpCtx.DEFAULT_HELP;
     }  
@@ -104,7 +105,8 @@ public abstract class CndDataObject extends MultiDataObject {
     public void removeCookie(Cookie nc) {
         getCookieSet().remove(nc);
     }
-    
+
+    @Override
     protected abstract Node createNodeDelegate();
 
     /**
@@ -124,6 +126,7 @@ public abstract class CndDataObject extends MultiDataObject {
      *  @param name New template name
      *  @exception IOException
      */
+    @Override
     protected DataObject handleCreateFromTemplate (DataFolder df, String name)
 	throws IOException {
 
