@@ -37,27 +37,36 @@
             
         <table border="1" cellpadding="5">
             <tr>
-                <td><b>Icon</b></td>
-                <td><b>Description</b></td>
-            </tr>     	
-            <tr>
-                <td><img src="../images/refresh.png" alt="Refresh Status icon"></td>
-                <td><strong>Refresh Status.</strong></td>
+                <th>Icon</th>
+                <th width="100px">Name</th>
+                <th>Function</th>
             </tr>
             <tr>
-                <td><img src="../images/diff.png" alt="Diff All icon"></td>
-                <td><strong>Diff All.</strong></td>
+                <td align="center"><img src="../images/refresh.png" alt="refresh status icon"></td>
+                <td align="center"><strong>Refresh Status</strong></td>
+                <td>Refreshes the status of the selected files and folders. Files displayed 
+                    in the Versioning window can be refreshed to reflect any changes that
+                    may have been made externally.</td>
             </tr>
             <tr>
-                <td><img src="../images/update.png" alt="Update All icon"></td>
-                <td><strong>Update All.</strong></td>
+                <td align="center"><img src="../images/diff.png" alt="diff all icon"></td>
+                <td align="center"><strong>Diff All</strong></td>
+                <td>Opens the Diff Viewer providing you with a side-by-side comparison of 
+                    your local copies and the versions maintained in the repository.</td>
+            </tr>     
+            <tr>
+                <td align="center"><img src="../images/update.png" alt="update all icon"></td>
+                <td align="center"><strong>Update All</strong></td>
+                <td>Updates all selected files from the repository.</td>
             </tr>
             <tr>
-                <td><img src="../images/commit.png" alt="Commit All icon"></td>
-                <td><strong>Commit All.</strong></td>
-            </tr>
+                <td align="center"><img src="../images/commit.png" alt="commit all icon"></td>
+                <td align="center"><strong>Commit All</strong></td>
+                <td>Enables you to commit local changes to the repository.</td>
+            </tr>            
         </table>
         
+        <br>
         <p>You can access other Subversion commands in the Versioning window by selecting a table 
             row that corresponds to a modified file, and choosing a command from the right-click menu.
             You can, for example, perform the following actions on a file:</p>
@@ -83,10 +92,10 @@
         
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="../svn_status.html">Viewing File Status information</a></dd>
+            <dd><a href="../svn_commit.html">Committing Local Changes to a Remote Repository</a></dd>
             <dd><a href="../svn_diff.html">Comparing File Revisions in Subversion</a></dd>
             <dd><a href="../svn_updating.html">Updating Files in a Local Working Directory</a></dd>
-            <dd><a href="../svn_commit.html">Committing Local Changes to a Remote Repository</a></dd>
+            <dd><a href="../svn_using.html">Using Subversion in the IDE</a></dd>            
         </dl>
         <hr>
         <small><a href="../../credits.html">Legal Notices</a></small>

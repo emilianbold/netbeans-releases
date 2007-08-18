@@ -8,10 +8,10 @@
     <head>
         <title>Subversion Tasks: Quick Reference</title>
         <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
-            rel="StyleSheet" type="text/css">
+              rel="StyleSheet" type="text/css">
     </head>
     <body>
-
+        
         <h2>Subversion Tasks: Quick Reference</h2>
         
         <p><small><a href="#seealso">See Also</a></small></p>
@@ -19,98 +19,102 @@
         <p>The following table describes common Subversion tasks.</p>
         
         <table border="1" cellpadding="5">
-            <tbody>
-                <tr valign="top">
-                    <th scope="col" align="left">To perform this task</th>
-                    <th scope="col" align="left">Follow these steps</th>
-                </tr>
-                <tr valign="top">
-                    <td>Check out sources.</td>
-                    <td>
-                        <ol>
-                            <li>Choose Versioning &gt; Subversion &gt; <a href="svn_checkout.html">Checkout</a> 
-                                from the main menu.</li>
-                            <li>In the Subversion Checkout wizard, specify the location of the Subversion repository, 
-                                enter your password and proxy, and click Next.</li>
-                            <li>Specify the folders you want to check out in the Folders to Checkout field.</li>
-                            <li>Specify the local working directory into which you want to check out the selected folders.</li>
-                            <li>Click Finish to check out the files.</li>
-                        </ol>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <td>View versioning information.</td>
-                    <td>
-                        <ul>
-                            <li>Choose Versioning &gt; Subversion &gt; Show Changes from the main menu to 
-                                open the <a href="csh/svn_versioning_window.html">Versioning window</a>.</li>
-                            <li>Right-click any project, directory, or file that is in a Subversion 
-                                working directory and choose Subversion &gt; Show Changes.</li>
-                        </ul>
-                    </td>
-                </tr>                
-                <tr valign="top">
-                    <td>Update local file versions.</td>
-                    <td>
-                        <ol>
-                            <li>Right-click the file that you want to update.</li>
-                            <li>Choose Subversion &gt; <a href="svn_updating.html">Update</a> from the menu.</li>
-                        </ol>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <td>Diff files.</td>
-                    <td>
-                        <ol>
-                            <li>Right-click the file that you want to perform a diff on.</li>
-                            <li>Choose <a href="svn_diff.html">Diff</a> from the menu.</li>
-                        </ol>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <td>Commit local changes.</td>
-                    <td>
-                        <ol>
-                            <li>Right-click the file or directory you want to commit.</li>
-                            <li>Choose Subversion &gt; <a href="svn_commit.html">Commit</a> from the menu.</li>
-                        </ol>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <td>Merge revisions.</td>
-                    <td>
-                        <ol>
-                            <li>Right-click the files or folders that you want to merge into your local working 
-                                copy and choose Subversion &gt; <a href="svn_merge.html">Merge Changes</a>.</li>
-                            <li>Select the branch you want to merge the changes to.</li>
-                            <li>Click Merge.</li>
-                        </ol>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <td>Create a patch.</td>
-                    <td>
-                        <ol>
-                            <li>Select the locally modified file or folder and choose Subversion &gt;
-                                <a href="svn_patch.html">Export Diff Patch</a> from the main menu.</li>
-                            <li>Enter a name for the patch file and specify the location where you want to 
-                                save the patch.</li>
-                            <li>Click Export.</li>
-                        </ol>
-                    </td>
-                </tr>
-                <tr valign="top">
-                    <td>Apply a patch.</td>
-                    <td>
-                        <ol>
-                            <li>Select the locally modified file or folder and choose Subversion &gt;
-                                <a href="svn_patch.html">Apply Diff Patch</a> from the main menu.</li>
-                            <li>Type the path or navigate to the patch file you want to apply.</li>
-                            <li>Click Patch.</li>
-                        </ol>
-                    </td>
-                </tr>
-            </tbody>
+            <tr>
+                <th>To perform this task:</th>
+                <th>Follow these steps:</th>
+            </tr>
+            <tr>
+                <td><strong>Checkout sources</strong></td>
+                <td>
+                    <ol>
+                        <li>Choose Versioning &gt; Subversion &gt; <a href="svn_checkout.html">Checkout</a> 
+                            from the main menu.</li>
+                        <li>In the Subversion Checkout wizard, specify the location of the Subversion repository, 
+                            enter your username, password, and proxy (if required), and click Next.</li>
+                        <li>Specify the folders you want to check out in the Repository Folder(s) field.</li>
+                        <li>In the Local Folder field, specify the location on your computer where you want the 
+                            checked out sources to reside.</li>
+                        <li>Click Finish to checkout the files.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>View versioning information</strong></td>
+                <td>
+                    <ol>
+                        <li>Select a project, directory, or file that is in a Subversion working 
+                            directory</li>
+                        <li>Choose Subversion &gt; Show Changes from the right-click menu. The
+                            <a href="csh/svn_versioning_window.html">Versioning window</a> opens 
+                            to display versioning information on the selected item(s).</li>
+                    </ol>
+                </td>
+            </tr>                
+            <tr>
+                <td><strong>Update local file versions</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the project, file, or folder that you want to update</li>
+                        <li>Choose Subversion &gt; <a href="svn_updating.html">Update</a> from 
+                            the right-click menu.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Diff files</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the file that you want to perform a diff on.</li>
+                        <li>Choose Subversion &gt; <a href="svn_diff.html">Diff</a> 
+                            from the right-click menu.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Commit local changes</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the file or directory that you want to commit.</li>
+                        <li>Choose Subversion &gt; <a href="svn_commit.html">Commit</a> from 
+                            right-click menu.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Merge revisions</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the files or folders that you want to merge into your local 
+                            working copy and choose Subversion &gt; <a href="svn_merge.html">Merge 
+                            Changes</a> from the right-click menu.</li>
+                        <li>Select the branch you want to merge the changes from.</li>
+                        <li>Click Merge.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Create a patch</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the locally modified file or folder and choose Versioning &gt;
+                            <a href="svn_patch.html">Export Diff Patch</a> from the main menu.</li>
+                        <li>Enter a name for the patch file and specify the location where you want 
+                            to save the patch.</li>
+                        <li>Click Export.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Apply a patch</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the locally modified file or folder and choose Versioning &gt;
+                            <a href="svn_patch.html">Apply Diff Patch</a> from the main menu.</li>
+                        <li>Type the path or navigate to the patch file you want to apply.</li>
+                        <li>Click Patch.</li>
+                    </ol>
+                </td>
+            </tr>
         </table>
         
         <dl>
