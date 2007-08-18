@@ -62,7 +62,7 @@ public class PageFlowDeleteAction extends AbstractAction{
     public boolean isEnabled() {
         //Workaround: Temporarily Wrapping Collection because of Issue: 100127
         Set<? extends Object> selectedObjs = scene.getSelectedObjects();
-        if (selectedObjs.size() == 0 ){
+        if (selectedObjs.isEmpty() ){
             return false;
         }
         
@@ -95,7 +95,7 @@ public class PageFlowDeleteAction extends AbstractAction{
                         thoseEdges.add(edge);
                     }
                 }
-                if( theseEdges.size() == 0 ){
+                if( theseEdges.isEmpty() ){
                     return false;
                 }
             }
@@ -168,7 +168,7 @@ public class PageFlowDeleteAction extends AbstractAction{
                             }
                             
                             if( scene.getPageFlowView().getPageFlowController().isCurrentScope(PageFlowToolbarUtilities.Scope.SCOPE_ALL_FACESCONFIG)){
-                                if( thoseEdges.size() == 0 ) {
+                                if( thoseEdges.isEmpty() ) {
                                     deleteNode.destroy();
                                 } else {
                                     for( NavigationCaseEdge edge : theseEdges ){

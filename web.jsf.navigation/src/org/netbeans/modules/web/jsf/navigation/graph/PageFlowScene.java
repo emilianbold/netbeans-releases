@@ -125,7 +125,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     private final WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     private final WidgetAction doubleClickAction = ActionFactory.createEditAction(new PageNodeEditAction());
 
-    private PageFlowView tc;
+    private final PageFlowView tc;
     private final PopupMenuProvider popupProvider; //Please see POPUP_HACK below.
     private static Paint PAINT_BACKGROUND;
     static {
@@ -637,11 +637,11 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
             throw uoe;
         }
 
-        public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState previousState, ObjectState newState) {
+        public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState prevState, ObjectState newState) {
             throw uoe;
         }
 
-        public void selectionChanged(ObjectSceneEvent event, Set<Object> previousSelection, Set<Object> newSelection) {
+        public void selectionChanged(ObjectSceneEvent event, Set<Object> prevSelection, Set<Object> newSelection) {
 
             Set<Node> selected = new HashSet<Node>();
             for (Object obj : newSelection) {
@@ -652,22 +652,22 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
                 }
             }
 
-            if (selected.size() == 0) {
+            if (selected.isEmpty()) {
                 tc.setDefaultActivatedNode();
             } else {
                 tc.setActivatedNodes(selected.toArray(new Node[selected.size()]));
             }
         }
 
-        public void highlightingChanged(ObjectSceneEvent event, Set<Object> previousHighlighting, Set<Object> newHighlighting) {
+        public void highlightingChanged(ObjectSceneEvent event, Set<Object> prevHighlighting, Set<Object> newHighlighting) {
             throw uoe;
         }
 
-        public void hoverChanged(ObjectSceneEvent event, Object previousHoveredObject, Object newHoveredObject) {
+        public void hoverChanged(ObjectSceneEvent event, Object prevHoveredObject, Object newHoveredObject) {
             throw uoe;
         }
 
-        public void focusChanged(ObjectSceneEvent event, Object previousFocusedObject, Object newFocusedObject) {
+        public void focusChanged(ObjectSceneEvent event, Object prevFocusedObject, Object newFocusedObject) {
             throw uoe;
         }
     }

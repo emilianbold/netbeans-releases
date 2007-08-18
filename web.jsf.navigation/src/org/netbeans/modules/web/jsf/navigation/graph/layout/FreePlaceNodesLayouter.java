@@ -17,6 +17,7 @@ import java.awt.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
@@ -61,7 +62,7 @@ public final class FreePlaceNodesLayouter {
     }
     
     
-    private final HashMap<String,Point> positions = new HashMap<String,Point> ();
+    private final Map<String,Point> positions = new HashMap<String,Point> ();
     public void layoutNodesLocations( PageFlowScene scene, Collection<Page> nodes) {
         final Collection<Page> allNodes = scene.getNodes();
         for( Page node : nodes ) {
@@ -91,9 +92,9 @@ public final class FreePlaceNodesLayouter {
         nodesAdded.add(node);
     }
     
-    private int SEP_X = 250;
-    private int SEP_Y = 150;
-    private Point getNewComponentLocation(PageFlowScene scene, HashMap positions, Collection<Page> nodes) {
+    private final int SEP_X = 250;
+    private final int SEP_Y = 150;
+    private Point getNewComponentLocation(PageFlowScene scene, Map positions, Collection<Page> nodes) {
         for (int a = 0; ; a++) {
             for (int b = 0; b <= a; b++) {
                 final int x =  SEP_Y + SEP_X * (a - b);
@@ -105,7 +106,7 @@ public final class FreePlaceNodesLayouter {
         }
     }
     
-    private boolean isThereEmptyPlace(PageFlowScene scene, HashMap positions, Collection<Page> nodes, int x, int y) {
+    private boolean isThereEmptyPlace(PageFlowScene scene, Map positions, Collection<Page> nodes, int x, int y) {
         final Rectangle rectangle = new Rectangle(x, y, 100, 150);
         if (nodes != null) {
             for( Page node : nodes) {
@@ -129,7 +130,7 @@ public final class FreePlaceNodesLayouter {
     private static final UnsupportedOperationException uoe = new UnsupportedOperationException("Not supported yet");
     
     
-    private Collection<Page> nodesAdded = new HashSet<Page>();
+    private final Collection<Page> nodesAdded = new HashSet<Page>();
     private class PageFlowObjectSceneListener implements ObjectSceneListener{
         private final PageFlowScene scene;
         public PageFlowObjectSceneListener(PageFlowScene scene) {
@@ -196,7 +197,7 @@ public final class FreePlaceNodesLayouter {
         }
         
         public void sceneValidated() {
-            if( nodesAdded.size() > 0 ) {
+            if( !nodesAdded.isEmpty() ) {
                 layoutNodesLocations(scene, nodesAdded);
                 nodesAdded.clear();
             }

@@ -387,7 +387,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
 
     public final class NonDataNode extends AbstractNode {
 
-        private Page page;
+        private final Page page;
 
         public NonDataNode(Page page, String pageName) {
             super(Children.LEAF);

@@ -50,7 +50,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileObject;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -82,9 +81,9 @@ public class PageFlowController {
     private final JSFConfigModel configModel;
     private final Collection<FileObject> webFiles;
     private DataObject configDataObj;
-    private final HashMap<NavigationCase, NavigationCaseEdge> navCase2NavCaseEdge = new HashMap<NavigationCase, NavigationCaseEdge>();
-    private final HashMap<NavigationRule, String> navRule2String = new HashMap<NavigationRule, String>();
-    private final HashMap<String, Page> pageName2Page = new HashMap<String, Page>(); //Should this be synchronized.
+    private final Map<NavigationCase, NavigationCaseEdge> navCase2NavCaseEdge = new HashMap<NavigationCase, NavigationCaseEdge>();
+    private final Map<NavigationRule, String> navRule2String = new HashMap<NavigationRule, String>();
+    private final Map<String, Page> pageName2Page = new HashMap<String, Page>(); //Should this be synchronized.
     //    public static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
     private static final String NO_WEB_FOLDER_WARNING = NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder");
     private static final String NO_WEB_FOLDER_TITLE = NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder");
@@ -354,6 +353,7 @@ public class PageFlowController {
             JSFConfigModel aConfigModel = ConfigurationUtils.getConfigModel(aConfigFile, true);
             aConfigModel.removePropertyChangeListener(otherFacesConfigListener);
         }
+        otherFacesConfigListener = null;
     }
 
     public int getPageCount() {

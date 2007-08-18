@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -152,16 +154,16 @@ public class TreeGraphLayoutUtility <N,E,P> {
     
     private class Node {
         
-        private final N node;
-        private final ArrayList<Node> children;
+        private final N myNode;
+        private final List<Node> children;
         
         private Rectangle relativeBounds;
         private int space;
         private int totalSpace;
         private Point point;
         
-        private Node(N node, HashSet<N> loadedSet) {
-            this.node = node;
+        private Node(N node, Set<N> loadedSet) {
+            this.myNode = node;
             loadedSet.add(node);
             
             Collection<N> list = resolveChildren(node);
@@ -174,7 +176,7 @@ public class TreeGraphLayoutUtility <N,E,P> {
         }
         
         private int allocateHorizontally() {
-            Widget widget = scene.findWidget(node);
+            Widget widget = scene.findWidget(myNode);
             widget.getLayout().layout(widget);
             relativeBounds = widget.getPreferredBounds();
             space = 0;
@@ -201,7 +203,7 @@ public class TreeGraphLayoutUtility <N,E,P> {
         }
         
         private int allocateVertically() {
-            Widget widget = scene.findWidget(node);
+            Widget widget = scene.findWidget(myNode);
             widget.getLayout().layout(widget);
             relativeBounds = widget.getPreferredBounds();
             space = 0;
@@ -227,15 +229,15 @@ public class TreeGraphLayoutUtility <N,E,P> {
             }
         }
         
-        private void upload(HashMap<N, Point> result) {
-            result.put(node, point);
+        private void upload(Map<N, Point> result) {
+            result.put(myNode, point);
             for (Node child : children) {
                 child.upload(result);
             }
         }
     }
     
-    private static <N> N findNodeWithMaxEdges(HashSet<N> unresolvedNodes, HashMap<N, Collection<N>> node2connected) {
+    private static <N> N findNodeWithMaxEdges(Set<N> unresolvedNodes, Map<N, Collection<N>> node2connected) {
         N bestNode = null;
         int bestCount = Integer.MIN_VALUE;
         for (N node : unresolvedNodes) {

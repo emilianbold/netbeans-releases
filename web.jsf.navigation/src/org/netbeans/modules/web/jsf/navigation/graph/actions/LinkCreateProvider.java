@@ -44,7 +44,7 @@ import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
  */
 public class LinkCreateProvider implements ConnectProvider {
     
-    private PageFlowScene graphScene;
+    private final PageFlowScene graphScene;
     Page source = null;
     Page target = null;
     Pin pinNode = null;
@@ -78,8 +78,9 @@ public class LinkCreateProvider implements ConnectProvider {
         target = null;
         Object object = graphScene.findObject(targetWidget);
         target = graphScene.isNode(object) ? (Page) object : null;
-        if (target != null)
+        if (target != null) {
             return ConnectorState.ACCEPT;
+        }
         return object != null ? ConnectorState.REJECT_AND_STOP : ConnectorState.REJECT;
         //
         //        if (targetWidget instanceof VMDNodeWidget ) {

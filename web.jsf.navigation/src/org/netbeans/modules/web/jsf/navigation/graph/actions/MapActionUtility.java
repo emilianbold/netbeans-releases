@@ -69,9 +69,8 @@ import org.openide.cookies.OpenCookie;
 public class MapActionUtility {
 
     /** Creates a new instance of MapActionUtility */
-    public MapActionUtility() {
+    private MapActionUtility() {
     }
-
 
     public static ActionMap initActionMap() {
         ActionMap actionMap = new ActionMap();
@@ -165,7 +164,6 @@ public class MapActionUtility {
         //        inputMap.put(KeyStroke.getKeyStroke( KeyEvent.VK_DELETE , 0), "handleDeleteKey");
         return inputMap;
     }
-
     // Handle Escape - cancels the link action
     public static Action handleEscape = new AbstractAction() {
 
@@ -182,7 +180,6 @@ public class MapActionUtility {
             }
         }
     };
-
     // Handle Rename
     public static Action handleRename = new AbstractAction() {
 
@@ -194,7 +191,7 @@ public class MapActionUtility {
                 PageFlowSceneElement selElement = getSelectedPageFlowSceneElement(scene);
                 Widget widget = scene.findWidget(selElement);
                 assert widget != null;
-                EditorController controller = null;
+                EditorController controller;
                 if (widget instanceof VMDNodeWidget) {
                     LabelWidget labelWidget = ((VMDNodeWidget) widget).getNodeNameWidget();
                     controller = findEditorController(labelWidget.getActions().getActions());
@@ -225,7 +222,6 @@ public class MapActionUtility {
             return null;
         }
     };
-
     public static final Action handleTabAction = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
@@ -256,15 +252,15 @@ public class MapActionUtility {
         PageFlowSceneElement nextElement = SceneElementComparator.getNextSelectableElement(scene, reverse, true, true, false);
         if (nextElement != null) {
             if (CONNECT_WIDGET != null && scene.getConnectionLayer().getChildren().contains(CONNECT_WIDGET)) {
-                Anchor targetAnchor = null;
+                Anchor targetAnchor;
                 if (nextElement instanceof Page) {
                     assert CONNECT_DECORATOR_DEFAULT != null;
                     targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(scene.findWidget(nextElement));
+                    CONNECT_WIDGET.setTargetAnchor(targetAnchor);
+                    scene.validate();
                 } else if (nextElement instanceof Pin) {
                     Widget pageWidget = scene.findWidget(((Pin) nextElement).getPage());
                     targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(pageWidget);
-                }
-                if (targetAnchor != null) {
                     CONNECT_WIDGET.setTargetAnchor(targetAnchor);
                     scene.validate();
                 }
@@ -279,7 +275,6 @@ public class MapActionUtility {
             scene.setHoveredObject(null); //Not sure if I can do this yet.
         }
     }
-
     public static final Action handleDownArrow = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
@@ -292,7 +287,6 @@ public class MapActionUtility {
             handleArrow(scene, reverse);
         }
     };
-
 
     private static final void handleArrow(PageFlowScene scene, boolean reverse) {
         PageFlowSceneElement nextElement = SceneElementComparator.getNextSelectableElement(scene, reverse, false, false, true);
@@ -316,7 +310,6 @@ public class MapActionUtility {
             scene.setSelectedObjects(set);
         }
     }
-
     public static final Action handleUpArrow = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
@@ -329,7 +322,6 @@ public class MapActionUtility {
             handleArrow(scene, reverse);
         }
     };
-
     private static ConnectDecorator CONNECT_DECORATOR_DEFAULT = null;
     private static ConnectionWidget CONNECT_WIDGET = null;
 // Handle Link Start Key Stroke
@@ -363,55 +355,52 @@ public class MapActionUtility {
             }
         }
     };
-
 // Handle Escape - cancels the link action
     public static Action handleLinkEnd = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
             /* Cancel A11y Linking */
             Object sourceObj = e.getSource();
-            if (!(sourceObj instanceof PageFlowScene)) {
-                return;
-            }
-            PageFlowScene scene = (PageFlowScene) sourceObj;
-            if (CONNECT_WIDGET != null) {
+            if (sourceObj instanceof PageFlowScene) {
+                PageFlowScene scene = (PageFlowScene) sourceObj;
+                if (CONNECT_WIDGET != null) {
 
-                Anchor sourceAnchor = CONNECT_WIDGET.getSourceAnchor();
-                Anchor targetAnchor = CONNECT_WIDGET.getTargetAnchor();
-                if (sourceAnchor != null && targetAnchor != null) {
-                    /* Figure out source */
-                    Object sourceObject = scene.findObject(CONNECT_WIDGET.getSourceAnchor().getRelatedWidget());
-                    Page sourcePage = null;
-                    Pin sourcePin = null;
-                    if (scene.isPin(sourceObject)) {
-                        sourcePin = (Pin) sourceObject;
-                        sourcePage = (sourcePin).getPage();
-                    }
-                    if (scene.isNode(sourceObject)) {
-                        sourcePage = (Page) sourceObject;
-                    }
+                    Anchor sourceAnchor = CONNECT_WIDGET.getSourceAnchor();
+                    Anchor targetAnchor = CONNECT_WIDGET.getTargetAnchor();
+                    if (sourceAnchor != null && targetAnchor != null) {
+                        /* Figure out source */
+                        Object sourceObject = scene.findObject(CONNECT_WIDGET.getSourceAnchor().getRelatedWidget());
+                        Page sourcePage = null;
+                        Pin sourcePin = null;
+                        if (scene.isPin(sourceObject)) {
+                            sourcePin = (Pin) sourceObject;
+                            sourcePage = (sourcePin).getPage();
+                        }
+                        if (scene.isNode(sourceObject)) {
+                            sourcePage = (Page) sourceObject;
+                        }
 
-                    /* Figure out target */
-                    Object targetObject = scene.findObject(CONNECT_WIDGET.getTargetAnchor().getRelatedWidget());
-                    Page targetPage = null;
-                    if (scene.isPin(targetObject)) {
-                        targetPage = ((Pin) targetObject).getPage();
-                    }
-                    if (scene.isNode(targetObject)) {
-                        targetPage = (Page) targetObject;
-                    }
+                        /* Figure out target */
+                        Object targetObject = scene.findObject(CONNECT_WIDGET.getTargetAnchor().getRelatedWidget());
+                        Page targetPage = null;
+                        if (scene.isPin(targetObject)) {
+                            targetPage = ((Pin) targetObject).getPage();
+                        }
+                        if (scene.isNode(targetObject)) {
+                            targetPage = (Page) targetObject;
+                        }
 
-                    if (sourcePage != null && targetPage != null) {
-                        scene.getPageFlowView().getPageFlowController().createLink(sourcePage, targetPage, sourcePin);
+                        if (sourcePage != null && targetPage != null) {
+                            scene.getPageFlowView().getPageFlowController().createLink(sourcePage, targetPage, sourcePin);
+                        }
+                        CONNECT_WIDGET.removeFromParent();
+                        CONNECT_WIDGET = null;
+                        scene.validate();
                     }
-                    CONNECT_WIDGET.removeFromParent();
-                    CONNECT_WIDGET = null;
-                    scene.validate();
                 }
             }
         }
     };
-
     public static final Action handleOpenPage = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
@@ -435,9 +424,8 @@ public class MapActionUtility {
             openCookie.open();
         }
     }
-
-
     public static Action handleNewWebForm = new AbstractAction() {
+
         PageFlowScene scene;
 
         public void actionPerformed(ActionEvent e) {
@@ -481,11 +469,8 @@ public class MapActionUtility {
             DataFolder webDf = DataFolder.findFolder(targetFolder);
             mt.createFromTemplate(webDf, name); // NOI18N
         }
-
-
         private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18N
     };
-
 // Handle Zoom Key Stroke
     public static final Action handleZoomPage = new AbstractAction() {
 
@@ -505,7 +490,6 @@ public class MapActionUtility {
             }
         }
     };
-
 // Handle UnZoom Key Stroke
     public static final Action handleUnZoomPage = new AbstractAction() {
 
@@ -519,7 +503,6 @@ public class MapActionUtility {
             //            }
         }
     };
-
     public static Action handlePopup = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
@@ -557,8 +540,6 @@ public class MapActionUtility {
             }
         }
     };
-
-
     public static Action handleRightCtrlArrowKey = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
@@ -601,7 +582,6 @@ public class MapActionUtility {
             }
         }
     };
-
     public static Action handleDownCtrlArrowKey = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
@@ -625,10 +605,8 @@ public class MapActionUtility {
         assert scene != null;
 
         PageFlowSceneElement element = getSelectedPageFlowSceneElement(scene);
-        if (element != null) {
-            if (element instanceof Page) {
-                return (Page) element;
-            }
+        if (element != null && element instanceof Page) {
+            return (Page) element;
         }
         return null;
     }

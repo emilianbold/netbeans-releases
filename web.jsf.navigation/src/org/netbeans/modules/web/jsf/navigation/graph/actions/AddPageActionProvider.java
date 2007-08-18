@@ -33,16 +33,20 @@ import org.openide.util.NbBundle;
  * @author joelle
  */
 public class AddPageActionProvider extends AbstractAction implements ContextAwareAction {
-    
+
+    public AddPageActionProvider() {
+        super();
+    }
     
     public Action createContextAwareInstance(Lookup lookup) {
-        Action addPageAction = null;
+        Action addPageAction;
         final PageFlowScene scene = lookup.lookup(PageFlowScene.class);
         if( scene != null) {
             setEnabled(true);
             addPageAction = new AddPageAction(scene);
         } else {
             setEnabled(false);
+            addPageAction = null;
         }
         return addPageAction;
     }

@@ -53,26 +53,29 @@ public class ConnectionWrapperLayout implements Layout {
         connectionWidgetLayout.justify(widget);
     }
 
-
-    private final static void resetLabelConstraint(ConnectionWidget connectionWidget, LabelWidget label) {
-        if (label == null)
-            return;
+    private static final void resetLabelConstraint(ConnectionWidget connectionWidget, LabelWidget label) {
+        assert connectionWidget != null;
         
-        connectionWidget.removeConstraint(label);
-        connectionWidget.removeChild(label);
+        if (label != null) {
 
-        EnumSet<Anchor.Direction> directions = connectionWidget.getSourceAnchor().compute(connectionWidget.getSourceAnchorEntry()).getDirections();
-        if (directions.contains(Anchor.Direction.TOP)) {
-            label.setOrientation(LabelWidget.Orientation.ROTATE_90);
-            connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
-        } else if (directions.contains(Anchor.Direction.BOTTOM)) {
-            label.setOrientation(LabelWidget.Orientation.ROTATE_90);
-            connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_RIGHT, 10);
-        } else if (directions.contains(Anchor.Direction.RIGHT)) {
-            connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
-        } else {
-            connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_LEFT, 10);
+            connectionWidget.removeConstraint(label);
+            connectionWidget.removeChild(label);
+
+            EnumSet<Anchor.Direction> directions = connectionWidget.getSourceAnchor().compute(connectionWidget.getSourceAnchorEntry()).getDirections();
+            if (directions.contains(Anchor.Direction.TOP)) {
+                label.setOrientation(LabelWidget.Orientation.ROTATE_90);
+                connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
+            } else if (directions.contains(Anchor.Direction.BOTTOM)) {
+                label.setOrientation(LabelWidget.Orientation.ROTATE_90);
+                connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.BOTTOM_RIGHT, 10);
+            } else if (directions.contains(Anchor.Direction.RIGHT)) {
+                connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
+                label.setOrientation(LabelWidget.Orientation.NORMAL);
+            } else {
+                connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_LEFT, 10);
+                label.setOrientation(LabelWidget.Orientation.NORMAL);
+            }
+            connectionWidget.addChild(label);
         }
-        connectionWidget.addChild(label);
     }
 }

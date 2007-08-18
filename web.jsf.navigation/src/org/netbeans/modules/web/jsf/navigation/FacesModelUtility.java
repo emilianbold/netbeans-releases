@@ -32,7 +32,8 @@ import org.openide.util.Exceptions;
  */
 public class FacesModelUtility {
     
-    public FacesModelUtility() {
+    private FacesModelUtility() {
+        
     }
     public static String getToViewIdFiltered( NavigationCase navCase ) {
         final String viewId = navCase.getToViewId();

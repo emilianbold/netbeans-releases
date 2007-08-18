@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -36,7 +37,7 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public class GridGraphLayoutUtility {
 
-    public GridGraphLayoutUtility() {
+    private GridGraphLayoutUtility() {
     }
 
     public static <N,E,P> void performLayout( GraphPinScene<N, E, P> graph, boolean checker, int horizontalGap, int verticalGap ){
@@ -155,7 +156,7 @@ public class GridGraphLayoutUtility {
         performLayout(scene, checker, 64, 64);
     }
     
-    private static <N> N findNodeWithMaxEdges(HashSet<N> unresolvedNodes, HashMap<N, Collection<N>> node2connected) {
+    private static <N> N findNodeWithMaxEdges(HashSet<N> unresolvedNodes, Map<N, Collection<N>> node2connected) {
         N bestNode = null;
         int bestCount = Integer.MIN_VALUE;
         for (N node : unresolvedNodes) {
@@ -168,7 +169,7 @@ public class GridGraphLayoutUtility {
         return bestNode;
     }
     
-    private static <N> Point  findCenter(HashMap<N, Point> node2grid, boolean checker) {
+    private static <N> Point  findCenter(Map<N, Point> node2grid, boolean checker) {
         int add = checker ? 2 : 1;
         for (int x = 0; ; x += add) {
             Point point = new Point(x, 0);
@@ -178,7 +179,7 @@ public class GridGraphLayoutUtility {
         }
     }
     
-    private static <N> boolean isOccupied(HashMap<N, Point> node2grid, Point point) {
+    private static <N> boolean isOccupied(Map<N, Point> node2grid, Point point) {
         boolean occupied = false;
         for (Point p : node2grid.values()) {
             if (point.x == p.x  &&  point.y == p.y) {
@@ -190,7 +191,7 @@ public class GridGraphLayoutUtility {
     }
     
     
-    private static <N> Point resolvePoint(HashMap<N, Point> node2grid, Point center, Point index, boolean checker) {
+    private static <N> Point resolvePoint(Map<N, Point> node2grid, Point center, Point index, boolean checker) {
         for (;;) {
             int max = 8 * index.y;
             index.x ++;

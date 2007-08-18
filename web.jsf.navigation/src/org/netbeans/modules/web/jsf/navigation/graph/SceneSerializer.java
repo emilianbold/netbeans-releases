@@ -45,6 +45,9 @@ public class SceneSerializer {
     
     private static final String VERSION_VALUE_1 = "1"; // NOI18N
     private static final String VERSION_VALUE_2 = "2"; // NOI18N
+
+    private SceneSerializer() {
+    }
     
     // call in AWT to serialize scene
     //    public static void serialize(PageFlowScene scene, File file) {
@@ -99,6 +102,7 @@ public class SceneSerializer {
     //        }
     //    }
     //
+    
     
     public static void serialize(PageFlowSceneData sceneData, FileObject file) {
         if( file == null || !file.isValid()){

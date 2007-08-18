@@ -43,7 +43,7 @@ public class WebFolderListener extends FileChangeAdapter {
         view = pfc.getView();
         webFolder = pfc.getWebFolder();
     }
-    private Collection<? extends PageContentModelProvider> impls = PageFlowController.getPageContentModelProviders();
+    private final Collection<? extends PageContentModelProvider> impls = PageFlowController.getPageContentModelProviders();
 
     private boolean isKnownFileEvent(FileObject potentialChild) {
         if (FileUtil.isParentOf(webFolder, potentialChild)) {
@@ -83,6 +83,7 @@ public class WebFolderListener extends FileChangeAdapter {
         });
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
         /* fileRenamed should not modify the faces-config because it should
          * be up to refactoring to do this. If that is the case, FacesModelPropertyChangeListener
