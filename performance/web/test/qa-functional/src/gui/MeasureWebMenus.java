@@ -71,13 +71,13 @@ public class MeasureWebMenus extends NbTestCase {
                 "TLD node popup in Projects View"));
         suite.addTest(new WebRuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime",
                 "Servers node popup in Runtime View"));
-        suite.addTest(new WebRuntimeViewPopupMenu("testTomcatPopupMenuRuntime",
+/*        suite.addTest(new WebRuntimeViewPopupMenu("testTomcatPopupMenuRuntime",
                 "Tomcat node popup in Runtime View"));
         suite.addTest(new WebRuntimeViewPopupMenu("testWebModulesPopupMenuRuntime",
                 "Tomcat's Web Modules node popup in Runtime View"));
         suite.addTest(new WebRuntimeViewPopupMenu("testWebModulePopupMenuRuntime",
                 "Tomcat's one Web Module node popup in Runtime View"));
-        
+*/        
         return suite;
     }
     
