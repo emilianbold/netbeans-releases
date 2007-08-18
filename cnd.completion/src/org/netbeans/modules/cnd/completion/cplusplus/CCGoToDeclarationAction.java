@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.completion.cplusplus;
 
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
-import java.awt.event.ActionEvent;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
@@ -39,18 +38,19 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  * @version 1.0
  */
-
 public class CCGoToDeclarationAction extends GotoDeclarationAction {
+
+    static final long serialVersionUID = 1L;
     
     private static CCGoToDeclarationAction instance;
-    
+
     public CCGoToDeclarationAction() {
         super();
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
-    
-    public static synchronized CCGoToDeclarationAction getInstance(){
-        if (instance == null){
+
+    public static synchronized CCGoToDeclarationAction getInstance() {
+        if (instance == null) {
             instance = new CCGoToDeclarationAction();
             String trimmedName = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-definition-declaration"); //NOI18N
             instance.putValue(org.netbeans.editor.ext.ExtKit.TRIMMED_TEXT, trimmedName);
@@ -58,11 +58,12 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
         }
         return instance;
     }
-    
+
     public String getName() {
         return NbBundle.getBundle(CCGoToDeclarationAction.class).getString("NAME_GoToDeclarationAction"); // NOI18N
     }
-    
+
+    @Override
     public boolean isEnabled() {
         /* If there are no paths in registry, the action shoud be disabled (#46632)*/
         //        Set sources = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
@@ -71,8 +72,8 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
         //        return !(sources.isEmpty() && compile.isEmpty() && boot.isEmpty());
         final JTextComponent target = getFocusedComponent();
         if (target != null && (target.getDocument() instanceof BaseDocument)) {
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            int offset = target.getCaret().getDot();  
+            BaseDocument doc = (BaseDocument) target.getDocument();
+            int offset = target.getCaret().getDot();
             offset = TokenUtilities.correctOffsetToID(doc, offset);
             // first try include provider
             if (new CsmIncludeHyperlinkProvider().isHyperlinkPoint(doc, offset)) {
@@ -80,17 +81,20 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
             } else if (new CsmHyperlinkProvider().isHyperlinkPoint(doc, offset)) {
                 return true;
             }
-        }        
+        }
         return false;
     }
-    
+
+    @Override
     protected boolean asynchonous() {
         return false;
     }
-    
+
+    @Override
     public boolean gotoDeclaration(final JTextComponent target) {
-        final String taskName = "Go to declaration";  //NOI18N
+        final String taskName = "Go to declaration"; //NOI18N
         Runnable run = new Runnable() {
+
             public void run() {
                 if (SwingUtilities.isEventDispatchThread()) {
                     //RequestProcessor.getDefault().post(this);
@@ -98,8 +102,8 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
                     return;
                 }
                 if (target != null) {
-                    BaseDocument doc = (BaseDocument)target.getDocument();
-                    int offset = target.getCaret().getDot();  
+                    BaseDocument doc = (BaseDocument) target.getDocument();
+                    int offset = target.getCaret().getDot();
                     offset = TokenUtilities.correctOffsetToID(doc, offset);
                     // first try include provider
                     if (!new CsmIncludeHyperlinkProvider().goToInclude(doc, target, offset)) {
@@ -114,24 +118,24 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
         return false;
     }
 
+    @Override
     public String getPopupMenuText(JTextComponent target) {
         String retValue;
-        
+
         retValue = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-identifier-declaration");
         if (target != null) {
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            int offset = target.getCaret().getDot();  
+            BaseDocument doc = (BaseDocument) target.getDocument();
+            int offset = target.getCaret().getDot();
             offset = TokenUtilities.correctOffsetToID(doc, offset);
             Token token = TokenUtilities.getToken(doc, offset);
             if (token != null) {
-                if (token.getTokenID() == CCTokenContext.SYS_INCLUDE ||
-                        token.getTokenID() == CCTokenContext.USR_INCLUDE) {
+                if (CsmIncludeHyperlinkProvider.isSupportedToken(token)) {
                     retValue = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-included-file");
-                } else if (token.getTokenID() == CCTokenContext.IDENTIFIER) {
+                } else if (CsmHyperlinkProvider.isSupportedToken(token)) {
                     // check if next token is '(' => it's possible to be functon
                     Token next = TokenUtilities.getToken(doc, token.getEndOffset());
                     if (next != null && next.getTokenID() == CCTokenContext.WHITESPACE) {
-                        // try next one 
+                        // try next one
                         next = TokenUtilities.getToken(doc, next.getEndOffset());
                     }
                     if (next != null && next.getTokenID() == CCTokenContext.LPAREN) {
