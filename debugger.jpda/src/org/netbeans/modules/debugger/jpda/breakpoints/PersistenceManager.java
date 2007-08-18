@@ -84,6 +84,18 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         return breakpoints;
     }
     
+    public synchronized Breakpoint[] unloadBreakpoints() {
+        Breakpoint[] bpts = DebuggerManager.getDebuggerManager().getBreakpoints();
+        ArrayList<Breakpoint> unloaded = new ArrayList<Breakpoint>();
+        for (Breakpoint b : bpts) {
+            if (b instanceof JPDABreakpoint) {
+                unloaded.add(b);
+                b.removePropertyChangeListener(this);
+            }
+        }
+        return unloaded.toArray(new Breakpoint[0]);
+    }
+    
     public void initWatches () {
     }
     
