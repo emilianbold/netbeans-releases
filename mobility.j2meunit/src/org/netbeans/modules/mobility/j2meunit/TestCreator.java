@@ -41,208 +41,112 @@ package org.netbeans.modules.mobility.j2meunit;
 
 
 import com.sun.source.util.TreePath;
-
 import com.sun.source.util.SourcePositions;
-
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 
-
-
 import javax.lang.model.element.Element;
-
 import javax.lang.model.element.TypeElement;
-
-
 
 import org.netbeans.api.java.source.JavaSource;
 
-
-
 import java.io.IOException;
-
 import java.util.*;
-
 import javax.lang.model.element.ElementKind;
-
 import javax.lang.model.element.ExecutableElement;
-
 import javax.lang.model.element.Modifier;
-
 import javax.lang.model.element.VariableElement;
-
 import javax.lang.model.type.TypeKind;
-
 import javax.lang.model.type.TypeMirror;
-
 import javax.lang.model.util.ElementFilter;
-
 import javax.lang.model.util.Elements;
-
 import javax.lang.model.util.Types;
 
-
-
 import org.netbeans.api.java.classpath.ClassPath;
-
 import org.netbeans.api.java.source.CancellableTask;
-
 import org.netbeans.api.java.source.ClasspathInfo;
-
 import org.netbeans.api.java.source.Comment;
-
 import org.netbeans.api.java.source.CompilationInfo;
-
 import org.netbeans.api.java.source.ElementHandle;
-
 import org.netbeans.api.java.source.JavaSource.Phase;
-
 import org.netbeans.api.java.source.ModificationResult;
-
 import org.netbeans.api.java.source.TreeMaker;
-
 import org.netbeans.api.java.source.TreeUtilities;
-
 import org.netbeans.api.java.source.WorkingCopy;
-
 import org.netbeans.api.project.Project;
-
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-
 import org.openide.filesystems.FileObject;
-
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
-
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-
 import org.openide.ErrorManager;
-
 import org.openide.cookies.SaveCookie;
-
 import org.openide.filesystems.Repository;
-
 import org.openide.loaders.DataFolder;
-
 import org.openide.loaders.DataObject;
-
 import org.openide.loaders.DataObjectNotFoundException;
-
 import org.openide.util.NbBundle;
 
-
-
 import static javax.lang.model.element.Modifier.ABSTRACT;
-
 import static javax.lang.model.element.Modifier.PRIVATE;
-
 import static javax.lang.model.element.Modifier.PROTECTED;
-
 import static javax.lang.model.element.Modifier.PUBLIC;
-
 import static javax.lang.model.element.Modifier.STATIC;
 
-
-
 /**
-
  * This is a J2MEUnit test generator used by the JUnit plugin API
-
  *
-
  * @author bohemius
-
  */
 
 public class TestCreator {
 
-
-
     private Map<CreateTestParam, Object> parameters;
-
     private FileObject testSourceRoot;
-
     private Project mProject;
-
     private AntProjectHelper aph;
 
-
-
     static private final String J2MEUNIT_SUPER_CLASS_NAME = "TestCase";//NOI18N
-
     static private final String J2MEUNIT_FRAMEWORK_PACKAGE_NAME = "jmunit.framework.cldc10";//NOI18N
 
-
-
     static private final String METHOD_NAME_SETUP = "setUp";            //NOI18N
-
     static private final String METHOD_NAME_TEARDOWN = "tearDown";      //NOI18N
-
     static private final String CLASS_COMMENT_LINE1 = "TestCreator.javaClass.addTestsHereComment.l1";
-
     static private final String CLASS_COMMENT_LINE2 = "TestCreator.javaClass.addTestsHereComment.l2";
 
-
-
     private static final String INSTANCE_VAR_NAME = "instance";         //NOI18N
-
     private static final String RESULT_VAR_NAME = "result";             //NOI18N
-
     private static final String EXP_RESULT_VAR_NAME = "expResult";      //NOI18N
-
     private static final String ARTIFICAL_VAR_NAME_BASE = "arg";        //NOI18N
 
-
-
     private static final EnumSet<Modifier> ACCESS_MODIFIERS
-
             = EnumSet.of(Modifier.PUBLIC,
-
             Modifier.PROTECTED,
-
             Modifier.PRIVATE);
 
-
-
     private static final EnumSet<Modifier> NO_MODIFIERS
-
             = EnumSet.noneOf(Modifier.class);
 
 
 
     private boolean skipPkgPrivateClasses = false;
-
     private boolean skipAbstractClasses = false;
-
     private boolean skipExceptionClasses = false;
-
     private Set<Modifier> methodAccessModifiers
-
             = TestUtils.createModifierSet(Modifier.PUBLIC,
-
             Modifier.PROTECTED);
 
 
 
     private boolean testPkgPrivateMethods = true;
-
     private boolean generateDefMethodBody = true;
-
     private boolean generateMethodJavadoc = true;
-
     private boolean generateSourceCodeHints = true;
-
     private boolean generateSetUp = true;
-
     private boolean generateTearDown = true;
-
     private String initialMainMethodBody;
 
-
-
     /**
-
      * Creates a new instance of TestCreator
-
      */
 
     public TestCreator(Map<CreateTestParam, Object> params, FileObject testTargetRoot, Project p, AntProjectHelper aph) {
@@ -478,112 +382,58 @@ public class TestCreator {
 
 
     private List<FileObject> generateFromSingleSource(FileObject file2test) {
-
         ClassPath testClassPath = ClassPathSupport.createClassPath(new FileObject[]{this.testSourceRoot});
-
         LinkedList<FileObject> result = new LinkedList();
-
         List<ElementHandle<TypeElement>> testable = null;
 
-
-
         try {
-
             JavaSource javaSource = JavaSource.forFileObject(file2test);
-
             testable = TestUtils.findTopClasses(javaSource);
-
         } catch (IOException ex) {
-
             System.out.println(ex.getMessage());
-
             ex.printStackTrace();
-
         }
-
-
 
         if (testable != null && !testable.isEmpty()) {
-
             String packageName = TestUtils.getPackageName(ClassPath.getClassPath(file2test, ClassPath.SOURCE).getResourceName(file2test, '.', false));
 
-
-
             try {
-
                 for (ElementHandle<TypeElement> clsToTest : testable) {
-
                     String srcClassNameShort = TestUtils.getSimpleName(clsToTest.getQualifiedName());
-
                     String testClassResourceName = TestUtils.getTestClassFullName(srcClassNameShort, packageName);
 
-
-
                     /* find or create the test class DataObject: */
-
                     DataObject testDataObj = null;
-
                     FileObject testFileObj = testClassPath.findResource(testClassResourceName + ".java");//NOI18N
-
                     boolean isNew = (testFileObj == null);
-
                     if (testFileObj == null) {
-
                         testDataObj = createTestClassDataObj(testClassResourceName, this.loadTestTemplate("PROP_emptyTestClassTemplate"));//NOI18N
-
                         testFileObj = testDataObj.getPrimaryFile();
-
                     }
-
-
 
                     JavaSource testSource = JavaSource.forFileObject(testFileObj);
-
                     SingleTestCreator testCreator = new SingleTestCreator(Collections.singletonList(clsToTest), isNew);
-
                     ModificationResult mResult = testSource.runModificationTask(testCreator);
-
                     mResult.commit();
-
                     if (testDataObj == null) {
-
                         testDataObj = DataObject.find(testFileObj);
-
                     }
-
                     SaveCookie sc = testDataObj.getCookie(SaveCookie.class);
-
                     if (sc != null) {
-
                         sc.save();
-
                     }
-
                     result.add(testFileObj);
-
                     // add the test class to the JMUnitTestClasses property
-
                     TestUtils.addTestClassProperty(this.mProject, this.aph, packageName + "." + TestUtils.getTestClassName(srcClassNameShort));
 
-
-
                 }
-
             } catch (IOException ex) {
-
                 System.out.println(ex.getMessage());
-
                 ex.printStackTrace();
-
             }
-
         }
-
         return result;
-
     }
-
-
 
     private DataObject createTestClassDataObj(String testClassName,
 
@@ -684,185 +534,101 @@ public class TestCreator {
         public void run(WorkingCopy workingCopy) throws IOException {
 
             final String className = workingCopy.getClasspathInfo()
-
                     .getClassPath(ClasspathInfo.PathKind.SOURCE)
-
                     .getResourceName(workingCopy.getFileObject(), '.', false);
 
-
-
-            workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-
-
+            workingCopy.toPhase(Phase.UP_TO_DATE);
 
             CompilationUnitTree compUnit = workingCopy.getCompilationUnit();
-
             List<ClassTree> tstTopClasses = TestUtils.findTopClasses(compUnit, workingCopy.getTreeUtilities());
 
-
-
             List<TypeElement> srcTopClassElems
-
                     = resolveHandles(workingCopy, srcTopClassElemHandles);
-
-
 
             TreePath compUnitPath = new TreePath(compUnit);
 
-
-
             if ((srcTopClassElems != null) && !srcTopClassElems.isEmpty()) {
 
-
-
                 /* Create/update a test class for each testable source class: */
-
                 for (TypeElement srcTopClass : srcTopClassElems) {
-
                     String srcClassName = srcTopClass.getSimpleName().toString();
-
                     String tstClassName = TestUtils.getTestClassName(srcClassName);
 
-
-
                     List<ExecutableElement> srcMethods
-
                             = findTestableMethods(srcTopClass);
-
                     boolean srcHasTestableMethods = !srcMethods.isEmpty();
 
-
-
                     ClassTree tstTopClass = null;
-
                     for (ClassTree tstClass : tstTopClasses) {
-
                         if (tstClass.getSimpleName().contentEquals(tstClassName)) {
-
                             tstTopClass = tstClass;
-
                             break;
-
                         }
-
                     }
 
                     if (tstTopClass != null) {
-
                         TreePath tstTopClassTreePath = new TreePath(compUnitPath,
-
                                 tstTopClass);
-
-
 
                         ClassTree origTstTopClass = tstTopClass;
-
                         if (srcHasTestableMethods) {
-
                             tstTopClass = generateMissingTestMethods(
-
                                     workingCopy,
-
                                     tstTopClass,
-
                                     tstTopClassTreePath,
-
                                     srcTopClass,
-
                                     srcMethods,
-
                                     isNewTestClass);
-
                         } else if (isNewTestClass) {
-
                             tstTopClass = generateMissingInitMembers(
-
                                     tstTopClass,
-
                                     tstTopClassTreePath,
-
                                     workingCopy);
-
                         }
-
                         if (tstTopClass != origTstTopClass) {
-
                             workingCopy.rewrite(origTstTopClass,
-
                                     tstTopClass);
-
                         }
-
                     } else {
-
                         if (srcHasTestableMethods
-
                                 || tstClassName.equals(TestUtils.getSimpleName(className))) {
-
                             tstTopClass = generateNewTestClass(workingCopy,
-
                                     tstClassName,
-
                                     srcTopClass,
-
                                     srcMethods);
-
                             //PENDING - add the top class to the CompilationUnit
-
                         }
-
                     }
-
                 }
-
             } else if (srcTopClassElems == null) {      //new empty test class
-
                 for (ClassTree tstClass : tstTopClasses) {
-
                     ClassTree origTstTopClass = tstClass;
-
                     ClassTree tstTopClass = generateMissingInitMembers(
-
                             tstClass,
-
                             new TreePath(compUnitPath,
-
                                     tstClass),
-
                             workingCopy);
-
                     if (tstTopClass != origTstTopClass) {
-
                         workingCopy.rewrite(origTstTopClass,
-
                                 tstTopClass);
-
                     }
-
                 }
-
             }
-
         }
 
 
 
         private ClassTree generateNewTestClass(WorkingCopy workingCopy,
-
                                                String name,
-
                                                TypeElement srcClass,
-
                                                List<ExecutableElement> srcMethods) {
 
             final TreeMaker maker = workingCopy.getTreeMaker();
-
             final Elements elements = workingCopy.getElements();
 
 
 
             ModifiersTree modifiers = maker.Modifiers(
-
                     Collections.<Modifier>singleton(PUBLIC));
 
 
@@ -870,9 +636,7 @@ public class TestCreator {
             TypeElement testCaseType = getTestCaseTypeElem(elements);
 
             Tree extendsClause = (testCaseType != null)
-
                     ? maker.QualIdent(testCaseType)
-
                     : maker.Identifier("junit.framework.TestCase");//NOI18N
 
 
@@ -880,65 +644,37 @@ public class TestCreator {
             List<? extends Tree> initMembers = generateInitMembers(maker);
 
             List<MethodTree> testMethods = generateTestMethods(workingCopy,
-
                     srcClass,
-
                     srcMethods);
 
             List<? extends Tree> members;
 
             if (initMembers.isEmpty() && testMethods.isEmpty()) {
-
                 members = Collections.<Tree>emptyList();
-
             } else if (initMembers.isEmpty()) {
-
                 List<Tree> mMembers = new ArrayList<Tree>(testMethods.size() + 1);
-
                 mMembers.addAll(testMethods);
-
                 mMembers.add(generateOverrideTestMethod(workingCopy, testMethods));
-
                 members = mMembers;
-
             } else if (testMethods.isEmpty()) {
-
                 members = initMembers;
-
             } else {
-
                 List<Tree> allMembers = new ArrayList<Tree>(
-
                         initMembers.size() + testMethods.size());
-
                 allMembers.addAll(initMembers);
-
                 allMembers.addAll(testMethods);
-
                 allMembers.add(generateOverrideTestMethod(workingCopy, testMethods));
 
-
-
                 members = allMembers;
-
             }
 
-
-
             return maker.Class(
-
                     modifiers,                                 //modifiers
-
                     name,                                      //name
-
                     Collections.<TypeParameterTree>emptyList(),//type params
-
                     extendsClause,                             //extends
-
                     Collections.<ExpressionTree>emptyList(),   //implements
-
                     members);                                  //members
-
         }
 
 
@@ -981,32 +717,18 @@ public class TestCreator {
 
             }
 
-
-
             if (generateTearDown && !TestUtils.hasTearDown(tstClass)) {
-
                 tstMembers.add(generateInitMethod(maker, "tearDown"));//NOI18N
-
             }
 
-
-
             ClassTree newClass = maker.Class(
-
                     tstClass.getModifiers(),
-
                     tstClass.getSimpleName(),
-
                     tstClass.getTypeParameters(),
-
                     tstClass.getExtendsClause(),
-
                     (List<? extends ExpressionTree>) tstClass.getImplementsClause(),
-
                     tstMembers);
-
             return newClass;
-
         }
 
 
@@ -1046,47 +768,29 @@ public class TestCreator {
                                               String methodName) {
 
             ModifiersTree modifiers = maker.Modifiers(
-
                     Collections.<Modifier>singleton(PROTECTED));
 
             ExpressionTree superMethodCall = maker.MethodInvocation(
-
                     Collections.<ExpressionTree>emptyList(),    // type params.
-
                     maker.MemberSelect(
-
                             maker.Identifier("super"), methodName),     //NOI18N
-
                     Collections.<ExpressionTree>emptyList());
 
             BlockTree methodBody = maker.Block(
-
                     Collections.<StatementTree>singletonList(
-
                             maker.ExpressionStatement(superMethodCall)),
-
                     false);
 
             MethodTree method = maker.Method(
-
                     modifiers,              // modifiers
-
                     methodName,             // name
-
                     maker.PrimitiveType(TypeKind.VOID),         // return type
-
                     Collections.<TypeParameterTree>emptyList(), // type params
-
                     Collections.<VariableTree>emptyList(),      // parameters
-
                     Collections.<ExpressionTree>singletonList(
-
                             maker.Identifier("Exception")),// throws... //NOI18N
-
                     methodBody,
-
                     null);                                      // default value
-
             return method;
 
         }
@@ -1094,129 +798,86 @@ public class TestCreator {
 
 
         private ClassTree generateMissingTestMethods(
-
                 WorkingCopy workingCopy,
-
                 ClassTree tstClass,
-
                 TreePath tstClassTreePath,
-
                 TypeElement srcClass,
-
                 List<ExecutableElement> srcMethods,
-
                 boolean generateMissingInitMembers) {
-
             if (srcMethods.isEmpty()) {
-
                 return tstClass;
-
             }
-
-
 
             List<? extends Tree> tstMembersOrig = tstClass.getMembers();
-
             List<Tree> tstMembers = new ArrayList<Tree>(tstMembersOrig.size() + 4);
-
             tstMembers.addAll(tstMembersOrig);
 
-
-
             if (generateMissingInitMembers) {
-
                 generateMissingInitMembers(tstClass, tstClassTreePath, workingCopy);
-
             }
 
-
-
             Boolean useNoArgConstrutor = null;
+            HashMap<String,List<ExecutableElement>> mMap=new HashMap<String,List<ExecutableElement>>();
 
+            if (useNoArgConstrutor == null) {
+                useNoArgConstrutor = Boolean.valueOf(
+                        hasAccessibleNoArgConstructor(srcClass));
+            }
+            
             for (ExecutableElement srcMethod : srcMethods) {
-
                 String testMethodName = TestUtils.createTestMethodName(
-
                         srcMethod.getSimpleName().toString());
 
                 if (TestUtils.testMethodExists(tstClass, testMethodName)) {
-
                     continue;       //corresponding test method already exists
-
                 }
 
-
-
-                if (useNoArgConstrutor == null) {
-
-                    useNoArgConstrutor = Boolean.valueOf(
-
-                            hasAccessibleNoArgConstructor(srcClass));
-
+                List<ExecutableElement> mList=mMap.get(testMethodName);
+                if (mList==null)
+                {
+                    mList=new ArrayList<ExecutableElement>();
+                    mMap.put(testMethodName,mList);
                 }
-
+                mList.add(srcMethod);
+            }
+            
+            for (String name : mMap.keySet())
+            {
                 MethodTree newTestMethod = generateTestMethod(
-
                         workingCopy,
-
                         srcClass,
-
-                        srcMethod,
-
+                        name,
+                        mMap.get(name),
                         useNoArgConstrutor.booleanValue());
 
-
-
                 tstMembers.add(newTestMethod);
-
             }
 
 
 
             if (tstMembers.size() == tstMembersOrig.size()) {  //no test method added
-
                 return tstClass;
-
             } else {
-
                 List<MethodTree> testMethods = new LinkedList<MethodTree>();
-
                 for (Tree member : tstMembers) {
-
                     if (member.getKind() == Tree.Kind.METHOD) {
-
                         MethodTree testMethod = (MethodTree) member;
-
                         if (TestUtils.isTestMethod(testMethod))
-
                             testMethods.add(testMethod);
-
                     }
-
                 }
-
                 tstMembers.add(generateOverrideTestMethod(workingCopy, testMethods));
-
             }
 
 
-
             ClassTree newClass = workingCopy.getTreeMaker().Class(
-
                     tstClass.getModifiers(),
-
                     tstClass.getSimpleName(),
-
                     tstClass.getTypeParameters(),
-
                     tstClass.getExtendsClause(),
-
                     (List<? extends ExpressionTree>) tstClass.getImplementsClause(),
-
                     tstMembers);
-
             return newClass;
-
         }
 
 
@@ -1224,35 +885,22 @@ public class TestCreator {
         private List<MethodTree> generateTestMethods(WorkingCopy workingCopy, TypeElement srcClass, List<ExecutableElement> srcMethods) {
 
             if (srcMethods.isEmpty()) {
-
                 return Collections.<MethodTree>emptyList();
-
             }
-
-
 
             boolean useNoArgConstrutor = hasAccessibleNoArgConstructor(srcClass);
-
             List<MethodTree> testMethods = new ArrayList<MethodTree>(srcMethods.size());
-
             for (ExecutableElement srcMethod : srcMethods) {
-
+                List<ExecutableElement> methods=new ArrayList<ExecutableElement>(1);
+                methods.add(srcMethod);
                 testMethods.add(
-
                         generateTestMethod(workingCopy,
-
                                 srcClass,
-
-                                srcMethod,
-
+                                TestUtils.createTestMethodName(srcMethod.getSimpleName().toString()),
+                                methods,
                                 useNoArgConstrutor));
-
             }
-
-
-
             return testMethods;
-
         }
 
 
@@ -1260,105 +908,56 @@ public class TestCreator {
         private MethodTree generateOverrideTestMethod(WorkingCopy workingCopy, List<MethodTree> testMethods) {
 
             final TreeMaker maker = workingCopy.getTreeMaker();
-
             final ClassTree clsTree = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
 
-
-
             //prepare method body
-
             StringBuffer methodBody = new StringBuffer("{\nswitch(" + NbBundle.getMessage(TestCreator.class, "PROP_generator_override_test_method_param") + ") {\n");//NOI18N
-
             int i = 0;
-
             for (MethodTree testMethod : testMethods) {
-
                 methodBody.append("case " + i + ":" + testMethod.getName().toString() + "();break;\n");//NOI18N
-
                 i++;
-
             }
-
             methodBody.append("default: break;\n}\n}\n");//NOI18N
 
-
-
             MethodTree mMethod = null;
-
             for (Tree member : clsTree.getMembers()) {
-
                 if (member.getKind() == Tree.Kind.METHOD) {
-
                     mMethod = (MethodTree) member;
-
                     if (mMethod.getName().toString().equals(NbBundle.getMessage(TestCreator.class, "PROP_generator_override_test_method")))//NOI18N
-
                         break;
-
                     else
-
                         mMethod = null;
-
                 }
-
             }
 
-
-
             List<ExpressionTree> throwsList = Collections.<ExpressionTree>singletonList(
-
                     maker.Identifier(NbBundle.getMessage(TestCreator.class, "PROP_generator_throwable")));//NOI18N
-
             ModifiersTree parameterModifiers = maker.Modifiers(Collections.<Modifier>emptySet(),
-
                     Collections.<AnnotationTree>emptyList());
 
             VariableTree parameter = maker.Variable(parameterModifiers,
-
                     NbBundle.getMessage(TestCreator.class, "PROP_generator_override_test_method_param"),//NOI18N
-
                     maker.PrimitiveType(TypeKind.INT),
-
                     null);
 
-
-
             if (mMethod == null) {
-
                 mMethod = maker.Method(
-
                         maker.Modifiers(TestUtils.createModifierSet(PUBLIC)),
-
                         NbBundle.getMessage(TestCreator.class, "PROP_generator_override_test_method"),
-
                         maker.PrimitiveType(TypeKind.VOID),
-
                         Collections.<TypeParameterTree>emptyList(),
-
                         Collections.<VariableTree>singletonList(parameter),
-
                         throwsList,
-
                         methodBody.toString(),
-
                         null);
-
                 workingCopy.rewrite(clsTree, maker.addClassMember(clsTree, mMethod));
-
             } else {
-
                 BlockTree mBlockTree = maker.createMethodBody(mMethod, methodBody.toString());
-
                 workingCopy.rewrite(mMethod.getBody(), mBlockTree);
-
             }
-
             updateTestClassConctructor(workingCopy,i);
 
-
-
             return mMethod;
-
         }
 
 
@@ -1366,113 +965,71 @@ public class TestCreator {
         private void updateTestClassConctructor(WorkingCopy workingCopy, int nTests) {
 
             final ClassTree clsTree = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
-
             final TreeMaker maker=workingCopy.getTreeMaker();
 
-
-
             MethodTree consMethod = null;
-
             for (Tree member : clsTree.getMembers()) {
-
                 if (member.getKind() == Tree.Kind.METHOD) {
-
                     consMethod = (MethodTree) member;
-
                     if (consMethod.getName().toString().equals("<init>"))//NOI18N
-
                         break;
-
                 }
-
             }
 
-
-
             String consBody="{\nsuper("+nTests+",\""+clsTree.getSimpleName()+"\");\n}\n";
-
             BlockTree consBlock=consMethod.getBody();
-
             TreeUtilities treeUtils=workingCopy.getTreeUtilities();
-
             Tree newBlock=treeUtils.parseStatement(consBody,new SourcePositions[1]);
-
             assert Tree.Kind.BLOCK == newBlock.getKind();
-
             workingCopy.rewrite(consBlock,newBlock);
-
         }
 
 
 
-        private MethodTree generateTestMethod(WorkingCopy workingCopy, TypeElement srcClass, ExecutableElement srcMethod, boolean useNoArgConstructor) {
+        private MethodTree generateTestMethod(WorkingCopy workingCopy, TypeElement srcClass, String testMethodName,
+                                              List<ExecutableElement> srcMethods, boolean useNoArgConstructor) {
 
             final TreeMaker maker = workingCopy.getTreeMaker();
-
-
-
-            String testMethodName = TestUtils.createTestMethodName(srcMethod.getSimpleName().toString());
-
             ModifiersTree modifiers = maker.Modifiers(TestUtils.createModifierSet(PUBLIC));
-
             List<ExpressionTree> throwsList = new LinkedList();
 
 
 
             throwsList.add(maker.Identifier(NbBundle.getMessage(TestCreator.class, "PROP_generator_test_method_exception")));//NOI18N
 
-            if (throwsNonRuntimeExceptions(workingCopy, srcMethod)) {
-
-                throwsList.add(maker.Identifier(NbBundle.getMessage(TestCreator.class, "PROP_generator_nonrte"))); //NOI18N
-
+            for (ExecutableElement srcMethod : srcMethods)
+            {
+                if (throwsNonRuntimeExceptions(workingCopy, srcMethod)) {
+                    throwsList.add(maker.Identifier(NbBundle.getMessage(TestCreator.class, "PROP_generator_nonrte"))); //NOI18N
+                }
             }
 
 
 
             MethodTree method = maker.Method(
-
                     modifiers,
-
                     testMethodName,
-
                     maker.PrimitiveType(TypeKind.VOID),
-
                     Collections.<TypeParameterTree>emptyList(),
-
                     Collections.<VariableTree>emptyList(),
-
                     throwsList,
-
-                    generateTestMethodBody(workingCopy, srcClass, srcMethod,
-
+                    generateTestMethodBody(workingCopy, srcClass, srcMethods,
                             useNoArgConstructor),
-
                     null);          //default value - used by annotations
 
 
 
             if (generateMethodJavadoc) {
-
                 Comment javadoc = Comment.create(
-
                         NbBundle.getMessage(
-
                                 TestCreator.class,
-
                                 "PROP_src_code_javadoc",   //NOI18N
-
-                                srcMethod.getSimpleName().toString(),
-
+                                testMethodName,
                                 srcClass.getSimpleName().toString()));
-
                 maker.addComment(method, javadoc, false);
-
             }
 
-
-
             return method;
-
         }
 
 
@@ -1498,238 +1055,133 @@ public class TestCreator {
 
 
             return maker.Method(
-
                     maker.Modifiers(TestUtils.createModifierSet(PUBLIC)),
-
                     "test",
-
                     maker.PrimitiveType(TypeKind.VOID),        //return type
-
                     Collections.<TypeParameterTree>emptyList(),//type params
-
                     Collections.<VariableTree>emptyList(),     //params
-
                     Collections.<ExpressionTree>emptyList(),   //throws-list
-
                     maker.Block(bodyContent, false),           //body
-
                     null);  //def. value - only for annotations
-
         }
 
 
 
-        private BlockTree generateTestMethodBody(WorkingCopy workingCopy, TypeElement srcClass, ExecutableElement srcMethod, boolean useNoArgConstructor) {
-
+        private BlockTree generateTestMethodBody(WorkingCopy workingCopy, TypeElement srcClass, List<ExecutableElement> srcMethods, boolean useNoArgConstructor) {
             TreeMaker maker = workingCopy.getTreeMaker();
-
-
-
-            boolean isStatic = srcMethod.getModifiers().contains(Modifier.STATIC);
-
             List<StatementTree> statements = new ArrayList<StatementTree>(8);
-
-
-
-            if (generateDefMethodBody) {
-
-                StatementTree sout = generateSystemOutPrintln(
-
-                        maker,
-
-                        srcMethod.getSimpleName().toString());
-
-                List<VariableTree> paramVariables = generateParamVariables(
-
-                        maker,
-
-                        srcMethod);
-
-                statements.add(sout);
-
-                statements.addAll(paramVariables);
-
-
-
-                if (!isStatic) {
-
-                    VariableTree instanceVarInit = maker.Variable(
-
-                            maker.Modifiers(Collections.<Modifier>emptySet()),
-
-                            INSTANCE_VAR_NAME,
-
-                            maker.QualIdent(srcClass),
-
-                            useNoArgConstructor
-
-                                    ? generateNoArgConstructorCall(maker, srcClass)
-
-                                    : maker.Literal(null));
-
-                    statements.add(instanceVarInit);
-
-                }
-
-
-
-                MethodInvocationTree methodCall = maker.MethodInvocation(
-
-                        Collections.<ExpressionTree>emptyList(),    //type args.
-
-                        maker.MemberSelect(
-
-                                isStatic ? maker.QualIdent(srcClass)
-
-                                        : maker.Identifier(INSTANCE_VAR_NAME),
-
-                                srcMethod.getSimpleName()),
-
-                        createIdentifiers(maker, paramVariables));
-
-
-
-                TypeMirror retType = srcMethod.getReturnType();
-
-                TypeKind retTypeKind = retType.getKind();
-
-
-
-                if (retTypeKind == TypeKind.VOID) {
-
-                    StatementTree methodCallStmt = maker.ExpressionStatement(methodCall);
-
-
-
-                    statements.add(methodCallStmt);
-
-                } else {
-
-/*                    ExpressionTree retTypeTree = retTypeKind.isPrimitive()
-
-                            ? maker.Identifier(retType.toString())
-
-                            : maker.QualIdent(
-
-                            workingCopy.getTypes().asElement(retType));*/
-
-                    Tree retTypeTree=maker.Type(retType);
-
-
-
-                    VariableTree expectedValue = maker.Variable(
-
-                            maker.Modifiers(NO_MODIFIERS),
-
-                            EXP_RESULT_VAR_NAME,
-
-                            retTypeTree,
-
-                            getDefaultValue(maker, retType));
-
-                    VariableTree actualValue = maker.Variable(
-
-                            maker.Modifiers(NO_MODIFIERS),
-
-                            RESULT_VAR_NAME,
-
-                            retTypeTree,
-
-                            methodCall);
-
-
-
-                    List<ExpressionTree> comparisonArgs = new ArrayList<ExpressionTree>(2);
-
+            boolean allStatic=true;
+            
+            for (ExecutableElement srcAMethod : srcMethods)
+            {
+                boolean isStatic = srcAMethod.getModifiers().contains(Modifier.STATIC);
+                allStatic&=isStatic;
+                
+                if (generateDefMethodBody) {
+                    StatementTree sout = generateSystemOutPrintln(
+                            maker,
+                            srcAMethod.getSimpleName().toString());
                     
+                    List<VariableTree> paramVariables = generateParamVariables(
+                            maker,
+                            srcAMethod);
+                    
+                    statements.add(sout);
+                    statements.addAll(paramVariables);
 
-                    MethodInvocationTree comparison;
-                    if (retTypeKind == TypeKind.FLOAT || retTypeKind == TypeKind.DOUBLE)
-                    {
-                        comparisonArgs.add(maker.Binary(Kind.EQUAL_TO,
-                            maker.Identifier(expectedValue.getName().toString()),
-                            maker.Identifier(actualValue.getName().toString())));
-                        comparison = maker.MethodInvocation(
-                                Collections.<ExpressionTree>emptyList(),//type args.
-                                maker.Identifier("assertTrue"),           //NOI18N
-                                comparisonArgs);
+                    MethodInvocationTree methodCall = maker.MethodInvocation(
+                            Collections.<ExpressionTree>emptyList(),    //type args.
+                            maker.MemberSelect(
+                                    isStatic ? maker.QualIdent(srcClass)
+                                            : maker.Identifier(INSTANCE_VAR_NAME),
+                                    srcAMethod.getSimpleName()),
+                            createIdentifiers(maker, paramVariables));
+
+                    TypeMirror retType = srcAMethod.getReturnType();
+                    TypeKind retTypeKind = retType.getKind();
+
+                    if (retTypeKind == TypeKind.VOID) {
+                        StatementTree methodCallStmt = maker.ExpressionStatement(methodCall);
+                        statements.add(methodCallStmt);
+                    } else {
+                        Tree retTypeTree=maker.Type(retType);
+
+                        VariableTree expectedValue = maker.Variable(
+                                maker.Modifiers(NO_MODIFIERS),
+                                EXP_RESULT_VAR_NAME,
+                                retTypeTree,
+                                getDefaultValue(maker, retType));
+                        VariableTree actualValue = maker.Variable(
+                                maker.Modifiers(NO_MODIFIERS),
+                                RESULT_VAR_NAME,
+                                retTypeTree,
+                                methodCall);
+
+                        List<ExpressionTree> comparisonArgs = new ArrayList<ExpressionTree>(2);
+
+                        MethodInvocationTree comparison;
+                        if (retTypeKind == TypeKind.FLOAT || retTypeKind == TypeKind.DOUBLE)
+                        {
+                            comparisonArgs.add(maker.Binary(Kind.EQUAL_TO,
+                                maker.Identifier(expectedValue.getName().toString()),
+                                maker.Identifier(actualValue.getName().toString())));
+                            comparison = maker.MethodInvocation(
+                                    Collections.<ExpressionTree>emptyList(),//type args.
+                                    maker.Identifier("assertTrue"),           //NOI18N
+                                    comparisonArgs);
+                        }
+                        else
+                        {
+                            comparisonArgs.add(maker.Identifier(expectedValue.getName().toString()));
+                            comparisonArgs.add(maker.Identifier(actualValue.getName().toString()));
+                            comparison = maker.MethodInvocation(
+                                    Collections.<ExpressionTree>emptyList(),//type args.
+                                    maker.Identifier("assertEquals"),           //NOI18N
+                                    comparisonArgs);
+                        }
+                        StatementTree comparisonStmt = maker.ExpressionStatement(
+                                comparison);
+
+                        statements.add(expectedValue);
+                        statements.add(actualValue);
+                        statements.add(comparisonStmt);
                     }
-                    else
-                    {
-                        comparisonArgs.add(maker.Identifier(expectedValue.getName().toString()));
-                        comparisonArgs.add(maker.Identifier(actualValue.getName().toString()));
-                        comparison = maker.MethodInvocation(
-                                Collections.<ExpressionTree>emptyList(),//type args.
-                                maker.Identifier("assertEquals"),           //NOI18N
-                                comparisonArgs);
-                    }
-
-                    StatementTree comparisonStmt = maker.ExpressionStatement(
-
-                            comparison);
-
-
-
-                    statements.add(expectedValue);
-
-                    statements.add(actualValue);
-
-                    statements.add(comparisonStmt);
-
+                
+                    String failMsg = NbBundle.getMessage(
+                            TestCreator.class,
+                            "PROP_src_code_sample_msg");   //NOI18N
+                    MethodInvocationTree failMethodCall = maker.MethodInvocation(
+                            Collections.<ExpressionTree>emptyList(),    //type args.
+                            maker.Identifier("fail"),                       //NOI18N
+                            Collections.<ExpressionTree>singletonList(
+                                    maker.Literal(failMsg)));
+                    statements.add(maker.ExpressionStatement(failMethodCall));
                 }
-
             }
-
-
-
-            if (generateDefMethodBody) {
-
-                String failMsg = NbBundle.getMessage(
-
-                        TestCreator.class,
-
-                        "PROP_src_code_sample_msg");   //NOI18N
-
-                MethodInvocationTree failMethodCall = maker.MethodInvocation(
-
-                        Collections.<ExpressionTree>emptyList(),    //type args.
-
-                        maker.Identifier("fail"),                       //NOI18N
-
-                        Collections.<ExpressionTree>singletonList(
-
-                                maker.Literal(failMsg)));
-
-                statements.add(maker.ExpressionStatement(failMethodCall));
-
+            if (!allStatic && generateDefMethodBody) {
+                VariableTree instanceVarInit = maker.Variable(
+                        maker.Modifiers(Collections.<Modifier>emptySet()),
+                        INSTANCE_VAR_NAME,
+                        maker.QualIdent(srcClass),
+                        useNoArgConstructor
+                                ? generateNoArgConstructorCall(maker, srcClass)
+                                : maker.Literal(null));
+                statements.add(1,instanceVarInit);
             }
-
-
-
             return maker.Block(statements, false);
-
         }
-
 
 
         private StatementTree generateSystemOutPrintln(TreeMaker maker, String arg) {
 
             MethodInvocationTree methodInvocation = maker.MethodInvocation(
-
                     Collections.<ExpressionTree>emptyList(),        //type args
-
                     maker.MemberSelect(
-
                             maker.MemberSelect(
-
                                     maker.Identifier("System"), "out"), "println"),//NOI18N
-
                     Collections.<LiteralTree>singletonList(
-
                             maker.Literal(arg)));                   //args.
-
             return maker.ExpressionStatement(methodInvocation);
-
         }
 
 
@@ -1747,57 +1199,33 @@ public class TestCreator {
 
 
             Set<Modifier> noModifiers = Collections.<Modifier>emptySet();
-
             List<VariableTree> paramVariables = new ArrayList<VariableTree>(params.size());
-
             String[] varNames = getTestSkeletonVarNames(params);
-
             int index = 0;
-
             for (VariableElement param : params) {
-
                 TypeMirror paramType = param.asType();
-
                 paramVariables.add(
-
                         maker.Variable(maker.Modifiers(noModifiers),
-
                                 varNames[index++],
-
                                 maker.Type(paramType),
-
                                 getDefaultValue(maker, paramType)));
-
             }
-
             return paramVariables;
-
         }
 
 
 
         private List<IdentifierTree> createIdentifiers(TreeMaker maker, List<VariableTree> variables) {
-
             List<IdentifierTree> identifiers;
-
             if (variables.isEmpty()) {
-
                 identifiers = Collections.<IdentifierTree>emptyList();
-
             } else {
-
                 identifiers = new ArrayList<IdentifierTree>(variables.size());
-
                 for (VariableTree var : variables) {
-
                     identifiers.add(maker.Identifier(var.getName().toString()));
-
                 }
-
             }
-
             return identifiers;
-
         }
 
 
@@ -2023,57 +1451,32 @@ public class TestCreator {
 
 
         private List<ExecutableElement> findTestableMethods(TypeElement classElem) {
-
             List<ExecutableElement> methods
-
                     = ElementFilter.methodsIn(classElem.getEnclosedElements());
 
-
-
             if (methods.isEmpty()) {
-
                 return Collections.<ExecutableElement>emptyList();
-
             }
-
-
 
             List<ExecutableElement> testableMethods = null;
 
-
-
             int skippedCount = 0;
-
             for (ExecutableElement method : methods) {
-
                 if (isTestableMethod(method)) {
-
                     if (testableMethods == null) {
-
                         testableMethods = new ArrayList<ExecutableElement>(
-
                                 methods.size() - skippedCount);
-
                     }
-
                     testableMethods.add(method);
-
                 } else {
-
                     skippedCount++;
-
                 }
-
             }
 
 
-
             return (testableMethods != null)
-
                     ? testableMethods
-
                     : Collections.<ExecutableElement>emptyList();
-
         }
 
 
@@ -2139,43 +1542,24 @@ public class TestCreator {
             List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
 
             if (thrownTypes.isEmpty()) {
-
                 return false;
-
             }
-
-
 
             String runtimeExcName = "java.lang.RuntimeException";       //NOI18N
-
             TypeElement runtimeExcElement = compInfo.getElements().getTypeElement(runtimeExcName);
-
             if (runtimeExcElement == null) {
-
                 return true;
-
             }
-
-
 
             Types types = compInfo.getTypes();
-
             TypeMirror runtimeExcType = runtimeExcElement.asType();
-
             for (TypeMirror exceptionType : thrownTypes) {
-
                 if (!types.isSubtype(exceptionType, runtimeExcType)) {
-
                     return true;
-
                 }
-
             }
 
-
-
             return false;
-
         }
 
 
