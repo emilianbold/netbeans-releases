@@ -53,7 +53,9 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public static boolean isSupportedToken(Token token) {
         if ((token != null) &&
                 ((token.getTokenID() == CCTokenContext.SYS_INCLUDE) ||
-                (token.getTokenID() == CCTokenContext.USR_INCLUDE))) {
+                (token.getTokenID() == CCTokenContext.USR_INCLUDE) ||
+                (token.getTokenID() == CCTokenContext.CPPINCLUDE) ||
+                (token.getTokenID() == CCTokenContext.CPPINCLUDE_NEXT))) {
             return true;
         } else {
             return false;
