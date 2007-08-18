@@ -27,6 +27,7 @@
     (jgraph, jdom, etc.), uncomment this section ...
     -->
     <target name="jar" depends="zip-rest-hello-world,
+                                zip-rest-customer-db,
                                 projectized-common.jar"/>
 
     <!-- initialize necessary properties for Identity sample targets-->
@@ -36,11 +37,20 @@
         <property name="build.rest.samples.resources" value="build/classes/${rest.samples}/resources"/>
     </target>
 
-    <!-- Target for Hello World sample -->
+    <!-- Target for HelloWorld sample -->
     <target name="zip-rest-hello-world" depends="init-zip-samples">
         <zip destfile="${rest.samples.resources}/HelloWorld.zip"
             update="true">
         <zipfileset dir="HelloWorld"/>
         </zip>
     </target>
+    
+     <!-- Target for CustomerDB sample -->
+    <target name="zip-rest-customer-db" depends="init-zip-samples">
+        <zip destfile="${rest.samples.resources}/CustomerDB.zip"
+            update="true">
+        <zipfileset dir="CustomerDB"/>
+        </zip>
+    </target>
+    
 </project>
