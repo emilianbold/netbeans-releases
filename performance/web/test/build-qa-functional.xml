@@ -75,9 +75,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="ide_command_line_suffix">
         <!--  Repeat performance test more than once -->
         <property name="perf.cfg" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
-        <property name="reg.home" value="-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${xtest.tmpdir}/apache-tomcat-${tomcat_version}" />
-        <property name="reg.token" value="-J-Dorg.netbeans.modules.tomcat.autoregister.token=1" />
-        <property name="xtest.ide.commandline.suffix" value="${perf.cfg} ${reg.home} ${reg.token}"/>
+<!--        <property name="reg.home" value="-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${xtest.tmpdir}/apache-tomcat-${tomcat_version}" />
+        <property name="reg.token" value="-J-Dorg.netbeans.modules.tomcat.autoregister.token=1" />           -->
+        <property name="xtest.ide.commandline.suffix" value="${perf.cfg}"/>
     </target>
     
     <!-- ========= -->
@@ -103,7 +103,7 @@ Microsystems, Inc. All Rights Reserved.
         <unzip src="qa-functional/data/PerformanceTestFolderWebApp.zip" dest="${xtest.tmpdir}/"/>
     </target>
 
-    <property name="tomcat.ext.dir" location="${nball.dir}/tomcatint/tomcat5/bundled/external"/>
+ <!--   <property name="tomcat.ext.dir" location="${nball.dir}/tomcatint/tomcat5/bundled/external"/>
     <import file="${tomcat.ext.dir}/../build.xml"/>
     
     <property name="tomcat.home" value="${xtest.tmpdir}/apache-tomcat-${tomcat_version}"/>
@@ -113,7 +113,7 @@ Microsystems, Inc. All Rights Reserved.
         <unzip src="${tomcat.ext.dir}/apache-tomcat-${tomcat_version}.zip" dest="${xtest.tmpdir}/"/>
         <chmod dir="${tomcat.home}/bin" perm="ugo+rx" includes="**/*.sh"/>
     </target>
-    
+-->    
     <!--Executor for IDE test -->
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
