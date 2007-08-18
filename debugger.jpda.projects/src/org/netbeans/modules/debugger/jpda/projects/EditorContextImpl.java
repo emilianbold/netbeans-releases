@@ -590,23 +590,37 @@ public class EditorContextImpl extends EditorContext {
             return "";
         }
     }
-    
-    /*
-    private ClassTree findClassTree(List typeDecls, String className) {
-        for (Iterator it = typeDecls.iterator(); it.hasNext(); ) {
-            Tree declTree = (Tree) it.next();
-            if (declTree instanceof ClassTree) {
-                ClassTree ctree = (ClassTree) declTree;
-                if (ctree.getSimpleName().equals(className)) {
-                    return ctree;
-                } else {
-                    return findClassTree(ctree.getMemberDecls(), className);
-                }
+        
+    private static TypeElement getTypeElement(CompilationController ci, String binaryName) {
+        List<? extends TypeElement> typeElements = ci.getTopLevelElements();
+        Elements elms = ci.getElements();
+        for (TypeElement e : typeElements) {
+            TypeElement te = getTypeElement(elms, e, binaryName);
+            if (te != null) {
+                return te;
             }
         }
         return null;
     }
-     */
+    
+    private static TypeElement getTypeElement(Elements elms, Element element, String binaryName) {
+        ElementKind kind = element.getKind();
+        if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE) {
+            TypeElement classElement = (TypeElement) element;
+            String binaryClassName = elms.getBinaryName(classElement).toString();
+            if (match(binaryClassName, binaryName)) {
+                return classElement;
+            }
+        }
+        List<? extends Element> enclosed = element.getEnclosedElements();
+        for (Element e : enclosed) {
+            TypeElement te = getTypeElement(elms, e, binaryName);
+            if (te != null) {
+                return te;
+            }
+        }
+        return null;
+    }
     
     /**
      * Returns line number of given field in given class.
@@ -651,7 +665,7 @@ public class EditorContextImpl extends EditorContext {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
                         return;
                     Elements elms = ci.getElements();
-                    TypeElement classElement = elms.getTypeElement(className);
+                    TypeElement classElement = getTypeElement(ci, className);
                     if (classElement == null) return ;
                     List classMemberElements = elms.getAllMembers(classElement);
                     for (Iterator it = classMemberElements.iterator(); it.hasNext(); ) {
