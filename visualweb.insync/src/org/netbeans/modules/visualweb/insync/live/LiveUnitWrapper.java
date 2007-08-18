@@ -86,7 +86,7 @@ public class LiveUnitWrapper implements Unit {
         return sourceUnit.getErrors();
     }
 
-    public synchronized LiveUnit getLiveUnit() {
+    public LiveUnit getLiveUnit() {
         if (liveUnit == null) {
             liveUnit = new LiveUnit(model, sourceUnit, file);
             liveUnit.sync();

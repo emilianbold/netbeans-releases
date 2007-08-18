@@ -51,15 +51,19 @@ public class ReadTaskWrapper implements CancellableTask<CompilationController> {
         result = (Object)task.run(controller);
     }
     
-     public static Object execute(Read task,  FileObject fObj) {
+     public static Object execute(Read task,  FileObject fObj, boolean shared) {
         ReadTaskWrapper taskWrapper = new ReadTaskWrapper(task);
         JavaSource js = JavaSource.forFileObject(fObj);
         try {
-            js.runUserActionTask(taskWrapper, true);
+            js.runUserActionTask(taskWrapper, shared);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
         return taskWrapper.result;
+    }    
+    
+    public static Object execute(Read task,  FileObject fObj) {
+        return execute(task, fObj, true);
     }
 }
 

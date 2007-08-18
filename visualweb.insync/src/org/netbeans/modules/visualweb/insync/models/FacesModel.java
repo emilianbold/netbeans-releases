@@ -558,7 +558,7 @@ public class FacesModel extends Model {
      *
      * @return The live Unit for this model.
      */
-    public LiveUnit getLiveUnit() {
+    public synchronized LiveUnit getLiveUnit() {
         if (liveUnitWrapper == null)
             return null;
         return liveUnitWrapper.getLiveUnit();
@@ -999,12 +999,11 @@ public class FacesModel extends Model {
      * and updating related models.
      * @see org.netbeans.modules.visualweb.insync.Model#sync()
      */
-    protected void syncImpl() {
+    protected synchronized void syncImpl() {
         if (!needSyncing) {
             return;
         }
         needSyncing = false;
-        
         assert Trace.trace("insync.models", "LFM.sync markupFile:" + markupFile);  //NOI18N
     
         // Initial opening of units done on first sync
@@ -1065,6 +1064,8 @@ public class FacesModel extends Model {
             // on first open, invoke fireContextCreated() to let viewers know of our new context
             if (opened && facesModelSet.hasDesignProjectListeners())
                 facesModelSet.fireContextOpened(getLiveUnit());
+        }else {
+            needSyncing = true;
         }
         if (synced)
             fireModelChanged();

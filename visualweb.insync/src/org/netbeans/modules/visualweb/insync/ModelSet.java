@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.visualweb.insync;
 
-import java.awt.Component;
-import java.awt.Container;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -175,31 +173,31 @@ public abstract class ModelSet implements FileChangeListener {
     }
     
     private static Map<Project, Runnable> projectToRunnable = new HashMap<Project, Runnable>();
-
+    
     protected static ModelSet startModeling(final Project project, final Class ofType) {
         if (project == null)
             return null;
         ModelSet set = getModelSet(project);
-        if (set == null) {
-        	synchronized (projectToRunnable) {
-				Runnable modelingRunnable = projectToRunnable.get(project);
-				if (modelingRunnable == null) {
-					modelingRunnable = new Runnable() {
-		                public void run() {
-		                	try {
-			                    getInstance(project, ofType);			                    
-		                	} finally {
-		                		synchronized (projectToRunnable) {
-		                			projectToRunnable.remove(project);
-		                		}
-		                	}
-		                }};
-	                projectToRunnable.put(project, modelingRunnable);
-		            new Thread(modelingRunnable, "Loading ModelSet for " + project.getProjectDirectory().getName()).start(); // NOI18N
-				}
-			}        	
-        } else {
-        	return set;
+        if (set != null) {
+            return set;
+        }
+        synchronized (projectToRunnable) {
+            Runnable modelingRunnable = projectToRunnable.get(project);
+            if (modelingRunnable == null) {
+                modelingRunnable = new Runnable() {
+                    public void run() {
+                        try {
+                            getInstance(project, ofType);
+                        } finally {
+                            synchronized (projectToRunnable) {
+                                projectToRunnable.remove(project);
+                            }
+                        }
+                    }
+                };
+                projectToRunnable.put(project, modelingRunnable);
+                new Thread(modelingRunnable, "Loading ModelSet for " + project.getProjectDirectory().getName()).start(); // NOI18N
+            }
         }
         return null;
     }
@@ -244,7 +242,14 @@ public abstract class ModelSet implements FileChangeListener {
 	                        }
 	                    }, anyJavaFile);             
             }
+            if(set != null) {
+                synchronized (sets) {
+                    sets.put(project, set);
+                }
+                fireModelSetAdded(set);
+            }
         }
+       
         return set;
     }
     
@@ -253,9 +258,6 @@ public abstract class ModelSet implements FileChangeListener {
             Constructor constructor = ofType.getConstructor(new Class[] {Project.class});
             ModelSet set = (ModelSet) constructor.newInstance(new Object[] {project});
             set.setInitialized();
-            // This should be fired after the ModelSet is fully constructed
-            // and initial syncall has happened.  
-            fireModelSetAdded(set);
             return set;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -307,9 +309,6 @@ public abstract class ModelSet implements FileChangeListener {
      * @param project The project that this ModelSet is to be associated with,
      */
     protected ModelSet(Project project) {
-        synchronized (sets) {
-            sets.put(project, this);
-        }
         this.project = project;
         
         CommonClassloaderProvider commonClassloaderProvider = null;

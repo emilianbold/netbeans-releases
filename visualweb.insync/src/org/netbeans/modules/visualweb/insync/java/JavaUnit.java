@@ -33,13 +33,18 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Future;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 
 import javax.swing.event.DocumentEvent;
 import javax.tools.Diagnostic;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 
 import org.openide.filesystems.FileObject;
@@ -107,7 +112,26 @@ public class JavaUnit extends SourceUnit {
                 errors = parserAnnotationsList.toArray(ParserAnnotation.EMPTY_ARRAY);
                 return null;
             }
-        }, fobj);
+        }, fobj, false);
+        
+
+        //Java source may not be parsed successfully if the project has dependency on libraries 
+        //or source roots that are not yet scanned. Therefore wait for the scan to complete and 
+        //check for errors again
+        if (errors.length > 0 && SourceUtils.isScanInProgress()) {
+            try {
+                Future future = JavaSource.forFileObject(fobj).runWhenScanFinished(new Task<CompilationController>() {
+                    public void run(CompilationController cc) throws Exception {
+                    }
+                }, true);
+                //Wait till the scan is done
+                future.get();
+                //Try reading errors again
+                readErrors();
+            }catch(Exception e){
+                //Ignore exception and continue to show the errors to user
+            }
+        }
     }
 
     /**
