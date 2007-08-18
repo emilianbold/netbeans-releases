@@ -207,6 +207,10 @@ public class RailsActionProvider implements ActionProvider {
             rake.runRake(pwd, null, displayName, new RubyFileLocator(context), true, "test"); // NOI18N
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
+            if (!RubyInstallation.getInstance().isValidRuby(true)) {
+                return;
+            }
+
             // Run test normally - don't pop up browser
             FileObject file = getCurrentFile(context);
             
@@ -241,6 +245,10 @@ public class RailsActionProvider implements ActionProvider {
             return;
 
         } else if (COMMAND_RUN_SINGLE.equals(command) || debugSingleCommand) {
+            if (!RubyInstallation.getInstance().isValidRuby(true)) {
+                return;
+            }
+
             FileObject file = getCurrentFile(context);
 
             if (file == null) {

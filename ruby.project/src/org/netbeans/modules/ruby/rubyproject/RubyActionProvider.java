@@ -557,6 +557,10 @@ public class RubyActionProvider implements ActionProvider {
         }
         
         if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
+            if (!RubyInstallation.getInstance().isValidRuby(true)) {
+                return;
+            }
+
             // Run test normally - don't pop up browser
             FileObject file = getCurrentFile(context);
             
