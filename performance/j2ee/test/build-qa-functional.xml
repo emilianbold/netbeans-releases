@@ -234,7 +234,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Executor for Measure Complex Startup Time - prepare -->
     <target name="runcodetest_measure_complex_startup_prepare"
-    depends="init-cp,copy_unzip_startup_project,install-tomcat,tomcat_command_line_suffix">
+    depends="init-cp,copy_unzip_startup_project">
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>
@@ -248,13 +248,13 @@ Microsystems, Inc. All Rights Reserved.
         
     <!-- Executor for Measure Complex Startup Time -->
     <target name="runcodetest_measure_complex_startup"
-    depends="init-cp,make_netbeans_executable,install-tomcat">
+    depends="init-cp,make_netbeans_executable">
         <antcall target="copy_released_ide_cfg_file"/>
         <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
         <copy file="${performance.testutilities.dist.dir}/ActionTracker.xsl" todir="${xtest.results.testrun.dir}" />
-        <property name="reg.home"
+<!--        <property name="reg.home"
         value="-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${xtest.tmpdir}/apache-tomcat-${tomcat_version}" />
-        <property name="reg.token" value="-J-Dorg.netbeans.modules.tomcat.autoregister.token=1" />
+        <property name="reg.token" value="-J-Dorg.netbeans.modules.tomcat.autoregister.token=1" />-->
         <executeTests pluginName="jvm">
             <classpath location="${test.qa-functional.run.cp.extra}"/>
             <property name="xtest.enable.assertions" value="false" /> 
@@ -264,7 +264,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.userdata|performance.testutilities.dist.jar" value="${performance.testutilities.dist.jar}"/>
             <!-- Property for repeatedly used userdir with opened files -->
             <property name="xtest.userdata|org.netbeans.performance.repeat" value="5"/>
-            <property name="xtest.userdata|xtest.perf.commandline.suffix" value="${reg.home} ${reg.token}"/>
+<!--            <property name="xtest.userdata|xtest.perf.commandline.suffix" value="${reg.home} ${reg.token}"/>-->
         </executeTests>
         <copy todir="${xtest.sketchpad}">
             <fileset dir="${xtest.workdir}/sys/ide/var/log"/>
@@ -293,7 +293,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${xtest.tmpdir}/perf"/>
         <unzip src="qa-functional/data/perf.zip" dest="${xtest.tmpdir}/"/>
     </target>
-    
+<!--    
     <property name="tomcat.ext.dir" location="${nball.dir}/tomcatint/tomcat5/bundled/external"/>
     <import file="${tomcat.ext.dir}/../build.xml"/>
     <property name="tomcat.home" value="${xtest.tmpdir}/apache-tomcat-${tomcat_version}"/>
@@ -302,12 +302,12 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${tomcat.home}" quiet="true"/>
         <unzip src="${tomcat.ext.dir}/apache-tomcat-${tomcat_version}.zip" dest="${xtest.tmpdir}/"/>
         <chmod dir="${tomcat.home}/bin" perm="ugo+rx" includes="**/*.sh"/>
-    </target>
+    </target>-->
     <!-- Setting tomcat command line -->
-    <target name="tomcat_command_line_suffix">
+<!--    <target name="tomcat_command_line_suffix">
         <property name="reg.home" value="-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${xtest.tmpdir}/apache-tomcat-${tomcat_version}" />
         <property name="reg.token" value="-J-Dorg.netbeans.modules.tomcat.autoregister.token=1" />
         <property name="xtest.ide.commandline.suffix" value="${reg.home} ${reg.token}"/>
     </target>
-
+ -->
 </project>
