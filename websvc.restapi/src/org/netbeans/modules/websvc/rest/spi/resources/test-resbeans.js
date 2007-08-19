@@ -196,33 +196,28 @@ function setvisibility(id, state) {
 function changeMethod()
 {    
     var methodNode = document.getElementById("methodSel");
-    var method = methodNode.options[methodNode.selectedIndex].value;
+    var method = methodNode.options[methodNode.selectedIndex].value;  
+    var mIndex = -1;
+    if(method.indexOf('[') != -1) {
+        mIndex = method.substring(method.indexOf('[')+1, method.lastIndexOf(']'));
+        method = method.substring(0, method.indexOf('['));
+    }
     var mimeNode = document.getElementById("mimeSel");
     if(mimeNode == null || mimeNode == undefined) {
         currentMimeType = getMimeType(method);
         //alert(currentMimeType);
     }
     currentMethod = getMethod(method);
-    var formSubmittal = document.getElementById("formSubmittal");
-    if(formSubmittal != null) {
-        var content = formSubmittal.innerHTML;
-        var index = content.indexOf('method');
-        if(index != -1) {
-            var index2 = content.indexOf('name');
-            formSubmittal.innerHTML = content.substring(0, index)+" method='"+currentMethod+"' "+content.substring(index2);
-        }
-    }
-    document.getElementById("method").value = currentMethod;
+    document.getElementById("methodName").value = currentMethod;
     var request = null;
     var resource = currentResource;
-    if(resource != null) {
-        var m = resource.getElementsByTagName("method")[methodNode.selectedIndex];
+    if(resource != null && mIndex != -1) {
+        var m = resource.getElementsByTagName("method")[mIndex];
         request = m.getElementsByTagName("request");
     }
     var paramRep = getParamRep(request, currentMethod);
     document.getElementById("paramHook").innerHTML = paramRep;
     document.getElementById("mimeType").value = currentMimeType;
-    //alert(formSubmittal.innerHTML);
     updatepage('result', '');
     updatepage('resultheaders', '');
 };
@@ -246,9 +241,9 @@ function getMethodMimeTypeCombo(resource) {
             var mimeType = mimeTypes[k];
             var dispName = getMethodNameForDisplay(mName, mimeType);
             if(mName == 'GET')
-                str += "  <option selected value='"+dispName+"' selected>"+dispName+"</option>";
+                str += "  <option selected value='"+dispName+"["+j+"]' selected>"+dispName+"</option>";
             else
-                str += "  <option selected value='"+dispName+"'>"+dispName+"</option>";
+                str += "  <option selected value='"+dispName+"["+j+"]'>"+dispName+"</option>";
         }
     }   
     str += "</select>";
@@ -383,7 +378,7 @@ function getFormRep(req, uri, mName, mediaType) {
     str += "<div id='paramHook'></div>";
     //str += getParamRep(req, mName);
     str += "<input name='path' value='"+uri+"' type='hidden'>";
-    str += "<input id='method' name='method' value='"+mName+"' type='hidden'>";
+    str += "<input id='methodName' name='methodName' value='"+mName+"' type='hidden'>";
     str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
     str += "<br/><input value='MSG_TEST_RESBEANS_TestButton' type='button' onclick='testResource()'>";
     str += "</form>";
@@ -513,6 +508,8 @@ function testResource() {
     if(method == 'GET' && p.length > 0)
         req+= "?"+p;
     var disp = getDisplayUri(req);
+    currentMethod = method;
+    currentMimeType = mimetype;
     //alert('method: '+method+'mimetype: '+mimetype+' length: '+paramLength+'params: '+params);
     var xmlHttpReq4 = open(method, req, mimetype, paramLength, true);
     xmlHttpReq4.onreadystatechange = function() { updateContent(xmlHttpReq4); };
@@ -930,7 +927,7 @@ function getMimeType(mime) {
         return getDefaultMime();
 }
 function getFormMethod() {
-    var resource = document.getElementById('method');
+    var resource = document.getElementById('methodName');
     if(resource != null)
         return getMethod(resource.value);
     else
