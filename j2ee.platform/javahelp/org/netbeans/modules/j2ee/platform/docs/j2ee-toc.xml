@@ -224,8 +224,8 @@
                 <tocitem text="Generating Java Classes from XML Documents" target="jaxb_wizard" />
                 <tocitem text="Marshalling and Unmarshalling Java to XML" target="marshall_unmarshall" />
             </tocitem>
-               <tocitem text="Configuring Interoperability">
-                   <tocitem text="About Web Service Policies" target="org.netbeans.modules.websvc.wsitconf.about"/>
+               <tocitem text="Configuring Quality of Service">
+                   <tocitem text="About Quality of Service" target="org.netbeans.modules.websvc.wsitconf.about"/>
                    <tocitem text="Message Security">
                        <tocitem text="About Security for Web Services" target="org.netbeans.modules.websvc.wsitconf.about.security"/>
                        <tocitem text="About Security Policy for Web Services" target="org.netbeans.modules.websvc.wsitconf.about.security-policy"/> 
