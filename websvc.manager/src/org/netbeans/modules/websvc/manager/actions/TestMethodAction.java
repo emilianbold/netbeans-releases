@@ -68,7 +68,7 @@ public class TestMethodAction extends NodeAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(AddToFormAction.class, "TEST_METHOD");
+        return NbBundle.getMessage(TestMethodAction.class, "TEST_METHOD");
     }
     
     protected void performAction(org.openide.nodes.Node[] nodes) {

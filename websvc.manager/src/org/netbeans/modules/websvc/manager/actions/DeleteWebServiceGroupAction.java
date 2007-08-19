@@ -62,7 +62,7 @@ public class DeleteWebServiceGroupAction extends NodeAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(AddToFormAction.class, "DELETE");
+        return NbBundle.getMessage(DeleteWebServiceAction.class, "DELETE");
     }
     
     protected void performAction(Node[] nodes) {

@@ -45,11 +45,13 @@ import java.awt.Image;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import org.netbeans.modules.websvc.manager.actions.AddToFormAction;
 import org.netbeans.modules.websvc.manager.actions.ViewWSDLAction;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.netbeans.modules.websvc.manager.util.Util;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -93,10 +95,19 @@ public class WebServicesPortNode  extends AbstractNode implements Node.Cookie {
     
     // Create the popup menu:
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(AddToFormAction.class),
-            SystemAction.get(ViewWSDLAction.class)
-        };
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(SystemAction.get(ViewWSDLAction.class));
+        for (WebServiceManagerExt ext : Util.getExtensions()) {
+            for (Action a : ext.getPortActions()) {
+                actions.add(a);
+            }
+        }
+        return actions.toArray(new Action[actions.size()]);
+    }
+    
+    public Action getPreferredAction() {
+        Action[] actions = getActions(true);
+        return actions.length > 0 ? actions[0] : null;
     }
     
     public Image getIcon(int type){

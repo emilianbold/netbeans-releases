@@ -24,7 +24,6 @@ import java.awt.Cursor;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.websvc.manager.nodes.WebServiceMethodNode;
 import org.netbeans.modules.websvc.manager.nodes.WebServiceNode;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -64,7 +63,7 @@ public class ViewWSDLAction extends NodeAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(AddToFormAction.class, "VIEW_WSDL");
+        return NbBundle.getMessage(ViewWSDLAction.class, "VIEW_WSDL");
     }
     
     protected void performAction(Node[] activatedNodes) {

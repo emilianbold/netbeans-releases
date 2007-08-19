@@ -19,12 +19,6 @@
 
 package org.netbeans.modules.websvc.manager.actions;
 
-import java.io.IOException;
-import java.util.Properties;
-import java.io.File;
-import org.apache.tools.ant.module.api.support.ActionUtils;
-
-import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.manager.nodes.WebServiceGroupNode;
 import org.netbeans.modules.websvc.manager.nodes.WebServicesRootNode;
@@ -32,32 +26,12 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.execution.ExecutorTask;
 
 // import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.websvc.manager.ui.AddWebServiceDlg;
-import org.openide.filesystems.FileUtil;
 
 public class AddWebServiceAction extends NodeAction {
     
-    
-    private static final String wsImportCompileScriptName = "ws_import_compile.xml";
-    private static File wsImportCompileScript;
-    private static final String USER_HOME_PROP = "user.home";
-    private static final String USER_FILE_PROP = "user.properties.file";
-    private static final String WSDL_NAME_PROP = "wsdlName";
-    private static final String WSDL_FILE_NAME_PROP = "wsdlFileName";
-    private static final String CLASSPATH_PROP = "wscompile.classpath";
-    
-    /*
-    private static final String glassfishPath = "${glassfish.home}\\lib\\j2ee.jar:${glassfish.home}\\lib\\saaj-api.jar:${glassfish.home}\\lib\\saaj-impl.jar:${glassfish.home}\\lib\\jaxrpc-api.jar:\\${glassfish.home}\\lib\\jaxrpc-impl.jar:${glassfish.home}\\lib\\endorsed\\jaxp-api.jar:${glassfish.home}\\lib\\appserv-ws.jar:${glassfish.home}\\lib\\webservices-tools.jar:${glassfish.home}\\lib\\webservices-rt.jar";
-     */
-    //private static final String toolsPath = "${java.home}\\..\\lib\\tools.jar";
-    
-    private static String wsdlName;  // WSDL file name w/o extension
-    // e.g. in TravelWS.wsdl the wsdlName
-    // is TravelWS
     
     WebServiceListModel wsListModel = WebServiceListModel.getInstance();
     

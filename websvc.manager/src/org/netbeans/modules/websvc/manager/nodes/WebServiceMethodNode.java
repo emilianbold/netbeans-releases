@@ -21,7 +21,6 @@ package org.netbeans.modules.websvc.manager.nodes;
 
 import org.netbeans.modules.websvc.manager.spi.WebServiceTransferManager;
 
-import org.netbeans.modules.websvc.manager.actions.AddDataProviderToFormAction;
 import org.netbeans.modules.websvc.manager.actions.TestMethodAction;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
@@ -51,11 +50,13 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.Action;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
+import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -147,14 +148,19 @@ public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
     
     // Create the popup menu:
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(AddDataProviderToFormAction.class),
-            SystemAction.get(TestMethodAction.class)
-        };
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(SystemAction.get(TestMethodAction.class));
+        for (WebServiceManagerExt ext : Util.getExtensions()) {
+            for (Action a : ext.getMethodActions()) {
+                actions.add(a);
+            }
+        }
+        return actions.toArray(new Action[actions.size()]);
     }
     
     public Action getPreferredAction() {
-        return SystemAction.get(AddDataProviderToFormAction.class);
+        Action[] actions = getActions(true);
+        return actions.length > 0 ? actions[0] : null;
     }
     
     public Image getIcon(int type){

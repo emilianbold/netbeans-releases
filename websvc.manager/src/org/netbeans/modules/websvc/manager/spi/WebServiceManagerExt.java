@@ -19,10 +19,32 @@
 
 package org.netbeans.modules.websvc.manager.spi;
 
+import javax.swing.Action;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.*;
 
 public interface WebServiceManagerExt {
+    
     public boolean wsServiceAddedExt(WebServiceDescriptor wsMetadataDesc);
     public boolean wsServiceRemovedExt(WebServiceDescriptor wsMetadataDesc);
+    
+    /**
+     * @return list of consumer-specific actions for webservice root node.
+     */
+    public Action[] getWebServicesActions();
+
+    /**
+     * @return list of consumer-specific actions for group nodes.
+     */
+    public Action[] getGroupActions();
+
+    /**
+     * @return list of consumer-specific actions for port nodes.
+     */
+    public Action[] getPortActions();
+
+    /**
+     * @return list of consumer-specific actions for method nodes.
+     */
+    public Action[] getMethodActions();
 }
