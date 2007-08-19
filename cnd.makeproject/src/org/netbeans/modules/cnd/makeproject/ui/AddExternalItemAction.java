@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
 import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -31,6 +32,8 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 
@@ -63,12 +66,17 @@ public class AddExternalItemAction extends AbstractAction {
 	    return;
 
 	File[] files = fileChooser.getSelectedFiles();
-	Item[] items = new Item[files.length];
+	ArrayList<Item> items = new ArrayList<Item>();
 	for (int i = 0; i < files.length; i++) {
+            if (!files[i].exists()) {
+                String errormsg = NbBundle.getMessage(AddExternalItemAction.class, "FILE_DOESNT_EXISTS", files[i].getPath()); // NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+                continue;
+            }
 	    String itemPath;
-	    if (pathPanel.getMode() == PathPanel.REL_OR_ABS)
+	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
 		itemPath = IpeUtils.toAbsoluteOrRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
-	    else if (pathPanel.getMode() == PathPanel.REL)
+	    else if (PathPanel.getMode() == PathPanel.REL)
 		itemPath = IpeUtils.toRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
 	    else
 		itemPath = files[i].getPath();
@@ -76,12 +84,15 @@ public class AddExternalItemAction extends AbstractAction {
 	    itemPath = FilePathAdaptor.normalize(itemPath);
             Item item = makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath);
 	    if (item != null) {
-                items[i] = item;
+                items.add(item);
 	    }
             else {
-                makeProjectDescriptor.getExternalItemFolder().addItem(items[i] = new Item(itemPath));
+                item = new Item(itemPath);
+                makeProjectDescriptor.getExternalItemFolder().addItem(item);
+                items.add(item);
             }
 	}
-	MakeLogicalViewProvider.setVisible(project, items);
+        if (items.size() > 0)
+            MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
     }
 }
