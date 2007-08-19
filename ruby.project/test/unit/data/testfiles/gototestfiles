@@ -3,8 +3,14 @@ test/test_foo.rb
 lib/bar.rb
 test/tc_bar.rb
 app/controllers/my_controller.rb
+app/controllers/lonely_controller.rb
 test/controllers/my_controller_test.rb
 app/models/whatever.rb
 spec/models/whatever_spec.rb
 app/models/mymodel.rb
 test/unit/mymodel_test.rb
+test/unit/lonesometest.rb
+app/views/user/create.mab
+app/views/user/_partial.mab
+spec/views/user/create_spec.rb
+spec/views/user/_partial_spec.rb

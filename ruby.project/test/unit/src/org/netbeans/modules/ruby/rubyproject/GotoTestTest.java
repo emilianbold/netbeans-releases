@@ -7,11 +7,8 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
-import junit.framework.TestCase;
 import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
-import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -203,5 +200,65 @@ public class GotoTestTest extends RubyProjectTestBase {
             loc = gotoTest.findOpposite(source, -1);
             assertEquals(test, loc.getFileObject());
         }
+    }
+    
+    public void testGoto112812() {
+        assertNotNull(project);
+        
+        DeclarationLocation loc = gotoTest.findTest(getProjFile("app/views/user/create.mab"), -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("spec/views/user/create_spec.rb", loc.getFileObject());
+    }
+
+    public void testGoto112812b() {
+        assertNotNull(project);
+        
+        DeclarationLocation loc = gotoTest.findTest(getProjFile("app/views/user/_partial.mab"), -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("spec/views/user/_partial_spec.rb", loc.getFileObject());
+    }
+
+    public void testGoto112812c() {
+        assertNotNull(project);
+        
+        DeclarationLocation loc = gotoTest.findTested(getProjFile("spec/views/user/create_spec.rb"), -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("app/views/user/create.mab", loc.getFileObject());
+    }
+
+    public void testGoto112812d() {
+        assertNotNull(project);
+        
+        DeclarationLocation loc = gotoTest.findTested(getProjFile("spec/views/user/_partial_spec.rb"), -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("app/views/user/_partial.mab", loc.getFileObject());
+    }
+
+    public void testNegative() {
+        assertNotNull(project);
+        
+        DeclarationLocation loc = gotoTest.findTest(getProjFile("app/controllers/lonely_controller.rb"), -1);
+        assertSame(DeclarationLocation.NONE, loc);
+    }
+
+    public void testNegative2() {
+        assertNotNull(project);
+        
+        DeclarationLocation loc = gotoTest.findTest(getProjFile("test/unit/lonesometest.rb"), -1);
+        assertSame(DeclarationLocation.NONE, loc);
+    }
+
+    public void testNegative3() {
+        assertNotNull(project);
+        
+        DeclarationLocation loc = gotoTest.findTested(getProjFile("app/controllers/lonely_controller.rb"), -1);
+        assertSame(DeclarationLocation.NONE, loc);
+    }
+
+    public void testNegative4() {
+        assertNotNull(project);
+        
+        DeclarationLocation loc = gotoTest.findTested(getProjFile("test/unit/lonesometest.rb"), -1);
+        assertSame(DeclarationLocation.NONE, loc);
     }
 }

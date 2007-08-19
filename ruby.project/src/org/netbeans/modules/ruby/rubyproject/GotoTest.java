@@ -62,32 +62,33 @@ import org.openide.util.NbBundle;
  */
 public class GotoTest extends AbstractAction implements EditorAction {
     private static final String FILE = "(.+)"; // NOI18N
+    private static final String EXT = "(.+)"; // NOI18N
     private final String[] ZENTEST_PATTERNS =
         {
-            "app/controllers/" + FILE + "\\.rb", "test/controllers/" + FILE + "_test\\.rb", // NOI18N
-            "app/views/" + FILE + "\\.rb", "test/views/" + FILE + "_test\\.rb", // NOI18N
-            "app/models/" + FILE + "\\.rb", "test/unit/" + FILE + "_test\\.rb", // NOI18N
-            "lib/" + FILE + "\\.rb", "test/unit/test_" + FILE + "\\.rb", // NOI18N
+            "app/controllers/" + FILE + "\\." + EXT, "test/controllers/" + FILE + "_test\\." + EXT, // NOI18N
+            "app/views/" + FILE + "\\." + EXT, "test/views/" + FILE + "_test\\." + EXT, // NOI18N
+            "app/models/" + FILE + "\\." + EXT, "test/unit/" + FILE + "_test\\." + EXT, // NOI18N
+            "lib/" + FILE + "\\." + EXT, "test/unit/test_" + FILE + "\\." + EXT, // NOI18N
         };
     private final String[] RSPEC_PATTERNS =
         {
-            "app/models/" + FILE + "\\.rb", "spec/models/" + FILE + "_spec\\.rb", // NOI18N
-            "app/controllers/" + FILE + "\\.rb", "spec/controllers/" + FILE + "_spec\\.rb", // NOI18N
-            "app/views/" + FILE + "\\.rb", "spec/views/" + FILE + "_spec\\.rb", // NOI18N
-            "app/helpers/" + FILE + "\\.rb", "spec/helpers/" + FILE + "_spec\\.rb", // NOI18N
+            "app/models/" + FILE + "\\." + EXT, "spec/models/" + FILE + "_spec\\." + EXT, // NOI18N
+            "app/controllers/" + FILE + "\\." + EXT, "spec/controllers/" + FILE + "_spec\\." + EXT, // NOI18N
+            "app/views/" + FILE + "\\." + EXT, "spec/views/" + FILE + "_spec\\." + EXT, // NOI18N
+            "app/helpers/" + FILE + "\\." + EXT, "spec/helpers/" + FILE + "_spec\\." + EXT, // NOI18N
         };
     private final String[] RAILS_PATTERNS =
         {
-            "app/controllers/" + FILE + "\\.rb", "test/functional/" + FILE + "_test\\.rb", // NOI18N
-            "app/models/" + FILE + "\\.rb", "test/unit/" + FILE + "_test\\.rb", // NOI18N
-            "lib/" + FILE + "\\.rb", "test/unit/test_" + FILE + "\\.rb", // NOI18N
+            "app/controllers/" + FILE + "\\." + EXT, "test/functional/" + FILE + "_test\\." + EXT, // NOI18N
+            "app/models/" + FILE + "\\." + EXT, "test/unit/" + FILE + "_test\\." + EXT, // NOI18N
+            "lib/" + FILE + "\\." + EXT, "test/unit/test_" + FILE + "\\." + EXT, // NOI18N
         };
     private final String[] RUBYTEST_PATTERNS =
         {
-            "lib/" + FILE + "\\.rb", "test/test_" + FILE + "\\.rb", // NOI18N
-            "lib/" + FILE + "\\.rb", "test/tc_" + FILE + "\\.rb", // NOI18N
-            FILE + "\\.rb", "test_" + FILE + "\\.rb", // NOI18N
-            FILE + "\\.rb", "tc_" + FILE + "\\.rb", // NOI18N
+            "lib/" + FILE + "\\." + EXT, "test/test_" + FILE + "\\." + EXT, // NOI18N
+            "lib/" + FILE + "\\." + EXT, "test/tc_" + FILE + "\\." + EXT, // NOI18N
+            FILE + "\\." + EXT, "test_" + FILE + "\\." + EXT, // NOI18N
+            FILE + "\\." + EXT, "tc_" + FILE + "\\." + EXT, // NOI18N
         };
 
     public GotoTest() {
@@ -151,20 +152,26 @@ public class GotoTest extends AbstractAction implements EditorAction {
             path = path.replace(File.separatorChar, '/');
         }
 
-        Matcher matcher = Pattern.compile("(.*)" + pattern1).matcher(path); // Do suffix matching // NOI18N
+        // Do suffix matching
+        Pattern pattern = Pattern.compile("(.*)" + pattern1); // NOI18N
+        Matcher matcher = pattern.matcher(path);
 
         if (matcher.matches()) {
             String prefix = matcher.group(1);
             String name = matcher.group(2);
+            String ext = matcher.group(3);
             int nameIndex = pattern2.indexOf(FILE);
             assert nameIndex != -1;
+            int extIndex = pattern2.indexOf(EXT,nameIndex+FILE.length());
+            assert extIndex != -1;
 
             StringBuilder sb = new StringBuilder();
             appendRegexp(sb, prefix);
             appendRegexp(sb, File.separator);
             appendRegexp(sb, pattern2.substring(0, nameIndex));
             appendRegexp(sb, name);
-            appendRegexp(sb, pattern2.substring(nameIndex + FILE.length()));
+            appendRegexp(sb, pattern2.substring(nameIndex + FILE.length(), extIndex));
+            appendRegexp(sb, ext);
 
             String otherPath = sb.toString();
 
@@ -177,6 +184,20 @@ public class GotoTest extends AbstractAction implements EditorAction {
 
             if (otherFile.exists()) {
                 return otherFile;
+            }
+            
+            // Try looking for arbitrary extensions
+            int fileIndex = pattern2.indexOf(FILE);
+            String newPattern = pattern2.substring(0, fileIndex) + name + pattern2.substring(fileIndex+FILE.length());
+            Pattern p2 = Pattern.compile("(.*)" + newPattern); // NOI18N
+            File parent = otherFile.getParentFile();
+            File[] children = parent.listFiles();
+            if (children != null) {
+                for (File f : children) {
+                    if (p2.matcher(f.getPath()).matches()) {
+                        return f;
+                    }
+                }
             }
         }
 
