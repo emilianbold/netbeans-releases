@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="Web Services Manager " default="createWsJars" basedir=".">
+    <description>
+        A script to wscompile and wsimport WSDL files.
+        
+        run-wscompile - runs the wscompile ant task for the JAX-RPC proxy client
+        run-wsimport - runs the wsimport ant task for the JAX-WS proxy client
+        
+        Creates the directories ${websvc.home}/${serviceName}/jaxrpc.
+        Creates build and src directories.
+        Uses "wscompile" to compile the WSDL and place all generated .class and .java files into  build and src directories respectively.
+        Creates the "jar" file from the ".class" files.
+        Deletes "build" and "src" directories.
+        
+        Creates the directories ${websvc.home}/${serviceName}/jaxws.
+        Creates build and src directories.
+        Uses "wsimport" to compile the WSDL and place all generated .class and .java files into  build and src directories respectively.
+        Creates the "jar" file from the ".class" files.
+        Deletes "build" and "src" directories.
+        
+        Copies the wsdl file into ${websvc.home}/${serviceName}/websvc.
+        
+    </description>
+    
+    <target name="wsimport-jar" depends="-run-wsimport, -create-proxy-jars" description="Generates web service proxy jars using wsimport"/>
+    <target name="wscompile-jar" depends="-run-wscompile, -create-proxy-jars" description="Generates web service proxy jars using wscompile"/>
+    
+    <target name="-init-user">
+        <property file="${user.properties.file}"/>
+        <condition property="is-jdk-1.5">
+            <equals arg1="${ant.java.version}" arg2="1.5"/>
+        </condition>
+    </target>
+    
+    <target name="-init-wscompile" depends="-init-user">
+        <property name="jxrpc.base" value="${websvc.home}/${serviceName}/jaxrpc"/>
+        <mkdir dir="${jxrpc.base}/build"/>
+        <mkdir dir="${jxrpc.base}/src"/>
+    </target>
+    
+    <target name="-init-wsimport" depends="-init-user">
+        <property name="jaxws.base" value="${websvc.home}/${serviceName}/jaxws"/>
+        <mkdir dir="${jaxws.base}/build"/>
+        <mkdir dir="${jaxws.base}/src"/>
+        <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+            <classpath path="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}"/>
+        </taskdef>
+    </target>
+    
+    <target name="-set-wsimport-base" if="jaxws.base">
+        <property name="jar.base" value="${jaxws.base}"/>
+    </target>
+    
+    <target name="-set-wscompile-base" if="jxrpc.base">
+        <property name="jar.base" value="${jxrpc.base}"/>
+    </target>
+    
+    <target name="-run-wscompile" depends="-init-wscompile, -init-user">
+        <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile" classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}"/>
+        <wscompile
+            gen="true"
+            base="${jxrpc.base}/build"
+            sourcebase="${jxrpc.base}/src"
+            debug="true"
+            config="${config.file}"
+            HTTPproxy="${proxy.server}"
+            classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}" fork="true"/>
+        
+        <!-- ensure source level 1.4 -->
+        <delete dir="${jxrpc.base}/build"/>
+        <mkdir dir="${jxrpc.base}/build"/>
+        <javac srcdir="${jxrpc.base}/src" 
+               destdir="${jxrpc.base}/build" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}" 
+               debug="on" source="1.4" fork="true">
+        </javac>
+    </target>
+    
+    <target name="recompile-wsimport" unless="is-jdk-1.5">
+        <!-- ensure correct source level -->
+        <delete dir="${jaxws.base}/build"/>
+        <mkdir dir="${jaxws.base}/build"/>
+        <javac srcdir="${jaxws.base}/src" 
+               destdir="${jaxws.base}/build" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}" 
+               debug="on" source="1.5" fork="true">
+            <compilerarg value="-Djava.endorsed.dirs=${jaxws.endorsed.dir}"/>
+        </javac>        
+    </target>
+    
+    <target name="-run-wsimport" depends="-init-wsimport, -init-user">
+        <wsimport sourcedestdir="${jaxws.base}/src" 
+                  extension="true" 
+                  package="${packageName}" 
+                  destdir="${jaxws.base}/build" 
+                  wsdl="${wsdlFileName}" xendorsed="true" fork="true" catalog="${catalog.file}" verbose="true">
+            <jvmarg value="-Djava.endorsed.dirs=${jaxws.endorsed.dir}"/>
+        </wsimport>
+        
+        <antcall target="recompile-wsimport"/>
+    </target>
+    
+    <target name="-create-proxy-jars" depends="-set-wsimport-base, -set-wscompile-base">
+        <!-- jar the sources -->
+        <jar jarfile="${jar.base}/${serviceName}-src.jar">
+            <fileset dir="${jar.base}/src"/>
+        </jar>
+        
+        <!-- jar the compiled classes -->
+        <jar jarfile="${jar.base}/${serviceName}.jar"
+             basedir="${jar.base}/build"/>
+        
+        <delete failonerror="false" dir="${jar.base}/build"/>
+        <delete failonerror="false" dir="${jar.base}/src"/>
+    </target>
+    
+    <!-- Visual web designer w/s consumer targets -->
+    
+    <target name="jaxrpc-dt-compile" depends="-init-user">
+        <property name="jxrpc.base" value="${websvc.home}/${serviceName}/jaxrpc"/>
+        
+        <mkdir dir="${jxrpc.base}/build"/>
+        <javac srcdir="${jxrpc.base}/src" 
+               destdir="${jxrpc.base}/build" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}:${libs.jsf12-support.classpath}:${jxrpc.base}/${serviceName}.jar" 
+               debug="on" 
+               source="1.4" fork="true"/>
+        
+        <jar jarfile="${jxrpc.base}/${serviceName}.jar" 
+             basedir="${jxrpc.base}/build"
+             update="true"/>
+        
+        <jar jarfile="${jxrpc.base}/${serviceName}-src.jar" update="true">
+            <fileset dir="${jxrpc.base}/src">
+                <patternset includes="**/*.java"/>
+            </fileset>
+        </jar>
+        
+        <delete dir="${jxrpc.base}/build"/>
+        <delete dir="${jxrpc.base}/src"/>
+        
+        <!-- create wrapper proxy client and the corresponding design time jar file -->
+        <mkdir dir="${jxrpc.base}/dt/build"/>
+        
+        <!-- Compile the design time files. designtime.jar and dataprovider.jar need to be in the classpath -->
+        <javac srcdir="${jxrpc.base}/dt/src" 
+               destdir="${jxrpc.base}/dt/build" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}:${jxrpc.base}/${serviceName}.jar:${designtime.classpath}" 
+               debug="on" source="1.4" fork="true"/>
+        
+        <copy todir="${jxrpc.base}/dt/build">
+            <fileset dir="${jxrpc.base}/dt/src">
+                <patternset excludes="**/*.java"/>
+            </fileset>
+        </copy>
+        <jar jarfile="${jxrpc.base}/${serviceName}-dt.jar" 
+             basedir="${jxrpc.base}/dt/build" />
+        
+        <jar jarfile="${jxrpc.base}/${serviceName}-dt-src.jar">
+            <fileset dir="${jxrpc.base}/dt/src">
+                <patternset includes="**/*.java"/>
+            </fileset>
+        </jar>
+        
+        <delete dir="${jxrpc.base}/dt"/>
+    </target>
+    
+    <target name="jaxws-dt-compile" depends="-init-user">
+        <property name="jaxws.base" value="${websvc.home}/${serviceName}/jaxws"/>
+        
+        <mkdir dir="${jaxws.base}/build"/>
+        <!-- Add the .wsdl file to the web service. The wsimport tool uses an
+             absolute path for the wsdl, which does not work for file-based wsdl files. -->
+        <copy file="${wsdlFileName}" todir="${jaxws.base}/src/${packageDir}"/>
+        <copy file="${wsdlFileName}" todir="${jaxws.base}/build/${packageDir}"/>
+        
+        <!-- compile client bean and dataprovider classes and add to proxy jar -->
+        <javac srcdir="${jaxws.base}/src" 
+               destdir="${jaxws.base}/build" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}:${libs.jsf12-support.classpath}:${jaxws.base}/${serviceName}.jar" 
+               debug="on" source="1.5" fork="true"/>
+        
+        <jar jarfile="${jaxws.base}/${serviceName}.jar"
+             basedir="${jaxws.base}/build"
+             update="true"/>
+        
+        <jar jarfile="${jaxws.base}/${serviceName}-src.jar" 
+             basedir="${jaxws.base}/src"
+             update="true"/>
+        
+        <delete dir="${jaxws.base}/build"/>
+        <delete dir="${jaxws.base}/src"/>
+        
+        <!-- compile designtime classes and create new designtime jar -->
+        <mkdir dir="${jaxws.base}/dt/build"/>
+        
+        <javac srcdir="${jaxws.base}/dt/src" 
+               destdir="${jaxws.base}/dt/build" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}:${designtime.classpath}:${jaxws.base}/${serviceName}.jar" 
+               debug="on" 
+               source="1.5" fork="true"/>
+        
+        <copy todir="${jaxws.base}/dt/build">
+            <fileset dir="${jaxws.base}/dt/src">
+                <patternset excludes="**/*.java"/>
+            </fileset>
+        </copy>
+        
+        <jar jarfile="${jaxws.base}/${serviceName}-dt.jar" 
+             basedir="${jaxws.base}/dt/build" />
+        
+        <jar jarfile="${jaxws.base}/${serviceName}-dt-src.jar">
+            <fileset dir="${jaxws.base}/dt/src">
+                <patternset includes="**/*.java"/>
+            </fileset>
+        </jar>
+        
+        <delete dir="${jaxws.base}/dt"/>
+    </target>
+    
+</project>
