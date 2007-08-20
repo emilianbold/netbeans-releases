@@ -24,11 +24,16 @@ package org.netbeans.nbbuild;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -114,7 +119,7 @@ public class CheckHelpSetsBin extends Task {
                 ex.printStackTrace();
             }
             if (manifest == null) {
-                System.out.println("Manifest is not present in jar. Skipping.");
+                log("Manifest is not present in jar. Skipping.", Project.MSG_WARN);
                 continue;
             }
             File parent = moduleJar.getParentFile();
@@ -122,7 +127,7 @@ public class CheckHelpSetsBin extends Task {
 
             String value = attrs.getValue("OpenIDE-Module");
             if (value == null) {
-                System.out.println("Attribute OpenIDE-Module is not present in manifest. Skipping.");
+                log("Attribute OpenIDE-Module is not present in manifest. Skipping.", Project.MSG_WARN);
                 continue;
             }
             //Look for *.hs
@@ -142,13 +147,12 @@ public class CheckHelpSetsBin extends Task {
                     try {
                         jar = new JarFile(extJar);
                     } catch (IOException ex) {
-                        System.out.println("Error: Cannot open file: " + extJar);
+                        log("Error: Cannot open file: " + extJar, Project.MSG_WARN);
                         ex.printStackTrace();
                     }
                     //Look for *.hs
                     for (Enumeration en = jar.entries(); en.hasMoreElements(); ) {
                         JarEntry je = (JarEntry) en.nextElement();
-                        //System.out.println("je.name: " + je.getName());
                         if (je.getName().endsWith(".hs")) {
                             hsFound = true;
                         }
@@ -162,17 +166,12 @@ public class CheckHelpSetsBin extends Task {
         globalClassPath = new URL[globalFileList.size()];
         for (int i = 0; i < globalFileList.size(); i++) {
             try {
-                if (System.getProperty("os.name").startsWith("Windows")) {
-                    globalClassPath[i] = new URL("file:///" + globalFileList.get(i).toString());
-                } else {
-                    globalClassPath[i] = new URL("file://" + globalFileList.get(i).toString());
-                }
-                //System.out.println("globalClassPath[" + i + "]: " + globalClassPath[i].toString());
+                globalClassPath[i] = globalFileList.get(i).toURI().toURL();
             } catch (MalformedURLException ex) {
                 ex.printStackTrace();
             }
         }
-        return new URLClassLoader(globalClassPath,this.getClass().getClassLoader().getParent(),new NbDocsStreamHandler.Factory());
+        return new URLClassLoader(globalClassPath,this.getClass().getClassLoader().getParent(),new CheckHelpSetsBin.NbDocsStreamHandler.Factory());
     }
 
     private Map<String, ClassLoader> createClassLoaderMap (File dir, String [] files) {
@@ -193,7 +192,7 @@ public class CheckHelpSetsBin extends Task {
                 ex.printStackTrace();
             }
             if (manifest == null) {
-                System.out.println("Manifest is not present in jar. Skipping.");
+                log("Manifest is not present in jar. Skipping.", Project.MSG_WARN);
                 continue;
             }
             File parent = moduleJar.getParentFile();
@@ -209,11 +208,7 @@ public class CheckHelpSetsBin extends Task {
                 classPath = new URL[fileList.size()];
                 for (int j = 0; j < fileList.size(); j++) {
                     try {
-                        if (System.getProperty("os.name").startsWith("Windows")) {
-                            classPath[j] = new URL("file:///" + fileList.get(j).toString());
-                        } else {
-                            classPath[j] = new URL("file://" + fileList.get(j).toString());
-                        }
+                        classPath[j] = fileList.get(j).toURI().toURL();
                     } catch (MalformedURLException ex) {
                         ex.printStackTrace();
                     }
@@ -222,7 +217,7 @@ public class CheckHelpSetsBin extends Task {
 
             String key = attrs.getValue("OpenIDE-Module");
             if (key == null) {
-                System.out.println("Attribute OpenIDE-Module is not present in manifest. Skipping.");
+                log("Attribute OpenIDE-Module is not present in manifest. Skipping.", Project.MSG_WARN);
                 continue;
             }
             int pos = key.indexOf("/");
@@ -232,7 +227,6 @@ public class CheckHelpSetsBin extends Task {
             //Look for *.hs
             for (Enumeration en = jar.entries(); en.hasMoreElements(); ) {
                 JarEntry je = (JarEntry) en.nextElement();
-                //System.out.println("je.name: " + je.getName());
                 if (je.getName().endsWith(".hs")) {
                     hsFound = true;
                 }
@@ -246,13 +240,12 @@ public class CheckHelpSetsBin extends Task {
                     try {
                         jar = new JarFile(extJar);
                     } catch (IOException ex) {
-                        System.out.println("Error: Cannot open file: " + extJar);
+                        log("Error: Cannot open file: " + extJar, Project.MSG_WARN);
                         ex.printStackTrace();
                     }
                     //Look for *.hs
                     for (Enumeration en = jar.entries(); en.hasMoreElements(); ) {
                         JarEntry je = (JarEntry) en.nextElement();
-                        //System.out.println("je.name: " + je.getName());
                         if (je.getName().endsWith(".hs")) {
                             hsFound = true;
                         }
@@ -261,7 +254,7 @@ public class CheckHelpSetsBin extends Task {
             }
             if (hsFound) {
                 ClassLoader clParent = this.getClass().getClassLoader().getParent();
-                URLClassLoader moduleClassLoader = new URLClassLoader(classPath,clParent,new NbDocsStreamHandler.Factory());
+                URLClassLoader moduleClassLoader = new URLClassLoader(classPath,clParent,new CheckHelpSetsBin.NbDocsStreamHandler.Factory());
                 m.put(key,moduleClassLoader);
             }
         }
@@ -275,7 +268,6 @@ public class CheckHelpSetsBin extends Task {
         }
         String [] arr = prop.split(",");
         for (int i = 0; i < arr.length; i++) {
-            //System.out.println("arr[" + i + "]: " + arr[i]);
             excludedModulesSet.add(arr[i]);
         }
         return excludedModulesSet;
@@ -283,9 +275,9 @@ public class CheckHelpSetsBin extends Task {
     
     public void execute() throws BuildException {
         try {
-            URL.setURLStreamHandlerFactory(new NbDocsStreamHandler.Factory());
+            URL.setURLStreamHandlerFactory(new CheckHelpSetsBin.NbDocsStreamHandler.Factory());
         } catch (Error ex) {
-            System.out.println("StreamHandlerFactory already set");
+            log("StreamHandlerFactory already set", Project.MSG_WARN);
         }
         String p = getProject().getProperty("javahelpbin.exclude.modules");
         excludedModulesSet = parseExcludeModulesProperty(p);
@@ -314,18 +306,15 @@ public class CheckHelpSetsBin extends Task {
                     ex.printStackTrace();
                 }
                 if (manifest == null) {
-                    System.out.println("Manifest is not present in jar. Skipping.");
+                    log("Manifest is not present in jar. Skipping.", Project.MSG_WARN);
                     continue;
                 }
                 File parent = moduleJar.getParentFile();
-                //System.out.println("------------------------------");
-                //System.out.println("moduleJar:" + moduleJar);
-                //System.out.println("manifest:" + manifest);
                 java.util.jar.Attributes attrs = manifest.getMainAttributes();
                         
                 String key = attrs.getValue("OpenIDE-Module");
                 if (key == null) {
-                    System.out.println("Attribute OpenIDE-Module is not present in manifest. Skipping.");
+                    log("Attribute OpenIDE-Module is not present in manifest. Skipping.", Project.MSG_WARN);
                     continue;
                 }
                 int pos = key.indexOf("/");
@@ -352,7 +341,6 @@ public class CheckHelpSetsBin extends Task {
                 //Look for *.hs
                 for (Enumeration en = jar.entries(); en.hasMoreElements(); ) {
                     JarEntry je = (JarEntry) en.nextElement();
-                    //System.out.println("je.name: " + je.getName());
                     if (je.getName().endsWith(".hs")) {
                         URLClassLoader moduleClassLoader = (URLClassLoader) classLoaderMap.get(key);
                         URL hsURL = moduleClassLoader.findResource(je.getName());
@@ -404,7 +392,7 @@ public class CheckHelpSetsBin extends Task {
             try {
                 u = id.getURL();
             } catch (MalformedURLException ex) {
-                System.out.println("id:" + id);
+                log("id:" + id, Project.MSG_WARN);
                 ex.printStackTrace();
             }
             if (u == null) {
@@ -460,11 +448,9 @@ public class CheckHelpSetsBin extends Task {
             }
             log("Checking ID " + id.id, Project.MSG_VERBOSE);
             try {
-                //System.out.println("CALL OF CheckLinks.scan");
                 CheckLinks.scan(this, null, null, id.id, "", 
                 new URI(u.toExternalForm()), okurls, badurls, cleanurls, false, false, false, 2,
                 Collections.<Mapper>emptyList());
-                //System.out.println("RETURN OF CheckLinks.scan");
             } catch (URISyntaxException ex) {
                 ex.printStackTrace();
             } catch (IOException ex) {
@@ -582,6 +568,269 @@ public class CheckHelpSetsBin extends Task {
             
         }
         
+    }
+    
+    public static class NbDocsStreamHandler extends URLStreamHandler {
+
+        public static class Factory implements URLStreamHandlerFactory {
+
+            public URLStreamHandler createURLStreamHandler(String protocol) {
+                if (protocol.equals("nbdocs")) { // NOI18N
+                    return new CheckHelpSetsBin.NbDocsStreamHandler();
+                } else {
+                    return null;
+                }
+            }
+        }
+
+        /** Make a URLConnection for nbdocs: URLs.
+         * @param u the URL
+         * @throws IOException if the wrong protocol
+         * @return the connection
+         */
+        protected URLConnection openConnection(URL u) throws IOException {
+            if (u.getProtocol().equals("nbdocs")) { // NOI18N
+                return new NbDocsURLConnection(u);
+            } else {
+                throw new IOException();
+            }
+        }
+
+        /** A URL connection that reads from the docs classloader.
+         */
+        private static class NbDocsURLConnection extends URLConnection {
+
+            /** underlying URL connection
+             */
+            private URLConnection real = null;
+
+            /** any associated exception while handling
+             */
+            private IOException exception = null;
+
+            /** Make the connection.
+             * @param u URL to connect to
+             */
+            public NbDocsURLConnection(URL u) {
+                super(u);
+            }
+
+            /** Connect to the URL.
+             * Actually look up and open the underlying connection.
+             * @throws IOException for the usual reasons
+             */
+            public synchronized void connect() throws IOException {
+                if (exception != null) {
+                    IOException e = exception;
+                    exception = null;
+                    throw e;
+                }
+                if (! connected) {
+                    real.connect();
+                    connected = true;
+                }
+            }
+
+            /** Maybe connect, if not keep track of the problem.
+             */
+            private void tryToConnect() {
+                if (connected || exception != null) return;
+                try {
+                    connect();
+                } catch (IOException ioe) {
+                    exception = ioe;
+                }
+            }
+
+            /** Get a URL header.
+             * @param n index of the header
+             * @return the header value
+             */
+            public String getHeaderField(int n) {
+                tryToConnect();
+                if (connected)
+                    return real.getHeaderField(n);
+                else
+                    return null;
+            }
+
+            /** Get the name of a header.
+             * @param n the index
+             * @return the header name
+             */
+            public String getHeaderFieldKey(int n) {
+                tryToConnect();
+                if (connected)
+                    return real.getHeaderFieldKey(n);
+                else
+                    return null;
+            }
+
+            /** Get a header by name.
+             * @param key the header name
+             * @return the value
+             */
+            public String getHeaderField(String key) {
+                tryToConnect();
+                if (connected)
+                    return real.getHeaderField(key);
+                else
+                    return null;
+            }
+
+            /** Get an input stream on the connection.
+             * @throws IOException for the usual reasons
+             * @return a stream to the object
+             */
+            public InputStream getInputStream() throws IOException {
+                connect();
+                return real.getInputStream();
+            }
+
+            /** Get an output stream on the object.
+             * @throws IOException for the usual reasons
+             * @return an output stream writing to it
+             */
+            public OutputStream getOutputStream() throws IOException {
+                connect();
+                return real.getOutputStream();
+            }
+
+            /** Get the type of the content.
+             * @return the MIME type
+             */
+            public String getContentType() {
+                tryToConnect();
+                if (connected)
+                    return real.getContentType();
+                else
+                    return "application/octet-stream"; // NOI18N
+            }
+
+            /** Get the length of content.
+             * @return the length in bytes
+             */
+            public int getContentLength() {
+                tryToConnect();
+                if (connected)
+                    return real.getContentLength();
+                else
+                    return 0;
+            }
+
+        }
+
+        /** A URL connection that reads from the info files. It displays
+         * help page when referred module is not enabled or installed.
+         * It also takes module display name from bundle when available.
+         * Module base name is key to retrieve module display name
+         * eg.: org.netbeans.modules.web.monitor=HTTP Monitor
+         */
+        private static class InfoURLConnection extends URLConnection {
+            /** Provides input stream for this connection. */
+            private ByteArrayInputStream stream;
+            /** Module display name */
+            private String moduleName;
+
+            /** Make the connection.
+             * @param u URL to connect to
+             */
+            public InfoURLConnection (URL u, String moduleName) {
+                super(u);
+                this.moduleName = moduleName;
+            }
+
+            /** Connect to the URL.
+             * Actually look up and open the underlying connection.
+             * @throws IOException for the usual reasons
+             */
+            public synchronized void connect() throws IOException {
+                if (!connected) {
+                    //Prepare data
+                    InputStream is = url.openStream();
+                    if (is != null) {
+                        byte [] arr;
+                        arr = readData(is);
+                        String s1 = new String(arr,"UTF-8"); // NOI18N
+                        String s2 = s1.replaceAll("\\{0\\}",moduleName); // NOI18N
+                        arr = s2.getBytes("UTF-8");
+                        stream = new ByteArrayInputStream(arr);
+                    } else {
+                        throw new IOException("Info file not found."); // NOI18N
+                    }
+                    connected = true;
+                }
+            }
+
+            /** Reads all available data from input steram to byte array. It is workaround
+             * to avoid usage of InputStream.available which might be unreliable on URL. */
+            private byte [] readData (InputStream is) throws IOException {
+                int step = 4096;
+                byte[] buff = new byte[step];
+                byte[] sum = new byte[0];
+                byte[] result;
+                int len = -1, readLen = 0, allocLen = 0;
+
+                for (;;) {
+                    len = is.read(buff);
+                    if (len == -1) {
+                        result = new byte[readLen];
+                        System.arraycopy(sum,0,result,0,readLen);
+                        return result;
+                    }
+                    if (allocLen < (readLen + len)) {
+                        byte [] tmp = new byte[sum.length];
+                        System.arraycopy(sum,0,tmp,0,readLen);
+                        sum = new byte[allocLen + step];
+                        allocLen = allocLen + step;
+                        System.arraycopy(tmp,0,sum,0,readLen);
+                    }
+                    System.arraycopy(buff,0,sum,readLen,len);
+                    readLen = readLen + len;
+                }
+            }
+
+            /** Maybe connect, if not keep track of the problem.
+             */
+            private void tryToConnect() {
+                if (connected) {
+                    return;
+                }
+                try {
+                    connect();
+                } catch (IOException ioe) {
+                }
+            }
+
+            /** Get an input stream on the connection.
+             * @throws IOException for the usual reasons
+             * @return a stream to the object
+             */
+            public InputStream getInputStream() throws IOException {
+                connect();
+                return stream;
+            }
+
+
+            /** Get the type of the content.
+             * @return the MIME type
+             */
+            public String getContentType() {
+                return "text/html"; // NOI18N
+            }
+
+            /** Get the length of content.
+             * @return the length in bytes
+             */
+            public int getContentLength() {
+                tryToConnect();
+                if (connected) {
+                    return stream.available();
+                } else {
+                    return 0;
+                }
+            }
+        }
     }
         
 }
