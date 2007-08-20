@@ -129,7 +129,6 @@ public class CheckHelpSets extends Task {
         while (e.hasMoreElements()) {
             javax.help.Map.ID id = (javax.help.Map.ID)e.nextElement();
             URL u = map.getURLFromID(id);
-            System.out.println("id:" + id + " u:" + u);
             if (u == null) {
                 throw new BuildException("Bogus map ID: " + id.id, new Location(hsfile.getAbsolutePath()));
             }
