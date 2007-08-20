@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
@@ -28,7 +30,6 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
-import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -42,26 +43,36 @@ import org.openide.util.RequestProcessor;
  * @author Michal Mocnak
  */
 public class JBWebApplicationsChildren extends Children.Keys implements Refreshable {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(JBWebApplicationsChildren.class.getName());
+
+    private static final Set<String> SYSTEM_WEB_APPLICATIONS = new HashSet<String>();
+    static {
+        Collections.addAll(SYSTEM_WEB_APPLICATIONS,
+                "jbossws-context", "jmx-console", "jbossws", "jbossws",
+                "web-console", "invoker", "jbossmq-httpil");
+    }
+
+    private final JBAbilitiesSupport abilitiesSupport;
+
     private Lookup lookup;
-    private Boolean remoteManagementSupported = null;
-    private Boolean isJB4x = null;
-    
+
     public JBWebApplicationsChildren(Lookup lookup) {
         this.lookup = lookup;
+        this.abilitiesSupport = new JBAbilitiesSupport(lookup);
     }
-    
+
     public void updateKeys(){
         setKeys(new Object[] {Util.WAIT_NODE});
-        
+
         RequestProcessor.getDefault().post(new Runnable() {
             Vector keys = new Vector();
-            
+
             public void run() {
                 try {
                     // Query to the jboss server
                     ObjectName searchPattern;
-                    if (isRemoteManagementSupported() && isJB4x()) {
+                    if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
                         searchPattern = new ObjectName("jboss.management.local:j2eeType=WebModule,J2EEApplication=null,*"); // NOI18N
                     }
                     else {
@@ -70,85 +81,71 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
 
                     Object server = Util.getRMIServer(lookup);
                     Set managedObj = (Set) server.getClass().getMethod("queryMBeans", new Class[]  {ObjectName.class, QueryExp.class}).invoke(server, new Object[]  {searchPattern, null});
-                    
-                    Iterator it = managedObj.iterator();
-                    
-                    JBDeploymentManager dm = (JBDeploymentManager)lookup.lookup(JBDeploymentManager.class);
-                    
+
+                    JBDeploymentManager dm = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
+
                     // Query results processing
-                    while(it.hasNext()) {
+                    for (Iterator it = managedObj.iterator(); it.hasNext();) {
                         try {
                             ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
                             String name = elem.getKeyProperty("name");
                             String url = "http://" + dm.getHost() + ":" + dm.getPort();
-                            String context = "";
-                            if (isRemoteManagementSupported() && isJB4x()) {
-                                if("jbossws-context.war".equals(name) || "jmx-console.war".equals(name)) { // Excluding it. It's system package
-                                    continue;
-                                }                                
-                                String descr = (String)Util.getMBeanParameter(dm, "jbossWebDeploymentDescriptor", elem.getCanonicalName()); // NOI18N                                
-                                context = Util.getWebContextRoot(descr, name);
+                            String context = null;
+
+                            if (name.endsWith(".war")) {
+                                name = name.substring(0, name.lastIndexOf(".war"));
                             }
-                            else {
+
+                            if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
+                                if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
+                                    continue;
+                                }
+                                String descr = (String) Util.getMBeanParameter(dm, "jbossWebDeploymentDescriptor", elem.getCanonicalName()); // NOI18N
+                                context = Util.getWebContextRoot(descr, name);
+                            } else {
                                 if (name.startsWith("//localhost/")) { // NOI18N
                                     name = name.substring("//localhost/".length()); // NOI18N
                                 }
-                                // excluding system packages
-                                if("".equals(name) || "jmx-console".equals(name) || "jbossws".equals(name) ||
-                                   "jbossws-context".equals(name) || "web-console".equals(name) || "invoker".equals(name)) {
+                                if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
                                     continue;
                                 }
-                                name +=  ".war"; // NOI18N
 
-                                context = (String)Util.getMBeanParameter(dm, "path", elem.getCanonicalName()); // NOI18N
+                                context = (String) Util.getMBeanParameter(dm, "path", elem.getCanonicalName()); // NOI18N
                             }
-                            keys.add(new JBWebModuleNode(name, lookup, (context == null ? null : url + context)));                        
+
+                            name += ".war"; // NOI18N
+                            keys.add(new JBWebModuleNode(name, lookup, (context == null ? null : url + context)));
                         } catch (Exception ex) {
-                            Logger.getLogger("global").log(Level.INFO, null, ex);
+                            LOGGER.log(Level.INFO, null, ex);
                         }
                     }
                 } catch (Exception ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                    LOGGER.log(Level.INFO, null, ex);
                 }
-                
+
                 setKeys(keys);
             }
         }, 0);
     }
-    
+
     protected void addNotify() {
         updateKeys();
     }
-    
+
     protected void removeNotify() {
         setKeys(java.util.Collections.EMPTY_SET);
     }
-    
+
     protected org.openide.nodes.Node[] createNodes(Object key) {
         if (key instanceof JBWebModuleNode){
             return new Node[]{(JBWebModuleNode)key};
         }
-        
+
         if (key instanceof String && key.equals(Util.WAIT_NODE)){
             return new Node[]{Util.createWaitNode()};
         }
-        
-        return null;
-    }
-    
-    private boolean isRemoteManagementSupported() {
-        if (remoteManagementSupported == null) {
-            remoteManagementSupported = Util.isRemoteManagementSupported(lookup);
-        }
-        return remoteManagementSupported;
-    }
 
-    private boolean isJB4x() {
-        if (isJB4x == null) {
-            JBDeploymentManager dm = (JBDeploymentManager)lookup.lookup(JBDeploymentManager.class);
-            isJB4x = JBPluginUtils.isGoodJBServerLocation4x(dm);
-        }
-        return isJB4x;
+        return null;
     }
 
 }

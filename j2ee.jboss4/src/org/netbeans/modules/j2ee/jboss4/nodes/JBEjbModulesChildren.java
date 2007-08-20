@@ -28,8 +28,6 @@ import java.util.logging.Logger;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
-import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -44,12 +42,14 @@ import org.openide.util.RequestProcessor;
  */
 public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
     
+    
+    private final JBAbilitiesSupport abilitiesSupport;
+    
     private Lookup lookup;
-    private Boolean remoteManagementSupported = null;
-    private Boolean isJB4x = null;
     
     public JBEjbModulesChildren(Lookup lookup) {
         this.lookup = lookup;
+        this.abilitiesSupport = new JBAbilitiesSupport(lookup);
     }
     
     public void updateKeys(){
@@ -73,7 +73,7 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
         try {
             String propertyName;
             Object searchPattern;
-            if (isRemoteManagementSupported() && isJB4x()) {
+            if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
                 propertyName = "name"; // NOI18N
                 searchPattern = new ObjectName("jboss.management.local:j2eeType=EJBModule,J2EEApplication=null,*"); // NOI18N
             }
@@ -138,21 +138,6 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
         }
         
         return null;
-    }
-    
-    private boolean isRemoteManagementSupported() {
-        if (remoteManagementSupported == null) {
-            remoteManagementSupported = Util.isRemoteManagementSupported(lookup);
-        }
-        return remoteManagementSupported;
-    }
-
-    private boolean isJB4x() {
-        if (isJB4x == null) {
-            JBDeploymentManager dm = (JBDeploymentManager)lookup.lookup(JBDeploymentManager.class);
-            isJB4x = JBPluginUtils.isGoodJBServerLocation4x(dm);
-        }
-        return isJB4x;
     }
     
 }

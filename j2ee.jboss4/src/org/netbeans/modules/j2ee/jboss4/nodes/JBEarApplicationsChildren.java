@@ -27,8 +27,6 @@ import java.util.logging.Logger;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
-import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -42,27 +40,28 @@ import org.openide.util.RequestProcessor;
  * @author Michal Mocnak
  */
 public class JBEarApplicationsChildren extends Children.Keys implements Refreshable {
-    
+
+    private final JBAbilitiesSupport abilitiesSupport;
+
     private Lookup lookup;
-    private Boolean remoteManagementSupported = null;
-    private Boolean isJB4x = null;
-    
+
     JBEarApplicationsChildren(Lookup lookup) {
         this.lookup = lookup;
+        this.abilitiesSupport = new JBAbilitiesSupport(lookup);
     }
-    
+
     public void updateKeys(){
         setKeys(new Object[] {Util.WAIT_NODE});
-        
+
         RequestProcessor.getDefault().post(new Runnable() {
             Vector keys = new Vector();
-            
+
             public void run() {
                 try {
                     // Query to the jboss4 server
                     ObjectName searchPattern;
                     String propertyName;
-                    if (isRemoteManagementSupported() && isJB4x()) {
+                    if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
                         searchPattern = new ObjectName("jboss.management.local:j2eeType=J2EEApplication,*"); // NOI18N
                         propertyName = "name"; // NOI18N
                     } else {
@@ -71,23 +70,21 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
                     }
                     Object server = Util.getRMIServer(lookup);
                     Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null});
-                    
-                    Iterator it = managedObj.iterator();
-                    
+
                     // Query results processing
-                    while(it.hasNext()) {
+                    for (Iterator it = managedObj.iterator(); it.hasNext();) {
                         try {
                             ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
                             String name = elem.getKeyProperty(propertyName);
-                            
-                            if (isRemoteManagementSupported() && isJB4x) {
+
+                            if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
                                 if (name.endsWith(".sar") || name.endsWith(".deployer")) { // NOI18N
                                     continue;
                                 }
                             } else {
                                 name = name.substring(1, name.length() - 1); // NOI18N
                             }
-                            
+
                             keys.add(new JBEarApplicationNode(name, lookup));
                         } catch (Exception ex) {
                             Logger.getLogger("global").log(Level.INFO, null, ex);
@@ -96,46 +93,31 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
                 } catch (Exception ex) {
                     Logger.getLogger("global").log(Level.INFO, null, ex);
                 }
-                
+
                 setKeys(keys);
             }
         }, 0);
-        
+
     }
-    
+
     protected void addNotify() {
         updateKeys();
     }
-    
+
     protected void removeNotify() {
         setKeys(java.util.Collections.EMPTY_SET);
     }
-    
+
     protected org.openide.nodes.Node[] createNodes(Object key) {
         if (key instanceof JBEarApplicationNode){
             return new Node[]{(JBEarApplicationNode)key};
         }
-        
+
         if (key instanceof String && key.equals(Util.WAIT_NODE)){
             return new Node[]{Util.createWaitNode()};
         }
-        
+
         return null;
     }
-    
-    private boolean isRemoteManagementSupported() {
-        if (remoteManagementSupported == null) {
-            remoteManagementSupported = Util.isRemoteManagementSupported(lookup);
-        }
-        return remoteManagementSupported;
-    }
- 
-    private boolean isJB4x() {
-        if (isJB4x == null) {
-            JBDeploymentManager dm = (JBDeploymentManager)lookup.lookup(JBDeploymentManager.class);
-            isJB4x = JBPluginUtils.isGoodJBServerLocation4x(dm);
-        }
-        return isJB4x;
-    }
-    
+
 }
