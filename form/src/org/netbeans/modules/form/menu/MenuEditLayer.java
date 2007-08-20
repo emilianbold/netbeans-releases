@@ -21,8 +21,10 @@ package org.netbeans.modules.form.menu;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.dnd.DropTarget;
@@ -43,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TooManyListenersException;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
@@ -58,6 +61,7 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.PopupMenuUI;
 import org.netbeans.modules.form.*;
@@ -578,8 +582,81 @@ public class MenuEditLayer extends JPanel {
             if(!(item.getIcon() instanceof WrapperIcon)) {
                 item.setIcon(new WrapperIcon(item.getIcon()));
             }
+            installAcceleratorPreview(item);
         }
     }
+    
+    static final int ACCEL_PREVIEW_WIDTH = 80;
+    private static final Border accel_border = new Border() {
+
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            g.setColor(Color.WHITE);
+            g.fillRect(width-ACCEL_PREVIEW_WIDTH+2,1,ACCEL_PREVIEW_WIDTH, height);
+            g.setColor(EMPTY_ICON_COLOR);
+            g.drawRect(width-ACCEL_PREVIEW_WIDTH+2,1,ACCEL_PREVIEW_WIDTH-1, height-1);
+            g.drawRect(width-ACCEL_PREVIEW_WIDTH+3,2,ACCEL_PREVIEW_WIDTH-3, height-3);
+            g.setColor(Color.LIGHT_GRAY);
+            g.setFont(new Font("SansSerif",Font.PLAIN,10));
+            g.drawString("shortcut", width-ACCEL_PREVIEW_WIDTH+15,height-3);
+        }
+
+        public Insets getBorderInsets(Component c) {
+            return new Insets(0,0,0,ACCEL_PREVIEW_WIDTH);
+        }
+
+        public boolean isBorderOpaque() {
+            return true;
+        }
+        
+    };
+    
+    
+    //installs a special border to represent the accelerator preview
+    //if the menu item already has an accelerator, then it will
+    //remove the preview if necessary.
+    private static void installAcceleratorPreview(JMenuItem item) {
+        //detect accelerator key
+        boolean already_has_accel = false;
+        if(item.getAccelerator() != null) already_has_accel = true;
+        if(item.getAction() != null && item.getAction().getValue(Action.ACCELERATOR_KEY) != null) already_has_accel = true;
+
+        
+        
+        boolean already_has_accel_border = false;
+        if(item.getBorder() == accel_border) {
+            already_has_accel_border = true;
+            //uninstall if needed
+            if(already_has_accel) {
+                item.setBorder(null);
+                return;
+            }
+        }
+        
+        if(item.getBorder() instanceof CompoundBorder) {
+            CompoundBorder comp = (CompoundBorder)item.getBorder();
+            if(comp.getInsideBorder() == accel_border) {
+                already_has_accel_border = true;
+                //uninstall if needed
+                if(already_has_accel) {
+                    item.setBorder(comp.getOutsideBorder());
+                    return;
+                }
+            }
+        }
+        
+        if(already_has_accel_border) return;
+        if(already_has_accel) return;
+        
+        
+        if(item.getBorder() == null) {
+            item.setBorder(accel_border);
+            return;
+        }
+        
+        item.setBorder(BorderFactory.createCompoundBorder(
+                    item.getBorder(),accel_border));
+    }
+    
     
     void unconfigureMenuItem(JComponent c) {
     }

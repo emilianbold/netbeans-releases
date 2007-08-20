@@ -262,6 +262,7 @@ class DropTargetLayer extends JComponent {
         g2.setColor(Color.LIGHT_GRAY);
         //g2.drawRect(iconLeft, 0, iconWidth-1, item.getHeight()-1);
         //g2.drawRect(textLeft, 0, textWidth-1, item.getHeight()-1);
+        //draw the accelerator areaa
         g2.drawRect(accelLeft, 0, accelWidth - 1, item.getHeight() - 1);
 
         // draw the selection rectangles
@@ -313,7 +314,7 @@ class DropTargetLayer extends JComponent {
     private static int getAcceleratorWidth(JMenuItem item) {
         if(item instanceof JMenu) return 0;
         if(item.getAccelerator() != null) return 50;
-        return 10; // gutter space that we can click on to add an accelerator
+        return MenuEditLayer.ACCEL_PREVIEW_WIDTH; // gutter space that we can click on to add an accelerator
     }
     
     private static int getAcceleratorLeft(JMenuItem item) {

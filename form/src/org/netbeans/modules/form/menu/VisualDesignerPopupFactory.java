@@ -58,12 +58,11 @@ class VisualDesignerPopupFactory extends PopupFactory {
         final JMenu menu = (JMenu) owner;
         p("creating a popup for: " + menu.getText());
         JComponent parent = canvas.getMenuParent(menu);
-        //p("menu's parent = " + parent);
         JPanel cont = containerMap.get(menu);
         
         if (cont == null) {
             cont = new VisualDesignerJPanelContainer(menu,this);
-            cont.setLayout(new BoxLayout(cont, BoxLayout.Y_AXIS));//GridLayout(10,1));
+            cont.setLayout(new BoxLayout(cont, BoxLayout.Y_AXIS));
             
             
             RADVisualContainer menuRAD = (RADVisualContainer) canvas.formDesigner.getMetaComponent(menu);
@@ -77,23 +76,7 @@ class VisualDesignerPopupFactory extends PopupFactory {
             canvas.layers.add(cont, JLayeredPane.DEFAULT_LAYER);
         }
         
-        // if the parent is a menu then this is a submenu
-        //if(parent instanceof JMenu) {
-            /*
-        } else {
-            // x/y are in abs screen coords. must convert to local
-            Point pt = new Point(x,y);
-            p("original point = " + pt);
-            SwingUtilities.convertPointFromScreen(pt,canvas);
-            p("converted poitn = " + pt);
-            cont.setLocation(pt);
-        }*/
-        
-        
-        //p("size = " + cont.getSize());
-        //p("min = " + cont.getLayout().preferredLayoutSize(cont));
         cont.setSize(cont.getLayout().preferredLayoutSize(cont));
-        //p("size = " + cont.getSize());
         canvas.validate();
         canvas.setVisible(true);
         final JPanel fcont = cont;
