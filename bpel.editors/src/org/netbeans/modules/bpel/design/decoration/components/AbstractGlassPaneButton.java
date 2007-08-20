@@ -41,10 +41,10 @@ import org.netbeans.modules.bpel.design.DesignView;
 public class AbstractGlassPaneButton extends JToggleButton implements ActionListener, HierarchyListener, DecorationComponent {
     
     public AbstractGlassPaneButton(Icon icon) {
-      this(icon, null, null, false);
+      this(icon, null, false, null);
     }
 
-    public AbstractGlassPaneButton(Icon icon, String text, ActionListener actionListener, boolean editable) {
+    public AbstractGlassPaneButton(Icon icon, String text, boolean editable, ActionListener actionListener) {
         super(icon);
         myIcon = icon;
         myGlassPane = new GlassPane(text, actionListener, editable);
