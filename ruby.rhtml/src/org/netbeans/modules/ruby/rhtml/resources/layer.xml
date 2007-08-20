@@ -65,12 +65,14 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rhtml.resources.Bundle"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
             </file>
             <file name="ErbTemplate.erb" url="RhtmlTemplate.rhtml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rhtml.resources.Bundle"/>
                 <attr name="position" intvalue="102"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
             </file>
         </folder>
