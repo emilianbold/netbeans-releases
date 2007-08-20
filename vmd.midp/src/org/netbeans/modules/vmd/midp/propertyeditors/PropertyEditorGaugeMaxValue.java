@@ -20,6 +20,10 @@
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -184,18 +188,21 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         }
 
         private void initComponents() {
-            setLayout(new BorderLayout());
+            setLayout(new GridBagLayout());
+
+            textField = new JTextField();
+            textField.getDocument().addDocumentListener(this);
+            textField.addFocusListener(this);
+            textField.setPreferredSize(new Dimension (100, textField.getPreferredSize().height));
+            add(textField, new GridBagConstraints (0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets (0, 0, 0, 0), 0, 0));
 
             foreverCheckBox = new JCheckBox();
             Mnemonics.setLocalizedText(foreverCheckBox, NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "LBL_MAX_VALUE_INDEFINITE")); // NOI18N
             foreverCheckBox.addActionListener(this);
             foreverCheckBox.addFocusListener(this);
-            add(foreverCheckBox, BorderLayout.NORTH);
-
-            textField = new JTextField();
-            textField.getDocument().addDocumentListener(this);
-            textField.addFocusListener(this);
-            add(textField, BorderLayout.SOUTH);
+            add(foreverCheckBox, new GridBagConstraints (1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets (0, 6, 0, 0), 0, 0));
+            
+            add (new JPanel (), new GridBagConstraints (2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets (0, 0, 0, 0), 0, 0));
         }
 
         public void setText(String text) {
