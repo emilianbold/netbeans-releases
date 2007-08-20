@@ -22,6 +22,8 @@ package org.netbeans.api.progress.aggregate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -40,12 +42,15 @@ import org.openide.util.Cancellable;
  * @author Milos Kleint (mkleint@netbeans.org)
  */
 public final class AggregateProgressHandle {
+    private static final Logger LOG = Logger.getLogger(AggregateProgressHandle.class.getName());
+
     private ProgressMonitor monitor;
     private ProgressHandle handle;
     static final int WORKUNITS = 10000;
     private boolean finished;
     private Collection<ProgressContributor> contributors;
     private int current;
+    private String displayName;
     
     /** Creates a new instance of AggregateProgressHandle */
     AggregateProgressHandle(String displayName, ProgressContributor[] contribs, Cancellable cancellable, Action listAction, boolean systemtask) {
@@ -57,6 +62,7 @@ public final class AggregateProgressHandle {
                 addContributor(contribs[i]);
             }
         }
+        this.displayName = displayName;
     }
     
 
@@ -89,6 +95,19 @@ public final class AggregateProgressHandle {
         finished = true;
         handle.finish();
     }
+    
+    /**
+     * Currently running task can switch to silent suspend mode where the progress bar 
+     * stops moving, hides completely or partially. Useful to make progress in status bar less intrusive 
+     * for very long running tasks, eg. running an ant script that executes user application, debugs user application etc.
+     * Any incoming progress wakes up the progress bar to previous state.
+     * @param message a message to display in the silent mode
+     * @since org.netbeans.api.progress/1 1.10
+     */
+    public void suspend(String message) {
+        LOG.log(Level.FINE, "{0}: {1}", new Object[] {displayName, message});
+        handle.suspend(message);
+    }    
     
     /**
      * allows to set a custom initial delay for the progress task to appear in the
