@@ -23,6 +23,7 @@ import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmBuiltIn;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -39,6 +40,7 @@ import org.openide.util.lookup.Lookups;
  * WhereUsedQueryUI from the Java refactoring module, only moderately modified for Ruby
  * 
  * @author Martin Matula, Jan Becicka
+ * @author Vladimir Voskresensky
  */
 public class WhereUsedQueryUI implements RefactoringUI {
     private WhereUsedQuery query = null;
@@ -53,18 +55,48 @@ public class WhereUsedQueryUI implements RefactoringUI {
     public WhereUsedQueryUI(CsmObject csmObject/*RubyElementCtx jmiObject, CompilationInfo info*/) {
         this.query = new WhereUsedQuery(Lookups.singleton(csmObject));
 //        this.query.getContext().add(RetoucheUtils.getClasspathInfoFor(jmiObject));
-        this.element = csmObject;
+        this.element = getElement(csmObject);
+        if (this.element != null && this.element != csmObject) {
+            this.query.getContext().add(this.element);
+        }
 //        name = csmObject.getName();
 //        kind = csmObject.getKind();
-        name = "DummyClass";
-        kind = CsmDeclaration.Kind.CLASS;
+        name = getName(this.element);
+        kind = getKind(this.element);
+    }
+
+    private CsmObject getElement(CsmObject csmObject) {
+        if (csmObject instanceof CsmReference) {
+            return ((CsmReference)csmObject).getReferencedObject();
+        } else {
+            return csmObject;
+        }
     }
     
-    public WhereUsedQueryUI(CsmReference csmObject/*RubyElementCtx jmiObject*/, String name, AbstractRefactoring delegate) {
-        this.delegate = delegate;
-        this.element = csmObject;
-        this.name = name;
+    private String getName(CsmObject csmObj) {
+        assert csmObj != null;
+        String objName;
+        if (csmObj instanceof CsmReference) {
+            objName = ((CsmReference)csmObj).getText();
+        } else if (CsmKindUtilities.isNamedElement(csmObj)) {
+            objName = ((CsmNamedElement)csmObj).getName();
+        } else if (csmObj != null) {
+            objName = "<UNNAMED ELEMENT>";
+        } else {
+            objName = "<UNRESOLVED ELEMENT>";
+        }
+        return objName;
     }
+    
+    private CsmDeclaration.Kind getKind(CsmObject obj) {
+        return CsmDeclaration.Kind.CLASS;
+    }
+    
+//    public WhereUsedQueryUI(CsmReference csmObject/*RubyElementCtx jmiObject*/, String name, AbstractRefactoring delegate) {
+//        this.delegate = delegate;
+//        this.element = csmObject;
+//        this.name = name;
+//    }
     
     public boolean isQuery() {
         return true;
@@ -125,9 +157,9 @@ public class WhereUsedQueryUI implements RefactoringUI {
             if (CsmKindUtilities.isClass(element)/*kind == ElementKind.MODULE || kind == ElementKind.CLASS*/) {
                 if (!panel.isClassFindUsages())
                     if (!panel.isClassSubTypesDirectOnly()) {
-                    return getString("DSC_WhereUsedFindAllSubTypes", name);
+                        return getString("DSC_WhereUsedFindAllSubTypes", name);
                     } else {
-                    return getString("DSC_WhereUsedFindDirectSubTypes", name);
+                        return getString("DSC_WhereUsedFindDirectSubTypes", name);
                     }
             } else {
                 if (CsmKindUtilities.isFunction(element)/*kind == ElementKind.METHOD*/) {

@@ -28,6 +28,7 @@ import org.openide.filesystems.FileObject;
 /**
  *
  * @author Jan Becicka
+ * @author Vladimir Voskresensky
  */
 public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
 

@@ -33,7 +33,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 /**
  * Based on the WhereUsedPanel in Java refactoring by Jan Becicka.
  * @author Jan Becicka
- * @author  Tor Norbye
+ * @author Vladimir Voskresensky
  */
 public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
@@ -43,12 +43,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 //    private RubyElementCtx newElement;
     private CsmObject newElement;
     private final transient ChangeListener parent;
-
+    private final String name;
     /** Creates new form WhereUsedPanel */
     public WhereUsedPanel(String name, CsmObject e,/*RubyElementCtx e, */ChangeListener parent) {
         setName(NbBundle.getMessage(WhereUsedPanel.class, "LBL_WhereUsed")); // NOI18N
         this.element = e;
         this.parent = parent;
+        this.name = name;
         initComponents();
     }
     private boolean initialized = false;
@@ -63,6 +64,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         if (initialized) {
             return;
         }
+        label.setText(name);
 //        Source source = RetoucheUtils.getSource(element.getFileObject());
 //        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 //

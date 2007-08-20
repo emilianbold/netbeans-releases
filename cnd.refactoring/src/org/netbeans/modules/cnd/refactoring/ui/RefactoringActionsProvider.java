@@ -30,6 +30,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -43,14 +44,17 @@ import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
 
 /**
- *
+ * provides support for refactoring actions
+ * 
  * @author Jan Becicka
+ * @author Vladimir Voskresensky
  */
-public class RefactoringActionsProvider extends ActionsImplementationProvider{
+public class RefactoringActionsProvider extends ActionsImplementationProvider {
     
     /** Creates a new instance of RefactoringActionsProvider */
     public RefactoringActionsProvider() {
     }
+    
     @Override
     public void doRename(final Lookup lookup) {
 //        Runnable task;
@@ -112,8 +116,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         return false;
     }
     
-//    @Override
-//    public void doCopy(final Lookup lookup) {
+    @Override
+    public void doCopy(final Lookup lookup) {
 //        Runnable task;
 //        EditorCookie ec = lookup.lookup(EditorCookie.class);
 //        final Dictionary dictionary = lookup.lookup(Dictionary.class);
@@ -139,7 +143,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 //            };
 ////        }
 //        task.run();
-//    }
+    }
 
     /**
      * returns true if exactly one refactorable file is selected
@@ -182,28 +186,27 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
-        if (true) return true;
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
         if (nodes.size() != 1) {
             return false;
         }
         Node n = nodes.iterator().next();
         DataObject dob = n.getCookie(DataObject.class);
-        if ((dob!=null)/* && RubyUtils.isRubyOrRhtmlFile(dob.getPrimaryFile())*/) {
+        if ((dob!=null) && (CsmUtilities.getCsmFile(dob, false) != null)/*RubyUtils.isRubyOrRhtmlFile(dob.getPrimaryFile())*/) {
             return true;
         }
         return false;
     }
 
     @Override
-    public void doFindUsages(Lookup lookup) {
+    public void doFindUsages(final Lookup lookup) {
         Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (isFromEditor(ec)) {
             task = new TextComponentTask(ec, lookup) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement/*RubyElementCtx selectedElement*/,int startOffset,int endOffset/*, CompilationInfo info*/) {
-                    return new WhereUsedQueryUI(selectedElement/*, info*/);
+                     return new WhereUsedQueryUI(selectedElement/*, info*/);
                 }
             };
         } else {
@@ -222,11 +225,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public boolean canDelete(Lookup lookup) {
+        return false;
 //        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
 //        for (Node n:nodes) {
 //            DataObject dob = n.getCookie(DataObject.class);
 //            if (dob==null)
-                return false;
+//                return false;
 //            
 //            if (!RetoucheUtils.isRefactorable(dob.getPrimaryFile())) {
 //                return false;
@@ -235,8 +239,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 //        return !nodes.isEmpty();
     }
 
-//    @Override
-//    public void doDelete(final Lookup lookup) {
+    @Override
+    public void doDelete(final Lookup lookup) {
 //        Runnable task;
 //        EditorCookie ec = lookup.lookup(EditorCookie.class);
 //        if (isFromEditor(ec)) {
@@ -261,7 +265,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 //            };
 //        }
 //        task.run();
-//    }
+    }
     
     private FileObject getTarget(Dictionary dict) {
         if (dict==null)
@@ -429,10 +433,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }
     
     private static boolean isSupportedReference(CsmReference ref) {
-        return ref != null && !CsmKindUtilities.isInclude(ref.getOwner());
+        return ref != null/* && !CsmKindUtilities.isInclude(ref.getOwner())*/;
     }
     
-    public static abstract class TextComponentTask implements Runnable/*, CancellableTask<CompilationController>*/ {
+    public static abstract class TextComponentTask implements Runnable {
         private JTextComponent textC;
         private int caret;
         private int start;
@@ -440,20 +444,17 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         private RefactoringUI ui;
         private Lookup lookup;
         
-        public TextComponentTask(EditorCookie ec, Lookup lookup) {
+        public TextComponentTask(EditorCookie ec, Lookup lkp) {
             this.textC = ec.getOpenedPanes()[0];
             this.caret = textC.getCaretPosition();
             this.start = textC.getSelectionStart();
             this.end = textC.getSelectionEnd();
+            this.lookup = lkp;
             assert caret != -1;
             assert start != -1;
             assert end != -1;
-            this.lookup = lookup;
         }
-        
-        public void cancel() {
-        }
-        
+               
 //        public void run(CompilationController cc) throws Exception {
 //            cc.toPhase(Phase.RESOLVED);
 //            org.jruby.ast.Node root = AstUtilities.getRoot(cc);
@@ -471,10 +472,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 //        }
         
         public final void run() {
-            CsmObject ctx = findReference(lookup.lookup(Node.class));
-//            if (ctx.getSimpleName() == null) {
-//                return;
-//            }
+            CsmReference ctx = findReference(lookup.lookup(Node.class));
+            if (!isSupportedReference(ctx)) {
+                return;
+            }
             ui = createRefactoringUI(ctx, start, end);
 //            try {
 //                Source source = RetoucheUtils.getSource(textC.getDocument());
