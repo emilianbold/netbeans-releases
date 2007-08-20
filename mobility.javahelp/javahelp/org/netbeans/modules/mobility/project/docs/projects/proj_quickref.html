@@ -6,12 +6,12 @@
 -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>J2ME MIDP Project Tasks: Quick Reference</title>
+<title>J2ME CLDC/MIDP Project Tasks: Quick Reference</title>
 <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-<h2>Java ME MIDP Project Tasks: Quick Reference</h2>
+<h2>Java ME CLDC/MIDP Project Tasks: Quick Reference</h2>
 <p>
 This topic describes common tasks you can perform to create a Java ME MIDP application.
   For more detailed information, click the links in the right column. </p>
@@ -23,7 +23,7 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
     <th width="85%" align="left" scope="col">Follow these steps</th>
   </tr>
   <tr valign="top"> 
-    <td> Create a new project</td>
+    <td> <a name="newproject"></a>Create a new project</td>
     <td> <ol>
         <li>Choose File &gt;&nbsp;New Project (Ctrl-Shift-N).</li>
         <li>Under Category, select Mobile. Under Projects, select the right <a href="proj_templates.html">template</a> 
@@ -48,18 +48,18 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
   <tr valign="top"> 
     <td>Create a MIDlet suite</td>
     <td><ul>
-        <li>See &quot;Create New Project.&quot; <br>
-          When you create a Java ME MIDP project, the IDE creates all the necessary 
-          files for a MIDlet Suite.</li>
+        <li>See <a href="#newproject">&quot;Create New Project.&quot;</a><br>
+          When you create a MIDP project, the IDE creates all the <a href="proj_about.html">necessary 
+          files</a> for a MIDlet Suite.</li>
       </ul></td>
   </tr>
   <tr valign="top"> 
     <td>Add an existing MIDlet </td>
     <td><ol>
-        <li>Select a Project and choose File &gt; &quot;<em>Active project name</em>&quot; 
-          Properties.</li>
-        <li>Choose <a href="../midlets/midlet_addproj.html">MIDlets</a> from the 
-          left pane and click the Add button. </li>
+        <li>Right-click on a project and choose Properties.</li>
+        <li>Select Application Descriptor from the Categories window and select 
+          the MIDlet tab in the right pane. </li>
+        <li>Click the Add button. </li>
         <li>Fill in the Add MIDlet dialog and click OK.<br>
           The MIDlet is automatically added to the Application Descriptor (JAD) 
           file. </li>
@@ -68,9 +68,9 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
   <tr valign="top"> 
     <td>Add a new MIDlet </td>
     <td><ol>
-        <li>Select a Project and Choose File &gt;&nbsp;New File (Ctrl-Shift-N).</li>
-        <li>Select MIDP under Categories, then select <a href="proj_templates.html">MIDlet</a> 
-          under File Types.</li>
+        <li>Select a Project and Choose File &gt;&nbsp;New File (Ctrl+N).</li>
+        <li>Select MIDP under Categories, then select <a href="proj_templates.html">the 
+          desired file template</a> under File Types.</li>
         <li>Enter the appropriate information in the MIDlet wizard. </li>
         <li>Click Finish. <br>
           The MIDlet is automatically added to the JAD file.</li>
@@ -79,44 +79,46 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
   <tr valign="top"> 
     <td>Change the active emulator platform</td>
     <td><ol>
-        <li>Select a Project and choose File &gt; &quot;<em>Active project name</em>&quot; 
-          Properties.</li>
+        <li>Right-click on a project and choose Properties.</li>
         <li>Choose Platform from the right pane, then choose an installed <a href="../emulator/emulator_about.html">emulator 
-          platform</a> from the Emulator Platform dropdown menu.</li>
+          platform</a> from the Emulator Platform drop-down menu.</li>
       </ol></td>
   </tr>
   <tr valign="top"> 
     <td>Add an emulator platform</td>
     <td><ol>
-        <li>Select a Project and choose File &gt; &quot;<em>Active project name</em>&quot; 
-          Properties.</li>
+        <li>Right-click on a project and choose Properties.</li>
         <li>Choose Platform from the right pane and click Manage Emulators. </li>
         <li>In the Java Platform Manager, Click Add Platform and follow the steps 
           of the <a href="../emulator/emulator_adding.html">Add Platform</a> wizard 
           to add the emulator platform. </li>
-      </ol></td>
+      </ol>
+      <ul>
+        <li>Alternatively, you can open the Java Platform Manager by choosing 
+          Tools &gt; Java Platforms.</li>
+      </ul></td>
+  </tr>
+  <tr valign="top">
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
   <tr valign="top"> 
-    <td>Edit the Application Descriptor (JAD) File</td>
+    <td>Edit the Application Descriptor (JAD) File<a name="jad"></a></td>
     <td><ol>
-        <li>Select a Project and choose File &gt; &quot;<em>Active project name</em>&quot; 
-          Properties.</li>
-        <li>Expand the Application Descriptor node and choose <a href="../ui/projectprop_appdescriptor.html">Attributes</a>.<br>
-          <ul class="note">
-            <li>If you modify the <a href="../ui/projectprop_midlets.html">MIDlet</a>, 
-              <a href="../ui/projectprop_apipermissions.html">API permissions</a>, 
-              or <a href="../ui/projectprop_pushregistry.html">Push Registry</a> 
-              property settings, the changes are automatically reflected in the 
-              JAD file. </li>
-          </ul>
+        <li>Right-click on a project and choose Properties.</li>
+        <li>Select the Application Descriptor category.
+        <li>Select the appropriate tab to change the <a href="../ui/projectprop_appdescriptor.html">Attributes</a>, 
+          <a href="../ui/projectprop_midlets.html">MIDlet</a>, <a href="../ui/projectprop_apipermissions.html">API 
+          permissions</a>, or <a href="../ui/projectprop_pushregistry.html">Push 
+          Registry</a> property settings.<br>
+          Changes to these properties are automatically reflected in the JAD file. 
       </ol></td>
   </tr>
   <tr valign="top"> 
     <td>Add or remove files from the JAR file. </td>
     <td><ol>
-        <li>Select a Project and choose File &gt; &quot;<em>Active project name</em>&quot; 
-          Properties.</li>
-        <li>Choose the <a href="../ui/projectprop_filtering.html">Filtering</a> 
+        <li>Right-click on a project and choose Properties.</li>
+        <li>Choose the <a href="../ui/projectprop_filtering.html">Sources Filtering</a> 
           node in the left pane and expand the folders in the right pane to reveal 
           the contents of the JAR file. </li>
         <li>Put a check in the checkboxes of files you want to include in the 
@@ -126,31 +128,26 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
   </tr>
   <tr valign="top"> 
     <td>Add API Permissions</td>
-    <td><ol>
-        <li>Select a Project and choose File &gt; &quot;<em>Active project name</em>&quot; 
-          Properties.</li>
-        <li>Expand the Application Descriptor node and choose the <a href="../ui/projectprop_apipermissions.html">API 
-          Permissions </a>node in the left pane. </li>
-        <li>In the right pane, Click the Add button and use the dropdown menu 
-          in the Add API dialog to add API permissions.</li>
-      </ol></td>
+    <td><ul>
+        <li>See &quot;<a href="#jad">Edit the Application Descriptor (JAD) File</a>.&quot; 
+        </li>
+      </ul></td>
   </tr>
   <tr valign="top"> 
     <td>Sign a MIDlet Suite</td>
     <td><ol>
-        <li>Select a Project and choose File &gt; &quot;<em>Active project name</em>&quot; 
-          Properties. Expand the Build node in the left pane and choose the <a href="../ui/projectprop_signing.html">Signing</a> 
+        <li>Right-click on a project and choose Properties. Expand the Build node 
+          in the left pane and choose the <a href="../ui/projectprop_signing.html">Signing</a> 
           node.</li>
         <li>Check the Sign Distribution checkbox. </li>
-        <li>Click the Open Security Manager button to add, import, or export a 
-          keystore.</li>
+        <li>Click the Open Keystores Manager button to add, import, or export 
+          a keystore.</li>
       </ol></td>
   </tr>
   <tr valign="top"> 
     <td>Enable obfuscation</td>
     <td><ol>
-        <li>Select a Project and choose File &gt; &quot;<em>Active project name</em>&quot; 
-          Properties.</li>
+        <li>Right-click on a project and choose Properties.</li>
         <li>Expand the Build node in the left pane and choose the <a href="../ui/projectprop_obfuscating.html">Obfuscating</a> 
           node. </li>
         <li>In the left pane, use the Obfuscation Level control to set the obfuscation 

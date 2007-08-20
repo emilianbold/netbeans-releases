@@ -235,4 +235,5 @@
 	<mapID target="cldc.gloss_tiledlayers" url="glossary/gloss_tiledlayers.html"/>
 	<mapID target="cldc.gloss_sprites" url="glossary/gloss_sprites.html"/>
 	<mapID target="cldc.gloss_scenes" url="glossary/gloss_scenes.html"/>
-</map>
+<mapID target="org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+<mapID target="org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" /> </map>
