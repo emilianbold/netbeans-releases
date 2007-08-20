@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.util.HashSet;
 import java.util.Set;
@@ -71,28 +72,57 @@ public class OperationsWidget extends AbstractTitledWidget {
             
             public void propertyChanged(String propertyName, String oldValue,
                     String newValue) {
-                System.out.println("receieved propertychangeevent for propertyName="+propertyName);
             }
             
-            public void operationAdded(MethodModel method) {
-                OperationWidget operationWidget = new OperationWidget(getObjectScene(), serviceModel,service, method);
-                getContentWidget().addChild(operationWidget);
-                updateHeaderLabel();
-                getScene().validate();
-            }
-            
-            public void operationRemoved(MethodModel method) {
-                Widget operationWidget = getObjectScene().findWidget(method);
-                if(operationWidget!=null) {
-                    getContentWidget().removeChild(operationWidget);
+            public void operationAdded(final MethodModel method) {
+                if(!EventQueue.isDispatchThread()) {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            OperationWidget operationWidget = new OperationWidget(getObjectScene(), serviceModel,service, method);
+                            getContentWidget().addChild(operationWidget);
+                            updateHeaderLabel();
+                            getScene().validate();
+                        }
+                    });
+                } else {
+                    OperationWidget operationWidget = new OperationWidget(getObjectScene(), serviceModel,service, method);
+                    getContentWidget().addChild(operationWidget);
                     updateHeaderLabel();
                     getScene().validate();
                 }
             }
             
-            public void operationChanged(MethodModel oldMethod, MethodModel newMethod) {
-                operationRemoved(oldMethod);
-                operationAdded(newMethod);
+            public void operationRemoved(MethodModel method) {
+                final Widget operationWidget = getObjectScene().findWidget(method);
+                if(operationWidget!=null) {
+                    if(!EventQueue.isDispatchThread()) {
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                getContentWidget().removeChild(operationWidget);
+                                updateHeaderLabel();
+                                getScene().validate();
+                            }
+                        });
+                    } else {
+                        getContentWidget().removeChild(operationWidget);
+                        updateHeaderLabel();
+                        getScene().validate();
+                    }
+                }
+            }
+            
+            public void operationChanged(final MethodModel oldMethod, final MethodModel newMethod) {
+                if(!EventQueue.isDispatchThread()) {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            operationRemoved(oldMethod);
+                            operationAdded(newMethod);
+                        }
+                    });
+                } else {
+                    operationRemoved(oldMethod);
+                    operationAdded(newMethod);
+                }
             }
             
         });
