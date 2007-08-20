@@ -24,9 +24,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,13 +45,22 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -81,7 +92,15 @@ public class GlobalSourcePath {
     private final BinaryPathImplementation binaryPath;
     private final UnknownSourcePathImplementation unknownSourcePath;
     
+    private final LibraryManager lm;
+    private final JavaPlatformManager pm;
+    private Set<JavaPlatform> seenPlatforms;
+    private Set<Library> seenLibs;
+    
+    private Set<URL> libsSrcs;
+    
     private final Listener listener;
+    private final LibsListener libsListener;
     
     private volatile PropertyChangeListener excludesListener;
 
@@ -98,6 +117,13 @@ public class GlobalSourcePath {
         this.unknownRoots = new HashMap<URL, WeakValue>();
         this.translatedRoots = new HashMap<URL, URL[]> ();
         this.gpr.addGlobalPathRegistryListener ((GlobalPathRegistryListener)WeakListeners.create(GlobalPathRegistryListener.class,this.listener,this.gpr));        
+        this.seenPlatforms = new HashSet<JavaPlatform>();
+        this.seenLibs = new HashSet<Library> ();
+        this.libsListener = new LibsListener ();
+        this.lm = LibraryManager.getDefault();
+        this.lm.addPropertyChangeListener(WeakListeners.propertyChange(libsListener, this.lm));
+        this.pm = JavaPlatformManager.getDefault();
+        this.pm.addPropertyChangeListener(WeakListeners.propertyChange(libsListener, this.pm));
     }
     
     
@@ -141,6 +167,17 @@ public class GlobalSourcePath {
         }
     }
     
+    public synchronized boolean isLibrary (final ClassPath cp) {
+        assert cp != null;
+        Set<URL> libs = getLibsSources();
+        for (ClassPath.Entry entry : cp.entries()) {
+            if (libs.contains(entry.getURL())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public ClassPathImplementation getSourcePath () {
         return this.sourcePath;
     }
@@ -170,7 +207,7 @@ public class GlobalSourcePath {
         });        
     }
     
-    private static Result createResources (final Request r) {
+    private Result createResources (final Request r) {
         assert r != null;
         Set<PathResourceImplementation> result = new HashSet<PathResourceImplementation> ();
         Set<PathResourceImplementation> unknownResult = new HashSet<PathResourceImplementation> ();
@@ -286,14 +323,19 @@ public class GlobalSourcePath {
         this.debugCallBack = callBack;
     }
     
-    private static Collection <? extends PathResourceImplementation> getSources (final FileObject[] roots, final List<URL> cacheDirs, final Map<URL, WeakValue> unknownRoots) {
+    private Collection <? extends PathResourceImplementation> getSources (final FileObject[] roots, final List<URL> cacheDirs, final Map<URL, WeakValue> unknownRoots) {
         assert roots != null;        
         URL[] urls = new URL[roots.length];
         boolean add = true;
+        Set<URL> libs = getLibsSources();
         for (int i=0; i<roots.length; i++) {
             try {
                 URL url = roots[i].getURL();
                 if (!"file".equals(url.getProtocol())) {     //NOI18N
+                    add = false;
+                    break;
+                }
+                if (libs.contains (url)) {
                     add = false;
                     break;
                 }
@@ -316,6 +358,84 @@ public class GlobalSourcePath {
             return result;
         }
         return Collections.<PathResourceImplementation>emptySet();
+    }
+    
+    private synchronized Set<URL> getLibsSources () {
+        if (this.libsSrcs == null) {
+            Set<URL> res = new HashSet<URL>();
+            this.libsSrcs = res;
+            Set<JavaPlatform> platforms = new HashSet<JavaPlatform> (Arrays.asList(pm.getInstalledPlatforms()));
+            Set<JavaPlatform> oldPlatforms = new HashSet<JavaPlatform> (this.seenPlatforms);
+            for (JavaPlatform platform : platforms) {                
+                if (!oldPlatforms.remove(platform)) {
+                    platform.addPropertyChangeListener(this.libsListener);
+                }
+                ClassPath cp = platform.getSourceFolders();
+                for (ClassPath.Entry e : cp.entries()) {
+                    URL url = e.getURL();
+                    try {
+                        Project p = FileOwnerQuery.getOwner(url.toURI());
+                        if (p != null) {
+                            Sources src = p.getLookup().lookup(Sources.class);
+                            if (src != null) {
+                                for (SourceGroup group : src.getSourceGroups("java")) {        //NOI18N
+                                    if (url.equals(group.getRootFolder().getURL())) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (URISyntaxException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    catch (FileStateInvalidException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    res.add(url);
+                }
+            }
+            for (JavaPlatform platform : oldPlatforms) {
+                platform.removePropertyChangeListener(this.libsListener);
+            }
+            this.seenPlatforms = platforms;
+            
+            Set<Library> libs = new HashSet<Library> (Arrays.asList(lm.getLibraries()));
+            Set<Library> oldLibs = new HashSet<Library> (this.seenLibs);
+            for (Library lib :libs) {
+                if (!oldLibs.remove(lib)) {
+                    lib.addPropertyChangeListener(this.libsListener);
+                }
+                if (lib.getContent("classpath") != null) {      //NOI18N
+                    List<URL> libSrc = lib.getContent("src");      //NOI18N
+                    for (URL url : libSrc) {                        
+                        try {
+                            Project p = FileOwnerQuery.getOwner(url.toURI());
+                            if (p != null) {
+                                Sources src = p.getLookup().lookup(Sources.class);
+                                if (src != null) {
+                                    for (SourceGroup group : src.getSourceGroups("java")) {        //NOI18N
+                                        if (url.equals(group.getRootFolder().getURL())) {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (URISyntaxException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        catch (FileStateInvalidException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }                        
+                        res.add(url);
+                    }
+                    
+                }
+            }
+            for (Library lib : oldLibs) {
+                lib.removePropertyChangeListener(this.libsListener);
+            }
+        }
+        return this.libsSrcs;
     }
        
     private class WeakValue extends WeakReference<ClassPath> implements Runnable {
@@ -661,6 +781,16 @@ public class GlobalSourcePath {
             public void stateChanged (ChangeEvent event) {
                 resetCacheAndFire();
             }
+    }
+    
+    private class LibsListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            synchronized (GlobalSourcePath.this) {
+                GlobalSourcePath.this.libsSrcs = null;
+            }
+        }
+        
     }
     
     public static synchronized GlobalSourcePath getDefault () {
