@@ -100,10 +100,12 @@ public class Statement {
      * Returns the argument for the property set statement
      */ 
     private ExpressionTree getArgument(CompilationInfo cinfo) {
-        //StatementTree stmtTree = (StatementTree) stmtTreePathHandle.resolve(wc).getLeaf();
-        StatementTree stmtTree = method.findPropertyStatement(cinfo, beanName, setterName);
-        ExpressionTree arg = getMethodInvocationTree(cinfo, stmtTree).getArguments().get(0);
-        return arg;
+        StatementTree stmtTree = (StatementTree) stmtTreePathHandle.resolve(cinfo).getLeaf();
+        //StatementTree stmtTree = method.findPropertyStatement(cinfo, beanName, setterName);
+        if (stmtTree != null) {
+            return getMethodInvocationTree(cinfo, stmtTree).getArguments().get(0);
+        }
+        return null;
     }
     
     /*
@@ -180,8 +182,8 @@ public class Statement {
         Boolean result = (Boolean)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
                 TreeMaker make = wc.getTreeMaker();
-                //StatementTree stmtTree = (StatementTree) stmtTreePathHandle.resolve(wc).getLeaf();
-                StatementTree stmtTree = method.findPropertyStatement(wc, beanName, setterName);
+                StatementTree stmtTree = (StatementTree) stmtTreePathHandle.resolve(wc).getLeaf();
+                //StatementTree stmtTree = method.findPropertyStatement(wc, beanName, setterName);
                 return method.removeStatement(wc, stmtTree);
             }
         }, method.getJavaClass().getFileObject());

@@ -42,6 +42,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.visualweb.insync.beans.BeanStructureScanner;
 import org.netbeans.modules.visualweb.insync.faces.ThresherFacesBeanStructureScanner;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -90,8 +91,11 @@ public class Method {
         return (Statement)ReadTaskWrapper.execute( new ReadTaskWrapper.Read() {
             public Object run(CompilationInfo cinfo) {
                 StatementTree stmtTree = findPropertyStatement(cinfo, beanName, methodName);
-                return new Statement(TreePathHandle.create(TreeUtils.getTreePath(cinfo, stmtTree), cinfo),
-                        Method.this, beanName, methodName);           
+                if(stmtTree != null) {
+                    return new Statement(TreePathHandle.create(TreeUtils.getTreePath(cinfo, stmtTree), cinfo), 
+                            Method.this, beanName, methodName);
+                }
+                return null;
             }
         }, javaClass.getFileObject());    
     }
@@ -185,7 +189,10 @@ public class Method {
             public Object run(WorkingCopy wc) {
                 TreeMaker make = wc.getTreeMaker();
                 ExecutableElement elem = execElementHandle.resolve(wc);
-                removeStatement(wc, findPropertyStatement(wc, beanName, methodName));
+                StatementTree stmtTree = findPropertyStatement(wc, beanName, methodName);
+                if (stmtTree != null) {
+                    removeStatement(wc, stmtTree);
+                }
                 return null;
             }
         }, javaClass.getFileObject());
@@ -303,7 +310,7 @@ public class Method {
                 List<Statement> stmts = new ArrayList<Statement>();
                 ExecutableElement execElement = execElementHandle.resolve(cinfo);
                 BlockTree block = cinfo.getTrees().getTree(execElement).getBody();
-                if(name.equals(ThresherFacesBeanStructureScanner.PROP_INITMETHOD)) {
+                if(name.equals(BeanStructureScanner.CTOR)) {
                     //Look for property initializers in the first try catch block, this is
                     //to support the code generated in constructor prior to FCS
                     for(StatementTree stmtTree : block.getStatements()){
