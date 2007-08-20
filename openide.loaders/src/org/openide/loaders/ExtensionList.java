@@ -40,9 +40,9 @@ public class ExtensionList extends Object
             (Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
 
     /** set of extensions to recognize */
-    private SortedSet<String> list;
+    private Set<String> list;
     /** set of mime types to recognize */
-    private SortedSet<String> mimeTypes;
+    private Set<String> mimeTypes;
 
     static final long serialVersionUID =8868581349510386291L;
     /** Default constructor.
@@ -52,17 +52,18 @@ public class ExtensionList extends Object
 
     /** Clone new object.
     */
+    @Override
     public synchronized Object clone () {
         try {
             ExtensionList l = (ExtensionList)super.clone ();
             
             if (list != null) {
-                l.list = createExtensionSet ();
+                l.list = new HashSet<String>();
                 l.list.addAll (list);
             }
             
             if (mimeTypes != null) {
-                l.mimeTypes = createExtensionSet();
+                l.mimeTypes = new HashSet<String>();
                 l.mimeTypes.addAll(mimeTypes);
             }
             
@@ -78,7 +79,7 @@ public class ExtensionList extends Object
     */
     public synchronized void addExtension (String ext) {
         if (list == null) {
-            list = createExtensionSet ();
+            list = new HashSet<String>();
         }
         
         list.add (ext);
@@ -98,7 +99,7 @@ public class ExtensionList extends Object
     */
     public synchronized void addMimeType (String mime) {
         if (mimeTypes == null) {
-            mimeTypes = new TreeSet<String> ();
+            mimeTypes = new HashSet<String>();
         }
 
         mimeTypes.add (mime);
@@ -162,10 +163,12 @@ public class ExtensionList extends Object
         return en (mimeTypes);
     }
     
+    @Override
     public String toString() {
         return "ExtensionList[" + list + mimeTypes + "]"; // NOI18N
     }
     
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof ExtensionList)) return false;
         ExtensionList e = (ExtensionList)o;
@@ -173,6 +176,7 @@ public class ExtensionList extends Object
                equalSets(mimeTypes, e.mimeTypes, false);
     }
     
+    @Override
     public int hashCode() {
         int x = 0;
         if (list != null) x = normalizeSet(list, CASE_INSENSITIVE).hashCode();
@@ -208,41 +212,44 @@ public class ExtensionList extends Object
         if (c == null) {
             return Enumerations.empty();
         } else {
-            return Collections.enumeration(c);
+            return Collections.enumeration(createExtensionSet(c));
         }
     }
     
     /** Creates a set for holding the extensions. It is platform 
     * dependent whether case sensitive or insensitive.
     */
-    private static SortedSet<String> createExtensionSet () {
+    private static SortedSet<String> createExtensionSet (Collection<String> clone) {
+        TreeSet<String> t;
         if (CASE_INSENSITIVE) {
-            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+            t = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         } else {
-            return new TreeSet<String>();
+            t = new TreeSet<String>();
         }
+        t.addAll(clone);
+        return t;
     }
     
     /** Backward compatibility settings read.
     */
+    @SuppressWarnings("unchecked")
     private void readObject (ObjectInputStream ois) 
     throws IOException, ClassNotFoundException {
         ObjectInputStream.GetField gf = ois.readFields();
         
-        Object list = gf.get ("list", null); // NOI18N
-        if (list instanceof Map) {
+        Object whichList = gf.get ("list", null); // NOI18N
+        if (whichList instanceof Map) {
             // backward compatible serialization
-            list = ((Map)list).keySet ();
+            whichList = ((Map)whichList).keySet ();
         }
         
-        if (list != null) {
+        if (whichList != null) {
             // have to reinsert everything because we could migrate from
             // different operating system and we might need to change
             // case-sensitivity
-            this.list = createExtensionSet ();
-            this.list.addAll ((Set)list);
+            this.list = createExtensionSet ((Set)whichList);
         }
         
-        this.mimeTypes = (TreeSet)gf.get ("mimeTypes", null); // NOI18N
+        this.mimeTypes = (Set)gf.get ("mimeTypes", null); // NOI18N
     }
 }
