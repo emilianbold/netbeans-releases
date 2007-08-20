@@ -2,7 +2,7 @@
 <html>
 <head>
 <!--
- * Copyright 2006 Sun Microsystems, Inc.
+ * Copyright 2007 Sun Microsystems, Inc.
  * All rights reserved. Use is subject to license terms.
 -->
   <title>sun-application.xml Visual Editor</title>
@@ -10,46 +10,52 @@
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"></head>
 <body style="background-color: rgb(255, 255, 255);">
 <h2><tt>sun-application.xml</tt> Visual Editor</h2>
-        <p><small><a href="#seealso">See Also</a></small></p>
+<p><small><a href="#seealso">See Also</a></small></p>
 <p>The <tt>sun-application.xml</tt> visual editor lets you edit the application's 
   platform-specific deployment descriptor for the Sun Java System Application 
   Server/GlassFish. You open the visual editor by expanding your project's Configuration 
-  Files node in the Projects window and double-clicking the <tt>sun-application.xml</tt> 
-  file. </p>
+  Files node in the Projects window and double-clicking the <tt>sun-application.xml</tt> file. </p>
   
+  <p>The <tt>sun-application.xml</tt> visual editor has the following tabs for editing descriptor properties:</p>
   
-  
-<!--<h3>Pass by reference</h3>
-  
-<p>Determines whether EJB modules use pass-by-value or pass-by-reference semantics. 
-  If false (the default if this element is not present), this application uses 
-  pass-by-value semantics, which the EJB specification requires. If true, this 
-  application uses pass-by-reference semantics. The setting of this element in 
-  the <tt>sun-application.xml</tt> file applies to all EJB modules in the application. 
-</p>-->
-<h3>Realm</h3>
+  <ul>
+      <li><b>Security.</b> This tab enables you to edit the descriptor properties for security role mappings.
+      For more on setting the properties, see the following topic:
+      <ul>
+          <li><a href="../configeditors/SecurityWebRoleMapping.html">Visual Editor: Security: Security Role Mapping</a></li>
+      </ul></li>
+      <li><b>XML.</b> This tab enables you to edit the descriptor file in the XML editor.
+      You may need to use the XML editor to edit the following descriptor properties:
+      <ul>
+          <li><b>Realm.</b>
+          Optional authentication realm name, which is used to process all authentication 
+          requests associated with this application. If this element is not specified 
+          (or if it is given but does not match the name of a configured realm) then the 
+          default realm set in the server instances security-service element is used.
+          <p>For more on security-service element, see &quot;security-service&quot; in 
+          the Sun Java System Application Server Administration Reference:</p>
 
-<p>Optional authentication realm name, which is used to process all authentication 
-  requests associated with this application. If this element is not specified 
-  (or if it is given but does not match the name of a configured realm) then the 
-  default realm set in the server instances security-service element will be used 
-  instead.</p>
-<p>For more on security-service element , see &quot;security-service&quot; in 
-  the Sun Java System Application Server Administration Reference:
+            <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://docs.sun.com/app/docs/doc/819-3661">
+                <param name="text" value="<html><u>http://docs.sun.com/app/docs/doc/819-3661</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+              </object></p>
+          </li>
+          <li><b>Pass by reference.</b>
+          This property determines whether EJB modules use pass-by-value or pass-by-reference semantics. 
+          If no value is set, the application uses pass-by-value semantics, which the EJB specification requires. 
+          The setting of this element in 
+          the <tt>sun-application.xml</tt> file applies to all EJB modules in the application.
+          You can specify the property for individual EJBs in <tt>sun-ejb-jar.xml</tt>.</li>
+      </ul>
+  </li>
+</ul>
   
-    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-        <param name="content" value="http://docs.sun.com/app/docs/doc/819-3661">
-        <param name="text" value="<html><u>http://docs.sun.com/app/docs/doc/819-3661</u></html>">
-        <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-      </object>
-</p>
   
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><tt>sun-application.xml</tt> Visual Editor</dd>
-    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sunj2eemodreference.html">Sun J2EE Module</a></dd>
-    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sunwebmodreference.html">Sun Web Module</a></dd>
     <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/enterprise/general/ent_app_configure.html">Editing an Enterprise Application's Deployment Descriptors</a></dd>
 </dl>
 <hr>

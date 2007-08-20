@@ -2,7 +2,7 @@
 <html>
 
 <!--
-  *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+  *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
   *     Use is subject to license terms.
 -->
 <head>
@@ -17,62 +17,79 @@
 <h2>Configuring CMP Mappings</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>If you are deploying to the Sun Java System Application Server, the CMP mappings 
-  for your EJB module are stored in the module's <tt>src/conf/sun-cmp-mappings.xml</tt> 
-  file. You may need to change the CMP mappings of your entity beans in the following 
-  situations:</p>
-<ul>
-  <li>The generated defaults are not adequate</li>
-  <li>You have modified your bean</li>
-  <li>You have modified your schema</li>
-</ul>
-<p> When you map the beans in the Sun Configuration editor, you specify the schema 
-  and the primary table for each bean. Each bean must be mapped to at least one 
-  table within a single database schema. You can also map a bean to a secondary 
-  table. All beans related by container-managed relationships must be mapped to 
-  tables in the same schema.</p>
-<p><b>To map a CMP entity bean to a database:</b></p>
-<ol>
-  <li>If you do not have a database schema, you can capture the schema by selecting 
-    Databases &gt; Schema in the New File wizard and saving the schema in the 
-    <tt>src/conf</tt> directory of your project.</li>
-  <li>In the Projects window, expand the Configuration Files node for your EJB 
-    module and double-click <tt>sun-cmp-mappings.xml</tt> or <tt>sun-ejb-jar.xml</tt>. 
-    <ul class="note">
-      <li>If either <tt>sun-cmp-mappings</tt> or <tt>sun-ejb-jar.xml</tt> are 
-        open in the text mode, you cannot open the visual editor. You first have 
-        to close the text mode tabs in the Source Editor.</li>
-    </ul>
-  </li>
-  <li>Expand the Sun Configuration node and select the bean you want to map.</li>
-  <li>In the Cmp Mapping tab of the bean, click Advanced Settings and choose the 
-    database schema from the combo box in the dialog box and click OK.</li>
-  <li>Select the primary table for the bean from the Primary Table drop-down list 
-    in the CMP Mapping tab.</li>
-  <li>You can click Automap All to automatically map the fields according to the 
-    schema. You may still need to map some fields manually if any of the fields 
-    are not mapped correctly. For example, if the Field name and the Mapped Column 
-    name do not match, the IDE may not recognize they should be mapped to each 
-    other.</li>
-  <li>To manually map a bean field, select the appropriate entry in the Mapped 
-    Column column. You can choose any of the following: 
+  for your EJB module are specified in the <tt>sun-cmp-mappings.xml</tt> descriptor file in the 
+  module's <tt>src/conf</tt> directory.
+  You use the XML editor to configure CMP mappings in <tt>sun-cmp-mappings.xml</tt>.</p>
+  
+    <p>You may need to change the CMP mappings of your entity beans in the following situations:</p>
     <ul>
-      <li><b>A single column name.</b> Maps the field to a single column in the 
-        primary table.</li>
-      <li><tt><b><a href="fields_mult_cols.html">&lt;map multiple columns&gt;</a></b></tt><b>.</b> 
-        Maps the field to multiple columns in the primary and secondary tables.</li>
-      <li><tt><b><a href="map_rel_fields.html">&lt;mapped relationship&gt;</a></b></tt><b>.</b> 
-        Configures a container-managed relationship between two tables.</li>
+      <li>The generated defaults are not adequate</li>
+      <li>You have modified your bean</li>
+      <li>You have modified your schema</li>
     </ul>
-  </li>
-</ol>
-<p>The IDE saves your changes to the <tt>sun-cmp-mappings.xml</tt> file when you 
-  save your changes.</p>
-<ul class="note">
-  <li>If you are using a mapping file (<tt>sun-cmp-mappings.xml</tt>) without 
-    capturing the database meta data (a schema file), your mapping is not shown 
-    in the Field Mappings table. However, this mapping file is still valid and 
-    deployable. You can continue to use this mapping file.</li>
-</ul>
+
+    <p><b>To edit CMP mappings in <tt>sun-cmp-mappings.xml</tt>:</b></p>  
+    <ol>
+      <li>In the Projects window, expand the Configuration Files node for your EJB 
+      module and double-click <tt>sun-cmp-mappings.xml</tt>.</li>
+      <li>Edit the file and save your changes.</li>
+    </ol>
+
+    <h3>Mapping Entity Beans to Tables</h3>
+    <p>When you map the beans in <tt>sun-cmp-mappings.xml</tt>, you specify the schema 
+    and the primary table for each bean. Each bean must be mapped to at least one 
+    table within a single database schema. You can also map a bean to a secondary 
+    table. All beans related by container-managed relationships must be mapped to 
+    tables in the same schema.</p>
+    <ul class="note">
+        <li>If you do not have a database schema, you can capture the schema by selecting 
+        Persistence &gt; Database Schema in the New File wizard and saving the schema in the 
+        <tt>src/conf</tt> directory of your project.</li>
+    </ul>
+    
+    <ul>
+      <li><b>Primary Tables.</b> A primary table is the table that most closely matches the bean you are mapping. 
+      A primary table must be selected for each CMP bean.</li>
+      <li><b>Secondary Tables.</b> A secondary table enables you to map fields in your bean directly to columns 
+      that are not part of your primary table. You might want to do this if, for example, 
+      the data that represents a logical object is split across two or more tables.
+      <p>A secondary table must be related to the primary table by one or more columns 
+      whose associated rows have the same values in both tables. This link is called 
+      a reference key. Normally, this key is a foreign key in the primary table. </p></li>
+    </ul>
+    <ul class="note">
+      <li>A secondary table differs from relationships. You use secondary tables when 
+      you want columns from another table to be fields in the same bean. You use relationship 
+      fields when there is a logical relationship between tables. For example, if 
+      you want the entire row of another table to be an object in a single bean, you 
+      would map that with a relationship.
+      <p>For more about CMP relationships, see the following topics:</p>
+        <ul>
+            <li><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/about_ejb_relationship.html">About Container-Managed Relationships</a></li>
+            <li><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/csh/graphic_editor/dd_multiview_Relationship.html"><tt>ejb-jar.xml</tt> Visual Editor: CMP Relationships</a></li>
+        </ul>
+      </li>
+    </ul>
+  
+    <h3>Mapping Fields to Columns</h3>
+    <p>When you map CMP beans to a database, the CMP fields in each entity bean map to columns in either the primary or a secondary table. 
+    CMP fields can also be mapped to multiple database columns.</p> 
+
+    <p>If you map a field to more than one column, all columns will be updated with 
+    the value of the first column listed. Therefore, if the value of one of the 
+    columns is changed outside of an EJB application, the value will only be read 
+    if the change was made to that first column. Writing a value to the database 
+    overwrites any conflicting changes made to any other columns. </p>
+    
+    <h2>Mapping Relationship Fields</h2>
+    <p>When you have foreign-key relationships between database tables, you usually 
+    want to preserve those relationships in the CMP beans mapped to those tables. 
+    Container-managed relationships (CMR) determine how relationships between 
+    mapped CMP beans are stored in the database. CMRs enable navigation from one 
+    bean to another, in the same way that a foreign key enables navigation from 
+    one table to another. </p>
+
+
 <dl> 
   <dt><a name="seealso">See Also</a></dt>
   <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_cmp.html">About EJB 2.1 CMP Mappings</a></dd>

@@ -90,15 +90,11 @@
   
     <!-- sun-ejb-jar.xml DD editor CSH: -->
   <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode"    url="ejbconfigeditors/sunconfig.html" />
-  <mapID target="AS_CFG_StatefulEjb"                                                            url="ejbconfigeditors/sessionbean.html" />
-  <mapID target="AS_CFG_StatelessEjb"                                                           url="ejbconfigeditors/sessionbean.html" />
   <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbNode"              	url="ejbconfigeditors/entitybean.html" />
   <mapID target="AS_CFG_CmpEntityEjb"                                                           url="ejbconfigeditors/entitybean.html" />
 
   <!-- sun-application.xml DD editor CSH: -->
   <mapID target="AS_CFG_Application"                    			url="appconfigeditors/sunapplication.html" />
-  <mapID target="AS_CFG_ModuleRef"                                       	url="appconfigeditors/sunj2eemodreference.html" />
-  <mapID target="AS_CFG_WebAppRef"                      			url="appconfigeditors/sunwebmodreference.html" />
 </map>
 
   

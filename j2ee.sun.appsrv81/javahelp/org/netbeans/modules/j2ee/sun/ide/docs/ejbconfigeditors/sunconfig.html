@@ -17,13 +17,13 @@
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 
     </head>
-
+    <body>
     <h2><tt>sun-ejb-jar.xml</tt> Visual Editor</h2>
     <p><small><a href="#seealso">See Also</a></small></p> 
     <p>The <tt>sun-ejb-jar.xml</tt> visual editor enables you to configure descriptor settings for an EJB module
     when your target server is the Sun Java System Application Server/GlassFish.</p>
     <p>You open the visual editor by expanding your project's Configuration Files node in 
-    the Projects window and double-clicking the <tt>sun-ejb-jar.xml</tt> file or the <tt>sun-cmp-mappings.xml</tt> file.</p>
+    the Projects window and double-clicking the <tt>sun-ejb-jar.xml</tt> file.</p>
     
     <p>The visual editor groups descriptor settings under the following tabs.</p>
     <ul>
@@ -35,25 +35,6 @@
         <li><b>XML.</b> This tab enables you to view and edit the xml file directly in the xml editor.
     </ul>
     
-    <!--The following bean types may be visible in the tree:</p>
-    <ul>
-        <li><a href="sessionbean.html">Session Bean</a>. A session bean (&nbsp;<img src="../images/SessionNodeIcon.gif">&nbsp;)
-        provides a service to a particular user session. A session bean can be one of two types: stateless or stateful.</li>
-        <li><a href="entitybean.html">Entity Bean</a>. An entity bean (&nbsp;<img src="../images/EntityNodeIcon.gif">&nbsp;) 
-        represents data that is typically stored in a database. Each entity bean represents a set of data, such as the fields in a database record.
-        There are two types of persistence for entity beans: bean-managed and container-managed.</li>
-        <li><a href="messagebean.html">Message Bean</a>. A message bean (&nbsp;<img src="../images/MessageNodeIcon.gif">&nbsp;)
-        enables enterprise applications to process messages asynchronously.</li>
-    </ul>
-
-    <p>Clicking on a bean node opens the 
-    configuration panel for the selected bean in the visual editor.
-    The configuration panes vary according to the type of bean, and 
-    there may be multiple tabs in the pane for configuring complex
-    elements. </p>
-    <p>If any configuration information for an enterprise bean is not specified 
-    in the sun-ejb-jar.xml file, it defaults to a corresponding setting in the EJB 
-    container if an equivalency exists.</p>-->
 
     <p>For a complete list of configurable properties for
     all J2EE module types, see "Appendix A
@@ -91,21 +72,15 @@
             bean(s) were last deployed are dropped when the bean(s) are undeployed.</li>
             
         </ul></li>
-        <li><b>CMP Properties.</b> 
-    Configure <tt>PersistenceManagerFactory</tt> properties if the <tt>JNDI-name</tt> 
-    of the CMP Resource refers to a JDBC resource. Click New to open the Property dialog box to add a property.</li>
-    <li><b>Schema Generator Properties.</b> Specify field-specific type mappings and set the <tt>use-unique-table-names</tt> property.
-    Click New to open the Property dialog box to add a property.</li>
+
     </ul>-->
     <dl>
             <dt><a name="seealso">See Also</a></dt>
-                        <dd><tt>sun-ejb-jar.xml</tt> Visual Editor</dd>
-            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sunconfig_tabs.html">General Tab</a></dd>
+                        <dd><a href="sunconfig.html"><tt>sun-ejb-jar.xml</tt> Visual Editor</a></dd>
             <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="entitybean.html">EJB Tab</a></dd>
             <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../configeditors/SecurityWebRoleMapping.html">Security Tab</a></dd>
             <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../configeditors/WebserviceDescriptor.html">Web Services Tab</a></dd>
             <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../configeditors/WebAppMessages.html">Messaging Tab</a></dd>
-            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../configeditors/WebserviceDescriptor.html">Web Service Descriptor</a></dd>
             <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>               
             <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/config_ejb_dd.html">Configuring EJB Deployment Descriptors</a></dd>             
     </dl>

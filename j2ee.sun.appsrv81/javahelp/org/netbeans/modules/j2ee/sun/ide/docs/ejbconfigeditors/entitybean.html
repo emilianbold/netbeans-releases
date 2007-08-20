@@ -12,34 +12,30 @@
 
         -->
 
-    <title>sun-ejb-jar.xml Visual Editor: EJB Tab</title>
+    <title>sun-ejb-jar.xml Visual Editor: EJB</title>
     
     <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     
 </head>
 <body>
-<h2><tt>sun-ejb-jar.xml</tt> Visual Editor: EJB Tab</h2>
+<h2><tt>sun-ejb-jar.xml</tt> Visual Editor: EJB</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>This pane enables you to edit the <tt>sun-ejb-jar.xml</tt> deployment descriptor entries for entity beans.
-You get to this pane by clicking the EJB tab in the <tt>sun-ejb-jar.xml</tt> visual editor.</p>
-<!--<p>In addition to the general bean settings, the pane contains the following configuration tabs:</p>
-        <ul>
-            <li><a href="entitybean_tabs.html">IOR Security Config tab</a></li>
-            <li><a href="entitybean_tabs.html#poo">Bean Pool tab</a></li>
-            <li><a href="entitybean_tabs.html#cac">Bean Cache tab</a></li>
-        </ul>
-        <p>If the Entity Bean uses container-managed persistence (CMP), the pane 
-        contains the following additional configuration tabs:</p>
-        <ul>            
-            <li><a href="entitybean_tabs.html#cmp">Cmp Mapping</a></li>
-            <li><a href="entitybean_tabs.html#que">EJB1.1 Finder Queries tab</a></li>
-            <li><a href="entitybean_tabs.html#pre">Prefetch Disabled tab</a></li>
-        </ul>
--->
-    <p>The pane contains a node for the EJBs in the module.
+    <p>The EJB tab in the <a href="sunconfig.html"><tt>sun-ejb-jar.xml</tt> visual editor</a>
+    enables you to configure platform-specific descriptor settings for entity beans 
+    when your target server is the Sun Java System Application Server/GlassFish.</p>
+    <p>You get to this tab by double-clicking the <tt>sun-ejb-jar.xml</tt> file under your project's
+    Configuration Files node in the Projects window and clicking the EJB tab in the visual editor.</p>
+    <p>The EJB tab does not contain nodes by default because the EJBs in your project by default do not have any properties.
+    If any configuration information for an enterprise bean is not specified 
+    in the <tt>sun-ejb-jar.xml</tt> file, it defaults to a corresponding setting in the EJB 
+    container if an equivalency exists.</p>
+    <p>If you want to add descriptor properties to <tt>sun-ejb-jar.xml</tt> for an EJB in your project, 
+    you first need to create an entry for that EJB by clicking Add EJB.
+    When you add an EJB, a node appears in the tab with a default name for the EJB.
     Expand the EJB node to edit the following EJB properties.</p>
+
     <ul>
-    <li><b>Name.</b> The name field contains the name of the bean. This name cannot be changed in the visual editor.</li>
+        <li><b>Name.</b> The name field contains the name of the bean. Changing this name does not change the name of the bean in your project.</li>
     <li><b>JNDI name.</b> This specifies the JNDI name of the entity bean. In the case of session beans, this name
     specifies the global JNDI name of the EJBHome object. This name is required if the session bean exposes a remote view.</li>
     <li><b>Pass by Reference.</b> This specifies the passing method used by the enterprise bean 
@@ -223,11 +219,7 @@ You get to this pane by clicking the EJB tab in the <tt>sun-ejb-jar.xml</tt> vis
     
 <dl>
     <dt><a name="seealso">See Also</a></dt>
-    <dd><tt>sun-ejb-jar.xml</tt> Visual Editor</dd>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="entitybean_tabs.html">Entity Bean Configuration Tabs</a></dd>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sessionbean.html">Session Bean</a></dd>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="messagebean.html">Message Bean</a></dd>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sunconfig.html">Sun Configuration</a></dd>
+    <dd><a href="sunconfig.html"><tt>sun-ejb-jar.xml</tt> Visual Editor</a></dd>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../configeditors/WebserviceDescriptor.html">Web Service Descriptor</a></dd>
     <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_entity_beans.html">About Entity Beans</a></dd>
     <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/editing/define_cmp_field.html">Defining a CMP Field</a></dd>
