@@ -54,7 +54,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
 
     private DataObjectContext context;
     private transient GameController controller;
-	private GlobalRepository gameDesign;
+	private transient GlobalRepository gameDesign;
 
     private transient JComponent toolBarRepresentation;
     private transient JComboBox comboGlobal;
