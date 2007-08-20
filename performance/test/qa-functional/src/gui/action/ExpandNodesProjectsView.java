@@ -139,7 +139,8 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
     }
     
     public ComponentOperator open(){
-        nodeToBeExpanded.tree().clickOnPath(nodeToBeExpanded.getTreePath(), 2);
+//        nodeToBeExpanded.tree().clickOnPath(nodeToBeExpanded.getTreePath(), 2);
+nodeToBeExpanded.tree().doExpandPath(nodeToBeExpanded.getTreePath());
 //        nodeToBeExpanded.tree().clickMouse(2);
 //        nodeToBeExpanded.waitExpanded();
         nodeToBeExpanded.expand();
