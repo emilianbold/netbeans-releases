@@ -28,7 +28,7 @@ import java.util.Calendar;
 
 /**
  *
- * @author  breh
+ * @author  breh, lukas
  * @version
  */
 public class LocalizedMIDlet extends MIDlet implements CommandListener {
@@ -42,7 +42,7 @@ public class LocalizedMIDlet extends MIDlet implements CommandListener {
     
     public void startApp() {
         
-//#if Chinese
+//#ifdef Chinese
 //#         /* This is used only for chinese configuration 
 //#          * we want the application to run always in Chinese
 //#          * no matter what the microedition.locale property is set.
@@ -51,6 +51,47 @@ public class LocalizedMIDlet extends MIDlet implements CommandListener {
 //#          */
 //#         LocalizationSupport.initLocalizationSupport("zh_CN");
 //#endif
+
+        //#ifdef Japanese
+//#         /* This is used only for japanese configuration 
+//#          * we want the application to run always in Japanese
+//#          * no matter what the microedition.locale property is set.
+//#          * Otherwise the localization support is initialized
+//#          * when a getMessage() method is called for the first time.            
+//#          */
+//#         LocalizationSupport.initLocalizationSupport("ja_JP");
+//#endif
+        
+//#ifdef Czech
+//#         /* This is used only for czech configuration 
+//#          * we want the application to run always in Czech
+//#          * no matter what the microedition.locale property is set.
+//#          * Otherwise the localization support is initialized
+//#          * when a getMessage() method is called for the first time.            
+//#          */
+//#         LocalizationSupport.initLocalizationSupport("cs_CZ");
+//#endif
+        
+//#ifdef Deutch
+//#         /* This is used only for german configuration 
+//#          * we want the application to run always in German
+//#          * no matter what the microedition.locale property is set.
+//#          * Otherwise the localization support is initialized
+//#          * when a getMessage() method is called for the first time.            
+//#          */
+//#         LocalizationSupport.initLocalizationSupport("de");
+//#endif
+
+//#ifdef Spanish
+//#         /* This is used only for german configuration 
+//#          * we want the application to run always in Spanish
+//#          * no matter what the microedition.locale property is set.
+//#          * Otherwise the localization support is initialized
+//#          * when a getMessage() method is called for the first time.            
+//#          */
+//#         LocalizationSupport.initLocalizationSupport("de");
+//#endif        
+
         
         d = Display.getDisplay(this);
         
