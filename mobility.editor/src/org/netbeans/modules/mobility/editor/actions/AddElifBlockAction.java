@@ -62,7 +62,7 @@ public class AddElifBlockAction extends PreprocessorEditorContextAction {
             this.textComponent = new WeakReference<JTextComponent>(target);
             this.preprocessorLineList = preprocessorLineList;
         } else this.textComponent = null;
-        return cfgProvider != null && cfgProvider.isPreprocessorOn() && cfgProvider.getConfigurations().size() > 1 && isInsideIfChain(target, preprocessorLineList) && !overlapsBlockBorders(target, preprocessorLineList);
+        return cfgProvider != null && cfgProvider.isPreprocessorOn() && cfgProvider.getConfigurations().size() > 1 && isInsideIfChain(target, preprocessorLineList) && !overlapsBlockBorders(target, preprocessorLineList) && !overlapsGuardedBlocks(target);
     }
     
     public String getPopupMenuText(@SuppressWarnings("unused")

@@ -65,7 +65,7 @@ public class RecommentAction extends PreprocessorEditorContextAction {
     public boolean isEnabled(final ProjectConfigurationsHelper cfgProvider, @SuppressWarnings("unused")
 	final ArrayList preprocessorLineList, @SuppressWarnings("unused")
 	final JTextComponent target) {
-        return cfgProvider != null && cfgProvider.isPreprocessorOn() && cfgProvider.getConfigurations().size() > 1;
+        return cfgProvider != null && cfgProvider.isPreprocessorOn();
     }
     
     public String getPopupMenuText(@SuppressWarnings("unused")

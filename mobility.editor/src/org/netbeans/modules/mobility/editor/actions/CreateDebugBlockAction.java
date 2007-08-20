@@ -54,7 +54,7 @@ public class CreateDebugBlockAction extends PreprocessorEditorContextAction {
     }
     
     public boolean isEnabled(final ProjectConfigurationsHelper cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
-        return cfgProvider != null && cfgProvider.isPreprocessorOn() && cfgProvider.getConfigurations().size() > 1 && !overlapsBlockBorders(target, preprocessorLineList);
+        return cfgProvider != null && cfgProvider.isPreprocessorOn() && cfgProvider.getConfigurations().size() > 1 && !overlapsBlockBorders(target, preprocessorLineList) && !overlapsGuardedBlocks(target);
     }
     
     public String getPopupMenuText(@SuppressWarnings("unused")

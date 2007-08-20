@@ -26,9 +26,13 @@
 package org.netbeans.modules.mobility.editor.actions;
 
 import java.util.ArrayList;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position.Bias;
 import javax.swing.text.StyledDocument;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.mobility.antext.preprocessor.PPBlockInfo;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
@@ -73,5 +77,18 @@ public abstract class PreprocessorEditorContextAction extends BaseAction {
         if (sL >= preprocessorLineList.size() || eL >= preprocessorLineList.size()) return false;
         final PPBlockInfo b = preprocessorLineList.get(sL - 1).getBlock();
         return b != null && (b.getStartLine() == sL || (b.hasFooter() && b.getEndLine() == eL) || b != preprocessorLineList.get(eL - 1).getBlock());
-    }   
+    }
+    
+    protected boolean overlapsGuardedBlocks(final JTextComponent c) {
+        Document d = c.getDocument();
+        if (!(d instanceof StyledDocument)) return false;
+        GuardedSectionManager man = GuardedSectionManager.getInstance((StyledDocument)d);
+        if (man == null) return false;
+        for (GuardedSection s : man.getGuardedSections()) try {
+            if (s.contains(NbDocument.createPosition(d, c.getSelectionStart(), Bias.Backward), false)
+                || s.contains(NbDocument.createPosition(d, c.getSelectionEnd(), Bias.Forward), false)
+                || (s.getStartPosition().getOffset() >= c.getSelectionStart() && s.getEndPosition().getOffset() <= c.getSelectionEnd())) return true;
+        } catch (BadLocationException ble) {}
+        return false;
+    }
 }
