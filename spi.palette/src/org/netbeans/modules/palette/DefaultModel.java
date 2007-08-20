@@ -53,6 +53,7 @@ public class DefaultModel implements Model, NodeListener {
     private Category selectedCategory;
     private PropertyChangeSupport propertySupport;
     private ArrayList<ModelListener> modelListeners = new ArrayList<ModelListener>( 3 );
+    private boolean categoriesNeedRefresh = true;
     /**
      * Cached categories
      */
@@ -122,14 +123,13 @@ public class DefaultModel implements Model, NodeListener {
     }
 
     
-    public Category[] getCategories() {
-        synchronized( this ) {
-            if( null == categories ) {
-                Node[] nodes = rootNode.getChildren().getNodes( canBlock() );
-                categories = nodes2categories( nodes );
-            }
-            return categories;
+    public synchronized Category[] getCategories() {
+        if( null == categories || categoriesNeedRefresh ) {
+            Node[] nodes = rootNode.getChildren().getNodes( canBlock() );
+            categories = nodes2categories( nodes );
+            categoriesNeedRefresh = false;
         }
+        return categories;
     }
     
     public static boolean canBlock() {
@@ -140,9 +140,7 @@ public class DefaultModel implements Model, NodeListener {
     * @param ev event describing the action
     */
     public void childrenAdded(NodeMemberEvent ev) {
-        synchronized( this ) {
-            categories = null;
-        }
+        categoriesNeedRefresh = true;
         if( isRefreshingChildren )
             return;
         getCategories();
@@ -155,9 +153,7 @@ public class DefaultModel implements Model, NodeListener {
     */
     public void childrenRemoved(NodeMemberEvent ev) {
         Category[] removedCategories = findCategories( ev.getDelta() );
-        synchronized( this ) {
-            categories = null;
-        }
+        categoriesNeedRefresh = true;
         fireCategoriesChanged( removedCategories, false );
     }
 
@@ -165,9 +161,7 @@ public class DefaultModel implements Model, NodeListener {
     * @param ev event describing the change
     */
     public void childrenReordered(NodeReorderEvent ev) {
-        synchronized( this ) {
-            categories = null;
-        }
+        categoriesNeedRefresh = true;
         fireCategoriesChanged( null, false );
     }
 
@@ -214,25 +208,24 @@ public class DefaultModel implements Model, NodeListener {
     }
     
     private Category[] findCategories( Node[] nodes ) {
-        synchronized( this ) {
-            Category[] res = new Category[ nodes.length ];
+        Category[] res = new Category[ nodes.length ];
 
-            for( int i=0; i<res.length; i++ ) {
-                boolean found = false;
-                for( int j=0; !found && null != categories && j<categories.length; j++ ) {
-                    Node catNode = categories[j].getLookup().lookup( Node.class );
-                    if( nodes[i].equals( catNode ) ) {
-                        res[i] = categories[j];
-                        found = true;
-                    }
-                }
-                if( !found ) {
-                    res[i] = new DefaultCategory( nodes[i] );
+        Category[] current = getCategories();
+        for( int i=0; i<res.length; i++ ) {
+            boolean found = false;
+            for( int j=0; !found && null != current && j<current.length; j++ ) {
+                Node catNode = current[j].getLookup().lookup( Node.class );
+                if( nodes[i].equals( catNode ) ) {
+                    res[i] = current[j];
+                    found = true;
                 }
             }
-
-            return res;
+            if( !found ) {
+                res[i] = new DefaultCategory( nodes[i] );
+            }
         }
+
+        return res;
     }
 
     private boolean isRefreshingChildren = false;
@@ -243,9 +236,7 @@ public class DefaultModel implements Model, NodeListener {
             customRefreshAction.actionPerformed( new ActionEvent( getRoot(), 0, "refresh" ) ); //NOI18N
         }
         clearSelection();
-        synchronized( this ) {
-            categories = null;
-        }
+        categoriesNeedRefresh = true;
         isRefreshingChildren = true;
         try {
             rootNode.refreshChildren();
