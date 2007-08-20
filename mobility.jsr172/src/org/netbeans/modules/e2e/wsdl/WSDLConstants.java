@@ -32,6 +32,8 @@ public final class WSDLConstants {
     public static final QName INPUT         = new QName( WSDL_URI, "input" );
     public static final QName OUTPUT        = new QName( WSDL_URI, "output" );
     public static final QName FAULT         = new QName( WSDL_URI, "fault" );
+
+    public static final QName IMPORT        = new QName( WSDL_URI, "import" );
     
     public static final QName DOCUMENTATION = new QName( WSDL_URI, "documentation" );
 }

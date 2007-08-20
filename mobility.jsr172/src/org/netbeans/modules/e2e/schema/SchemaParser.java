@@ -13,6 +13,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,22 +44,26 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class SchemaParser extends DefaultHandler {
     
-    private Stack<String> state = new Stack();
-    private Stack<SchemaConstruct> schemaConstructs = new Stack();
+    private Stack<String> state = new Stack<String>();
+    private Stack<SchemaConstruct> schemaConstructs = new Stack<SchemaConstruct>();
 
     private SchemaHolder schemaHolder;
     
     private String targetNamespace;
     private boolean elementFormDefault = false;
-    private Stack<String> targetNamespaceStack = new Stack();
-    private Map<String, String> prefixMapping = new HashMap();
+    private Stack<String> targetNamespaceStack = new Stack<String>();
+    private Map<String, String> prefixMapping = new HashMap<String, String>();
     private Locator locator;
-        
+    
+    private String schemaURI;
+    
     /* SCHEMA constants */
     private static final String SCHEMA          = "schema";
     
     private static final String ELEMENT         = "element";
     private static final String COMPLEX_TYPE    = "complexType";
+    private static final String COMPLEX_CONTENT = "complexContent";
+    private static final String EXTENSION       = "extension";
     private static final String SEQUENCE        = "sequence";
     private static final String SIMPLE_TYPE     = "simpleType";
     private static final String RESTRICTION     = "restriction";
@@ -69,7 +75,7 @@ public class SchemaParser extends DefaultHandler {
     
     public SchemaParser() {
         schemaHolder = new SchemaHolderImpl();
-        validationResults = new ArrayList();
+        validationResults = new ArrayList<WSDL2Java.ValidationResult>();
         
         addPrimitiveTypes();
     }
@@ -154,6 +160,7 @@ public class SchemaParser extends DefaultHandler {
             
             SAXParser parser = spf.newSAXParser();
             
+            schemaURI = uri;
             parser.parse( uri, this );
         } catch( SAXException e ) {
             if( e.getException() instanceof SchemaException ) {
@@ -182,14 +189,17 @@ public class SchemaParser extends DefaultHandler {
         }
     }
 
+    @Override
     public void setDocumentLocator( Locator locator ) {
         this.locator = locator;
     }
     
+    @Override
     public void startPrefixMapping( String prefix, String uri ) throws SAXException {
         prefixMapping.put( prefix, uri );
     }        
 
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         QName qname = new QName( uri, localName );
         
@@ -212,9 +222,14 @@ public class SchemaParser extends DefaultHandler {
                 String schemaLocation = attributes.getValue( "schemaLocation" );
 //                System.err.println("<import namespace='" + namespace + "' schemaLocation='" + schemaLocation + "'/>" );
                 SchemaParser sp = new SchemaParser( false );
+                    
                 try {
-                    sp.parseLocation( schemaLocation );
+                    URI u = new URI( schemaURI );
+                    URI sl = u.resolve( schemaLocation );
+                    sp.parseLocation( sl.toString());
                 } catch( SchemaException ex ) {
+                    ex.printStackTrace();
+                } catch( URISyntaxException ex ) {
                     ex.printStackTrace();
                 }
                 schemaHolder.importSchema( sp.getSchemaHolder());
@@ -315,6 +330,28 @@ public class SchemaParser extends DefaultHandler {
                 }
                 return;
             }
+//            // Complex content
+            if( localName.equalsIgnoreCase( SchemaConstants.COMPLEX_CONTENT.getLocalPart()) && state.peek().equals( COMPLEX_TYPE )) {
+                state.push( COMPLEX_CONTENT );
+            }
+            // Extension
+            if( localName.equalsIgnoreCase( SchemaConstants.EXTENSION.getLocalPart()) && state.peek().equals( COMPLEX_CONTENT )) {
+                state.push( EXTENSION );
+                String name = attributes.getValue( "base" );
+                QName qn = null;
+                Type type = null;
+                if( name != null ) {
+                    qn = parseQName( name );
+                    type = schemaHolder.getSchemaType( qn );
+                    if( type == null ) {
+                        type = new Type( qn );
+                        schemaHolder.addSchemaType( type );
+                    }
+                    SchemaConstruct sc = schemaConstructs.peek();
+                    sc.setParent( type );
+                }
+                return;
+            }
             // Simple Type
             if( localName.equals( SchemaConstants.SIMPLE_TYPE.getLocalPart())) {
 //                state.push( SIMPLE_TYPE );
@@ -357,6 +394,7 @@ public class SchemaParser extends DefaultHandler {
         }        
     }
     
+    @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         
         if( uri.equals( WSDLConstants.WSDL_URI )) {
@@ -397,9 +435,15 @@ public class SchemaParser extends DefaultHandler {
                 if( !SEQUENCE.equals( state.pop())) {
                     throw new SAXException( "", new SchemaException( "Invalid end tag for 'sequence'." ));
                 }
-                if( !COMPLEX_TYPE.equals( state.peek())) {
+                if( !COMPLEX_TYPE.equals( state.peek()) && !EXTENSION.equals( state.peek())) {
                     throw new SAXException( "", new SchemaException( "Invalid 'sequence' tag position." ));
                 } 
+            }
+            if( SchemaConstants.EXTENSION.getLocalPart().equals( localName )) {
+                state.pop();
+            }
+            if( SchemaConstants.COMPLEX_CONTENT.getLocalPart().equals( localName )) {
+                state.pop();
             }
         }
     }

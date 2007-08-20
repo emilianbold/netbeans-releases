@@ -52,6 +52,7 @@ import org.netbeans.modules.e2e.wsdl.extensions.soap.SOAPConstants;
 import org.netbeans.modules.e2e.wsdl.extensions.soap.SOAPFaultImpl;
 import org.netbeans.modules.e2e.wsdl.extensions.soap.SOAPHeaderImpl;
 import org.netbeans.modules.e2e.wsdl.extensions.soap.SOAPOperationImpl;
+import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -60,7 +61,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author Michal Skvor
  */
-public class WSDLParser {
+public class WSDLParser extends DefaultHandler {
 
     private static final String SCHEMA  = "http://www.w3.org/2001/XMLSchema";    
         
@@ -86,13 +87,13 @@ public class WSDLParser {
     private List<WSDL2Java.ValidationResult> validationResults;    
     
     public WSDLParser() {
-        validationResults = new ArrayList();
+        validationResults = new ArrayList<WSDL2Java.ValidationResult>();
     }
     
     public Definition parse( String uri ) throws WSDLException {
-        Definition definition = new DefinitionImpl();
+        definition = new DefinitionImpl();
         
-        DefaultHandler handler = new DefaultHandlerImpl( definition );
+//        DefaultHandler handler = new DefaultHandlerImpl( definition );
         SchemaParser schemaParser = new SchemaParser();
         
         SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -100,7 +101,7 @@ public class WSDLParser {
             spf.setNamespaceAware( true );
             
             SAXParser parser = spf.newSAXParser();
-            parser.parse( uri, handler );
+            parser.parse( uri, this );
             try {                
                 schemaParser.parseLocation( uri );
             } catch (SchemaException ex) {
@@ -126,9 +127,9 @@ public class WSDLParser {
         return Collections.unmodifiableList( validationResults );
     }    
     
-    private static class DefaultHandlerImpl extends DefaultHandler {
+//    private static class DefaultHandlerImpl extends DefaultHandler {
         
-        private Stack<String> state = new Stack();
+        private Stack<String> state = new Stack<String>();
         
         private Definition definition;
         private Message message;
@@ -147,7 +148,7 @@ public class WSDLParser {
         private BindingOutput bindingOutput;
         private BindingFault bindingFault;
         
-        private Map<String,String> prefixMapping;
+        private Map<String, String> prefixMapping = new HashMap<String, String>();
         private String targetNamespace;
         
         private SOAPAddress soapAddress;
@@ -159,18 +160,14 @@ public class WSDLParser {
         private SOAPFault soapFault;
         
         private String tagString;        
-        
-        public DefaultHandlerImpl( Definition definition ) {
-            this.definition = definition;
-            
-            prefixMapping = new HashMap();
-        }
-        
+                
+        @Override
         public void startPrefixMapping(String prefix, String uri) throws SAXException {
 //            System.err.println(" - mapping : " + prefix + " ~ " + uri );
             prefixMapping.put( prefix, uri );
         }        
 
+        @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) 
                 throws SAXException 
         {
@@ -328,9 +325,32 @@ public class WSDLParser {
                     port = new PortImpl( attributes.getValue( "name" ), b );
                     return;
                 }
+                // Import
+                if( localName.equals( WSDLConstants.IMPORT.getLocalPart()) && state.peek().equals( DEFINITION )) {
+                    try {
+                        String namespace = attributes.getValue( "namespace" );
+                        String location = attributes.getValue( "location" );
+                        WSDLParser parser = new WSDLParser();
+                        Definition d = parser.parse( location );
+                        
+                        for( Binding b : d.getBindings().values()) definition.addBinding( b );
+                        for( Message m : d.getMessages().values()) definition.addMessage( m );
+                        for( Service s : d.getServices().values()) definition.addService( s );
+                        for( PortType pt : d.getPortTypes().values()) definition.addPortType( pt );
+                        if( d.getSchemaHolder() != null ) {
+                            definition.setSchemaHolder( d.getSchemaHolder());
+                        }
+                        
+                        validationResults.addAll( parser.getValidationResults());
+                        return;
+                    } catch( WSDLException e ) {
+                        Exceptions.printStackTrace( e );
+                    }
+                }
             }
         }
 
+        @Override
         public void endElement(String uri, String localName, String qName) 
                 throws SAXException 
         {
@@ -495,9 +515,10 @@ public class WSDLParser {
             return new QName( targetNamespace, qName );
         }
 
+        @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
             tagString += new String( ch, start, length );
         }
         
-    }
+//    }
 }

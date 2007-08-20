@@ -70,6 +70,8 @@ public class Element extends RepeatableSchemaConstruct {
     }
     
     public String getJavaName() {
+        String javaName = getJavaName();
+        if( javaName != null ) return javaName;
         return getName().getLocalPart() + ( getMaxOccurs() > 1 ? "[]" : "" ); 
     }
 

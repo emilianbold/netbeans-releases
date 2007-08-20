@@ -24,6 +24,8 @@ public class SchemaConstruct {
     private ConstructType constructType;
     private String javaName;
     
+    private SchemaConstruct parent = null;
+    
     public SchemaConstruct( SchemaConstruct.ConstructType constructType ) {
         this.constructType = constructType;
     }
@@ -63,5 +65,13 @@ public class SchemaConstruct {
     
     public String getJavaName() {
         return javaName;
+    }
+    
+    public void setParent( SchemaConstruct parent ) {
+        this.parent = parent;
+    }
+    
+    public SchemaConstruct getParent() {
+        return parent;
     }
 }

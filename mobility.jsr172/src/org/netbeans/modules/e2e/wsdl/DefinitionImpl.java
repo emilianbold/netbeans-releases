@@ -27,10 +27,10 @@ public class DefinitionImpl implements Definition {
     
     private SchemaHolder schemaHolder;
     
-    private Map<String, Binding> bindings;
-    private Map<String, Message> messages;
-    private Map<String, Service> services;
-    private Map<String, PortType> portTypes;
+    private Map<String, Binding> bindings = new HashMap<String, Binding>();
+    private Map<String, Message> messages = new HashMap<String, Message>();
+    private Map<String, Service> services = new HashMap<String, Service>();
+    private Map<String, PortType> portTypes = new HashMap<String, PortType>();
     
     private String documentation;
     
@@ -38,10 +38,6 @@ public class DefinitionImpl implements Definition {
     
     /** Creates a new instance of DefinitionImpl */
     public DefinitionImpl() {
-        bindings = new HashMap();
-        messages = new HashMap();
-        services = new HashMap();
-        portTypes = new HashMap();
     }
 
     public void setSchemaHolder( SchemaHolder schemaHolder ) {
