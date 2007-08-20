@@ -44,7 +44,6 @@ import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewContro
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceActionGroup;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -124,9 +123,8 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
         int nodesCount = Utilities.actionsGlobalContext().lookup(new Lookup.Template<Node>(Node.class)).allInstances().size();
         List<SystemAction> list = new ArrayList<SystemAction>();
         list.add(SystemAction.get(OpenAction.class));
-        list.add(null);
-        list.add(SystemAction.get(DeleteAction.class));
         if (nodesCount == 1) {
+            list.add(null);
             list.add(SystemAction.get(AddActionGroup.class));
             list.add(null);
             list.add(SystemAction.get(GoToSourceActionGroup.class));
