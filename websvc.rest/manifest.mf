@@ -4,4 +4,4 @@ OpenIDE-Module-Install: org/netbeans/modules/websvc/rest/RestModuleInstall.class
 OpenIDE-Module-Layer: org/netbeans/modules/websvc/rest/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/rest/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 0.2
-
+AutoUpdate-Show-In-Client: false
