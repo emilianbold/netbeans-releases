@@ -421,9 +421,16 @@
 <mapID target="hist_working_with" url="local-history/hist_working_with.html" />
 <mapID target="hist_settings" url="local-history/hist_settings.html" />
 
-<!-- CSH -->
+<!-- Local History CSH -->
 <mapID target="org.netbeans.modules.localhistory.ui.revert.RevertFileChanges" url="local-history/csh/hist_revert_dialog.html" />
 <mapID target="org.netbeans.modules.localhistory.options.LocalHistoryOptionsController" url="local-history/hist_settings.html" />
+
+<mapID target="org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction" url="pending.html" />
+<mapID target="org.netbeans.modules.localhistory.ui.revert.RevertToAction" url="pending.html" />
+
+<!-- TODO:  Find out if this target for Diff Viewer is correct: -->
+<!-- <mapID target="org.openide.windows.TopComponent" url="local-history/csh/hist_diff_viewer.html" /> -->
+
 
 
 <!--IDs for menu items-->
@@ -460,10 +467,6 @@
 <!--next error and previous error-->
 <mapID target="org.netbeans.core.actions.JumpNextAction" url="pending.html" />
 <mapID target="org.netbeans.core.actions.JumpPrevAction" url="pending.html" />
-
-<!--local history-->
-<mapID target="org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction" url="pending.html" />
-<mapID target="org.netbeans.modules.localhistory.ui.revert.RevertToAction" url="pending.html" />
 
 <!--debugging, add watch-->
 <mapID target="org.netbeans.modules.debugger.ui.actions.AddWatchAction" url="pending.html" />
