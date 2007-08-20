@@ -221,7 +221,7 @@ public class Util {
                 double version = Double.parseDouble(j2eeModule.getModuleVersion());
                 if (J2eeModule.EJB.equals(type) && (version > 2.1)) {
                     return true;
-                };
+                }
                 if (J2eeModule.WAR.equals(type) && (version > 2.4)) {
                     return true;
                 }
