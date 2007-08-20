@@ -35,7 +35,6 @@
 		<tocitem text="Sun Java System Access Manager">
 			<tocitem text="About the Sun Java System Access Manager" target="idmtools_am_about_am" />
 			<tocitem text="Working with Sun Java System Access Manager Instances" target="idmtools_am_ww_am_instances" />
-			<tocitem text="Adding Sun Java System Access Manager Instances" target="idmtools_am_adding_am_instance" />
 			<tocitem text="Changing the Properties of Sun Java System Access Manager Instances" target="idmtools_am_changing_props_am_instance" />
 			<tocitem text="Accessing the Java System Access Manager Instance Admin Console" target="idmtools_am_accessing_am_console" />
 			<tocitem text="Configuring Security Mechanism Profiles for Sun Java System Access Manager Instances" target="idmtools_am_config_am_sec_mech" />
