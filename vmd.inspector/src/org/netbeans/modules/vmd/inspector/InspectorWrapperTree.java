@@ -119,7 +119,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
 
     //------------------ bulid tree algorithm
     private void dive(InspectorFolderPath path, InspectorFolderWrapper parentWrapper) {
-        List<InspectorFolderWrapper> wrapperChildren = null;
+        List<InspectorFolderWrapper> wrapperChildren;
         if (parentWrapper.getFolder() instanceof RootFolder) {
             wrapperChildren = componentsRecursion(path, parentWrapper, document.getRootComponent());
         } else {
@@ -303,7 +303,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
 
     //------------------ change tree algorithm
     private void rebulidDive(InspectorFolderPath path, InspectorFolderWrapper parentWrapper) {
-        List<InspectorFolderWrapper> wrapperChildren = null;
+        List<InspectorFolderWrapper> wrapperChildren;
 
         if (parentWrapper.getFolder() instanceof RootFolder) {
             wrapperChildren = rebulidComponentsRecursion(path, parentWrapper, document.getRootComponent());
@@ -365,7 +365,7 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
             if (presenter != null && presenter.getFolder().isInside(path, presenter.getFolder(), component)) {
                 if (presenter.getFolder().getComponentID() != null && (parentWrapper.getChildrenFolders() == null || (!parentWrapper.getChildrenFolders().contains(presenter.getFolder())))) {
                     if (childrenWrapper == null) {
-                        childrenWrapper = childrenWrapper = new ArrayList<InspectorFolderWrapper>();
+                        childrenWrapper = new ArrayList<InspectorFolderWrapper>();
                     }
                     InspectorFolderWrapper wrapper = new InspectorFolderWrapper(document, presenter.getFolder());
                     childrenWrapper.add(wrapper);
@@ -480,22 +480,17 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener {
         return selectedNodes;
     }
 
-    private Collection<DesignComponent> markAllComponentsAsToAdd() {
-        final Collection<DesignComponent> componentsToAdd = new HashSet<DesignComponent>();
-
-        componentsToAdd.add(document.getRootComponent());
-        componentsToAdd.addAll(markAllComponentsAsToAdd(document.getRootComponent()));
-
+    private Collection<DesignComponent> markAllComponentsAsToAdd () {
+        Collection<DesignComponent> componentsToAdd = new HashSet<DesignComponent>();
+        if (document.getRootComponent() != null)
+            markAllComponentsAsToAdd(componentsToAdd, document.getRootComponent());
         return componentsToAdd;
     }
 
-    private Collection<DesignComponent> markAllComponentsAsToAdd(DesignComponent parentComponent) {
-        Collection<DesignComponent> componentsToAdd = new HashSet<DesignComponent>();
-
-        for (DesignComponent component : parentComponent.getComponents()) {
-            componentsToAdd.addAll(markAllComponentsAsToAdd(component));
-            componentsToAdd.add(component);
-        }
+    private Collection<DesignComponent> markAllComponentsAsToAdd(Collection<DesignComponent> componentsToAdd, DesignComponent parentComponent) {
+        componentsToAdd.add(parentComponent);
+        for (DesignComponent component : parentComponent.getComponents())
+            markAllComponentsAsToAdd (componentsToAdd, component);
         return componentsToAdd;
     }
 
