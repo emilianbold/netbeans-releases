@@ -781,7 +781,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 	    			this.clearSelectedLayers();
 	    		}
 	    	}
-			if (this.mouseDragging == true) {
+			if (this.mouseDragging == true && this.lastDragPoint != null && this.startDragPoint != null) {
 				int dx = this.lastDragPoint.x - this.startDragPoint.x;
 				int dy = this.lastDragPoint.y - this.startDragPoint.y;
 				if (isSnapGrid()) {
