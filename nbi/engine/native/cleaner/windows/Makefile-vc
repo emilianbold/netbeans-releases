@@ -14,7 +14,7 @@ OUTPUT_FILE32=.\dist\cleaner.exe
 CC32_OPTS=/O1 /Os \
 	/I "$(VC_2005)\include" \
 	/D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_CRT_SECURE_NO_DEPRECATE" \
-	/FD /MT /GS-\
+	/FD /GS-\
 	/Fo"$(BUILD_DIR32)\\"  /Fd"$(BUILD_DIR32)\vc80.pdb" \
 	/W3 /nologo /c /Wp64 /TC /errorReport:prompt
 
