@@ -24,4 +24,6 @@ Microsystems, Inc. All Rights Reserved.
        <mkdir dir="external/xmlbeans-2.1.0"/>
        <unzip src="external/xmlbeans-2.1.0.zip" dest="external/xmlbeans-2.1.0"/>
     </target>
+    
+    <target name="netbeans-extra" depends="ext_init, init"/>
 </project>
