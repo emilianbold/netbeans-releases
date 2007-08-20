@@ -16,6 +16,7 @@
 			<tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
 			<tocitem text="Creating a Web Application with Visual Web JSF " target="projrave_projects_howtoprojects_create_sample_app" />
 			<tocitem text="Adding a Theme" target="projrave_projects_howtoprojects_add_theme" />
+			<tocitem text="Importing a Legacy Project" target="projrave_projects_howtoprojects_import_creator_project" />
 			<tocitem text="Web Application Frameworks">
 				<tocitem text="About Web Application Frameworks" target="about_framework" />
 				<tocitem text="JavaServer Faces">
@@ -37,7 +38,6 @@
 					<tocitem text="Working With Databases" target="projrave_connect_data_working_with_databases" />
 					<tocitem text="Database Tasks: Quick Reference" target="projrave_connect_data_howtodata_howtoconnectdata" />
 					<tocitem text="JDBC Type Conversions for RowSets" target="projrave_connect_data_jdbc_type_conversions" />
-					<tocitem text="Supported SQL Queries" target="projrave_connect_data_sql_query_supported" />
 					<tocitem text="Accessing the Data">
 						<tocitem text="Adding a Database Table  to a Page" target="projrave_connect_data_howtodata_add_tables2form" />
 						<tocitem text="Binding a List Component to a Database" target="projrave_connect_data_howtodata_binding_data_2_list_component" />
@@ -47,11 +47,24 @@
 						<tocitem text="Deleting a Database Table from a Page" target="projrave_connect_data_howtodata_delete_table" />
 					</tocitem>
 					<tocitem text="Setting Up Database Connections">
+						<tocitem text="Data Source Drag and Drop" target="projrave_ui_elements_options_visual_editor" />
 						<tocitem text="Adding a Data Source" target="projrave_ui_elements_dialogs_add_data_source_db" />
 						<tocitem text="Resolving a Data Source" target="projrave_ui_elements_dialogs_resolve_data_source_db" />
 					</tocitem>
 					<tocitem text="Using the Java DB Database Server" expand="false">
 						<tocitem text="Java DB Database Tasks: Quick Reference" target="projrave_connect_data_howtodata_howtoconnectdata" />
+					</tocitem>
+					<tocitem text="SQL">
+						<tocitem text="Supported SQL Queries" target="projrave_connect_data_sql_query_supported" />
+						<tocitem text="About the Visual SQL Editor">
+							<tocitem text="About the Visual SQL Editor" target="projrave_ui_elements_editors_about_query_editor" />
+							<tocitem text="About the Diagram Pane" target="projrave_ui_elements_editors_qe_diagram_pane" />
+							<tocitem text="About the Grid Pane" target="projrave_ui_elements_editors_qe_grid_pane" />
+							<tocitem text="About the SQL Pane" target="projrave_ui_elements_editors_qe_sql_pane" />
+							<tocitem text="About the Results Pane" target="projrave_ui_elements_editors_qe_results_pane" />
+							<tocitem text="Visual SQL Editor Keyboard Shortcuts" target="projrave_a11y_query_editor_shortcuts" />
+							<tocitem text="Run Query Document Window" target="projrave_ui_elements_server_nav_run_query" />
+						</tocitem>
 					</tocitem>
 				</tocitem>
 				<tocitem text="Enterprise JavaBeans">
@@ -81,6 +94,7 @@
 				</tocitem>
 			</tocitem>
 			<tocitem text="Creating Multiple Pages" expand="false">
+				<tocitem text="About the Page Flow Editor" target="projrave_ui_elements_editors_about_navigation_editor" />
 				<tocitem text="About Multiple Pages and Navigation" target="projrave_multiple_forms_aboutmultiforms" />
 				<tocitem text="Working With Multiple Pages" target="projrave_multiple_forms_multiform_process" />
 				<tocitem text="Page Navigation Tasks: Quick Reference" target="projrave_multiple_forms_howtomultiforms_howtomultiforms" />
@@ -89,6 +103,7 @@
 					<tocitem text="Renaming a Page Navigation Connector" target="projrave_multiple_forms_howtomultiforms_rename_connector" />
 					<tocitem text="Setting Up Dynamic Page Navigation" target="projrave_multiple_forms_howtomultiforms_dynamic_form_navigation" />
 					<tocitem text="Setting Up Static Page Navigation" target="projrave_multiple_forms_howtomultiforms_set_form_navigation" />
+					<tocitem text="Page Navigation Editor Keyboard Shortcuts" target="projrave_a11y_navigation_editor_shortcuts" />
 				</tocitem>
 				<tocitem text="Creating Pages and Components">
 					<tocitem text="Adding Components in the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_add_comp_nav_editor" />
@@ -98,7 +113,6 @@
 					<tocitem text="Viewing Page Contents in the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_preview_nav_page" />
 				</tocitem>
 			</tocitem>
-			<tocitem text="Importing a Legacy Project" target="projrave_projects_howtoprojects_import_creator_project" />
 		</tocitem>
 		<tocitem text="Creating and Editing Web Components">
 			<tocitem text="About Creating Web Components" target="about_create_webcomps" />
@@ -230,111 +244,6 @@
 			<tocitem text="Compiling a JSP File" target="jsp_compile" />
 			<tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
 			<tocitem text="Debugging a Web Application" target="debug_webapp" />
-		</tocitem>
-		<tocitem text="Visual Web Reference" expand="false">
-			<tocitem text="Navigator Window" target="projrave_ui_elements_navigator_win_about_navigator_win" />
-			<tocitem text="Properties Window" target="projrave_ui_elements_propsheets_propsheet_win" />
-			<tocitem text="Editors" mergetype="javax.help.SortMerge" expand="false">
-				<tocitem text="About the Page Flow Editor" target="projrave_ui_elements_editors_about_navigation_editor" />
-				<tocitem text="About the Properties Editor" target="propfiles.prop" />
-				<tocitem text="About the Visual SQL Editor">
-					<tocitem text="About the Visual SQL Editor" target="projrave_ui_elements_editors_about_query_editor" />
-					<tocitem text="About the Diagram Pane" target="projrave_ui_elements_editors_qe_diagram_pane" />
-					<tocitem text="About the Grid Pane" target="projrave_ui_elements_editors_qe_grid_pane" />
-					<tocitem text="About the SQL Pane" target="projrave_ui_elements_editors_qe_sql_pane" />
-					<tocitem text="About the Results Pane" target="projrave_ui_elements_editors_qe_results_pane" />
-				</tocitem>
-				<tocitem text="About the Visual Designer" target="projrave_ui_elements_editors_about_visual_editor" />
-			</tocitem>
-			<tocitem text="Java Editing and Coding" expand="false">
-				<tocitem text="About the Properties Editor" target="propfiles.prop" />
-			</tocitem>
-			<tocitem text="Projects and Files Windows" expand="false">
-				<tocitem text="About the Projects and Files Windows" target="projrave_ui_elements_project_nav_about_project_nav" />
-				<tocitem text="About the Files Window" target="projrave_ui_elements_project_nav_portfoliofilesystem" />
-				<tocitem text="build.xml Node" target="projrave_ui_elements_project_nav_buildxml_node" />
-				<tocitem text="Projects View">
-					<tocitem text="Projects Window" target="projrave_ui_elements_project_nav_portfoliological" />
-					<tocitem text="Project Node" target="projrave_ui_elements_project_nav_webapp_node" />
-					<tocitem text="Web Pages Node" target="projrave_ui_elements_project_nav_webforms_node" />
-					<tocitem text="Source Packages Node" target="projrave_ui_elements_project_nav_java_sources_node" />
-					<tocitem text="Libraries Node" target="projrave_ui_elements_project_nav_references_node" />
-					<tocitem text="Component Libraries Node" target="projrave_ui_elements_project_nav_complib_node" />
-				</tocitem>
-				<tocitem text="Properties">
-					<tocitem text="Dist Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_dist_node_props" />
-					<tocitem text="Source Packages Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_java_sources_node_props" />
-					<tocitem text="Managed Beans Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_man_beans_node_props" />
-					<tocitem text="Project Properties: Build Category" target="projrave_ui_elements_project_nav_project_props_build" />
-					<tocitem text="Project Properties: Libraries Category" target="projrave_ui_elements_project_nav_project_props_libraries" />
-					<tocitem text="Project Properties: Run Category" target="projrave_ui_elements_project_nav_project_props_run" />
-					<tocitem text="Project Properties: Sources Category" target="projrave_ui_elements_project_nav_project_props_sources" />
-					<tocitem text="Web Pages Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_web_pages_node_props" />
-				</tocitem>
-				<tocitem text="Dialog Boxes">
-					<tocitem text="Add Project Dialog Box" target="projrave_ui_elements_dialogs_add_project" />
-					<tocitem text="Add Library Dialog Box" target="projrave_ui_elements_dialogs_add_library" />
-				</tocitem>
-			</tocitem>
-			<tocitem text="Palette" expand="false">
-				<tocitem text="About the Visual Web Pack Palette" target="projrave_ui_elements_palette_palette" />
-			</tocitem>
-			<tocitem text="Property Editors">
-				<tocitem text="imageURL Property Editor" target="projrave_ui_elements_propeditors_imageurl_prop_ed" />
-				<tocitem text="Page Properties" target="projrave_ui_elements_propsheets_page_props" />
-				<tocitem text="Style Editor" target="projrave_ui_elements_propeditors_style_prop_ed_main" />
-				<tocitem text="styleClass Property Editor" target="projrave_ui_elements_propeditors_styleclass_prop_ed" />
-				<tocitem text="URL Property Editor" target="projrave_ui_elements_propeditors_url_prop_ed" />
-				<tocitem text="urlLang / lang Property Editor" target="projrave_ui_elements_propeditors_lang_domain_prop_ed" />
-			</tocitem>
-			<tocitem text="Services Window" expand="true">
-				<tocitem text="Run Query Document Window" target="projrave_ui_elements_server_nav_run_query" />
-				<tocitem text="Servers Node" target="projrave_ui_elements_server_nav_deployment_srvrnode" />
-				<tocitem text="Dialog Boxes">
-					<tocitem text="Add New Data Provider With Rowset Dialog Box" target="projrave_ui_elements_server_nav_add_new_data_provider" />
-					<tocitem text="Edit Database Server Types Dialog Box" target="projrave_ui_elements_dialogs_new_jdbc_driver_db" />
-					<tocitem text="Modify Data Source Dialog Box" target="projrave_ui_elements_dialogs_add_database_conn_db" />
-					<tocitem text="Run Query Options Dialog Box" target="projrave_ui_elements_server_nav_run_query_options_dialog" />
-				</tocitem>
-			</tocitem>
-			<tocitem text="Dialog Boxes: General" mergetype="javax.help.SortMerge" expand="false">
-				<tocitem text="Add Data Provider" target="projrave_ui_elements_server_nav_add_new_data_provider" />
-				<tocitem text="Add Query Criteria" target="projrave_ui_elements_dialogs_add_query_criteria" />
-				<tocitem text="Bind to Data: List Components" target="projrave_ui_elements_dialogs_bindtodata_list_db" />
-				<tocitem text="Bind to Data: Simple Components" target="projrave_ui_elements_dialogs_bindtodata_simple_db" />
-				<tocitem text="Bind to Data: Table Components" target="projrave_ui_elements_dialogs_bindtodata_table_db" />
-				<tocitem text="Add Component Library" target="projrave_ui_elements_dialogs_add_complib" />
-				<tocitem text="Component Library Manager" target="projrave_ui_elements_dialogs_component_library_manager" />
-				<tocitem text="Configure Virtual Forms" target="projrave_ui_elements_dialogs_config_virtual_forms_db" />
-				<tocitem text="Find" target="projrave_ui_elements_dialogs_findinfiles" />
-				<tocitem text="Import Components" target="projrave_ui_elements_dialogs_import_components_db" />
-				<tocitem text="New Database Connection" target="projrave_ui_elements_dialogs_new_database_connection_db" />
-				<tocitem text="New JDBC Driver" target="projrave_ui_elements_dialogs_new_jdbc_driver_db" />
-				<tocitem text="Resolve Data Source(s)" target="projrave_ui_elements_dialogs_resolve_data_source_db" />
-				<tocitem text="Table Layout" target="projrave_ui_elements_dialogs_data_table_layout_db" />
-				<tocitem text="Theme Switch Informational Dialog Box" target="projrave_ui_elements_dialogs_theme_switch_info_db" />
-				<tocitem text="Virtual Forms" target="projrave_ui_elements_dialogs_virtual_forms_db" />
-				<tocitem text="Add Database Connection" target="projrave_ui_elements_dialogs_add_database_conn_db" />
-			</tocitem>
-			<tocitem text="Options Window" expand="false">
-				<tocitem text="Visual Web Tab">
-					<tocitem text="Data Source Drag and Drop" target="projrave_ui_elements_options_visual_editor" />
-					<tocitem text="Visual Designer" target="projrave_ui_elements_options_visual_editor" />
-				</tocitem>
-			</tocitem>
-		</tocitem>
-		<tocitem text="Visual Web Introduction and Setup" expand="false">
-			<tocitem text="About Accessibility" target="projrave_a11y_abouta11y" />
-			<tocitem text=" Keyboard Shortcuts">
-				<tocitem text="Page Navigation Editor Keyboard Shortcuts" target="projrave_a11y_navigation_editor_shortcuts" />
-				<tocitem text="Palette Keyboard Shortcuts" target="projrave_a11y_component_palette_shortcuts" />
-				<tocitem text="Visual SQL Editor Keyboard Shortcuts" target="projrave_a11y_query_editor_shortcuts" />
-			</tocitem>
-			<tocitem text="Setting Up">
-				<tocitem text="Data Source Drag and Drop" target="projrave_ui_elements_options_visual_editor" />
-				<tocitem text=" Tooltips" target="projrave_config_setup_tooltip_setting" />
-				<tocitem text="Visual Designer" target="projrave_ui_elements_options_visual_editor" />
-			</tocitem>
 		</tocitem>
 	</tocitem>
 </toc>

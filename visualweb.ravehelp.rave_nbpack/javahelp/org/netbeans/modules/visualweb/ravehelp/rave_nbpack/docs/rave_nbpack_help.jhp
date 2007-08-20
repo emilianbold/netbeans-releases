@@ -15,8 +15,6 @@
 					<file title="Root"/>
 					<file title="Template"/>
 				</directory>
-				<file title="abouta11y.html"/>
-				<file title="component_palette_shortcuts.html"/>
 				<file title="navigation_editor_shortcuts.html"/>
 				<file title="query_editor_shortcuts.html"/>
 			</directory>
@@ -74,7 +72,6 @@
 					<file title="Root"/>
 					<file title="Template"/>
 				</directory>
-				<file title="tooltip_setting.html"/>
 			</directory>
 			<directory title="connect_data">
 				<directory title="CVS">
@@ -860,7 +857,6 @@
 						<file title="man_beans_node_props.html"/>
 						<file title="web_pages_node_props.html"/>
 					</directory>
-					<file title="about_project_nav.html"/>
 					<file title="buildxml_node.html"/>
 					<file title="complib_node.html"/>
 					<file title="data_source_ref_node.html"/>
@@ -928,7 +924,6 @@
 					<file title="jsfstd_secret_field_props.html"/>
 					<file title="jsfstd_text_field_props.html"/>
 					<file title="page_props.html"/>
-					<file title="propsheet_win.html"/>
 				</directory>
 				<directory title="server_nav">
 					<directory title="CVS">

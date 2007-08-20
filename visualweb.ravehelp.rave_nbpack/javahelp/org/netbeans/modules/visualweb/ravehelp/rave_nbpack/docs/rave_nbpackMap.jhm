@@ -118,8 +118,6 @@
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="web/create/tag/framework/struts/file_ActionPanel.html"/>
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/create/tag/framework/struts/file_ActionPanel1.html"/>
 	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/create/tag/framework/struts/file_FormBeanNewPanel.html"/>
-	<mapID target="projrave_a11y_abouta11y" url="a11y/abouta11y.html"/>
-	<mapID target="projrave_a11y_component_palette_shortcuts" url="a11y/component_palette_shortcuts.html"/>
 	<mapID target="projrave_a11y_navigation_editor_shortcuts" url="a11y/navigation_editor_shortcuts.html"/>
 	<mapID target="projrave_a11y_query_editor_shortcuts" url="a11y/query_editor_shortcuts.html"/>
 	<mapID target="projrave_components_about_complibs" url="components/about_complibs.html"/>
@@ -153,7 +151,6 @@
 	<mapID target="projrave_components_howtocomponents_view_browser_size" url="components/howtocomponents/view_browser_size.html"/>
 	<mapID target="projrave_components_theme_structure" url="components/theme_structure.html"/>
 	<mapID target="projrave_components_webform" url="components/webform.html"/>
-	<mapID target="projrave_config_setup_tooltip_setting" url="config_setup/tooltip_setting.html"/>
 	<mapID target="projrave_connect_data_about_data_binding" url="connect_data/about_data_binding.html"/>
 	<mapID target="projrave_connect_data_aboutcompdata" url="connect_data/aboutcompdata.html"/>
 	<mapID target="projrave_connect_data_howtodata_add_tables2form" url="connect_data/howtodata/add_table_to_page.html"/>
@@ -564,7 +561,6 @@
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_text_field" url="ui_elements/palette/wdstk-jsf1_2/text_field.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_tree" url="ui_elements/palette/wdstk-jsf1_2/tree.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_tree_node" url="ui_elements/palette/wdstk-jsf1_2/tree_node.html"/>
-	<mapID target="projrave_ui_elements_project_nav_about_project_nav" url="ui_elements/project_nav/about_project_nav.html"/>
 	<mapID target="projrave_ui_elements_project_nav_buildxml_node" url="ui_elements/project_nav/buildxml_node.html"/>
 	<mapID target="projrave_ui_elements_project_nav_complib_node" url="ui_elements/project_nav/complib_node.html"/>
 	<mapID target="projrave_ui_elements_project_nav_data_source_ref_node" url="ui_elements/project_nav/data_source_ref_node.html"/>
@@ -620,7 +616,6 @@
 	<mapID target="projrave_ui_elements_propsheets_jsfstd_secret_field_props" url="ui_elements/propsheets/jsfstd_secret_field_props.html"/>
 	<mapID target="projrave_ui_elements_propsheets_jsfstd_text_field_props" url="ui_elements/propsheets/jsfstd_text_field_props.html"/>
 	<mapID target="projrave_ui_elements_propsheets_page_props" url="ui_elements/propsheets/page_props.html"/>
-	<mapID target="projrave_ui_elements_propsheets_propsheet_win" url="ui_elements/propsheets/propsheet_win.html"/>
 	<mapID target="projrave_ui_elements_server_nav_add_new_data_provider" url="ui_elements/server_nav/add_new_data_provider.html"/>
 	<mapID target="projrave_ui_elements_server_nav_deployment_srvrnode" url="ui_elements/server_nav/srvs_rnode.html"/>
 	<mapID target="projrave_ui_elements_server_nav_run_query" url="ui_elements/server_nav/run_query.html"/>
