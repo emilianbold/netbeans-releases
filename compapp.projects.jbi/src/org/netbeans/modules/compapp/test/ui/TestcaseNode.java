@@ -27,14 +27,16 @@ import org.netbeans.modules.compapp.test.ui.actions.TestCaseDebugAction;
 import org.netbeans.modules.compapp.test.ui.actions.TestCaseResultsDeleteAction;
 import org.netbeans.modules.compapp.test.ui.actions.TestcaseCookie;
 import org.netbeans.modules.compapp.test.ui.actions.TestcaseDiffAction;
-import org.netbeans.modules.compapp.test.ui.actions.TestcaseTestAction;
 import java.awt.Image;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
+import org.netbeans.modules.compapp.test.ui.actions.TestCaseRunAction;
 import org.netbeans.modules.compapp.test.util.FileNodeUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -56,8 +58,9 @@ import org.openide.util.actions.SystemAction;
 import org.openide.actions.DeleteAction;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
+
 /**
- * DOCUMENT ME!
+ * A node that represents a test case.
  *
  * @author Bing Lu
  * @author Jun Qian
@@ -79,7 +82,6 @@ public class TestcaseNode extends FilterNode {
     
     private PropertyFileWrapper mPropertyFileWrapper;
     private FileObject mTestcaseDir;
-    private DataFolder mTestcaseFolder;
     private FileObject mPropertyFile;
     private TestcaseCookie mTestcaseCookie;
     private DiffTopComponent mDiffTopComponent;
@@ -93,6 +95,9 @@ public class TestcaseNode extends FilterNode {
     private FileObject mTestDir;             // test
     private FileObject mTestResultsDir;      // test/results
     private FileObject mTestCaseResultsDir;  // test/results/<TestCaseName>
+        
+    // a set of test cases that are currently running (#84900)
+    private static Set<FileObject> runningTestCases = new HashSet<FileObject>();
     
     // will frequently accept an element from some data mTestcaseDir in the constructor:
     public TestcaseNode(JbiProject project, FileObject testcaseDir) {
@@ -100,9 +105,6 @@ public class TestcaseNode extends FilterNode {
                 new TestcaseChildren(project, testcaseDir));
         mTestcaseDir = testcaseDir;
         mProject = project;
-        if (testcaseDir.isFolder()) {
-            mTestcaseFolder = DataFolder.findFolder(testcaseDir);
-        }
         
         registerPropertyFileChangeListener(testcaseDir);
         
@@ -271,7 +273,7 @@ public class TestcaseNode extends FilterNode {
     
     private void registerPropertyFileChangeListener(final FileObject testcaseDir) {
         
-        List specList = new ArrayList();
+        List<PropertySpec> specList = new ArrayList<PropertySpec>();
         specList.add(PropertySpec.DESCRIPTION);
         specList.add(PropertySpec.DESTINATION);
         specList.add(PropertySpec.SOAP_ACTION);
@@ -306,7 +308,7 @@ public class TestcaseNode extends FilterNode {
     }
     
     private FileObject getFileObject() {
-        DataObject dataObj = (DataObject) getLookup().lookup(DataObject.class);
+        DataObject dataObj = getLookup().lookup(DataObject.class);
         return dataObj.getPrimaryFile();
     }
     
@@ -342,19 +344,18 @@ public class TestcaseNode extends FilterNode {
     }
     
     public Action[] getActions(boolean context) {
-        ArrayList actionList = new ArrayList();
-        actionList.add(SystemAction.get(TestcaseTestAction.class));
+        List<Action> actionList = new ArrayList<Action>();
+        actionList.add(SystemAction.get(TestCaseRunAction.class));
         actionList.add(SystemAction.get(TestCaseDebugAction.class));
         actionList.add(null);
         actionList.add(SystemAction.get(TestcaseDiffAction.class));
         actionList.add(null);
-        //actionList.add(SystemAction.get(TestCaseDeleteAction.class));
         actionList.add(SystemAction.get(DeleteAction.class));
         actionList.add(SystemAction.get(TestCaseResultsDeleteAction.class));
         actionList.add(null);
         actionList.add(SystemAction.get(PropertiesAction.class));
         
-        return (Action[])actionList.toArray(new Action[0]);
+        return actionList.toArray(new Action[0]);
     }
     
     public void destroy() throws IOException {
@@ -519,6 +520,46 @@ public class TestcaseNode extends FilterNode {
         File file = FileUtil.toFile(fo);
         return new DiffStreamSource("Output.xml", // NOI18N
                 java.util.ResourceBundle.getBundle("org/netbeans/modules/compapp/test/ui/Bundle").getString("Expected_Output"), file); // NOI18N
+    }
+    
+    /**
+     * Checks whether the test case represented by this node is running.
+     */
+    public boolean isTestCaseRunning() {
+        return isTestCaseRunning(mTestcaseDir);
+    }
+    
+    /**
+     * Sets whether the test case represented by this node is running.
+     */
+    public void setTestCaseRunning(boolean isRunning) {
+        setTestCaseRunning(mTestcaseDir, isRunning); 
+    }
+    
+    /**
+     * Checks whether the test case corresponding to the given file object 
+     * is running.
+     * 
+     * @param testcaseDirFO file object corresponding to a test case directory
+     */
+    public static boolean isTestCaseRunning(FileObject testcaseDirFO) {
+        return runningTestCases.contains(testcaseDirFO);
+    }
+    
+    /**
+     * Sets whether the test case corresponding to the given file object 
+     * is running.
+     * 
+     * @param testcaseDirFO file object corresponding to a test case directory
+     */
+    public static void setTestCaseRunning(FileObject testcaseDirFO, boolean isRunning) {
+        if (isRunning) {
+            System.out.println("Set test case running: " + testcaseDirFO);
+            runningTestCases.add(testcaseDirFO);
+        } else {
+            System.out.println("Set test case not running: " + testcaseDirFO);
+            runningTestCases.remove(testcaseDirFO);            
+        }
     }
     
     class PropertyFileChangeListener extends FileChangeAdapter {

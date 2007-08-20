@@ -26,6 +26,7 @@ import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectPropert
 import org.netbeans.modules.compapp.test.ui.actions.TestCookie;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.compapp.test.ui.actions.TestResultsDeleteAction;
 import org.openide.filesystems.FileChangeAdapter;
@@ -55,12 +56,13 @@ public class TestNode extends FilterNode {
             "org/netbeans/modules/compapp/test/ui/resources/testCases_badge.png", true); // NOI18N
     
     private JbiProject mProject;
-    private DataFolder mTestFolder;
     private FileObject mTestDir;
     private TestChildren mChildren;
     private FileChangeListener mFileChangeListener;
-    private AddTestcaseAction mAddTestcaseAction;
     private TestCookie mTestCookie;
+    
+    // whether the current test is being run (#84900)
+    private boolean testRunning = false;
     
     /**
      * Creates a new TestNode object.
@@ -105,8 +107,6 @@ public class TestNode extends FilterNode {
         
         mTestDir = getTestDir(jpp, project);
         mTestDir.addFileChangeListener(mFileChangeListener);
-        
-        mTestFolder = getTestFolder(jpp, project);
         
         mChildren = (TestChildren) getChildren();
         mTestCookie = new TestCookie(this);
@@ -156,35 +156,20 @@ public class TestNode extends FilterNode {
     
     private Image computeIcon(boolean opened, int type) {
         DataFolder projectFolder = getProjectFolder(mProject);
-//        if (projectFolder != null) {
-            Node folderNode = projectFolder.getNodeDelegate();
-            Image image = opened ? folderNode.getOpenedIcon(type) : folderNode.getIcon(type);
-            
-            return Utilities.mergeImages(image, JBI_TEST_BADGE, 7, 7);
-//        } else {
-//            return JBI_TEST_BADGE;
-//        }
+        Node folderNode = projectFolder.getNodeDelegate();
+        Image image = opened ? folderNode.getOpenedIcon(type) : folderNode.getIcon(type);
+
+        return Utilities.mergeImages(image, JBI_TEST_BADGE, 7, 7);
     }
     
     // Create the popup menu:
     public Action[] getActions(boolean context) {
-        ArrayList actionList = new ArrayList();
+        List<Action> actionList = new ArrayList<Action>();
         actionList.add(SystemAction.get(AddTestcaseAction.class));
         actionList.add(null);
-//        Action[] folderActions = mTestFolder.getNodeDelegate().getActions(context);
-//        for (int i = 0; i < folderActions.length; i++) {
-//            if (folderActions[i] == null) {
-//                continue;
-//            }
-//            if (folderActions[i] instanceof org.openide.actions.PasteAction) {
-//                actionList.add(folderActions[i]);
-//            }
-//        }
-//        actionList.add(null);
-        
         actionList.add(SystemAction.get(TestResultsDeleteAction.class));
         
-        return (Action[])actionList.toArray(new Action[0]);
+        return actionList.toArray(new Action[0]);
     }
     
     public Node.Cookie getCookie(Class type) {
@@ -204,6 +189,14 @@ public class TestNode extends FilterNode {
     
     public FileObject getTestDir() {
         return mTestDir;
+    }
+    
+    public boolean isTestRunning() {
+        return testRunning;
+    }
+    
+    public void setTestRunning(boolean testRunning) {
+        this.testRunning = testRunning;
     }
     
     private static DataFolder getProjectFolder(JbiProject project) {

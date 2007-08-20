@@ -33,29 +33,28 @@ import org.netbeans.modules.compapp.projects.jbi.ui.customizer.VisualClassPathIt
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-
 import org.openide.*;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
-
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
-
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-
 import java.io.IOException;
 import java.util.Enumeration;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.awt.Dialog;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.netbeans.modules.compapp.projects.jbi.api.ProjectValidator;
+import org.netbeans.modules.compapp.test.ui.TestcaseNode;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileUtil;
@@ -68,37 +67,38 @@ import org.openide.util.TaskListener;
  * E.g. compile-single.
  */
 public class JbiActionProvider implements ActionProvider {
+
     // Definition of commands
     private static final String[] supportedActions = {
-        COMMAND_CLEAN, JbiProjectConstants.COMMAND_UNDEPLOY,
-        JbiProjectConstants.COMMAND_REDEPLOY, JbiProjectConstants.COMMAND_DEPLOY,
-        JbiProjectConstants.COMMAND_JBIBUILD, JbiProjectConstants.COMMAND_JBICLEANBUILD,
-        JbiProjectConstants.COMMAND_JBICLEANCONFIG,
-        JbiProjectConstants.COMMAND_VALIDATEPORTMAPS,
-        // Start Test Framework
-        JbiProjectConstants.COMMAND_TEST,
-        // End Test Framework
-        COMMAND_DELETE,
-        COMMAND_COPY,
-        COMMAND_MOVE,
-        COMMAND_RENAME,
-        COMMAND_BUILD,
-        COMMAND_REBUILD,
-        COMMAND_DEBUG
-    };
-    
+        COMMAND_CLEAN, 
+        JbiProjectConstants.COMMAND_UNDEPLOY, 
+        JbiProjectConstants.COMMAND_REDEPLOY, 
+        JbiProjectConstants.COMMAND_DEPLOY, 
+        JbiProjectConstants.COMMAND_JBIBUILD, 
+        JbiProjectConstants.COMMAND_JBICLEANBUILD, 
+        JbiProjectConstants.COMMAND_JBICLEANCONFIG, 
+        JbiProjectConstants.COMMAND_VALIDATEPORTMAPS, 
+        JbiProjectConstants.COMMAND_TEST, 
+        COMMAND_DELETE, 
+        COMMAND_COPY, 
+        COMMAND_MOVE, 
+        COMMAND_RENAME, 
+        COMMAND_BUILD, 
+        COMMAND_REBUILD, 
+        COMMAND_DEBUG};
+
     /**
      * DOCUMENT ME!
      */
     JbiProject project;
-    
+
     // Ant project helper of the project
     private AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
-    
+
     /** Map from commands to ant targets */
-    Map /*<String,String[]>*/ commands;
-    
+    Map<String, String[]> commands;
+
     /**
      * Creates a new JbiActionProvider object.
      *
@@ -106,45 +106,43 @@ public class JbiActionProvider implements ActionProvider {
      * @param antProjectHelper DOCUMENT ME!
      * @param refHelper DOCUMENT ME!
      */
-    public JbiActionProvider(
-            JbiProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper
-            ) {
-        commands = new HashMap();
-        commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_DEPLOY, new String[] {"run"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_UNDEPLOY, new String[] {"undeploy"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_JBIBUILD, new String[] {"jbi-build"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_JBICLEANCONFIG, new String[] {"jbi-clean-config"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_JBICLEANBUILD, new String[] {"jbi-clean-build"}); // NOI18N
-        commands.put(JbiProjectConstants.COMMAND_VALIDATEPORTMAPS, new String[] {"validate-portmaps"}); // NOI18N
+    public JbiActionProvider(JbiProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+        commands = new HashMap<String, String[]>();
+        commands.put(COMMAND_CLEAN, new String[]{"clean"}); // NOI18N
+        commands.put(JbiProjectConstants.COMMAND_REDEPLOY, new String[]{"run"}); // NOI18N
+        commands.put(JbiProjectConstants.COMMAND_DEPLOY, new String[]{"run"}); // NOI18N
+        commands.put(JbiProjectConstants.COMMAND_UNDEPLOY, new String[]{"undeploy"}); // NOI18N
+        commands.put(JbiProjectConstants.COMMAND_JBIBUILD, new String[]{"jbi-build"}); // NOI18N
+        commands.put(JbiProjectConstants.COMMAND_JBICLEANCONFIG, new String[]{"jbi-clean-config"}); // NOI18N
+        commands.put(JbiProjectConstants.COMMAND_JBICLEANBUILD, new String[]{"jbi-clean-build"}); // NOI18N
+        commands.put(JbiProjectConstants.COMMAND_VALIDATEPORTMAPS, new String[]{"validate-portmaps"}); // NOI18N
         // Start Test Framework
-        commands.put(JbiProjectConstants.COMMAND_TEST, new String[] {"test"}); // NOI18N
+        commands.put(JbiProjectConstants.COMMAND_TEST, new String[]{"test"}); // NOI18N
         // End Test Framework
-        
         // map common project action to jbi ones
-        commands.put(COMMAND_BUILD, new String[] {"jbi-build"}); // NOI18N
-        commands.put(COMMAND_REBUILD, new String[] {"jbi-clean-build"}); // NOI18N
-        commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
+        commands.put(COMMAND_BUILD, new String[]{"jbi-build"}); // NOI18N
+        commands.put(COMMAND_REBUILD, new String[]{"jbi-clean-build"}); // NOI18N
+        commands.put(COMMAND_DEBUG, new String[]{"debug"}); // NOI18N
         // end map common project action to jbi ones
-        
         this.antProjectHelper = antProjectHelper;
         this.project = project;
         this.refHelper = refHelper;
     }
-    
+
     /**
      * @return array of targets or null to stop execution; can return empty array
      */
-    /*private*/ String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
-        String[] targetNames = (String[])commands.get(command);
+    /*private*/
+    String[] getTargetNames(String command, Lookup context, Properties p) 
+            throws IllegalArgumentException {
+        String[] targetNames = commands.get(command);
         return targetNames;
     }
-    
+
     private FileObject findBuildXml() {
         return project.getProjectDirectory().getFileObject(project.getBuildXmlName());
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -153,7 +151,7 @@ public class JbiActionProvider implements ActionProvider {
     public String[] getSupportedActions() {
         return supportedActions;
     }
-    
+
     /**
      * DOCUMENT ME!
      *
@@ -162,63 +160,62 @@ public class JbiActionProvider implements ActionProvider {
      *
      * @throws IllegalArgumentException DOCUMENT ME!
      */
-    public void invokeAction(String command, Lookup context)
-    throws IllegalArgumentException {
-        
+    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+
         if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
-            return ;
+            return;
         }
-        
+
         if (COMMAND_COPY.equals(command)) {
             DefaultProjectOperations.performDefaultCopyOperation(project);
-            return ;
+            return;
         }
-        
+
         if (COMMAND_MOVE.equals(command)) {
             DefaultProjectOperations.performDefaultMoveOperation(project);
-            return ;
+            return;
         }
-        
+
         if (COMMAND_RENAME.equals(command)) {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
-            return ;
+            return;
         }
-        
+
         Properties p = null;
-        String[] targetNames = (String[]) commands.get(command);
-        
-        if(command.equals(JbiProjectConstants.COMMAND_TEST)) {
+        String[] targetNames = commands.get(command);
+
+        if (command.equals(JbiProjectConstants.COMMAND_TEST)) {
             setupTests();
         }
-        
-        if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) ||
-                command.equals(JbiProjectConstants.COMMAND_REDEPLOY) ||
-                command.equals(JbiProjectConstants.COMMAND_UNDEPLOY) ||
-                command.equals(COMMAND_DEBUG) ||
+
+        if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) || 
+                command.equals(JbiProjectConstants.COMMAND_REDEPLOY) || 
+                command.equals(JbiProjectConstants.COMMAND_UNDEPLOY) || 
+                command.equals(COMMAND_DEBUG) || 
                 command.equals(JbiProjectConstants.COMMAND_TEST)) {
-            
+
             /*if (isProjectEmpty()) {
-                NotifyDescriptor d =
-                        new NotifyDescriptor.Message(
-                        NbBundle.getMessage(
-                        JbiActionProvider.class, "MSG_EmptyJbiProjectError" // NOI18N
-                        ),
-                        NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(d);
-                return;
+            NotifyDescriptor d =
+            new NotifyDescriptor.Message(
+            NbBundle.getMessage(
+            JbiActionProvider.class, "MSG_EmptyJbiProjectError" // NOI18N
+            ),
+            NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            return;
             }*/
-            
+
             if (!isSelectedServer()) {
                 return;
             }
             if (!validateSubProjects()) {
                 return;
             }
-        } else if (command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) ||
-                command.equals(JbiProjectConstants.COMMAND_JBIBUILD) ||
+        } else if (command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) || 
+                command.equals(JbiProjectConstants.COMMAND_JBIBUILD) || 
                 command.equals(JbiProjectConstants.COMMAND_JBICLEANBUILD)) {
-            
+
             if (command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG)) {
                 NotifyDescriptor d = new NotifyDescriptor.Confirmation(
                         NbBundle.getMessage(JbiActionProvider.class, "MSG_CleanConfig"), // NOI18N
@@ -228,28 +225,27 @@ public class JbiActionProvider implements ActionProvider {
                     return;
                 }
             }
-            
+
             saveCasaChanges(project);
-            
+
             if (!validateSubProjects()) {
                 return;
             }
-            
         } else {
             p = null;
-            
+
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
         }
-        
+
         final JbiBuildListener jbiBuildListener = getBuildListener(command);
 
         try {
             final ExecutorTask executorTask = 
                     ActionUtils.runTarget(findBuildXml(), targetNames, p);
-            
-            if (jbiBuildListener != null) {                
+
+            if (jbiBuildListener != null) {
                 JbiBuildTask buildTask = new JbiBuildTask() {
                     public boolean isFinished() {
                         return executorTask.isFinished();
@@ -259,17 +255,17 @@ public class JbiActionProvider implements ActionProvider {
                     }
                 };
                 jbiBuildListener.buildStarted(buildTask);
-                
+
                 executorTask.addTaskListener(new TaskListener() {
                     public void taskFinished(Task task) {
                         jbiBuildListener.buildCompleted(executorTask.result() == 0);
                     }
-                });                
+                });
             }
-            
-            if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) ||
-                    command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) ||
-                    command.equals(JbiProjectConstants.COMMAND_JBIBUILD) ||
+
+            if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) || 
+                    command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) || 
+                    command.equals(JbiProjectConstants.COMMAND_JBIBUILD) || 
                     command.equals(JbiProjectConstants.COMMAND_JBICLEANBUILD)) {
                 executorTask.addTaskListener(new TaskListener() {
                     public void taskFinished(Task task) {
@@ -278,22 +274,43 @@ public class JbiActionProvider implements ActionProvider {
                 });
             }
 
+            if (command.equals(JbiProjectConstants.COMMAND_TEST)) {
+                executorTask.addTaskListener(new TaskListener() {
+                    public void taskFinished(Task task) {
+                        FileObject testDir = project.getTestDirectory();
+                        String fileName = FileUtil.toFile(testDir).getPath() + 
+                                "/selected-tests.properties"; // NOI18N
+                        try {
+                            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+                            String line = reader.readLine();
+                            assert line.startsWith("testcases=");
+                            String testCaseNames = line.substring(line.indexOf('=')); // NOI18N
+                            for (String testCaseName : testCaseNames.split(",")) { // NOI18N
+                                FileObject testCaseDir = testDir.getFileObject(testCaseName.trim());
+                                TestcaseNode.setTestCaseRunning(testCaseDir, false);                                
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
     }
-    
+
     private JbiBuildListener getBuildListener(String command) {
-        if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) ||
-                command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) ||
-                command.equals(JbiProjectConstants.COMMAND_JBIBUILD) ||
+        if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) || 
+                command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) || 
+                command.equals(JbiProjectConstants.COMMAND_JBIBUILD) || 
                 command.equals(JbiProjectConstants.COMMAND_JBICLEANBUILD)) {
             FileObject casaFO = CasaHelper.getCasaFileObject(project, false);
             if (casaFO != null) {
                 try {
                     DataObject casaDO = DataObject.find(casaFO);
                     if (casaDO != null) {
-                        return (JbiBuildListener) casaDO.getLookup().lookup(JbiBuildListener.class);
+                        return casaDO.getLookup().lookup(JbiBuildListener.class);
                     }
                 } catch (DataObjectNotFoundException e) {
                     ; // ignore the error
@@ -302,21 +319,21 @@ public class JbiActionProvider implements ActionProvider {
         }
         return null;
     }
-    
-    private boolean validateSubProjects(){
+
+    private boolean validateSubProjects() {
         try {
             JbiProjectProperties properties = project.getProjectProperties();
-            List<VisualClassPathItem> itemList =
+            List<VisualClassPathItem> itemList = 
                     (List) properties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
-            
+
             List<Project> subProjects = new ArrayList<Project>();
             Map<Class, Project> subProjectTypeMap = new HashMap<Class, Project>();
             for (VisualClassPathItem item : itemList) {
                 Project subProject = item.getAntArtifact().getProject();
-                subProjects.add(subProject);                
+                subProjects.add(subProject);
                 subProjectTypeMap.put(subProject.getClass(), subProject);
             }
-            
+
             Collection<? extends ProjectValidator> validators = 
                     Lookup.getDefault().lookupAll(ProjectValidator.class);
 
@@ -337,9 +354,9 @@ public class JbiActionProvider implements ActionProvider {
 
         return true;
     }
-    
+
     private void saveCasaChanges(JbiProject project) {
-        // Save casa   
+        // Save casa
         CasaHelper.saveCasa(project);
 
         // Save casa wsdl
@@ -355,11 +372,11 @@ public class JbiActionProvider implements ActionProvider {
                 // failed to load casa...
             }
         }
-        
+
         // TODO: save other wsdls in compapp
     }
-    
-    
+
+
     private void setupTests() {
         try {
             FileObject testDir = project.getTestDirectory();
@@ -374,41 +391,54 @@ public class JbiActionProvider implements ActionProvider {
                     return;
                 }
             }
-            
+
+            // REFACTOR ME
             //Generate a list of test folders
             Enumeration testFolders = testDir.getFolders(false); // no recursion
-            List<String> testCaseNameList = new ArrayList();
+            List<String> testCaseNameList = new ArrayList<String>();
+            final List<String> skippedTestCaseNameList = new ArrayList<String>();
             while (testFolders.hasMoreElements()) {
-                FileObject testFolder = (FileObject)testFolders.nextElement();
+                FileObject testFolder = (FileObject) testFolders.nextElement();
                 String testFolderName = testFolder.getName();
                 //accumulate everything except "results" folder and other well-known folders
                 if (!testFolderName.equals("results") && !testFolderName.equalsIgnoreCase("cvs")) { // NOI18N
-                    testCaseNameList.add(testFolderName);
+                    if (!TestcaseNode.isTestCaseRunning(testFolder)) {
+                        testCaseNameList.add(testFolderName);
+                    } else {
+                        skippedTestCaseNameList.add(testFolderName);
+                    }
                 }
             }
-            
+
+            if (skippedTestCaseNameList.size() > 0) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {                        
+                        String msg = "The following test case(s) are skipped because they are in progress:" + 
+                                System.getProperty("line.separator") + // NOI18N
+                                skippedTestCaseNameList;
+                        NotifyDescriptor d = new NotifyDescriptor.Message(
+                                msg, NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(d);
+                    }
+                });
+            }
+
             Collections.sort(testCaseNameList);
-            
+
             String testCasesCSV = ""; // NOI18N
             for (String testCaseName : testCaseNameList) {
-                testCasesCSV +=  testCaseName + ","; // NOI18N
+                testCasesCSV += testCaseName + ","; // NOI18N
             }
             if (testCasesCSV.length() > 1) {
                 testCasesCSV = testCasesCSV.substring(0, testCasesCSV.length() - 1);
             }
             String testCasesProperty = "testcases=" + testCasesCSV; // NOI18N
-            
             //write csv to all-tests.properties
             String fileName = FileUtil.toFile(testDir).getPath() + "/all-tests.properties"; // NOI18N
             BufferedWriter fw = new BufferedWriter(new FileWriter(fileName));
             fw.write(testCasesProperty, 0, testCasesProperty.length());
             fw.close();
-            
-//            //read all-tests.properties
-//            BufferedReader fr = new BufferedReader(new FileReader(fileName));
-//            testCasesProperty = fr.readLine();
-//            fr.close();
-            
+
             //write csv to selected-tests.properties
             //org.netbeans.modules.compapp.catd.ConfiguredTests expects this
             fileName = FileUtil.toFile(testDir).getPath() + "/selected-tests.properties"; // NOI18N
@@ -419,7 +449,8 @@ public class JbiActionProvider implements ActionProvider {
             ErrorManager.getDefault().notify(e);
         }
     }
-    
+
+
     /**
      * DOCUMENT ME!
      *
@@ -432,77 +463,68 @@ public class JbiActionProvider implements ActionProvider {
         if (findBuildXml() == null) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     // Private methods -----------------------------------------------------
     private boolean isDebugged() {
         return false;
     }
-    
+
     private boolean isProjectEmpty() {
-        String comps = antProjectHelper.getStandardPropertyEvaluator().getProperty(
-                JbiProjectProperties.JBI_CONTENT_ADDITIONAL
-                );
-        
-        return ((comps == null) || (comps.trim().length() < 1));
+        String comps = antProjectHelper.getStandardPropertyEvaluator().
+                getProperty(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
+
+        return (comps == null) || (comps.trim().length() < 1);
     }
-    
+
     private boolean isSelectedServer() {
-        String instance = antProjectHelper.getStandardPropertyEvaluator().getProperty(
-                JbiProjectProperties.J2EE_SERVER_INSTANCE
-                );
-        
+        String instance = antProjectHelper.getStandardPropertyEvaluator().
+                getProperty(JbiProjectProperties.J2EE_SERVER_INSTANCE);
+
         if ((instance == null) || !JbiManager.isAppServer(instance)) {
             String[] serverIDs = JbiManager.getAppServers();
-            
+
             if (serverIDs.length < 1) {
-                NotifyDescriptor d =
-                        new NotifyDescriptor.Message(
-                        NbBundle.getMessage(
-                        JbiActionProvider.class, "MSG_NoInstalledServerError" // NOI18N
-                        ),
+                NotifyDescriptor d = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(JbiActionProvider.class, 
+                        "MSG_NoInstalledServerError"), // NOI18N
                         NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
                 return false;
             }
-            
-            NoSelectedServerWarning panel = new NoSelectedServerWarning( serverIDs );
-            
-            Object[] options = new Object[] {
-                DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION
-            };
-            DialogDescriptor desc = new DialogDescriptor(
-                    panel,
-                    NbBundle.getMessage(
-                    NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title" // NOI18N
-                    ),
-                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null
-                    );
+
+            NoSelectedServerWarning panel = new NoSelectedServerWarning(serverIDs);
+
+            Object[] options = new Object[]{
+                DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION};
+            DialogDescriptor desc = new DialogDescriptor(panel, 
+                    NbBundle.getMessage(NoSelectedServerWarning.class, 
+                    "CTL_NoSelectedServerWarning_Title"), // NOI18N 
+                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
             dlg.setVisible(true);
-            
-            if (desc.getValue() != options[0]) { // cancel
+
+            if (desc.getValue() != options[0]) {
+                // cancel
                 return false;
             } else {
-                instance = panel.getSelectedInstance();                
+                instance = panel.getSelectedInstance();
                 if (instance != null) {
                     JbiProjectProperties projectProperties = project.getProjectProperties();
                     projectProperties.put(JbiProjectProperties.J2EE_SERVER_INSTANCE, instance);
                     projectProperties.store();
                 }
             }
-            
+
             dlg.dispose();
         }
-        
+
         if (instance == null) {
-            NotifyDescriptor d =
-                    new NotifyDescriptor.Message(
-                    NbBundle.getMessage(
-                    JbiActionProvider.class, "MSG_NoSelectedServerError" // NOI18N
-                    ),
+            NotifyDescriptor d = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(JbiActionProvider.class, 
+                    "MSG_NoSelectedServerError"), // NOI18N
                     NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
             return false;
@@ -516,7 +538,7 @@ public class JbiActionProvider implements ActionProvider {
 //            DialogDisplayer.getDefault().notify(d);
 //            return false;
         }
-        
+
         return true;
     }
 }

@@ -26,11 +26,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.PropertySupport;
@@ -48,13 +46,13 @@ public class PropertyFileWrapper {
     private static final java.util.logging.Logger mLogger = 
             java.util.logging.Logger.getLogger("org.netbeans.modules.compapp.projects.jbi.ui.PropertyFileWrapper"); // NOI18N
     
-    private List mPropertySpecList;
+    private List<PropertySpec> mPropertySpecList;
     private FileObject mFileObject;
     private EditableProperties mProperties;
     private Sheet mSheet;
     
     /** Creates a new instance of PropertyFileWrapper */
-    public PropertyFileWrapper(FileObject fileObject, List propertySpecList) {
+    public PropertyFileWrapper(FileObject fileObject, List<PropertySpec> propertySpecList) {
         mFileObject = fileObject;
         mPropertySpecList = propertySpecList;
         mProperties = new EditableProperties(true);
@@ -89,12 +87,11 @@ public class PropertyFileWrapper {
         loadProperties();
         Sheet sheet = new Sheet();
         Sheet.Set ss = null;
-        HashMap catTable = new HashMap();
-        for (int i = 0, I = mPropertySpecList.size(); i < I; i++) {
-            PropertySpec spec = (PropertySpec)mPropertySpecList.get(i);
+        Map<String, Sheet.Set> catTable = new HashMap<String, Sheet.Set>();
+        for (PropertySpec spec : mPropertySpecList) {
             String categoryName = spec.getCategoryName();
             if (catTable.containsKey(categoryName)) {
-                ss = (Sheet.Set)catTable.get(categoryName);
+                ss = catTable.get(categoryName);
             } else {
                 ss = new Sheet.Set();
                 ss.setName(categoryName);
