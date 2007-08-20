@@ -52,7 +52,7 @@ public class DiagramBuilder {
         pfv = new PredicateFinderVisitor(mapper);
     }
 
-    public void updateDiagram() {
+    public void updateDiagram(boolean reuse) {
         TreeNode root = (TreeNode) mapper.getMapperViewManager()
                 .getDestView()
                 .getTree()
@@ -63,7 +63,7 @@ public class DiagramBuilder {
             relayoutRequired = false;
             try {
                 updating = true;
-                updateDiagramRecursive(root);
+                updateDiagramRecursive(root, reuse);
             } finally {
                 updating = false;
             }
@@ -73,7 +73,7 @@ public class DiagramBuilder {
             }
         }
         //
-        // Remove old automatically created predicates. 
+        // Remove old automatically created predicates.
         mapper.getPredicateManager().clearTemporaryPredicates();
     }
 
@@ -85,7 +85,7 @@ public class DiagramBuilder {
      * Detects if given target tree node contains xpath expression.
      * If so, builds expression node graph starting from this tree node
      **/
-    public void updateDiagram(TreeNode tree_node) {
+    public void updateDiagram(TreeNode tree_node, boolean reuse) {
 
         Object data = tree_node.getDataObject();
 
@@ -106,27 +106,32 @@ public class DiagramBuilder {
             new_expr.accept(pfv);
         }
 
-        //first check, if current node is already connected to any grap
+        //first check, if current node is already connected to any graph
         List<Node> upstreams = tree_node.getPreviousNodes();
+
 
         XPathExpression current_expr = null;
 
+        if (reuse) {
+            if (!upstreams.isEmpty() && reuse) {
+                Node upstream = upstreams.get(0);
+                if (upstream != null) {
+                    BuildExpressionVisitor visitor_be = new BuildExpressionVisitor(mapper.getContext());
 
-        if (!upstreams.isEmpty()) {
-            Node upstream = upstreams.get(0);
-            if (upstream != null) {
-                BuildExpressionVisitor visitor_be = new BuildExpressionVisitor(mapper.getContext());
-
-                upstream.accept(visitor_be);
-                current_expr = visitor_be.getResult();
+                    upstream.accept(visitor_be);
+                    current_expr = visitor_be.getResult();
+                }
             }
+
+            if (current_expr != null) {
+                if (new_expr == null || !current_expr.toString().equals(new_expr.toString())) {
+                    destroyDiagramRecursive(tree_node);
+                }
+            }
+        } else {
+            destroyDiagramRecursive(tree_node);
         }
 
-        if (current_expr != null) {
-            if (new_expr == null || !current_expr.toString().equals(new_expr.toString())) {
-                destroyDiagramRecursive(tree_node);
-            }
-        }
         if (new_expr != null) {
             if (current_expr == null || !new_expr.toString().equals(current_expr.toString())) {
 
@@ -246,11 +251,11 @@ public class DiagramBuilder {
      * Iterates over target tree nodes
      * calls updateDiagram() for each node
      **/
-    private void updateDiagramRecursive(TreeNode node) {
+    private void updateDiagramRecursive(TreeNode node, boolean reuse) {
         if (node instanceof StylesheetNode) {
-            updateDiagram(node);
+            updateDiagram(node, reuse);
             for (TreeNode n : node.getChildren()) {
-                updateDiagramRecursive(n);
+                updateDiagramRecursive(n, reuse);
             }
         }
     }

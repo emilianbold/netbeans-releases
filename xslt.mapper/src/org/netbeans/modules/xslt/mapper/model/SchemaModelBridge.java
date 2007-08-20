@@ -45,6 +45,6 @@ public class SchemaModelBridge extends ModelBridge {
         super.reloadTree(getMapper().getMapperViewManager().getDestView().getTree());
         super.reloadTree(getMapper().getMapperViewManager().getSourceView().getTree());
 
-        getMapper().getBuilder().updateDiagram();
+        getMapper().getBuilder().updateDiagram(false);
     }
 }

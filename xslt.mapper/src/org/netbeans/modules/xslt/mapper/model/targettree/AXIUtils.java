@@ -218,6 +218,11 @@ public class AXIUtils {
             AXIComponent axi_parent = getType(xsl_parent, mapper);
             if (axi_parent != null){
                 for (AXIComponent type: axi_parent.getChildElements()){
+                    if (type == null || 
+                        type.getPeer() == null || 
+                        type.getPeer().getModel() == null) {
+                        continue;
+                    }
                     if (AXIUtils.isSameSchemaType(xslc, type)){
                         return type;
                     }

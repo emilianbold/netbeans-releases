@@ -193,7 +193,7 @@ public class XsltModelBridge extends ModelBridge implements IMapperListener {
         }
         super.reloadTree(getMapper().getMapperViewManager().getDestView().getTree());
         
-        getMapper().getBuilder().updateDiagram();
+        getMapper().getBuilder().updateDiagram(true);
     }
 
 
