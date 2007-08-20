@@ -1203,7 +1203,10 @@ public class InteractionManager {
      * Update to the current equivalent objects.
      */
     public void syncSelection(boolean update) {
-        finishInlineEditing(false);
+        // XXX #113141 Cancel the inline editing.
+//        finishInlineEditing(false);
+        finishInlineEditing(true);
+        
 //        highlighted = null;
         highlightedComponentRootElement = null;
 //        highlightedRegion = null;
