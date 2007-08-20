@@ -25,11 +25,4 @@
         <mkdir dir="external/wsdl4j-1.5.2"/>
         <unzip src="external/wsdl4j-1.5.2.zip" dest="external/wsdl4j-1.5.2"/>        
     </target>
-    
-    <target name="netbeans-extra" depends="ext_init, init">
-        <mkdir dir="${cluster}/modules/ext/wsdl4j-1.5.2"/>
-        <copy todir="${cluster}/modules/ext/wsdl4j-1.5.2">
-            <fileset dir="external/wsdl4j-1.5.2" />
-        </copy>
-    </target>
 </project>
