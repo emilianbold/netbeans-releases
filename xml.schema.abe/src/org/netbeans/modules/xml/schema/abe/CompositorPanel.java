@@ -392,7 +392,22 @@ public class CompositorPanel extends ElementsContainerPanel{
     }
     
     public String getCompositorTypeString(){
-        StringBuffer str = new StringBuffer(getCompositorType().getName());
+        CompositorType compType= getCompositorType();
+        String comp = null;
+        switch(compType){
+            case SEQUENCE:
+                comp = NbBundle.getMessage(CompositorPanel.class,"LBL_Sequence");
+                break;
+            case CHOICE:
+                comp = NbBundle.getMessage(CompositorPanel.class,"LBL_Choice");
+                break;
+            case ALL:
+                comp = NbBundle.getMessage(CompositorPanel.class,"LBL_All");
+                break;
+        }
+        if(comp == null)
+            comp = getCompositorType().getName();
+        StringBuffer str = new StringBuffer(comp);
         while(str.length() < 8)
             str.append(" ");
         return str.toString();
