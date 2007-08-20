@@ -1,37 +1,17 @@
+<?xml version="1.0" encoding="${encoding}"?>
+<!-- 
+    Document   : ${name}
+    Created on : ${date}, ${time}
+    Author     : ${user}
+-->
 <jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
 
-<!-- The list of normal or fragment attributes can be specified here, e.g.: -->
-<!--
-    <jsp:directive.attribute name="title" required="true"/>
-    <jsp:directive.attribute name="author" required="false"/>
--->
+    <jsp:directive.tag pageEncoding="${encoding}"/> 
 
-<!-- Use expression language to work with attributes, e.g.: -->
-<!--
-    <jsp:element name="book">
-        <jsp:element name="title">${title}</jsp:element>
-        <jsp:element name="author">${author}</jsp:element>
-    </jsp:element>
--->
+    <!-- The list of normal or fragment attributes can be specified here, e.g.: -->
+    <jsp:directive.attribute name="message"/>
+
+    <!-- any content can be specified here e.g.: -->
+    <#noparse><jsp:text>${message}</jsp:text></#noparse>
 
 </jsp:root>
-
-<!-- 
-Tag files with XML syntax can be used in XML documents similarly as normal JSP tags in JSP pages.
-Use urn:jsptagdir namespace prefix instead of taglib directive.
-
-This is an example of tag file usage in JSP document (books.jspx):
-**********************************************************************
-<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
-          xmlns:tags="urn:jsptagdir:/WEB-INF/tags"
-          version="2.0">
-
-    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
-
-    <jsp:element name="books">
-        <tags:book title="Whom The Bells Tolls" author="Ernest Hamingway"/>
-    </jsp:element>
-
-</jsp:root>
-**********************************************************************
--->

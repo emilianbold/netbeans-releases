@@ -52,7 +52,8 @@ Microsystems, Inc. All Rights Reserved.
       <!-- Tag File -->
       <file name="TagFile.tag" url="templates/TagFile.template">
         <attr name="position" intvalue="1100"/>
-                <attr name="template" boolvalue="true"/>
+        <attr name="template" boolvalue="true"/>
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagFile.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createTagIterator"/>
@@ -61,6 +62,7 @@ Microsystems, Inc. All Rights Reserved.
       <!--  Tag File Document --> 
       <file name="TagFileX.tagx" url="templates/TagFileX.template">
         <attr name="position" intvalue="0"/>
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
       </file>
       <!--  Tag File Segments --> 
       <file name="TagFileF.tagf" url="templates/TagFileF.template">

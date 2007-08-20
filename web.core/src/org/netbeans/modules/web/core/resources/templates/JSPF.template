@@ -1,16 +1,2 @@
-<%-- the static segment can be included to JSP using the <%@include ...%> directive, e.g:
-    <%@include file="/WEB-INF/jspf/header.jspf" %>
-
-    J2EE1.4 also enables to specify header or footer segments for multiple pages in web.xml file.
-    Use the <include-prelude> or <include-coda> elements in <jsp-config> section, e.g.:
-    <jsp-config>
-      <jsp-property-group>
-        <url-pattern>*.jsp</url-pattern>
-        <include-prelude>/WEB-INF/jspf/header.jspf</include-prelude>
-      </jsp-property-group>
-    </jsp-config>
---%>
-
 <%-- any content can be specified here e.g.: --%>
-<h2>This is the page header</h2>
-<hr>
+<h2>Cat In The Rain</h2>

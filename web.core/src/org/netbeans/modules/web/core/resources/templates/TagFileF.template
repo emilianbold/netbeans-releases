@@ -1,14 +1,2 @@
-<%-- The tag file segment can be statically included to tag file using include directive, e.g.:
-    <%@include file="table_header.tagf" %>
---%>
-
-<%-- This is the example of a table header created as a Tag File segment --%>
-
-<%--
-<table>
-    <tr>
-        <th>${column_1}</th>
-        <th>${column_2}</th>
-        <th>${column_3}</th>
-    </tr>
---%>
+<%-- any content can be specified here e.g.: --%>
+<h2>Cat In The Rain</h2>

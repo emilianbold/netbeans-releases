@@ -6,13 +6,12 @@
 -->
 <jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
 
-    <!-- to change the content type or response encoding change the following line -->
     <jsp:directive.page contentType="text/html" pageEncoding="${encoding}"/>
 
     <!-- any content can be specified here, e.g.: -->
     <jsp:element name="text">
         <jsp:attribute name="lang">EN</jsp:attribute>
-        <jsp:body>Sample text</jsp:body>
+        <jsp:body>Cat In The Rain</jsp:body>
     </jsp:element>
 
 </jsp:root>
