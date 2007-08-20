@@ -22,8 +22,10 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.vmd.api.flow.visual.FlowDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowNodeDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
+import org.netbeans.modules.vmd.api.flow.FlowSupport;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DataSerializer;
+import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
@@ -50,6 +52,10 @@ public class FlowDataSerializer implements DataSerializer {
     private static final String VERSION_VALUE_1 = "1"; // NOI18N
 
     public Node serializeData (DataObjectContext context, DesignDocument document, Document file) {
+        ProjectTypeInfo info = ProjectTypeInfo.getProjectTypeInfoFor (context.getProjectType ());
+        if (! info.getTags ().contains (FlowSupport.PROJECT_TYPE_TAG_FLOW))
+            return null;
+
         FlowAccessController accessController = document.getListenerManager ().getAccessController (FlowAccessController.class);
         FlowScene scene = accessController.getScene ();
         Node node = file.createElement (FLOW_DOCUMENT_NODE);
@@ -78,6 +84,10 @@ public class FlowDataSerializer implements DataSerializer {
     }
 
     public boolean deserializeData (final DataObjectContext context, final DesignDocument document, final Node data) {
+        ProjectTypeInfo info = ProjectTypeInfo.getProjectTypeInfoFor (context.getProjectType ());
+        if (! info.getTags ().contains (FlowSupport.PROJECT_TYPE_TAG_FLOW))
+            return false;
+
         if (! FLOW_DOCUMENT_NODE.equals (data.getNodeName ()))
             return false;
 
