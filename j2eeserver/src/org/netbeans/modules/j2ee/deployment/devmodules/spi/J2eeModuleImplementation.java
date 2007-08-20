@@ -36,7 +36,10 @@ import org.openide.filesystems.FileObject;
 public interface J2eeModuleImplementation {
     
     /** 
-     * Returns module specification version.
+     * Returns a Java EE module specification version, version of a web application 
+     * for example.
+     * <p>
+     * Do not confuse with the Java EE platform specification version.
      *
      * @return module specification version.
      */
