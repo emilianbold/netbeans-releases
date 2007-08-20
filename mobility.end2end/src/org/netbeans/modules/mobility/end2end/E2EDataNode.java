@@ -31,6 +31,7 @@ import org.netbeans.modules.mobility.end2end.ui.editor.GenerateAction;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
+import org.openide.actions.FileSystemAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.PropertiesAction;
@@ -64,6 +65,8 @@ public class E2EDataNode extends DataNode {
             SystemAction.get( SaveAction.class ),
             null,
             SystemAction.get( GenerateAction.class ),
+            null,
+            SystemAction.get( FileSystemAction.class ),
             null,
             SystemAction.get( CutAction.class ),
             SystemAction.get( CopyAction.class ),
