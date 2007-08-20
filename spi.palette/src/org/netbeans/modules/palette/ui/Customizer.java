@@ -98,6 +98,8 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         explorerManager.setRootContext(paletteRoot);
 
         initComponents();
+        
+        createCustomButtons();
 
         CheckTreeView treeView = new CheckTreeView( settings );
         treeView.getAccessibleContext().setAccessibleName(
@@ -269,7 +271,6 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         add(newCategoryButton, gridBagConstraints);
         newCategoryButton.getAccessibleContext().setAccessibleDescription(Utils.getBundleString("ACSD_NewCategory")); // NOI18N
 
-        createCustomButtons();
         customActionsPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
