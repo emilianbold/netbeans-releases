@@ -91,8 +91,10 @@ public class MeasureActions  {
         
         suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
         suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
-//TODO no tomcat - see issue 101104         suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
-        //TODO    suite.addTest(new CreateProject("testCreateJavaProjectWithExistingSources", "Create Java Project with Existing sources"));
+//TODO no tomcat - see issue 101104        
+	suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
+
+//TODO    suite.addTest(new CreateProject("testCreateJavaProjectWithExistingSources", "Create Java Project with Existing sources"));
         
         suite.addTest(new CreateNBProject("testCreateModuleProject", "Create Module Project"));
         suite.addTest(new CreateNBProject("testCreateModuleSuiteProject", "Create Module Suite Project"));
