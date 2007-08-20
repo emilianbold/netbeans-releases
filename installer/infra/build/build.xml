@@ -685,7 +685,6 @@ jarsigner.storepass=${jarsigner.storepass}
                 value=""/>
         </ant>
 
-        <!--
 	<echo message="BUILDING NB-CND =========================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-cnd" target="release-all">
             <property 
@@ -709,7 +708,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-        -->
+
         <echo message="BUILDING RUNTIMES-GROUP ==================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/groups/runtimes-group" target="release-all">
             <property 
@@ -1056,7 +1055,9 @@ jarsigner.storepass=${jarsigner.storepass}
             root="${output.dir}/registry-temp" 
             destination="${output.dir}/registry" 
             codebase="http://bits.netbeans.org/download/6.0/nightly/${build.number}/installers/registry"/>
-        
+
+
+        <!-- JavaSE bundles -->        
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-java-windows.exe">
@@ -1095,7 +1096,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
 
 
-        
+        <!-- JavaEE bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javaee-windows.exe">
@@ -1151,7 +1152,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="tomcat" version="6.0.13.0.0"/>
         </create-bundle>
 
-
+        <!-- JavaME bundles (only for windows and linux) -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javame-windows.exe">
@@ -1167,7 +1168,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
         </create-bundle>
 
-
+        <!-- Ruby bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-windows.exe">
@@ -1205,7 +1206,46 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
         </create-bundle>
 
-        
+
+        <!-- C/C++ bundles -->
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="windows" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cnd-windows.exe">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="linux" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cnd-linux.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-x86" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cnd-solaris-x86.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris-sparc" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cnd-solaris-sparc.sh">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="macosx-x86" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cnd-macosx-x86.zip">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="macosx-ppc" 
+                       target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cnd-macosx-ppc.zip">
+            <component uid="nb-base" version="6.0.0.0.${build.number}"/>
+            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+        </create-bundle>
+
+        <!-- Full bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-windows.exe">
@@ -1216,7 +1256,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
             <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <!--<component uid="nb-cnd" version="6.0.0.0.${build.number}"/>-->
+            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1234,7 +1274,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
             <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <!--<component uid="nb-cnd" version="6.0.0.0.${build.number}"/>--> 
+            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1251,7 +1291,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
             <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <!--<component uid="nb-cnd" version="6.0.0.0.${build.number}"/>--> 
+            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1268,7 +1308,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
             <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <!--<component uid="nb-cnd" version="6.0.0.0.${build.number}"/>--> 
+            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1285,7 +1325,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
             <!--<component uid="nb-uml" version="6.0.0.0.${build.number}"/>-->
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <!--<component uid="nb-cnd" version="6.0.0.0.${build.number}"/>--> 
+            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1302,7 +1342,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
             <!--<component uid="nb-uml" version="6.0.0.0.${build.number}"/>-->
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <!--<component uid="nb-cnd" version="6.0.0.0.${build.number}"/>--> 
+            <component uid="nb-cnd" version="6.0.0.0.${build.number}"/> 
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
@@ -1446,6 +1486,14 @@ jarsigner.storepass=${jarsigner.storepass}
         <antcall target="zip-to-tgz">
             <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-macosx-ppc.zip"/>
             <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-macosx-ppc.tgz"/>
+        </antcall>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cnd-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cnd-macosx-x86.tgz"/>
+        </antcall>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cnd-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cnd-macosx-ppc.tgz"/>
         </antcall>
         <antcall target="zip-to-tgz">
             <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-x86.zip"/>
