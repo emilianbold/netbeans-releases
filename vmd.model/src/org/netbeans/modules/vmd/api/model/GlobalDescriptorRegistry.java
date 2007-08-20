@@ -18,22 +18,22 @@
  */
 package org.netbeans.modules.vmd.api.model;
 
+import org.netbeans.modules.vmd.model.XMLComponentDescriptor;
+import org.netbeans.modules.vmd.model.XMLComponentProducer;
+import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.XMLDataObject;
 import org.openide.util.Mutex;
-import org.openide.util.WeakSet;
-import org.openide.ErrorManager;
-import org.xml.sax.SAXException;
 import org.w3c.dom.Document;
-import org.netbeans.modules.vmd.model.XMLComponentDescriptor;
-import org.netbeans.modules.vmd.model.XMLComponentProducer;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author David Kaspar
@@ -65,7 +65,7 @@ final class GlobalDescriptorRegistry {
     private final Mutex mutex = new Mutex ();
     private HashMap<TypeID, ComponentDescriptor> descriptors = new HashMap<TypeID, ComponentDescriptor> ();
     private ArrayList<ComponentProducer> producers = new ArrayList<ComponentProducer> ();
-    private final WeakSet<DescriptorRegistryListener> listeners = new WeakSet<DescriptorRegistryListener> ();
+    private final CopyOnWriteArraySet<DescriptorRegistryListener> listeners = new CopyOnWriteArraySet<DescriptorRegistryListener> ();
 
     private final HashMap<String, WeakReference<DescriptorRegistry>> projectID2projectRegistry = new HashMap<String, WeakReference<DescriptorRegistry>> ();
 
@@ -403,19 +403,11 @@ final class GlobalDescriptorRegistry {
     }
 
     void addRegistryListener (final DescriptorRegistryListener listener) {
-        mutex.writeAccess (new Runnable() {
-            public void run () {
-                listeners.add (listener);
-            }
-        });
+        listeners.add (listener);
     }
 
     void removeRegistryListener (final DescriptorRegistryListener listener) {
-        mutex.writeAccess (new Runnable() {
-            public void run () {
-                listeners.remove (listener);
-            }
-        });
+        listeners.remove (listener);
     }
 
 }
