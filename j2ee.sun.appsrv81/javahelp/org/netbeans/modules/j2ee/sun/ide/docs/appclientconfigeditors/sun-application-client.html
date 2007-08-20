@@ -2,45 +2,48 @@
 <html>
     <head>
         <!--
-        * Copyright 2006 Sun Microsystems, Inc.
+        * Copyright 2007 Sun Microsystems, Inc.
         * All rights reserved. Use is subject to license terms.
         -->
-        <title>sun-application-client.xml Visual Editor</title>
+        <title><tt>sun-application-client.xml</tt> Visual Editor: General</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"></head>
-    <body style="background-color: rgb(255, 255, 255);">
-        <h2><tt>sun-application-client.xml</tt> Visual Editor</h2>
+    </head>
+    <body>
+        <h2><tt>sun-application-client.xml</tt> Visual Editor: General</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>The <tt>sun-application-client.xml</tt> visual editor lets you edit an enterprise
             application client's 
             platform-specific deployment descriptor for the Sun Java System Application 
-            Server. You open the visual editor by expanding your project's Configuration 
-            Files node in the Projects window and double-clicking the <tt>sun-application-client.xml</tt> 
-        file. </p>
-        <h3>Java Web Start Access</h3>
+            Server/GlassFish. You open the visual editor by expanding your project's Configuration 
+            Files node in the Projects window and double-clicking the <tt>sun-application-client.xml</tt> file. </p>
+            <p>You get to this tab by double-clicking the <tt>sun-application-client.xml</tt> file under the application client project's
+            Configuration Files node in the Projects window and clicking the General tab in the visual editor.</p>
+            <p>If any configuration information for an application client is not specified 
+            in the <tt>sun-application-client.xml</tt> file, it defaults to a corresponding setting in <tt>application-client.xml</tt> if an equivalency exists.</p>
+
+            <p>The General enables you to set the following descriptor properties:</p>
+    
+            <h3>Java Web Start Access</h3>
         
-        <p>Specifies changes to default Java Web Start parameters for an embedded or 
-            stand-alone application client module.
-        </p>
-        <ul>
-            
-            <li><b>Context Root.</b>&nbsp;Contains the context root for the Java Web Start enabled application
-                client module. If none is specified, a default is generated.&nbsp;
-                <p>The default for an application is as follows:&nbsp;</p>
+            <p>Specifies changes to default Java Web Start parameters for an embedded or 
+            stand-alone application client module.</p>
+            <ul>
+                <li><b>Context Root.</b> Contains the context root for the Java Web Start enabled application
+                client module. If none is specified, a default is generated.
+                <p>The default for an application is as follows:</p>
                 <pre>http://<var>host</var>:<var>port</var>/<var>app-name</var>/<var>relative-URI-to-appclient-jar</var></pre>
                 <p>The default for a stand-alone application client module is as
-                follows:&nbsp;</p>
+                follows:</p>
                 <pre>http://<var>host</var>:<var>port</var>/<var>module-name</var></pre>
                 <p>If the <tt>app-name</tt> or <tt>module-name</tt> is
                     not specified during deployment, the name of the EAR or JAR file without
                     the extension is used. If the application or module is not in EAR
-                    or JAR file format, a name is generated and written to the server
-            log.</p></li>
-            <li><b>Vendor.</b>&nbsp;Specifies whether the application client module is eligible
-            to be Java Web Start enabled.</li>
-            <li><b>Eligible</b>&nbsp;Specifies the name of the vendor as it appears in Java Web Start
-            download and launch screens.</li>
-        </ul>
+                    or JAR file format, a name is generated and written to the server log.</p></li>
+                <li><b>Vendor.</b> Specifies the name of the vendor as it appears in Java Web Start
+                download and launch screens.</li>
+                <li><b>Eligible.</b> Specifies whether the application client module is eligible
+                to be Java Web Start enabled.</li>
+            </ul>
         
         <h3>Message Destinations</h3>
         <p>In the Message Destinations table, you can specify message destinations and 

@@ -5,23 +5,23 @@
  * Copyright 2007 Sun Microsystems, Inc.
  * All rights reserved. Use is subject to license terms.
 -->
-  <title>sun-web.xml/sun-ejb-jar.xml Visual Editor: Message Destinations</title>
+  <title>Deployment Descriptor Visual Editor: Message Destinations</title>
   
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2><tt>sun-web.xml</tt>/<tt>sun-ejb-jar.xml</tt> Visual Editor: Message Destinations</h2>
+<h2>Deployment Descriptor Visual Editor: Message Destinations</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The <tt>sun-web.xml</tt>/<tt>sun-ejb-jar.xml</tt> visual editor lets you edit the platform-specific 
+<p>The <tt>sun-web.xml</tt>/<tt>sun-ejb-jar.xml</tt>/<tt>sun-application-client.xml</tt> visual editor lets you edit the platform-specific 
 deployment descriptors for Sun Java System Application Server/GlassFish. 
 This pane lists the JMS message destinations in the project and enables you to provide a reference to any resource 
 from which the application is going to send or receive messages.</p>
 
-<p>A web or enterprise application will only contain the <tt>sun-web.xml</tt> or <tt>sun-ejb-jar.xml</tt> 
+<p>A web or enterprise application will only contain the <tt>sun-web.xml</tt>, <tt>sun-ejb-jar.xml</tt> or <tt>sun-application-client.xml</tt> 
 deployment descriptors if the target server is the Sun Java System Application Server/GlassFish.</p>
 
 <p>You get to this pane by expanding your project's Configuration Files node in the Projects window 
-and double-clicking <tt>sun-web.xml</tt> or <tt>sun-ejb-jar.xml</tt> and clicking the Messaging tab.</p>
+and double-clicking <tt>sun-web.xml</tt>, <tt>sun-ejb-jar.xml</tt> or <tt>sun-application-client.xml</tt> and clicking the Messaging tab.</p>
 
   
 <p>Click Add Message Destination to add descriptor properties for a message destination.
@@ -36,11 +36,9 @@ Each message destination has the following properties:</p>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>
     <dd><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/configure/configure_webapp_dd.html">Editing a Web Application's Deployment Descriptors</a></dd>
-    <dd><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/deploy/deploy_changeserver.html">Changing the Target Server</a></dd>
     <dd><tt>sun-web.xml</tt> Visual Editor:</dd>
     <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppGeneral.html">General</a></dd>
     <!--<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="SessionConfigurationManager.html">Session</a></dd>-->
-    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppMessages.html">Messages</a></dd> 
     <!-- <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppLocale.html">Locale</a></dd> -->
     <!--<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppCacheGeneral.html">Cache Mappings </a></dd> -->
     <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebserviceDescriptor.html">Web Service Descriptor</a></dd>

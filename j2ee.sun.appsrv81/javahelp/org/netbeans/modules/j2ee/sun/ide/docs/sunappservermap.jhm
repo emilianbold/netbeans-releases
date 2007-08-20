@@ -38,8 +38,7 @@
     <mapID target="sun-application_help"			url="appconfigeditors/sunapplication.html"  />
     <mapID target="sun-application-client_help"			url="appclientconfigeditors/sun-application-client.html"  />
     
-    <!-- sun-application-client.xml DD editor CSH -->
-    <mapID target="AS_CFG_AppClient"	url="appclientconfigeditors/sun-application-client.html"  />
+    
 
     <!-- sun-web.xml DD editor CSH: -->
     <!-- DD dialogs -->
@@ -49,15 +48,37 @@
     <mapID target="AS_CFG_SecurityRoleEditGroup"                url="configeditors/SecurityWebEditGroup.html"  />
     
     <!-- DD CSH from within editor -->
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingView"	url="configeditors/SecurityWebRoleMapping.html"  />
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode"		url="configeditors/WebAppGeneral.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView" 		url="configeditors/WebAppMessages.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationNode" 	url="configeditors/WebAppMessages.html"  />
+
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode"		url="configeditors/WebAppGeneral.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode"         url="configeditors/WebAppClassloader.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView"                   url="configeditors/Servlet.html"  />
+   
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceView" 	url="configeditors/WebserviceDescriptor.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceNode" 	url="configeditors/WebserviceDescriptor.html"  />
+ 
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefNode"             url="configeditors/WebserviceClients.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefView"             url="configeditors/WebserviceClients.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingView"	url="configeditors/SecurityWebRoleMapping.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingNode"	url="configeditors/SecurityWebRoleMapping.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EnvironmentView"            url="appclientconfigeditors/sun-applicationclient_env.html"  />
+
+
+    <!-- sun-ejb-jar.xml DD editor CSH: -->
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode"          url="ejbconfigeditors/sunconfig.html" />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbView"                       url="ejbconfigeditors/entitybean.html" />    
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbNode"                       url="ejbconfigeditors/entitybean.html" />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.ReferencesNode                 url="ejbconfigeditors/entitybean.html" />  
+    <mapID target="AS_CFG_CmpEntityEjb"                                                                 url="ejbconfigeditors/entitybean.html" />
+
+    <!-- sun-application-client.xml DD editor CSH -->
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.appclient.SunAppClientJWSNode"     url="appclientconfigeditors/sun-application-client.html"  />
+    <!-- can probably remove this -->
+    <mapID target="AS_CFG_AppClient"                                                                    url="appclientconfigeditors/sun-application-client.html"  />
+ 
+
+
 
     <!-- older targets we can probably remove -->
     <mapID target="AS_CFG_ServiceRefPortInfoStubProperty"               url="configeditors/ServiceRefPortInfoStubProperty.html"  />
@@ -88,10 +109,6 @@
     <mapID target="AS_RegServ_EnterPlatformDir"      				url="runtimetab/RegServ_Choose.html" />
     <mapID target="AS_RegServ_DefinePorts"      				url="runtimetab/RegServ_Create.html" />
   
-    <!-- sun-ejb-jar.xml DD editor CSH: -->
-  <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode"    url="ejbconfigeditors/sunconfig.html" />
-  <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbNode"              	url="ejbconfigeditors/entitybean.html" />
-  <mapID target="AS_CFG_CmpEntityEjb"                                                           url="ejbconfigeditors/entitybean.html" />
 
   <!-- sun-application.xml DD editor CSH: -->
   <mapID target="AS_CFG_Application"                    			url="appconfigeditors/sunapplication.html" />
