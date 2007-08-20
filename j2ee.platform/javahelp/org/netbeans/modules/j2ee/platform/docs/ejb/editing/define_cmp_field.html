@@ -48,10 +48,11 @@
     <li>If you use the <a href="generate_cmp_beans.html">Entity Beans from Database</a> 
     wizard to create the bean, the IDE can automatically create the CMP fields 
     for all the fields in a database. </li>
-  <li>The new CMP field might require some server specific configuration. For 
-    example, it might need to be mapped to a database column for the Sun Java 
-    System Application Server in <tt>sun-ejb-jar.xml</tt> or <tt>sun-cmp-mapping.xml</tt>.</li>
-  <!--TODO link to how to do this-->
+  <li>When you create a new CMP field you may need to configure the server-specific deployment descriptor. For 
+    example, the field may need to be mapped to a database column. 
+    If you are deploying to the Sun Java System Application Server,
+    you will need to make these changes in <tt>sun-ejb-jar.xml</tt> or <tt>sun-cmp-mapping.xml</tt>.</li>
+    <!--TODO link to how to do this-->
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
@@ -60,6 +61,7 @@
       <dd><a href="generate_cmp_beans.html">Generating CMP Entity Beans from a Database</a></dd>
       <dd><a href="define_select_method.html">Defining a Select Method</a></dd>
       <dd><a href="define_finder_method.html">Defining a Finder Method</a> </dd>
+      <dd><a href="../configuring/config_ejb_dd">Configuring EJB Deployment Descriptors</a></dd>
       <dd><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a></dd>
       <dd><a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema.html">Obtaining a Database Schema</a>
       </dd>

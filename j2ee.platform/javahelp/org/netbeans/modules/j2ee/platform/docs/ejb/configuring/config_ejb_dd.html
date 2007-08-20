@@ -20,29 +20,34 @@
   to assemble and deploy a module to a specific environment. The elements also 
   contain behavioral information about components not included directly in code.</p>
   
-  <p>If you are developing enterprise beans on the Java EE 5 platform and deploying to
+<p>If you are developing enterprise beans on the Java EE 5 platform and deploying to
 a Java EE 5 compliant application server, you develop enterprise beans using EJB 3.0 technology.
-EJB 3.0 technology enables you to use annotations in your classes instead of deployment descriptors to describe behavior.</p>
-  
-  <p>For EJB modules, there are two types of deployment descriptors:</p>
+EJB 3.0 technology supports the use of annotations in your code to describe behavior
+that was described using deployment descriptors in EJB 2.1 technology.
+EJB 3.0 technology also supports the use of deployment descriptors. 
+You may need to use annotations and deployment descriptors in your project when you configure your
+project.</p>
+
+<p>For EJB modules, there are two types of deployment descriptors:</p>
 <ul>
   <li>The general J2EE deployment descriptor that configures deployment settings 
     on any J2EE-compliant implementation. The general EJB deployment descriptor 
-    is called <tt>ejb-jar.xml</tt>. The IDE provides a graphical editor for the 
-    general deployment descriptor and automatically updates it when you edit your 
-    code. </li>
+    is called <tt>ejb-jar.xml</tt>. The IDE provides a visual editor for the 
+    general deployment descriptor and automatically updates the descriptor file when you edit your code. </li>
   <li>The server-specific deployment descriptor that configures deployment settings 
     for the application server to which you are deploying. For the Sun Java System 
-    Application Server, the IDE automatically updates the deployment descriptor as you edit your files.
-    The IDE also provides a graphical deployment descriptor editor to edit some descriptor files.
+    Application Server, the IDE automatically updates the deployment descriptor files as you edit your files.
     For all other application servers, you have to write the server-specific deployment 
-    descriptors yourself. </li>
+    descriptors yourself. 
+        <p>The IDE provides a visual deployment descriptor editor to help you edit some descriptor files.
+        You can also use the XML editor to edit your descriptor files.</p>
+    </li>
 </ul>
 
 <p><b>To edit <tt>ejb-jar.xml</tt>:</b></p>
 <ol>
   <li>In the Projects window, expand the Configuration Files node for your EJB module project.</li>
-  <li>Double-click <tt>ejb-jar.xml</tt> to open the file in the graphical editor. </li>
+  <li>Double-click <tt>ejb-jar.xml</tt> to open the file in the visual editor. </li>
   <li>Select one of the following tabs:
     <ul>
         <li><b>General.</b> This tab enables you to specify general information about the EJB module, details about security roles
@@ -50,22 +55,22 @@ EJB 3.0 technology enables you to use annotations in your classes instead of dep
         See the following topics for more information about the properties you can set in the General tab: 
         <ul>
           <li><tt><a href="../csh/graphic_editor/dd_multiview_moduleDetails.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_moduleDetails.html"> 
-            Visual Editor - Module Details</a></li>
+            Visual Editor: General: Module Details</a></li>
           <li><tt><a href="../csh/graphic_editor/dd_multiview_securityRoles.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_securityRoles.html"> 
-            Visual Editor - Security Roles</a></li>
+            Visual Editor: General: Security Roles</a></li>
           <li><tt><a href="../csh/graphic_editor/dd_multiview_Session.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_Session.html"> 
-            Visual Editor - Session Beans</a> </li>
+            Visual Editor: General: Enterprise Beans: Session Beans</a> </li>
           <li><tt><a href="../csh/graphic_editor/dd_multiview_Entity.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_Entity.html"> 
-            Visual Editor - Entity Beans</a></li>
+            Visual Editor: General: Enterprise Beans: Entity Beans</a></li>
           <li><tt><a href="../csh/graphic_editor/dd_multiview_MDB.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_MDB.html"> 
-            Visual Editor - Message-Driven Beans</a></li>
+            Visual Editor: General: Enterprise Beans: Message-Driven Beans</a></li>
         </ul>
         </li>
         <li><b>CMP Relationships.</b> This tab enables you to view and modify CMP relationships for CMP beans in your module.
         See the following topic for more information about the properties you can set in the CMP Relationships tab:
         <ul>
             <li><tt><a href="../csh/graphic_editor/dd_multiview_Relationship.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_Relationship.html"> 
-            Visual Editor - CMP Relationships</a></li>
+            Visual Editor: CMP Relationships</a></li>
         </ul>
         </li>
         <li><b>XML.</b> This tab enables you to edit the descriptor file in the XML editor.</li>
@@ -78,42 +83,22 @@ EJB 3.0 technology enables you to use annotations in your classes instead of dep
 <p><b>To edit <tt>sun-ejb-jar.xml</tt>:</b></p>
 <ol>
     <li>In the Projects window, expand the Configuration Files node for your EJB module project.</li>
-    <li>Double-click <tt>sun-ejb-jar.xml</tt> to open the file in the graphical editor. </li>
-    <li>Double-click <tt>sun-ejb-jar.xml</tt> to open it in the graphical editor. 
-    <li>Select one of the following tabs:
-    <ul>
-        <li><b>General.</b></li>
-        <li><b>EJB.</b></li>
-        <li><b>Security.</b></li>
-        <li><b>Web Services.</b></li>
-        <li><b>Messaging.</b></li>
-        <li><b>XML.</b></li>
-    </ul>
-    
-    <li>Edit the deployment descriptor as necessary. See the following topics for 
-    more information: 
+    <li>Double-click <tt>sun-ejb-jar.xml</tt> to open the file in the visual editor. </li>
+    <li>Select a tab at the top of the editor. See the following topic for more information about the editor tabs: 
     <ul>
       <li><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/ejbconfigeditors/sunconfig.html"><tt>sun-ejb-jar.xml</tt> 
-        Visual Editor: Sun Configuration</a></li>
-      <li><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/ejbconfigeditors/sessionbean.html"><tt>sun-ejb-jar.xml</tt> 
-        Visual Editor: Session Bean</a></li>
-      <li><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/ejbconfigeditors/entitybean.html"><tt>sun-ejb-jar.xml</tt> 
-        Visual Editor: Entity Bean</a></li>
-      <li><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/ejbconfigeditors/messagebean.html"><tt>sun-ejb-jar.xml</tt> 
-        Visual Editor: Message Bean</a></li>
+        Visual Editor</a></li>
     </ul>
-  </li>
-  <li>Choose File &gt; Save to save your changes.</li>
-  <li>Right-click <tt>sun-ejb-jar.xml</tt> and choose Edit to edit the deployment 
-    descriptor's XML source. You can only open in this mode if the file is not 
-    already open in the visual editor. The Source Editor provides code completion 
-    and validation for all XML files.</li>
+    </li>
+    <li>Edit the descriptor file as necesary and save your changes.</li>
 </ol>
+
 <p>To edit the server-specific deployment descriptor for any other application server:</p>
 <ol>
-  <li>Double-click the deployment descriptor node.<br>
+  <li>Double-click the deployment descriptor node in the Projects window.<br>
     The IDE opens the XML source of the deployment descriptor in the Source Editor.</li>
 </ol>
+
 <ul class="note">
   <li>If you enter any XML syntax errors the IDE automatically alerts you. To 
     fully ensure your changes have not cause any errors, you should verify the 

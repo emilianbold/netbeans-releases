@@ -121,10 +121,6 @@
             </tocitem>
         </tocitem>
 
-        <tocitem text="Developing Web Applications">
-            <tocitem text="About Web Applications in Enterprise Applications" target="about_entwebapps" />
-        </tocitem>
-    
         <tocitem text="Using Java Persistence" >
             <tocitem text="About Java Persistence" target="persist_about" />
             <tocitem text="Java Persistence Tasks: Quick Reference" target="persist_quickref" />
@@ -158,6 +154,12 @@
             </tocitem>
         </tocitem>
     </tocitem> 
+
+    <tocitem text="Web Applications">
+        <tocitem text="About Web Applications">
+            <tocitem text="About Web Applications in Enterprise Applications" target="about_entwebapps" />
+        </tocitem>
+    </tocitem>
     
         <tocitem text="Web Services"  expand="false">
             <tocitem text="About Web Services" >

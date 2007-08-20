@@ -16,7 +16,7 @@
 <p>Like a table in a relational database, an entity bean may be related to other 
   entity beans. With bean-managed persistence, the code that you write implements 
   the relationships. But with container-managed persistence, the EJB container 
-  manages of the relationships for you. </p>
+  manages the relationships for you. </p>
   
   
   <p>For instance, consider the <tt>cmpcustomer</tt> example that ships with the 
@@ -27,10 +27,14 @@
   In order for this example to work correctly, the relationships between 
   the entity beans representing these database tables must be configured correctly.</p>
   
-<p>When you generate CMP entity beans from an existing database, the IDE automatically 
-  configures the module's CMP relationships and CMP fields and creates a default 
-  mapping used by the Sun Java System Application Server.</p>
-
+  <h3>Container-Managed Relationships in the IDE</h3>
+  <p>When you generate CMP entity beans from a database, the IDE automatically registers 
+  all of the container-managed relationships based on the relationships in the database.
+  The CMP relationships are described in the module's <tt>ejb-jar.xml</tt> descriptor file.   
+  The IDE also automatically generates the necessary CMP fields in your source code.</p>
+  
+  <p>When defining a CMP relationship, you may need to set the following properties.</p>
+  
   <h3>Direction </h3>
   <p>Relationships between databases can either be unidirectional or multidirections. 
   For example, in the above <tt>cmpcustomer</tt> example, the relationship between 
@@ -38,7 +42,8 @@
   the address table but the address table does not reference the customer table. 
   The relationship between subscriptions and customers, on the other hand, is 
   multidirectional.</p>
-<h3>Multiplicity</h3>
+  
+  <h3>Multiplicity</h3>
 <p>Multiplicity (also known as cardinality) describes how many instances of each 
   side of the relationship there can be. Entity beans can have the following multiplicity:</p>
 <ul>
@@ -53,6 +58,7 @@
     instances of each other. For example, in the above <tt>cmpcustomer</tt> application, 
     subscriptions and customers have a many-to-many relationship.</li>
 </ul>
+
 <h3>Cascade Delete</h3>
 <p>Often, the existence of one table is often dependent on the existence of the 
   table that references it. For example, in the above <tt>cmpcustomer</tt> example, 
@@ -62,11 +68,9 @@
 <p>The application server takes care of this automatically through the cascade 
   delete setting. When you enable cascade delete in a relationship, all related 
   bean instances are deleted when the bean referring to them is deleted. </p>
-<h3>Container-Managed Relationships in the IDE</h3>
-<p>When you generate CMP entity beans from a database, the IDE automatically registers 
-  all of the container-managed relationships based on the relationships in the 
-  database. You can manage CMP relationships in the EJB module's <tt>ejb-jar.xml</tt> 
-  deployment descriptor.</p>
+  
+  
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="ejb_relationship.html">Managing Container-Managed Relationships</a></dd>

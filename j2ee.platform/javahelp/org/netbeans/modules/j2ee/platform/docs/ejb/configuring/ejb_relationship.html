@@ -13,20 +13,28 @@
 <body>
 <h2>Managing Container-Managed Relationships</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
+<p>CMP relationships are managed by the container based on the how the relationships are described
+in <tt>ejb-jar.xml</tt>. When you edit the relationship in <tt>ejb-jar.xml</tt>, you may also need 
+to make corresponding changes in your source code.</p>
+
+<p><b>To modify CMP relationships in <tt>ejb-jar.xml</tt>:</b></p>
 <ol>
   <li>In the Projects window, expand the Configuration Files node for the EJB 
     module project and double-click <tt>ejb-jar.xml</tt>.</li>
   <li>In the top of the graphical editor, click CMP Relationships. 
   <p>The visual editor displays a table of the existing container-managed relationships for the EJB module. 
   </li>
-  <li>Select a relationship in the table and do one of the following: 
-    <ul>
-      <li>Click Edit to edit the relationship details.</li>
-      <li>Click Remove to remove the relationship.</li>
-    </ul>
-  </li>
-  <li>In the dialog box, specify a name and description for the relationship.</li>
-  <li>For each end of the relationship, define the following: 
+  <li>Double-click the name of the relationship in the table to open the Edit CMP Relationship dialog box.</li>
+  <li>Edit the relationship description properties in the dialog box.</li>
+  <li>Specify whether to add getter and setter methods for the field to the entity 
+    bean's local interface. </li>
+    <li>Click OK.</li>
+</ol>
+
+<p>Each CMP relationship requires the following.</p> 
+<ul>
+    <li>A relationship name.</li>
+    <li>Each end of the relationships requires that the following is defined.
     <ul>
       <li>A distinct name for the relationship role and the entity bean in which 
         the relationship begins or ends.</li>
@@ -36,7 +44,7 @@
         the bean also deletes the bean it is related to.</li>
       <li>Whether to create a Container-Managed Relationship (CMR) field for the 
         bean. If you create a CMR field, the application server can search for 
-        and return instances of the bean the field references. The name of the 
+        and return instances of the bean field references. The name of the 
         class must begin with a lower-case letter.</li>
       <li>The return type of the CMR field. If the multiplicity of the bean it 
         is returning is one, you do not have to specify a return type. The application 
@@ -47,12 +55,22 @@
           if the returned beans can include duplicates. 
       </li>
     </ul>
+    </li>
+</ul>
+
+
+<p><b>To remove a CMP relationship in <tt>ejb-jar.xml</tt>:</b></p>
+<ol>
+  <li>In the Projects window, expand the Configuration Files node for the EJB 
+    module project and double-click <tt>ejb-jar.xml</tt>.</li>
+  <li>In the top of the graphical editor, click CMP Relationships. 
+  <p>The visual editor displays a table of the existing container-managed relationships for the EJB module. 
   </li>
-  <li>Specify whether to add getter and setter methods for the field to the entity 
-    bean's local interface. </li>
+  <li>Select the name of the relationship in the table and click Remove</li>
 </ol>
-<b>Notes:</b> 
-<ul>
+  
+  <b>Notes:</b> 
+  <ul>
   <li>When you generate CMP entity beans from a database, the IDE automatically 
     registers all of the container-managed relationships based on the relationships 
     in the database.</li>
