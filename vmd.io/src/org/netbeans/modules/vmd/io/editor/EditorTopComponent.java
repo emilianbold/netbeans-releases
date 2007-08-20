@@ -43,7 +43,11 @@ public class EditorTopComponent extends TopComponent {
         setFocusable(true);
         add(view, BorderLayout.CENTER);
 //        ic = new InstanceContent();
-        this.lookup = new ProxyLookup (lookup, /*new AbstractLookup(ic),*/ Lookups.singleton(getActionMap()));
+        if (view instanceof TopComponent)
+            this.lookup = new ProxyLookup (((TopComponent) view).getLookup (), lookup, /*new AbstractLookup(ic),*/ Lookups.singleton(getActionMap()));
+        else
+            this.lookup = new ProxyLookup (lookup, /*new AbstractLookup(ic),*/ Lookups.singleton(getActionMap()));
+        getActionMap ().remove ("cloneWindow"); // NOI18N
     }
 
     public Lookup getLookup () {

@@ -43,6 +43,7 @@ public class CodeEditorTopComponent extends EditorTopComponent implements Clonea
             JComponent view = getView ();
             pane = view instanceof CloneableEditorSupport.Pane ? ((CloneableEditorSupport.Pane) view).getEditorPane () : null;
             getActionMap ().setParent (pane.getActionMap ());
+            pane.getActionMap ().remove ("cloneWindow"); // NOI18N
         }
         return pane;
     }
