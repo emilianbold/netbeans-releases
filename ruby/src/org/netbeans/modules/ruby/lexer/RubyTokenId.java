@@ -200,6 +200,9 @@ public class RubyTokenId extends GsfTokenId {
         types.add(TODO);
         types.add(TYPE_SYMBOL);
         types.add(EMBEDDED_RUBY);
+        types.add(RANGE);
+        types.add(COLON3);
+        types.add(NONUNARY_OP);
 
         types.add(LPAREN);
         types.add(RPAREN);
