@@ -633,6 +633,11 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 "nb-platform",
                 "nb-base",
                 "nb-ruby");
+
+	final List<String> cnd = Arrays.asList(
+                "nb-platform",
+                "nb-base",
+                "nb-cnd");
         
         final List<String> full = Arrays.asList(
                 "nb-platform",
@@ -755,6 +760,9 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 }
                 if (ruby.contains(product.getUid())) {
                     properties += " | PROPERTY_RUBY";
+                }
+		if (cnd.contains(product.getUid())) {
+                    properties += " | PROPERTY_CND";
                 }
                 if (full.contains(product.getUid())) {
                     properties += " | PROPERTY_FULL";
