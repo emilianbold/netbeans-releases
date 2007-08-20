@@ -151,6 +151,8 @@ public class JsfProjectUtils {
         return wm != null;
     }
 
+    private static final Map<FileObject,Boolean> JsfProjectFile = new WeakHashMap();
+
     /**
      * Check for Creator project file. Note: For DataLoader only when 'Project' is not available.
      * @param fo FileObject to be checked
@@ -161,6 +163,11 @@ public class JsfProjectUtils {
                 final FileObject projXml = fo.getFileObject("nbproject/project.xml"); // NOI18N
                 // Found the project root directory and got the project.xml file
                 if (projXml != null) {
+                    Boolean ret = (Boolean) JsfProjectFile.get(projXml);
+                    if (ret != null) {
+                        return ret.booleanValue();
+                    }
+
                     try {
                         Document doc = XMLUtil.parse(new InputSource(FileUtil.toFile(projXml).toURI().toString()), false, true, null,
                             new EntityResolver() {
@@ -170,6 +177,7 @@ public class JsfProjectUtils {
                             });
                         NodeList nlist = doc.getElementsByTagNameNS(RAVE_AUX_NAMESPACE, RAVE_AUX_NAME);
                         if (nlist.getLength() > 0) {
+                            JsfProjectFile.put(projXml, Boolean.TRUE);
                             return true;
 			}
                     } catch (Exception e) {
@@ -180,6 +188,11 @@ public class JsfProjectUtils {
                 final FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 // Found the project root directory and got the project.properties file
                 if (propFile != null) {
+                    Boolean ret = (Boolean) JsfProjectFile.get(propFile);
+                    if (ret != null) {
+                        return ret.booleanValue();
+                    }
+
                     try {
                         EditableProperties prop = new EditableProperties();
                         InputStream is = propFile.getInputStream();
@@ -188,8 +201,17 @@ public class JsfProjectUtils {
                         is.close();
 
                         // Check Creator property
-                        return prop.getProperty("jsf.pagebean.package") != null; // NOI18N
+                        boolean isJsf = prop.getProperty("jsf.pagebean.package") != null; // NOI18N
+                        JsfProjectFile.put(propFile, Boolean.valueOf(isJsf));
+                        if (projXml != null) { // Also put xml file here so that it won't be rescaned every time before coming here
+                            JsfProjectFile.put(projXml, Boolean.valueOf(isJsf));
+                        }
+                        return isJsf;
                     } catch (Exception e) {
+                        JsfProjectFile.put(propFile, Boolean.FALSE);
+                        if (projXml != null) {
+                            JsfProjectFile.put(projXml, Boolean.FALSE);
+                        }
                         return false;
                     }
                 }
@@ -207,6 +229,10 @@ public class JsfProjectUtils {
 
     public static void setProjectVersion(Project project, String version) {
         createProjectProperty(project, JsfProjectConstants.PROP_JSF_PROJECT_VERSION, version);
+
+        FileObject projDir = project.getProjectDirectory() ;
+        FileObject projXml = projDir.getFileObject("nbproject/project.xml"); // NOI18N
+        JsfProjectFile.put(projXml, Boolean.TRUE);
     }
 
     public static String getProjectProperty(Project project, String propName) {
