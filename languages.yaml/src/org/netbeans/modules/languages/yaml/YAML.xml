@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 <MIME-resolver>
     <file>
         <ext name="yml"/>
+        <ext name="yaml"/>
         <resolver mime="text/x-yaml"/>
     </file>
 </MIME-resolver>
