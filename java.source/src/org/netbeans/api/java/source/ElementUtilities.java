@@ -24,6 +24,7 @@ import com.sun.source.tree.Scope;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
@@ -254,7 +255,7 @@ public final class ElementUtilities {
                     if (acceptor == null || acceptor.accept(local, null)) {
                         String name = local.getSimpleName().toString();
                         ArrayList<Element> h = hiders.get(name);
-                        if (!isHidden(local, h, elements, types)) {
+                        if (!isHidden(local, h, types)) {
                             members.add(local);
                             if (h == null) {
                                 h = new ArrayList<Element>();
@@ -268,7 +269,7 @@ public final class ElementUtilities {
                     if (acceptor == null || acceptor.accept(member, type)) {
                         String name = member.getSimpleName().toString();
                         ArrayList<Element> h = hiders.get(name);
-                        if (!isHidden(member, h, elements, types)) {
+                        if (!isHidden(member, h, types)) {
                             members.add(member);
                             if (h == null) {
                                 h = new ArrayList<Element>();
@@ -284,7 +285,7 @@ public final class ElementUtilities {
                         (acceptor == null || acceptor.accept(local, local.getEnclosingElement().asType()))) {
                         String name = local.getSimpleName().toString();
                         ArrayList<Element> h = hiders.get(name);
-                        if (!isHidden(local, h, elements, types)) {
+                        if (!isHidden(local, h, types)) {
                             members.add(local);
                             if (h == null) {
                                 h = new ArrayList<Element>();
@@ -305,14 +306,13 @@ public final class ElementUtilities {
     public Iterable<? extends Element> getLocalVars(Scope scope, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
         HashMap<String, ArrayList<Element>> hiders = new HashMap<String, ArrayList<Element>>();
-        Elements elements = JavacElements.instance(ctx);
         Types types = JavacTypes.instance(ctx);
         while(scope != null && scope.getEnclosingClass() != null) {
             for (Element local : scope.getLocalElements())
                 if (acceptor == null || acceptor.accept(local, null)) {
                     String name = local.getSimpleName().toString();
                     ArrayList<Element> h = hiders.get(name);
-                    if (!isHidden(local, h, elements, types)) {
+                    if (!isHidden(local, h, types)) {
                         members.add(local);
                         if (h == null) {
                             h = new ArrayList<Element>();
@@ -335,23 +335,62 @@ public final class ElementUtilities {
      */
     public Iterable<? extends TypeElement> getGlobalTypes(ElementAcceptor acceptor) {
         HashSet<TypeElement> members = new HashSet<TypeElement>();
+        HashMap<String, ArrayList<Element>> hiders = new HashMap<String, ArrayList<Element>>();
         Trees trees = JavacTrees.instance(ctx);
+        Types types = JavacTypes.instance(ctx);
         RootTree root = (RootTree)ASTService.instance(ctx).getRoot();
         for (CompilationUnitTree unit : root.getCompilationUnits()) {
             TreePath path = new TreePath(unit);
+            Scope scope = trees.getScope(path);
+            while (scope != null && scope instanceof JavacScope && !((JavacScope)scope).isStarImportScope()) {
+                for (Element local : scope.getLocalElements())
+                    if ((local.getKind().isClass() || local.getKind().isInterface()) &&
+                        (acceptor == null || acceptor.accept(local, null))) {
+                        String name = local.getSimpleName().toString();
+                        ArrayList<Element> h = hiders.get(name);
+                        if (!isHidden(local, h, types)) {
+                            members.add((TypeElement)local);
+                            if (h == null) {
+                                h = new ArrayList<Element>();
+                                hiders.put(name, h);
+                            }
+                            h.add(local);
+                        }
+                    }
+                scope = scope.getEnclosingScope();
+            }
             Element element = trees.getElement(path);
             if (element != null && element.getKind() == ElementKind.PACKAGE) {
                 for (Element member : element.getEnclosedElements()) {
-                    if (acceptor == null || acceptor.accept(member, null))
-                        members.add((TypeElement)member);
+                    if (acceptor == null || acceptor.accept(member, null)) {
+                        String name = member.getSimpleName().toString();
+                        ArrayList<Element> h = hiders.get(name);
+                        if (!isHidden(member, h, types)) {
+                            members.add((TypeElement) member);
+                            if (h == null) {
+                                h = new ArrayList<Element>();
+                                hiders.put(name, h);
+                            }
+                            h.add(member);
+                        }
+                    }
                 }
             }
-            Scope scope = trees.getScope(path);
             while (scope != null) {
                 for (Element local : scope.getLocalElements())
                     if ((local.getKind().isClass() || local.getKind().isInterface()) &&
-                        (acceptor == null || acceptor.accept(local, null)))
-                        members.add((TypeElement)local);
+                        (acceptor == null || acceptor.accept(local, null))) {
+                        String name = local.getSimpleName().toString();
+                        ArrayList<Element> h = hiders.get(name);
+                        if (!isHidden(local, h, types)) {
+                            members.add((TypeElement)local);
+                            if (h == null) {
+                                h = new ArrayList<Element>();
+                                hiders.put(name, h);
+                            }
+                            h.add(local);
+                        }
+                    }
                 scope = scope.getEnclosingScope();
             }
         }
@@ -370,7 +409,7 @@ public final class ElementUtilities {
         boolean accept(Element e, TypeMirror type);
     }
     
-    private boolean isHidden(Element member, Iterable<Element> hiders, Elements elements, Types types) {
+    private boolean isHidden(Element member, Iterable<Element> hiders, Types types) {
         if (hiders != null) {
             for (Element hider : hiders) {
                 if (hider == member || (hider.getClass() == member.getClass() && //TODO: getClass() should not be used here
