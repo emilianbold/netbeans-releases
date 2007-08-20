@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +50,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -102,8 +104,14 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
                          int offset, TreePath treePath,
                          Data<Void> data) {
         String suppressKey = KEY2SUPRESS_KEY.get(diagnosticKey);
-        
-        if (suppressKey != null) {
+	
+	final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
+	
+	while (treePath.getLeaf().getKind() != Kind.COMPILATION_UNIT && !DECLARATION.contains(treePath.getLeaf().getKind())) {
+	    treePath = treePath.getParentPath();
+	}
+	
+        if (suppressKey != null && treePath.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
             return Collections.singletonList((Fix) new FixImpl(suppressKey, TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject()));
         }
         
