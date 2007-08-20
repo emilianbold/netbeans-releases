@@ -2,7 +2,7 @@
 #
 
 
-!include <win32.mak>
+!include <$(PLATFORM_SDK)/include/win32.mak>
 
 # define the compiler and linker for all the platforms
 CC32="$(VC_2005)\Bin\cl.exe"
