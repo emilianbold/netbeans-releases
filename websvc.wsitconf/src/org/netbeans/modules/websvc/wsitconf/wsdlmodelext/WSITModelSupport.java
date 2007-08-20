@@ -361,8 +361,8 @@ public class WSITModelSupport {
         }
         
         // check whether config file already exists
-        if (supp.getWsdlFolder(false) != null) {
-            FileObject wsdlFO = supp.getWsdlFolder(false).getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
+        if (supp.getWsdlFolder(true) != null) {
+            FileObject wsdlFO = supp.getWsdlFolder(true).getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
             if ((wsdlFO != null) && (wsdlFO.isValid())) {   //NOI18N
                 return getModelFromFO(wsdlFO, true);
             }

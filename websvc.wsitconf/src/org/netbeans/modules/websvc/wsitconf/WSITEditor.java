@@ -143,9 +143,9 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                                 String configWsdlName = WSITModelSupport.CONFIG_WSDL_SERVICE_PREFIX + implClass;
                                 if ((implClass != null) && (implClass.length() > 0)) {
                                     try {
-                                        if (wss.getWsdlFolder(false) != null) {
+                                        if (wss.getWsdlFolder(true) != null) {
                                             FileObject wsdlFO = wss.getWsdlFolder(
-                                                    false).getParent().getFileObject(configWsdlName, WSITModelSupport.CONFIG_WSDL_EXTENSION);
+                                                    true).getParent().getFileObject(configWsdlName, WSITModelSupport.CONFIG_WSDL_EXTENSION);
                                             if ((wsdlFO != null) && (wsdlFO.isValid())) {   //NOI18N
                                                 FileLock lock = null;
                                                 try {
