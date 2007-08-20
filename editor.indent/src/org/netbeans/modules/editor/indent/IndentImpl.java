@@ -149,7 +149,9 @@ public final class IndentImpl {
     }
 
     public void reindent(int startOffset, int endOffset) throws BadLocationException {
-        assert (startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N
+        if (startOffset > endOffset) {
+            throw new IllegalArgumentException("startOffset=" + startOffset + " > endOffset=" + endOffset); // NOI18N
+        }
         boolean runUnlocked = false;
         if (indentHandler == null) {
             LOG.log(Level.SEVERE, "Not locked. Use Indent.lock().", new Exception()); // NOI18N
@@ -213,7 +215,9 @@ public final class IndentImpl {
     }
 
     public void reformat(int startOffset, int endOffset) throws BadLocationException {
-        assert (startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N
+        if (startOffset > endOffset) {
+            throw new IllegalArgumentException("startOffset=" + startOffset + " > endOffset=" + endOffset); // NOI18N
+        }
         boolean runUnlocked = false;
         if (reformatHandler == null) { // 
             LOG.log(Level.SEVERE, "Not locked. Use Reformat.lock().", new Exception()); // NOI18N
