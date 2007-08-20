@@ -344,7 +344,7 @@ public class SharedUtils {
      
      
      public static void refactor(AbstractRefactoring refactoring, boolean failsOnUsages) throws CannotRefactorException, IOException {
-        RefactoringSession session = RefactoringSession.create("Silent Refactor");
+        RefactoringSession session = RefactoringSession.create(NbBundle.getMessage(SharedUtils.class, "LBL_Silent_Refactor"));
         Problem problem = refactoring.checkParameters();
         while(problem != null) {
             if(problem.isFatal())
