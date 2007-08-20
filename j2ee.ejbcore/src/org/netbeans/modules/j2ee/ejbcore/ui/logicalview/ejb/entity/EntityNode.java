@@ -134,9 +134,8 @@ public class EntityNode extends AbstractNode implements OpenCookie {
         Collection<? extends Node> nodes = Utilities.actionsGlobalContext().lookup(new Lookup.Template<Node>(Node.class)).allInstances();
         List<SystemAction> list = new ArrayList<SystemAction>();
         list.add(SystemAction.get(OpenAction.class));
-        list.add(null);
-        list.add(SystemAction.get(DeleteAction.class));
         if (nodes.size() == 1) {
+            list.add(null);
             list.add(SystemAction.get(AddActionGroup.class));
             list.add(null);
             list.add(SystemAction.get(GoToSourceActionGroup.class));

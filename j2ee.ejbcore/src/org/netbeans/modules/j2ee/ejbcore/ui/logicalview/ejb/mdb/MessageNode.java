@@ -95,8 +95,6 @@ public class MessageNode extends AbstractNode implements OpenCookie {
     public Action[] getActions(boolean context) {
         return new SystemAction[] {
             SystemAction.get(OpenAction.class),
-            null,
-            SystemAction.get(DeleteAction.class)
         };
     }
     
