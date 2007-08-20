@@ -32,28 +32,105 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Custom properties -->
     <property name="xtest.tmpdir.createproject" location="${xtest.tmpdir}/createdProjects"/>
+    <property name="test.classpath" value="${j2ee.appserver.path}/lib/j2ee.jar"/>
+
+    <!-- ==================== -->
+    <!-- Setting command line -->
+    <!-- ==================== -->
+    
+    <target name="ide_command_line_suffix">
+        <!--  Repeat performance test more than once -->
+        <property name="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=${j2ee.appserver.path} -J-Dorg.netbeans.performance.repeat=4 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+    </target>
     
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
 
-    <target name="qa-functional-compiler" depends="init, init-cp">
+<!--    <target name="qa-functional-compiler" depends="init, init-cp,check-appserver">
         <ant antfile="${nball.dir}/nbbuild/templates/xtest-qa-functional.xml" target="qa-functional-compiler">
             <property name="permit.jdk6.builds" value="true"/>
         </ant>
 
         <packageTests/>
     </target>
+-->
+    <target name="qa-functional-compiler" depends="init,init-cp,check-appserver">
+        <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
+            <classpath>
+                <!--path refid="compiletest.classpath"/-->
+                <path refid="test.qa-functional.compile.cp"/>
+                <path location="${j2ee.appserver.path}/lib/j2ee.jar"/>
+                <path location="${j2ee.appserver.path}/lib/appserv-rt.jar"/>			
+                <path location="${java.home}/lib/rt.jar"/>
+                <!--path refid="performance.testutilities.path"/>
+                <path refid="perf.util"/-->
+           </classpath>
+        </buildTests>
+    </target>
     
     
     <!-- ================ -->
     <!-- Global Executors -->
     <!-- ================ -->
+    <target name="set-appserver-path" unless="j2ee.appserver.path">
+        <!--condition property="j2ee.appserver.path" value="e:\\space\\AppServer"-->
+        <condition property="j2ee.appserver.path" value="e:\\space\\appserver">
+            <os family="windows"/>
+        </condition>
+        <condition property="j2ee.appserver.path" value="/space/appserver">
+            <os family="unix"/>
+        </condition>
+    </target>
+    
+    <!-- Stop all running domains, clear domain1 and create a new one.  -->
+    <target name="init-clean-appserver-domain">
+        <condition property="windows">
+            <os family="windows" />
+        </condition>
+        <condition property="unix">
+            <os family="unix" />
+        </condition>
+        <condition property="clean.script.exec" value="e:\\space\\scripts\\cleanAS.bat">
+            <os family="windows" />
+        </condition>
+        <condition property="clean.script.exec" value="/space/scripts/cleanAS.sh">
+            <os family="unix" />
+        </condition>
+        <available file="${clean.script.exec}" property="clean.script.exists" type="file"/>
+    </target>
+    
+    <target name="-run-clean-domain-windows" if="windows">
+        <exec executable="${clean.script.exec}"/>
+    </target>
+    
+    <target name="-run-clean-domain-unix" if="unix">
+        <exec executable="sh">
+            <arg value="${clean.script.exec}"/>
+        </exec>
+    </target>
+
+    <target name="run-clean-appserver-domain" if="clean.script.exists">
+        <echo>Cleaning default domains...</echo>
+        <antcall target="-run-clean-domain-windows" inheritall="true"/>
+        <antcall target="-run-clean-domain-unix" inheritall="true"/>
+    </target>
+    
+    <target name="inform-user" unless="clean.script.exists">
+        <echo>Continuing with default domain, data in this domain will be modified....</echo>
+    </target>
+    
+    <target name="clean-appserver-domain" depends="init-clean-appserver-domain, run-clean-appserver-domain, inform-user"/>
+    
+    <target name="check-appserver" depends="set-appserver-path">
+        <available file="${j2ee.appserver.path}/domains/domain1" property="j2ee.appserver.present"/>
+        <fail unless="j2ee.appserver.present" message="AppServer was not found in ${j2ee.appserver.path}. Set property j2ee.appserver.path to point to AppServer installation directory."/>
+    </target>
     
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="runidesetup" depends="copy_unzip_test_projects, init-cp">
+    <target name="runidesetup" depends="copy_unzip_test_projects, init-cp,set-appserver-path,check-appserver,ide_command_line_suffix">
         <antcall target="copy_released_ide_cfg_file"/>
         
         <executeTests pluginName="ide">
@@ -72,6 +149,13 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         
         <antcall target="copy_original_ide_cfg_file"/>
+    </target>
+
+    <!-- Executor for performance tests with backup of appserver domain -->
+    <target name="runide_performance_as" depends="init,init-cp,set-appserver-path,check-appserver,ide_command_line_suffix">
+       <antcall target="runidetest">
+          <param name="xtest.userdata|j2ee.appserver.path" value="${j2ee.appserver.path}"/>
+       </antcall>   
     </target>
     
     
@@ -97,7 +181,7 @@ Microsystems, Inc. All Rights Reserved.
                 <path location="${extra.test.libs.dir}"/>
             </classpath>
             
-            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+<!--            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>-->
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true" />
             <property name="xtest.timeout" value="3600000" />

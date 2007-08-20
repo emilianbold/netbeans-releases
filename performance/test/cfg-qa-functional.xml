@@ -274,7 +274,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- executors & compilers -->
     <executor name="ide_perf_setup" antfile="build-qa-functional.xml" target="runidesetup"/>
-    <executor name="ide_performance" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <executor name="ide_performance" antfile="build-qa-functional.xml" target="runide_performance_as" default="true"/>
     <executor name="ide_performance_memory_usage" antfile="build-qa-functional.xml" target="runidetest_memory_usage"/>
     <executor name="ide_performance_scan" antfile="build-qa-functional.xml" target="runidetest_scan" />
     <executor name="ide_footprint" antfile="build-qa-functional.xml" target="runidetest_footprint"/>
