@@ -37,6 +37,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -56,6 +57,9 @@ import org.openide.util.test.MockLookup;
  */
 public class TestBase extends NbTestCase {
 
+    protected static final String EJB_2_1 = "2.1"; // NOI18N
+    protected static final String EJB_3_0 = "3.0"; // NOI18N
+    
     private EjbJarProviderImpl ejbJarProvider;
     private ClassPathProviderImpl classPathProvider;
     private FileOwnerQueryImpl fileOwnerQuery;
@@ -77,7 +81,7 @@ public class TestBase extends NbTestCase {
      * and returns TestModule wrapper for that
      */
     public TestModule createEjb21Module(TestModule... modulesOnClasspath) throws IOException {
-        return createTestModule("EJBModule_1_4", EjbProjectConstants.J2EE_14_LEVEL, modulesOnClasspath);
+        return createTestModule("EJBModule_1_4", EJB_2_1, modulesOnClasspath);
     }
 
     /**
@@ -85,14 +89,14 @@ public class TestBase extends NbTestCase {
      * and returns TestModule wrapper for that
      */
     public TestModule createEjb30Module(TestModule... modulesOnClasspath) throws IOException {
-        return createTestModule("EJBModule_5_0", EjbProjectConstants.JAVA_EE_5_LEVEL, modulesOnClasspath);
+        return createTestModule("EJBModule_5_0", EJB_3_0, modulesOnClasspath);
     }
 
     /**
      * Creates new copy of project in test's working directory instead of using one froo data dir,
      * co it can be called multiple times on 'clean' project (without generated code)
      */
-    public TestModule createTestModule(String projectDirName, String ejbVersion, TestModule... modulesOnClasspath) throws IOException {
+    protected TestModule createTestModule(String projectDirName, String ejbVersion, TestModule... modulesOnClasspath) throws IOException {
 
         File projectDir = new File(getDataDir(), projectDirName);
         File tempProjectDir = copyFolder(projectDir);
@@ -128,7 +132,7 @@ public class TestBase extends NbTestCase {
 
     private void activate(TestModule testModule, TestModule... modulesOnClasspath) {
         fileOwnerQuery.setProject(testModule.project);
-        ejbJarProvider.setEjbModule(testModule.j2eePlatformVersion, testModule.deploymentDescriptor, testModule.sources);
+        ejbJarProvider.setEjbModule(convertEjbVersionToJavaEEVersion(testModule.ejbLevel), testModule.deploymentDescriptor, testModule.sources);
         FileObject[] sources = new FileObject[1 + modulesOnClasspath.length];
         sources[0] = testModule.sources[0];
         for (int i = 0; i < modulesOnClasspath.length; i++) {
@@ -144,6 +148,15 @@ public class TestBase extends NbTestCase {
         }
     }
 
+    private static String convertEjbVersionToJavaEEVersion(String ejbVersion) {
+        double version = Double.parseDouble(ejbVersion);
+        if (version > 2.1) {
+            return EjbProjectConstants.JAVA_EE_5_LEVEL;
+        } else {
+            return EjbProjectConstants.J2EE_14_LEVEL;
+        }
+    }
+    
     /**
      * Make a temporary copy of a whole folder into some new dir in the scratch area.<br>
      * Copy from /ant/freeform/test/unit/src/org/netbeans/modules/ant/freeform/TestBase.java
@@ -187,7 +200,7 @@ public class TestBase extends NbTestCase {
     protected static class TestModule {
 
         private final FileObject projectDir;
-        private final String j2eePlatformVersion;
+        private final String ejbLevel;
         private final FileObject deploymentDescriptor;
         private final FileObject[] sources;
         private final ProjectImpl project;
@@ -195,7 +208,7 @@ public class TestBase extends NbTestCase {
 
         public TestModule(FileObject projectDir, String ejbLevel) {
             this.projectDir = projectDir;
-            this.j2eePlatformVersion = ejbLevel;
+            this.ejbLevel = ejbLevel;
             this.deploymentDescriptor = projectDir.getFileObject("src/conf/ejb-jar.xml");
             this.sources = new FileObject[]{projectDir.getFileObject("src/java")};
             this.erContainer = new EnterpriseReferenceContainerImpl();

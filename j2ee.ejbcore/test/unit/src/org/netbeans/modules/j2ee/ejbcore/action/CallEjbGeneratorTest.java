@@ -51,7 +51,7 @@ public class CallEjbGeneratorTest extends TestBase {
     @Override
     protected void setUp() throws IOException {
         super.setUp();
-        this.referencedEjb21Module = createTestModule("EJBModule2_1_4", EjbProjectConstants.J2EE_14_LEVEL);
+        this.referencedEjb21Module = createTestModule("EJBModule2_1_4", EJB_2_1);
         this.ejbReference = EjbReference.create(
             "statelesslr.StatelessLRBean2",
             EjbRef.EJB_REF_TYPE_SESSION,
@@ -64,7 +64,7 @@ public class CallEjbGeneratorTest extends TestBase {
     }
     
     public void testAddReference_LocalEE14FromEjbEE14() throws IOException {
-        TestModule referencingModule = createEjb21Module();
+        TestModule referencingModule = createEjb21Module(referencedEjb21Module);
         
         FileObject referencingFO = referencingModule.getSources()[0].getFileObject("statelesslr/StatelessLRBean.java");
         
@@ -132,9 +132,9 @@ public class CallEjbGeneratorTest extends TestBase {
                 );
         
         EnterpriseReferenceContainerImpl erc = referencingModule.getEnterpriseReferenceContainerImpl();
-        assertNotNull(erc.getLocalEjbReference());
-        assertEquals("StatelessLRBean2", erc.getLocalEjbRefName());
-        assertEquals("statelesslr.StatelessLRBean", erc.getLocalReferencingClass());
+        assertNull(erc.getLocalEjbReference());
+        assertNull(erc.getLocalEjbRefName());
+        assertNull(erc.getLocalReferencingClass());
 
         final String generatedHome =
                 "@EJB()\n" +
