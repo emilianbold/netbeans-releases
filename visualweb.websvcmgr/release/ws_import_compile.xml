@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${jaxws.base}/build"/>
         <mkdir dir="${jaxws.base}/src"/>
         <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-            <classpath path="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}"/>
+            <classpath path="${java.home}/../lib/tools.jar:${libs.jaxws21.classpath}"/>
         </taskdef>
     </target>
     
@@ -100,7 +100,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${jaxws.base}/build"/>
         <javac srcdir="${jaxws.base}/src" 
                destdir="${jaxws.base}/build" 
-               classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxws21.classpath}" 
                debug="on" source="1.5" fork="true">
             <compilerarg value="-Djava.endorsed.dirs=${jaxws.endorsed.dir}"/>
         </javac>        
@@ -195,7 +195,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- compile client bean and dataprovider classes and add to proxy jar -->
         <javac srcdir="${jaxws.base}/src" 
                destdir="${jaxws.base}/build" 
-               classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}:${libs.jsf12-support.classpath}:${jaxws.base}/${serviceName}.jar" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxws21.classpath}:${libs.jsf12-support.classpath}:${jaxws.base}/${serviceName}.jar" 
                debug="on" source="1.5" fork="true"/>
         
         <jar jarfile="${jaxws.base}/${serviceName}.jar"
@@ -214,7 +214,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <javac srcdir="${jaxws.base}/dt/src" 
                destdir="${jaxws.base}/dt/build" 
-               classpath="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}:${designtime.classpath}:${jaxws.base}/${serviceName}.jar" 
+               classpath="${java.home}/../lib/tools.jar:${libs.jaxws21.classpath}:${designtime.classpath}:${jaxws.base}/${serviceName}.jar" 
                debug="on" 
                source="1.5" fork="true"/>
         
