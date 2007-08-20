@@ -46,7 +46,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
- *
  * @author nk160297
  */
 public class ReceiveNode extends BpelNode<Receive> {
@@ -68,49 +67,23 @@ public class ReceiveNode extends BpelNode<Receive> {
         if (super.isEventRequreUpdate(event)) {
             return true;
         }
-        
-        //CorrelationContainer
         BpelEntity entity = event.getParent();
+
         if (entity == null) {
             return false;
         }
         Object ref = getReference();
-        return  ref != null && ref == entity.getParent()
-        && entity.getElementType() == CorrelationContainer.class;
+        return  ref != null && ref == entity.getParent() && entity.getElementType() == CorrelationContainer.class;
     }
     
     protected String getImplHtmlDisplayName() {
         Receive receive = getReference();
+
         if (receive == null) {
             return super.getImplHtmlDisplayName();
         }
-        
         return SoaUiUtil.getGrayString(super.getImplHtmlDisplayName(), EMPTY_STRING);
     }
-    
-//    protected String getImplShortDescription() {
-//        Receive receive = getReference();
-//        if (receive == null) {
-//            return super.getImplShortDescription();
-//        }
-//        
-//        StringBuffer result = new StringBuffer();
-//        result.append(getName());
-//        result.append(receive.getVariable() == null ? EMPTY_STRING : VARIABLE_EQ+receive.getVariable().getRefString());
-//        result.append(receive.getMessageExchange() == null ? EMPTY_STRING : MESSAGE_EXCHANGE_EQ+receive.getMessageExchange().getRefString());
-//        result.append(receive.getPartnerLink() == null ? EMPTY_STRING : PARTNER_LINK_EQ+receive.getPartnerLink().getRefString());
-//        result.append(receive.getOperation() == null ? EMPTY_STRING : OPERATION_EQ+receive.getOperation().getRefString());
-//        TBoolean createInstance = receive.getCreateInstance();
-//        if (createInstance != null
-//                && !(createInstance.equals(TBoolean.INVALID))) {
-//            result.append(CREATE_INSTANCE_EQ).append(createInstance.toString());
-//        }
-//        
-//        return NbBundle.getMessage(ReceiveNode.class,
-//                "LBL_RECEIVE_NODE_TOOLTIP", // NOI18N
-//                result.toString()
-//                );
-//    }
     
     public String getHelpId() {
         return getNodeType().getHelpId();
@@ -118,8 +91,8 @@ public class ReceiveNode extends BpelNode<Receive> {
     
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
+
         if (getReference() == null) {
-            // The related object has been removed!
             return sheet;
         }
         //
@@ -148,19 +121,8 @@ public class ReceiveNode extends BpelNode<Receive> {
                 "getCreateInstance", "setCreateInstance",   // NOI18N
                 null); // NOI18N
         //
-
-// Issue 85553 start.        
-//        property = PropertyUtils.registerAttributeProperty(this, mainPropertySet,
-//                MessageExchangeReference.MESSAGE_EXCHANGE, MESSAGE_EXCHANGE,
-//                "getMessageExchange", "setMessageExchange",  // NOI18N
-//                "removeMessageExchange"); // NOI18N
-//        property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-//        //
-// Issue 85553 end.    
-        
         Sheet.Set messagePropertySet =
                 getPropertySet(sheet, Constants.PropertiesGroups.MESSAGE_SET);
-        
         //
         property = PropertyUtils.registerAttributeProperty(this,
                 messagePropertySet,
@@ -189,7 +151,10 @@ public class ReceiveNode extends BpelNode<Receive> {
                 "getVariable", "setVariable", "removeVariable"); // NOI18N
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-        
+        //
+        PropertyUtils.registerProperty(this, mainPropertySet,
+                DOCUMENTATION, "getDocumentation", "setDocumentation"); // NOI18N
+        //
         return sheet;
     }
     
@@ -224,7 +189,6 @@ public class ReceiveNode extends BpelNode<Receive> {
         return new ActionType[] {
             ActionType.GO_TO_SOURCE,
             ActionType.GO_TO_DIAGRAMM,
-//            ActionType.CYCLE_MEX, // Issue 85553
             ActionType.WRAP,
             ActionType.SEPARATOR,
             ActionType.SHOW_POPERTY_EDITOR,

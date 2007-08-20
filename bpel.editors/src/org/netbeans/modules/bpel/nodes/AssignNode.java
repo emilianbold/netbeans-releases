@@ -101,9 +101,8 @@ public class AssignNode extends BpelNode<Assign> {
                 ASSIGNMENT_COUNT, "sizeOfAssignChildren", null);
         prop.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         //
-//        PropertyUtils.registerAttributeProperty(this, mainPropertySet,
-//                Assign.VALIDATE, ASSIGN_VALIDATE,
-//                "getValidate", "setValidate", "removeValidate"); // NOI18N
+        PropertyUtils.registerProperty(this, mainPropertySet,
+                DOCUMENTATION, "getDocumentation", "setDocumentation"); // NOI18N
         //
         return sheet;
     }

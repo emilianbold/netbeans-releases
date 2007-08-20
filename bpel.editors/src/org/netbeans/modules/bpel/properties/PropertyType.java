@@ -67,6 +67,7 @@ import org.netbeans.modules.xml.xam.Reference;
  */
 public enum PropertyType {
     NAME(String.class, StringPropEditor.class),
+    DOCUMENTATION(String.class, StringPropEditor.class), 
     VERSION(String.class, StringPropEditor.class), 
     AUTHOR(String.class, StringPropEditor.class), 
     LANGUAGE(String.class, StringPropEditor.class), 

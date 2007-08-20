@@ -49,7 +49,6 @@ import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 
 /**
- *
  * @author nk160297
  */
 public class ReplyNode extends BpelNode<Reply> {
@@ -71,34 +70,19 @@ public class ReplyNode extends BpelNode<Reply> {
         if (super.isEventRequreUpdate(event)) {
             return true;
         }
-        
-        //CorrelationContainer
         BpelEntity entity = event.getParent();
+
         if (entity == null) {
             return false;
         }
         Object ref = getReference();
-        return  ref != null && ref == entity.getParent() 
-            && entity.getElementType() == CorrelationContainer.class;
+        return  ref != null && ref == entity.getParent() && entity.getElementType() == CorrelationContainer.class;
     }
-
-//    protected String getImplShortDescription() {
-//        Reply reply = getReference();
-//        StringBuffer result = new StringBuffer();
-//        result.append(getName());
-//        result.append(reply == null || reply.getMessageExchange() == null ? EMPTY_STRING 
-//                : MESSAGE_EXCHANGE_EQ+reply.getMessageExchange().getRefString()); 
-//
-//        return NbBundle.getMessage(ReplyNode.class,
-//            "LBL_REPLY_NODE_TOOLTIP", // NOI18N
-//            result.toString()
-//            );
-//    }
 
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
+
         if (getReference() == null) {
-            // The related object has been removed!
             return sheet;
         }
         //
@@ -121,15 +105,6 @@ public class ReplyNode extends BpelNode<Reply> {
         //
         PropertyUtils.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
-        
-// Issue 85553 start.        
-//        property = PropertyUtils.registerAttributeProperty(this, mainPropertySet,
-//                MessageExchangeReference.MESSAGE_EXCHANGE, MESSAGE_EXCHANGE, 
-//                "getMessageExchange", "setMessageExchange",  // NOI18N
-//                "removeMessageExchange"); // NOI18N
-//        property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-// Issue 85553 end.        
-        
         //
         Sheet.Set messagePropertySet = 
                 getPropertySet(sheet, Constants.PropertiesGroups.MESSAGE_SET);
@@ -155,7 +130,6 @@ public class ReplyNode extends BpelNode<Reply> {
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        // modelReference.getVariable();
         property = PropertyUtils.registerAttributeProperty(myInstanceRef, 
                 messagePropertySet,
                 null, OUTPUT, 
@@ -180,6 +154,9 @@ public class ReplyNode extends BpelNode<Reply> {
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
+        PropertyUtils.registerProperty(this, mainPropertySet,
+                DOCUMENTATION, "getDocumentation", "setDocumentation"); // NOI18N
+        //
         return sheet;
     }
     
@@ -197,13 +174,13 @@ public class ReplyNode extends BpelNode<Reply> {
     
     public BpelReference<VariableDeclaration> getFaultVariable() {
         Reply reply = getReference();
+
         if (reply != null) {
             QName faultName = reply.getFaultName();
             if (faultName != null) {
                 return reply.getVariable();
             }
         }
-        //
         return null;
     }
     
@@ -222,7 +199,6 @@ public class ReplyNode extends BpelNode<Reply> {
             ActionType.SEPARATOR,
             ActionType.WRAP,
             ActionType.SEPARATOR,
-//            ActionType.CYCLE_MEX, // Issue 85553
             ActionType.MOVE_UP,
             ActionType.MOVE_DOWN,
             ActionType.SEPARATOR,
@@ -248,5 +224,4 @@ public class ReplyNode extends BpelNode<Reply> {
             }
         }
     }
-
 }
