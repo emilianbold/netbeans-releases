@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Working with Branches</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        
+        <h2>Working with Branches</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The IDE's Subversion support enables you to:</p>
+        
+        <ul>
+            <li><a href="#checkout">checkout branches</a> from a remote repository.</li>
+            <li><a href="#create">create branches</a> in the repository you are working from.</li>
+            <li><a href="#switch">switch to a branch</a> in the repository you are working from.</li>
+        </ul>
+        
+        <p>For more information on working with branches, see the Subversion documentation at:</p>
+        
+        <p>
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://svnbook.red-bean.com/">
+                <param name="text" value="&lt;html&gt;&lt;u&gt;http://svnbook.red-bean.com/&lt;/u&gt;&lt;/html&gt;">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object></p>
+            
+        <h3><a name="checkout"></a>Checking out branches</h3>
+        
+        <p>If you need to edit files on a branch folder that already exists, you can checkout 
+            the branch to copy the files to a local working directory. You must however create 
+            a new local working directory within which to checkout the branch.</p>
+</p>
+            
+        <h4>To checkout a branch to your local working directory:</h4>
+        
+        <ol>
+            <li>Choose Versioning &gt; Subversion &gt; Checkout from the main menu. The 
+                Subversion Checkout wizard opens.</li>
+            <li>In the first panel of the wizard, enter a URL that contains the connection 
+                protocol and location to the repository. Depending on your protocol selection
+                and connection requirements, enter any required parameters, such as username, 
+                password, proxy configuration, etc. Click Next.</li>          
+            <li>In the Folders to Checkout panel of the wizard, specify the folder that 
+                represents the branch you want to check out in the Repository Folder(s) field.
+                You can click the Browse button to choose from a list of all folders in the 
+                repository. Specify the revision number if you want to work from a specific 
+                revision.
+                
+                <ul>
+                    <li>To checkout only the contents of the folder you are specifying 
+                        (i.e. and not the folder itself), select the Skip 
+                        &quot;&lt;<tt>selected_folder</tt>&gt;&quot; and checkout only 
+                        its content option.</li>
+                </ul></li>
+
+            <li>Specify the local working directory into which you want to checkout the 
+                selected branch folder. Alternately, you can click the Browse button to 
+                navigate to the desired directory on your system.</li>
+            <li>Click Finish to check out the branch folder. The IDE initiates the checkout 
+                action and the IDE's status bar indicates the progress of the files 
+                downloading from the repository to your local working directory. You can 
+                also view files being checked out from the Output window (Ctrl-4).</li>
+        </ol>
+            
+        <h3><a name="create"></a>Creating branches</h3>
+            
+        <p>If you want to work on a separate version of your file system for stabilization 
+            or experimentation purposes, you can do so by creating a branch. To create a 
+            branch in Subversion, you are effectively copying a version-controlled project
+            or folder and adding it to a new location within the repository. The IDE's 
+            Subversion support enables you to select a source from either your local working 
+            copy, or browse to a location in the repository you are working from. You can 
+            create branches in the IDE by choosing Subversion &gt; Copy To from a versioned 
+            file or folder's contextual menu.</p>
+  
+        <h4>To create a branch:</h4>
+        
+        <ol>
+            <li>Select the versioned project or folder (e.g. in the Projects, Files, or 
+                Favorites window) that you want to be the root of your branch and choose 
+                Subversion &gt; Copy To. The Subversion Copy dialog box opens.</li>
+            <li>Under Source, select Local Folder if you want to create a branch from 
+                your local working copy, otherwise select Remote Folder to specify the 
+                version maintained in the repository.
+            
+                <ul>
+                    <li>You can specify a specific revision of the selected item by entering 
+                        a revision number in the Revision text box. Clicking the Search button 
+                        adjacent to the Revision text box allows you to view revisions maintained 
+                        in the repository.</li>
+                    <li>Click the <strong>Skip selected Folder and copy only its Contents</strong> 
+                        option if you want to avoid including the selected folder when creating 
+                        a copy.</li>
+                </ul></li>
+                
+            <li>Under Destination, select the target location for the new branch copy. In 
+                Repository Location, type in a path relative to the repository, otherwise 
+                click the Browse button to open a new dialog that aids in browsing the 
+                repository folders.</li>
+            <li>Enter a description for the new branch folder in the Copy Description text
+                area. If you want to switch to the branch after creating it, select the
+                Switch to Copy checkbox.</li>
+            <li>Click Copy. The IDE creates the branch by copying the folder contents to the 
+                specified location in the repository.</p>
+        </ol>
+
+        <h3><a name="switch"></a>Switching to a Branch</h3>
+        
+        <p>If you want to switch your local working copy to point to a branch or other
+            location in the repository, you can do so using the Subversion Switch to 
+            command.</p>
+            
+        <h4>To switch to a branch or other location in the repository:</h4>
+        
+        <ol>
+            <li>Select a versioned file or folder (e.g. from the Projects, Files, or Favorites 
+                window) and choose either Subversion &gt; Switch to Copy from the right-click 
+                menu or Versioning &gt; Switch to from the IDE's main menu. The Subversion Switch
+                dialog box opens.</li>
+            <li>For Repository Folder, enter the branch folder you want to switch to, or click 
+                Browse to view a list of all locations in the repository.
+            
+                <ul>
+                    <li>If you need to specify a previous revision, enter the revision number 
+                        for the selected location. Leave blank if you require the most recent 
+                        revision. To display a log of all revisions for the selected location, 
+                        you can click the Search button.</li>
+                </ul></li>
+                
+            <li>Click Switch. The IDE updates your working copy to reflect the content maintained
+                by the newly selected branch location in the repository. Note that any differences 
+                arising between your local working copy and the location that you are switching to 
+                will be overwritten by the new location.</li>
+        </ol>
+
+        <dl>
+            <dt>
+            <a name="seealso">See Also</a></dt>
+            <dd> <a href="../svn_checkout.html">Checking Out Files from a Subversion Repository</a></dd> 
+        </dl>
+        
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

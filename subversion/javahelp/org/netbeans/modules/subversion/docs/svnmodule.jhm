@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -43,6 +43,9 @@
 
     <!-- Committing Local Changes to a Remote Repository -->
     <mapID target="svn_commit" url="svnmodule/svn_commit.html" />
+
+    <!-- Working with Branches -->
+    <mapID target="svn_branches" url="svnmodule/svn_branches.html" />
 
     <!-- Reverting Modifications -->
     <mapID target="svn_revert" url="svnmodule/svn_revert.html" />

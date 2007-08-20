@@ -21,7 +21,8 @@
                 <tocitem text="Placing Projects Under Version Control" target="svn_import" />                
                 <tocitem text="Updating Files in a Subversion Working Directory" target="svn_updating" />
                 <tocitem text="Comparing File Revisions in Subversion" target="svn_diff" /> 
-                <tocitem text="Committing Local Changes to a Remote Repository" target="svn_commit" /> 
+                <tocitem text="Committing Local Changes to a Remote Repository" target="svn_commit" />
+                <tocitem text="Working with Branches" target="svn_branches" />
                 <tocitem text="Reverting Modifications" target="svn_revert" />
                 <tocitem text="Merging File Revisions in Subversion" target="svn_merge" /> 
                 <tocitem text="Resolving Merge Conflicts" target="svn_mergeresolve" /> 
