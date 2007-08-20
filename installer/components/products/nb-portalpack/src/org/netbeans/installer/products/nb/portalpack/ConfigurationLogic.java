@@ -51,7 +51,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String WIZARD_COMPONENTS_URI =
             "resource:" + // NOI18N
             "org/netbeans/installer/products/nb/portalpack/wizard.xml"; // NOI18N
-    private static final String NB_BASE_UID= "nb-base";
+    private static final String NB_JAVAEE_UID= "nb-javaee";
     private List<WizardComponent> wizardComponents;
     
     
@@ -66,7 +66,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public void install(Progress progress) throws InstallationException {
         // get the list of suitable glassfish installations
         final List<Dependency> dependencies =
-                getProduct().getDependencyByUid(NB_BASE_UID);
+                getProduct().getDependencyByUid(NB_JAVAEE_UID);
         final List<Product> sources =
                 Registry.getInstance().getProducts(dependencies.get(0));
         // resolve the dependency
