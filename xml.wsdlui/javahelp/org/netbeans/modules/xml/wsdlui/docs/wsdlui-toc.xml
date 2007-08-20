@@ -3,10 +3,10 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-<tocitem text="Enterprise Applications">
-<tocitem text="Developing Web Services">
-	<tocitem text="WSDL Editor">
-		<tocitem text="About the WSDL Editor" target="org.netbeans.modules.xml.wsdlui.about" />
+<tocitem text="Web Services">
+    <tocitem text="Creating Web Services">
+	<tocitem text="Editing WSDL Files">
+		<tocitem text="Editing WSDL Files" target="org.netbeans.modules.xml.wsdlui.about" />
 		<tocitem text="Source View">
 			<tocitem text="About the Source View" target="wsdlui_source" />
 			<tocitem text="Using Code Completion in WSDL Files" target="wsdlui_code_completion" />
@@ -52,6 +52,6 @@
 			<tocitem text="Validating WSDL Files" target="wsdlui_validation" />
 		</tocitem>
 	</tocitem>
-</tocitem>
+    </tocitem>
 </tocitem>
 </toc>
