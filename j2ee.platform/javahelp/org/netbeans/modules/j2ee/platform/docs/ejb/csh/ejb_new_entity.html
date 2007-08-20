@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright Â© 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -11,39 +11,35 @@
 <body>
 <h2>New Entity Bean Wizard</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>This wizard creates a new <a href="../general/about_entity_beans.html">entity 
+<p>This wizard creates a new EJB 2.1 <a href="../general/about_entity_beans.html">entity 
   bean</a> in an EJB module project. You open the wizard by right-clicking the 
-  project node or Enterprise Beans node for any EJB module project and choosing 
-  New &gt; Entity Bean.
+  project node or Enterprise Beans node for any EJB module project and choosing New &gt; Entity Bean.</p>
 <p>You set the following information in the wizard:</p>
 <ul>
-  <li><b>EJB Name.</b> Set the name of the session bean in the deployment descriptors 
-    and is the basis for the session bean's class and interface names.</li>
-  <li><b>Location.</b> Select the source folder where you want to create the session 
-    bean files.</li>
+  <li><b>EJB Name.</b> Set the name of the bean in the deployment descriptors 
+    and is the basis for the bean's class and interface names.</li>
+  <li><b>Location.</b> Select the source folder where you want to create the bean files.</li>
   <li><b>Package.</b> Select an existing package or type the name of a new package.</li>
   <li><b>Primary Key Class.</b> The type of the object that maps to the database 
-    table's primary key. You can click the Browse button to navigate to the class. 
-  </li>
+    table's primary key.</li>
   <li><b>Persistence Type.</b> Specify how to manage persistence for your bean: 
     <ul>
       <li> 
         <p><b>Container.</b> The application server manages the persistence for 
           your bean. You do not have to write methods that access the database. 
-          You just specify the queries in the module's deployment descriptors 
+          You only need to specify the queries in the module's deployment descriptors 
           using finder methods and select methods.</p>
       </li>
       <li><b>Bean.</b> The bean manages all persistence on its own. You have to 
         code all the database methods.</li>
     </ul>
   </li>
-  <li><b>Create Interface.</b> Specify which interfaces to create for the session 
-    bean: 
+  <li><b>Create Interface.</b> Specify which interfaces to create for the bean: 
     <ul>
-      <li><b>Remote.</b> Allow your session bean to be accessed from remote clients 
-        using remote method calls. This usually means clients that are not running 
-        on the session bean's application server.</li>
-      <li><b>Local.</b> Allow your session bean to be accessed from clients that 
+      <li><b>Remote.</b> Allow your entity bean to be accessed from remote clients 
+        using remote method calls. This usually means clients that are running on a different JVM and not running 
+        on the bean's application server.</li>
+      <li><b>Local.</b> Allow your bean to be accessed from clients that 
         are running in the same Java virtual machine.</li>
       <ul class="note">
         <li>Generally, your entity beans should not have remote interfaces. It 
@@ -56,19 +52,16 @@
 <dl>
     <dt><a name="seealso">See Also</a></dt>
   <dd><a href="../general/about_entity_beans.html">About Entity Beans</a></dd>
-  <dd><a href="../editing/generate_cmp_beans.html">Generating CMP Entity Beans 
-    from a Database</a></dd>
+  <dd><a href="../editing/generate_cmp_beans.html">Generating CMP Entity Beans from a Database</a></dd>
   <dd><a href="../editing/define_finder_method.html">Defining a Finder Method</a></dd>
   <dd><a href="../editing/define_select_method.html">Defining a Select Method</a></dd>
   <dd><a href="../editing/create_ejb_project.html">Creating an EJB Module Project</a></dd>
   <dd><a href="../editing/create_ejb.html">Creating an Enterprise Bean</a></dd>
 </dl>
 
-<hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
+<hr><small><a href="../../credits.html">Legal Notices</a></small>
 
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
+<table border="0" cellpadding="50">
 <tr><td>&nbsp;</td></tr>
 </table></body>
 </html>

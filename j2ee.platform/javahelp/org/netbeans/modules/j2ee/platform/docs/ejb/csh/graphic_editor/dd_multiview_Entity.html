@@ -1,15 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright Â© 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
 <head>
-<title>ejb-jar.xml Visual Editor: Entity Bean</title>
+<title>ejb-jar.xml Visual Editor: Enterprise Beans: Entity Beans</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2><tt>ejb-jar.xml</tt> Visual Editor: Entity Bean</h2>
+<h2><tt>ejb-jar.xml</tt> Visual Editor: Enterprise Beans: Entity Beans</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 <p>The <tt>ejb-jar.xml</tt> visual editor lets you edit the general <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
     <param name="content" value="../../glossary/deploymentdesc.html">
@@ -24,24 +24,20 @@
     <param name="textColor" value="blue">
   </object> for an EJB module. You open the editor by expanding the project's 
   Configuration Files node in the Projects window and double-clicking <tt>ejb-jar.xml</tt>. 
-  The Enterprise Beans section of the General view contains a section for each 
+  The Enterprise Beans section of the General tab contains a section for each 
   of your EJB module's enterprise beans. </p>
-<p>The Overview section for entity beans lets you set general information about 
-  the entity bean:</p>
+<p>The General section for entity beans lets you set the following general information about the enterprise bean:</p>
 <ul>
   <li><b>Name.</b> Specifies the enterprise bean's name. This name is not related 
     to the bean's JNDI name that is specified in the <tt>sun-ejb-jar.xml</tt> 
-    deployment descriptor. The name must be unique in the <tt>ejb-jar.xml</tt> 
-    file.</li>
+    deployment descriptor. The name must be unique in the <tt>ejb-jar.xml</tt> file.</li>
   <li><b>Persistence Type.</b> Specifies whether the bean's persistence is managed 
     by the container or by the bean.</li>
   <li><b>Abstract Schema Name.</b> Specifies the abstract schema 
     that declares the persistent fields and relationships of an entity bean. </li>
   <li><b>Primary Key Field.</b> Specifies the primary key field of the entity 
     bean. The combo box lists all of the CMP fields in your entity bean. A primary 
-    key uniquely identifies an entity bean. 
-    <!--TODO we might say something about compound fields-->
-  </li>
+    key uniquely identifies an entity bean. </li>
   <li><b>Primary Key Class.</b> Displays your primary key's class. You can change 
     the class by going to the entity bean's CMP fields section and entering a 
     new class in the primary key field's Type column. You can also specify a primary 
@@ -54,33 +50,24 @@
 <p>Entity beans also have the following sections in the <tt>ejb-jar.xml</tt> editor:</p>
 <ul>
   <li><a href="dd_multiview_beanImp.html">Enterprise Bean Implementation and Interfaces</a></li>
-  <li><a href="dd_multiview_CMPField.html">CMP Fields</a></li>
-  <li><a href="dd_multiview_Finders.html">CMP Finder Methods</a></li>
-  <li><a href="dd_multiview_Selects.html">CMP Select Methods</a></li>
   <li><a href="dd_multiview_beanEnviornment.html">Bean Environment</a></li>
   <li><a href="dd_multiview_beanDetails.html">Bean Details</a></li>
   <li><a href="dd_multiview_beanSecurity.html">Security</a></li>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
-    <dd> <a href="../../configuring/config_ejb_about.html">About Configuring EJB 
-        Modules</a> </dd>
-        <dd><a href="../../../enterprise/general/ent_app_verify.html">Verifying an 
-        Enterprise Application</a></dd>
+    <dd> <a href="../../configuring/config_ejb_about.html">About Configuring EJB Modules</a> </dd>
+        <dd><a href="../../../enterprise/general/ent_app_verify.html">Verifying an Enterprise Application</a></dd>
         <dd><tt>ejb-jar.xml</tt> Visual Editor:</dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_moduleDetails.html">Module 
-        Details</a> </dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session 
-        Bean</a></dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="dd_multiview_MDB.html">Message-Driven 
-        Beans</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_moduleDetails.html">Module Details</a> </dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session Bean</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="dd_multiview_MDB.html">Message-Driven Bean</a></dd>
         <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_securityRoles.html">Security Roles</a> </dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Relationship.html">CMP 
-        Relationships</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Relationship.html">CMP Relationships</a></dd>
 </dl>
 
 <hr>
-<font size=-2><a href="../../../credits.html">Legal Notices</a></font> 
+<small><a href="../../../credits.html">Legal Notices</a></small> 
 <table border="0" cellpadding="50">
   <tr><td>&nbsp;</td></tr>
 </table>

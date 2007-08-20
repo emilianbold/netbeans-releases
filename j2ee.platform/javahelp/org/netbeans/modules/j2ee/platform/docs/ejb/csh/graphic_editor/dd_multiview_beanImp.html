@@ -24,13 +24,19 @@
     <param name="textColor" value="blue">
   </object> for an EJB module. You open the editor by expanding the project's 
   Configuration Files node in the Projects window and double-clicking <tt>ejb-jar.xml</tt>. 
-  The Enterprise Beans section of the General view contains a section for each 
+  The Enterprise Beans section of the General tab contains a section for each 
   of your EJB module's enterprise beans. </p>
 <p>Each enterprise bean has an Enterprise Bean Implementation and Interfaces section 
-  where you can view and edit the bean class name and bean interface names. (Because 
-  message-driven beans do not have interfaces, this section is just called Enterprise 
-  Bean Implementation for message-driven beans.) You can do any of the following:</p>
-<ul>
+where you can view and edit the bean class name and bean interface names.</p> 
+<p>You can also quickly navigate to an enterprise bean's classes and interfaces 
+by clicking Go To Source next to the name of the class or interface.</p>
+  
+<ul class="note">
+    <li>This section is just called Enterprise Bean Implementation for message-driven beans
+    because message-driven beans do not have interfaces.</li>
+</ul>
+
+<!--<ul>
   <li><b>Add or remove interfaces. </b>Select or deselect the checkbox for the 
     remote or local interfaces. When you add interfaces, the IDE adds the corresponding 
     interface, home interface, and business interface based on the name of the 
@@ -51,14 +57,9 @@
     or interface's field and click Rename Class. In the dialog that appears, type 
     a new name for the class or interface and click Next.</li>
   <li><b>Open the class or interface source file.</b> Click Go To Source for any 
-    class or interface. 
-    <ul class="note">
-      <li>You can also quickly navigate to an enterprise bean's classes and interfaces 
-        by right-clicking the enterprise bean's node in the Projects window and 
-        choosing from the Go To Source submenu.</li>
-    </ul>
-  </li>
+    class or interface. </li>
 </ul>
+-->
 <p>All enterprise beans also have the following sections in the <tt>ejb-jar.xml</tt> 
   visual editor:</p>
 <ul>
@@ -68,22 +69,15 @@
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="../../configuring/config_ejb_about.html">About Configuring EJB 
-        Modules</a> </dd>
-        <dd><a href="../../../enterprise/general/ent_app_verify.html">Verifying an 
-        Enterprise Application</a></dd>
+    <dd><a href="../../configuring/config_ejb_about.html">About Configuring EJB Modules</a> </dd>
+        <dd><a href="../../../enterprise/general/ent_app_verify.html">Verifying an Enterprise Application</a></dd>
         <dd><tt>ejb-jar.xml</tt> Visual Editor:</dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_moduleDetails.html">Module 
-        Details</a> </dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Entity.html">Entity 
-        Bean</a></dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session 
-        Bean</a></dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="dd_multiview_MDB.html">Message-Driven 
-        Beans</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_moduleDetails.html">Module Details</a> </dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Entity.html">Entity Bean</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session Bean</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="dd_multiview_MDB.html">Message-Driven Beans</a></dd>
         <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_securityRoles.html">Security Roles</a> </dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Relationship.html">CMP 
-        Relationships</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Relationship.html">CMP Relationships</a></dd>
 </dl>
 
 <hr>

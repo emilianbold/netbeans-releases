@@ -24,11 +24,8 @@
 <ol>
   <li>Open the bean class in the Source Editor.</li>
   <li>Right-click anywhere inside the body of the class and choose EJB Methods 
-    &gt; Add 
-    CMP Field. This command is only enabled when you click within the body of 
+    &gt; Add CMP Field. This command is only enabled when you click within the body of 
     the class (after the class declaration).</li>
-  <p>You can also right-click enterprise bean's node in the Projects window and 
-    choose Add &gt; Add CMP Field. 
   <li>Enter the name and type of the CMP field and click OK.</li>
 </ol>
 <p>When you add a new CMP field to an entity bean, the IDE does the following:</p>
@@ -38,17 +35,17 @@
 </ul>
 <p><b>To view or edit an existing CMP field:</b></p>
 <ol>
-  <li>In the Projects window, expand the Configuration Files node for your EJB 
-    module project.</li>
-  <li>Double-click <tt>ejb-jar.xml</tt>. The graphical editor opens in the Details 
-    view.</li>
-  <li>Expand the header for the entity bean node and the CMP Fields header. The 
-    table lists all of the existing CMP fields.</li>
-  <li>Click Add or Edit to make changes to the list of CMP fields.</li>
+  <li>In the Projects window, expand the Configuration Files node for your EJB module project.</li>
+  <li>Double-click <tt>ejb-jar.xml</tt>. The graphical editor opens in the General view.</li>
+  <li>Click the XML tab and make your changes in the XML editor.
+    <ul class="note"><li>If you make changes to CMP fields in <tt>ejb-jar.xml</tt> you will
+    also need to make corresponding changes in your bean source code.</li></ul>
+  </li>
 </ol>
+
 <p><b>Notes:</b></p>
 <ul>
-  <li>If you use the <a href="generate_cmp_beans.html">Entity Beans from Database</a> 
+    <li>If you use the <a href="generate_cmp_beans.html">Entity Beans from Database</a> 
     wizard to create the bean, the IDE can automatically create the CMP fields 
     for all the fields in a database. </li>
   <li>The new CMP field might require some server specific configuration. For 

@@ -24,7 +24,7 @@
     <param name="textColor" value="blue">
   </object> for an EJB module. You open the editor by expanding the project's 
   Configuration Files node in the Projects window and double-clicking <tt>ejb-jar.xml</tt>. 
-  The Enterprise Beans section of the General view contains a section for each 
+  The Enterprise Beans section of the General tab contains a section for each 
   of your EJB module's enterprise beans. </p>
 <p>Each enterprise bean has a Bean Environment section, which lets you specify 
   the following information:</p>
@@ -34,32 +34,19 @@
   <li><a href="#resref">Resource References</a></li>
   <li><a href="#resenref">Resource Environment References</a></li>
   <li><a href="#secref">Security Role References</a></li>
-</ul>  
-<h3><b>Enterprise Bean References</b> <a name="beanref"></a> </h3>
+</ul>
+
+<h3>Enterprise Bean References <a name="beanref"></a> </h3>
 <p>Lists all of the enterprise beans that a particular bean references. When you 
   add a bean reference through the <tt>ejb-jar.xml</tt> visual editor, the IDE 
   adds a reference to the bean in the deployment descriptorand creates lookup 
   code for the referenced bean in the bean implementation class of the enterprise 
   bean.</p>
 <p>You can also add enterprise bean references by right-clicking in the bean class 
-  for an enterprise bean and choosing Enterprise Resources &gt; Call 
-  Enterprise Bean. </p>
-  <ul class="note">
-    <li>In <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-    <param name="content" value="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/glossary_freeform.html">
-    <param name="viewerActivator" value="javax.help.LinkLabel">
-    <param name="viewerStyle" value="javax.help.Popup">
-    <param name="viewerSize" value="400,160">
-    <param name="text" value="free-form projects">
-    <param name="textFontSize" value="medium">
-    <param name="textFontFamily" value="SansSerif">
-    <param name="textFontStyle" value="italic">
-    <param name="textFontWeight" value="bold">
-    <param name="textColor" value="blue">
-  </object>, you can only add references to enterprise beans
-    in the same EJB module project.</li>
-  </ul>
-<h3><b>Environment Entries</b><a name="envent"></a></h3>
+  for an enterprise bean and choosing Enterprise Resources &gt; Call Enterprise Bean. </p>
+  
+  
+  <h3>Environment Entries<a name="envent"></a></h3>
 <p>In the Environment Entries section, you can define properties in the deployment 
   descriptor that you can then access in the code of your EJB module. For example, 
   an entry name of a enterprise bean that calculates money exchanges might be 
@@ -69,10 +56,10 @@
   <tt>Character</tt>, <tt>Integer</tt>, <tt>Boolean</tt>, <tt>Double</tt>, <tt>Byte</tt>, 
   <tt>Short</tt>, <tt>Long</tt>, and <tt>Float</tt>. Make sure that each entry's 
   value matches its type. Also make sure that the name for each entry is unique 
-  in each enterprise bean. 
-  <!--TODO we might add some code examples how to access these entries-->
-</p>
-<h3><b>Resource References</b><a name="resref"></a><b></b></h3>
+  in each enterprise bean.</p>
+  
+  
+  <h3>Resource References<a name="resref"></a><b></b></h3>
 <p>In the Resource References section, you can define references that your bean 
   needs to access server resources. These resources can include the following:</p>
 <ul>
@@ -118,18 +105,22 @@
   <li>(Optional) Type a description of the resource reference in the description 
     column. </li>
 </ul>
-<h3><b>Resource Environment References</b><a name="resenref"></a></h3>
+
+
+<h3>Resource Environment References<a name="resenref"></a></h3>
 <p>Resource environment references are another type of environment entries. They 
   allow you to refer to administered objects that are associated with resources 
   (for example, JMS Destinations), by using logical names. You can type the name, 
   resource type, and optionally a description for each resource environment reference.</p>
-<h3><b>Security Role References</b><a name="secref"></a></h3>
-<p>In the Security Role References section, you can link a reference name used 
+
+  
+<h3>Security Role References<a name="secref"></a></h3>
+  <p>In the Security Role References section, you can link a reference name used 
   in your code to a security role defined on the application server. The value 
-  in the Name column must be the security role name that is used as a parameter 
-  to the <tt>isCallerInRole(String roleName)</tt> method in your enterprise bean. 
-</p>
-<p>All enterprise beans also have the following sections in the <tt>ejb-jar.xml</tt> 
+  in the Reference Name column must be the security role name that is used as a parameter 
+  to the <tt>isCallerInRole(String roleName)</tt> method in your enterprise bean.</p>
+  
+  <p>All enterprise beans also have the following sections in the <tt>ejb-jar.xml</tt> 
   visual editor:</p>
 <ul>
   <li><a href="dd_multiview_beanImp.html">Enterprise Bean Implementation and Interfaces</a></li>
@@ -138,26 +129,19 @@
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="../../configuring/config_ejb_about.html">About Configuring EJB 
-        Modules</a> </dd>
-        <dd><a href="../../../enterprise/general/ent_app_verify.html">Verifying an 
-        Enterprise Application</a></dd>
+    <dd><a href="../../configuring/config_ejb_about.html">About Configuring EJBModules</a> </dd>
+        <dd><a href="../../../enterprise/general/ent_app_verify.html">Verifying an Enterprise Application</a></dd>
         <dd><tt>ejb-jar.xml</tt> Visual Editor:</dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_moduleDetails.html">Module 
-        Details</a> </dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Entity.html">Entity 
-        Bean</a></dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session 
-        Bean</a></dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="dd_multiview_MDB.html">Message-Driven 
-        Beans</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_moduleDetails.html">Module Details</a> </dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Entity.html">Entity Bean</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session Bean</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="dd_multiview_MDB.html">Message-Driven Beans</a></dd>
         <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_securityRoles.html">Security Roles</a> </dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Relationship.html">CMP 
-        Relationships</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Relationship.html">CMP Relationships</a></dd>
 </dl>
 
 <hr>
-<font size=-2><a href="../../../credits.html">Legal Notices</a></font> 
+<small><a href="../../../credits.html">Legal Notices</a></small> 
 <table border="0" cellpadding="50">
   <tr><td>&nbsp;</td></tr>
 </table>

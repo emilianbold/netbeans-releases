@@ -28,25 +28,25 @@
   <li>Open the bean class in the Source Editor.</li>
   <li>Right-click anywhere in the Source Editor and choose EJB Methods &gt; Add 
     Finder Method.</li>
-  <li>In the New Finder Method dialog box, define the method signature: 
+  <li>In the Add Finder Method dialog box, define the method signature: 
     <ol>
       <li type="a"> Add text to the base <tt>findBy</tt> name of the method.</li>
+      <li>Specify any parameters that the method needs.</li>
+      <li>Specify which interfaces to add the method to (remote and/or local).</li>
       <li>Specify the return cardinality for the method. This setting should match 
-        the return cardinality of the statement in the database. If you select 
+          the return cardinality of the statement in the database. If you select 
         One, the statement returns the bean's interface. If you select Many, the 
         statement returns a <tt>java.util.Collection</tt> object.</li>
       <li>If the bean uses container-managed persistence (CMP), enter the EJB 
         QL statement that the method will use to find the enterprise bean or beans 
         that the method is to return.</li>
-      <li>Specify which interfaces to add the method to (remote and/or local).</li>
-      <li>Specify any parameters that the method needs.</li>
     </ol>
   </li>
   <li>Click OK to create the method. 
     <p> The IDE adds the method signature to the bean's interfaces and registers 
-      the method in the general deployment descriptor. 
+    the method in the general deployment descriptor. </p>
     <ul>
-      <li>If the entity bean uses CMP, you are done. The IDE adds The container 
+      <li>If the entity bean uses CMP, you are done. The container 
         implements the finder method from the signature in the home interface 
         or local home interface, so the home interface and the local home interface 
         are the only places the method appears. </li>
@@ -61,27 +61,23 @@
 <ol>
   <li>In the Projects window, expand the Configuration Files node for your EJB 
     module project.</li>
-  <li>Double-click <tt>ejb-jar.xml</tt>. The graphical editor opens in the Details 
-    view.</li>
-  <li>Expand the entity bean's header and the CMP Finder Methods header. The table 
-    lists all of the existing CMP finder methods.</li>
-  <li>Click Add or Edit to make changes to the list finder methods. </li>
+  <li>Double-click <tt>ejb-jar.xml</tt>. The graphical editor opens in the General view.</li>
+  <li>Click the XML tab and make your changes in the XML editor.
+  <ul class="note"><li>If you make changes to CMP fields in <tt>ejb-jar.xml</tt> you will
+    also need to make corresponding changes in your bean source code.</li></ul>
+  </li>
 </ol>
 <p><b>Notes:</b></p>
 <ul>
   <li>When the IDE adds a finder method to an entity bean, it does not save 
     the bean class or the bean interfaces. Only when you compile or save the project 
     are the changes saved to disk.</li>
-  <li>To fully remove a finder method from both a enterprise bean, do one of the 
-    following: 
+  <li>To fully remove a finder method from an enterprise bean, do the following: 
     <ul>
-      <li>Delete the method from the bean's Home Methods list in the Projects 
-        window. </li>
-      <li>Delete the method from the CMP Finder Methods header in the <tt>ejb-jar.xml</tt> 
-        graphical editor. </li>
+      <li>Delete the method from the bean's source code. </li>
+      <li>Delete the finder query from <tt>ejb-jar.xml</tt>. </li>
     </ul>
-    If you delete the finder method in the Source Editor, the IDE does not remove 
-    it from the bean interfaces.</li>
+    </li>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>

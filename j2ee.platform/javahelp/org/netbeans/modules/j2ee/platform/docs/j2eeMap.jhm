@@ -330,9 +330,6 @@
     <mapID target="dd_multiview_beanDetails" url="ejb/csh/graphic_editor/dd_multiview_beanDetails.html" />
     <mapID target="dd_multiview_beanEnviornment" url="ejb/csh/graphic_editor/dd_multiview_beanEnviornment.html" />
     <mapID target="dd_multiview_beanImp.html" url="ejb/csh/graphic_editor/dd_multiview_beanImp.html" />
-    <mapID target="dd_multiview_CMPField" url="ejb/csh/graphic_editor/dd_multiview_CMPField.html" />
-    <mapID target="dd_multiview_Finders" url="ejb/csh/graphic_editor/dd_multiview_Finders.html" />
-    <mapID target="dd_multiview_Selects" url="ejb/csh/graphic_editor/dd_multiview_Selects.html" />
     
 
     <!-- GRAPHIC EDITOR FOR EJB-JAR.XML FILES - SECURITY-RELATED IDs: -->

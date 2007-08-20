@@ -31,8 +31,7 @@
     visible only to the bean class, and therefore can be used only by methods 
     of the bean class. In addition to returning a bean or a collection of beans, 
     a select method can also return the value of a field.</p>
-<p>You have two opportunities to add EJB QL to, or edit the EJB QL in, a finder 
-  method or select method:</p>
+<p>To add or edit the EJB QL in a finder method or select method, do one of the following:</p>
 <ul>
   <li>When you define a <a href="define_finder_method.html">new finder method</a> 
     or a <a href="define_select_method.html">new select method</a>, the Add Finder 
@@ -43,12 +42,11 @@
       <li>In the Projects window, expand the Configuration Files node for your 
         EJB module project.</li>
       <li>Double-click <tt>ejb-jar.xml</tt>. The graphical editor opens in the 
-        Details view.</li>
-      <li>Expand the entity bean's node and the CMP Finder Methods and Select 
-        Methods node. The table lists all of the existing CMP finder methods and 
-        select methods.</li>
-      <li>Select the method, click Edit, and edit the EJBQL field in the dialog 
-        box.</li>
+        General view.</li>
+      <li>Click the XML tab and make your changes in the XML editor.
+    <ul class="note"><li>If you make changes to CMP fields in <tt>ejb-jar.xml</tt> you will
+    also need to make corresponding changes in your bean source code.</li></ul>
+  </li>
     </ol>
   </li>
 </ul>

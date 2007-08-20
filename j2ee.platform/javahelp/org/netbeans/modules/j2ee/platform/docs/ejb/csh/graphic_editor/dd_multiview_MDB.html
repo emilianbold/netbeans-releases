@@ -1,15 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright Â© 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
 <head>
-<title>ejb-jar.xml Visual Editor: Message-Driven Bean</title>
+<title>ejb-jar.xml Visual Editor: General: Enterprise Beans: Message-Driven Bean</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2><tt>ejb-jar.xml</tt> Visual Editor: Message-Driven Bean</h2>
+<h2><tt>ejb-jar.xml</tt> Visual Editor: General: Enterprise Beans: Message-Driven Bean</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 <p>The <tt>ejb-jar.xml</tt> visual editor lets you edit the general <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
     <param name="content" value="../../glossary/deploymentdesc.html">
@@ -24,45 +24,40 @@
     <param name="textColor" value="blue">
   </object> for an EJB module. You open the editor by expanding the project's 
   Configuration Files node in the Projects window and double-clicking <tt>ejb-jar.xml</tt>. 
-  The Enterprise Beans section of the Overview view contains a section for each 
+  The Enterprise Beans section of the General tab contains a section for each 
   of your EJB module's enterprise beans. </p>
 <p>For each message-drive bean, you can specify the following information in the 
-  Overview section:</p>
+  General section:</p>
 <ul>
   <li><b>Name.</b> Specifies the enterprise bean's name. This name is not related 
     to the bean's JNDI name that is specified in the <tt>sun-ejb-jar.xml</tt> 
     deployment descriptor. The name must be unique in the <tt>ejb-jar.xml</tt> 
     file.</li>
   <li><b>Transaction Type.</b> Specifies whether the bean's transactions are managed 
-    by the container or by the bean. 
-    <!--TODO We might add some code examples how to use transactions-->
-    <!--TODO doc the rest of the properties-->
-  </li>
+    by the container or by the bean.</li>
+  <li><b>Message Selector.</b></li>
+  <li><b>Acknowledge Mode.</b></li>
+  <li><b>Destination Type.</b></li>
+  <li><b>Durability.</b></li>
 </ul>
-<p>Message-driven beans also have the following sections in the <tt>ejb-jar.xml</tt> 
-  editor:</p>
+<p>Message-driven beans also have the following sections in the <tt>ejb-jar.xml</tt> editor:</p>
 <ul>
-  <li><a href="dd_multiview_beanImp.html">Enterprise Bean Implementation and Interfaces</a></li>
+  <li><a href="dd_multiview_beanImp.html">Enterprise Bean Implementation</a></li>
   <li><a href="dd_multiview_beanEnviornment.html">Bean Environment</a></li>
   <li><a href="dd_multiview_beanDetails.html">Bean Details</a></li>
   <li><a href="dd_multiview_beanSecurity.html">Security</a></li>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="../../configuring/config_ejb_about.html">About Configuring EJB 
-        Modules</a> </dd>
-        <dd><a href="../../../enterprise/general/ent_app_verify.html">Verifying an 
-        Enterprise Application</a></dd>
-        <dd><tt>ejb-jar.xml</tt> Visual Editor:</dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_moduleDetails.html">Module 
-        Details</a> </dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Entity.html">Entity 
-        Bean</a></dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session 
-        Bean</a></dd>
+    <dd><a href="../../configuring/config_ejb_about.html">About Configuring EJB Modules</a> </dd>
+        <dd><a href="../../../enterprise/general/ent_app_verify.html">Verifying an Enterprise Application</a></dd>
+        <dd><tt>ejb-jar.xml</tt> Visual Editor: General:</dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_moduleDetails.html">Module Details</a> </dd>
         <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_securityRoles.html">Security Roles</a> </dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Relationship.html">CMP 
-        Relationships</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Entity.html">Entity Bean</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session Bean</a></dd>
+
+       <!-- <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Relationship.html">CMP Relationships</a></dd>-->
 </dl>
 
 <hr>

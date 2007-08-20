@@ -19,7 +19,12 @@
 <p>Deployment descriptors are XML-based text files whose elements describe how 
   to assemble and deploy a module to a specific environment. The elements also 
   contain behavioral information about components not included directly in code.</p>
-<p>For EJB modules, there are two types of deployment descriptors:</p>
+  
+  <p>If you are developing enterprise beans on the Java EE 5 platform and deploying to
+a Java EE 5 compliant application server, you develop enterprise beans using EJB 3.0 technology.
+EJB 3.0 technology enables you to use annotations in your classes instead of deployment descriptors to describe behavior.</p>
+  
+  <p>For EJB modules, there are two types of deployment descriptors:</p>
 <ul>
   <li>The general J2EE deployment descriptor that configures deployment settings 
     on any J2EE-compliant implementation. The general EJB deployment descriptor 
@@ -28,49 +33,64 @@
     code. </li>
   <li>The server-specific deployment descriptor that configures deployment settings 
     for the application server to which you are deploying. For the Sun Java System 
-    Application Server, the IDE provides a graphical deployment descriptor editor 
-    and automatically updates the deployment descriptor as you edit your files. 
+    Application Server, the IDE automatically updates the deployment descriptor as you edit your files.
+    The IDE also provides a graphical deployment descriptor editor to edit some descriptor files.
     For all other application servers, you have to write the server-specific deployment 
     descriptors yourself. </li>
 </ul>
+
 <p><b>To edit <tt>ejb-jar.xml</tt>:</b></p>
 <ol>
-  <li>In the Projects window, expand the Configuration Files node for your EJB 
-    module project.</li>
-  <li>Double-click <tt>ejb-jar.xml</tt> to open it in the graphical editor. <br>
-    The graphical editor opens in a Source Editor tab. The editor contains a general 
-    Module Details section and a section for each of the enterprise beans in your 
-    module. </li>
-  <li>Edit the deployment descriptor as necessary. See the following topics for 
-    more information: 
+  <li>In the Projects window, expand the Configuration Files node for your EJB module project.</li>
+  <li>Double-click <tt>ejb-jar.xml</tt> to open the file in the graphical editor. </li>
+  <li>Select one of the following tabs:
     <ul>
-      <li><tt><a href="../csh/graphic_editor/dd_multiview_Session.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_Session.html"> 
-        Visual Editor - Session Beans</a> </li>
-      <li><tt><a href="../csh/graphic_editor/dd_multiview_Entity.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_Entity.html"> 
-        Visual Editor - Entity Beans</a></li>
-      <li><tt><a href="../csh/graphic_editor/dd_multiview_MDB.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_MDB.html"> 
-        Visual Editor - Message-Driven Beans</a></li>
-      <li><tt><a href="../csh/graphic_editor/dd_multiview_Relationship.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_Relationship.html"> 
-        Visual Editor - CMP Relationships</a></li>
+        <li><b>General.</b> This tab enables you to specify general information about the EJB module, details about security roles
+        and descriptor details about each of the enterprise beans in the module.
+        See the following topics for more information about the properties you can set in the General tab: 
+        <ul>
+          <li><tt><a href="../csh/graphic_editor/dd_multiview_moduleDetails.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_moduleDetails.html"> 
+            Visual Editor - Module Details</a></li>
+          <li><tt><a href="../csh/graphic_editor/dd_multiview_securityRoles.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_securityRoles.html"> 
+            Visual Editor - Security Roles</a></li>
+          <li><tt><a href="../csh/graphic_editor/dd_multiview_Session.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_Session.html"> 
+            Visual Editor - Session Beans</a> </li>
+          <li><tt><a href="../csh/graphic_editor/dd_multiview_Entity.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_Entity.html"> 
+            Visual Editor - Entity Beans</a></li>
+          <li><tt><a href="../csh/graphic_editor/dd_multiview_MDB.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_MDB.html"> 
+            Visual Editor - Message-Driven Beans</a></li>
+        </ul>
+        </li>
+        <li><b>CMP Relationships.</b> This tab enables you to view and modify CMP relationships for CMP beans in your module.
+        See the following topic for more information about the properties you can set in the CMP Relationships tab:
+        <ul>
+            <li><tt><a href="../csh/graphic_editor/dd_multiview_Relationship.html">ejb-jar.xml</a></tt><a href="../csh/graphic_editor/dd_multiview_Relationship.html"> 
+            Visual Editor - CMP Relationships</a></li>
+        </ul>
+        </li>
+        <li><b>XML.</b> This tab enables you to edit the descriptor file in the XML editor.</li>
     </ul>
   </li>
-  <li>(Optional) Click XML at the top of the deployment descriptor editor to view 
-    and edit the deployment descripor's XML code. </li>
-  <li>Choose File &gt; Save to save your changes.</li>
-</ol>
-<ul class="note">
-  <li>If you rename any CMP fields, methods, interfaces, or classes in the <tt>ejb-jar.xml</tt> 
-    visual editor, the IDE updates the all references to the names in the appropriate 
-    class and interface files.</li>
-</ul>
+  <li>Edit the properties.</li>
+  <li>Save your changes.</li>
+  </ol>
+
 <p><b>To edit <tt>sun-ejb-jar.xml</tt>:</b></p>
 <ol>
-  <li>Double-click <tt>sun-ejb-jar.xml</tt> to open it in the graphical editor. 
-    <br>
-    The graphical editor opens in a Source Editor tab. The editor contains a tree 
-    view of the module's contents on the left and property editors for each item 
-    on the right. </li>
-  <li>Edit the deployment descriptor as necessary. See the following topics for 
+    <li>In the Projects window, expand the Configuration Files node for your EJB module project.</li>
+    <li>Double-click <tt>sun-ejb-jar.xml</tt> to open the file in the graphical editor. </li>
+    <li>Double-click <tt>sun-ejb-jar.xml</tt> to open it in the graphical editor. 
+    <li>Select one of the following tabs:
+    <ul>
+        <li><b>General.</b></li>
+        <li><b>EJB.</b></li>
+        <li><b>Security.</b></li>
+        <li><b>Web Services.</b></li>
+        <li><b>Messaging.</b></li>
+        <li><b>XML.</b></li>
+    </ul>
+    
+    <li>Edit the deployment descriptor as necessary. See the following topics for 
     more information: 
     <ul>
       <li><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/ejbconfigeditors/sunconfig.html"><tt>sun-ejb-jar.xml</tt> 

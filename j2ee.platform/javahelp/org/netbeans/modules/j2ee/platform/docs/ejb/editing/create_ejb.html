@@ -32,6 +32,8 @@
 <p>When you create an enterprise bean, the IDE does the following: </p> 
 <ul><li><b>Java EE 5 projects:</b>
         <ul>
+            <li>Adds a node for the enterprise bean under the project's Enterprise Beans 
+                node. This node can contain nodes for bean methods and fields. </li>
             <li>Creates the bean class and the interfaces under the Source Packages node</li>
             <li>Opens the bean class in the Source Editor</li>
         </ul>
@@ -39,13 +41,12 @@
     <li><b>J2EE 1.4 projects:</b>
         <ul>
             <li>Adds a node for the enterprise bean under the project's Enterprise Beans 
-                node. This node contains a node for the bean class and nodes for the bean's 
-            business methods and CMP fields. </li>
-            <li>Updates the deployment descriptors for the EJB module and the Java EE module 
+                node. This node can contain nodes for bean methods and fields. </li>
+            <li>Updates the deployment descriptors for the EJB module and the Enterprise Application module 
                 that contains the EJB module. If your target server is the Sun Java System 
                 Application Server/GlassFish, the IDE also configures the server-specific deployment 
                 descriptors. For all other application servers, you have to write the server-specific 
-            deployment descriptors yourself.</li>
+                deployment descriptors yourself.</li>
             <li>Opens the bean class in the Source Editor</li>
         </ul>
     </li>

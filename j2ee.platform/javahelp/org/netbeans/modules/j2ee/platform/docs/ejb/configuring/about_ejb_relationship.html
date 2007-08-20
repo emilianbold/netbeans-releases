@@ -16,19 +16,23 @@
 <p>Like a table in a relational database, an entity bean may be related to other 
   entity beans. With bean-managed persistence, the code that you write implements 
   the relationships. But with container-managed persistence, the EJB container 
-  takes care of the relationships for you. </p>
-<p>For instance, consider the <tt>cmpcustomer</tt> example that ships with the 
+  manages of the relationships for you. </p>
+  
+  
+  <p>For instance, consider the <tt>cmpcustomer</tt> example that ships with the 
   J2EE JDK. The example defines relationships between customers, addresses, and 
   subscriptions. Each customer may have one or more addresses. A customer may 
   also have zero or more subscriptions. Similarly, a single subscription may be 
-  associated with many customers. </p>
-<p>In order for the above example to work correctly, the relationships between 
-  the entity beans representing these database tables must be configured correctly. 
-  When you generate CMP entity beans from an existing database, the IDE automatically 
+  associated with many customers.
+  In order for this example to work correctly, the relationships between 
+  the entity beans representing these database tables must be configured correctly.</p>
+  
+<p>When you generate CMP entity beans from an existing database, the IDE automatically 
   configures the module's CMP relationships and CMP fields and creates a default 
   mapping used by the Sun Java System Application Server.</p>
-<h3>Direction </h3>
-<p>Relationships between databases can either be unidirectional or multidirections. 
+
+  <h3>Direction </h3>
+  <p>Relationships between databases can either be unidirectional or multidirections. 
   For example, in the above <tt>cmpcustomer</tt> example, the relationship between 
   customers and the addresses is unidrectional, because the customer table references 
   the address table but the address table does not reference the customer table. 
@@ -54,8 +58,7 @@
   table that references it. For example, in the above <tt>cmpcustomer</tt> example, 
   you may add and delete individual addresses for a customer. Because an address 
   instance must be associated to a customer, however, when you delete a customer, 
-  you are also automatically deleting all addresses associated to that customer. 
-</p>
+  you are also automatically deleting all addresses associated to that customer.</p>
 <p>The application server takes care of this automatically through the cascade 
   delete setting. When you enable cascade delete in a relationship, all related 
   bean instances are deleted when the bean referring to them is deleted. </p>

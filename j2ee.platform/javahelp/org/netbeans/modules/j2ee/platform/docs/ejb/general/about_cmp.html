@@ -18,26 +18,55 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>The term container-managed persistence (CMP) means that the EJB container handles 
   all database access required by the entity bean. When coding to the J2EE 1.4 specification,
-  you create CMP entity beans that are mapped to tables in your <tt>sun-cmp-mapping.xml</tt>
-  files. The bean's code contains no 
-  database access (SQL) calls. As a result, the bean's code is not tied to a specific 
+  you create CMP entity beans and then describe how the entity beans are mapped to tables in your database
+  in a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="../../glossary/deploymentdesc.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="deployment descriptor">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>.</p>
+  
+  
+  <p>If you are deploying to the Sun Java System Application Server, the CMP mappings 
+  for your EJB module are specified in the <tt>sun-cmp-mappings.xml</tt> descriptor file in the 
+  module's <tt>src/conf</tt> directory.
+  If you generate CMP entity beans from a datasource, the IDE generates <tt>sun-cmp-mappings.xml</tt> for you when 
+  you create the CMP entity beans.
+  To edit CMP mappings, you need to open <tt>sun-cmp-mappings.xml</tt> in the XML editor.</p>
+  
+  <ul class="note">
+      <li>If you are deploying to another application server, you have to edit the CMP mappings in the deployment descriptor specific to that server.</li>
+  </ul>
+      
+  <p>The <tt>sun-cmp-mapping.xml</tt> descriptor file describes how 
+  the entity beans, CMP fields and CMR relationships are mapped to the database. 
+  The bean's code contains no database access (SQL) calls. 
+  As a result, the bean's code is not tied to a specific 
   persistent storage mechanism (database). Because of this flexibility, even if 
   you redeploy the same entity bean to different J2EE servers that use different 
-  databases, you do not need to modify or recompile the bean's code. In short, 
-  your entity beans are more portable.</p>
-<ul class="tip">
-    <li>If you are coding a Java EE 5 EJB module, you use 
-    <a href="../../persistence/general/persistence_about.html">
+  databases, you do not need to modify or recompile the bean's code. This makes 
+  your entity beans more portable.</p>
+  
+  <ul class="tip">
+    <li>If you are coding a Java EE 5 EJB module, you use <a href="../../persistence/general/persistence_about.html">
     Java Persistence API entity</a> classes instead of entity beans.</li>
 </ul>
+
 <p>In order to generate the data access calls, you have to provide a schema that 
   defines the bean's persistent fields and relationships. Your CMP entity beans 
   mirror the structure of your database. The beans' CMP fields correspond to the 
   columns in the database tables and the relationship fields correspond to foreign 
   keys in the database.</p>
+  
 <h3>Configuring CMP Mappings in the IDE</h3>
 <p>If you are deploying to the Sun Java System Application Server, the IDE can 
-  assist you in generating and configuring CMP mappings. If you are deploying 
+  assist you in generating CMP mappings. If you are deploying 
   to a different application server, you have to configure CMP mappings yourself 
   by editing the server-specific deployment descriptors.</p>
 <p>There are three strategies for working with CMP mappings in the IDE:</p>
@@ -50,9 +79,9 @@
     CMP fields and relationships by hand. You then configure the application to 
     create the database tables when you deploy it. </li>
   <li><b>Meet in the middle.</b> If you have both existing CMP beans and a database 
-    schema, you can map the beans to the database schema. The IDE suggests mappings 
-    for most of your fields and provides wizards to help you map more complicated 
-    fields like relationships and CMP fields that map to multiple columns.</li>
+    schema, you can map the beans to the database schema and then edit
+    <tt>sun-cmp-mapping.xml</tt> to map more complicated fields
+    like relationships and CMP fields that map to multiple columns.</li>
 </ul>
 <dl> 
   <dt>See Also<a name="seealso"></a></dt>

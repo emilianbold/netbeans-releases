@@ -23,16 +23,36 @@
     <param name="textFontWeight" value="bold">
     <param name="textColor" value="blue">
   </object> for an EJB module. You open the editor by expanding the project's 
-  Configuration Files node in the Projects window and double-clicking <tt>ejb-jar.xml</tt>. 
-  The Enterprise Beans section of the Overview view contains a section for each 
-  of your EJB module's enterprise beans. </p>
-<p>When you click CMP Relationships at the top of the editor, you can edit the 
-  container-managed relationships between the CMP entity beans in the EJB module. 
-  For each relationship, specify the following: </p>
+  Configuration Files node in the Projects window and double-clicking <tt>ejb-jar.xml</tt>.</p>
+  
+  <p>Click CMP Relationships at the top of the editor to view and edit the 
+  container-managed relationships between the CMP entity beans in the EJB module.
+The table displays the CMP relationships in the module.</p>
+
+<p><b>To remove a CMP relationship:</b></p>
+    <ul>
+        <li>Select the relationship name in the table and click Remove.</li>
+    </ul>
+   
+    
+<p><b>To edit a CMP relationship:</b></p>
+    <ol>
+        <li>Double-click the relationship name in the table to open the Edit CMP Relationship dialog box. </li>
+        <li>In the dialog box, modify the properties of the relationship.</li>
+        <li>Click OK.</li>
+    </ol>
+
+ <p><b>Notes:</b></p>
+    <ul>
+        <li>When you remove or modify a CMP relationship in <tt>ejb-jar.xml</tt>, the IDE does not update the
+        EJB module. You need to update the source code in your EJB module manually.</li>
+        <li>You can also remove or edit relationships in the XML editor by clicking the XML tab.</li>
+    </ul>
+
+<p>The Edit CMP Relationship dialog box enables you to modify the following properties.
 <ul>
-  <li><b> Name. </b>A unique name for the relationship.</li>
-  <li><b>(Optional) Description.</b> A short description of the relationship. 
-  </li>
+  <li><b>Relationship Name. </b>A unique name for the relationship.</li>
+  <li><b>(Optional) Description.</b> A short description of the relationship.</li>
   <li><b>(Optional) Role Name. </b>A unique name for each relationship role.</li>
   <li><b>Entity Bean. </b>The bean that is the source of the relationship role.</li>
   <li><b>Multiplicity. </b>Whether the relationship is one-to-one, one-to-many, 
@@ -42,35 +62,27 @@
   <li><b>Create CMR Field. </b>Whether to create a Container-Managed Relationship 
     (CMR) field in the bean. If you create a CMR field, the application server 
     can search for and return instances of the bean the field references. <br>
-    Specify the name and return type of the CMR field. The name of the class must 
+    Specify the field name and return type of the CMR field. The name of the field must 
     begin with a lower-case letter. If the multiplicity of the bean it is returning 
     is one, you do not have to specify a return type. The application server automatically 
     returns the enterprise bean's interface. 
     <p> If the multiplicity is set to many, you can choose whether to return <tt>java.util.Set</tt> 
       or <tt>java.util.Collection</tt>. Choose <tt>java.util.Set</tt> if the returned 
       beans cannot be duplicates. Choose <tt>java.util.Collection</tt> if the 
-      returned beans can include duplicates. 
-  </li>
+      returned beans can include duplicates.</li>
   <li><b>Add to Local Interface. </b>Whether to add getter and setter methods 
     for the field to the entity bean's local interface.</li>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
-    <dd> <a href="../../configuring/about_ejb_relationship.html">About Container-Managed 
-      Relationships</a></dd>  
-    <dd><a href="../../configuring/config_ejb_about.html">About Configuring EJB 
-        Modules</a> </dd>
-        <dd><a href="../../../enterprise/general/ent_app_verify.html">Verifying an 
-        Enterprise Application</a></dd>
+    <dd> <a href="../../configuring/about_ejb_relationship.html">About Container-Managed Relationships</a></dd>  
+    <dd><a href="../../configuring/config_ejb_about.html">About Configuring EJB Modules</a> </dd>
+        <dd><a href="../../../enterprise/general/ent_app_verify.html">Verifying an Enterprise Application</a></dd>
         <dd><tt>ejb-jar.xml</tt> Visual Editor:</dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_moduleDetails.html">Module 
-        Details</a> </dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Entity.html">Entity 
-        Bean</a></dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session 
-        Bean</a></dd>
-        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="dd_multiview_MDB.html">Message-Driven 
-        Beans</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_moduleDetails.html">Module Details</a> </dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Entity.html">Entity Bean</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session Bean</a></dd>
+        <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="dd_multiview_MDB.html">Message-Driven Beans</a></dd>
         <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_securityRoles.html">Security Roles</a> </dd>
 </dl>
 
