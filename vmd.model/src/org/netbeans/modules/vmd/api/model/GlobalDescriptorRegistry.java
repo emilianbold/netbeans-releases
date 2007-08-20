@@ -60,6 +60,7 @@ final class GlobalDescriptorRegistry {
 
     private String projectType;
 
+    private final FileObject registryFileObject;
     private final DataFolder registryFolder;
     private final DataFolder producersFolder;
     private final Mutex mutex = new Mutex ();
@@ -73,7 +74,7 @@ final class GlobalDescriptorRegistry {
         assert projectType != null  && projectType.length () > 0 : "Invalid project-type: " + projectType; // NOI18N
         this.projectType = projectType;
 
-        FileObject registryFileObject = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/components"); // NOI18N
+        registryFileObject = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/components"); // NOI18N
         if (registryFileObject != null) {
             registryFolder = DataFolder.findFolder (registryFileObject);
             registryFolder.getPrimaryFile ().addFileChangeListener (new FileChangeListener() {
@@ -153,6 +154,18 @@ final class GlobalDescriptorRegistry {
 
         if (registryFolder != null) {
             Enumeration<DataObject> enumeration = registryFolder.children ();
+
+            if (! enumeration.hasMoreElements ()) {
+                System.out.println ("WARNING: GlobalDescriptorRegistry for " + projectType + " is empty"); // NOI18N
+                System.out.println ("registryFolder.getPrimaryFile = " + registryFolder.getPrimaryFile ()); // NOI18N
+                System.out.println ("registryFolder.getPrimaryFile.getChildren = " + Arrays.asList (registryFolder.getPrimaryFile ().getChildren ())); // NOI18N
+                System.out.println ("registryFileObject = " + registryFileObject); // NOI18N
+                System.out.println ("registryFileObject.getChildren = " + Arrays.asList (registryFileObject.getChildren ())); // NOI18N
+                for (StackTraceElement[] stackTraceElements : Thread.getAllStackTraces ().values ())
+                    for (StackTraceElement stackTraceElement : stackTraceElements)
+                        System.out.println (stackTraceElement);
+            }
+
             while (enumeration.hasMoreElements ()) {
                 DataObject dataObject = enumeration.nextElement ();
                 ComponentDescriptor descriptor = dao2descriptor (dataObject);

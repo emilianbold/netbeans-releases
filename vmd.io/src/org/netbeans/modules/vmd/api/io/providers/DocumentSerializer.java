@@ -96,6 +96,12 @@ public final class DocumentSerializer {
             if (loaded  ||  loading)
                 return;
             loading = true;
+
+            StackTraceElement[] stackTraceElements = Thread.currentThread ().getStackTrace ();
+            System.out.println ("DocumentSerializer invocation:");
+            for (StackTraceElement stackTraceElement : stackTraceElements)
+                System.out.println (stackTraceElement);
+
             RequestProcessor.getDefault ().post (loader);
         }
     }
