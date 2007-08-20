@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.PrintStream;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -47,15 +46,18 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
         this.isReparsed = isReparsed;
     }
     
+    @Override
     protected void setUp() throws Exception {
         System.setProperty("cnd.classview.no-loading-node","true");
         super.setUp();
     }
     
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
     
+    @Override
     protected void doTest(File testFile, PrintStream streamOut, PrintStream streamErr, Object ... params) throws Exception {
         PrintStream oldOut = System.out;
         PrintStream oldErr = System.err;
@@ -73,6 +75,7 @@ public class BaseTestCase extends TraceModelTestBase implements CsmModelListener
     }
     
     
+    @Override
     protected void performTest(String source) throws Exception {
         CsmProject project = getCsmProject();
         assertNotNull("Project not found",project);

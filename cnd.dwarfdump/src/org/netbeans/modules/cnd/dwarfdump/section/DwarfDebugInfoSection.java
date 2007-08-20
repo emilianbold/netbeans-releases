@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -52,15 +52,15 @@ public class DwarfDebugInfoSection extends ElfSection {
     }
     
     public int getCompilationUnitsNumber() {
-        List<CompilationUnit> compilationUnits = null;
+        List<CompilationUnit> aCompilationUnits = null;
         
         try {
-            compilationUnits = getCompilationUnits();
+            aCompilationUnits = getCompilationUnits();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
         
-        return (compilationUnits == null) ? 0 : compilationUnits.size();
+        return (aCompilationUnits == null) ? 0 : aCompilationUnits.size();
     }
     
     public CompilationUnit getCompilationUnit(long unit_offset) {
@@ -91,6 +91,7 @@ public class DwarfDebugInfoSection extends ElfSection {
         return compilationUnits;
     }
     
+    @Override
     public void dump(PrintStream out) {
         try {
             for (CompilationUnit unit : getCompilationUnits()) {

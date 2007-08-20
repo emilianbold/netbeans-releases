@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -29,7 +29,6 @@ import javax.swing.AbstractListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -52,7 +51,6 @@ import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationNode;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -442,6 +440,7 @@ public final class SelectConfigurationPanel extends JPanel {
         public AnalyzingTask(DiscoveryDescriptor wizardDescriptor){
             this.wizardDescriptor = wizardDescriptor;
         }
+        @Override
         public void run() {
             buildModel(wizardDescriptor);
             creteTreeModel(wizardDescriptor);

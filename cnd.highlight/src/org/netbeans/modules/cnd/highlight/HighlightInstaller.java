@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -20,7 +20,6 @@
 package org.netbeans.modules.cnd.highlight;
 
 import org.openide.modules.ModuleInstall;
-import org.openide.util.SharedClassObject;
 
 /**
  *
@@ -28,16 +27,19 @@ import org.openide.util.SharedClassObject;
  */
 public class HighlightInstaller extends ModuleInstall {
     
+    @Override
     public void restored() {
         HighlightProvider.getInstance().startup();
 	super.restored();
     }
 
+    @Override
     public void close() {
         super.close();
         HighlightProvider.getInstance().close();
     }
 
+    @Override
     public void uninstalled() {
         HighlightProvider.getInstance().shutdown();
 	super.uninstalled();

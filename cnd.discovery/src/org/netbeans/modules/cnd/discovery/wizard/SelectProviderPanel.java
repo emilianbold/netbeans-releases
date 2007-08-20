@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -223,7 +223,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     // End of variables declaration//GEN-END:variables
     
     void read(final DiscoveryDescriptor wizardDescriptor) {
-        Lookup.Result providers = Lookup.getDefault().lookup(new Lookup.Template(DiscoveryProvider.class));
+        Lookup.Result<DiscoveryProvider> providers = Lookup.getDefault().lookup(new Lookup.Template<DiscoveryProvider>(DiscoveryProvider.class));
         DefaultComboBoxModel model = (DefaultComboBoxModel)prividersComboBox.getModel();
         model.removeAllElements();
         ProjectProxy proxy = new ProjectProxy() {
@@ -235,8 +235,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             }
         };
         List<ProviderItem> list = new ArrayList<ProviderItem>();
-        for(Object p : providers.allInstances()){
-            DiscoveryProvider provider = (DiscoveryProvider)p;
+        for(DiscoveryProvider provider : providers.allInstances()){
             provider.clean();
             if (provider.isApplicable(proxy)) {
                 list.add(new ProviderItem(provider));
@@ -348,6 +347,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         private ProviderItem(DiscoveryProvider provider){
             this.provider = provider;
         }
+        @Override
         public String toString(){
             return provider.getName();
         }

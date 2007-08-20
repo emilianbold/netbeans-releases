@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -43,7 +43,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-abstract public class HostKeyArray extends Children.Keys implements UpdatebleHost{
+abstract public class HostKeyArray extends Children.Keys<PersistentKey> implements UpdatebleHost{
     private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.key-events"); // NOI18N
     // for testing only
     private static final boolean noLoadinNode = Boolean.getBoolean("cnd.classview.no-loading-node"); // NOI18N
@@ -74,7 +74,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
             myKeys.clear();
             myChanges.clear();
             childrenUpdater.unregister(myProject, myID);
-            setKeys(new Object[0]);
+            setKeys(new PersistentKey[0]);
         }
     }
     
@@ -395,20 +395,18 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         update = false;
     }
     
-    protected Node[] createNodes(Object object) {
-        Node node = null;
-        if (object instanceof PersistentKey){
-            node = createNode((PersistentKey)object);
-        }
+    protected Node[] createNodes(PersistentKey object) {
+        Node node = createNode(object);
         if (node != null) {
             if (node instanceof ChangeListener){
-                myChanges.put((PersistentKey)object,(ChangeListener)node);
+                myChanges.put(object,(ChangeListener)node);
             }
             return new Node[]{node};
         }
         return new Node[0];
     }
     
+    @Override
     protected void addNotify() {
         synchronized (childrenUpdater.getLock(getProject())) {
             if (isNamespace() && !noLoadinNode){ //isGlobalNamespace()) {
@@ -434,6 +432,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         }
     }
     
+    @Override
     protected void removeNotify() {
         super.removeNotify();
         isInited = false;
@@ -446,6 +445,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         }
     }
     
+    @Override
     protected void destroyNodes(Node[] node) {
         for (Node n : node){
             Children children = n.getChildren();

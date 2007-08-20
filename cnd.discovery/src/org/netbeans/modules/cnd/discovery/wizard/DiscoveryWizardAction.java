@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -22,7 +22,6 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -96,7 +95,7 @@ public final class DiscoveryWizardAction extends NodeAction {
     }
     
     private String findBuildResult(Project project) {
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp==null){
             return null;
         }
@@ -130,7 +129,7 @@ public final class DiscoveryWizardAction extends NodeAction {
     
     private String findSourceRoot(Project project) {
         String base = getProjectDirectoryPath(project);
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp!=null){
             MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
             Folder folder = make.getLogicalFolders();
@@ -193,11 +192,11 @@ public final class DiscoveryWizardAction extends NodeAction {
     private Collection<Project> getMakeProjects(Node[] nodes) {
         Collection<Project> projects = new ArrayList<Project>();
         for (int i = 0; i < nodes.length; i++) {
-            Project project = (Project)nodes[i].getLookup().lookup(Project.class);
+            Project project = nodes[i].getLookup().lookup(Project.class);
             if(project == null) {
                 return null;
             }
-            ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if( pdp == null ) {
                 return null;
             }
@@ -280,6 +279,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         return getString("ACTION_TITLE_TXT");
     }
     
+    @Override
     public String iconResource() {
         return null;
     }
@@ -288,6 +288,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

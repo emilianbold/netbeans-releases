@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -31,7 +31,6 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.dwarfdump.section.AddressRangeSet;
 
 /**
  *
@@ -61,6 +60,7 @@ public class DwarfArangesSection extends ElfSection {
         return addressRangeSets;
     }
     
+    @Override
     public DwarfArangesSection read() throws IOException {
         long sectionStart = header.getSectionOffset();
         long sectionEnd = header.getSectionSize() + sectionStart;
@@ -100,6 +100,7 @@ public class DwarfArangesSection extends ElfSection {
         return this;
     }
     
+    @Override
     public void dump(PrintStream out) {
         super.dump(out);
         

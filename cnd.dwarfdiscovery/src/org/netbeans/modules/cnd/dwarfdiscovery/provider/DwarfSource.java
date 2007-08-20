@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -41,7 +40,6 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.CompilerSettings;
-import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -442,25 +440,25 @@ public class DwarfSource implements SourceFileProperties{
         }
         ArrayList<String> dwarfIncludedFiles = dwarfTable.getFilePaths();
         for(String path : dwarfIncludedFiles){
-            String fullName = path;
+            String includeFullName = path;
             if (path.startsWith("./")) { // NOI18N
-                fullName = compilePath+path.substring(1);
+                includeFullName = compilePath+path.substring(1);
             } else if (path.startsWith("../")) { // NOI18N
-                fullName = compilePath+File.separator+path;
+                includeFullName = compilePath+File.separator+path;
             } else if (!path.startsWith("/")){ // NOI18N
-                fullName = compilePath+File.separator+path;
+                includeFullName = compilePath+File.separator+path;
             } else {
-                fullName = fixCygwinPath(path);
-                fullName = normalizePath(fullName);
+                includeFullName = fixCygwinPath(path);
+                includeFullName = normalizePath(includeFullName);
             }
             if (Utilities.isWindows()) {
-                fullName = fullName.replace('\\', '/');
+                includeFullName = includeFullName.replace('\\', '/');
             }
-            list = grepSourceFile(fullName);
+            list = grepSourceFile(includeFullName);
             for(String included : list){
                 cutFolderPrefix(included, dwarfTable);
             }
-            includedFiles.add(PathCache.getString(fullName));
+            includedFiles.add(PathCache.getString(includeFullName));
         }
     }
 
@@ -513,14 +511,14 @@ public class DwarfSource implements SourceFileProperties{
             return;
         }
         for(String path :dwarfTable.getFilePaths()){
-            String fullName = path;
+            String includeFullName = path;
             if (path.startsWith("./")) { // NOI18N
-                fullName = compilePath+path.substring(1);
+                includeFullName = compilePath+path.substring(1);
             } else if (path.startsWith("../")) { // NOI18N
-                fullName = compilePath+File.separator+path;
+                includeFullName = compilePath+File.separator+path;
             }
-            fullName = normalizePath(fullName);
-            includedFiles.add(PathCache.getString(fullName));
+            includeFullName = normalizePath(includeFullName);
+            includedFiles.add(PathCache.getString(includeFullName));
         }
     }
     

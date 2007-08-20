@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,19 +19,11 @@
 
 package org.netbeans.modules.cnd.classview.actions;
 
-import javax.swing.Action;
 import java.awt.event.ActionEvent;
-
-import org.openide.NotifyDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.windows.*;
-
 import org.openide.util.HelpCtx;
-//import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.classview.resources.I18n;
-import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
-
 import org.netbeans.modules.cnd.classview.ClassViewTopComponent;
 
 /**
@@ -39,32 +31,33 @@ import org.netbeans.modules.cnd.classview.ClassViewTopComponent;
  * @author Vladimir Kvashin
  */
 public class ShowHideClassViewAction extends CallableSystemAction {
-	
-	public ShowHideClassViewAction() {
-		putValue(NAME, I18n.getMessage("CTL_ClassViewAction")); // NOI18N
-		putValue(SHORT_DESCRIPTION, I18n.getMessage("HINT_ClassViewAction")); // NOI18N
-	}
-	
-    public String getName() {
-		return (String) getValue(NAME);
+
+    public ShowHideClassViewAction() {
+        putValue(NAME, I18n.getMessage("CTL_ClassViewAction")); // NOI18N
+        putValue(SHORT_DESCRIPTION, I18n.getMessage("HINT_ClassViewAction")); // NOI18N
     }
 
+    public String getName() {
+        return (String) getValue(NAME);
+    }
+
+    @Override
     public void actionPerformed(ActionEvent ev) {
-		performAction();
+        performAction();
     }
 
     public void performAction() {
-		TopComponent tc = ClassViewTopComponent.findDefault();
-		tc.open();
-		tc.requestActive();
-	}
+        TopComponent tc = ClassViewTopComponent.findDefault();
+        tc.open();
+        tc.requestActive();
+    }
 
     public HelpCtx getHelpCtx() {
-		return null;
+        return null;
     }
 
+    @Override
     protected String iconResource() {
-		return ClassViewTopComponent.ICON_PATH;
+        return ClassViewTopComponent.ICON_PATH;
     }
-	
 }

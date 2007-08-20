@@ -1,12 +1,11 @@
 /*
-/*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -76,6 +75,7 @@ Convenient definitions in http://www.arcknowledge.com/gmane.comp.compilers.llvm.
         return value;
     }
     
+    @Override
     public String toString() {
         switch(this) {
             case DW_LANG_C89: return "C 89"; // NOI18N

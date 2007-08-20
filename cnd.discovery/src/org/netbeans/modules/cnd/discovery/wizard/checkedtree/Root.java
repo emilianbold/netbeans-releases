@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.checkedtree;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -75,12 +74,12 @@ public class Root implements AbstractRoot {
                 }
                 current = found;
             } else {
-                List<String> files = current.getFiles();
-                if (files == null){
-                    files = new ArrayList<String>();
-                    current.setFiles(files);
+                List<String> fileList = current.getFiles();
+                if (fileList == null){
+                    fileList = new ArrayList<String>();
+                    current.setFiles(fileList);
                 }
-                files.add(child);
+                fileList.add(child);
             }
         }
         return current;

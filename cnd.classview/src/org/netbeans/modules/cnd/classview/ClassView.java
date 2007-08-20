@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -28,7 +28,6 @@ import java.beans.PropertyVetoException;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
-import javax.swing.plaf.ViewportUI;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
@@ -91,13 +90,16 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     /* Read accessible context
      * @return - accessible context
      */
+    @Override
     public AccessibleContext getAccessibleContext() {
         if (accessibleContext == null) {
             accessibleContext = new AccessibleJComponent() {
+                @Override
                 public AccessibleRole getAccessibleRole() {
                     return AccessibleRole.PANEL;
                 }
                 
+                @Override
                 public String getAccessibleName() {
                     if (accessibleName != null) {
                         return accessibleName;
@@ -107,6 +109,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
                 }
                 
                 /* Fix for 19344: Null accessible decription of all TopComponents on JDK1.4 */
+                @Override
                 public String getToolTipText() {
                     return ClassView.this.getToolTipText();
                 }
@@ -116,12 +119,14 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         return accessibleContext;
     }
     
+    @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         return view.requestFocusInWindow();
     }
     
     // In the SDI, requestFocus is called rather than requestFocusInWindow:
+    @Override
     public void requestFocus() {
         super.requestFocus();
         view.requestFocus();

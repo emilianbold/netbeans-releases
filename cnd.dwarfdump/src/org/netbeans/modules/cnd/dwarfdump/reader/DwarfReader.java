@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -92,7 +92,7 @@ public class DwarfReader extends ElfReader {
         } else if (form.equals(FORM.DW_FORM_string)) {
             return readString();
         } else if (form.equals(FORM.DW_FORM_block)) {
-            return read(new byte[(int)readUnsignedLEB128()]);
+            return read(new byte[readUnsignedLEB128()]);
         } else if (form.equals(FORM.DW_FORM_block1)) {
             return read(new byte[readUnsignedByte()]);
         } else if (form.equals(FORM.DW_FORM_data1)) {
@@ -124,6 +124,7 @@ public class DwarfReader extends ElfReader {
         }
     }
     
+    @Override
     ElfSection initSection(Integer sectionIdx, String sectionName) {
         if (sectionName.equals(SECTIONS.DEBUG_STR)) {
             return new StringTableSection(this, sectionIdx);

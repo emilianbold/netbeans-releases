@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -56,10 +56,12 @@ public class ProjectNode extends NPNode {
         return null;
     }
     
+    @Override
     public Image getIcon(int param) {
         return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Project_explorer/Project.png"); // NOI18N
     }
     
+    @Override
     public Image getOpenedIcon(int param) {
         return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/Project_explorer/Project_open.png"); // NOI18N
     }
@@ -68,6 +70,7 @@ public class ProjectNode extends NPNode {
         return project;
     }
     
+    @Override
     public Action getPreferredAction() {
         if( Diagnostic.DEBUG ) {
             return new TraverseAction();
@@ -129,6 +132,7 @@ public class ProjectNode extends NPNode {
         }
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         if( Diagnostic.DEBUG || EXPORT) {
             return new Action[] {new TraverseAction(),new ExportAction()};

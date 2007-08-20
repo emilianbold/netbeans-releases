@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -79,7 +79,7 @@ public class Dwarf {
     
     private List<MemberHeader> getObjectTable(RandomAccessFile reader) throws IOException{
         byte[] next = new byte[60];
-        ArrayList<MemberHeader> offsets= new ArrayList<MemberHeader>();
+        ArrayList<MemberHeader> offsetsList= new ArrayList<MemberHeader>();
         while(true) {
             if (reader.getFilePointer()+60 >= reader.length()){
                 break;
@@ -102,14 +102,14 @@ public class Dwarf {
             byte[] bytes = new byte[8];
             reader.readFully(bytes);
             if (FileMagic.isElfMagic(bytes) || FileMagic.isCoffMagic(bytes) || FileMagic.isMachoMagic(bytes)) {
-                offsets.add(new MemberHeader(pointer,length));
+                offsetsList.add(new MemberHeader(pointer,length));
             }
             reader.skipBytes(length-8-nameLength);
             if (length % 2 == 1){
                 reader.skipBytes(1);
             }
         }
-        return offsets;
+        return offsetsList;
     }
 
     private int readNumber(final byte[] next, int shift) {

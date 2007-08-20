@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -35,7 +35,6 @@ import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
-import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -93,7 +92,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     }
     
     public int compareTo(CppDeclarationNode o) {
-        int res = getDisplayName().compareTo(((CppDeclarationNode) o).getDisplayName());
+        int res = getDisplayName().compareTo(o.getDisplayName());
         if (res == 0) {
             if (CsmKindUtilities.isFunctionDeclaration(object)){
                 res = 1;
@@ -108,6 +107,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         this.icon = icon;
     }
     
+    @Override
     public Image getIcon(int param) {
         if (icon != null){
             return icon;
@@ -115,9 +115,9 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         if (file != null && !file.isValid()){
             CsmObject obj = object;
             object = null;
-            Image icon = super.getIcon(param);
+            Image aIcon = super.getIcon(param);
             object = obj;
-            return icon;
+            return aIcon;
         }
         if (isFriend) {
             CsmFriend csmObj = (CsmFriend)object;
@@ -127,10 +127,12 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         }
     }
     
+    @Override
     public Image getOpenedIcon(int param) {
         return getIcon(param);
     }
     
+    @Override
     public Action getPreferredAction() {
         if (CsmKindUtilities.isOffsetable(object)){
             return new AbstractAction(){
@@ -191,6 +193,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             this.getNodes();
         }
         
+        @Override
         protected Collection initCollection() {
             List<CppDeclarationNode> retValue = new ArrayList<CppDeclarationNode>();
             if (CsmKindUtilities.isClass(element)){

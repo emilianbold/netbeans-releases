@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -50,8 +50,8 @@ public class ModelFolder implements FolderProperties {
     void update(SourceFileProperties source){
         files.add(source);
         userIncludes.addAll(source.getUserInludePaths());
-        for (String path : source.getUserInludePaths()) {
-            userIncludes.add(ModelSource.convertRelativePathToAbsolute(source,path));
+        for (String aPath : source.getUserInludePaths()) {
+            userIncludes.add(ModelSource.convertRelativePathToAbsolute(source,aPath));
         }
         systemIncludes.addAll(source.getSystemInludePaths());
         userMacros.putAll(source.getUserMacros());

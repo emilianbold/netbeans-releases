@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -47,6 +47,7 @@ public class ClassViewTopComponent extends TopComponent  {
     }
     
     /** Return preferred ID */
+    @Override
     protected String preferredID() {
         return PREFERRED_ID;
     }
@@ -96,11 +97,13 @@ public class ClassViewTopComponent extends TopComponent  {
     
     /** Overriden to explicitely set persistence type of ProjectsTab
      * to PERSISTENCE_ALWAYS */
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
     
     /** Initialize visual content of component */
+    @Override
     protected void componentShowing() {
         super.componentShowing();
 //            view.getAccessibleContext().setAccessibleName(
@@ -120,11 +123,13 @@ public class ClassViewTopComponent extends TopComponent  {
 //        }
     }
     
+    @Override
     protected void componentHidden() {
         super.componentHidden();
     }
     
     public static final String ICON_PATH = "org/netbeans/modules/cnd/classview/resources/class_view.png"; // NOI18N
+    @Override
     protected void componentOpened() {
         if( view == null ) {
             view = new ClassView();
@@ -137,12 +142,14 @@ public class ClassViewTopComponent extends TopComponent  {
         view.startup();
     }
     
+    @Override
     protected void componentClosed() {
         if( view != null ) { // paranoia
             view.shutdown();
         }
     }
 
+    @Override
     protected void componentActivated() {
 	super.componentActivated();
 	view.requestFocus();

@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,30 +19,13 @@
 
 package org.netbeans.modules.cnd.discovery.wizard;
 
-import java.awt.GridBagConstraints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -50,8 +33,6 @@ import org.openide.util.Utilities;
  */
 public final class SelectObjectFilesPanel extends JPanel {
     private SelectObjectFilesWizard wizard;
-    private int chooserMode = 0;
-    private String selectorID;
     private List<ProviderControl> controls = new ArrayList<ProviderControl>();
     
     /** Creates new form DiscoveryVisualPanel1 */
@@ -61,7 +42,6 @@ public final class SelectObjectFilesPanel extends JPanel {
     }
     
     void read(DiscoveryDescriptor wizardDescriptor) {
-        String oldSelectorID = selectorID;
         DiscoveryProvider provider = wizardDescriptor.getProvider();
         if (provider != null) {
             providerPanel.removeAll();

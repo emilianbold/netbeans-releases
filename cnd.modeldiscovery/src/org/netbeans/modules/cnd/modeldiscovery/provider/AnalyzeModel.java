@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -207,7 +207,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         private MyConfiguration(ProjectProxy project){
             Project makeProject = (Project)project.getProject();
             langProject = CsmModelAccessor.getModel().getProject(makeProject);
-            ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
         }
         

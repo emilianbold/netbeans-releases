@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -36,7 +36,7 @@ import org.openide.nodes.Node;
  *
  * @author Alexander Simon
  */
-public class ProjectsKeyArray extends Children.Keys {
+public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     private java.util.Map<CsmProject,SortedName> myProjects;
     private ChildrenUpdater childrenUpdater;
     private static Comparator<java.util.Map.Entry<CsmProject, SortedName>> COMARATOR = new ProjectComparator();
@@ -61,7 +61,7 @@ public class ProjectsKeyArray extends Children.Keys {
             myProjects.clear();
         }
         childrenUpdater =null;
-        setKeys(new Object[0]);
+        setKeys(new CsmProject[0]);
     }
     
     private Set<CsmProject> getProjects(){
@@ -143,13 +143,13 @@ public class ProjectsKeyArray extends Children.Keys {
 	return new java.util.concurrent.ConcurrentHashMap<CsmProject,SortedName>();
     }
     
-    protected Node[] createNodes(Object object) {
+    protected Node[] createNodes(CsmProject project) {
         //System.out.println("Create project"); // NOI18N
-        CsmProject project = (CsmProject) object;
         return new Node[] {new ProjectNode(project,
                 new NamespaceKeyArray(childrenUpdater,project.getGlobalNamespace()))};
     }
     
+    @Override
     protected void destroyNodes(Node[] node) {
         for (Node n : node){
             Children children = n.getChildren();
@@ -162,12 +162,14 @@ public class ProjectsKeyArray extends Children.Keys {
     }
     
     
+    @Override
     protected void addNotify() {
         myProjects = createProjectsMap();
         resetProjects();
         super.addNotify();
     }
     
+    @Override
     protected void removeNotify() {
         super.removeNotify();
         if (myProjects != null) {

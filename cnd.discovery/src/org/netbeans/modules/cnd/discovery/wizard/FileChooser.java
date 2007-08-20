@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Component;
 import java.io.File;
-import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
@@ -92,6 +91,7 @@ public class FileChooser extends JFileChooser {
 	}
     }
 
+    @Override
     public int showOpenDialog(Component parent) {
 	int ret = super.showOpenDialog(parent);
 	if (ret != CANCEL_OPTION) {

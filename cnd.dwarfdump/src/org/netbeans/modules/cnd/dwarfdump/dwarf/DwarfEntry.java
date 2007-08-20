@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -91,9 +91,9 @@ public class DwarfEntry {
                 return null;
         }
         
-        String name = getName();
+        String aName = getName();
         String pname = parent.getQualifiedName();
-        String qname = (pname != null && name != null && !pname.equals("") && !name.equals("")) ? pname + "::" + name : null;  // NOI18N
+        String qname = (pname != null && aName != null && !pname.equals("") && !aName.equals("")) ? pname + "::" + aName : null;  // NOI18N
 
         return qname;
     }

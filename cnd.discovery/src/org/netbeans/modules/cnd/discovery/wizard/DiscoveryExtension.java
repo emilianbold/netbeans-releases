@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -205,9 +205,8 @@ public class DiscoveryExtension implements IteratorExtension {
     }
     
     private DiscoveryProvider findProvider(String providerID){
-        Lookup.Result providers = Lookup.getDefault().lookup(new Lookup.Template(DiscoveryProvider.class));
-        for(Object p : providers.allInstances()){
-            DiscoveryProvider provider = (DiscoveryProvider)p;
+        Lookup.Result<DiscoveryProvider> providers = Lookup.getDefault().lookup(new Lookup.Template<DiscoveryProvider>(DiscoveryProvider.class));
+        for(DiscoveryProvider provider : providers.allInstances()){
             if (providerID.equals(provider.getID())) {
                 provider.clean();
                 return provider;

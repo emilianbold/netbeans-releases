@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -67,6 +67,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
         getCopyButton().setVisible(false);
     }
     
+    @Override
     public Object addAction() {
         String seed = null;
         if (FileChooser.getCurrectChooserFile()  != null)
@@ -103,32 +104,40 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
         return itemPath;
     }
     
+    @Override
     public String getListLabelText() {
         return getString("LIBRARY_LIST_TXT");
     }
+    @Override
     public char getListLabelMnemonic() {
         return getString("LIBRARY_LIST_MN").charAt(0);
     }
     
+    @Override
     public String getAddButtonText() {
         return getString("ADD_BUTTON_TXT");
     }
+    @Override
     public char getAddButtonMnemonics() {
         return getString("ADD_BUTTON_MN").charAt(0);
     }
     
+    @Override
     public String getRenameButtonText() {
         return getString("EDIT_BUTTON_TXT");
     }
+    @Override
     public char getRenameButtonMnemonics() {
         return getString("EDIT_BUTTON_MN").charAt(0);
     }
     
+    @Override
     public Object copyAction(Object o) {
         return new String((String) o);
     }
     
     @SuppressWarnings("unchecked") // NOI18N
+    @Override
     public void editAction(Object o) {
         String s = (String)o;
         

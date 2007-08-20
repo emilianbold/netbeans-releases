@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -73,7 +73,7 @@ public class ClassViewUpdater extends Thread {
     private BlockingQueue queue;
     private volatile boolean isStoped = false;
     
-    public ClassViewUpdater(ClassViewModel model) {
+    /*package-local*/ ClassViewUpdater(ClassViewModel model) {
         super("Class View Updater"); // NOI18N
         this.model = model;
         queue = new BlockingQueue();
@@ -111,6 +111,7 @@ public class ClassViewUpdater extends Thread {
      */
     private static final int USER_ACTIVITY_DELAY = 1000;
     
+    @Override
     public void run() {
         long start = 0;
         try {

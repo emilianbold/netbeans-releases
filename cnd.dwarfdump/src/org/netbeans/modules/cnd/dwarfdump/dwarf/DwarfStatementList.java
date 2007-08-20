@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
 import org.netbeans.modules.cnd.dwarfdump.section.FileEntry;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 
@@ -155,7 +154,7 @@ public class DwarfStatementList {
         if (fileEntry.dirIndex == 0) {
             result = "." + File.separator + fileEntry.fileName; // NOI18N
         } else {
-            result = includeDirs.get((int)fileEntry.dirIndex - 1) + File.separator + fileEntry.fileName;
+            result = includeDirs.get(fileEntry.dirIndex - 1) + File.separator + fileEntry.fileName;
         }        
         
         return result;

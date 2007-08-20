@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -108,7 +108,6 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel, Change
     }
     
     public void storeSettings(Object settings) {
-        DiscoveryDescriptor wizardDescriptor = DiscoveryWizardDescriptor.adaptee(settings);
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
     }
 }

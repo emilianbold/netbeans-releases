@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -131,8 +131,8 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (csmFile != null){
                 //fileID = csmFile.getAbsolutePath();
                 final Children children = root.getChildren();
-                if (!children.MUTEX.isReadAccess()){
-                    children.MUTEX.writeAccess(new Runnable(){
+                if (!Children.MUTEX.isReadAccess()){
+                    Children.MUTEX.writeAccess(new Runnable(){
                         public void run() {
                             children.remove(children.getNodes());
                             List<CppDeclarationNode> list = new ArrayList<CppDeclarationNode>();
@@ -167,8 +167,8 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
                 }
             } else {
                 final Children children = root.getChildren();
-                if (!children.MUTEX.isReadAccess()){
-                    children.MUTEX.writeAccess(new Runnable(){
+                if (!Children.MUTEX.isReadAccess()){
+                    Children.MUTEX.writeAccess(new Runnable(){
                         public void run() {
                             children.remove(children.getNodes());
                             lineNumberIndex.clear();
@@ -251,7 +251,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     
     private CppEditorSupport getCppEditorSupport(){
         if (cdo != null) {
-            return (CppEditorSupport)cdo.getCookie(CppEditorSupport.class);
+            return cdo.getCookie(CppEditorSupport.class);
         }
         return null;
     }

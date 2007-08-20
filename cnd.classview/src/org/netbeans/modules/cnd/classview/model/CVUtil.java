@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.classview.model;
 
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.NameCache;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.nodes.*;
