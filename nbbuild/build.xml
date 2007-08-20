@@ -518,7 +518,7 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
       </taskdef>
       <checkhelpsetsbin>
         <fileset dir="netbeans">
-          <include name="*/**/modules/*.jar"/>
+          <include name="*/modules/*.jar"/>
         </fileset>
       </checkhelpsetsbin>
   </target>
