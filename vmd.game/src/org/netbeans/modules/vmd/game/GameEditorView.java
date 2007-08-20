@@ -21,7 +21,9 @@ package org.netbeans.modules.vmd.game;
 
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
+import org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog;
 import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.EditorManagerListener;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
@@ -30,6 +32,7 @@ import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
 import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,9 +41,6 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
-import org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -116,7 +116,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(GameEditorView.class, "GameBuilder.DisplayName");
+        return NbBundle.getMessage(GameEditorView.class, "GameEditorView.DisplayName");
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {
