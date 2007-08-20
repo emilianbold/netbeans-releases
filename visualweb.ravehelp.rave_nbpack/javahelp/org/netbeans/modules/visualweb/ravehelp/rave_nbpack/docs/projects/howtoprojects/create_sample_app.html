@@ -5,118 +5,208 @@
  * All rights reserved. 
  * Use is subject to license terms.
 -->
-<head>
- <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
- 	 <title>Creating a Sample Application</title>
- 	 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
- </head>
-
-<body>
-<h2>Creating a Sample Application</h2>
-<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
-<p>NetBeans contains several sample web applications. 
-
-
- To use a sample application, you must create a new Web project with the framework that uses the application, and then connect the project to the sample database if one is provided.
-<ul class="note">
-
-  <li>Updates to the IDE might include new sample databases and sample applications for  web devlopment. After an update, to see if there are new sample applications, choose File &gt; New Project to open the New Project wizard, and then choose Samples &gt; Web to see the list of sample applications in the right pane.</li> </ul>
-
-<p>This topic covers the following subjects:</p>
-<p>&nbsp;&nbsp;&nbsp;<a href="#setup">Setting up the IDE</a><br>
-  &nbsp;&nbsp;&nbsp;<a href="#create">Creating a Sample Application</a><br>
-  &nbsp;&nbsp;&nbsp;<a href="#connect">Connecting to a Java DB Database</a><br>
-  &nbsp;&nbsp;&nbsp;<a href="#viewdata">Viewing Data in a  Database</a>
-</p>
-<h3>Setting up the IDE<a name="setup"></a></h3>
-<ol>
-<li>Ensure that a server is <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">registered</a> in the IDE</li>
-<li>In the main toolbar, choose Tools &gt; Java DB Database &gt; Start  Server.</li>
-<ul class="note">
-  <li>For troubleshooting, see 
-      <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-             <param name="content" value="http://www.netbeans.org/community/releases/60/install.html">
-             <param name="text" value="Configuration Information in the Installation Instructions.">
-      </object> 
-    </li>
-</ul>
-</ol>
-<h3><b>Creating a Sample Application<a name="create"></a></b></h3>
-<ol>
-  <li>Choose File &gt; New Project. <p>
- 	   The New Project Wizard opens.
- 	 </p></li>
-  <li> In the Categories pane of the <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New Project Wizard</a>, expand the Samples node and select  Web.</li>
-  <li>Select the sample project from the Projects pane and click Next to continue. <ul class="note"><li><b>Note:</b> Visual Web is a subcategory.</li></ul></li>
-  <li>Type the name of the project in the Project Name field. <p>The IDE suggests a name that you can edit. </p></li>
-  <li>Based on the project name, the IDE suggests the Project Location and Project Folder. You can change the project location
-    <p>The IDE creates a folder name based on the information you enter.</p></li>
- 	   
-	<li>Click Finish to create the project. </li>
-</ol>
-  <h3><b>Connecting  to a  Java DB Database<a name="connect"></a></b></h3>
-  <ol>
-    <li>Make sure that the Java DB Database is running. </li>
-    <li>In the
-        <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href=
+    "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css">
+    <meta name="generator" content="Helen">
+    <title>Creating a Sample Application</title>
+  </head>
+  <body>
+    <h2>
+       Creating a Sample Application
+    </h2>
+    <p>
+       <small><a href="#seealso">See Also | Tutorials</a></small>
+    </p>
+    <p>
+       NetBeans contains several sample web applications. To use a sample application, you must
+      create a new Web project with the framework that uses the application, and then connect the
+      project to the sample database if one is provided.
+    </p>
+    <ul class="note">
+      <li>
+        Updates to the IDE might include new sample databases and sample applications for web
+        devlopment. After an update, to see if there are new sample applications, choose File &gt;
+        New Project to open the New Project wizard, and then choose Samples &gt; Web to see the
+        list of sample applications in the right pane.
+      </li>
+    </ul>
+    <p>
+       This topic covers the following subjects:
+    </p>
+    <p>
+       &nbsp;&nbsp;&nbsp;<a href="#setup">Setting up the IDE</a><br>
+       &nbsp;&nbsp;&nbsp;<a href="#create">Creating a Sample Application</a><br>
+       &nbsp;&nbsp;&nbsp;<a href="#connect">Connecting to a Java DB Database</a><br>
+       &nbsp;&nbsp;&nbsp;<a href="#viewdata">Viewing Data in a Database</a>
+    </p>
+    <h3>
+       Setting up the IDE <a name="setup"></a>
+    </h3>
+    <ol>
+      <li>
+        Ensure that a server is <a href=
+        "nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">
+        registered</a> in the IDE
+      </li>
+      <li>
+        In the main toolbar, choose Tools &gt; Java DB Database &gt; Start Server.
+      </li>
+      <li style=" list-style-type: none; list-style-image: none;">
+        <ul class="note">
+          <li>
+            For troubleshooting, see <object classid=
+            "java:org.netbeans.modules.javahelp.BrowserDisplayer">
+              <param name="content" value=
+              "http://www.netbeans.org/community/releases/60/install.html">
+              <param name="text" value=
+              "Configuration Information in the Installation Instructions.">
+            </object>
+          </li>
+        </ul>
+      </li>
+    </ol>
+    <h3>
+       <b>Creating a Sample Application <a name="create"></a></b>
+    </h3>
+    <ol>
+      <li>
+        Choose File &gt; New Project. 
+        <p>
+           The New Project Wizard opens.
+        </p>
+      </li>
+      <li>
+        In the Categories pane of the <a href=
+        "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">
+        New Project Wizard</a>, expand the Samples node and select Web.
+      </li>
+      <li>
+        Select the sample project from the Projects pane and click Next to continue. 
+        <ul class="note">
+          <li>
+            <b>Note:</b> Visual Web is a subcategory.
+          </li>
+        </ul>
+      </li>
+      <li>
+        Type the name of the project in the Project Name field. 
+        <p>
+           The IDE suggests a name that you can edit.
+        </p>
+      </li>
+      <li>
+        Based on the project name, the IDE suggests the Project Location and Project Folder. You
+        can change the project location 
+        <p>
+           The IDE creates a folder name based on the information you enter.
+        </p>
+      </li>
+      <li>
+        Click Finish to create the project.
+      </li>
+    </ol>
+    <h3>
+       <b>Connecting to a Java DB Database <a name="connect"></a></b>
+    </h3>
+    <ol>
+      <li>
+        Make sure that the Java DB Database is running.
+      </li>
+      <li>
+        In the <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
           <param name="content" value="../../ui_elements/server_nav/services_win_popup.html">
           <param name="viewerActivator" value="javax.help.LinkLabel">
           <param name="viewerStyle" value="javax.help.Popup">
           <param name="viewerSize" value="325,175">
           <param name="text" value="Services window">
+        </object> , expand the Databases node <img alt="Database node icon" src=
+        "../../images/databasenodeicon.gif">, right-click the database you want to access, and
+        choose Connect.
+      </li>
+      <li>
+        Enter the User ID and Password. 
+        <ul class="note">
+          <li>
+            For Java DB databases included with the Sun Java System Application Server 9, the
+            password is the same as the user ID. For example, for the Travel database the username
+            and password are both <code>travel</code>.
+          </li>
+        </ul>
+      </li>
+      <li>
+        The IDE connects the database, making the data accessible.
+      </li>
+    </ol>
+    <h3>
+       <b>Viewing Data in a Database <a name="viewdata"></a></b>
+    </h3>
+    <ol>
+      <li>
+        Connect to the database.
+      </li>
+      <li>
+        Expand the <i>database-name</i> node.
+      </li>
+      <li>
+        Expand the Tables folder and select the item you want to view.
+      </li>
+      <li>
+        Right-click the item and choose View Data. 
+        <p>
+           The table or view opens in the <a href=
+          "../../ui_elements/editors/about_query_editor.html">Visual SQL Editor</a>.
+        </p>
+      </li>
+    </ol>
+    <dl>
+      <dt>
+         <a name="seealso">See Also</a>
+      </dt>
+      <dd>
+        <a href=
+        "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/db/docs/connectdb.html">Adding
+        a Database Connection</a>
+      </dd>
+      <dd>
+        <a href="../../connect_data/about_data_binding.html">About Binding Components to Data</a>
+      </dd>
+      <dd>
+        <a href="../../connect_data/howtodata/add_table_to_page.html">Adding a Database Table to a
+        Page</a>
+      </dd>
+    </dl>
+    <dl>
+      <dt>
+         <a name="tutorials">Tutorials</a>
+      </dt>
+      <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value=
+          "http://www.netbeans.org/kb/60/web/intro.html &lt;param name=" value=
+          "Getting Started With NetBeans Visual Web Pack 6.0">
         </object>
-        , expand the Databases node <img src="../../images/databasenodeicon.gif" alt="Database node icon">, right-click the database you want to access, and choose Connect.</li>
-    <li>Enter the User ID and Password. <ul class="note">
-      <li>For  Java DB databases included with the Sun Java System Application Server 9, the password is the same as the user ID. For example, for the Travel database the username and password are both <code>travel</code>. </li>
-    </ul></li>
-    <li>The IDE connects the database, making the data accessible. </li>
-  </ol>
-  <h3><b>Viewing Data in a Database<a name="viewdata"></a></b></h3>
-  <ol>
-  <li>Connect to the database.</li>
-  <li>Expand the <i>database-name</i> node.</li>
-
-  <li>Expand the Tables  folder and select the item you want to view. </li>
-  <li>Right-click the item and choose View Data.
-<p>The table or view opens in the <a href="../../ui_elements/editors/about_query_editor.html">Visual SQL Editor</a>.</p>
-    </li>
-  </ol>
-<dl> 
-  <dt><a name="seealso">See Also</a></dt>
-  <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/db/docs/connectdb.html">Adding a Database Connection</a></dd>
-
-  <dd><a href="../../connect_data/about_data_binding.html">About Binding Components to Data</a></dd>
-  <dd><a href="../../connect_data/howtodata/add_table_to_page.html">Adding a Database Table to a Page</a></dd>
-</dl>
-<dl>
-<dt><a name="tutorials">Tutorials</a></dt>
-
-<dd>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-		<param name="content" value="http://www.netbeans.org/kb/60/web/intro.html
-		<param name="text" value="Getting Started With NetBeans Visual Web Pack 6.0">
-</object>
-</dd>
-
-</dl>
-<hr>   
-<!-- Start Customer Feedback Link -->
-<!-- <p><b>Comments or questions?</b><br>
-Use the link below to connect to the Visual Web Development contact page. </p>
-  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="viewerActivator" value="javax.help.LinkButton">
-    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=3&subject=Feedback:%20Web%20Application%20Help:%20Creating a Sample Application">
-    <param name="text" value="<html><u>Click here to send feedback</u></html>">
-    <param name="textFontFamily" value="SansSerif">
-  </object><br>
-<!-- End Customer Feedback Link -->
-  <small><a href="../../credits.html">Legal Notices</a></small> 
-
-<table cellpadding="50" border="0">
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-</table>
-
-</body>
-</html>
+      </dd>
+    </dl>
+    <hr>
+    <p>
+       <!--Start Customer Feedback Link--><!--<p><b>Comments or questions?</b><br>
+      Use the link below to connect to the Visual Web Development contact page. </p>
+      <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+      <param name="viewerActivator" value="javax.help.LinkButton">
+      <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=3&subject=Feedback:%20Web%20Application%20Help:%20Creating a Sample Application">
+      <param name="text" value="<html><u>Click here to send feedback</u></html>">
+      <param name="textFontFamily" value="SansSerif">
+      </object><br>
+      <!== End Customer Feedback Link--> <a href="../../credits.html"><small>Legal
+      Notices</small></a>
+    </p>
+    <table border="0" cellpadding="50">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>

@@ -20,7 +20,7 @@
 			<tocitem text="Web Application Frameworks">
 				<tocitem text="About Web Application Frameworks" target="about_framework" />
 				<tocitem text="JavaServer Faces">
-					<tocitem text="About the Visual Web JSF Framework" />
+					<tocitem text="About the Visual Web JSF Framework" target="projraveweb_create_tag_framework_jsf_about_visweb_framework" />
 					<tocitem text="Creating a New Application with JSF Support" target="framework_jsf_create" />
 					<tocitem text="Adding JSF Support to an Existing Application" target="framework_jsf_add" />
 					<tocitem text="Adding a JSF Form to a JSP Page" target="framework_jsf_form" />
@@ -81,7 +81,7 @@
 				</tocitem>
 				<tocitem text="Web Services">
 					<tocitem text="About Web Services" target="projrave_web_svc_aboutwebservices" />
-					<tocitem text="Working with Web Services" target="projrave_web_svc_web_services_process" />
+					<tocitem text="Working with Web Services" target="projraveweb_svc_web_services_process" />
 					<tocitem text="Visual Web JSF Web Service Tasks: Quick Reference" target="projrave_web_svc_howtowebservices_webservices_quickref" />
 					<tocitem text="Adding a Web Service to a Visual Web JSF Project" target="projrave_web_svc_howtowebservices_accessing_websvc" />
 					<tocitem text="Deleting a Web Service" target="projrave_web_svc_howtowebservices_delete_websvc" />

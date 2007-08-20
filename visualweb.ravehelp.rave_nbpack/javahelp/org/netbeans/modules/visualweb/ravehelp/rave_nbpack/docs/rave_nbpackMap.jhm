@@ -6,7 +6,6 @@
 	<mapID target="about_build" url="web/build/about_build.html"/>
 	<mapID target="about_create_webapps" url="web/create/about/about_create_webapps.html"/>
 	<mapID target="about_create_webcomps" url="web/create/about/about_create_webcomps.html"/>
-	<mapID target="about_crud" url="web/create/tag/framework/about_crud.html"/>
 	<mapID target="about_debug" url="web/debug/about_debug.html"/>
 	<mapID target="about_deploy" url="web/deploy/about_deploy.html"/>
 	<mapID target="about_filter" url="web/create/filter/about_filter.html"/>
@@ -58,7 +57,6 @@
 	<mapID target="filter_addtodd" url="web/create/filter/filter_addtodd.html"/>
 	<mapID target="filter_create" url="web/create/filter/filter_create.html"/>
 	<mapID target="filter_run" url="web/create/filter/filter_run.html"/>
-	<mapID target="framework_crud_generate" url="web/create/tag/framework/framework_crud_generate.html"/>
 	<mapID target="framework_jsf_add" url="web/create/tag/framework/framework_jsf_add.html"/>
 	<mapID target="framework_jsf_create" url="web/create/tag/framework/framework_jsf_create.html"/>
 	<mapID target="framework_jsf_datatable" url="web/create/tag/framework/framework_jsf_datatable.html"/>
@@ -216,7 +214,6 @@
 	<mapID target="projrave_multiple_forms_howtomultiforms_set_form_navigation" url="multiple_forms/howtomultiforms/set_form_navigation.html"/>
 	<mapID target="projrave_multiple_forms_multiform_process" url="multiple_forms/multiform_process.html"/>
 	<mapID target="projrave_no_topic" url="no_topic.html"/>
-	<mapID target="projrave_projects_about_lib_refs" url="projects/about_lib_refs.html"/>
 	<mapID target="projrave_projects_howtoprojects_add_theme" url="projects/howtoprojects/add_theme.html"/>
 	<mapID target="projrave_projects_howtoprojects_create_sample_app" url="projects/howtoprojects/create_sample_app.html"/>
 	<mapID target="projrave_projects_howtoprojects_import_creator_project" url="projects/howtoprojects/import_creator_project.html"/>
@@ -243,7 +240,6 @@
 	<mapID target="projrave_ui_elements_dialogs_theme_switch_info_db" url="ui_elements/dialogs/theme_switch_info_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_virtual_forms_db" url="ui_elements/dialogs/virtual_forms_db.html"/>
 	<mapID target="projrave_ui_elements_editors_about_css_editor" url="ui_elements/editors/about_css_editor.html"/>
-	<mapID target="projrave_ui_elements_editors_about_jsp_editor" url="ui_elements/editors/about_jsp_editor.html"/>
 	<mapID target="projrave_ui_elements_editors_about_navigation_editor" url="ui_elements/editors/about_navigation_editor.html"/>
 	<mapID target="projrave_ui_elements_editors_about_query_editor" url="ui_elements/editors/about_query_editor.html"/>
 	<mapID target="projrave_ui_elements_editors_about_visual_editor" url="ui_elements/editors/about_visual_editor.html"/>
@@ -623,6 +619,7 @@
 	<mapID target="projrave_ui_elements_server_nav_runtime_nav_driver_node_popup" url="ui_elements/server_nav/runtime_nav_driver_node_popup.html"/>
 	<mapID target="projrave_ui_elements_server_nav_runtime_navigator" url="ui_elements/server_nav/runtime_navigator.html"/>
 	<mapID target="projrave_ui_elements_server_nav_services_win_popup" url="ui_elements/server_nav/services_win_popup.html"/>
+	<mapID target="projrave_web_svc_aboutwebservices" url="web_svc/aboutwebservices.html"/>
 	<mapID target="projrave_web_svc_howtowebservices_accessing_websvc" url="web_svc/howtowebservices/accessing_websvc.html"/>
 	<mapID target="projrave_web_svc_howtowebservices_add_websvc_to_page" url="web_svc/howtowebservices/add_websvc_to_page.html"/>
 	<mapID target="projrave_web_svc_howtowebservices_create_websvc_group" url="web_svc/howtowebservices/create_websvc_group.html"/>
@@ -632,8 +629,7 @@
 	<mapID target="projrave_web_svc_howtowebservices_ws_bind_list" url="web_svc/howtowebservices/ws_bind_list.html"/>
 	<mapID target="projrave_web_svc_howtowebservices_ws_bind_simple" url="web_svc/howtowebservices/ws_bind_simple.html"/>
 	<mapID target="projrave_web_svc_howtowebservices_ws_bind_table" url="web_svc/howtowebservices/ws_bind_table.html"/>
-	<mapID target="projrave_web_svc_web_services_process" url="web_svc/web_services_process.html"/>
-	<mapID target="projrave_web_svc_aboutwebservices" url="web_svc/aboutwebservices.html"/>
+	<mapID target="projraveweb_create_tag_framework_jsf_about_visweb_framework" url="web/create/tag/framework/jsf/about_visweb_framework.html"/>
 	<mapID target="propfiles.prop" url="ui_elements/editors/about_properties_editor.html"/>
 	<mapID target="servlet_create" url="web/create/servlet/servlet_create.html"/>
 	<mapID target="servlet_edit" url="web/create/servlet/servlet_edit.html"/>
@@ -642,11 +638,11 @@
 	<mapID target="taghandler_create" url="web/create/tag/taghandler/taghandler_create.html"/>
 	<mapID target="taghandler_edit" url="web/create/tag/taghandler/taghandler_edit.html"/>
 	<mapID target="taglib_create_separate" url="web/create/tag/taglib/taglib_create_separate.html"/>
-	<mapID target="taglib_manage" url="web/create/tag/taglib/taglib_manage.html"/>
 	<mapID target="tld_create" url="web/create/tag/tld/tld_create.html"/>
 	<mapID target="tld_edit" url="web/create/tag/tld/tld_edit.html"/>
 	<mapID target="webapps_idesupport" url="web/about/webapps_idesupport.html"/>
 	<mapID target="webapps_process" url="web/about/webapps_process.html"/>
 	<mapID target="webapps_quickref" url="web/about/webapps_quickref.html"/>
 	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html"/>
+	<mapID target="projraveweb_svc_web_services_process" url="web_svc/web_services_process.html"/>
 </map>
