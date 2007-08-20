@@ -21,6 +21,9 @@ package org.netbeans.modules.visualweb.websvcmgr.util;
 
 
 import java.io.FileInputStream;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.*;
 import java.text.*;
@@ -72,6 +75,51 @@ public class Util {
     public static final int BUFFER_SIZE = 4096;
     public static final String xsdNamespace = "xsd";
     final static public String WSDL_FILE_EXTENSION = "wsdl";
+    
+    public static String typeToString(Type type) {
+        if (type instanceof ParameterizedType) {
+            ParameterizedType paramType = (ParameterizedType)type;
+            if (paramType.getOwnerType() != null) return null;
+            
+            Type rawType = paramType.getRawType();
+            if (!(rawType instanceof Class)) {
+                return null;
+            }
+            Class rawClass = (Class)rawType;
+            
+            Type[] argTypes = paramType.getActualTypeArguments();
+            if (argTypes == null || argTypes.length == 0) {
+                return null;
+            }
+            
+            StringBuffer arguments = new StringBuffer();
+            for (int i = 0; i < argTypes.length; i++) {
+                String argument = typeToString(argTypes[0]);
+                if (argument == null) {
+                    return null;
+                }else {
+                    arguments.append(argument);
+                }
+                
+                if (i != argTypes.length - 1) {
+                    arguments.append(',');
+                }
+            }
+            
+            return rawClass.getCanonicalName() + "<" + arguments.toString() + ">";
+        }else if (type instanceof GenericArrayType) {
+            String component = typeToString(((GenericArrayType)type).getGenericComponentType());
+            if (component != null) {
+                return component + "[]";
+            }
+        }else if (type instanceof Class) {
+            return ((Class)type).getCanonicalName();
+        }
+        
+        return null;
+    }
+    
+    
     /*
      * Removes any namespace prefix.
      *    eg: 'xsd:element' -> 'element'

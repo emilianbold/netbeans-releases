@@ -348,7 +348,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
                 println( "         initialize();");
                 print(   "         return " + portInterfaceVariable + "." + methodName + "(");
             }else{
-                println( "      if( Beans.isDesignTime() ) " );
+                println( "      if( Beans.isDesignTime() && !testMode ) " );
                 println( "        return;" );
                 println( "      else {" );
                 println( "        initialize();");

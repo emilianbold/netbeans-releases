@@ -22,6 +22,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 
 /**
  *
@@ -35,7 +36,7 @@ public class DataProviderJavaMethod implements DataProviderMethod {
     
     public DataProviderJavaMethod(Method method) {
         this.name = method.getName();
-        this.returnType = toString(method.getGenericReturnType());
+        this.returnType = Util.typeToString(method.getGenericReturnType());
         if (returnType == null) {
             returnType = method.getReturnType().getCanonicalName();
         }
@@ -44,7 +45,7 @@ public class DataProviderJavaMethod implements DataProviderMethod {
         Type[] methodParameters = method.getGenericParameterTypes();
         Class[] methodClassParameters = method.getParameterTypes();
         for (int i = 0; i < methodParameters.length; i++) {
-            String nextParamType = toString(methodParameters[i]);
+            String nextParamType = Util.typeToString(methodParameters[i]);
             if (nextParamType == null) {
                 nextParamType = methodClassParameters[i].getCanonicalName();
             }
@@ -56,7 +57,7 @@ public class DataProviderJavaMethod implements DataProviderMethod {
         Type[] methodExceptions = method.getGenericExceptionTypes();
         Class[] methodClassExceptions = method.getExceptionTypes();
         for (int i = 0; i < methodExceptions.length; i++) {
-            String nextException = toString(methodExceptions[i]);
+            String nextException = Util.typeToString(methodExceptions[i]);
             if (nextException == null) {
                 nextException = methodClassExceptions[i].getCanonicalName();
             }
@@ -80,48 +81,4 @@ public class DataProviderJavaMethod implements DataProviderMethod {
     public List<String> getExceptions() {
         return exceptions;
     }
-
-    private String toString(Type type) {
-        if (type instanceof ParameterizedType) {
-            ParameterizedType paramType = (ParameterizedType)type;
-            if (paramType.getOwnerType() != null) return null;
-            
-            Type rawType = paramType.getRawType();
-            if (!(rawType instanceof Class)) {
-                return null;
-            }
-            Class rawClass = (Class)rawType;
-            
-            Type[] argTypes = paramType.getActualTypeArguments();
-            if (argTypes == null || argTypes.length == 0) {
-                return null;
-            }
-            
-            StringBuffer arguments = new StringBuffer();
-            for (int i = 0; i < argTypes.length; i++) {
-                String argument = toString(argTypes[0]);
-                if (argument == null) {
-                    return null;
-                }else {
-                    arguments.append(argument);
-                }
-                
-                if (i != argTypes.length - 1) {
-                    arguments.append(',');
-                }
-            }
-            
-            return rawClass.getCanonicalName() + "<" + arguments.toString() + ">";
-        }else if (type instanceof GenericArrayType) {
-            String component = toString(((GenericArrayType)type).getGenericComponentType());
-            if (component != null) {
-                return component + "[]";
-            }
-        }else if (type instanceof Class) {
-            return ((Class)type).getCanonicalName();
-        }
-        
-        return null;
-    }
-    
 }
