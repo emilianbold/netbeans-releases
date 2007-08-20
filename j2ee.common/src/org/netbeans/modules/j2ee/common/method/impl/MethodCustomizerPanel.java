@@ -23,7 +23,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
@@ -361,7 +361,15 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     }
     
     public List<String> getExceptions() {
-        return exceptionsPanel != null ? exceptionsPanel.getExceptions() : Collections.<String>emptyList();
+        List<String> result = new ArrayList<String>();
+        if (exceptionsPanel != null) {
+            for (String exception : exceptionsPanel.getExceptions()) {
+                if (!"".equals(exception.trim())) {
+                    result.add(exception);
+                }
+            }
+        }
+        return result;
     }
     
     public Set<Modifier> getModifiers() {
