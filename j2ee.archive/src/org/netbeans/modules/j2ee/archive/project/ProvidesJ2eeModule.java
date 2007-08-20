@@ -63,6 +63,14 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
         innerModule = J2eeModuleFactory.createJ2eeModule(new InnerModule(inner.getJ2eeModule()));
     }
     
+    /**  Return name to be used in deployment for the module.
+     * @return name to be used for the module
+     */
+    @Override
+    public String getDeploymentName() {
+        return project.getName();
+    }
+    
     public J2eeModule getJ2eeModule() {
         return innerModule;
         
