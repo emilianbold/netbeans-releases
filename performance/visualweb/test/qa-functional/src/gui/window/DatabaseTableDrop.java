@@ -28,10 +28,11 @@ import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.DeleteAction;
+import org.netbeans.jemmy.JemmyProperties;
 
 import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
@@ -135,8 +136,18 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         NbDialogOperator connectDlg = new NbDialogOperator("Connect"); // NOI18N
         JTextComponentOperator password = new JTextComponentOperator(connectDlg,0);
         password.setText("travel");
+        
+        long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",60000);        
+        
         connectDlg.ok();
-        connectDlg.waitClosed();
+        try {
+            connectDlg.waitClosed();
+        } catch (TimeoutExpiredException tex) 
+        {
+            fail("Unable to start Java DB server");
+        }
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",oldTimeout);
     }
     
     private void selectDBTableNode() {
