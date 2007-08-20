@@ -15,19 +15,8 @@
 
 <!-- Start of "Developing Web Applications" help -->
     <mapID target="about_entwebapps" url="web/about_webtier.html" />
-        <!-- Start of "About" section -->
-        <!--
-        <mapID target="about_webapps" url="web/about/about_webapps.html" />
-        <mapID target="webapps_process" url="web/about/webapps_process.html" />
-        <mapID target="webapps_quickref" url="web/about/webapps_quickref.html" />
-	<mapID target="webapps_idesupport" url="web/about/webapps_idesupport.html" />
-	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html" />
-	-->
-<!-- End of "About" section -->
 
         <!-- Start of "Create" section -->
-
-
 <mapID target="jsp_connectionpool_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
 <mapID target="jsp_compilation_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_enable_1_5.html" />
 <mapID target="tomcat_jwsdp" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_websvc_jwsdp.html" />
@@ -35,28 +24,6 @@
 -->
 		<!-- End of "Create/JSP" subsection -->
 
-	<!-- Start of "Configure" section -->
-        <!-- <mapID target="about_webapp_configure" url="web/configure/about_webapp_configure.html" />
-	<mapID target="configure_webapp_dd" url="web/configure/configure_webapp_dd.html" /> -->
-	<!-- End of "Configure" section -->
-
-	<!-- Start of "Build" section -->
-        <!-- <mapID target="about_build" url="web/build/about_build.html" />
-	<mapID target="build_warfile" url="web/build/build_warfile.html" />
-	<mapID target="build_externalresources" url="web/build/build_externalresource.html" />
-	<mapID target="build_remove" url="web/build/build_remove.html" /> -->
-	<!-- End of "Build" section -->
-
-	<!-- Start of "Deploy" section -->
-        <!-- <mapID target="about_deploy" url="web/deploy/about_deploy.html" />
-        <mapID target="deploy_quickref" url="web/deploy/deploy_quickref.html" />
-	<mapID target="deploy_webapp" url="web/deploy/deploy_webapp.html" />
-        <mapID target="deploy_tomcat_manager" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_edit_tomcatuser.html" /> -->
-	<!-- End of "Deploy" section -->
-
-
-
-<!-- End of "Developing Web Applications" help -->
 
 
 <!-- Start of "Developing Web Services" help -->
@@ -314,11 +281,6 @@
     <!-- EJB Module with Existing Ant Script Project Wizard dialog box csh: -->
     <mapID target="org.netbeans.modules.j2ee.ejbfreeform.ui.EJBLocationsWizardPanel" url="ejb/csh/freeform_ejb_wizard.html" />
 
-    <!-- Free-form EJB Module project properties dialog box: -->
-    <mapID target="org.netbeans.modules.j2ee.ejbfreeform.ui.EJBLocationsPanel" url="ejb/csh/freeform_ejb_properties.html" />
-    <!-- Freeform EJB Module project properties dialog box: -->
-    <mapID target="org.netbeans.modules.j2ee.ejbfreeform.ui.EJBLocationsPanel.ejb.java" url="ejb/csh/freeform_ejb_properties.html" />
-    
     <!-- ejb-jar.xml editor csh: -->
     <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.SessionNode" url="ejb/csh/graphic_editor/dd_multiview_Session.html" />
     <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.EntityNode" url="ejb/csh/graphic_editor/dd_multiview_Entity.html" />
