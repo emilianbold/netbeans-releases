@@ -507,7 +507,7 @@ public class NetBeansUtils {
         for(String s : list) {
             String cluster = s.trim();
             if(!cluster.startsWith("#") &&
-                    cluster.equals("etc")) {
+                    !cluster.equals("etc")) {
                 nbDirs.add(new File(nbLocation, cluster));
                 if(cluster.startsWith("platform")) {
                     platformCluster= new File(nbLocation, cluster);
