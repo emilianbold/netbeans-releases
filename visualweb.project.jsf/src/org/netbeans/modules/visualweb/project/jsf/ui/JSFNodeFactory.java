@@ -21,6 +21,7 @@ package org.netbeans.modules.visualweb.project.jsf.ui;
 
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.project.jsf.framework.JSFFrameworkProvider;
+import org.netbeans.modules.visualweb.project.jsf.services.ThemeNodeService;
 import org.netbeans.modules.visualweb.project.jsf.services.ComponentLibraryService;
 import org.netbeans.modules.visualweb.project.jsf.services.DataSourceService;
 
@@ -101,8 +102,12 @@ public class JSFNodeFactory implements NodeFactory {
 
         public Node node(String key) {
             if (key == THEMES_FOLDER) {
-                return new JSFThemesFolderNode(NbBundle.getMessage(JSFNodeFactory.class, "CTL_ThemesNode"), project,
-                                               new Action[] { /* TODO: Themes folder actions */ });
+                ThemeNodeService themeService = (ThemeNodeService) Lookup.getDefault().lookup(ThemeNodeService.class);
+                if (themeService != null) {
+                    return themeService.getThemeNode(project);
+                } else {
+                    return null;
+                }
             } else if (key == COMPONENT_LIBS) {
                 ComponentLibraryService complibService = (ComponentLibraryService) Lookup.getDefault().lookup(ComponentLibraryService.class);
                 if (complibService != null) {
