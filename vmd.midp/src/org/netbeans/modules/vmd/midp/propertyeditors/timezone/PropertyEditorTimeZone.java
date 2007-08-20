@@ -19,16 +19,6 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.timezone;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
@@ -36,25 +26,27 @@ import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUser
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collections;
+
 /**
  *
  * @author Anton Chechel
  */
 public class PropertyEditorTimeZone extends PropertyEditorUserCode {
-    
-    private List<PropertyEditorElement> elements;
-    private PredefinedEditor predefinedEditor;
-    
+
+    private PropertyEditorTimeZone.TimeZoneEditor timeZoneEditor;
+
     private PropertyEditorTimeZone() {
         super(NbBundle.getMessage(PropertyEditorTimeZone.class, "LBL_TIME_ZONE_UCLABEL")); // NOI18N
-        
-        elements = new ArrayList<PropertyEditorElement>(2);
-        elements.add(predefinedEditor = new PredefinedEditor());
-        elements.add(new CustomEditor());
-        initElements(elements);
+
+        timeZoneEditor = new TimeZoneEditor ();
+        initElements(Collections.<PropertyEditorElement>singleton (timeZoneEditor));
     }
     
-    public static final PropertyEditorTimeZone createInstance() {
+    public static PropertyEditorTimeZone createInstance() {
         return new PropertyEditorTimeZone();
     }
     
@@ -78,33 +70,22 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
     @Override
     public void customEditorOKButtonPressed() {
         super.customEditorOKButtonPressed();
-        for (PropertyEditorElement element : elements) {
-            if (element.getRadioButton().isSelected()) {
-                saveValue(element.getTextForPropertyValue ());
-                break;
-            }
-        }
+        if (timeZoneEditor.getRadioButton().isSelected())
+            saveValue(timeZoneEditor.getTextForPropertyValue ());
     }
     
-    private boolean isPredefined(String str) {
-        return predefinedEditor.isPredefined(str);
-    }
-    
-    private final class PredefinedEditor implements PropertyEditorElement, ActionListener {
+    private final class TimeZoneEditor implements PropertyEditorElement, ActionListener {
         private JRadioButton radioButton;
         private TimeZoneComboboxModel model;
         private JComboBox combobox;
         
-        public PredefinedEditor() {
+        public TimeZoneEditor() {
             radioButton = new JRadioButton();
-            Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTimeZone.class, "LBL_PREDEFINED")); // NOI18N
+            Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTimeZone.class, "LBL_TIMEZONE")); // NOI18N
             model = new TimeZoneComboboxModel();
             combobox = new JComboBox(model);
+            combobox.setEditable (true);
             combobox.addActionListener(this);
-        }
-        
-        public boolean isPredefined(String str) {
-            return model.contains(str);
         }
         
         public void updateState(PropertyValue value) {
@@ -112,7 +93,7 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
                 String timeZone;
                 for (int i = 0; i < model.getSize(); i++) {
                     timeZone = (String) model.getElementAt(i);
-                    if (timeZone.equals((String) value.getPrimitiveValue())) {
+                    if (timeZone.equals(value.getPrimitiveValue())) {
                         model.setSelectedItem(timeZone);
                         break;
                     }
@@ -149,61 +130,4 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
         }
     }
     
-    private final class CustomEditor implements PropertyEditorElement, DocumentListener {
-        private JRadioButton radioButton;
-        private JTextField textField;
-        
-        public CustomEditor() {
-            radioButton = new JRadioButton();
-            Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTimeZone.class, "LBL_CUSTOM")); // NOI18N
-            textField = new JTextField();
-            textField.getDocument().addDocumentListener(this);
-        }
-        
-        public void updateState(PropertyValue value) {
-            if (!isCurrentValueANull() && value != null) {
-                String str = (String) value.getPrimitiveValue();
-                if (!isPredefined(str)) { // if that value is not predefined
-                    textField.setText(str);
-                }
-            } else {
-                textField.setText(null);
-            }
-        }
-        
-        public void setTextForPropertyValue (String text) {
-            saveValue(text);
-        }
-        
-        public String getTextForPropertyValue () {
-            return textField.getText();
-        }
-        
-        public JComponent getCustomEditorComponent() {
-            return textField;
-        }
-        
-        public JRadioButton getRadioButton() {
-            return radioButton;
-        }
-        
-        public boolean isInitiallySelected() {
-            return false;
-        }
-        
-        public boolean isVerticallyResizable() {
-            return false;
-        }
-        
-        public void insertUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-        }
-        
-        public void removeUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-        }
-        
-        public void changedUpdate(DocumentEvent evt) {
-        }
-    }
 }
