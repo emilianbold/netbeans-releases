@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
-<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
-                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/map_2_0.dtd">
 
 <map version="1.0">
 	<mapID target="about_build" url="web/build/about_build.html"/>
@@ -638,7 +638,7 @@
 	<mapID target="projrave_web_svc_howtowebservices_ws_bind_simple" url="web_svc/howtowebservices/ws_bind_simple.html"/>
 	<mapID target="projrave_web_svc_howtowebservices_ws_bind_table" url="web_svc/howtowebservices/ws_bind_table.html"/>
 	<mapID target="projrave_web_svc_web_services_process" url="web_svc/web_services_process.html"/>
-	<mapID target="projraveweb_svc_aboutwebservices" url="web_svc/aboutwebservices.html"/>
+	<mapID target="projrave_web_svc_aboutwebservices" url="web_svc/aboutwebservices.html"/>
 	<mapID target="propfiles.prop" url="ui_elements/editors/about_properties_editor.html"/>
 	<mapID target="servlet_create" url="web/create/servlet/servlet_create.html"/>
 	<mapID target="servlet_edit" url="web/create/servlet/servlet_edit.html"/>

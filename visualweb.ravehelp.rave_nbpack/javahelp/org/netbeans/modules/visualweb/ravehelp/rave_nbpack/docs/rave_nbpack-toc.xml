@@ -11,7 +11,7 @@
 			<tocitem text="About the IDE's Web Development Support" target="webapps_idesupport" />
 			<tocitem text="About the IDE's Technology Version Support" target="webapps_techsupport" />
 		</tocitem>
-		<tocitem text="Creating  Web Applications">
+		<tocitem text="Creating Web Applications">
 			<tocitem text="About Creating Web Applications" target="about_create_webapps" />
 			<tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
 			<tocitem text="Creating a Web Application with Visual Web JSF " target="projrave_projects_howtoprojects_create_sample_app" />
@@ -19,7 +19,7 @@
 			<tocitem text="Web Application Frameworks">
 				<tocitem text="About Web Application Frameworks" target="about_framework" />
 				<tocitem text="JavaServer Faces">
-					<tocitem text="About the Visual Web JSF Framework" target="projrave_web_create_tag_framework_jsf_about_visweb_framework" />
+					<tocitem text="About the Visual Web JSF Framework" />
 					<tocitem text="Creating a New Application with JSF Support" target="framework_jsf_create" />
 					<tocitem text="Adding JSF Support to an Existing Application" target="framework_jsf_add" />
 					<tocitem text="Adding a JSF Form to a JSP Page" target="framework_jsf_form" />
@@ -98,10 +98,11 @@
 					<tocitem text="Viewing Page Contents in the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_preview_nav_page" />
 				</tocitem>
 			</tocitem>
+			<tocitem text="Importing a Legacy Project" target="projrave_projects_howtoprojects_import_creator_project" />
 		</tocitem>
 		<tocitem text="Creating and Editing Web Components">
 			<tocitem text="About Creating Web Components" target="about_create_webcomps" />
-			<tocitem text="Visual Web Components" expand="false">
+			<tocitem text="Components" expand="false">
 				<tocitem text="About Components" target="projrave_components_aboutcomponents" />
 				<tocitem text="Working With Components" target="projrave_components_component_process" />
 				<tocitem text="Component Tasks: Quick Reference" target="projrave_components_howtocomponents_howtocomponents" />

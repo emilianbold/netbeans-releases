@@ -5,116 +5,236 @@
  * All rights reserved. 
  * Use is subject to license terms.
 -->
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Importing a Java Studio Creator Project</title>
-<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-
-<body>
-<h2>Importing a Legacy Project</h2>
-<p><small><a href="#seealso">See Also | Tutorials</a></small></p>
-<p>A legacy project is a project that was created in  Java Studio  Creator 2 , Java Studio  Creator 2 Update 1, or NetBeans Visual Web Pack 5.5. You can import a legacy project in  NetBeans 6.0. For more information about importing legacy projects, go to
-<ul><li><a href="www.netbeans.org/kb/60/web/creator-migration.html">Tips for Migrating Java Studio Creator 2 Update 1 Projects to NetBeans</a></li>
-<li><a href="www.netbeans.org/kb/60/web/vwp-migration.html">Tips for NetBeans Visual Web Pack Applications to NetBeans</a></li>
-
-<p><b>To import a  legacy  project:</b></p>
-
-
-<ol>
-  <li><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/configure_importing.html">Import the settings from a previous version of the IDE</a></li>
-
-<li>In the main toolbar, choose File &gt; Open Project.</li>
-  <li>In the Open Project dialog box, browse for the project. </li>
-
-<li>Click Open Project Folder to open the project in the IDE. 
-    <p>The IDE scans the project classpath. </p>
-</li>
-<li>If you are connecting to a Java DB database using the Sun Java System Application Server 9, restart the IDE. </li>
-</ol>
-<p><b>Connecting to a Database</b></p>
-<p>In NetBeans 6.0, you must resolve all data sources before you run the application. When you migrate the Java Studio Creator 2.1 user directory, third party complibs migrate to the NetBeans 6.0 directory and appear in the Component Library Manager. </p>
-<ol>
-<li>In the Services Window, expand the Servers node, right-click the server you want to use, and choose Start.</li>
-<li>After the server has started, expand the Databases node <img src="../../images/databasenodeicon.gif" alt="database node icon">, and then right-click the node of the database you want to use and choose Connect.
-    <p>The IDE prompts you to enter a password for the database.</p>
-</li>
-</ol>
-<p><b>Resolving Data Sources</b></p>
-<p>In NetBeans 6.0, you must resolve all data sources before you run the application. When you migrate the Java Studio Creator 2.1 user directory, third party complibs migrate to the NetBeans 6.0 directory and appear in the Component Library Manager. </p>
-<ol>
-  <li>In the Projects window, the project node is red and displays a badge  when there is a missing  data source. </li>
-  <li>To resolve a data source,  right-click the Data Source References node and choose Resolve Data Sources. </li>
-  <li>In the Resolve Data Source(s) dialog box, select the database name from the list and click Add Data Connection.
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <link type="text/css" rel="stylesheet" href=
+    "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css">
+    <meta name="generator" content="Helen">
+    <title>Importing a Legacy Project</title>
+  </head>
+  <body>
+    <h2>
+       Importing a Legacy Project
+    </h2>
     <p>
-  The Resolve Data Sources dialog box opens, displaying data sources that do not have a database connection. </p> 
-  <li>Select the data souce you want to resolve and click OK.
-    <p>The <a href="../../ui_elements/dialogs/add_database_conn_db.html">Add Database Connection</a> dialog box opens.</p>
-    <ul class="note">
-      <li><b>Note: </b>If the project you are importing uses a Java DB database, go to step 9.</li>
+       <small><a href="#seealso">See Also | Tutorials</a></small>
+    </p>
+    <p>
+       A legacy project is a project that was created in Java Studio Creator 2 , Java Studio
+      Creator 2 Update 1, or NetBeans Visual Web Pack 5.5. You can import a legacy project in
+      NetBeans 6.0. For more information about importing legacy projects, go to
+    </p>
+    <ul>
+      <li>
+        <a href="www.netbeans.org/kb/60/web/creator-migration.html">Tips for Migrating Java Studio
+        Creator 2 Update 1 Projects to NetBeans</a>
+      </li>
+      <li>
+        <a href="www.netbeans.org/kb/60/web/vwp-migration.html">Tips for NetBeans Visual Web Pack
+        Applications to NetBeans</a>
+      </li>
+      <li style=" list-style-image: none; list-style-type: none;">
+        <p>
+           <b>To import a legacy project:</b>
+        </p>
+        <ol>
+          <li>
+            <a href=
+            "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/configure_importing.html">
+             Import the settings from a previous version of the IDE</a>
+          </li>
+          <li>
+            In the main toolbar, choose File &gt; Open Project.
+          </li>
+          <li>
+            In the Open Project dialog box, browse for the project.
+          </li>
+          <li>
+            Click Open Project Folder to open the project in the IDE. 
+            <p>
+               The IDE scans the project classpath.
+            </p>
+          </li>
+          <li>
+            If you are connecting to a Java DB database using the Sun Java System Application
+            Server 9, restart the IDE.
+          </li>
+        </ol>
+        <p>
+           <b>Connecting to a Database</b>
+        </p>
+        <p>
+           In NetBeans 6.0, you must resolve all data sources before you run the application. When
+          you migrate the Java Studio Creator 2.1 user directory, third party complibs migrate to
+          the NetBeans 6.0 directory and appear in the Component Library Manager.
+        </p>
+        <ol>
+          <li>
+            In the Services Window, expand the Servers node, right-click the server you want to
+            use, and choose Start.
+          </li>
+          <li>
+            After the server has started, expand the Databases node <img alt="database node icon"
+            src="../../images/databasenodeicon.gif">, and then right-click the node of the database
+            you want to use and choose Connect. 
+            <p>
+               The IDE prompts you to enter a password for the database.
+            </p>
+          </li>
+        </ol>
+        <p>
+           <b>Resolving Data Sources</b>
+        </p>
+        <p>
+           In NetBeans 6.0, you must resolve all data sources before you run the application. When
+          you migrate the Java Studio Creator 2.1 user directory, third party complibs migrate to
+          the NetBeans 6.0 directory and appear in the Component Library Manager.
+        </p>
+        <ol>
+          <li>
+            In the Projects window, the project node is red and displays a badge when there is a
+            missing data source.
+          </li>
+          <li>
+            To resolve a data source, right-click the Data Source References node and choose
+            Resolve Data Sources.
+          </li>
+          <li>
+            In the Resolve Data Source(s) dialog box, select the database name from the list and
+            click Add Data Connection. 
+            <p>
+               The Resolve Data Sources dialog box opens, displaying data sources that do not have
+              a database connection.
+            </p>
+          </li>
+          <li>
+            Select the data souce you want to resolve and click OK. 
+            <p>
+               The <a href="../../ui_elements/dialogs/add_database_conn_db.html">Add Database
+              Connection</a> dialog box opens.
+            </p>
+            <ul class="note">
+              <li>
+                <b>Note:</b> If the project you are importing uses a Java DB database, go to step
+                9.
+              </li>
+            </ul>
+          </li>
+          <li>
+            To add a new server type, in the Server Type drop down list, select Add Server Type. 
+            <p>
+               The <a href="../../ui_elements/dialogs/edit_database_svr_types_db.html">Edit
+              Database Server Types</a> dialog box opens
+            </p>
+          </li>
+          <li>
+            Click New and browse for the database driver JAR file. 
+            <p>
+               The driver JAR file then appears in the JDBC Driver Jar File(s) pane.
+            </p>
+          </li>
+          <li>
+            If nothing appears in the Driver Class Name field, click Suggest. 
+            <p>
+               The IDE suggests the best possible driver class name for the driver.
+            </p>
+          </li>
+          <li>
+            If nothing appears in the URL Template field, type the URL template for the database
+            connection. Follow the example that is provided. 
+            <ul class="note">
+              <li>
+                <b>Note:</b> For Java DB databases, the URL should look like this:
+                <code>jdbc:derby://localhost:1527/travel</code>.
+              </li>
+            </ul>
+          </li>
+          <li>
+            Click Close. 
+            <p>
+               The Add Data Connection dialog box opens.
+            </p>
+          </li>
+          <li>
+            Select the server type from the drop down list.
+          </li>
+          <li>
+            Enter a User ID and a Password. 
+            <p>
+               &nbsp;
+            </p>
+          </li>
+          <li>
+            Enter the Database URL and click Add to add the Data Source.
+          </li>
+        </ol>
+        <ul class="note">
+          <li>
+            <b>Note:</b> For a database other than Java DB, if you plan to run the project on Sun
+            Java<small><sup>TM</sup></small> System Application Server 9.1, you must copy the
+            database driver libraries to the server's <code>lib</code> directory prior to running
+            the project. Also, you must ensure that the port numbers used by the project match the
+            port numbers required by your installation of Sun Application Server 9.1.
+          </li>
+        </ul>
+        <dl>
+          <dt>
+             <a name="seealso">See Also</a>
+          </dt>
+          <dd>
+            <a href=
+            "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/db/docs/connectdb.html">Adding
+            a Database Connection</a>
+          </dd>
+          <dd>
+            <a href=
+            "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/configure_importing.html">
+             Importing Settings from a Previous Version of the IDE</a>
+          </dd>
+          <dd>
+            <a href="../../connect_data/working_with_databases.html">Working with Databases with
+            Visual Web Applications</a>
+          </dd>
+          <dd>
+            <a href="../../connect_data/howtodata/data_quickref.html">Visual Web Database Tasks:
+            Quick Reference</a>
+          </dd>
+        </dl>
+        <dl>
+          <dt>
+             <a name="tutorials">Tutorials</a>
+          </dt>
+          <dd>
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+              <param name="content" value=
+              "http://www.netbeans.org/kb/60/web/databoundcomponents.html">
+              <param name="text" value="Using Databound Components to Access a Database">
+            </object>
+          </dd>
+          <dd>
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+              <param name="content" value=
+              "http://www.netbeans.org/kb/55/using-netbeans/dbconn.html">
+              <param name="text" value="Connecting to Databases">
+            </object>
+          </dd>
+        </dl>
+        <hr>
+        <!--Start Customer Feedback Link--><!--<p><b>Comments or questions?</b><br>
+        Use the link below to connect to the Visual Web Development contact page. </p>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="viewerActivator" value="javax.help.LinkButton">
+        <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Importing a Java Studio Creator Project">
+        <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br>-->
+        <!--End Customer Feedback Link--><a href="../../credits.html"><small>Legal
+        Notices</small></a> 
+        <table cellpadding="50" border="0">
+          <tr>
+            <td>
+              &nbsp;
+            </td>
+          </tr>
+        </table>
+      </li>
     </ul>
-  <li>To add a new server type, in the Server Type drop down list, select Add Server Type.
-    <p>The <a href="../../ui_elements/dialogs/edit_database_svr_types_db.html">Edit Database Server Types</a> dialog box opens</p>
-  </li>
-  <li>Click New and browse for the database driver JAR file. 
-    <p>The driver JAR file then appears in the JDBC Driver Jar File(s) pane. </p>
-  </li>
-  <li>If nothing appears in the Driver Class Name field, click Suggest.
-    <p>The IDE suggests the best possible driver class name for the driver.</p>
-  </li>
-  <li>If nothing appears in the URL Template field, type the URL template for the database connection. Follow the example that is provided.
-    <ul class="note">
-      <li><b>Note: </b>For Java DB databases, the URL should look like this:  
-      <code>jdbc:derby://localhost:1527/travel</code>.</li>  
-    </ul>
-  </li>
-  <li>Click Close. <p>The Add Data Connection dialog box opens.</p>
-  </li>
-    <li>Select the server type from the drop down list. </li>
-    <li>Enter a User ID and a Password.<ul class="note">
-      
-        </ul><p></p>
-    </li>
-    <li>Enter the Database URL and click  Add to add the Data Source.</li>
-</ol>
-<ul class="note">
-  <li><b>Note:</b> For a database other than Java DB, if you plan to run the project on Sun Java<sup><small>TM</small></sup> System Application Server 9.1, you must copy the database driver libraries to the server's <code>lib</code> directory prior to running the project. Also, you must ensure that the port numbers used by the project match the port numbers required by your installation of Sun Application Server 9.1.</li>
-</ul>
-<dl>
-<dt><a name="seealso">See Also</a></dt>
-<dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/db/docs/connectdb.html">Adding a Database Connection</a></dd>
-<dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/configure_importing.html">Importing Settings from a Previous Version of the IDE</a></dd>
-<dd><a href="../../connect_data/working_with_databases.html">Working with Databases with Visual Web Applications</a></dd>
-<dd><a href="../../connect_data/howtodata/data_quickref.html">Visual Web Database Tasks: Quick Reference</a></dd>
-</dl>
-<dl>
-<dt><a name="tutorials">Tutorials</a></dt>
-
-
-<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-      <param name="content" value="http://www.netbeans.org/kb/60/web/databoundcomponents.html">
-      <param name="text" value="Using Databound Components to Access a Database"></object>
-</dd>
-<dd>              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-      <param name="content" value="http://www.netbeans.org/kb/55/using-netbeans/dbconn.html">
-      <param name="text" value="Connecting to Databases"></object>
-</dd>
-
-</dl>
-<hr>
-<!-- Start Customer Feedback Link -->
-<!-- <p><b>Comments or questions?</b><br>
-Use the link below to connect to the Visual Web Development contact page. </p>
-  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="viewerActivator" value="javax.help.LinkButton">
-    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Importing a Java Studio Creator Project">
-    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
-<!-- End Customer Feedback Link -->
-  <small><a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="50" border="0">
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-</table>
-</body>
-</html>
+  </body>
