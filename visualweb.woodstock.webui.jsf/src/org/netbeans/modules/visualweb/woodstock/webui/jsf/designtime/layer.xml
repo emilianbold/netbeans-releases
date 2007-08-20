@@ -177,17 +177,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>     
             <file name="WoodstockHelpInline.comp_palette_item" url="resources/WoodstockHelpInline.comp_palette_item">
                 <attr name="position" intvalue="400"/>
-            </file>  
-            
-            <!-- Woodstock components not included in VWP. Add them here so that people can test the designtime code -->
-         <!--   <file name="WoodstockContentPageTitle.comp_palette_item" url="resources/WoodstockContentPageTitle.comp_palette_item">
-                <attr name="position" intvalue="500"/>
-            </file>
-            <file name="WoodstockMasthead.comp_palette_item" url="resources/WoodstockMasthead.comp_palette_item">
-                <attr name="position" intvalue="600"/>
-            </file>
-            <file name="WoodstockVersionPage.comp_palette_item" url="resources/WoodstockVersionPage.comp_palette_item">
-                <attr name="position" intvalue="700"/>
             </file>
             <file name="WoodstockProgressIndicator.comp_palette_item" url="resources/WoodstockProgressIndicator.comp_palette_item">
                 <attr name="position" intvalue="800"/>
@@ -200,7 +189,18 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="WoodstockCommonTask.comp_palette_item" url="resources/WoodstockCommonTask.comp_palette_item">
                 <attr name="position" intvalue="1100"/>
+            </file>  
+            
+            <!-- Woodstock components not included in VWP. Add them here so that people can test the designtime code -->
+         <!--   <file name="WoodstockContentPageTitle.comp_palette_item" url="resources/WoodstockContentPageTitle.comp_palette_item">
+                <attr name="position" intvalue="500"/>
             </file>
+            <file name="WoodstockMasthead.comp_palette_item" url="resources/WoodstockMasthead.comp_palette_item">
+                <attr name="position" intvalue="600"/>
+            </file>
+            <file name="WoodstockVersionPage.comp_palette_item" url="resources/WoodstockVersionPage.comp_palette_item">
+                <attr name="position" intvalue="700"/>
+            </file>            
             <file name="WoodstockEditableList.comp_palette_item" url="resources/WoodstockEditableList.comp_palette_item">
                 <attr name="position" intvalue="1200"/>
             </file>
