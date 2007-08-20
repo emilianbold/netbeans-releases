@@ -20,7 +20,9 @@
 package org.netbeans.modules.swingapp;
 
 import java.awt.BorderLayout;
+import org.netbeans.modules.form.FormUtils;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -61,7 +63,9 @@ public class GlobalActionTable extends TopComponent {
     }
     
     private GlobalActionTable() {
-        setName("Application Actions");
+        //setName("Application Actions");
+        //setName(FormUtils.getBundleString("CTL_GlobalActionTable_Title"));
+        setName(NbBundle.getMessage(GlobalActionTable.class, "CTL_GlobalActionTable_Title"));
         setLayout(new BorderLayout());
         createComponents();
     }
