@@ -187,6 +187,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
      * @param cachedRowSet The new <code>CachedRowSet</code>
      */
     public void setCachedRowSet(CachedRowSet cachedRowSet) {
+
         // Initialize our internal state information
         if (this.cachedRowSet != null && this.cachedRowSet instanceof CachedRowSetX
             && this.propertyChangeListener != null) {
@@ -235,6 +236,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
 
     /** {@inheritDoc} */
     public RowKey[] getRowKeys(int count, RowKey afterRow) throws DataProviderException {
+
         /*
          * Only hand out RowKeys for rows that have not been deleted
          */
@@ -367,6 +369,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
 
     /** {@inheritDoc} */
     public boolean cursorFirst() throws DataProviderException {
+
         RowKey[] keys = getRowKeys(1, null);
         if (keys.length == 0) {
             return false;
@@ -448,6 +451,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
 
     /** {@inheritDoc} */
     public FieldKey getFieldKey(String fieldId) throws DataProviderException {
+
         /*
          * Bug 6275441: mssqlserver is handing back different metadata based on whether
          * the query has been executed or not.
@@ -531,13 +535,14 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
 
     /** {@inheritDoc} */
     public Class getType(FieldKey fieldKey) throws DataProviderException {
+
         ResultSetMetaData metaData = getMetaData();
         if (metaData != null) {
             try {
                 int column = column(fieldKey);
                 if (column > 0) {
                     String className = metaData.getColumnClassName(column);
-                    // System.out.println("column: "+column + "   className: "+className + "   type: "+metaData.getColumnType(column));
+		    // System.out.println("column: "+column + "   className: "+className + "   type: "+metaData.getColumnType(column));
 
 		    if ( Beans.isDesignTime() && (className.equals("oracle.sql.TIMESTAMP")) ) {
                         // Special processing for non-standard Oracle classes @ design time
@@ -546,7 +551,11 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                         //                      getDriverClassLoader(getClass().getClassLoader()));
                         // Return the appropriate Java class instead
                         return java.sql.Timestamp.class;
-                    } else {
+                    } else if ( Beans.isDesignTime() && (className.equals("oracle.sql.CLOB")) ) {
+			// Convert Oracle class into standard Java class. Note that no oracle.sql.CLOB extends java.sql.Clob, so only the
+			// type needs to be converted, not the value.
+			return java.sql.Clob.class;
+		    } else {
                         return Class.forName(className);
                     }
                 } else {
@@ -660,7 +669,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
     /** {@inheritDoc} */
     public Object getValue(FieldKey fieldKey, RowKey row) throws DataProviderException {
 
-        // try {
+	// try {
         //      System.out.println("Entering CRSDP.getValue, fieldKey: " + fieldKey + "  rowKey: " + row +
         //                         "colClassName: " + getMetaData().getColumnClassName(column(fieldKey)) +
         //                         "  colType: " + getMetaData().getColumnType(column(fieldKey)));
@@ -796,7 +805,9 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
 
     /** {@inheritDoc} */
     public void setValue(FieldKey fieldKey, RowKey row, Object value) throws DataProviderException {
-        // System.out.println("Entering setValue, fieldKey: " + fieldKey + "  rowKey: " + row + "  value: " + value);
+
+	// System.out.println("Entering setValue, fieldKey: " + fieldKey + "  rowKey: " + row + "  value: " + value);
+
         if (getCachedRowSet() != null && row instanceof CachedRowSetRowKey) {
             try {
                 if (!isUpdatable()) {
@@ -811,10 +822,10 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                     }
                     int column = column(fieldKey);
 
-//                     if (getMetaData().getColumnClassName(column(fieldKey)).equals("oracle.sql.TIMESTAMP")) {
-//                         // Extra code to create oracle.sql.TIMESTAMP objects from java.sql.Timestamp
-//                         // May not be required
-//                     }
+//                      if (getMetaData().getColumnClassName(column(fieldKey)).equals("oracle.sql.TIMESTAMP")) {
+//                          // Extra code to create oracle.sql.TIMESTAMP objects from java.sql.Timestamp
+//                          // May not be required
+//                      }
                     
                     Object old = getCachedRowSet().getObject(column);
                     boolean changed = false;
