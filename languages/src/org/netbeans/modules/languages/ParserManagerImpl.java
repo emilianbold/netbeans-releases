@@ -24,8 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTEvaluator;
@@ -45,16 +43,13 @@ import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.lexer.TokenHierarchyListener;
-import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.LanguagesManager.LanguagesManagerListener;
 import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
-import org.openide.cookies.EditorCookie;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
-import org.openide.windows.TopComponent;
 
 
 /**
@@ -68,6 +63,7 @@ public class ParserManagerImpl extends ParserManager {
     private ASTNode                 ast = null;
     private ParseException          exception = null;
     private State                   state = State.NOT_PARSED;
+    private boolean[]               cancel = new boolean[] {false};
     private List<ParserManagerListener> listeners = new ArrayList<ParserManagerListener> ();
     private List<ASTEvaluator>      evaluators = new CopyOnWriteArrayList<ASTEvaluator> ();
     private static RequestProcessor rp = new RequestProcessor ("Parser");
@@ -139,19 +135,13 @@ public class ParserManagerImpl extends ParserManager {
     
     private synchronized void startParsing () {
         setChange (State.PARSING, ast);
+        cancel [0] = true;
         if (parsingTask != null) {
-            String mimeType = (String) doc.getProperty ("mimeType");
-            try {
-                Language l = getLanguage (mimeType);
-                LLSyntaxAnalyser a = l.getAnalyser ();
-                a.cancel ();
-            } catch (ParseException ex) {
-                ex.printStackTrace();
-            }
             parsingTask.cancel ();
         }
         parsingTask = rp.post (new Runnable () {
             public void run () {
+                cancel [0] = false;
                 parseAST ();
             }
         }, 1000);
@@ -159,9 +149,6 @@ public class ParserManagerImpl extends ParserManager {
     
     private void setChange (State state, ASTNode root) {
         if (state == this.state) return;
-        
-        //switch (state) {case PARSING:System.out.println("parsing started");break;case OK:System.out.println("parsed OK");break;case ERROR:System.out.println("parser ERROR");};
-        
         this.state = state;
         this.ast = root;
         exception = null;
@@ -169,6 +156,7 @@ public class ParserManagerImpl extends ParserManager {
         while (it.hasNext ()) {
             ParserManagerListener l = it.next ();
             l.parsed (state, root);
+            if (cancel [0]) return;
         }
         if (state == State.PARSING) return;
         if (!evaluators.isEmpty ()) {
@@ -176,15 +164,17 @@ public class ParserManagerImpl extends ParserManager {
             while (it2.hasNext ()) {
                 ASTEvaluator e = it2.next ();
                 e.beforeEvaluation (state, root);
+                if (cancel [0]) return;
             }
             evaluate (state, root, root, new ArrayList<ASTItem> ());
+            if (cancel [0]) return;
             it2 = evaluators.iterator ();
             while (it2.hasNext ()) {
                 ASTEvaluator e = it2.next ();
                 e.afterEvaluation (state, root);
+                if (cancel [0]) return;
             }
         }
-        refreshPanes ();
     }
     
     private void evaluate (State state, ASTItem root, ASTItem item, List<ASTItem> path) {
@@ -194,10 +184,13 @@ public class ParserManagerImpl extends ParserManager {
         while (it.hasNext ()) {
             ASTEvaluator e = it.next ();
             e.evaluate (state, path2);
+            if (cancel [0]) return;
         }
         Iterator<ASTItem> it2 = item.getChildren ().iterator ();
-        while (it2.hasNext ())
+        while (it2.hasNext ()) {
+            if (cancel [0]) return;
             evaluate (state, root, it2.next (), path);
+        }
         path.remove (path.size () - 1);
     }
     
@@ -209,54 +202,42 @@ public class ParserManagerImpl extends ParserManager {
         while (it.hasNext ()) {
             ParserManagerListener l = it.next ();
             l.parsed (state, ast);
+            if (cancel [0]) return;
         }
         if (state == State.PARSING) return;
-        refreshPanes();
-    }
-    
-    private void refreshPanes() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                Iterator<TopComponent> it = TopComponent.getRegistry ().getOpened ().iterator ();
-                while (it.hasNext ()) {
-                    TopComponent tc = it.next ();
-                    EditorCookie ec = tc.getLookup ().lookup (EditorCookie.class);
-                    if (ec == null) continue;
-                    JEditorPane[] eps = ec.getOpenedPanes ();
-                    if (eps == null) {
-                        continue;
-                    }
-                    int i, k = eps.length;
-                    for (i = 0; i < k; i++) {
-                        if (eps[i].getDocument () == doc) {
-                            eps[i].repaint ();
-                        }
-                    }
-                }
-            }
-        });
     }
     
     private void parseAST () {
         try {
             setChange (State.PARSING, ast);
             ast = parse ();
+            if (cancel [0]) {
+                return;
+            }
             if (ast == null) {
                 setChange (new ParseException ("ast is null?!"));
                 return;
             }
+                                                                                //long start = System.currentTimeMillis ();
             ast = process (ast);
+                                                                                //start = System.currentTimeMillis () - start;
+                                                                                //if (start > 100)
+                                                                                    //S ystem.out.println ("postprocess " + start);
             if (ast == null) {
                 setChange (new ParseException ("ast is null?!"));
                 return;
             }
+                                                                                //start = System.currentTimeMillis ();
             setChange (State.OK, ast);
+                                                                                //S ystem.out.println ("fire " + (System.currentTimeMillis () - start));
         } catch (ParseException ex) {
             if (ex.getASTNode () != null) {
                 ASTNode ast = process (ex.getASTNode ());
                 ex = new ParseException (ex, ast);
             }
+                                                                                //start = System.currentTimeMillis ();
             setChange (ex);
+                                                                                //S ystem.out.println ("fire " + (System.currentTimeMillis () - start));
             ErrorManager.getDefault ().notify (ex);
         }
     }
@@ -285,12 +266,13 @@ public class ParserManagerImpl extends ParserManager {
         String mimeType = (String) doc.getProperty ("mimeType");
         Language l = getLanguage (mimeType);
         LLSyntaxAnalyser a = l.getAnalyser ();
-        long start = System.currentTimeMillis ();
-
+                                                                                //long start = System.currentTimeMillis ();
         TokenInput input = createTokenInput ();
-        long to = System.currentTimeMillis () - start;
-        ASTNode n = a.read (input, true);
-        //S ystem.out.println("parse " + doc.getProperty ("title") + " " + (System.currentTimeMillis () - start) + " " + to);
+        if (cancel [0]) return null;
+                                                                                //S ystem.out.println ("lex " + (System.currentTimeMillis () - start));
+                                                                                //start = System.currentTimeMillis ();
+        ASTNode n = a.read (input, true, cancel);
+                                                                                //S ystem.out.println ("syntax " + (System.currentTimeMillis () - start));
         return n;
     }
 
@@ -301,16 +283,19 @@ public class ParserManagerImpl extends ParserManager {
             if (tokenHierarchy == null) 
                 return TokenInputUtils.create (Collections.<ASTToken>emptyList ());
             TokenSequence ts = tokenHierarchy.tokenSequence ();
-            return TokenInputUtils.create (getTokens (ts));
+            List<ASTToken> tokens = getTokens (ts);
+            if (cancel [0]) return null;
+            return TokenInputUtils.create (tokens);
         } finally {
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readUnlock ();
         }
     }
     
-    private static List<ASTToken> getTokens (TokenSequence ts) {
+    private List<ASTToken> getTokens (TokenSequence ts) {
         List<ASTToken> tokens = new ArrayList<ASTToken> ();
         while (ts.moveNext ()) {
+            if (cancel [0]) return null;
             Token t = ts.token ();
             String type = t.id ().name ();
             int offset = ts.offset ();
@@ -338,6 +323,7 @@ public class ParserManagerImpl extends ParserManager {
 //                        getTokens (ts2)
 //                    );
                 while (ts.moveNext ()) {
+                    if (cancel [0]) return null;
                     t = ts.token ();
                     ttype = (String) t.getProperty ("type");
                     if (ttype == null) {
@@ -354,9 +340,9 @@ public class ParserManagerImpl extends ParserManager {
 //                            t.length (),
 //                            getTokens (ts2)
 //                        ));
-                        children.addAll (
-                            getTokens (ts2)
-                        );
+                        List<ASTToken> tokens2 = getTokens (ts2);
+                        if (cancel [0]) return null;
+                        children.addAll (tokens2);
                         continue;
                     }
                     if (ttype.equals ("S")) {

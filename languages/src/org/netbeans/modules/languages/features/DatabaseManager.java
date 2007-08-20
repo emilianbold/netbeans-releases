@@ -62,18 +62,26 @@ public class DatabaseManager implements ParserManagerListener {
 
     public void parsed (State state, ASTNode root) {
         if (root == null) return;
-        astNodeToDatabaseContext.put (root, parse (root, doc));
+        DatabaseContext databaseContext = parse (root, doc, parser);
+        if (databaseContext == null) return;
+        astNodeToDatabaseContext.put (root, databaseContext);
         //S ystem.out.println (rootContext.getAsText ());
     }
 
-    static DatabaseContext parse (ASTNode ast, Document doc) {
+    static DatabaseContext parse (
+        ASTNode ast, 
+        Document doc,
+        EditorParser parser
+    ) {
         DatabaseContext rootContext = new DatabaseContext (null, null, ast.getOffset (), ast.getEndOffset ());
         List<ASTItem> path = new ArrayList<ASTItem> ();
         path.add (ast);
         List<DatabaseItem> unresolvedUsages = new ArrayList<DatabaseItem> ();
-        process (path, rootContext, unresolvedUsages, doc);
+        process (path, rootContext, unresolvedUsages, doc, parser);
         Iterator<DatabaseItem> it2 = unresolvedUsages.iterator ();
         while (it2.hasNext ()) {
+            if (parser != null && parser.getState () == State.PARSING)
+                return null;
             DatabaseUsage usage = (DatabaseUsage) it2.next ();
             DatabaseContext context = (DatabaseContext) it2.next ();
             DatabaseDefinition definition = rootContext.getDefinition (usage.getName (), usage.getOffset ());
@@ -90,11 +98,14 @@ public class DatabaseManager implements ParserManagerListener {
         List<ASTItem> path, 
         DatabaseContext context, 
         List<DatabaseItem> unresolvedUsages,
-        Document doc
+        Document doc,
+        EditorParser parser
     ) {
         ASTItem last = path.get (path.size () - 1);
         Iterator<ASTItem> it = last.getChildren ().iterator ();
         while (it.hasNext ()) {
+            if (parser != null && parser.getState () == State.PARSING)
+                return;
             ASTItem item =  it.next ();
             path.add (item);
             try {
@@ -131,7 +142,7 @@ public class DatabaseManager implements ParserManagerListener {
                     String type = (String) feature.getValue ("type");
                     DatabaseContext newContext = new DatabaseContext (context, type, item.getOffset (), item.getEndOffset ());
                     context.addContext (item, newContext);
-                    process (path, newContext, unresolvedUsages, doc);
+                    process (path, newContext, unresolvedUsages, doc, parser);
                     path.remove (path.size () - 1);
                     continue;
                 }
@@ -152,7 +163,7 @@ public class DatabaseManager implements ParserManagerListener {
                 }
             } catch (LanguageDefinitionNotFoundException ex) {
             }
-            process (path, context, unresolvedUsages, doc);
+            process (path, context, unresolvedUsages, doc, parser);
             path.remove (path.size () - 1);
         }
     }

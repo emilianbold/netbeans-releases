@@ -97,7 +97,7 @@ public class NBSLanguageReader {
                 input, 
                 Collections.EMPTY_SET
             );
-            node = nbsLanguage.getAnalyser ().read (tokenInput, false);
+            node = nbsLanguage.getAnalyser ().read (tokenInput, false, new boolean[] {false});
             if (node == null) 
                 System.out.println ("Can not parse " + sourceName);
             else

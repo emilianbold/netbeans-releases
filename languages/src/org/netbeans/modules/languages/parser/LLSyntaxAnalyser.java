@@ -60,7 +60,6 @@ public class LLSyntaxAnalyser {
     private Map<String,Map> first;
     private Set<String>     skip;
     private int             traceSteps = -1;
-    private boolean         cancel = false;
     private boolean         printFirst = false;
     
     
@@ -70,10 +69,6 @@ public class LLSyntaxAnalyser {
     
     
     // public methods ..........................................................
-    
-    public void cancel () {
-        cancel = true;
-    }
 
     public List<Rule> getRules () {
         return rules;
@@ -103,16 +98,20 @@ public class LLSyntaxAnalyser {
         return a;
     }
     
-    public ASTNode read (TokenInput input, boolean skipErrors) throws ParseException {
+    public ASTNode read (
+        TokenInput input, 
+        boolean skipErrors, 
+        boolean[] cancel
+    ) throws ParseException {
         _t = 0;
-        cancel = false;
         Map<String,List<ASTItem>> embeddings = new HashMap<String, List<ASTItem>> ();
         ASTNode root;
         if (rules.isEmpty () || input.eof ()) {
-            root = readNoGrammar (input, skipErrors, embeddings);
+            root = readNoGrammar (input, skipErrors, embeddings, cancel);
         } else {
-            root = read2 (input, skipErrors, embeddings);
+            root = read2 (input, skipErrors, embeddings, cancel);
         }
+        if (cancel [0]) return null;
         if (embeddings.isEmpty ()) {
             int[] ntw = new int [3];
             inspect (root, ntw);
@@ -187,23 +186,33 @@ public class LLSyntaxAnalyser {
     
     // helper methods ..........................................................
     
-    private ASTNode read (TokenInput input, boolean skipErrors, Map<String,List<ASTItem>> embeddings) throws ParseException {
-        cancel = false;
+    private ASTNode read (
+        TokenInput input, 
+        boolean skipErrors, 
+        Map<String,List<ASTItem>> embeddings,
+        boolean[] cancel
+    ) throws ParseException {
         if (rules.isEmpty () || input.eof ())
-            return readNoGrammar (input, skipErrors, embeddings);
-        return read2 (input, skipErrors, embeddings);
+            return readNoGrammar (input, skipErrors, embeddings, cancel);
+        return read2 (input, skipErrors, embeddings, cancel);
     }
     
-    private ASTNode read2 (TokenInput input, boolean skipErrors, Map<String,List<ASTItem>> embeddings) throws ParseException {
+    private ASTNode read2 (
+        TokenInput input, 
+        boolean skipErrors, 
+        Map<String,List<ASTItem>> embeddings,
+        boolean[] cancel
+    ) throws ParseException {
         Stack<Object> stack = new Stack<Object> ();
         ASTNode root = null, node = null;
         Iterator it = Collections.singleton ("S").iterator ();
         boolean firstLine = true;
         do {
+            if (cancel [0]) return null;
             int offset = input.getOffset ();
-            List<ASTItem> whitespaces = readWhitespaces (node, input, skipErrors, embeddings);
+            List<ASTItem> whitespaces = readWhitespaces (node, input, skipErrors, embeddings, cancel);
             if (firstLine && input.eof() && whitespaces != null) {
-                return readNoGrammar(whitespaces, offset, skipErrors, embeddings);
+                return readNoGrammar (whitespaces, offset, skipErrors, embeddings, cancel);
             }
             if (node != null)
                 offset = input.getOffset ();
@@ -231,7 +240,7 @@ public class LLSyntaxAnalyser {
                         return root;
                     }
                     //S ystem.out.println(input.getIndex () + ": no rule for " + nt + "&" + input.next (0));
-                    createErrorNode (node, input.getOffset ()).addChildren (readEmbeddings (input.read (), skipErrors, embeddings));
+                    createErrorNode (node, input.getOffset ()).addChildren (readEmbeddings (input.read (), skipErrors, embeddings, cancel));
                 } else {
                     Rule rule = rules.get (newRule);
                     Feature parse = language.getFeature ("PARSE", rule.getNT ());
@@ -285,10 +294,10 @@ public class LLSyntaxAnalyser {
                 if (!isCompatible (token, input.next (1))) {
                     if (!skipErrors)
                         throw new ParseException ("Unexpected token " + input.next (1) + ". Expecting " + token, root);
-                    createErrorNode (node, input.getOffset ()).addChildren (readEmbeddings (input.read (), skipErrors, embeddings));
+                    createErrorNode (node, input.getOffset ()).addChildren (readEmbeddings (input.read (), skipErrors, embeddings, cancel));
                     //S ystem.out.println(input.getIndex () + ": unrecognized token " + token + "<>" + input.next (1));
                 } else {
-                    node.addChildren (readEmbeddings (input.read (), skipErrors, embeddings));
+                    node.addChildren (readEmbeddings (input.read (), skipErrors, embeddings, cancel));
                     //S ystem.out.println(input.getIndex () + ": token readed " + input.next (1));
                 }
             }
@@ -299,12 +308,12 @@ public class LLSyntaxAnalyser {
             !input.eof () //&& 
             //input.next (1).getMimeType () == mimeType
         )
-            createErrorNode (node, input.getOffset ()).addChildren (readEmbeddings (input.read (), skipErrors, embeddings));
+            createErrorNode (node, input.getOffset ()).addChildren (readEmbeddings (input.read (), skipErrors, embeddings, cancel));
         if (root == null) {
             root = ASTNode.create (
                 language.getMimeType (),  
                 "Root", 
-                readWhitespaces (node, input, skipErrors, embeddings), 
+                readWhitespaces (node, input, skipErrors, embeddings, cancel), 
                 input.getOffset ()
             );
         }
@@ -327,7 +336,8 @@ public class LLSyntaxAnalyser {
         ASTNode node, 
         TokenInput input, 
         boolean skipErrors,
-        Map<String,List<ASTItem>> embeddings
+        Map<String,List<ASTItem>> embeddings,
+        boolean[] cancel
     ) throws ParseException {
         List<ASTItem> result = null;
         while (
@@ -336,11 +346,11 @@ public class LLSyntaxAnalyser {
         ) {
             ASTToken token = input.read ();
             if (node != null)
-                node.addChildren (readEmbeddings (token, skipErrors, embeddings));
+                node.addChildren (readEmbeddings (token, skipErrors, embeddings, cancel));
             else {
                 if (result == null)
                     result = new ArrayList<ASTItem> ();
-                result.add (readEmbeddings (token, skipErrors, embeddings));
+                result.add (readEmbeddings (token, skipErrors, embeddings, cancel));
             }
         }
         return result;
@@ -349,7 +359,8 @@ public class LLSyntaxAnalyser {
     private ASTItem readEmbeddings (
         ASTToken token, 
         boolean skipErrors,
-        Map<String,List<ASTItem>> embeddings
+        Map<String,List<ASTItem>> embeddings,
+        boolean[] cancel
     ) throws ParseException {
         List<ASTItem> children = token.getChildren ();
         if (children.isEmpty ())
@@ -375,7 +386,7 @@ public class LLSyntaxAnalyser {
 
             Language language = LanguagesManager.getDefault ().
                 getLanguage (children.get (0).getMimeType ());
-            ASTNode root = language.getAnalyser ().read (in, skipErrors, embeddings);
+            ASTNode root = language.getAnalyser ().read (in, skipErrors, embeddings, cancel);
             Feature astProperties = language.getFeature ("AST");
             if (astProperties != null) {
                 String process_embedded = (String)astProperties.getValue("process_embedded");
@@ -397,7 +408,7 @@ public class LLSyntaxAnalyser {
                 Collections.<ASTItem>singletonList (root)
             );
         } catch (LanguageDefinitionNotFoundException ex) {
-            return readNoGrammar (in, skipErrors, embeddings);
+            return readNoGrammar (in, skipErrors, embeddings, cancel);
         }
     }
     
@@ -426,12 +437,13 @@ public class LLSyntaxAnalyser {
     private ASTNode readNoGrammar (
         TokenInput input,
         boolean skipErrors,
-        Map<String,List<ASTItem>> embeddings
+        Map<String,List<ASTItem>> embeddings,
+        boolean[] cancel
     ) throws ParseException {
         ASTNode root = ASTNode.create (language.getMimeType(), "S", input.getIndex ());
         while (!input.eof ()) {
             ASTToken token = input.read ();
-            root.addChildren (readEmbeddings (token, skipErrors, embeddings));
+            root.addChildren (readEmbeddings (token, skipErrors, embeddings, cancel));
         }
         return root;
     }
@@ -440,12 +452,13 @@ public class LLSyntaxAnalyser {
         List tokens,
         int offset,
         boolean skipErrors,
-        Map<String,List<ASTItem>> embeddings
+        Map<String,List<ASTItem>> embeddings,
+        boolean[] cancel
     ) throws ParseException {
         ASTNode root = ASTNode.create (language.getMimeType(), "S", offset);
         for (Iterator iter = tokens.iterator(); iter.hasNext(); ) {
             ASTToken token = (ASTToken) iter.next();
-            root.addChildren (readEmbeddings (token, skipErrors, embeddings));
+            root.addChildren (readEmbeddings (token, skipErrors, embeddings, cancel));
         }
         return root;
     }
@@ -591,17 +604,6 @@ public class LLSyntaxAnalyser {
         initASTFeatures ();
         return removeEmpty || (removeEmptyN == empty.contains (nt));
     }
-    
-    private boolean removeSimple (String nt) {
-        return removeSimple || (removeSimpleN == simple.contains (nt));
-    }
-    
-//        if (n.children == null)
-//            return removeEmpty || (removeEmptyN == empty.contains (n.nt));
-//        else
-//            return removeSimple || (removeSimpleN == simple.contains (n.nt));
-//    } 
-
     
     
     // innerclasses ............................................................

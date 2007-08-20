@@ -293,7 +293,7 @@ public class Index {
         ) throws LanguageDefinitionNotFoundException, IOException, ParseException {
             Language l = LanguagesManager.get().getLanguage (fo.getMIMEType ());
             ASTNode root = l.parse (fo.getInputStream ());
-            return DatabaseManager.parse (root, null);
+            return DatabaseManager.parse (root, null, null);
         }
 
         private void add (

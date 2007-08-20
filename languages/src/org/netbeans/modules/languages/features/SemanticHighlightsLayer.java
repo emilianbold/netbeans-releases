@@ -80,6 +80,7 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
     private static class Highlights implements HighlightsSequence {
 
         private Document            document;
+        private ParserManager       parserManager;
         private int                 endOffset;
         private int                 startOffset1;
         private int                 endOffset1;
@@ -96,6 +97,7 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
             int             endOffset
         ) {
             this.document = document;
+            this.parserManager = parserManager;
             this.highlighting = highlighting;
             this.endOffset = endOffset;
             startOffset1 = startOffset;
@@ -109,6 +111,7 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
         
         public boolean moveNext () {
             if (ast == null) return false;
+            if (parserManager.getState () == State.PARSING) return false;
             attributeSet = new SimpleAttributeSet ();
             do {
                 startOffset1 = endOffset1;

@@ -590,7 +590,7 @@ public class Language extends org.netbeans.api.languages.Language {
             new StringInput (sb.toString ()),
             Collections.emptySet ()
         );
-        ASTNode root = getAnalyser ().read (ti, true);
+        ASTNode root = getAnalyser ().read (ti, true, new boolean[] {false});
         Feature astProperties = getFeature ("AST");
         if (astProperties != null && root != null) {
             ASTNode root1 = (ASTNode) astProperties.getValue (
