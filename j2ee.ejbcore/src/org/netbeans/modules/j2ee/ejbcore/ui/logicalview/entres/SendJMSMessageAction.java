@@ -99,8 +99,7 @@ public class SendJMSMessageAction extends NodeAction {
                             }
                         }
                     });
-            // initial invalidation
-            dialogDescriptor.setValid(false);
+            sendJmsMessagePanel.verifyAndFire();
 
             Object option = DialogDisplayer.getDefault().notify(dialogDescriptor);
             if (option != DialogDescriptor.OK_OPTION) {

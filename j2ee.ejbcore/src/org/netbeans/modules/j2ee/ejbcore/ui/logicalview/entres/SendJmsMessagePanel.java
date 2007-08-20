@@ -240,7 +240,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
         SendJMSMessageUiSupport.populateMessageDrivenBeans(mdbs, mdbCombo, destinationText);
     }
     
-    private void verifyAndFire() {
+    void verifyAndFire() {
         boolean isValid = verifyComponents();
         firePropertyChange(IS_VALID, !isValid, isValid);
     }
