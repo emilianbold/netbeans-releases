@@ -621,7 +621,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 getProjectImpl().cleanPreprocStateAfterParse(this, oldState);
             }
         }
-	lastParsed = System.currentTimeMillis();
+	lastParsed = Math.max(System.currentTimeMillis(), fileBuffer.lastModified());
 	if( TraceFlags.TRACE_VALIDATION ) System.err.printf("PARSED    %s \n\tlastModified=%d\n\t  lastParsed=%d  diff=%d\n", 
 		getAbsolutePath(), fileBuffer.lastModified(), lastParsed, fileBuffer.lastModified()-lastParsed);
         return ast;
