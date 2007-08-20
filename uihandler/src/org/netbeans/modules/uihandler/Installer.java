@@ -1153,7 +1153,9 @@ public class Installer extends ModuleInstall implements Runnable {
                 try {
                     if (openPasswd) {
                         String passwd = new ExceptionsSettings().getPasswd();
-                        passwd = PasswdEncryption.encrypt(passwd);
+                        if ((passwd.length() != 0) && (!reportPanel.asAGuest())){
+                            passwd = PasswdEncryption.encrypt(passwd);
+                        }
                         params.add(passwd);
                     } else {
                         params.add("*********");// NOI18N
