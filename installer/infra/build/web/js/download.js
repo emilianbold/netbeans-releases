@@ -23,8 +23,9 @@ var PROPERTY_JAVA      = 1;
 var PROPERTY_JAVAEE    = 2;
 var PROPERTY_JAVAME    = 4;
 var PROPERTY_RUBY      = 8;
-var PROPERTY_FULL      = 16;
-var PROPERTY_HIDDEN    = 32;
+var PROPERTY_CND       = 16;
+var PROPERTY_FULL      = 32;
+var PROPERTY_HIDDEN    = 64;
 
 function handle_keyup(event) {
     //if (event.keyCode == 13) {
@@ -65,7 +66,8 @@ function write_components() {
             document.write('    <td class="left_border_thin" id="product_' + index + '_javaee"></td>');
 	    document.write('    <td class="beige left_border_thin" id="product_' + index + '_javame"></td>');
 	    document.write('    <td class="left_border_thin" id="product_' + index + '_ruby"></td>');
-            document.write('    <td class="beige left_border_thin" id="product_' + index + '_full"></td>');
+	    document.write('    <td class="beige left_border_thin" id="product_' + index + '_cnd"></td>');
+            document.write('    <td class="left_border_thin" id="product_' + index + '_full"></td>');
             
             document.write('</tr>');
         }
@@ -159,6 +161,15 @@ function update() {
         } else {
             document.getElementById("product_" + i + "_ruby").innerHTML = '';
         }
+        if (product_properties[i] & PROPERTY_CND) {
+            if (product_messages[i] == null) {
+                document.getElementById("product_" + i + "_cnd").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
+            } else {
+                document.getElementById("product_" + i + "_cnd").innerHTML = '<img src="img/warning_badge_beige_' + platform + '.gif"/>';
+            }
+        } else {
+            document.getElementById("product_" + i + "_cnd").innerHTML = '';
+        }
 
         if (product_properties[i] & PROPERTY_FULL) {
             if (product_messages[i] == null) {
@@ -188,6 +199,7 @@ function update() {
     var javaee_size = 0;
     var javame_size = 0;
     var ruby_size   = 0;
+    var cnd_size    = 0;
     var full_size   = 0;
 
     for (var i = 0; i < product_uids.length; i++) {
@@ -208,7 +220,9 @@ function update() {
         if (product_properties[i] & PROPERTY_RUBY) {
             ruby_size += new Number(product_download_sizes[i]);
         }
-
+        if (product_properties[i] & PROPERTY_CND) {
+            cnd_size += new Number(product_download_sizes[i]);
+        }
         if (product_properties[i] & PROPERTY_FULL) {
             full_size += new Number(product_download_sizes[i]);
         }
@@ -217,12 +231,14 @@ function update() {
     javaee_size  = Math.ceil(javaee_size / 1024.0);
     javame_size  = Math.ceil(javame_size / 1024.0);
     ruby_size    = Math.ceil(ruby_size / 1024.0);
+    cnd_size     = Math.ceil(cnd_size / 1024.0);
     full_size    = Math.ceil(full_size / 1024.0);
     
     document.getElementById("java_size").innerHTML = "Free, " + java_size + " MB";
     document.getElementById("javaee_size").innerHTML = "Free, " + javaee_size + " MB"; 
     document.getElementById("javame_size").innerHTML = "Free, " + javame_size + " MB";
     document.getElementById("ruby_size").innerHTML = "Free, " + ruby_size + " MB";
+    document.getElementById("cnd_size").innerHTML = "Free, " + cnd_size + " MB";
     document.getElementById("full_size").innerHTML = "Free, " + full_size + " MB";
 }
 
