@@ -265,7 +265,7 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
                             + lexer() + " for language=" + language + ":\n";
                     if (token.id().ordinal() > language.maxOrdinal()) {
                         throw new IllegalStateException(msgPrefix +
-                                "Language.maxOrdinal()=" + language.maxOrdinal() + " > " + token.id().ordinal());
+                                "Language.maxOrdinal()=" + language.maxOrdinal() + " < " + token.id().ordinal());
                     } else { // Ordinal ok but different id with that ordinal contained in language
                         throw new IllegalStateException(msgPrefix +
                                 "Language contains no or different tokenId with ordinal="
