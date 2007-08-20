@@ -89,6 +89,9 @@ class AMConfigManager {
     }
     
     private JAXBElement<AMConfigType> getAMConfigInternal(String path) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+        
         try {
             
             //Find the amconfig.xml file in the path
@@ -110,6 +113,8 @@ class AMConfigManager {
             return amConfig;
         } catch (JAXBException excp) {
             excp.printStackTrace();
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
         }
         
         return null;
