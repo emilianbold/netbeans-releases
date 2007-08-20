@@ -56,7 +56,8 @@ public final class TokenFactory<T extends TokenId> {
      */
     public static final Token SKIP_TOKEN
         = new TextToken<TokenId>(
-            new TokenIdImpl("skip-token-id(should never be part of token sequence", 0, null), // NOI18N
+            new TokenIdImpl("skip-token-id; special id of TokenFactory.SKIP_TOKEN; " + // NOI18N
+                    " It should never be part of token sequence", 0, null), // NOI18N
             "" // empty skip token text NOI18N
         );
     

@@ -22,6 +22,7 @@ package org.netbeans.lib.lexer;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.GapList;
@@ -100,6 +101,8 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
     protected int preprocessingLevelCount;
 
     private CharProvider.ExtraPreprocessedChars extraPreprocessedChars;
+    
+    private Language<T> language;
 
     public LexerInputOperation(TokenList<T> tokenList, int tokenIndex, Object lexerRestartState) {
         this.tokenList = tokenList;
@@ -112,7 +115,8 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
         }
         
         LanguagePath languagePath = tokenList.languagePath();
-        LanguageHierarchy<T> languageHierarchy = LexerUtilsConstants.innerLanguageHierarchy(languagePath);
+        language = LexerUtilsConstants.innerLanguage(languagePath);
+        LanguageHierarchy<T> languageHierarchy = LexerApiPackageAccessor.get().languageHierarchy(language);
         TokenFactory<T> tokenFactory = LexerSpiPackageAccessor.get().createTokenFactory(this);
         
         // Check whether character preprocessing is necessary
@@ -254,6 +258,20 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
                 lexerFinished = true;
                 return null;
             } else {
+                // Check that the id belongs to the language
+                if (token != TokenFactory.SKIP_TOKEN && !language.tokenIds().contains(token.id())) {
+                    String msgPrefix = "Invalid TokenId=" + token.id()
+                            + " returned from lexer="
+                            + lexer() + " for language=" + language + ":\n";
+                    if (token.id().ordinal() > language.maxOrdinal()) {
+                        throw new IllegalStateException(msgPrefix +
+                                "Language.maxOrdinal()=" + language.maxOrdinal() + " > " + token.id().ordinal());
+                    } else { // Ordinal ok but different id with that ordinal contained in language
+                        throw new IllegalStateException(msgPrefix +
+                                "Language contains no or different tokenId with ordinal="
+                                + token.id().ordinal() + ": " + language.tokenId(token.id().ordinal()));
+                    }
+                }
                 approveToken(token);
             }
             if (token == TokenFactory.SKIP_TOKEN)
