@@ -97,6 +97,12 @@ public class JsfDesignerAdvancedOptionsPanel extends javax.swing.JPanel {
     void setRowsetDuplicate(boolean b) {
         checkRowsetDuplicate.setSelected(b);
     }
+    boolean isPromptForName() {
+        return promptForName.isSelected();
+    }
+    void setPromptForName(boolean b) {
+        promptForName.setSelected(b);
+    }
         
     /** This method is called from within the constructor to
      * initialize the form.
@@ -122,6 +128,7 @@ public class JsfDesignerAdvancedOptionsPanel extends javax.swing.JPanel {
         checkRowsetDuplicate = new javax.swing.JCheckBox();
         jLabel5 = new javax.swing.JLabel();
         dataProviderSuffix = new javax.swing.JTextField();
+        promptForName = new javax.swing.JCheckBox();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.jLabel1.text")); // NOI18N
 
@@ -157,6 +164,10 @@ public class JsfDesignerAdvancedOptionsPanel extends javax.swing.JPanel {
 
         dataProviderSuffix.setText(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.dataProviderSuffix.text")); // NOI18N
 
+        promptForName.setText(org.openide.util.NbBundle.getMessage(JsfDesignerAdvancedOptionsPanel.class, "JsfDesignerAdvancedOptionsPanel.promptForName.text")); // NOI18N
+        promptForName.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        promptForName.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -184,31 +195,35 @@ public class JsfDesignerAdvancedOptionsPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(checkRowsetDuplicate)
+                        .add(promptForName)
                         .addContainerGap())
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                         .add(layout.createSequentialGroup()
-                            .add(rowsetInSession)
+                            .add(checkRowsetDuplicate)
                             .addContainerGap())
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(snapToGrid)
+                                .add(rowsetInSession)
                                 .addContainerGap())
-                            .add(layout.createSequentialGroup()
-                                .add(showGrid)
-                                .addContainerGap())
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, rowsetSuffix, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, dataProviderSuffix, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
-                                    .add(resolution, 0, 166, Short.MAX_VALUE))
-                                .add(14, 14, 14))
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, gridWidth)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, gridHeight)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, defaultFontSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE))
-                                .addContainerGap(136, Short.MAX_VALUE))))))
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(layout.createSequentialGroup()
+                                    .add(snapToGrid)
+                                    .addContainerGap())
+                                .add(layout.createSequentialGroup()
+                                    .add(showGrid)
+                                    .addContainerGap())
+                                .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, rowsetSuffix, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, dataProviderSuffix, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
+                                        .add(resolution, 0, 157, Short.MAX_VALUE))
+                                    .add(14, 14, 14))
+                                .add(layout.createSequentialGroup()
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, gridWidth)
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, gridHeight)
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, defaultFontSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE))
+                                    .addContainerGap(127, Short.MAX_VALUE)))))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -245,7 +260,9 @@ public class JsfDesignerAdvancedOptionsPanel extends javax.swing.JPanel {
                 .add(rowsetInSession)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(checkRowsetDuplicate)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(promptForName)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -262,6 +279,7 @@ public class JsfDesignerAdvancedOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JCheckBox promptForName;
     private javax.swing.JComboBox resolution;
     private javax.swing.JCheckBox rowsetInSession;
     private javax.swing.JTextField rowsetSuffix;

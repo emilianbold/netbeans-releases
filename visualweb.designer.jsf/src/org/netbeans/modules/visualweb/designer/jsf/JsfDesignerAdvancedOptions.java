@@ -80,6 +80,7 @@ public class JsfDesignerAdvancedOptions extends AdvancedOption {
                         component.setRowsetSuffix(dataConnectivity.getRowSetSuffixProp());
                         component.setRowsetDuplicate(dataConnectivity.getCheckRowSetProp());
                         component.setRowsetInSession(dataConnectivity.getMakeInSession());
+                        component.setPromptForName(dataConnectivity.getPromptForName());
                     }
                 });
         }
@@ -115,6 +116,7 @@ public class JsfDesignerAdvancedOptions extends AdvancedOption {
                         dataConnectivity.setRowSetSuffixProp(component.getRowsetSuffix());
                         dataConnectivity.setCheckRowSetProp(component.isRowsetDuplicate());
                         dataConnectivity.setMakeInSession(component.isRowsetInSession());
+                        dataConnectivity.setPromptForName(component.isPromptForName());
                     }
                 });
         }
