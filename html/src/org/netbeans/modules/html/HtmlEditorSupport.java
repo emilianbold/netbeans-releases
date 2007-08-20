@@ -86,7 +86,20 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws IOException {
-            //try to find encoding specification in the editor content
+           saveDocument();
+        }
+    };
+    
+    /** Constructor. */
+    HtmlEditorSupport(HtmlDataObject obj) {
+        super(obj, new Environment(obj));
+        
+        setMIMEType("text/html"); // NOI18N
+    }
+    
+    @Override 
+    public void saveDocument() throws IOException {
+         //try to find encoding specification in the editor content
             String documentContent = getDocumentText();
             String encoding = HtmlDataObject.findEncoding(documentContent);
             String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
@@ -124,17 +137,9 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
             //FEQ cannot be run in saveFromKitToStream since document is locked for writing,
             //so setting the FEQ result to document property
             getDocument().putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
-
-            HtmlEditorSupport.this.saveDocument();
+            
+            super.saveDocument();
             HtmlEditorSupport.this.getDataObject().setModified(false);
-        }
-    };
-    
-    /** Constructor. */
-    HtmlEditorSupport(HtmlDataObject obj) {
-        super(obj, new Environment(obj));
-        
-        setMIMEType("text/html"); // NOI18N
     }
     
     @Override
