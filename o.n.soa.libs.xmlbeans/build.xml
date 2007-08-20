@@ -24,13 +24,4 @@ Microsystems, Inc. All Rights Reserved.
        <mkdir dir="external/xmlbeans-2.1.0"/>
        <unzip src="external/xmlbeans-2.1.0.zip" dest="external/xmlbeans-2.1.0"/>
     </target>
-
-    <target name="netbeans-extra" depends="ext_init, init">
-        <mkdir dir="${cluster}/modules/ext/xmlbeans-2.1.0"/>
-       <!-- <unzip src="external/xmlbeans-2.1.0.zip" dest="${cluster}/modules/ext/xmlbeans-2.1.0"/>-->
-        <copy todir="${cluster}/modules/ext/xmlbeans-2.1.0">
-            <fileset dir="external/xmlbeans-2.1.0" />
-        </copy>
-    </target>
-
 </project>
