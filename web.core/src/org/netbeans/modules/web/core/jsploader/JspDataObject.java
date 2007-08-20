@@ -452,10 +452,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     //so the ICHNE is always thrown for them, just ignore
                     Boolean template = (Boolean)file.getAttribute("template");//NOI18N
                     if(template == null || !template.booleanValue()) {
-                        Logger.getLogger("global").log(Level.INFO, null, ichse);
+                        Logger.getLogger("global").log(Level.INFO, "Detected illegal charset name in file " + file.getNameExt() + " (" + ichse.getMessage() + ")");
                     }
                 } catch (UnsupportedCharsetException uchse) {
-                    Logger.getLogger("global").log(Level.INFO, null, uchse);
+                    Logger.getLogger("global").log(Level.INFO, "Detected unsupported charset name in file " + file.getNameExt() + " (" + uchse.getMessage() + ")");
                 }
 
                 return null;
