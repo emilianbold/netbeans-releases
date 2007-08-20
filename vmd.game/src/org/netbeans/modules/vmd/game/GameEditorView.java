@@ -116,7 +116,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(GameEditorView.class, "GameBuilderNavigator.DisplayName");
+        return NbBundle.getMessage(GameEditorView.class, "GameBuilder.DisplayName");
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {
