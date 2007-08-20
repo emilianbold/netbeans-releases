@@ -56,8 +56,7 @@ public class MidpCodeSupport {
                     generateCodeForPropertyValue (writer, propertyValue);
                 }
 
-                if (array.size () > 0)
-                    writer.write (newLines ? "}" : " }"); // NOI18N
+                writer.write (newLines ? "}" : " }"); // NOI18N
             } break;
             case ENUM:
                 generateEnumTypes (writer, value);
