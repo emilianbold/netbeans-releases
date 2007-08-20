@@ -19,6 +19,17 @@
                         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.metro.samples.WebSampleProjectIterator"/>
                         <attr name="prjType" stringvalue="web"/>
                     </file>
+                    <file name="Calculator" url="Calculator.txt">
+                        <attr name="position" intvalue="300"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="needsdefaults" boolvalue="true"/>
+                        <attr name="files" stringvalue="CalculatorApp.zip,CalculatorClientApp.zip"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/metro/samples/descriptions/Calculator.html"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.metro.samples.Bundle"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.metro.samples.WebSampleProjectIterator"/>
+                        <attr name="prjType" stringvalue="web"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

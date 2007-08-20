@@ -28,6 +28,8 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${examples}"/>
         <zip basedir="SecureCalculatorApp" excludes="CVS" destfile="${examples}/SecureCalculatorApp.zip"/>
         <zip basedir="SecureCalculatorClientApp" excludes="CVS" destfile="${examples}/SecureCalculatorClientApp.zip"/>
+        <zip basedir="CalculatorApp" excludes="CVS" destfile="${examples}/CalculatorApp.zip"/>
+        <zip basedir="CalculatorClientApp" excludes="CVS" destfile="${examples}/CalculatorClientApp.zip"/>
     </target>    
     
 </project>
