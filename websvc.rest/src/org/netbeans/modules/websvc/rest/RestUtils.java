@@ -18,7 +18,12 @@
  */
 package org.netbeans.modules.websvc.rest;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
 import java.io.IOException;
+import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -29,6 +34,12 @@ import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 import javax.xml.xpath.*;
+import org.netbeans.modules.websvc.rest.codegen.Constants;
+import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -152,4 +163,186 @@ public class RestUtils {
         NodeList nodes3 = (NodeList) result3;
         return nodes3;
     }      
+    
+    public static FileObject findWadlFile(Project p) {
+        FileObject pf = p.getProjectDirectory();
+        FileObject f = pf.getFileObject("/build/web/WEB-INF/classes/com/sun/ws/rest/wadl/resource/application.wadl");
+        return f;
+    }
+
+    public static DataObject createDataObjectFromTemplate(String template, 
+            FileObject targetFolder, String targetName) throws IOException {
+        assert template != null;
+        assert targetFolder != null;
+        assert targetName != null && targetName.trim().length() > 0;
+
+        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+        FileObject templateFO = defaultFS.findResource(template);
+        DataObject templateDO = DataObject.find(templateFO);
+        DataFolder dataFolder = DataFolder.findFolder(targetFolder);
+
+        return templateDO.createFromTemplate(dataFolder, targetName);
+    }
+
+    public static String findStubNameFromClass(String className) {
+        String name = className;
+        int index = name.lastIndexOf("Resource");
+        if (index != -1) {
+            name = name.substring(0, index);
+        } else {
+            index = name.lastIndexOf("Converter");
+            if (index != -1)
+                name = name.substring(0, index);
+        }
+        return name;
+    }
+
+    public static String findUri(JavaSource rSrc) {
+        String path = null;
+        List<? extends AnnotationMirror> annotations = JavaSourceHelper.getClassAnnotations(rSrc);
+        for (AnnotationMirror annotation : annotations) {
+            String cAnonType = annotation.getAnnotationType().toString();
+            if (Constants.URI_TEMPLATE.equals(cAnonType) || Constants.URI_TEMPLATE_ANNOTATION.equals(cAnonType)) {
+                path = getValueFromAnnotation(annotation);
+            }
+        }
+        return path;
+    }
+
+    public static boolean isStaticResource(JavaSource src) {
+        List<? extends AnnotationMirror> annotations = JavaSourceHelper.getClassAnnotations(src);
+        if (annotations != null && annotations.size() > 0) {
+            for (AnnotationMirror annotation : annotations) {
+                String classAnonType = annotation.getAnnotationType().toString();
+                if (Constants.URI_TEMPLATE.equals(classAnonType)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isConverter(JavaSource src) {
+        List<? extends AnnotationMirror> annotations = JavaSourceHelper.getClassAnnotations(src);
+        if (annotations != null && annotations.size() > 0) {
+            for (AnnotationMirror annotation : annotations) {
+                String classAnonType = annotation.getAnnotationType().toString();
+                if (Constants.XML_ROOT_ELEMENT.equals(classAnonType)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isDynamicResource(JavaSource src) {
+        List<MethodTree> trees = JavaSourceHelper.getAllMethods(src);
+        for (MethodTree tree : trees) {
+            List<? extends AnnotationTree> mAnons = tree.getModifiers().getAnnotations();
+            if (mAnons != null && mAnons.size() > 0) {
+                for (AnnotationTree mAnon : mAnons) {
+                    String mAnonType = mAnon.getAnnotationType().toString();
+                    if (Constants.URI_TEMPLATE_ANNOTATION.equals(mAnonType) || Constants.URI_TEMPLATE.equals(mAnonType)) {
+                        return true;
+                    } else if (Constants.HTTP_METHOD_ANNOTATION.equals(mAnonType) || Constants.HTTP_METHOD.equals(mAnonType)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    public static String findElementName(MethodTree tree, ClientStubModel.Resource r) {
+        String eName = "";
+        List<? extends AnnotationTree> mAnons = tree.getModifiers().getAnnotations();
+        if (mAnons != null && mAnons.size() > 0) {
+            for (AnnotationTree mAnon : mAnons) {
+                eName = mAnon.toString();
+                if (eName.indexOf("\"") != -1) {
+                    eName = getValueFromAnnotation(mAnon);
+                } else {
+                    eName = getNameFromMethod(tree);
+                }
+            }
+        }
+        return eName.substring(0, 1).toLowerCase() + eName.substring(1);
+    }
+
+    public static MethodTree findGetAsXmlMethod(JavaSource rSrc) {
+        MethodTree method = null;
+        List<MethodTree> rTrees = JavaSourceHelper.getAllMethods(rSrc);
+        for (MethodTree tree : rTrees) {
+            String mName = tree.getName().toString();
+            ClientStubModel.Method m = null;
+            boolean isHttpGetMethod = false;
+            boolean isXmlMime = false;
+            List<? extends AnnotationTree> mAnons = tree.getModifiers().getAnnotations();
+            if (mAnons != null && mAnons.size() > 0) {
+                for (AnnotationTree mAnon : mAnons) {
+                    String mAnonType = mAnon.getAnnotationType().toString();
+                    if (Constants.HTTP_METHOD_ANNOTATION.equals(mAnonType) || Constants.HTTP_METHOD.equals(mAnonType)) {
+                        String value = getValueFromAnnotation(mAnon);
+                        if (value.equals("GET")) {
+                            isHttpGetMethod = true;
+                        }
+                    } else if (Constants.PRODUCE_MIME_ANNOTATION.equals(mAnonType) || Constants.PRODUCE_MIME.equals(mAnonType)) {
+                        isXmlMime = true;
+                    }
+                }
+                if (isHttpGetMethod && isXmlMime) {
+                    method = tree;
+                    break;
+                }
+            }
+        }
+        return method;
+    }
+
+    public static String getNameFromMethod(MethodTree tree) {
+        String attrName = tree.getName().toString();
+        attrName = attrName.substring(attrName.indexOf("get") + 3);
+        attrName = attrName.substring(0, 1).toLowerCase() + attrName.substring(1);
+        return attrName;
+    }
+
+    public static String getValueFromAnnotation(AnnotationMirror annotation) {
+        return getValueFromAnnotation(annotation.getElementValues().values().toString());
+    }
+
+    public static String getValueFromAnnotation(AnnotationTree mAnon) {
+        return getValueFromAnnotation(mAnon.toString());
+    }
+
+    public static String getValueFromAnnotation(ExpressionTree eAnon) {
+        return getValueFromAnnotation(eAnon.toString());
+    }
+    
+    public static String getValueFromAnnotation(String value) {
+        if (value.indexOf("\"") != -1)
+            value = value.substring(value.indexOf("\"") + 1, value.lastIndexOf("\""));
+        return value;
+    }     
+
+    public static String createGetterMethodName(ClientStubModel.RepresentationNode n) {
+        String mName = "get";
+        if(n.getLink() != null)
+            mName = escapeJSReserved(n.getLink().getName().toString());
+        else {
+            mName = n.getName();
+            mName = "get"+mName.substring(0, 1).toUpperCase()+mName.substring(1);
+        }
+        return mName;
+    }  
+            
+    public static String escapeJSReserved(String key) {
+        if(key.equals("delete"))
+            return key + "_";
+        else
+            return key;
+    }    
 }
