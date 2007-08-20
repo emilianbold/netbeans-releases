@@ -29,6 +29,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 
 /**
@@ -75,6 +76,13 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     
     public void initialize(){
         log("::initialize::");
+        long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",120000);
+        
+        waitProjectCreatingDialogClosed();
+        
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",oldTimeout);                
+                
     }
     
     public void prepare(){
@@ -115,7 +123,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
         wizard_location.finish();
         
         long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
-        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",120000);        
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",120000);
         wizard_location.waitClosed();
         waitProjectCreatingDialogClosed();
 
