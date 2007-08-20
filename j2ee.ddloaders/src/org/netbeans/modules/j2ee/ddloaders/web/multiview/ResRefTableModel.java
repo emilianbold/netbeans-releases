@@ -99,8 +99,11 @@ public class ResRefTableModel extends DDBeanTableModel
                 param.setResAuth((String)values[2]);
                 String scope = (String)values[3];
                 String oldScope = param.getResSharingScope();
-                if (oldScope==null && "Unshareable".equals(scope)) param.setResSharingScope(scope); //NOI18N
-                else if (!oldScope.equals(scope)) param.setResSharingScope(scope);
+                if (oldScope == null && "Unshareable".equals(scope)){//NOI18N
+                    param.setResSharingScope(scope);
+                } else if (!scope.equals(oldScope)){
+                    param.setResSharingScope(scope);
+                }
                 String desc = (String)values[4];
                 param.setDescription(desc.length()>0?desc:null);
                 fireTableRowsUpdated(row,row);
