@@ -72,8 +72,6 @@ public class ResourceRefMetadataReader extends CommonBeanReader {
                     Map<String, Object> resourceRefMap = new HashMap<String, Object>();
                     result.put(resourceRefName, resourceRefMap);
                     resourceRefMap.put(DDBinding.PROP_NAME, resourceRefName);
-                    
-                    // TODO handle port-component-ref
                 }
             }
         }
