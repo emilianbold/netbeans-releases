@@ -94,7 +94,7 @@ public class OpenFormFile extends OpenFilesNoCloneableEditor {
     }
 
     public void close() {
-        ((FormDesignerOperator)testedComponentOperator).close();
+//        ((FormDesignerOperator)testedComponentOperator).close();
     }
     
     public static void main(java.lang.String[] args) {

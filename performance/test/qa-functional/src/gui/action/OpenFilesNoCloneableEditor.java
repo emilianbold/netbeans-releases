@@ -100,11 +100,11 @@ public class OpenFilesNoCloneableEditor extends OpenFiles {
     }
     
     public void close(){
-        if (testedComponentOperator != null) {
+/*        if (testedComponentOperator != null) {
             ((TopComponentOperator)testedComponentOperator).close();
         }
         else {
             throw new Error ("no component to close");
         }
-    }
+*/    }
 }
