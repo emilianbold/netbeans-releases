@@ -96,7 +96,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         Set result = new HashSet();
         
         // build the URL
-        String url = WLDeploymentFactory.URI_PREFIX + this.host + ":" + this.port + ":" + serverRoot; // NOI18N
+        String url = WLDeploymentFactory.URI_PREFIX + this.host + ":" + this.port + ":" + serverRoot + ":" + domainRoot; // NOI18N
         
         String displayName = (String)wizardDescriptor.getProperty(PROP_DISPLAY_NAME);
         
