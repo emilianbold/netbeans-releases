@@ -420,7 +420,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             // Just to avoid creating accessor class
         }
         
-        protected void projectOpened() {
+        protected synchronized void projectOpened() {
             // Check up on build scripts.
             addRoots(helper);
             final SourcesHelper sourcesHelper = getLookup().lookup(SourcesHelper.class);
@@ -470,7 +470,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             midletsCacheHelper.refresh();
         }
         
-        protected void projectClosed() {
+        protected synchronized void projectClosed() {
             if (skipCloseHook) return;
             // Probably unnecessary, but just in case:
             try {
