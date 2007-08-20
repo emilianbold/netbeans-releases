@@ -1392,8 +1392,7 @@ public class MenuEditLayer extends JPanel {
             RADComponent rad = formDesigner.getHandleLayer().getMetaComponentAt(e.getPoint(), HandleLayer.COMP_DEEPEST);
             if(rad != null) {
                 JComponent c = (JComponent) formDesigner.getComponent(rad);
-                if(c != null && c instanceof JMenu && isTopLevelMenu(c)) {
-                    p("this is a top level JMenu");
+                if(c != null && isTopLevelMenu(c)) {
                     if(e.getClickCount() > 1) {
                         isEditing = true;
                         configureEditedComponent(c);
@@ -1407,13 +1406,20 @@ public class MenuEditLayer extends JPanel {
                             return;
                         }
                         if(!dragop.isStarted()) {
-                            p("possibly starting a drag op of a toplevel menu");
                             pressPoint = e.getPoint();
                             pressComp = c;
                             return;
                         }
                     }
                     return;
+                }
+                if(c instanceof JMenuBar) {
+                     setSelectedRADComponent(rad);
+                     if(e.isPopupTrigger()) {
+                         showContextMenu(e.getPoint());
+                         return;
+                     }
+                     return;
                 }
             }
 
