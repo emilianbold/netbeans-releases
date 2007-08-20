@@ -16,8 +16,10 @@
  */
 package org.netbeans.modules.sun.manager.jbi.nodes.property;
 
+import java.util.List;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
+import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
 import org.netbeans.modules.sun.manager.jbi.util.MyMBeanAttributeInfo;
 import org.netbeans.modules.sun.manager.jbi.util.DoNotShowAgainMessage;
@@ -75,9 +77,18 @@ class SchemaBasedConfigPropertySupport<T>
                             
                     if (myInfo.isApplicationRestartRequired() && 
                             promptForApplicationRestart) {
-                        d = promptForRestart("MSG_NEEDS_APPLICATION_RESTART");
-                        if (d.getDoNotShowAgain()) {
-                            promptForApplicationRestart = false;
+                        String compName = componentNode.getName();
+                        AdministrationService adminService = 
+                                componentNode.getAppserverJBIMgmtController().
+                                getJBIAdministrationService();
+                        List<String> saNames = 
+                                adminService.getServiceAssemblyNames(compName);
+                        if (saNames.size() > 0) {
+                            d = promptForRestart("MSG_NEEDS_APPLICATION_RESTART", 
+                                    saNames.toString());
+                            if (d.getDoNotShowAgain()) {
+                                promptForApplicationRestart = false;
+                            }
                         }
                     }
 
@@ -115,6 +126,14 @@ class SchemaBasedConfigPropertySupport<T>
     private DoNotShowAgainMessage promptForRestart(String msgBundleName) {
         DoNotShowAgainMessage d = new DoNotShowAgainMessage(
                 NbBundle.getMessage(getClass(), msgBundleName),
+                NotifyDescriptor.INFORMATION_MESSAGE);        
+        DialogDisplayer.getDefault().notify(d);
+        return d;
+    }
+    
+    private DoNotShowAgainMessage promptForRestart(String msgBundleName, String param1) {
+        DoNotShowAgainMessage d = new DoNotShowAgainMessage(
+                NbBundle.getMessage(getClass(), msgBundleName, param1),
                 NotifyDescriptor.INFORMATION_MESSAGE);        
         DialogDisplayer.getDefault().notify(d);
         return d;
