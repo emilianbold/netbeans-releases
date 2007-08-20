@@ -21,7 +21,7 @@ package org.netbeans.modules.websvc.manager.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.websvc.manager.WebServiceDescriptor;
+import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 
 /**
