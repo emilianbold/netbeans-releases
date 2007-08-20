@@ -1436,8 +1436,6 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
         command.add(repository.getAbsolutePath());
-        command.add(HG_FLAG_REV_CMD);
-        command.add(HG_STATUS_FLAG_TIP_CMD);
 
         // In 0.9.3 hg status does not give back copy information unless we 
         // use relative paths from repository. This is fixed in 0.9.4.
@@ -1461,8 +1459,6 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
         command.add(repository.getAbsolutePath());
-        command.add(HG_FLAG_REV_CMD);
-        command.add(HG_STATUS_FLAG_TIP_CMD);
         if (dir != null) {
             command.add(dir.getAbsolutePath());
         } else {
