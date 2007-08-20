@@ -203,6 +203,11 @@ public class RubyTokenId extends GsfTokenId {
         types.add(RANGE);
         types.add(COLON3);
         types.add(NONUNARY_OP);
+        types.add(DOT);
+        types.add(SUPER);
+        types.add(SELF);
+        types.add(QUOTED_STRING_BEGIN);
+        types.add(QUOTED_STRING_END);
 
         types.add(LPAREN);
         types.add(RPAREN);
@@ -229,6 +234,11 @@ public class RubyTokenId extends GsfTokenId {
         types.add(WHILE);
         types.add(UNTIL);
         types.add(UNLESS);
+        types.add(ELSE);
+        types.add(ELSIF);
+        types.add(ENSURE);
+        types.add(WHEN);
+        types.add(RESCUE);
 
         types.add(ANY_KEYWORD);
         types.add(ANY_OPERATOR);
