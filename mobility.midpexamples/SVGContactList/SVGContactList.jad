@@ -1,0 +1,8 @@
+MIDlet-1: SVGContactList (skin 1), , com.sun.perseus.demo.ContactListSkin1
+MIDlet-2: SVGContactList (skin 2), , com.sun.perseus.demo.ContactListSkin2
+MIDlet-Description: JSR 226 (Scalable Vector Graphics) contact list demo.
+MIDlet-Name: SVGContactList
+MIDlet-Vendor: Sun Microsystems, Inc.
+MIDlet-Version: 1.0
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0

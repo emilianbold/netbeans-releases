@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://serverscript.org/wsdl" xmlns:ns2="http://serverscript.org/types" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" name="serverscript" targetNamespace="http://serverscript.org/wsdl">
+  <types>
+    <schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://serverscript.org/types" xmlns:soap11-enc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://serverscript.org/types">
+      <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+      <complexType name="request">
+        <sequence>
+          <element name="String_1" type="string" nillable="true"/>
+          <element name="String_2" type="string" nillable="true"/></sequence></complexType>
+      <complexType name="requestResponse">
+        <sequence>
+          <element name="result" type="string" nillable="true"/></sequence></complexType>
+      <element name="request" type="tns:request"/>
+      <element name="requestResponse" type="tns:requestResponse"/></schema></types>
+  <message name="Interface_request">
+    <part name="parameters" element="ns2:request"/></message>
+  <message name="Interface_requestResponse">
+    <part name="result" element="ns2:requestResponse"/></message>
+  <portType name="Interface">
+    <operation name="request">
+      <input message="tns:Interface_request"/>
+      <output message="tns:Interface_requestResponse"/></operation></portType>
+  <binding name="InterfaceBinding" type="tns:Interface">
+    <operation name="request">
+      <input>
+        <soap:body use="literal"/></input>
+      <output>
+        <soap:body use="literal"/></output>
+      <soap:operation soapAction=""/></operation>
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/></binding>
+  <service name="Serverscript">
+    <port name="InterfacePort" binding="tns:InterfaceBinding">
+      <soap:address xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" location="http://cds.cmsg.sun.com:80/serverscript/serverscript"/></port></service></definitions>

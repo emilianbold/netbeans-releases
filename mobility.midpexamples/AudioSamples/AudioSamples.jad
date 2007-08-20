@@ -1,0 +1,23 @@
+BBall-MIDI-URL: resource:/audio/pattern.mid
+BBall-wav-URL: resource:/audio/test-wav.wav
+MIDlet-1: Audio Player, /icons/App.png, example.audiodemo.AudioPlayer
+MIDlet-2: Bouncing Ball, /icons/App.png, example.audiodemo.BBall
+MIDlet-3: Mix Demo, /icons/App.png, example.audiodemo.MixTest
+MIDlet-Description: Sample suite for the Audio Building Block in MIDP 2.0.
+MIDlet-Name: AudioSamples
+MIDlet-Permissions: javax.microedition.io.Connector.http
+MIDlet-Vendor: Sun Microsystems, Inc.
+MIDlet-Version: 2.0
+MicroEdition-Configuration: CLDC-1.0
+MicroEdition-Profile: MIDP-2.0
+MixTestURL: resource:/audio/test-wav.wav
+PlayerTitle-1: Simple Tone
+PlayerTitle-2: Bark [rms]
+PlayerTitle-3: Ring Tone [jar]
+PlayerTitle-4: JavaOne Theme [jar]
+PlayerTitle-5: JavaOne Theme [http]
+PlayerURL-1: simple tone
+PlayerURL-2: rms:/audio/bark.wav
+PlayerURL-3: resource:/audio/beethoven.jts
+PlayerURL-4: resource:/audio/test-wav.wav
+PlayerURL-5: http://java.sun.com/products/java-media/mma/media/test-wav.wav

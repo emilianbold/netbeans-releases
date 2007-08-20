@@ -1,0 +1,12 @@
+MIDlet-1: Image Effects, /icons/App.png, ImageEffects
+MIDlet-2: Radio Tuner, /icons/App.png, TunerDemo
+MIDlet-3: Camera, /icons/App.png, CameraDemo
+MIDlet-4: Moving Helicopter, /icons/App.png, CopterAudio
+MIDlet-5: Music Effects, /icons/App.png, MusicEffects
+MIDlet-Description: AMMS demo midlets for image effects, tuner, camera, 3d sound and audio effects
+MIDlet-Name: Advanced Multimedia Supplements
+MIDlet-Permissions: javax.microedition.io.Connector.http,javax.microedition.media.control.VideoControl.getSnapshot,javax.microedition.io.Connector.file.write,javax.microedition.io.Connector.file.read,javax.microedition.media.control.RecordControl.startRecord,javax.microedition.amms.control.camera.enableShutterFeedback,javax.microedition.amms.control.tuner.setPreset
+MIDlet-Vendor: Sun Microsystems
+MIDlet-Version: 1.0
+MicroEdition-Configuration: CLDC-1.0
+MicroEdition-Profile: MIDP-2.0

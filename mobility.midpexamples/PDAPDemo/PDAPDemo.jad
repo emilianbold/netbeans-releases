@@ -1,0 +1,9 @@
+MIDlet-1: FileBrowser, , example.fc.FileBrowser
+MIDlet-2: JSR75 PIM APIs, PDAPDemo.png, example.pim.PIMDemo
+MIDlet-Description: JSR 75 (FileConnection & PIM) demonstration.
+MIDlet-Name: PDAPDemo
+MIDlet-Permissions: javax.microedition.pim.ContactList.read,javax.microedition.pim.ContactList.write,javax.microedition.pim.EventList.read,javax.microedition.pim.EventList.write,javax.microedition.pim.ToDoList.read,javax.microedition.pim.ToDoList.write,javax.microedition.io.Connector.file.read,javax.microedition.io.Connector.file.write
+MIDlet-Vendor: Unknown
+MIDlet-Version: 1.0
+MicroEdition-Configuration: CLDC-1.0
+MicroEdition-Profile: MIDP-2.0

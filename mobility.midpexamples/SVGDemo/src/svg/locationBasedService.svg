@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1 Tiny//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-tiny.dtd">
+<svg version="1.1" 
+     baseProfile="tiny" 
+     xmlns="http://www.w3.org/2000/svg" 
+     xmlns:xlink="http://www.w3.org/1999/xlink"  
+     id="svg-root"
+     width="396.864" height="319.5" viewBox="0 0 396.864 319.5"
+     xmlns:p="http://www.sun.com/svg/perseus"
+     xml:space="preserve">
+
+        <path id="Inset_bay" fill="rgb(181, 199, 206)" d="M396.089,305.742h-179v-282h179V305.742z"/>
+        <path id="Inset_Land" fill="rgb(255, 209, 31)" stroke="rgb(153, 51, 0)" d="M245.082,24.25l-5,2l4,8l21-11.5l44-2.5l-55.5,32l3,4.5l22-12l46,63.5
+            l56.5-20l12,19.5l-43.5,38.5l4,7.5c0,0,6.5-5,13,13.5s-11.5,9.5-11.5,9.5l17,25.5l-15.5,19l39,59l0.5,38.5h-395v-295h243.5"/>
+        <path fill="rgb(255, 209, 31)" stroke="rgb(153, 51, 0)" stroke-width="0.8817" d="M111.689,237.57l-2.064-2.859l41.021-29.616l2.063,2.857
+            L111.689,237.57z"/>
+
+    <g id="mapBackground" p:externalResourcesRequired="true">
+
+        <path fill="rgb(204, 102, 0)" stroke="rgb(153, 51,0)" stroke-width="0.8755" d="M394.582,307.25l-27.5-38c0,0,18,38,14.5,47.5
+            c-0.385,1.044,5.5,0.5,5.5,0.5h7.5V307.25z"/>
+        <path fill="rgb(204, 102, 0)" stroke="rgb(153, 51,0)" stroke-width="0.8755" d="M103.082,98.75h46.5v-33h-46.5V98.75z"/>
+
+        <g fill="rgb(253, 237, 153)" stroke="rgb(255, 153, 0)" >
+            <path stroke-width="0.8755" d="M352.082,150.25l-2.5-4.5l43-37.5l-11-19.5l-57.5,19l-35-50.5
+            l-6,4.5l59.5,95L352.082,150.25z"/>
+
+            <path stroke-width="0.8755" d="M104.082,21.25v36.5l-60-0.5l-0.5,7.5h60l0.5,34.5l-60-0.5v8h-3.5
+            v-8l-22,0.5v-34.5h20.5l0.5-7.5h-21v-36l85-2"/>
+
+            <path stroke-width="0.8755" d="M149.582,22.25v35h-38l-0.5-37.5l38.5,2"/>
+
+            <path stroke-width="0.8755" d="M157.082,66.75v31.5l38,0.5l-0.5,27.5l21,27.5l13.5-8l28.5,39.5
+            l23.5-15l-23-25.5c0,0-21-22.5-23.5-62c-1.242-19.62-19-15.5-19-15.5l-58.5-1"/>
+
+            <path stroke-width="0.8755" d="M346.082,316.75c0,0-4.5-25.5-1.5-31.5s-9.5,7-9.5,7s11,8,3,13
+            s-9-7.5-9-8.5s-29.5,19.5-29.5,19.5L346.082,316.75z"/>
+
+            <path stroke-width="0.8755" d="M355.582,316.75l16-0.5c0,0,2-17-12-42c-0.513-0.916-2,1-2,1
+            l-2.5,1.5l-2,2C353.082,278.75,351.582,317.25,355.582,316.75z"/>
+
+            <path stroke-width="0.8755" d="M301.582,206.75l-8.5,6.5l-9,7l45.5,66l13.5-11.5
+            c0,0-4.5-24.5-38.5-69.5C303.498,203.815,301.582,206.75,301.582,206.75z"/>
+        </g>
+
+        <g fill="rgb(255, 153, 0)" stroke="rgb(204, 102, 0)" stroke-width="0.8755" >
+            <path d="M149.082,316.25l9.5-6.5l5.5,6.5H149.082z"/>
+            <path d="M165.582,305.25l31.5-22.5l24.5,33.5l-47.5,1L165.582,305.25z"/>
+            <path d="M286.582,316.25l-46.5-65l-35.5,25.5l27.5,40L286.582,316.25z"/>
+            <path d="M74.582,267.75l35.5-25l43.5,61l-19,13h-24.5L74.582,267.75z"/>
+            <path d="M100.082,315.75l-31-43l-31.5,22l15,22h45.5L100.082,315.75z"/>
+            <path d="M2.582,307.75l8.5-6.5v-13h-8.5V307.75z"/>
+            <path d="M5.582,317.25l25-17.5l13,17L5.582,317.25z"/>
+            <path d="M16.082,297.75v-9.5h3.5l5,2.5L16.082,297.75z"/>
+            <path d="M92.082,243.25h-25l-0.5,18.5L92.082,243.25z"/>
+            <path d="M58.582,267.75v-24l-40-0.5l0.5,37.5l12,6.5L58.582,267.75z"/>
+            <path d="M2.082,280.75h8.5v-37.5h-8.5V280.75z"/>
+            <path d="M2.082,234.75h9v-39.5h-9V234.75z"/>
+            <path d="M2.082,187.25h9v-16h-9V187.25z"/>
+            <path d="M2.082,167.75h9.5v-17.5h-9.5V167.75z"/>
+            <path d="M2.082,142.25h9v-35.5h-9V142.25z"/>
+            <path d="M2.082,98.25h9v-15h-9V98.25z"/>
+            <path d="M10.582,80.75h-8v-15h8V80.75z"/>
+            <path  stroke-width="0.882" d="M160.833,298.907l-42.955-61.159l31.779-22.322l42.957,61.163
+            L160.833,298.907z"/>
+            <path  stroke-width="0.9511" d="M198.833,271.756l-42.887-61.06l37.01-25.994l42.888,61.063
+            L198.833,271.756z"/>
+            <path  stroke-width="0.8661" d="M241.239,240.607l-42.957-61.159l30.641-21.521l42.957,61.161
+            L241.239,240.607z"/>
+            <path  stroke-width="0.903" d="M293.202,312.867l-47.642-67.829l30.035-21.096l47.641,67.829
+            L293.202,312.867z"/>
+            <path  stroke-width="0.9183" d="M157.082,24.25v31.5l67,0.5l3-1.5l-15.5-32l-54-3.5l-1,4.5"/>
+            <path  stroke-width="0.9183" d="M281.082,170.25l-23,15.5l21,28.5l21-15.5L281.082,170.25z"/>
+            <path  stroke-width="0.9183" d="M149.082,195.75h-37l-0.5,32.5l37.5-25.5V195.75z"/>
+            <path  stroke-width="0.9183" d="M194.582,107.25h-37.5l-0.5,80h12l47-32.5l-21-28.5V107.25z"/>
+            <path  d="M58.082,235.25h-39.5v-40h39.5V235.25z"/>
+            <path  d="M103.44,235.25h-39.5v-40h39.5V235.25z"/>
+            <path  stroke-width="0.9245" d="M149.317,187.398h-37v-36.5h37V187.398z"/>
+            <path  stroke-width="0.9245" d="M102.951,187.398h-37v-36.5h37V187.398z"/>
+            <path  stroke-width="0.9613" d="M58.574,187.398h-40v-36.5h40V187.398z"/>
+            <path  stroke-width="0.9613" d="M58.574,143.047h-40v-36.5h40V143.047z"/>
+            <path  stroke-width="0.9183" d="M102.924,143.047h-36.5v-36.5h36.5V143.047z"/>
+            <path  stroke-width="0.9183" d="M149.292,143.047h-36.5v-36.5h36.5V143.047z"/>
+            <path d="M1.582,24.25h9.5v33.5h-9.5V24.25z"/>
+        </g>
+
+        <g>
+            <path fill="none" d="M289.082,66.25v0.5h4.5v-0.5H289.082z"/>
+        </g>
+        <path fill="none" stroke="rgb(204, 102, 0)" stroke-width="1.5" d="M396.114,318.75H0.75v-318h395.364V318.75z"/>
+
+
+
+        <path d="M395.082,23.75h-394v-23h394V23.75z" fill="rgb(204, 102, 0)" />
+    </g> <!-- mapBackground -->
+
+    <g id="inserts">
+        <g display="none">
+            <circle cx="14" cy="60" r="5" fill="rgb(222,0,49)" />
+            <circle cx="14" cy="146" r="5" fill="rgb(222,0,49)" />
+            <circle cx="153" cy="146" r="5" fill="rgb(222,0,49)" />
+            <circle cx="153" cy="204" r="5" fill="rgb(222,0,49)" />
+            <circle cx="229" cy="151" r="5" fill="rgb(222,0,49)" />
+            <circle cx="278" cy="219" r="5" fill="rgb(222,0,49)" />
+            <circle cx="312" cy="194" r="5" fill="rgb(222,0,49)" />
+            <circle cx="275" cy="141" r="5" fill="rgb(222,0,49)" />
+        </g>
+        <g stroke="rgb(222,0,49)" display="none">
+            <line x1="14" y1="60" x2="14" y2="146" />
+            <line x1="14" y1="146" x2="153" y2="146" />
+            <line x1="153" y1="146" x2="153" y2="204" />
+            <line x1="153" y1="204" x2="229" y2="151" />
+            <line x1="229" y1="151" x2="278" y2="219" />
+            <line x1="278" y1="219" x2="312" y2="194" />
+            <line x1="312" y1="194" x2="275" y2="141" />
+        </g>
+    </g>
+
+    <g id="labels" visibility="visible">
+        <g font-size="7" p:externalResourcesRequired="true">
+            <text x="346.9692" y="104.1426" >Terminal</text>
+            <text x="346.9692" y="97.0859" >Ferry</text>
+            <text x="346.9692" y="90.0293" >Transit</text>
+            <text x="346.9692" y="82.9727" >Gate</text>
+            <text x="346.9692" y="75.916" >Golden</text>
+            <text x="277.4165" y="71.8848" >Building</text>
+            <text x="277.4165" y="63.8223" >Ferry</text>
+            <text x="277.4165" y="56.7656" >The</text>
+        </g>
+
+        <g p:externalResourcesRequired="true" fill="rgb(113, 11, 0)">
+            <text transform="matrix(0.6455 0.9228 -0.8194 0.5732 311.5317 205.8428)" font-size="6.9999">Embarcadero</text>
+            <text transform="matrix(0.9326 -0.6313 0.5606 0.8281 307.8833 308.6719)" font-size="7.0001">Howard</text>
+            <text transform="matrix(0.9326 -0.6313 0.5606 0.8281 43.7856 288.5117)" font-size="7.0001">Market</text>
+            <text transform="matrix(0.6618 0.9112 -0.8091 0.5877 36.2153 304.6416)" font-size="7.0001">First</text>
+            <text transform="matrix(0.6618 0.9112 -0.8091 0.5877 82.5825 288.5146)" font-size="7.0001">Fremont</text>
+            <text transform="matrix(0.6618 0.9112 -0.8091 0.5877 125.9263 263.3154)" font-size="7.0001">Beale</text>
+            <text transform="matrix(0.6618 0.9112 -0.8091 0.5877 176.3247 250.21)" font-size="7.0001">Main</text>
+            <text transform="matrix(0.6618 0.9112 -0.8091 0.5877 208.5806 204.8525)" font-size="7.0001">Spear</text>
+            <text transform="matrix(0.6618 0.9112 -0.8091 0.5877 244.8677 178.6475)" font-size="7.0001">Stewart</text>
+            <text transform="matrix(1.1261 0 0 1 130.4673 252.9688)" font-size="7">Station</text>
+            <text transform="matrix(1.1261 0 0 1 130.4673 245.9121)" font-size="7">Muni Metro</text>
+            <text transform="matrix(1.1261 0 0 1 130.4673 238.8555)" font-size="7">BART &amp;</text>
+            <text transform="matrix(1.1261 0 0 1 130.4673 231.7988)" font-size="7">Embarcadero</text>
+            <text transform="matrix(0 1.1261 -1 0 151.5786 149.3193)" font-size="7">Drumm</text>
+            <text transform="matrix(0 1.1261 -1 0 105.2153 151.335)" font-size="7">Davis</text>
+            <text transform="matrix(0 1.1261 -1 0 60.8638 194.6787)" font-size="7">Front</text>
+            <text transform="matrix(0 1.1261 -1 0 12.479 248.1025)" font-size="7">Battery</text>
+            <text transform="matrix(1.1261 0 0 1 4.4653 241.8789)" font-size="7">Pine</text>
+            <text transform="matrix(1.1261 0 0 1 4.4653 193.4961)" font-size="7">California</text>
+            <text transform="matrix(1.1261 0 0 1 4.4653 149.1445)" font-size="7">Sacramento</text>
+            <text transform="matrix(1.1261 0 0 1 6.481 105.8008)" font-size="7">Clay</text>
+            <text transform="matrix(1.1261 0 0 1 5.4731 64.4727)" font-size="7">Washington</text>
+            <text transform="matrix(1.1261 0 0 1 206.0649 112.8555)" font-size="7">Plaza</text>
+            <text transform="matrix(1.1261 0 0 1 206.0649 105.7988)" font-size="7">Herman</text>
+            <text transform="matrix(1.1261 0 0 1 206.0649 99.75)" font-size="7">Justin</text>
+            <text transform="matrix(1.1261 0 0 1 173.0649 94.75)" font-size="7">Plaza</text>
+            <text transform="matrix(1.1261 0 0 1 173.5337 87.8516)" font-size="7">Embarcadero</text>
+            <text transform="matrix(1.1261 0 0 1 28.5728 140.8125)" font-size="7">E M B  A R C A D E R O     C E N T E R</text>
+        </g>
+
+        <g p:externalResourcesRequired="true">
+            <path fill="none" d="M245.42,51.468l25.775,48.55"/>
+            <text transform="matrix(0.528 0.9947 -0.8833 0.4689 245.3638 51.3604)" font-size="7.0003">Herb Caen Way</text>
+        </g>
+
+        <g font-family="SunSansDemiEmbeded" font-size="8" p:externalResourcesRequired="true">
+            <rect x="300" y="120" width="38" height="40" fill="rgb(255, 209, 31)" stroke="rgb(153, 51, 0)" /> 
+            <g fill="rgb(153, 51, 0)">
+                <text x="303.6606" y="155.752">Feed</text>
+                <text x="303.6606" y="147.6875">Pasta</text>
+                <text x="303.6606" y="138.6152">Night</text>
+                <text x="303.6606" y="130.5508">Saturday</text>
+            </g>
+            <text id="marathon_x005F_staging_x005F_area" x="200" y="18.4082" fill="rgb(255,209,31)" font-family="SunSansDemiEmbeded" text-anchor="middle" font-size="18">Itinerary Demo</text>
+        </g>
+
+
+    </g> <!-- labels -->
+</svg>

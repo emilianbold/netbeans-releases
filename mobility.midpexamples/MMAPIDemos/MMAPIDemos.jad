@@ -1,0 +1,46 @@
+MIDlet-1: Simple Tones, /icons/App.png, example.mmademo.SimpleTones
+MIDlet-2: Simple Player, /icons/App.png, example.mmademo.SimplePlayer
+MIDlet-3: Video, /icons/App.png, example.mmademo.VideoTest
+MIDlet-4: Pausing Audio Test, /icons/App.png, example.mmademo.PausingAudioTest
+MIDlet-Description: Demo suite for MMAPI
+MIDlet-Name: MMAPI demos
+MIDlet-Permissions: javax.microedition.io.Connector.http,javax.microedition.media.control.RecordControl,javax.microedition.media.control.VideoControl.getSnapshot
+MIDlet-Vendor: Sun Microsystems, Inc.
+MIDlet-Version: 1.0.3
+MicroEdition-Configuration: CLDC-1.0
+MicroEdition-Profile: MIDP-2.0
+PauseAudioURL: http://java.sun.com/products/java-media/mma/media/test-wav.wav
+PlayerTitle-1: Bong [jar]
+PlayerTitle-10: Video Capture Simulation
+PlayerTitle-11: MPEG1 Video [http]
+PlayerTitle-2: MIDI Scale [jar]
+PlayerTitle-3: Simple Ring Tone [jar]
+PlayerTitle-4: WAV Music [http]
+PlayerTitle-5: MIDI scale [http]
+PlayerTitle-6: Animated GIF [jar]
+PlayerTitle-7: AMR Narrow Band [jar]
+PlayerTitle-8: AMR Wide Band 3[jar]
+PlayerTitle-9: Audio Capture from default device
+PlayerURL-1: resource:/audio/bong.wav
+PlayerURL-10: capture://video
+PlayerURL-11: http://java.sun.com/products/java-media/mma/media/test-mpeg.mpg
+PlayerURL-2: resource:/audio/scale.mid
+PlayerURL-3: resource:/audio/beethoven.jts
+PlayerURL-4: http://java.sun.com/products/java-media/mma/media/test-wav.wav
+PlayerURL-5: http://java.sun.com/products/java-media/mma/media/test-midi.mid
+PlayerURL-6: resource:/video/animated_89_c.gif
+PlayerURL-7: resource:/audio/amr-nb.amr
+PlayerURL-8: resource:/audio/amr-wb.awb
+PlayerURL-9: capture://audio
+VideoTest-1: Animated GIF - Form [jar]
+VideoTest-2: Animated GIF - Canvas [jar]
+VideoTest-3: Video Capture - Form
+VideoTest-4: Video Capture - Canvas
+VideoTest-5: MPEG1 Video - Form
+VideoTest-6: MPEG1 Video - Canvas
+VideoTest-URL1: resource:/video/animated_89_c.gif
+VideoTest-URL2: resource:/video/animated_89_c.gif
+VideoTest-URL3: capture://video
+VideoTest-URL4: capture://video
+VideoTest-URL5: http://java.sun.com/products/java-media/mma/media/test-mpeg.mpg
+VideoTest-URL6: http://java.sun.com/products/java-media/mma/media/test-mpeg.mpg

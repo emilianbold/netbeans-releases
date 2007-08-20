@@ -1,0 +1,14 @@
+ImageName-1: /images/duke.png
+ImageName-2: /images/leaf.jpg
+ImageName-3: /images/leaf.png
+ImageTitle-1: Duke (png)
+ImageTitle-2: The leaf (jpg)
+ImageTitle-3: The leaf (png)
+MIDlet-1: Bluetooth Demo, /icons/demo.png, example.bluetooth.demo.DemoMIDlet
+MIDlet-Description: This MIDlet demonstrates Bluetooth API.
+MIDlet-Name: BluetoothDemo
+MIDlet-Permissions: javax.microedition.io.Connector.bluetooth.client,javax.microedition.io.Connector.bluetooth.server
+MIDlet-Vendor: Sun Microsystems, Inc.
+MIDlet-Version: 1.0
+MicroEdition-Configuration: CLDC-1.0
+MicroEdition-Profile: MIDP-2.0

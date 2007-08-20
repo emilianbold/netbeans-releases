@@ -1,0 +1,10 @@
+MIDlet-1: String Comparator, , example.mia.demo.StrComparatorDemo
+MIDlet-2: Formatter, , example.mia.demo.FormatterDemo
+MIDlet-3: MicroLexicon, , example.mia.demo.MicroLexicon
+MIDlet-Description: JSR 238 (Mobile Internationalization) demo
+MIDlet-Name: i18nDemo
+MIDlet-Vendor: Sun Microsystems
+MIDlet-Version: 1.0
+Manifest-Version: 1.0
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0

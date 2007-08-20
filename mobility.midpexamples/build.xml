@@ -24,8 +24,26 @@ Microsystems, Inc. All Rights Reserved.
     <target name="zip-examples" depends="basic-init,files-init,build-init">
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/mobility/midpexamples"/>
         <mkdir dir="${examples}"/>
+        <zip basedir="AdvancedMultimediaSupplements" excludes="CVS" destfile="${examples}/AdvancedMultimediaSupplements.zip"/>
+        <zip basedir="AudioSamples" excludes="CVS" destfile="${examples}/AudioSamples.zip"/>
+        <zip basedir="BluetoothDemo" excludes="CVS" destfile="${examples}/BluetoothDemo.zip"/>
+        <zip basedir="CityGuide" excludes="CVS" destfile="${examples}/CityGuide.zip"/>
         <zip basedir="converter" excludes="CVS" destfile="${examples}/converter.zip"/>
-        <zip basedir="LocalizationDemo" excludes="CVS" destfile="${examples}/LocalizationDemo.zip"/>
         <zip basedir="GameBuilderDemo" excludes="CVS" destfile="${examples}/GameBuilderDemo.zip"/>
+        <zip basedir="I18nDemo" excludes="CVS" destfile="${examples}/I18nDemo.zip"/>
+        <zip basedir="JSR172Demo" excludes="CVS" destfile="${examples}/JSR172Demo.zip"/>
+        <zip basedir="LocalizationDemo" excludes="CVS" destfile="${examples}/LocalizationDemo.zip"/>
+        <zip basedir="MMAPIDemos" excludes="CVS" destfile="${examples}/MMAPIDemos.zip"/>
+        <zip basedir="NetworkDemo" excludes="CVS" destfile="${examples}/NetworkDemo.zip"/>
+        <zip basedir="ObexDemo" excludes="CVS" destfile="${examples}/ObexDemo.zip"/>
+        <zip basedir="OpenGLESDemo" excludes="CVS" destfile="${examples}/OpenGLESDemo.zip"/>
+        <zip basedir="PDAPDemo" excludes="CVS" destfile="${examples}/PDAPDemo.zip"/>
+        <zip basedir="PhotoAlbum" excludes="CVS" destfile="${examples}/PhotoAlbum.zip"/>
+        <zip basedir="SIPDemo" excludes="CVS" destfile="${examples}/SIPDemo.zip"/>
+        <zip basedir="SunSamples-Demos" excludes="CVS" destfile="${examples}/SunSamples-Demos.zip"/>
+        <zip basedir="SVGContactList" excludes="CVS" destfile="${examples}/SVGContactList.zip"/>
+        <zip basedir="SVGDemo" excludes="CVS" destfile="${examples}/SVGDemo.zip"/>
+        <zip basedir="UIDemo" excludes="CVS" destfile="${examples}/UIDemo.zip"/>
+        <zip basedir="WMADemo" excludes="CVS" destfile="${examples}/WMADemo.zip"/>
     </target>
 </project>

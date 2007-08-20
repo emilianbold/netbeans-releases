@@ -1,0 +1,24 @@
+Attribute-photo1: /images/lama2.jpg
+Attribute-photo2: /images/lama3.jpg
+Attribute-photo3: /images/SunCampus.jpg
+Attribute-photo4: /images/SunLinux01.jpg
+Attribute-photo5: /images/dog.jpg
+Attribute-photo6: /images/DukeCup.jpg
+Attribute-photo7: /images/JavaOne02.jpg
+Attribute-photocount: 7
+MIDlet-1: SVG Browser, , com.sun.perseus.demo.svgbrowser.SVGBrowser
+MIDlet-2: Render SVG Image, , com.sun.perseus.demo.RenderSVGImageDemo
+MIDlet-3: Play SVG Animation, , com.sun.perseus.demo.greetingcard.GreetingCard
+MIDlet-4: Create SVG Image From Scratch, , com.sun.perseus.demo.CreateEmptyImageDemo
+MIDlet-5: Bouncing Balls, , com.sun.perseus.demo.bouncingballs.BouncingBalls
+MIDlet-6: Optimized Menu, , com.sun.perseus.demo.optimizedmenu.OptimizedSVGMenuDemo
+MIDlet-7: Picture Decorator, , com.sun.perseus.demo.picturedecorator.PictureDecorator
+MIDlet-8: Location Based Service, , com.sun.perseus.demo.locationBasedService.LocationBasedService
+MIDlet-9: PlaySVGImageDemo, , com.sun.perseus.demo.PlaySVGImageDemo
+MIDlet-Description: JSR 226 (Scalable Vector Graphics) demo.
+MIDlet-Name: SVGDemo
+MIDlet-Permissions: javax.microedition.io.Connector.file.read
+MIDlet-Vendor: Sun Microsystems, Inc.
+MIDlet-Version: 1.0
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0

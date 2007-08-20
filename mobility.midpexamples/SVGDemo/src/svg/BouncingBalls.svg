@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generator: Mobile Designer 2 2.0 -->
+<svg width="240" height="320" viewBox="-120 -160 240 320" stroke-miterlimit="2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" version="1.1" baseProfile="tiny">
+<rect fill="#fff" x="-120" y="-160" width="240" height="320"/>
+<g id="Scene_1">
+<rect id="icon_5" x="-120.32" y="-160.32" width="240" height="320" fill="#6075e4" fill-opacity="0.31" stroke="#3d229f" stroke-linejoin="bevel" stroke-miterlimit="4">
+<animate attributeName="fill" values="#6075e4;#2ab2e4;#6075e4" keyTimes="0;0.45;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+<animate attributeName="stroke" values="#3d229f;#28177c;#120b57" keyTimes="0;0.45;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+<animate attributeName="stroke-opacity" values="1;0.74;0.47" keyTimes="0;0.45;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+</rect>
+<ellipse id="icon_4" cx="-4" cy="-3.66" rx="12.66" ry="13.66" fill="#dcdcdc" stroke="#9696be" stroke-linejoin="bevel" stroke-miterlimit="4">
+<animate attributeName="fill-opacity" values="1;0.47;1;1" keyTimes="0;0.2;0.45;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+<animate attributeName="stroke-opacity" values="1;0.47;1;1" keyTimes="0;0.2;0.45;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+<animateTransform attributeName="transform" type="translate" values="0,0;7.76,7.11;17.47,16.01;7.93,7.14;-1.59,-1.71" keyTimes="0;0.2;0.45;0.7;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+<animateTransform attributeName="transform" type="scale" additive="sum" values="1,1;2.94152,2.94152;5.36842,5.36842;3.02632,3.02632;0.684211,0.684211" keyTimes="0;0.2;0.45;0.7;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+</ellipse>
+<ellipse id="icon_3" cx="111" cy="151" rx="7.99" ry="8" fill="#ff1cd5" stroke="#000" stroke-linejoin="bevel" stroke-miterlimit="4">
+<animate attributeName="fill" values="#ff1cd5;#9027ff;#ff20df" keyTimes="0;0.45;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+<animateTransform attributeName="transform" type="translate" values="0,0;-432.14,-592.31;-110.45,-148.79" keyTimes="0;0.45;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+<animateTransform attributeName="transform" type="scale" additive="sum" values="1,1;3.02083,3.02083;1.875,1.875" keyTimes="0;0.45;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+</ellipse>
+<ellipse id="icon_2" cx="-2.49" cy="-140.5" rx="18.5" ry="19.5" fill="#10faff" stroke="#000" stroke-linejoin="bevel" stroke-miterlimit="4">
+<animate attributeName="fill" values="#10faff;#4b28ff;#52feff" keyTimes="0;0.45;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+<animateTransform attributeName="transform" type="translate" values="0,0;3.4,420.62;1.21,85.51" keyTimes="0;0.45;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+<animateTransform attributeName="transform" type="scale" additive="sum" values="1,1;2.16216,2.16216;1.48649,1.48649" keyTimes="0;0.45;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+</ellipse>
+<g id="icon_1">
+<ellipse cx="-85.5" cy="15.5" rx="27.5" ry="29.5" fill="#734bff" stroke="#000" stroke-linejoin="bevel" stroke-miterlimit="4">
+<animate attributeName="fill" values="#734bff;#ff1cc3;#ff1b17;#00ff08;#10faff" keyTimes="0;0.2;0.45;0.7;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+<animateTransform attributeName="transform" type="translate" values="0,0;157.96,57.54;140.54,-144.07;-14.16,-115.43;-7.16,-27.43" keyTimes="0;0.2;0.45;0.7;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+<animateTransform attributeName="transform" type="scale" additive="sum" values="1,1;0.654545,0.654545;1.18182,1.18182;0.945455,0.945455;0.945455,0.945455" keyTimes="0;0.2;0.45;0.7;1" dur="1s" fill="freeze" repeatCount="indefinite"/>
+</ellipse>
+</g>
+</g>
+</svg>

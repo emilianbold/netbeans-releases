@@ -1,0 +1,7 @@
+MIDlet-1: Cube,,com.sun.jsr239.wtksamples.cube.Cube
+MIDlet-Description: Test application for the JSR 239 API
+MIDlet-Name: OpenGLESDemo
+MIDlet-Vendor: Sun Microsystems, Inc.
+MIDlet-Version: 1.0
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0

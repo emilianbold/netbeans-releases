@@ -1,0 +1,9 @@
+MIDlet-1: CityGuide,,examples.cityguide.CityGuideMIDlet
+MIDlet-Description: Location API demonstration.
+MIDlet-Name: CityGuide
+MIDlet-Permissions: javax.microedition.location.LandmarkStore.read,javax.microedition.location.LandmarkStore.write,javax.microedition.location.LandmarkStore.category,javax.microedition.location.LandmarkStore.management,javax.microedition.location.Location,javax.microedition.location.ProximityListener
+MIDlet-Vendor: SUN Microsystems
+MIDlet-Version: 1.0
+Manifest-Version: 1.0
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0
