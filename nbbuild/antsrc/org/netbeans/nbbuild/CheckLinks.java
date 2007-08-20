@@ -277,14 +277,17 @@ public class CheckLinks extends MatchingTask {
                 return;
             }
             //System.out.println("");
+            //System.out.println("r:" + referrer);
             //System.out.println("u:" + u);
             //System.out.println("u.getScheme:" + u.getScheme());
             //System.out.println("u.getHost:" + u.getHost());
+            //System.out.println("u.toURL.getHost:" + u.toURL().getHost());
             //System.out.println("u.getPath:" + u.getPath());
             //If no module base name is specified as host name check if given
             //resource is available in current module or globaly.
-            if (u.getHost() == null) {
+            if (u.toURL().getHost() == null) {
                 task.log("WARNING: Missing host in nbdocs protocol URL. URI: " + u, Project.MSG_WARN);
+                task.log("WARNING: Referrer: " + referrer, Project.MSG_WARN);
                 String name = u.getPath();
                 //Strip leading "/" as findResource does not work when leading slash is present
                 if (name.startsWith("/")) {
@@ -312,12 +315,14 @@ public class CheckLinks extends MatchingTask {
                             URL moduleRes = cl.findResource(name);
                             if (moduleRes != null) {
                                 task.log("INFO: Link found in module:" + key + ". URI: " + u, Project.MSG_WARN);
+                                task.log("INFO: Referrer: " + referrer, Project.MSG_WARN);
                                 break;
                             }
                         }
                     }
                 } else {
                     task.log("WARNING: Link not found globaly. URI: " + u, Project.MSG_WARN);
+                    task.log("WARNING: Referrer: " + referrer, Project.MSG_WARN);
                     return;
                 } 
                 //System.out.println("res:" + res);
@@ -333,6 +338,7 @@ public class CheckLinks extends MatchingTask {
                 //Log warning
                 if (moduleClassLoader == null) {
                     task.log("WARNING: Module " + u.getHost() + " not found among modules containing helpsets. URI: " + u, Project.MSG_WARN);
+                    task.log("WARNING: Referrer: " + referrer, Project.MSG_WARN);
                 }
                 if (moduleClassLoader != null) {
                     res = moduleClassLoader.findResource(name);
@@ -351,6 +357,7 @@ public class CheckLinks extends MatchingTask {
                 if (res == null) {
                     if (moduleClassLoader != null) {
                         task.log("WARNING: Link not found in module " + u.getHost() + " URI: " + u, Project.MSG_WARN);
+                        task.log("WARNING: Referrer: " + referrer, Project.MSG_WARN);
                     }
                     res = globalClassLoader.getResource(name);
                     //System.out.println("res2:" + res);
@@ -372,12 +379,14 @@ public class CheckLinks extends MatchingTask {
                                 URL moduleRes = cl.findResource(name);
                                 if (moduleRes != null) {
                                     task.log("INFO: Link found in module:" + key + ". URI: " + u, Project.MSG_WARN);
+                                    task.log("INFO: Referrer: " + referrer, Project.MSG_WARN);
                                     break;
                                 }
                             }
                         }
                     } else {
                         task.log("WARNING: Link not found globaly. URI: " + u, Project.MSG_WARN);
+                        task.log("WARNING: Referrer: " + referrer, Project.MSG_WARN);
                         return;
                     } 
                 }
