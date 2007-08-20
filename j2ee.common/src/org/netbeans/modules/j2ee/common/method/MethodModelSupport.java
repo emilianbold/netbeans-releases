@@ -305,8 +305,8 @@ public final class MethodModelSupport {
                 return ((TypeElement) element).getQualifiedName().toString();
             case ARRAY : 
                 ArrayType arrayType = (ArrayType) typeMirror;
-                Element componentTypeElement = controller.getTypes().asElement(arrayType.getComponentType());
-                return ((TypeElement) componentTypeElement).getQualifiedName().toString() + "[]";
+                TypeMirror componentType = arrayType.getComponentType();
+                return getTypeName(controller, componentType) + "[]";
             case ERROR :
             case EXECUTABLE :
             case NONE :

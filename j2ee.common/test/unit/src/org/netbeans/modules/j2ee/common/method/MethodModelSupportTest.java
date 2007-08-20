@@ -31,6 +31,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
@@ -162,6 +164,11 @@ public class MethodModelSupportTest extends NbTestCase {
                 typeName = String.class.getName();
                 resolvedTypeName = MethodModelSupport.getTypeName(controller, types.getArrayType(elements.getTypeElement(typeName).asType()));
                 assertEquals("java.lang.String[]", resolvedTypeName);
+                
+                PrimitiveType primitiveType = types.getPrimitiveType(TypeKind.BYTE);
+                ArrayType arrayType = types.getArrayType(primitiveType);
+                resolvedTypeName = MethodModelSupport.getTypeName(controller, arrayType);
+                assertEquals("byte[]", resolvedTypeName);
             }
         });
     }
@@ -217,7 +224,7 @@ public class MethodModelSupportTest extends NbTestCase {
             }
         });
     }
-    
+
     private static void runUserActionTask(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
         javaSource.runUserActionTask(taskToTest, true);
