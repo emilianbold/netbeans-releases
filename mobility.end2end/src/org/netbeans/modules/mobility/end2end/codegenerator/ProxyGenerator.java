@@ -107,6 +107,7 @@ public class ProxyGenerator {
             final ClassPath cp = ClassPath.getClassPath( srcDirectory, ClassPath.SOURCE );
             final FileObject fo = cp.getRoots()[0]; //TODO fix me - find src or test folder @see sc.getProjectPath();
             String targetFolderName = ( sc.getClassDescriptor().getPackageName()).replace( '.', '/' );
+            String pkgName = sc.getClassDescriptor().getPackageName();
             
             FileObject targetFolder = fo.getFileObject( targetFolderName );
             if( targetFolder == null ){
@@ -118,7 +119,7 @@ public class ProxyGenerator {
             proxyClassName = proxyClassName.substring(proxyClassName.lastIndexOf('.') + 1); // NOI18N
             proxyClassName = proxyClassName + "_Proxy"; // NOI18N
             
-            generatedProxyName = targetFolderName.length() > 0 ? targetFolderName + "." + proxyClassName : proxyClassName;
+            generatedProxyName = pkgName.length() > 0 ? pkgName + "." + proxyClassName : proxyClassName;
                 
             FileObject outputFile = targetFolder.getFileObject( proxyClassName, "java" );
             if( outputFile == null ) {
