@@ -94,4 +94,8 @@ public class SuppressWarningsFixerTest extends HintsTestBase {
         performTestDoNotPerform("Test2", 38, 5);
     }
     
+    public void testSuppressWarnings106794() throws Exception {
+	performTestDoNotPerform("Test3", 3, 10);
+    }
+    
 }
