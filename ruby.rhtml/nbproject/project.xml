@@ -187,6 +187,12 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.ruby</code-name-base>
+                        <recursive/>
+                        <test/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.util</code-name-base>
                         <recursive/>
                         <compile-dependency/>

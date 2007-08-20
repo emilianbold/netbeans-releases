@@ -11,12 +11,18 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.nio.CharBuffer;
+import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyParseResult;
+import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-public class RhtmlModelTest extends NbTestCase {
+public class RhtmlModelTest extends RubyTestBase {
 
     public RhtmlModelTest(String testName) {
         super(testName);
@@ -61,6 +67,14 @@ public class RhtmlModelTest extends NbTestCase {
 
         String ruby = readFile(test, rubyFile);
         assertEquals(ruby, generatedRuby);
+
+        // Make sure the generated file doesn't have errors
+        FileObject rubyFo = FileUtil.toFileObject(rubyFile);
+        assertNotNull(rubyFo);
+        CompilationInfo info = getInfo(rubyFo);
+        assertNotNull(info);
+        assertNotNull(AstUtilities.getRoot(info));
+        assertTrue(info.getDiagnostics().size() == 0);
     }
 
     private static String readFile(NbTestCase test, File f) throws Exception {
@@ -82,5 +96,9 @@ public class RhtmlModelTest extends NbTestCase {
 
     public void testEruby108990() throws Exception {
         checkEruby(this, "testfiles/quotes");
+    }
+
+    public void testEruby112877() throws Exception {
+        checkEruby(this, "testfiles/other-112877");
     }
 }
