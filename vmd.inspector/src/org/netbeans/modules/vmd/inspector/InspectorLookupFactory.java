@@ -57,7 +57,7 @@ public class InspectorLookupFactory implements DataEditorViewLookupFactory {
     }
     
     public Collection<? extends Lookup> getLookups(DataObjectContext context, DataEditorView view) {
-        if (view.getKind() == DataEditorView.Kind.MODEL) {
+        if (view.canShowSideWindows()  &&  view.getKind() == DataEditorView.Kind.MODEL) {
             if (ic == null) {
                 ic = InspectorPanel.getInstance().getInstanceContent();
                 ic.add(context.getDataObject().getLookup());
