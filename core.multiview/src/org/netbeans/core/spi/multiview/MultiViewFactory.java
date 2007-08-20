@@ -19,32 +19,15 @@
 
 package org.netbeans.core.spi.multiview;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
-import javax.swing.text.Document;
 import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.core.multiview.MultiViewTopComponent;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node;
-import org.openide.text.CloneableEditor;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
