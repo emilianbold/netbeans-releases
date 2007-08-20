@@ -24,20 +24,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="zip-examples" depends="basic-init,files-init,build-init">
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/mobility/midpexamples"/>
         <mkdir dir="${examples}"/>
-        <zip basedir="audiodemo" excludes="CVS" destfile="${examples}/audiodemo.zip"/>
         <zip basedir="converter" excludes="CVS" destfile="${examples}/converter.zip"/>
-        <zip basedir="demos" excludes="CVS" destfile="${examples}/demos.zip"/>
-        <zip basedir="demos2" excludes="CVS" destfile="${examples}/demos2.zip"/>
-        <zip basedir="games" excludes="CVS" destfile="${examples}/games.zip"/>
-        <zip basedir="games2" excludes="CVS" destfile="${examples}/games2.zip"/>        
-		<zip basedir="GameBuilderDemo" excludes="CVS" destfile="${examples}/GameBuilderDemo.zip"/>
-        <zip basedir="mmademo" excludes="CVS" destfile="${examples}/mmademo.zip"/>
-        <zip basedir="NetworkDemo" excludes="CVS" destfile="${examples}/NetworkDemo.zip"/>
-        <zip basedir="photoalbum" excludes="CVS" destfile="${examples}/photoalbum.zip"/>
-        <zip basedir="UIDemo" excludes="CVS" destfile="${examples}/UIDemo.zip"/>
-        <zip basedir="UIDemo2" excludes="CVS" destfile="${examples}/UIDemo2.zip"/>
-        <zip basedir="SendMessages" excludes="CVS" destfile="${examples}/SendMessages.zip"/>
         <zip basedir="LocalizationDemo" excludes="CVS" destfile="${examples}/LocalizationDemo.zip"/>
-        <zip basedir="BluetoothDemo" excludes="CVS" destfile="${examples}/BluetoothDemo.zip"/>
+        <zip basedir="GameBuilderDemo" excludes="CVS" destfile="${examples}/GameBuilderDemo.zip"/>
     </target>
 </project>

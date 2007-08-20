@@ -26,44 +26,14 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/j2meSamplesCategory.html"/>
                     <attr name="position" intvalue="400"/>
-                    <folder name="MIDP1">
+                    <folder name="MIDP">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/midp1.html"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/midp.html"/>
                         <attr name="position" intvalue="100"/>
                         <file name="CurrencyConverter.zip" url="converter.zip">
                             <attr name="position" intvalue="100"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/converter.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-1.0"/>
-                        </file>
-                        <file name="PhotoAlbum.zip" url="photoalbum.zip">
-                            <attr name="position" intvalue="200"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/photoalbum.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-1.0"/>
-                        </file>
-                        <file name="VariousGames.zip" url="games.zip">
-                            <attr name="position" intvalue="300"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/games.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-1.0"/>
-                        </file>
-                        <file name="UIWidgetExample.zip" url="UIDemo.zip">
-                            <attr name="position" intvalue="400"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/UIDemo.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
@@ -80,105 +50,10 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-1.0"/>
                         </file>
-                        <file name="VariousExamples.zip" url="demos.zip">
-                            <attr name="position" intvalue="600"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/demos.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-1.0"/>
-                        </file>
-                    </folder>
-                    <folder name="MIDP2">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/midp2.html"/>
-                        <attr name="position" intvalue="200"/>
-                        <file name="AudioPlayer.zip" url="audiodemo.zip">
-                            <attr name="position" intvalue="100"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/audiodemo.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>
-                        <file name="BluetoothExample.zip" url="BluetoothDemo.zip">
-                            <attr name="position" intvalue="200"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/BluetoothDemo.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>                        
-                        <file name="MessagingExample.zip" url="SendMessages.zip">
-                            <attr name="position" intvalue="300"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/SendMessages.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>
-                        <file name="VariousGames.zip" url="games2.zip">
-                            <attr name="position" intvalue="400"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/games2.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>
-                        <file name="UIWidgetExample.zip" url="UIDemo2.zip">
-                            <attr name="position" intvalue="600"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/UIDemo2.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>
                         <file name="GameBuilderDemo.zip" url="GameBuilderDemo.zip">
                             <attr name="position" intvalue="500"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/GameBuilderDemo.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>
-						<file name="NetworkingExample.zip" url="NetworkDemo.zip">
-                            <attr name="position" intvalue="700"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/NetworkDemo.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>
-                        <file name="MMAPIExample.zip" url="mmademo.zip">
-                            <attr name="position" intvalue="800"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/mmademo.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>
-                        <file name="VariousExamples.zip" url="demos2.zip">
-                            <attr name="position" intvalue="900"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/demos2.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>

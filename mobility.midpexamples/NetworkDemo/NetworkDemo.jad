@@ -1,9 +1,0 @@
-MIDlet-3: COMM Demo, , example.comm.CommMIDlet
-MIDlet-2: Datagram Demo, , example.datagram.DatagramMIDlet
-MIDlet-1: Socket Demo, , example.socket.SocketMIDlet
-MicroEdition-Configuration: CLDC-1.0
-MIDlet-Version: 1.0
-MIDlet-Name: NetworkDemo
-MIDlet-Vendor: Sun Microsystems
-MicroEdition-Profile: MIDP-2.0
-MIDlet-Permissions: javax.microedition.io.Connector.datagramreceiver, javax.microedition.io.Connector.comm, javax.microedition.io.Connector.datagram, javax.microedition.io.Connector.socket, javax.microedition.io.Connector.http, javax.microedition.io.Connector.https, javax.microedition.io.Connector.serversocket, javax.microedition.io.PushRegistry
