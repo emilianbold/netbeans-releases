@@ -688,6 +688,19 @@ public final class ClassPath {
         public String toString() {
             return "Entry[" + url + "]"; // NOI18N
         }
+        
+        @Override
+        public boolean equals (Object other) {
+            if (other instanceof ClassPath.Entry) {
+                return Utilities.compareObjects(((ClassPath.Entry)other).url, this.url);
+            }
+            return false;
+        }
+        
+        @Override
+        public int hashCode () {
+            return this.url == null ? 0 : this.url.hashCode();
+        }
     }
 
     //-------------------- Implementation details ------------------------//
