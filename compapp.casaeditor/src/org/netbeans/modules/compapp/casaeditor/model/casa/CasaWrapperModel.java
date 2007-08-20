@@ -122,7 +122,6 @@ public class CasaWrapperModel extends CasaModelImpl {
     private static final String DUMMY_PORTTYPE_NAME = "dummyCasaPortType";      // NOI18N
            
     private static final String NEWLINE = System.getProperty("line.separator");
-    private static final String CASA_WSDL_TNS_PREFIX = "http://enterprise.netbeans.org/casa/"; 
     
     //private static CatalogWriteModel catalogModel;
     
@@ -153,11 +152,11 @@ public class CasaWrapperModel extends CasaModelImpl {
         super(source);
         
         // ?
-        try {
-            sync();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+//        try {
+//            sync();
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//        }
         
         artifactTypes.add(JbiProjectConstants.ARTIFACT_TYPE_JBI_ASA);
 //        buildBindingComponentMaps();
@@ -1362,7 +1361,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             String newPortName = port.getName(); 
             String fname = wsdlFile.getCanonicalPath();
             String relativePath = "../" + // NOI18N
-                    fname.substring(fname.indexOf("jbiServiceUnits")).replace('\\', '/'); // NOI18N
+                    fname.substring(fname.indexOf(JBI_SERVICE_UNITS_DIR)).replace('\\', '/'); // NOI18N
             String portHref = getPortHref(relativePath, newServiceName, newPortName); 
             
             for (CasaBindingComponentServiceUnit bcSU : getBindingComponentServiceUnits()) {
@@ -2348,24 +2347,19 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
         
         ModelSource wsdlModelSource = null;
+        
+        FileObject compAppWSDLDirFO = 
+                    fo.getParent().getParent().getFileObject("jbiasa"); // NOI18N
+        File file = new File(FileUtil.toFile(compAppWSDLDirFO), compAppWSDLFileName);        
+        if (!file.exists() && create) {  
+            createEmptyCompAppWSDLFile(file);
+        }
+        
         try {
             wsdlModelSource = catalogModel.getModelSource(uri, modelSource);
         } catch (CatalogModelException ex) {
-            ; // ex.printStackTrace();
+            ex.printStackTrace();
         }
-        
-        if (wsdlModelSource == null && create) {
-            FileObject compAppWSDLDirFO = 
-                    fo.getParent().getParent().getFileObject("jbiasa"); // NOI18N
-            File file = new File(FileUtil.toFile(compAppWSDLDirFO), compAppWSDLFileName);
-            createEmptyCompAppWSDLFile(file);
-            // try again
-            try {
-                wsdlModelSource = catalogModel.getModelSource(uri, modelSource);
-            } catch (CatalogModelException ex) {
-                ex.printStackTrace();
-            }
-        } 
         
         if (wsdlModelSource != null) {
             WSDLModel wsdlModel = WSDLModelFactory.getDefault().getModel(wsdlModelSource);
@@ -2414,13 +2408,12 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     private void createEmptyCompAppWSDLFile(File file) {
-        FileWriter fileWriter = null;
         BufferedWriter out = null;
                 
         try {
             String tns = getCompAppWSDLTargetNamespace();
             
-            fileWriter = new FileWriter(file);
+            FileWriter fileWriter = new FileWriter(file);
             out = new BufferedWriter(fileWriter);
             out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18M
             out.write(NEWLINE);
@@ -2435,8 +2428,6 @@ public class CasaWrapperModel extends CasaModelImpl {
             out.write("             xmlns:myns=\"" + tns + "\">"); // NOI18M
             out.write(NEWLINE);
             out.write("</definitions>"); // NOI18M
-            out.write(NEWLINE);
-            out.close(); 
         } catch (IOException ex) {
             ex.printStackTrace();
         } finally {
@@ -2446,13 +2437,6 @@ public class CasaWrapperModel extends CasaModelImpl {
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
-            }
-            if (fileWriter != null) {
-                try {
-                    fileWriter.close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }                
             }
         }
     }
