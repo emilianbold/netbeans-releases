@@ -51,7 +51,7 @@
                 <package>javax.xml.namespace</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/wsdl4j-1.5.2/wsdl4j.jar</runtime-relative-path>
+                <runtime-relative-path>ext/wsdl4j-1.5.2/qname.jar</runtime-relative-path>
                 <binary-origin>external/wsdl4j-1.5.2/qname.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
