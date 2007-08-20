@@ -171,6 +171,7 @@
                     <tocitem text="Generating a RESTful Web Service from Scratch" target="create_rest_from_scratch" />
                     <tocitem text="Using the Preregistered RESTful Web Service Clients" target="wsc_rest" />
                     <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
+                    <tocitem text="Testing a RESTful Web Service" target="test_rest" />
                 </tocitem>
                 <tocitem text="Creating a JAX-WS Web Service from Scratch" >
                     <tocitem text="Generating a JAX-WS Web Service from Scratch" target="create_ws_from_scratch" />
@@ -192,12 +193,13 @@
                 <tocitem text="About Building Web Services" target="about_build_ws" />
                 <tocitem text="About the Web Service Attributes Editor" target="org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl" />
             </tocitem>
-            <tocitem text="Deploying Web Services" >
+            <tocitem text="Deploying and Testing Web Services" >
                 <tocitem text="About Deploying and Testing Web Services" target="about_deploy_and_test_ws" />
                 <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 	
-               
-               <tocitem text="Deploying a Web Service" target="expose_ws" />
+                <tocitem text="Deploying a Web Service" target="expose_ws" />
+                <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
                 <tocitem text="Testing a JAX-WS Web Service" target="glassfish_tester-ws" />
+                <tocitem text="Testing a RESTful Web Service" target="test_rest" />
                 <tocitem text="Viewing the Published WSDL File" target="test_ws" /> 
             </tocitem>
             <tocitem text="Creating Web Service Clients" >

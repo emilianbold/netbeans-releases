@@ -96,6 +96,7 @@
 	<!-- Start of "Expose" section -->
         <mapID target="about_deploy_and_test_ws" url="webservice/expose/about_deploy_and_test_ws.html" />
 	<mapID target="test_ws" url="webservice/expose/test_ws.html" />
+        <mapID target="test_rest" url="webservice/expose/test_rest.html" />
 	<mapID target="expose_ws" url="webservice/expose/expose_ws.html" />
         <mapID target="glassfish_tester-ws" url="webservice/expose/glassfish_tester-ws.html" />
 	<!-- End of "Expose" section -->
