@@ -128,4 +128,19 @@ public class NbTestCaseTest extends NbTestCase {
         }
         fail("The assertion should fail");
     }
+    
+    public void testWorkDirLength() {
+        System.setProperty("nbjunit.too.long", "10");
+        
+        String s = getWorkDirPath();
+        if (s.length() > 200) {
+            fail("Too long (" + s.length() + "): " + s);
+        }
+        if (s.indexOf(".netbeans.") > 0) {
+            fail("package names shall be abbreviated: " + s);
+        }
+        if (s.indexOf("testWorkDir") > 0) {
+            fail("no testWorkDir: " + s);
+        }
+    }
 }

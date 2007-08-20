@@ -16,15 +16,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * Manager.java
- *
- * Created on February 8, 2001, 3:33 PM
- */
 
 package org.netbeans.junit;
 
-import java.lang.*;
 import java.lang.reflect.*;
 import java.io.*;
 import java.util.*;
@@ -226,5 +220,9 @@ public class Manager extends Object {
             file = new File(file.toURI().normalize()).getAbsoluteFile();
         }
         return file;
+    }
+    
+    private static File shortenNames(File f) {
+        return f;
     }
 }

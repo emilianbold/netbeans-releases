@@ -585,9 +585,48 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
         }
         // end
-        return Manager.getWorkDirPath() +
-                File.separator + getClass().getName() +
-                File.separator + name;
+        
+        int len1 = Manager.getWorkDirPath().length();
+        String clazz = getClass().getName();
+        int len2 = clazz.length();
+        int len3 = name.length();
+        
+        int tooLong = Integer.getInteger("nbjunit.too.long", 100);
+        if (len1 + len2 + len3 > tooLong) {
+            clazz = abbrevDots(clazz);
+            len2 = clazz.length();
+        }
+
+        if (len1 + len2 + len3 > tooLong) {
+            name = abbrevCapitals(name);
+        }
+        
+        return Manager.getWorkDirPath() + File.separator + 
+           clazz + File.separator + name;
+    }
+    
+    private static String abbrevDots(String dotted) {
+        StringBuffer sb = new StringBuffer();
+        String sep = "";
+        for (String item : dotted.split("\\.")) {
+            sb.append(sep);
+            sb.append(item.charAt(0));
+            sep = ".";
+        }
+        return sb.toString();
+    }
+
+    private static String abbrevCapitals(String name) {
+        if (name.startsWith("test")) {
+            name = name.substring(4);
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < name.length(); i++) {
+            if (Character.isUpperCase(name.charAt(i))) {
+                sb.append(Character.toLowerCase(name.charAt(i)));
+            }
+        }
+        return sb.toString();
     }
     
     /** Returns unique working directory for a test (each test method has a unique dir).
