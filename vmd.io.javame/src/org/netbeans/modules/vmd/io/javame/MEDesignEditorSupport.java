@@ -30,7 +30,6 @@ import org.netbeans.modules.mobility.editor.pub.J2MEDataObject.J2MEEditorSupport
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.IOUtils;
 import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
-import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
@@ -45,7 +44,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.Line;
 import org.openide.util.Utilities;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -72,7 +70,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
     private GuardedSectionsProvider sections;
     private UndoRedo.Manager undoRedoManager;
 
-    private boolean sourceEditorOpened = false;
+//    private boolean sourceEditorOpened = false;
 
     private FileSystem.AtomicAction atomicSaveAction = new FileSystem.AtomicAction() {
         public void run () throws IOException {
@@ -222,19 +220,19 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
         });
     }
 
-    public Line.Set getLineSet () {
-        if (! sourceEditorOpened  &&  mvtc != null) {
-            sourceEditorOpened = true;
-            MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
-            for (MultiViewPerspective perspective : handler.getPerspectives()) {
-                if (perspective.getDisplayName().equals(ProjectUtils.getSourceEditorViewDisplayName ())) {
-                    handler.requestVisible(perspective);
-                    break;
-                }
-            }
-        }
-        return super.getLineSet ();
-    }
+//    public Line.Set getLineSet () {
+//        if (! sourceEditorOpened  &&  mvtc != null) {
+//            sourceEditorOpened = true;
+//            MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
+//            for (MultiViewPerspective perspective : handler.getPerspectives()) {
+//                if (perspective.getDisplayName().equals(ProjectUtils.getSourceEditorViewDisplayName ())) {
+//                    handler.requestVisible(perspective);
+//                    break;
+//                }
+//            }
+//        }
+//        return super.getLineSet ();
+//    }
 
     @Override
     protected UndoRedo.Manager createUndoRedoManager () {
