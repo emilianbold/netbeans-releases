@@ -38,7 +38,51 @@ public class YAML {
         ASTNode root = (ASTNode) context.getASTPath ().getRoot ();
         if (root.getChildren ().isEmpty ())
             return root;
-        return parse (root.getChildren (), 0, new int[] {0});
+        ASTNode result = parse (root.getChildren (), 0, new int[] {0});
+        List<ASTItem> ch = new ArrayList<ASTItem> ();
+        int seqCount = 0;
+        List<ASTItem> seqChildren = new ArrayList<ASTItem> ();
+        for (ASTItem item : result.getChildren()) {
+            if (item instanceof ASTNode && ((ASTNode)item).getNode("Item2.SequenceValue") != null) {
+                seqCount++;
+                seqChildren.add(item);
+            } else {
+                if (seqCount > 1) {
+                    ASTNode node = ASTNode.create (
+                        "text/x-yaml",
+                        "Collection",
+                        seqChildren,
+                        seqChildren.get(0).getOffset()
+                    );
+                    ch.add(node);
+                    seqCount = 0;
+                    seqChildren = new ArrayList<ASTItem> ();
+                } else if (seqCount == 1) {
+                    ch.add(seqChildren.get(0));
+                    seqCount = 0;
+                    seqChildren.clear();
+                }
+                ch.add(item);
+            } // if
+        } // for
+        if (seqCount > 1) {
+            ASTNode node = ASTNode.create (
+                "text/x-yaml",
+                "Collection",
+                seqChildren,
+                seqChildren.get(0).getOffset()
+            );
+            ch.add(node);
+        } else if (seqCount == 1) {
+            ch.add(seqChildren.get(0));
+        }
+        
+        return ASTNode.create (
+            "text/x-yaml",
+            "S",
+            ch,
+            result.getOffset()
+        );
     }
     
     private static ASTNode parse (List<ASTItem> items, int indent, int[] index) {
@@ -54,12 +98,15 @@ public class YAML {
                         ci = ((ASTToken) indentToken).getLength ();
                 }
             }
-            if (ci > indent)
-                ch.add (parse (items, ci, index));
-            else
-            if (ci < indent)
+            if (ci > indent) {
+                int idx = index[0];
+                ASTNode subNode = parse (items, ci, index);
+                if (!(idx > 0 && addMapValue(idx - 1, items, subNode))) {
+                    ch.add(subNode);
+                }
+            } else if (ci < indent) {
                 break;
-            else {
+            } else {
                 ch.add (item);
                 index[0]++;
             }
@@ -74,6 +121,26 @@ public class YAML {
             offset
         );
     }
+    
+    private static boolean addMapValue(int index, List<ASTItem> items, ASTNode subNode) {
+        if (!(items.get(index) instanceof ASTNode)) {
+            return false;
+        }
+        ASTNode node = (ASTNode)items.get(index);
+        ASTNode item2 = (ASTNode)node.getNode("Item2");
+        if (item2 == null) {
+            return false;
+        }
+        if (item2.getNode("MapKey") == null) {
+            return false;
+        }
+        if (item2.getNode("MapValue") != null) {
+            return false;
+        }
+        item2.addChildren(subNode);
+        return true;
+    }
+    
 }
 
 

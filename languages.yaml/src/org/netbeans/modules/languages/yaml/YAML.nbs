@@ -17,16 +17,18 @@
 
 ########### tokens #############################################################
 
-TOKEN:comment: ("#" [^"\n" "\r"]* ["\n" "\r"]*)
-<AFTER_INDENT>:TOKEN:comment: ("#" [^"\n" "\r"]* ["\n" "\r"]*):<DEFAULT>
+TOKEN:comment: ("#" [^"\n" "\r"]*)
+<AFTER_INDENT>:TOKEN:comment: ("#" [^"\n" "\r"]*):<DEFAULT>
 
 TOKEN:whitespace: ( " "* ["\n" "\r"]+)
-TOKEN:indent: ( " "* ):<AFTER_INDENT>
-TOKEN:sequence: ( "-" [^"\n" "\r"]* ["\n" "\r"]*)
-<AFTER_INDENT>:TOKEN:sequence: ( "-" [^"\n" "\r"]* ["\n" "\r"]*):<DEFAULT>
-TOKEN:key: ( [^"\n" "\r" " " ":"]* ":"):<AFTER_KEY>
-<AFTER_INDENT>:TOKEN:key: ( [^"\n" "\r" " " ":"]* ":"):<AFTER_KEY>
-<AFTER_KEY>:TOKEN:value:( [^"\n" "\r"]* ["\n" "\r"]*):<DEFAULT>
+TOKEN:indent: ( [" " "\t"]* ):<AFTER_INDENT>
+TOKEN:sequence: ( "-" [^"\n" "\r"]*)
+<AFTER_INDENT>:TOKEN:sequence: ( "-" [^"\n" "\r" "#"]*):<DEFAULT>
+TOKEN:key: ( [^"\n" "\r" " " "\t" ":"]* ":"):<AFTER_KEY>
+<AFTER_INDENT>:TOKEN:key: ( [^"\n" "\r" " " "\t" ":"]* ":"):<AFTER_KEY>
+<AFTER_KEY>:TOKEN:value:( [^"\n" "\r" "#"]+):<DEFAULT>
+<AFTER_KEY>:TOKEN:whitespace:( [" " "\t"]* ["\n" "\r"]):<DEFAULT>
+<AFTER_KEY>:TOKEN:comment:( [" " "\t"]* "#" [^"\n" "\r"]*):<DEFAULT>
 
 COLOR:key: {
     default_coloring: "keyword";
@@ -40,10 +42,11 @@ COLOR:sequence: {
 }
 
 SKIP:whitespace
+SKIP:comment
 
 S = (Item)*;
 Item = Indent Item2;
-Item2 = MapKey MapValue;
+Item2 = MapKey [MapValue];
 Item2 = SequenceValue;
 Indent = [<indent>];
 MapKey = <key>;
@@ -51,13 +54,21 @@ MapValue = <value>;
 SequenceValue = <sequence>;
 
 AST {
-    removeSimple:"!Collection,Item";
+    removeSimple:"!Collection,Item,Item2,Indent,MapKey,MapValue,SequenceValue";
     process:org.netbeans.modules.languages.yaml.YAML.parse;
 }
 
 FOLD:Collection
-NAVIGATOR:Item
-NAVIGATOR:Collection
+
+#NAVIGATOR:Item: {
+#    display_name: "item";
+#    tooltip: "$$";
+#}
+
+#NAVIGATOR:Collection: {
+#    display_name: "collection";
+#    tooltip: "$$";
+#}
 
 COMMENT_LINE {
     prefix:"#";
