@@ -24,8 +24,8 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="validation" executor="ide" prio="1" name="module validation">
         <testset dir="qa-functional/src">
             <patternset>
-		<include name="validation/NewProjectFileTest.class"/>
-                <exclude name="validation/NewProjectFileTest.class/testCreateNewMIDPFilesValidation"/>
+		<include name="org/netbeans/test/mobility/NewProjectFileTest.class"/>
+                <exclude name="org/netbeans/test/mobility/NewProjectFileTest.class/testCreateNewMIDPFilesValidation"/>
             </patternset>
         </testset>
     </testbag>
@@ -34,9 +34,9 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="commit" executor="ide" name="Mobility Pack Validation">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="validation/NewProjectFileTest.class/testCreateNewMobileApplication"/>
-                <include name="validation/NewProjectFileTest.class/testCreateNewMIDPFilesValidation"/>
-                <include name="validation/NewProjectFileTest.class/testCompileMobileMIDPProject"/>
+                <include name="org/netbeans/test/mobility/NewProjectFileTest.class/testCreateNewMobileApplication"/>
+                <include name="org/netbeans/test/mobility/NewProjectFileTest.class/testCreateNewMIDPFilesValidation"/>
+                <include name="org/netbeans/test/mobility/NewProjectFileTest.class/testCompileMobileMIDPProject"/>
             </patternset>
         </testset>
     </testbag>
