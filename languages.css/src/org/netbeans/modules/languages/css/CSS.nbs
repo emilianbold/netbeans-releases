@@ -22,7 +22,8 @@ TOKEN:css_comment:( "/*" - "*/" )
 TOKEN:css_comment:( "<!--" | "-->" )
 TOKEN:css_whitespace: ([" " "\t" "\n" "\r"]+)
 
-TOKEN:css_operator:( ["*" "#" "." "," ":" "-" "+" ">" "(" ")" "{" "}" ";" "[" "]" "!" "/"] )
+TOKEN:css_operator:( ["*" "#" "." "," ":" "-" "+" ">" "(" ")" "{" "}" ";" "[" "]" "!" "/" "\\"] )
+TOKEN:css_operator2: ( "~=" | "|=" | "=" )
 TOKEN:css_identifier: (
     "-"? ["a"-"z" "A"-"Z" "_"]
          ["a"-"z" "A"-"Z" "_" "0" - "9" "-"]*
@@ -56,17 +57,35 @@ TOKEN:css_number:(
 
 TOKEN:css_hash:( "#" ["a"-"z" "A"-"Z" "0"-"9" "-" "_"]+)
 
+TOKEN:escaped_css_number:( 
+    ("\\")
+    ["0"-"9"]+ 
+    ( "pt" | "pc" | "in" | "mm" | "cm" | "em" |
+      "ex" | "px" | "ms" | "s" | "%"
+    )?
+)
+
+TOKEN:escaped_css_number:(
+    ("\\")
+    ["0"-"9"]* "." ["0"-"9"]+
+    ( "pt" | "pc" | "in" | "mm" | "cm" | "em" |
+      "ex" | "px" | "ms" | "s" | "%"
+    )?
+)
+
 TOKEN:css_string: (
     "\""
         ( [^ "\"" "\n" "\r"] |
-          ("\\" ["r" "n" "t" "\\" "\'" "\""])
+          ("\\" ["r" "n" "t" "\\" "\'" "\""]) |
+          ("\\" "\n")
         )*
     "\""
 )
 TOKEN:css_string: (
     "\'"
         ( [^ "\"" "\n" "\r"] |
-          ("\\" ["r" "n" "t" "\\" "\'" "\""])
+          ("\\" ["r" "n" "t" "\\" "\'" "\""]) |
+          ("\\" "\n")
         )*
     "\'"
 )
@@ -93,7 +112,7 @@ combinator = ">" | "+" | ;
 #attrib removed!!!
 simple_selector = element_name (hash | class | attrib | pseudo)* |
                   (hash | class | attrib | pseudo)+;
-element_name = <css_identifier> | "*";
+element_name = <css_identifier> | "*" | ("." <escaped_css_number> <css_identifier>) | (<css_number> <css_identifier>);
 hash = <css_hash>;
 class = "." <css_identifier>;
 attrib = "[" <css_identifier> [ ("=" | "~=" | "|=") (<css_identifier> | <css_string>) ] "]";
@@ -112,7 +131,21 @@ prio = "!" "important";
 
 ########### color ##############################################################
  
-COLOR:selector: {
+COLOR:element_name: {
+    color_name: "css_selector";
+    default_coloring: "identifier";
+    foreground_color: "#007c00";
+    font_type:"bold";
+} 
+
+COLOR:hash: {
+    color_name: "css_selector";
+    default_coloring: "identifier";
+    foreground_color: "#007c00";
+    font_type:"bold";
+} 
+
+COLOR:class: {
     color_name: "css_selector";
     default_coloring: "identifier";
     foreground_color: "#007c00";
@@ -294,7 +327,7 @@ MARK:ERROR: {
 PROPERTIES {
     navigator_sort:"true"; 
     #traceSteps:"true";
-    #printRules:"true";
+    printRules:"true";
     #printFirst:"true";
 }
 
