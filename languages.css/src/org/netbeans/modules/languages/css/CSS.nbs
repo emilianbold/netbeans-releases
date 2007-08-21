@@ -168,6 +168,10 @@ FOLD:mediaBody: {
     expand_type_action_name:"LBL_Expand_Rulesets";
     collapse_type_action_name:"LBL_Collapse_Rulesets";
 }
+FOLD:css_comment: {
+    expand_type_action_name:"LBL_Expand_Comments";
+    collapse_type_action_name:"LBL_Collapse_Comments";
+}
 
 ########### navigator ##########################################################
 
