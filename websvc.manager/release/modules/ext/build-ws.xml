@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${jaxws.base}/build"/>
         <mkdir dir="${jaxws.base}/src"/>
         <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-            <classpath path="${java.home}/../lib/tools.jar:${libs.jaxws20.classpath}"/>
+            <classpath path="${java.home}/../lib/tools.jar:${libs.jaxws21.classpath}"/>
         </taskdef>
     </target>
     
