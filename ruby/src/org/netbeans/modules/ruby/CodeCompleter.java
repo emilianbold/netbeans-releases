@@ -1467,7 +1467,7 @@ public class CodeCompleter implements Completable {
                     fqn = "Object"; // NOI18N
                 }
 
-                if ((fqn != null) &&
+                if ((fqn != null) && queryType == QueryType.COMPLETION && // doesn't apply to (or work with) documentation/tooltip help
                         completeDefMethod(proposals, request, fqn)) {
                     if (queryType == QueryType.DOCUMENTATION) {
                         proposals = filterDocumentation(proposals, root, doc, info, astOffset, lexOffset,
