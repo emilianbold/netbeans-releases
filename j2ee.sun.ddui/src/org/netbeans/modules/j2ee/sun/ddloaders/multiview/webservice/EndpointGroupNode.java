@@ -97,12 +97,12 @@ public class EndpointGroupNode extends NamedBeanGroupNode {
     // ------------------------------------------------------------------------
     @Override
     public Map<String, Object> readDescriptor() {
-        CommonBeanReader reader = getAnnotationReader();
+        CommonBeanReader reader = getModelReader();
         return reader != null ? reader.readDescriptor(getWebServicesRootDD()) : null;
     }
     
     @Override
-    protected CommonBeanReader getAnnotationReader() {
+    protected CommonBeanReader getModelReader() {
         return new PortComponentMetadataReader(getParentNodeName());
     }
     
@@ -139,6 +139,6 @@ public class EndpointGroupNode extends NamedBeanGroupNode {
     }
 
     public String getStandardBeanNameProperty() {
-        return STANDARD_PORT_NAME;
+        return STANDARD_PORTCOMPONENT_NAME;
     }
 }
