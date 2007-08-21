@@ -21,7 +21,6 @@ package org.netbeans.modules.websvc.manager.nodes;
 
 import org.netbeans.modules.websvc.manager.spi.WebServiceTransferManager;
 
-import org.netbeans.modules.websvc.manager.actions.TestMethodAction;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.openide.nodes.Node;
@@ -149,7 +148,6 @@ public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
     // Create the popup menu:
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(SystemAction.get(TestMethodAction.class));
         for (WebServiceManagerExt ext : Util.getExtensions()) {
             for (Action a : ext.getMethodActions()) {
                 actions.add(a);

@@ -52,6 +52,7 @@ import org.w3c.dom.NodeList;
  * @author  Winston Prakash, quynguyen
  */
 public class WebServicePersistenceManager implements ExceptionListener {
+    //TODO: (nam) derive from default value used by wscompile
     private static final String DEFAULT_PACKAGE = "websvc"; // NOI18N
     
     private File websvcDir = new File(WebServiceManager.WEBSVC_HOME);
@@ -234,6 +235,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
 
                 if (currentUrls.size() > 0) {
                     String groupName = nextFolder.getName();
+                    //TODO: (nam) if and how to internalize partner's name
                     if (groupName.equals("StrikeIron")) { // NOI18N
                         groupName = NbBundle.getMessage(WebServicePersistenceManager.class, "STRIKE_IRON_GROUP");
                     }
