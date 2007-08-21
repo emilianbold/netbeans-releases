@@ -44,18 +44,14 @@ import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.FolderLookup;
-import org.openide.loaders.DataObjectNotFoundException;
 
 import org.openide.nodes.*;
 
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.ErrorManager;
 
 import java.awt.event.ActionEvent;
 import java.awt.*;
@@ -182,6 +178,16 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
         }
     }
     
+    // Only used for detecting whether the "Debug (BPEL)" action should be 
+    // enabled or not
+    private boolean projectContainsBPELModule() {
+        String comps = helper.getStandardPropertyEvaluator().getProperty(
+                JbiProjectProperties.JBI_CONTENT_COMPONENT
+                );
+                
+        return comps != null && comps.contains("sun-bpel-engine"); // NOI18N
+    }
+    
     
     /**
      * DOCUMENT ME!
@@ -192,7 +198,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
      * @return DOCUMENT ME!
      */
     public Node findPath(Node root, Object target) {
-        Project project = (Project) root.getLookup().lookup(Project.class);
+        Project project = root.getLookup().lookup(Project.class);
         if (project == null) {
             return null;
         }
@@ -339,7 +345,9 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             List<Action> actions = new ArrayList<Action>();
             
             actions.add(ProjectSensitiveActions.projectSensitiveAction(
-                    new AddProjectAction(), bundle.getString("LBL_AddProjectAction_Name"), null
+                    new AddProjectAction(), 
+                    bundle.getString("LBL_AddProjectAction_Name"),  // NOI18N
+                    null
                     ));
             actions.add(CommonProjectActions.newFileAction());
             
@@ -349,11 +357,14 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             if (casaFile.exists()) { // TODO: create CASA on demand
                 actions.add(null);
                 actions.add(ProjectSensitiveActions.projectSensitiveAction(
-                        new OpenEditorAction(), bundle.getString("LBL_EditAction_Name"), null
+                        new OpenEditorAction(), 
+                        bundle.getString("LBL_EditAction_Name"), // NOI18N
+                        null
                         ));
                 actions.add(ProjectSensitiveActions.projectCommandAction(
                         JbiProjectConstants.COMMAND_JBICLEANCONFIG,
-                        bundle.getString("LBL_JbiCleanConfigAction_Name"), null
+                        bundle.getString("LBL_JbiCleanConfigAction_Name"),  // NOI18N
+                        null
                         ));
             }                        
             
@@ -361,39 +372,53 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
 
             actions.add(ProjectSensitiveActions.projectCommandAction(
                     JbiProjectConstants.COMMAND_JBIBUILD,
-                    bundle.getString("LBL_JbiBuildAction_Name"), null
+                    bundle.getString("LBL_JbiBuildAction_Name"),  // NOI18N
+                    null
                     ));
             
             actions.add(ProjectSensitiveActions.projectCommandAction(
                     JbiProjectConstants.COMMAND_JBICLEANBUILD,
-                    bundle.getString("LBL_JbiCleanBuildAction_Name"), null
+                    bundle.getString("LBL_JbiCleanBuildAction_Name"),  // NOI18N
+                    null
                     ));
             
             actions.add(ProjectSensitiveActions.projectCommandAction(
-                    ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null
+                    ActionProvider.COMMAND_CLEAN, 
+                    bundle.getString("LBL_CleanAction_Name"),  // NOI18N
+                    null
                     ));
             actions.add(null);
                         
             actions.add(ProjectSensitiveActions.projectCommandAction(
-                    JbiProjectConstants.COMMAND_DEPLOY, bundle.getString("LBL_DeployAction_Name"),
+                    JbiProjectConstants.COMMAND_DEPLOY, 
+                    bundle.getString("LBL_DeployAction_Name"), // NOI18N
                     null
                     ));
                         
             actions.add(ProjectSensitiveActions.projectCommandAction(
-                    JbiProjectConstants.COMMAND_UNDEPLOY, bundle.getString("LBL_UnDeployAction_Name"),
+                    JbiProjectConstants.COMMAND_UNDEPLOY, 
+                    bundle.getString("LBL_UnDeployAction_Name"), // NOI18N
                     null
                     ));
             // Start Test Framework
-            //actions.add(null);
-            actions.add(ProjectSensitiveActions.projectCommandAction(
-                    JbiProjectConstants.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"),
+            actions.add(null);
+            Action testAction = ProjectSensitiveActions.projectCommandAction(
+                    JbiProjectConstants.COMMAND_TEST, 
+                    bundle.getString("LBL_TestAction_Name"), // NOI18N
                     null
-                    ));
+                    );
+            actions.add(testAction);
+            Action debugAction = ProjectSensitiveActions.projectCommandAction(
+                    ActionProvider.COMMAND_DEBUG, 
+                    bundle.getString("LBL_DebugAction_Name"), // NOI18N
+                    null
+                    );
+            actions.add(new ActionDecorator(debugAction) {
+                public boolean isEnabled() {
+                    return projectContainsBPELModule();
+                }                
+            });            
             // End Test Framework
-            actions.add(ProjectSensitiveActions.projectCommandAction(
-                    ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"),
-                    null
-                    ));
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.openSubprojectsAction());
@@ -417,7 +442,7 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
                         
-            return (Action[]) actions.toArray(new Action[actions.size()]);            
+            return actions.toArray(new Action[actions.size()]);            
         }
         
         private void addFromLayers(List<Action> actions, String path) {
@@ -501,4 +526,45 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
             }
         }
     }
+}
+
+/**
+ * Action wrapper.
+ */
+class ActionDecorator implements Action {
+
+    private Action realAction;
+    
+    ActionDecorator(Action action) {
+        realAction = action;
+    }
+
+    public Object getValue(String key) {
+        return realAction.getValue(key);
+    }
+
+    public void putValue(String key, Object value) {
+        realAction.putValue(key, value);
+    }
+
+    public void setEnabled(boolean b) {
+        realAction.setEnabled(b);
+    }
+
+    public boolean isEnabled() {
+        return realAction.isEnabled();
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        realAction.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        realAction.removePropertyChangeListener(listener);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        realAction.actionPerformed(e);
+    }
+        
 }
