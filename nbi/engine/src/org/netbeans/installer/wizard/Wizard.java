@@ -206,10 +206,11 @@ public class Wizard {
             try {
                 factory.setSchema(schema);
             } catch (UnsupportedOperationException e) {
-                // if the parser does not support schemas, let it be -- we can do 
+                // if the parser does not support schemas, let it be -- we can do
                 // without it anyway -- just log it and proceed
                 ErrorManager.notifyDebug(
-                        "The current parser - " + factory.getClass() + " - does not support schemas.", 
+                        ResourceUtils.getString(Wizard.class,
+                        RESOURCE_PARSER_UNSUPPORTS_SCHEMAS,factory.getClass()),
                         e);
             }
             factory.setNamespaceAware(true);
@@ -376,8 +377,8 @@ public class Wizard {
     private FinishHandler finishHandler;
     
     /**
-     * Specifies whether the wizard is opened in blocking mode. If it is, the 
-     * opening method {@link #openBlocking()} will not return intil the wizard is 
+     * Specifies whether the wizard is opened in blocking mode. If it is, the
+     * opening method {@link #openBlocking()} will not return intil the wizard is
      * closed from another thread.
      */
     private boolean blocking;
@@ -488,49 +489,49 @@ public class Wizard {
         
         // then create the container according to the current UI mode
         switch (UiMode.getCurrentUiMode()) {
-        case SWING:
-            container = new SwingFrameContainer();
-            
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
+            case SWING:
+                container = new SwingFrameContainer();
+                
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            Thread.currentThread().setUncaughtExceptionHandler(
+                                    ErrorManager.getExceptionHandler());
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    ErrorManager.notifyDebug(ResourceUtils.getString(
+                            Wizard.class,
+                            RESOURCE_FAILED_TO_ATTACH_ERROR_HANDLER), e);
+                } catch (InterruptedException e) {
+                    ErrorManager.notifyDebug(ResourceUtils.getString(
+                            Wizard.class,
+                            RESOURCE_FAILED_TO_ATTACH_ERROR_HANDLER), e);
+                }
+                
+                SwingUtilities.invokeLater(new Runnable(){
                     public void run() {
-                        Thread.currentThread().setUncaughtExceptionHandler(
-                                ErrorManager.getExceptionHandler());
+                        container.setVisible(true);
                     }
                 });
-            } catch (InvocationTargetException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(
+                break;
+            case SILENT:
+                // we don't have to initialize anything for silent mode
+                break;
+            default:
+                ErrorManager.notifyCritical(ResourceUtils.getString(
                         Wizard.class,
-                        RESOURCE_FAILED_TO_ATTACH_ERROR_HANDLER), e);
-            } catch (InterruptedException e) {
-                ErrorManager.notifyDebug(ResourceUtils.getString(
-                        Wizard.class,
-                        RESOURCE_FAILED_TO_ATTACH_ERROR_HANDLER), e);
-            }
-            
-            SwingUtilities.invokeLater(new Runnable(){
-                public void run() {
-                    container.setVisible(true);
-                }
-            });
-            break;
-        case SILENT:
-            // we don't have to initialize anything for silent mode
-            break;
-        default:
-            ErrorManager.notifyCritical(ResourceUtils.getString(
-                    Wizard.class,
-                    RESOURCE_UNKNOWN_UI_MODE,
-                    UiMode.getCurrentUiMode()));
+                        RESOURCE_UNKNOWN_UI_MODE,
+                        UiMode.getCurrentUiMode()));
         }
         
         next();
     }
     
     /**
-     * Opens the wizard in a blocking mode. As opposed to {@link #open()}, this 
+     * Opens the wizard in a blocking mode. As opposed to {@link #open()}, this
      * method will not return the wizard is closed from another thread.
-     * 
+     *
      * @see #open()
      */
     public void openBlocking() {
@@ -542,7 +543,8 @@ public class Wizard {
             try {
                 wait();
             } catch (InterruptedException e) {
-                ErrorManager.notifyDebug("Interrupted while waiting", e);
+                ErrorManager.notifyDebug(ResourceUtils.getString(
+                        Wizard.class, RESOURCE_INTERRUPTED), e);
             }
         }
     }
@@ -564,21 +566,21 @@ public class Wizard {
         }
         
         switch (UiMode.getCurrentUiMode()) {
-        case SWING:
-            // if the container has not yet been initialized -- we do not need to 
-            // do anything with it
-            if (container != null) {
-                container.setVisible(false);
-            }
-            break;
-        case SILENT:
-            // we don't have to initialize anything for silent mode
-            break;
-        default:
-            ErrorManager.notifyCritical(ResourceUtils.getString(
-                    Wizard.class,
-                    RESOURCE_UNKNOWN_UI_MODE,
-                    UiMode.getCurrentUiMode()));
+            case SWING:
+                // if the container has not yet been initialized -- we do not need to
+                // do anything with it
+                if (container != null) {
+                    container.setVisible(false);
+                }
+                break;
+            case SILENT:
+                // we don't have to initialize anything for silent mode
+                break;
+            default:
+                ErrorManager.notifyCritical(ResourceUtils.getString(
+                        Wizard.class,
+                        RESOURCE_UNKNOWN_UI_MODE,
+                        UiMode.getCurrentUiMode()));
         }
         
         if (blocking) {
@@ -611,23 +613,23 @@ public class Wizard {
             component.initialize();
             
             switch (UiMode.getCurrentUiMode()) {
-            case SWING:
-                if (component.getWizardUi() != null) {
-                    container.updateWizardUi(component.getWizardUi());
-                }
-                break;
-            case SILENT:
-                // nothing special should be done for silent mode
-                break;
-            default:
-                ErrorManager.notifyCritical(ResourceUtils.getString(
-                        Wizard.class,
-                        RESOURCE_UNKNOWN_UI_MODE,
-                        UiMode.getCurrentUiMode()));
+                case SWING:
+                    if (component.getWizardUi() != null) {
+                        container.updateWizardUi(component.getWizardUi());
+                    }
+                    break;
+                case SILENT:
+                    // nothing special should be done for silent mode
+                    break;
+                default:
+                    ErrorManager.notifyCritical(ResourceUtils.getString(
+                            Wizard.class,
+                            RESOURCE_UNKNOWN_UI_MODE,
+                            UiMode.getCurrentUiMode()));
             }
             
             System.setProperty(
-                    CURRENT_COMPONENT_CLASSNAME_PROPERTY, 
+                    CURRENT_COMPONENT_CLASSNAME_PROPERTY,
                     component.getClass().getName());
             
             component.executeForward();
@@ -660,25 +662,25 @@ public class Wizard {
             component.initialize();
             
             switch (UiMode.getCurrentUiMode()) {
-            case SWING:
-                if (component.getWizardUi() != null) {
-                    container.updateWizardUi(component.getWizardUi());
-                }
-                break;
-            case SILENT:
-                ErrorManager.notifyCritical(ResourceUtils.getString(
-                        Wizard.class,
-                        RESOURCE_CANNOT_MOVE_BACKWARD_SILENT));
-                break;
-            default:
-                ErrorManager.notifyCritical(ResourceUtils.getString(
-                        Wizard.class,
-                        RESOURCE_UNKNOWN_UI_MODE,
-                        UiMode.getCurrentUiMode()));
+                case SWING:
+                    if (component.getWizardUi() != null) {
+                        container.updateWizardUi(component.getWizardUi());
+                    }
+                    break;
+                case SILENT:
+                    ErrorManager.notifyCritical(ResourceUtils.getString(
+                            Wizard.class,
+                            RESOURCE_CANNOT_MOVE_BACKWARD_SILENT));
+                    break;
+                default:
+                    ErrorManager.notifyCritical(ResourceUtils.getString(
+                            Wizard.class,
+                            RESOURCE_UNKNOWN_UI_MODE,
+                            UiMode.getCurrentUiMode()));
             }
             
             System.setProperty(
-                    CURRENT_COMPONENT_CLASSNAME_PROPERTY, 
+                    CURRENT_COMPONENT_CLASSNAME_PROPERTY,
                     component.getClass().getName());
             
             component.executeBackward();
@@ -819,6 +821,7 @@ public class Wizard {
     /**
      * Sets the {@link FinishHandler} which should be used by this {@link Wizard}
      * instance.
+     *
      *
      * @param finishHandler {@link FinishHandler} which should be used by this
      *      {@link Wizard} instance.
@@ -998,7 +1001,7 @@ public class Wizard {
      * Name of the system property which will be set when a component executes. Its
      * value will be the fully qualified class name of the component.
      */
-    public static final String CURRENT_COMPONENT_CLASSNAME_PROPERTY = 
+    public static final String CURRENT_COMPONENT_CLASSNAME_PROPERTY =
             "nbi.wizard.current.component.classname"; // NOI18N
     
     // private //////////////////////////////////////////////////////////////////////
@@ -1043,4 +1046,16 @@ public class Wizard {
      */
     private static final String RESOURCE_CANNOT_MOVE_BACKWARD_AT_FIRST =
             "W.error.cannot.move.backward.at.first"; // NOI18N
+    
+    /**
+     * Name of a resource bundle entry.
+     */
+    private static final String RESOURCE_PARSER_UNSUPPORTS_SCHEMAS =
+            "W.error.parser.unsupports.schemas";//NOI18N
+    
+    /**
+     * Name of a resource bundle entry.
+     */
+    private static final String RESOURCE_INTERRUPTED =
+            "W.error.interrupted";//NOI18N
 }
