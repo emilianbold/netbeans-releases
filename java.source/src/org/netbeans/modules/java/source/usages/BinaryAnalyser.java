@@ -39,9 +39,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -94,6 +94,7 @@ public class BinaryAnalyser implements LowMemoryListener {
         CLOSED,
     };
     
+    private static final Logger LOGGER = Logger.getLogger(BinaryAnalyser.class.getName());
     static final String OBJECT = Object.class.getName();                        
     
     private static boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
@@ -134,11 +135,15 @@ public class BinaryAnalyser implements LowMemoryListener {
                             if (handle != null) { //Tests don't provide handle
                                 handle.setDisplayName (NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing",archive.getAbsolutePath()));
                             }
-                            final ZipFile zipFile = new ZipFile(archive);
-                            prebuildArgs(zipFile, root);
-                            final Enumeration<? extends ZipEntry> e = zipFile.entries();        
-                            cont = new ZipContinuation (zipFile, e, cancel, closed);
-                            return cont.execute();                                        
+                            try {
+                                final ZipFile zipFile = new ZipFile(archive);
+                                prebuildArgs(zipFile, root);
+                                final Enumeration<? extends ZipEntry> e = zipFile.entries();        
+                                cont = new ZipContinuation (zipFile, e, cancel, closed);
+                                return cont.execute();
+                            } catch (ZipException e) {
+                                LOGGER.warning("Broken zip file: " + archive.getAbsolutePath());
+                            }
                         }
                     }
                 }
@@ -257,7 +262,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                     try {
                         analyse (in);
                     } catch (InvalidClassFormatException icf) {
-                        Logger.getLogger(BinaryAnalyser.class.getName()).info("Invalid class file format: "+file.getAbsolutePath());      //NOI18N
+                        LOGGER.warning("Invalid class file format: "+file.getAbsolutePath());      //NOI18N
                     }
                     finally {
                         in.close();
@@ -288,7 +293,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                 try {                                        
                     analyse(in);
                 } catch (InvalidClassFormatException icf) {
-                    Logger.getLogger(BinaryAnalyser.class.getName()).info("Invalid class file format: "+ new File(zipFile.getName()).toURI() + "!/" + ze.getName());     //NOI18N
+                    LOGGER.warning("Invalid class file format: "+ new File(zipFile.getName()).toURI() + "!/" + ze.getName());     //NOI18N
                 } catch (IOException x) {
                     Exceptions.attachMessage(x, "While scanning: " + ze.getName());                                         //NOI18N
                     throw x;
@@ -319,7 +324,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                 try {
                     analyse (in);
                 } catch (InvalidClassFormatException icf) {
-                    Logger.getLogger(BinaryAnalyser.class.getName()).info("Invalid class file format: "+FileUtil.getFileDisplayName(fo));      //NOI18N
+                    LOGGER.warning("Invalid class file format: "+FileUtil.getFileDisplayName(fo));      //NOI18N
                 }
                 finally {
                     in.close();
@@ -422,7 +427,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                     message.append(e.toString());
                     message.append('\n');   //NOI18N
                 }
-                Logger.getLogger("global").log (Level.INFO, message.toString());    //NOI18N
+                LOGGER.warning(message.toString());    //NOI18N
             }
         }
 
@@ -496,7 +501,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                             addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         }
                     } catch (IllegalStateException is) {
-                        Logger.getLogger("global").warning("Invalid method signature: "+className+"::"+method.getName()+" signature is:" + jvmTypeId);  // NOI18N
+                        LOGGER.warning("Invalid method signature: "+className+"::"+method.getName()+" signature is:" + jvmTypeId);  // NOI18N
                     }
                 }
                 Code code = method.getCode();
@@ -516,7 +521,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                                 addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                             }
                         } catch (IllegalStateException is) {
-                            Logger.getLogger("global").warning("Invalid local variable signature: "+className+"::"+method.getName());  // NOI18N
+                            LOGGER.warning("Invalid local variable signature: "+className+"::"+method.getName());  // NOI18N
                         }
                     }
                 }
@@ -537,7 +542,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                             addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         }
                     } catch (IllegalStateException is) {
-                        Logger.getLogger("global").warning("Invalid field signature: "+className+"::"+var.getName()+" signature is: "+jvmTypeId);  // NOI18N
+                        LOGGER.warning("Invalid field signature: "+className+"::"+var.getName()+" signature is: "+jvmTypeId);  // NOI18N
                     }
                 }
             }            
