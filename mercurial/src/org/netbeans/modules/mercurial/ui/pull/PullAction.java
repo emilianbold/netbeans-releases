@@ -186,7 +186,7 @@ public class PullAction extends AbstractAction {
                 if (bComfirmMerge) {
                     HgUtils.outputMercurialTab("");
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_MERGE_DO"));
-                    MergeAction.doMergeAction(root);
+                    MergeAction.doMergeAction(root, null);
                 }
                 
                 List<String> headRevList = HgCommand.getHeadRevisions(root);

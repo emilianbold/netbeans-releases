@@ -43,7 +43,9 @@ import org.openide.windows.OutputWriter;
 public class MergeAction extends AbstractAction {
 
     private final VCSContext context;
-
+    private String revStr;
+    private final static int MULTIPLE_AUTOMERGE_HEAD_LIMIT = 2;
+    
     public MergeAction(String name, VCSContext context) {
         this.context = context;
         putValue(Action.NAME, name);
@@ -61,7 +63,21 @@ public class MergeAction extends AbstractAction {
             return;
         }
         String repository = root.getAbsolutePath();
-
+        try{
+            List<String> headList = HgCommand.getHeadRevisions(root);
+            revStr = null;
+            if (headList.size() > MULTIPLE_AUTOMERGE_HEAD_LIMIT){
+                final MergeRevisions mergeDlg = new MergeRevisions(root);
+                if (!mergeDlg.showDialog()) {
+                    return;
+                }
+                revStr = mergeDlg.getSelectionRevision();               
+            }
+        } catch(HgException ex) {
+                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+                    DialogDisplayer.getDefault().notifyLater(e);
+        }
+        
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
@@ -70,7 +86,7 @@ public class MergeAction extends AbstractAction {
                             NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE"));
                     HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE_SEP"));
-                    doMergeAction(root);
+                    doMergeAction(root, revStr);
                     HgUtils.forceStatusRefresh(root);
                     HgUtils.outputMercurialTab("");
                 } catch (HgException ex) {
@@ -82,8 +98,8 @@ public class MergeAction extends AbstractAction {
         support.start(rp, repository, NbBundle.getMessage(MergeAction.class, "MSG_MERGE_PROGRESS")); // NOI18N
     }
 
-    public static boolean doMergeAction(File root) throws HgException {
-        List<String> listMerge = HgCommand.doMerge(root);
+    public static boolean doMergeAction(File root, String revStr) throws HgException {
+        List<String> listMerge = HgCommand.doMerge(root, revStr);
         Boolean bConflicts = false;
         Boolean bMergeFailed = false;
         

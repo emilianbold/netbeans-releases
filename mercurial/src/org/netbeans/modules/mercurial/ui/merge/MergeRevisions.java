@@ -39,23 +39,24 @@ public class MergeRevisions implements PropertyChangeListener {
     private JButton okButton;
     private JButton cancelButton;
     
-    /** Creates a new instance of RevertModifications */
-    public MergeRevisions(File repository, File[] files) {
-        this (repository);
-    }
-
     public MergeRevisions(File repository) {
         panel = new MergeRevisionsPanel(repository);
-        okButton = new JButton(org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertForm_Action_Revert")); // NOI18N
-        okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_RevertForm_Action_Revert")); // NOI18N
-        cancelButton = new JButton(org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertForm_Action_Cancel")); // NOI18N
-        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_RevertForm_Action_Cancel")); // NOI18N
+         okButton = new JButton(NbBundle.getMessage(MergeRevisions.class, 
+                     "CTL_MergeForm_Action_Merge")); // NOI18N
+         okButton.getAccessibleContext().setAccessibleDescription(
+                 NbBundle.getMessage(MergeRevisions.class, 
+                 "ACSD_MergeForm_Action_Merge")); // NOI18N
+         cancelButton = new JButton(NbBundle.getMessage(MergeRevisions.class, 
+                 "CTL_MergeForm_Action_Cancel")); // NOI18N
+         cancelButton.getAccessibleContext().setAccessibleDescription(
+                 NbBundle.getMessage(MergeRevisions.class, 
+                 "ACSD_MergeForm_Action_Cancel")); // NOI18N
     } 
     
     public boolean showDialog() {
         DialogDescriptor dialogDescriptor;
         dialogDescriptor = new DialogDescriptor(panel, 
-                NbBundle.getMessage(MergeRevisions.class, "CTL_MERGE_DIALOG")); // NOI18N
+                NbBundle.getMessage(MergeRevisions.class, "ASCD_MERGE_DIALOG")); // NOI18N
 
         dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
         
@@ -65,7 +66,7 @@ public class MergeRevisions implements PropertyChangeListener {
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
         dialog.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(MergeRevisions.class, "CTL_MERGE_DIALOG")); // NOI18N
+                NbBundle.getMessage(MergeRevisions.class, "ASCD_MERGE_DIALOG")); // NOI18N
         dialog.setVisible(true);
         dialog.setResizable(false);
         boolean ret = dialogDescriptor.getValue() == okButton;

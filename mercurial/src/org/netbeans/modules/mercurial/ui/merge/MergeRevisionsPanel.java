@@ -57,7 +57,14 @@ public class MergeRevisionsPanel extends javax.swing.JPanel {
 
     public String getSelectedRevision() {
         String revStr = (String) revisionsComboBox.getSelectedItem();
-        revStr = revStr.substring(0, revStr.indexOf(" "));
+        if( revStr != null){
+            int end = revStr.indexOf(" (");
+            if( end > 0) 
+                revStr = revStr.substring(0, end);
+            else
+                revStr = null;
+        }
+        
         return revStr;
     }
 
@@ -122,14 +129,14 @@ public class MergeRevisionsPanel extends javax.swing.JPanel {
 
     private void refreshRevisions() {
         try {
-            java.util.List<java.lang.String> targetRevsList = org.netbeans.modules.mercurial.util.HgCommand.getHeadChangeSetIds(repository);
+            java.util.List<java.lang.String> targetRevsList = HgCommand.getHeadChangeSetIds(repository);
 
             java.util.Set<java.lang.String> targetRevsSet = new java.util.LinkedHashSet<java.lang.String>();
 
             int size;
             if (targetRevsList == null) {
                 size = 0;
-                targetRevsSet.add(org.openide.util.NbBundle.getMessage(org.netbeans.modules.mercurial.ui.merge.MergeRevisionsPanel.class, "MSG_MERGE_HEAD_REVISION_DEFAULT"));
+                targetRevsSet.add(NbBundle.getMessage(MergeRevisionsPanel.class, "MSG_MERGE_HEAD_REVISION_DEFAULT"));            
             } else {
                 size = targetRevsList.size();
                 int i = 0;

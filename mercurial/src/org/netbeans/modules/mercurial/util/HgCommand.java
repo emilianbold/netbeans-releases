@@ -178,10 +178,11 @@ public class HgCommand {
      * performed before any further updates are allowed.
      *
      * @param File repository of the mercurial repository's root directory
+     * @param Revision to merge with, if null will merge with default tip rev
      * @return hg merge output
      * @throws HgException
      */
-    public static List<String> doMerge(File repository) throws HgException {
+    public static List<String> doMerge(File repository, String revStr) throws HgException {
         if (repository == null ) return null;
         List<String> command = new ArrayList<String>();
         List<String> env = new ArrayList<String>();
@@ -191,6 +192,8 @@ public class HgCommand {
         command.add(HG_MERGE_FORCE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        if(revStr != null)
+             command.add(revStr);
         env.add(HG_MERGE_ENV);
         
         return execEnv(command, env);
@@ -1080,7 +1083,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> getHeadChangeSetIds(File repository) throws HgException {
-        return  getHeadInfo(repository, HG_CSET_TEMPLATE_CMD);
+        return  getHeadInfo(repository, HG_CSET_TARGET_TEMPLATE_CMD);
     }
 
     private static List<String> getHeadInfo(File repository, String template) throws HgException {
