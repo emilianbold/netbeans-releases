@@ -368,20 +368,20 @@ public class STSWizardCreator {
                     try {
                         servlet = (Servlet)wApp.addBean("Servlet",              //NOI18N
                                 new String[]{SERVLET_NAME,SERVLET_CLASS},    
-                                new Object[]{targetName,serviceImplPath},SERVLET_NAME);
+                                new Object[]{serviceImplPath,serviceImplPath},SERVLET_NAME);
                         servlet.setLoadOnStartup(new java.math.BigInteger("0"));               //NOI18N
                         wApp.addBean("ServletMapping", new String[]{SERVLET_NAME,URL_PATTERN}, //NOI18N
-                                new Object[]{targetName, "/" + targetName},SERVLET_NAME);      //NOI18N
+                                new Object[]{serviceImplPath, "/" + targetName + "Service"},SERVLET_NAME);      //NOI18N
                         try {
                             servlet = (Servlet)wApp.addBean("Servlet",              //NOI18N
                                     new String[]{SERVLET_NAME,SERVLET_CLASS},    
                                     new Object[]{MEX_NAME,MEX_NAME},SERVLET_NAME);
                             servlet.setLoadOnStartup(new java.math.BigInteger("0"));     //NOI18N
-                            } catch (NameAlreadyUsedException ex) {
+                        } catch (NameAlreadyUsedException ex) {
                             // do nothing, this is ok - there should be only one instance of this
                         }
                         wApp.addBean("ServletMapping", new String[]{SERVLET_NAME,URL_PATTERN}, //NOI18N
-                                new Object[]{MEX_NAME, "/" + targetName + "/mex"},URL_PATTERN);  //NOI18N
+                                new Object[]{MEX_NAME, "/" + targetName + "Service/mex"},URL_PATTERN);  //NOI18N
                         wApp.write(wm.getDeploymentDescriptor());
                     } catch (NameAlreadyUsedException ex) {
                         ex.printStackTrace();
