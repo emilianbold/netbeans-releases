@@ -1,5 +1,4 @@
-<?xml version="1.0"?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -19,12 +18,17 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
-<filesystem>
-  <folder name="org-netbeans-api-project-libraries">
-    <folder name="Libraries">
-      <file name="rowset-ri.xml" url="/org/netbeans/modules/visualweb/libs/rowset/rowset-ri.xml"/>
-    </folder>
-  </folder>
-</filesystem>
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+<library version="1.0">
+    <name>rowset-ri</name>
+    <type>j2se</type>
+    <localizing-bundle>org.netbeans.modules.visualweb.libs.rowset.Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst:///modules/ext/rowset.jar!/</resource>
+    </volume>
+    <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst:///docs/rowset-doc.zip!/</resource>
+    </volume>
+</library>
