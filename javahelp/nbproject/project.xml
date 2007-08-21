@@ -108,7 +108,7 @@ Microsystems, Inc. All Rights Reserved.
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jh-2.0_04.jar</runtime-relative-path>
-                <binary-origin>../external/jh-2.0_04.jar</binary-origin>
+                <binary-origin>external/jh-2.0_04.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

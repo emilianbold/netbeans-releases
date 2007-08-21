@@ -66,9 +66,9 @@ Microsystems, Inc. All Rights Reserved.
      <pathelement location="${ant.jar}"/>
      <fileset dir="..">
         <!-- For JavaHelp indexing: -->
-        <include name="apisupport/external/jsearch*.jar"/>
+        <include name="apisupport/harness/external/jsearch*.jar"/>
         <!-- For JavaHelp link checking: -->
-        <include name="core/external/jh*.jar"/>
+        <include name="core/javahelp/external/jh*.jar"/>
       </fileset>
     </path>
     <!-- Sanity check: -->
@@ -511,7 +511,7 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
       <taskdef name="checkhelpsetsbin" classname="org.netbeans.nbbuild.CheckHelpSetsBin">
         <classpath>
           <pathelement location="${nb_all}/nbbuild/nbantext.jar"/>
-            <fileset dir="${nb_all}/core/external">
+            <fileset dir="${nb_all}/core/javahelp/external">
               <include name="jh*.jar"/>
             </fileset>
         </classpath>

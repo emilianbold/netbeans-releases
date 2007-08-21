@@ -160,7 +160,7 @@ Microsystems, Inc. All Rights Reserved.
     <jhindexer basedir="javahelp/org/netbeans/modules/testtools/docs/"
                db="javahelp/org/netbeans/modules/testtools/docs/JavaHelpSearch2">
       <classpath>
-        <fileset dir="../apisupport/external">
+        <fileset dir="../apisupport/harness/external">
           <include name="jsearch*.jar"/>
         </fileset>
       </classpath>
