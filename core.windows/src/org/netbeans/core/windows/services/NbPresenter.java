@@ -127,7 +127,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     /** Used to prevent updateHelp from calling initializeButtons too many times. */
     private transient boolean haveCalledInitializeButtons = false;
 
-    private static Logger LOG = Logger.getLogger(NbPresenter.class.getName());
+    static final Logger LOG = Logger.getLogger(NbPresenter.class.getName());
     
     static final long serialVersionUID =-4508637164126678997L;
     

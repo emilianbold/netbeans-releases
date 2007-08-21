@@ -20,6 +20,8 @@
 package org.netbeans.core.windows.services;
 
 import java.awt.Window;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
@@ -32,18 +34,35 @@ import org.openide.NotifyDescriptor;
  * @author Jaroslav Tulach
  */
 public class NotifyLaterTest extends NbTestCase {
+    Logger LOG;
+    
+    
     public NotifyLaterTest (String testName) {
         super (testName);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
     
+    
+    
+    @Override
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
     }
 
+    @Override
     protected boolean runInEQ () {
         return false;
     }
     private void waitAWT() throws Exception {
-        SwingUtilities.invokeAndWait(new Runnable() { public void run() { } });
+        LOG.fine("waitAWT - enter");
+        SwingUtilities.invokeAndWait(new Runnable() { public void run() { 
+            LOG.fine("waitAWT - in AWT");
+        } });
+        LOG.fine("waitAWT - done");
     }
     
     protected NotifyDescriptor createDescriptor(Object msg) {
@@ -56,17 +75,21 @@ public class NotifyLaterTest extends NbTestCase {
             
             public void addNotify() {
                 called = 1;
+                LOG.info("addNotify called=" + called);
                 super.addNotify();
             }
         }
         MyObj obj = new MyObj();
-        
+
+        LOG.info("createDescriptor");
         NotifyDescriptor ownerDD = createDescriptor(obj);
-        
-        
-        
+        LOG.info("createDescriptor = " + ownerDD);
+
+        LOG.info("notifyLater");
         DialogDisplayer.getDefault ().notifyLater(ownerDD);
+        LOG.info("done notifyLater");
         waitAWT();
+        LOG.info("check");
         assertEquals("No notify yet", 0, obj.called);
         
         DialogDisplayerImplTest.postInAwtAndWaitOutsideAwt(new Runnable () {

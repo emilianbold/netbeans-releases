@@ -32,6 +32,7 @@ public class NotifyLaterWithDialogDescriptorTest extends NotifyLaterTest {
     }
     
     
+    @Override
     protected NotifyDescriptor createDescriptor(Object msg) {
         return new DialogDescriptor(msg, "ignore title");
     }

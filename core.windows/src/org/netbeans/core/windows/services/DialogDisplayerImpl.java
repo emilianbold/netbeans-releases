@@ -61,16 +61,20 @@ public class DialogDisplayerImpl extends DialogDisplayer {
     
     /* Runs list of tasks gathered from notifyLater calls */
     public static void runDelayed() {
+        NbPresenter.LOG.fine("runDelayed");
         List<Runnable> local = run;
         run = null;
         if (local == null) {
+            NbPresenter.LOG.fine("runDelayed, nothing");
             return;
         }
         
         assert EventQueue.isDispatchThread();
         for (Runnable r : local) {
+            NbPresenter.LOG.fine("runDelayed, run = " + r);
             r.run();
         }
+        NbPresenter.LOG.fine("runDelayed, done");
     }
     
 
