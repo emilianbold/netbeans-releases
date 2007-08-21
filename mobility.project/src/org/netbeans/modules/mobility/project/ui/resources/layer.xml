@@ -496,7 +496,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="org.netbeans.modules.kjava.j2meproject">
             <file name="midp">
                 <attr name="RecommendedTemplates" stringvalue="MIDP"/>
-                <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/VisualMIDlet.java,Templates/MIDP/Midlet.java"/>
+                <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/VisualMIDlet.java,Templates/MIDP/Midlet.java,Templates/MIDP/GameDesign.java"/>
                 <attr name="position" intvalue="100"/>
             </file>
             <file name="core">
