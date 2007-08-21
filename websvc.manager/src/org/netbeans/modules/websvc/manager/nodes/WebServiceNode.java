@@ -21,11 +21,15 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.manager.api.WebServiceManager;
 import org.netbeans.modules.websvc.manager.actions.DeleteWebServiceAction;
 import org.netbeans.modules.websvc.manager.actions.ViewWSDLAction;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
+import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
@@ -66,10 +70,15 @@ public class WebServiceNode extends AbstractNode implements Node.Cookie {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(ViewWSDLAction.class),
-            SystemAction.get(DeleteWebServiceAction.class)
-        };
+        List<Action> actions = new ArrayList<Action>();
+        for (WebServiceManagerExt ext : ManagerUtil.getExtensions()) {
+            for (Action a : ext.getMethodActions()) {
+                actions.add(a);
+            }
+        }
+        actions.add(SystemAction.get(ViewWSDLAction.class));
+        actions.add(SystemAction.get(DeleteWebServiceAction.class));
+        return actions.toArray(new Action[actions.size()]);
     }
     
     @Override

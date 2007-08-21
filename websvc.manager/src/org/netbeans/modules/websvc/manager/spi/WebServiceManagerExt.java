@@ -29,14 +29,19 @@ public interface WebServiceManagerExt {
     public boolean wsServiceRemovedExt(WebServiceDescriptor wsMetadataDesc);
     
     /**
-     * @return list of consumer-specific actions for webservice root node.
+     * @return list of consumer-specific actions for web service root node.
      */
-    public Action[] getWebServicesActions();
+    public Action[] getWebServicesRootActions();
 
     /**
      * @return list of consumer-specific actions for group nodes.
      */
     public Action[] getGroupActions();
+
+    /**
+     * @return list of consumer-specific actions for web service nodes.
+     */
+    public Action[] getWebServiceActions();
 
     /**
      * @return list of consumer-specific actions for port nodes.

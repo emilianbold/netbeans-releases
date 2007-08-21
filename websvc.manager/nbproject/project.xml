@@ -226,15 +226,14 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.visualweb.websvcmgr</package>
-                <package>org.netbeans.modules.visualweb.websvcmgr.actions</package>
-                <package>org.netbeans.modules.visualweb.websvcmgr.jaxrpc</package>
-                <package>org.netbeans.modules.visualweb.websvcmgr.model</package>
-                <package>org.netbeans.modules.visualweb.websvcmgr.nodes</package>
-                <package>org.netbeans.modules.visualweb.websvcmgr.ui</package>
-                <package>org.netbeans.modules.visualweb.websvcmgr.util</package>
-            </public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
+                <package>org.netbeans.modules.websvc.manager.api</package>
+                <package>org.netbeans.modules.websvc.manager.model</package>
+                <package>org.netbeans.modules.websvc.manager.spi</package>
+                <package>org.netbeans.modules.websvc.manager.util</package>
+                <package>org.netbeans.swing.outline</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

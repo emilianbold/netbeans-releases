@@ -111,17 +111,18 @@ public class Wsdl2Java {
             try {
                 ProxySelector selector = ProxySelector.getDefault();
                 List<Proxy> proxies = selector.select(new URI(TEST_URI));
+                String proxyServer = "";
                 if (proxies.size() > 0) {
                     InetSocketAddress address = (InetSocketAddress)proxies.get(0).address();
-                    String host = "http://" + address.getHostName();
-                    String port = String.valueOf(address.getPort());
-                    properties.put(PROXY_SERVER, host + ":" + port);
-                }else {
-                    properties.put(PROXY_SERVER, "");
+                    if (address != null) {
+                        String host = "http://" + address.getHostName();
+                        String port = String.valueOf(address.getPort());
+                        proxyServer = host + ":" + port;
+                    }
                 }
+                properties.put(PROXY_SERVER, proxyServer);
                 
             }catch (Exception ex) {
-                properties.put(PROXY_SERVER, "");
                 Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
             

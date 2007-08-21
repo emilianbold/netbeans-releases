@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.manager.nodes;
 
+import org.netbeans.modules.websvc.manager.util.WebServiceLibReferenceHelper;
 import org.netbeans.modules.websvc.manager.spi.WebServiceTransferManager;
 
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
@@ -33,11 +34,10 @@ import org.openide.nodes.Sheet.Set;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.Utilities;
 import org.openide.ErrorManager;
 
-import org.netbeans.modules.websvc.manager.util.Util;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 
 import com.sun.tools.ws.processor.model.Operation;
@@ -57,6 +57,8 @@ import javax.swing.Action;
 import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * A simple node with no children.
@@ -66,7 +68,7 @@ import org.openide.util.datatransfer.ExTransferable;
  * such nodes with the proper behavior.
  * @author octav
  */
-public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
+public class WebServiceMethodNode extends AbstractNode {
     private static final DataFlavor METHOD_NODE_FLAVOR;
     
     static {
@@ -84,10 +86,6 @@ public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
     private WsdlPort port;
     private Transferable transferable;
     
-    public WebServiceMethodNode() {
-        this(null,null,null);
-    }
-    
     public JavaMethod getJavaMethod() {
         return javaMethod;
     }
@@ -102,7 +100,11 @@ public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
     
     // will frequently accept an element from some data model in the constructor:
     public WebServiceMethodNode(WebServiceData inWsData, WsdlPort inPort, WsdlOperation inOperation) {
-        super(Children.LEAF);
+        this(inWsData, inPort, inOperation, new InstanceContent());
+    }
+    
+    private WebServiceMethodNode(WebServiceData inWsData, WsdlPort inPort, WsdlOperation inOperation, InstanceContent content) {
+        super(Children.LEAF, new AbstractLookup(content));
         
         wsData = inWsData;
         
@@ -125,6 +127,11 @@ public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
         }else {
             transferable = ExTransferable.create(new MethodTransferable(new WebServiceMetaDataTransfer.Method(wsData, javaMethod, port.getName())));
         }
+        transferable = addFlavors(transferable);
+        content.add(transferable);
+        content.add(wsData);
+        content.add(javaMethod);
+        content.add(port);
         
         /**
          * Set the shortDescription (tooltip) to the method signature
@@ -134,21 +141,20 @@ public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
         JavaParameter currentParam = null;
         while(parameterIterator.hasNext()) {
             currentParam = (JavaParameter)parameterIterator.next();
-            String parameterType = Util.getParameterType(currentParam);
+            String parameterType = ManagerUtil.getParameterType(currentParam);
             signature += parameterType + " " + currentParam.getName();
             if(parameterIterator.hasNext()) {
                 signature += ", ";
             }
         }
         signature += ")";
-        
         setShortDescription(signature);    
     }
     
     // Create the popup menu:
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        for (WebServiceManagerExt ext : Util.getExtensions()) {
+        for (WebServiceManagerExt ext : ManagerUtil.getExtensions()) {
             for (Action a : ext.getMethodActions()) {
                 actions.add(a);
             }
@@ -270,7 +276,7 @@ public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
                 for(int ii=0;paramIterator.hasNext();ii++) {
                     currentParameter = (JavaParameter)paramIterator.next();
                     if(currentParameter.getType().isHolder()) {
-                        p = new Reflection(Util.getParameterType(currentParameter), String.class, "toString", null); // NOI18N
+                        p = new Reflection(ManagerUtil.getParameterType(currentParameter), String.class, "toString", null); // NOI18N
                     } else {
                         p = new Reflection(currentParameter.getType(), String.class, "getRealName", null); // NOI18N
                     }
@@ -317,7 +323,7 @@ public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
     }
     
     public boolean isMethodDroppable() {
-        boolean isJ2EE_15 = Util.isJavaEE5Project(WebServiceLibReferenceHelper.getActiveProject());
+        boolean isJ2EE_15 = ManagerUtil.isJavaEE5Project(WebServiceLibReferenceHelper.getActiveProject());
         if (wsData != null && isJ2EE_15) {
             return wsData.isJaxWsEnabled();
         } else if (wsData != null && !isJ2EE_15) {
@@ -332,13 +338,16 @@ public class WebServiceMethodNode extends AbstractNode implements Node.Cookie {
             return super.clipboardCopy();
         }
         
+        return transferable;
+    }
+    
+    private static Transferable addFlavors(Transferable transfer) {
         Collection<? extends WebServiceTransferManager> managers = Lookup.getDefault().lookupAll(WebServiceTransferManager.class);
-        Transferable result = transferable;
+        Transferable result = transfer;
         
         for (WebServiceTransferManager m : managers) {
             result = m.addDataFlavors(result);
         }
-        
         return result;
     }
     

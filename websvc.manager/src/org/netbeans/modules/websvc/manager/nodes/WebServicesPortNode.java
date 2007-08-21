@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.manager.nodes;
 
+import org.netbeans.modules.websvc.manager.util.WebServiceLibReferenceHelper;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.util.Collection;
 
@@ -52,7 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
-import org.netbeans.modules.websvc.manager.util.Util;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -96,12 +97,12 @@ public class WebServicesPortNode  extends AbstractNode implements Node.Cookie {
     // Create the popup menu:
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(SystemAction.get(ViewWSDLAction.class));
-        for (WebServiceManagerExt ext : Util.getExtensions()) {
+        for (WebServiceManagerExt ext : ManagerUtil.getExtensions()) {
             for (Action a : ext.getPortActions()) {
                 actions.add(a);
             }
         }
+        actions.add(SystemAction.get(ViewWSDLAction.class));
         return actions.toArray(new Action[actions.size()]);
     }
     
@@ -185,7 +186,7 @@ public class WebServicesPortNode  extends AbstractNode implements Node.Cookie {
     }
     
     public boolean isMethodDroppable() {
-        boolean isJ2EE_15 = Util.isJavaEE5Project(WebServiceLibReferenceHelper.getActiveProject());
+        boolean isJ2EE_15 = ManagerUtil.isJavaEE5Project(WebServiceLibReferenceHelper.getActiveProject());
         if (wsData != null && isJ2EE_15) {
             return wsData.isJaxWsEnabled();
         } else if (wsData != null && !isJ2EE_15) {
