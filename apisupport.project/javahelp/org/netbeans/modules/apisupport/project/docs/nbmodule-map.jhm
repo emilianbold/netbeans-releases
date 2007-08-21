@@ -52,8 +52,8 @@
     <mapID target="apisupport_about_wizards" url="create_plugin/filelevel_create/about_wizards.html"/>
     <mapID target="apisupport_create_wizard" url="create_plugin/filelevel_create/create_wizard.html"/>
 	
-    <!-- Start of "Create" section -->
-
+    <mapID target="about_communicate" url="communicate_plugin/about_communicate.html"/>
+    <mapID target="using_service_provider_browser" url="communicate_plugin/using_service_provider_browser.html"/>
 	
     <mapID target="apisupport_building_plugins" url="build_plugin/building_plugins.html"/>
     <mapID target="apisupport_building_nbm" url="build_plugin/building_nbm.html"/>
