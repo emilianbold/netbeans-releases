@@ -90,9 +90,10 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private final String displayName;
     private final Runnable interestingOutputCallback;
     private final ProgressHandle handle;
+    private boolean insideRunTask = false; // #95201
     private final RequestProcessor.Task sleepTask = RequestProcessor.getDefault().create(new Runnable() {
         public void run() {
-            handle.suspend("");
+            handle.suspend(insideRunTask ? NbBundle.getMessage(NbBuildLogger.class, "MSG_sleep_running") : "");
         }
     });
     private static final int SLEEP_DELAY = 5000;
@@ -266,10 +267,10 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
             c = new LinkedHashSet<AntLogger>(interestedLoggers.size());
             interestedLoggersByTarget.put(target, c);
             for (AntLogger l : interestedLoggers) {
-                String[] targets = l.interestedInTargets(thisSession);
-                if (targets == AntLogger.ALL_TARGETS ||
-                        (target != null && Arrays.asList(targets).contains(target)) ||
-                        (target == null && targets == AntLogger.NO_TARGETS)) {
+                String[] interestingTargets = l.interestedInTargets(thisSession);
+                if (interestingTargets == AntLogger.ALL_TARGETS ||
+                        (target != null && Arrays.asList(interestingTargets).contains(target)) ||
+                        (target == null && interestingTargets == AntLogger.NO_TARGETS)) {
                     c.add(l);
                 }
             }
@@ -478,11 +479,19 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                     }
                 }
             }
+            if (isRunTask(e)) {
+                insideRunTask = true;
+            }
         } finally {
             AntBridge.resumeDelegation();
         }
     }
-    
+
+    private boolean isRunTask(AntEvent event) { // #95201
+        String taskName = event.getTaskName();
+        return "java".equals(taskName) || "exec".equals(taskName); // NOI18N
+    }
+
     public void taskFinished(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
@@ -500,6 +509,9 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                 }
             }
             NbInputHandler.setDefaultValue(null);
+            if (isRunTask(e)) {
+                insideRunTask = false;
+            }
         } finally {
             AntBridge.resumeDelegation();
         }
