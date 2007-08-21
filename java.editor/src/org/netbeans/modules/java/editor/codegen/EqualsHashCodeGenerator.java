@@ -127,7 +127,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         
         List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
         for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
-            if (!ERROR.contentEquals(variableElement.getSimpleName()))
+            if (!ERROR.contentEquals(variableElement.getSimpleName()) && !variableElement.getModifiers().contains(Modifier.STATIC))
                 descriptions.add(ElementNode.Description.create(variableElement, null, true, isUsed(cc, variableElement, equalsHashCode)));
         }
         if (descriptions.isEmpty() || (equalsHashCode[0] != null && equalsHashCode[1] != null))
