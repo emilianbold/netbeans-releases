@@ -467,7 +467,7 @@ public class Utils {
             for (ParamModel param:params) {
                 String paramNs = param.getTargetNamespace();
                 Name paramName = null;
-                if (paramNs!=null) {
+                if (paramNs!=null && paramNs.length()>0) {
                     String pref = "ns"+String.valueOf(++i); //NOI18N
                     paramName = envelope.createName(param.getName(), pref, paramNs);
                     methodElement.addNamespaceDeclaration(pref,paramNs);
@@ -527,7 +527,7 @@ public class Utils {
             String resultNs = resultModel.getTargetNamespace();
             
             Name resultName = null;
-            if (resultNs!=null) {
+            if (resultNs!=null && resultNs.length()>0) {
                 responseElement.addNamespaceDeclaration("ns1",resultNs); //NOI18N
                 resultName = envelope.createName(resultModel.getName(), "ns1", resultNs); //NOI18N
             } else {
