@@ -88,6 +88,8 @@ public final class JPDAThreadImpl implements JPDAThread {
     public String getName () {
         try {
             return threadReference.name ();
+        } catch (IllegalThreadStateException ex) {
+            return ""; // Thrown when thread has exited
         } catch (ObjectCollectedException ex) {
             return "";
         } catch (VMDisconnectedException ex) {
@@ -105,6 +107,8 @@ public final class JPDAThreadImpl implements JPDAThread {
             ThreadGroupReference tgr = threadReference.threadGroup ();
             if (tgr == null) return null;
             return debugger.getThreadGroup(tgr);
+        } catch (IllegalThreadStateException ex) {
+            return null; // Thrown when thread has exited
         } catch (ObjectCollectedException ex) {
             return null;
         } catch (VMDisconnectedException ex) {
@@ -128,6 +132,8 @@ public final class JPDAThreadImpl implements JPDAThread {
         } catch (ObjectCollectedException ex) {
         } catch (InvalidStackFrameException ex) {
         } catch (IncompatibleThreadStateException ex) {
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         } catch (VMDisconnectedException ex) {
         }
         return -1;
@@ -169,6 +175,8 @@ public final class JPDAThreadImpl implements JPDAThread {
     public int getState () {
         try {
             return threadReference.status ();
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         } catch (ObjectCollectedException ex) {
         } catch (VMDisconnectedException ex) {
         }
@@ -192,6 +200,8 @@ public final class JPDAThreadImpl implements JPDAThread {
     public boolean isThreadSuspended () {
         try {
             return threadReference.isSuspended ();
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         } catch (ObjectCollectedException ex) {
         } catch (VMDisconnectedException ex) {
         }
@@ -210,6 +220,8 @@ public final class JPDAThreadImpl implements JPDAThread {
         } catch (ObjectCollectedException ex) {
         } catch (InvalidStackFrameException ex) {
         } catch (IncompatibleThreadStateException ex) {
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         } catch (VMDisconnectedException ex) {
         }
         return "";
@@ -227,6 +239,8 @@ public final class JPDAThreadImpl implements JPDAThread {
         } catch (ObjectCollectedException ex) {
         } catch (InvalidStackFrameException ex) {
         } catch (IncompatibleThreadStateException ex) {
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         } catch (VMDisconnectedException ex) {
         }
         return "";
@@ -244,6 +258,8 @@ public final class JPDAThreadImpl implements JPDAThread {
         } catch (ObjectCollectedException ex) {
         } catch (InvalidStackFrameException ex) {
         } catch (IncompatibleThreadStateException ex) {
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         } catch (VMDisconnectedException ex) {
         }
         return "";
@@ -262,6 +278,8 @@ public final class JPDAThreadImpl implements JPDAThread {
         } catch (ObjectCollectedException ex) {
         } catch (InvalidStackFrameException ex) {
         } catch (IncompatibleThreadStateException ex) {
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         } catch (VMDisconnectedException ex) {
         }
         return "";
@@ -348,6 +366,11 @@ public final class JPDAThreadImpl implements JPDAThread {
             AbsentInformationException aiex = new AbsentInformationException(ocex.getLocalizedMessage());
             aiex.initCause(ocex);
             throw aiex;
+        } catch (IllegalThreadStateException itsex) {
+            // Thrown when thread has exited
+            AbsentInformationException aiex = new AbsentInformationException(itsex.getLocalizedMessage());
+            aiex.initCause(itsex);
+            throw aiex;
         } catch (VMDisconnectedException ex) {
             return new CallStackFrame [0];
         }
@@ -369,6 +392,8 @@ public final class JPDAThreadImpl implements JPDAThread {
     public int getStackDepth () {
         try {
             return threadReference.frameCount ();
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
         }
@@ -380,6 +405,8 @@ public final class JPDAThreadImpl implements JPDAThread {
             threadReference.popFrames(sf);
             cleanCachedFrames();
             setReturnVariable(null); // Clear the return var
+        } catch (IllegalThreadStateException ex) {
+            throw new IncompatibleThreadStateException("Thread exited.");
         } catch (ObjectCollectedException ex) {
             throw new IncompatibleThreadStateException("Thread died.");
         } catch (NativeMethodException nmex) {
@@ -412,6 +439,8 @@ public final class JPDAThreadImpl implements JPDAThread {
                     suspendCount++;
                 }
                 suspended = true;
+            } catch (IllegalThreadStateException ex) {
+                // Thrown when thread has exited
             } catch (ObjectCollectedException ex) {
             } catch (VMDisconnectedException ex) {
             }
@@ -450,6 +479,8 @@ public final class JPDAThreadImpl implements JPDAThread {
                 suspendCount = 0;
                 suspended = false;
                 methodInvokingDisabledUntilResumed = false;
+            } catch (IllegalThreadStateException ex) {
+                // Thrown when thread has exited
             } catch (ObjectCollectedException ex) {
             } catch (VMDisconnectedException ex) {
             }
@@ -500,6 +531,8 @@ public final class JPDAThreadImpl implements JPDAThread {
         synchronized (this) {
             try {
                 suspendCount = threadReference.suspendCount();
+            } catch (IllegalThreadStateException ex) {
+                return ; // Thrown when thread has exited
             } catch (ObjectCollectedException ocex) {
                 return ; // The thread is gone
             }
@@ -563,6 +596,8 @@ public final class JPDAThreadImpl implements JPDAThread {
         try {
             if (isSuspended ()) return;
             threadReference.interrupt();
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         } catch (ObjectCollectedException ex) {
         } catch (VMDisconnectedException ex) {
         }
@@ -587,6 +622,9 @@ public final class JPDAThreadImpl implements JPDAThread {
             if (!threadReference.virtualMachine().canGetCurrentContendedMonitor()) {
                 return null;
             }
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
+            return null;
         } catch (ObjectCollectedException ocex) {
             return null;
         }
@@ -602,6 +640,8 @@ public final class JPDAThreadImpl implements JPDAThread {
             }
             if (or == null) return null;
             return new ThisVariable (debugger, or, "");
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
             ErrorManager.getDefault().notify(e);
@@ -626,6 +666,9 @@ public final class JPDAThreadImpl implements JPDAThread {
             if (!threadReference.virtualMachine().canGetOwnedMonitorInfo()) {
                 return new ObjectVariable[0];
             }
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
+            return new ObjectVariable [0];
         } catch (ObjectCollectedException ocex) {
             return new ObjectVariable [0];
         }
@@ -645,6 +688,8 @@ public final class JPDAThreadImpl implements JPDAThread {
                 vs [i] = new ThisVariable (debugger, (ObjectReference) l.get (i), "");
             }
             return vs;
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
             ErrorManager.getDefault().notify(e);
