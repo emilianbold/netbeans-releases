@@ -42,8 +42,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.progress.ProgressHandle;
@@ -100,7 +98,7 @@ public class ProjectHelper {
     public static final int PROJECT_TYPE_WEB = 2;
     private static final String JAXB_ANT_XTN_NAME = "jaxb";
     
-    private static final String JAXB_LIB_NAME = "jaxb20"; //NOI18N
+    private static final String JAXB_LIB_NAME = "jaxb21"; //NOI18N
     private static final String PROP_BUILD_DIR = "build.dir"; //NOI18N
     private static final String PROP_SRC_DIR = "src.dir"; //NOI18N
     private static final String PROP_SRC_ROOT = "source.root"; //NOI18N
@@ -112,8 +110,8 @@ public class ProjectHelper {
     private static final String BUILD_GEN_JAXB_DIR = "build/generated/addons/jaxb"; //NOI18N
     private static final String NON_JAVA_SE_CONFIG_DIR = "conf/xml-resources/jaxb"; //NOI18N
     private static final String JAVA_SE_CONFIG_DIR = "xml-resources/jaxb"; //NOI18N
-    private static final String PLATFORM_ACTIVE = "platform.active"; //NOI18N
-    private static final String DEFAULT_PLATFORM = "default_platform"; //NOI18N
+    //private static final String PLATFORM_ACTIVE = "platform.active"; //NOI18N
+    //private static final String DEFAULT_PLATFORM = "default_platform"; //NOI18N
     private static final String RUN_JVM_ARGS_KEY = "run.jvmargs"; //NOI18N
     private static final String PROP_ENDORSED = "jaxbwiz.endorsed.dirs"; //NOI18N
     private static final String RUN_JVM_ARGS_VAL_PREFIX = "-Djava.endorsed.dirs"; //NOI18N    
@@ -227,7 +225,7 @@ public class ProjectHelper {
         return relPath;
     }
 
-    private static void addJAXB20Library(Project prj) {
+    private static void addJAXBLibrary(Project prj) {
         SourceGroup[] sgs = ProjectUtils.getSources(prj).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         ClassPath compileClassPath = ClassPath.getClassPath(sgs[0]
@@ -260,7 +258,7 @@ public class ProjectHelper {
     }
 
     private static void addLibraries(Project prj) {
-        addJAXB20Library(prj);
+        addJAXBLibrary(prj);
     }
 
     public static int getProjectType(Project prj) {
