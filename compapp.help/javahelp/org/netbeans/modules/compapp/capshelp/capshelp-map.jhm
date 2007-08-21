@@ -3,7 +3,6 @@
                      "http://java.sun.com/products/javahelp/map_1_0.dtd">
 
 <map version="1.0">
-	
 	<mapID target="basics_javaeews_acc_serv_resources" url="basics/javaeews/acc_serv_resources.html"/>
 	<mapID target="basics_javaeews_intro-javaeews" url="basics/javaeews/intro_javaeews.html"/>
 	<mapID target="basics_javaeews_resource_usage" url="basics/javaeews/resource_usage.html"/>
@@ -21,15 +20,9 @@
 	<mapID target="caps_jbi_tester_setting_props" url="basics/jbi_tester_setting_props.html"/>
 	<mapID target="capshelp_intro" url="intro.html"/>
 	<mapID target="casaeditor_about-casa" url="casaeditor/about-casa.html"/>
-	<mapID target="casaeditor_adding-external-SU" url="casaeditor/adding-external-SU.html"/>
-	<mapID target="casaeditor_adding-jbi-module" url="casaeditor/adding-jbi-module.html"/>
 	<mapID target="casaeditor_building" url="casaeditor/building.html"/>
-	<mapID target="casaeditor_checking-endpoints" url="casaeditor/checking-endpoints.html"/>
-	<mapID target="casaeditor_creating-connection" url="casaeditor/creating-connection.html"/>
 	<mapID target="casaeditor_designview" url="casaeditor/design-view.html"/>
 	<mapID target="casaeditor_opening" url="casaeditor/opening.html"/>
-	<mapID target="casaeditor_palette" url="casaeditor/palette.html"/>
-	<mapID target="casaeditor_removing-connection" url="casaeditor/removing-connection.html"/>
 	<mapID target="org.netbeans.modules.compapp.projects.jbi.ui.customizer.CustomizerGeneral" url="properties/caps_project_props.html"/>
 	<mapID target="org.netbeans.modules.compapp.projects.jbi.ui.customizer.CustomizerJarContent" url="properties/caps_project_props.html"/>
 	<mapID target="org.netbeans.modules.compapp.projects.jbi.ui.customizer.CustomizerRun" url="properties/caps_project_props.html"/>
@@ -41,4 +34,9 @@
 	<mapID target="org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentContainerNode$SharedLibraries" url="jbinode/caps_jbi_node_SharedLibraries.html"/>
 	<mapID target="org.netbeans.modules.sun.manager.jbi.nodes.JBINode" url="jbinode/caps_jbi_node.html"/>
 	<mapID target="org.netbeans.modules.sun.manager.jbi.nodes.JBIServiceAssembliesNode" url="jbinode/caps_jbi_node_ServiceAssemblies.html"/>
+	<mapID target="casaeditor_editing-binding" url="casaeditor/editing-binding.html"/>
+	<mapID target="casaeditor_editing-service-units" url="casaeditor/editing-service-units.html"/>
+	<mapID target="casaeditor-connections" url="casaeditor/connections.html"/>
+	<mapID target="casaeditor_navigation" url="casaeditor/navigator.html"/>
+	<mapID target="casaeditor_clean-configuration" url="casaeditor/clean-configuration.html"/>
 </map>

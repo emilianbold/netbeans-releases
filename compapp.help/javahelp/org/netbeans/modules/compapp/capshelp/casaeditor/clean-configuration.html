@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Editing a Composite Application</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<!--	
+	<link rel="stylesheet" href="ide.css" type="text/css">
+-->
+</head>
+<body>
+<h2>Reverting to the Default Configuration</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>There are two ways you revert to an application's default configuration:</p>
+<ol>
+	<li>You can abandon all changes made to an application's configuration and revert to the default configuration.</li>
+	<li>You can revert an individual JBI module to its default configuration.</li>
+</ol>  
+<hr>
+<p><b>To revert to the default configuration of a composite application:</b></p>
+<ol>
+<li>
+In the Project window, right-click the composite application node and select Clean Application Configuration.
+<br>All modifications to the application configuration are deleted and the CASA Editor is closed if was previously open.
+<br><br><b>Caution: </b>If you perform this procedure, all modifications that you have made cannot be recovered.
+</li>
+</ol>
+<hr>
+<p><b>To revert an individual JBI module to its default configuration:</b></p>
+<ol>
+<li>
+In the WSDL Ports section of the CASA Editor, delete the WSDL binding to which the JBI module connects.
+</li>
+<li>
+Right-click the JBI module and select Load WSDL Port.
+<br>The default WSDL ports are added to the WSDL Port section of the CASA Editor.
+</li>
+<li>Manually connect the WSDL ports to the JBI module.</li>
+</ol>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="about-casa.html" title="About the CASA Editor">About the CASA Editor</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

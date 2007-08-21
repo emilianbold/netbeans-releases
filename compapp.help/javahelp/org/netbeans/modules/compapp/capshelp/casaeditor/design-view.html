@@ -5,31 +5,94 @@
 -->
 <html>
 <head>
-<title>CASA Editor: About the Design View</title>
-<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+	<title>About the Design View</title>
+	<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<!--	
+	<link rel="stylesheet" href="ide.css" type="text/css">
+-->
+	<style>
+	.comment {color:blue;}
+	.change-bar {border-left: thin; border-left-style: solid; border-color:black; padding-left: 6px}
+	.deleted {text-decoration: line-through}
+	</style>
 </head>
 <body>
-<h2>CASA Editor: About the Design View</h2>
+<h2>About the Design View</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>You can use the Design view of the CASA editor to edit the deployment configuration for a JBI Service Assembly. When you open the CASA editor, the Design view is the default view.</p>
+<p>Use the Design View of the CASA Editor to modify the deployment configuration of a composite application. The Design view is the active view when you open the CASA Editor.</p>
 
-<p>The Design view has the following parts:</p>
+<p>When the Design View is active, the following windows and tools are available:</p>
 <ul>
-<li><b>Editor toolbar.</b> The Editor toolbar is located at the top of the view, just below the tab for the <tt>casa</tt> file. In the Design view, this toolbar has two navigation buttons: the Source and Design buttons let you switch to those views of the <tt>casa</tt> file. In addition, you can use the Auto Layout button, <img src="../images/button-autolayout.png" alt="Auto Layout button">&nbsp; to let the IDE rearrange the information in the Design view. You use the Build Project button, <img src="../images/button-buildproject.png" alt="Build Project button">&nbsp; to build the current project.</li>
-<li><b>Design area.</b> The design area is divided into three panes: WSDL Ports, JBI Modules, and External Modules.</li>
+	<li>Editor Toolbar</li>
+	<li>Design Area</li>
+	<li>Palette Window</li>
+	<li>Navigator Window</li>
 </ul>
+
+<h3>Editor Toolbar</h3>
+<p>The Editor Toolbar contains the following buttons:</p>
+<ul>
+	<li><b>Source</b><br>Opens the Source View of the CASA Editor</li>
+	<li><b>Design</b><br>Opens the Design View of the CASA Editor</li>
+	<li>
+	<b>Auto Layout</b><br>Arranges design artifacts in the Design Area to optimal positions.
+	</li>
+	<li><b>Build Project</b><br>Builds the composite application. This is equivalent to invoking the Build command for a composite application from the Projects window.</li>
+	<li><b>Print Preview</b><br>Invokes a Print Preview dialog. Use the Print Preview dialog to specify printing options and send the layout design to a printer.</li>
+</ul>
+
+<h3>Design Area</h3>
+<p>
+The Design Area is where you place and configure composite application artifacts. You can add new artifacts from the Palette, specify connections between artifacts, and select artifacts to edit their properties.
+</p>
+<p>
+The Design Area contains the following sections:
+</p>
+<ul>
+	<li>
+	<b>WSDL Ports</b>
+	<br>WSDL ports for the composite application are represented in this area of the CASA Editor.
+	</li>
+	<li><b>JBI Modules</b>
+	<br>JBI Service Engines for the composite application are represented in this area of the CASA Editor.
+	</li>
+	<li>
+	<b>External Modules</b>
+	<br>Services available from external applications are represented in this section of the Design Area. If the External Modules section is not visible, you might have to enlarge the Design Area window or use the horizontal scroll bar.
+	</li>
+</ul>
+
 <h3>Palette</h3>
-<p>When the Design view is active, the <a href="palette.html" title="Design View Palette">Palette</a> contains three sections: WSDL Bindings, Service Units, and Endpoints. </p>
+<p>
+When the Design View is active, the Palette window is visible. The Palette window contains the following types of artifacts, which you can add to a composite application.
+</p>
+<ul>
+	<li>
+	<b>WSDL Bindings</b>
+	<br>The available WSDL Binding types are listed in the WSDL Bindings section of the Palette. These represent WSDL ports that can be added to a composite application. To add a new WSDL port of a specific binding type, drag a WSDL Binding palette item to the WSDL Ports section of the Design Area.
+	</li>
+	<li>
+	<b>Service Units</b>
+	<br>A Service Unit represents a deployed service from another composite application. To specify an external service, drag the External SU icon to the External Modules section of the Design Area. If the External Modules section is not visible, it becomes visible during the drag operation. You must define the properties of an external Service Unit before it can be configured for the composite application.
+	</li>
+	<li><b>Endpoints</b>
+	<br>Consumer and provider endpoints that can be used to configure an external Service Unit.</li>
+</ul>
+
+
+
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="about-casa.html" title="About the CASA Editor">About the CASA Editor</a></dd>
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>
+<!--
 <table cellpadding="150" border="0"> 
 <tr><td>&nbsp;</td></tr> 
 <tr><td>&nbsp;</td></tr> 
 <tr><td>&nbsp;</td></tr> 
 </table> 
+-->
 </body>
 </html>

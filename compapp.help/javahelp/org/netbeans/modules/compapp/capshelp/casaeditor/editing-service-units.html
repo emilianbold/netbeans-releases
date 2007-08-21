@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+	<title>Connecting to External Services</title>
+	<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<!--	
+	<link rel="stylesheet" href="ide.css" type="text/css">
+-->
+
+	<style>
+	.comment {color:blue;}
+	.change-bar {border-left: thin; border-left-style: solid; border-color:black; padding-left: 6px}
+	.deleted {text-decoration: line-through}
+	</style>
+</head>
+<body>
+<h2>Connecting to External Services</h2>
+<p>
+Use the CASA Editor to connect to deployed services available from another composite application. You can connect to external services by dragging a deployed service unit to the External Modules section of the CASA Editor.
+</p>
+<p>
+You can also drag an external Service Unit from the Palette to the External Modules section. After you drag the external Service Unit, you must configure it before it can be connected to components in the composite application.
+</p>
+<p>
+The following procedures assume you have deployed an additional composite application that contains services to which you want to connect.
+</p>
+
+<p><b>To connect to deployed services from another composite application:</b></p>
+<ol>
+	<li>If the CASA Editor is not open, in the Project window right-click your composite application and select Edit Application Configuration.</li>
+	<li>
+	Open the Services window and expand the following nodes:
+	<br><tt>Servers&nbsp;>&nbsp;GlassFish V2&nbsp;>&nbsp;JBI&nbsp;>&nbsp;Service &nbsp;Assemblies</tt>
+	</li>
+	<li>Expand the node of the Service Assembly to which you want to connect.</li>
+	<li>
+	Select the desired Service Unit and drag it to the External Modules area of the CASA Editor.
+	<br><b>Note: </b>You can only drop Service Units representing services, not Binding Components.
+	</li>
+	<li>
+	Add any Consume or Provide endpoints you might need to the Service Unit by dragging the endpoints from the Palette.
+	</li>
+	<li>
+	Connect the Service Unit to a JBI module or a WSDL Binding.
+	<br>You might have to first define the interface to a WSDL Binding before you connect to the binding. For more information, refer to <a href="connections.html">Connecting Composite Application Components</a>.
+	</li>
+	<li>
+	Select the Edit icon of the external Service Unit to view or edit its properties.
+	<br>You can also use the <a href="navigator.html">Navigator window</a> for advanced editing of the composite application.
+	</li>
+</ol>
+
+
+<p><b>To add and configure an external Service Unit:</b></p>
+<ol>
+	<li>From the Palette, select the icon for an external Service Unit.
+	</li>
+	<li>
+	Drag the icon for the Service Unit to the External Modules section of the Design Area.
+	<br>If the External Modules section is not visible, it becomes visible during the drag operation.
+	</li>
+	<li>
+	Add any Consume or Provide endpoints you might need to the Service Unit by dragging the endpoints from the Palette.
+	</li>
+	<li>
+	Connect the Service Unit to a JBI module or a WSDL Binding.
+	<br>You might have to first define the interface to a WSDL Binding before you connect to the binding. For more information, refer to <a href="connections.html">Connecting Composite Application Components</a>.
+	</li>
+	<li>
+	Select the Edit icon of the external Service Unit to view or edit its properties.
+	<br>You can also use the <a href="navigator.html">Navigator window</a> for advanced editing of the composite application.
+	</li>
+</ol>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="about-casa.html" title="About the CASA Editor">About the CASA Editor</a></dd>
+<dd><a href="editing-binding.html" title="Adding and Configuring WSDL Bindings">Adding and Configuring WSDL Bindings</a></dd>
+<dd><a href="navigator.html" title="Viewing and Editing the Composite Application in the Navigator Window">Viewing and Editing the Composite Application in the Navigator Window</a></dd>
+<dd><a href="connections.html" title="Connecting Composite Application Components">Connecting Composite Application Components</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="150" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>
