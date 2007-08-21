@@ -287,6 +287,22 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 		return true;
 	}
 	
+	public String getNextAvailableComponentName(String name) {
+		String next = name;
+		int count = 1;
+		while (!isComponentNameAvailable(next)) {
+			next = name;
+			if (count < 100) {
+				next += "0";
+			}
+			if (count < 10) {
+				next += "0";
+			}
+			next += count++;
+		}
+		return next;
+	}
+	
 	public Scene getSceneByName(String name) {
 		for (Iterator iter = this.scenes.iterator(); iter.hasNext();) {
 			Scene scene = (Scene) iter.next();
