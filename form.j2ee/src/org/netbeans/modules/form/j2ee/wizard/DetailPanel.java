@@ -214,17 +214,17 @@ public class DetailPanel implements WizardDescriptor.Panel {
 
         includeLabel.setText(org.openide.util.NbBundle.getMessage(DetailPanel.class, "LBL_DetailFieldsToInclude")); // NOI18N
 
-        detailLabel.setText("Create Detail Area as:");
+        detailLabel.setText(org.openide.util.NbBundle.getMessage(DetailPanel.class, "LBL_DetailType")); // NOI18N
 
         buttonGroup.add(fieldsChoice);
         fieldsChoice.setSelected(true);
-        fieldsChoice.setText("Textfields");
+        fieldsChoice.setText(org.openide.util.NbBundle.getMessage(DetailPanel.class, "LBL_DetailTextfields")); // NOI18N
         fieldsChoice.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         fieldsChoice.setMargin(new java.awt.Insets(0, 0, 0, 0));
         fieldsChoice.addActionListener(formListener);
 
         buttonGroup.add(tableChoice);
-        tableChoice.setText("Table");
+        tableChoice.setText(org.openide.util.NbBundle.getMessage(DetailPanel.class, "LBL_DetailTable")); // NOI18N
         tableChoice.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         tableChoice.setMargin(new java.awt.Insets(0, 0, 0, 0));
         tableChoice.addActionListener(formListener);
