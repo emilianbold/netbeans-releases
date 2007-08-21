@@ -128,6 +128,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_DOWNLOAD);
         setProperty(ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY,
                 DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_EXTRACT);
+        setProperty(ERROR_CANNOT_CHECK_SPACE_PROPERTY,
+                DEFAULT_ERROR_CANNOT_CHECK_SPACE);
     }
     
     @Override
@@ -395,7 +397,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 }
             } catch (NativeException e) {
                 ErrorManager.notifyError(
-                        "Cannot check the free disk space",
+                        ResourceUtils.getString(ComponentsSelectionPanel.class, 
+                        panel.getProperty(ERROR_CANNOT_CHECK_SPACE_PROPERTY)),                        
                         e);
             }
             
@@ -1028,6 +1031,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             "error.not.enough.space.to.download"; // NOI18N
     public static final String ERROR_NO_ENOUGH_SPACE_TO_EXTRACT_PROPERTY =
             "error.not.enough.space.to.extract"; // NOI18N
+    public static final String ERROR_CANNOT_CHECK_SPACE_PROPERTY =
+            "error.cannot.check.space"; // NOI18N
     
     public static final String DEFAULT_ERROR_NO_CHANGES =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
@@ -1053,6 +1058,9 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_EXTRACT =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
             "CSP.error.not.enough.space.to.extract"); // NOI18N
+    public static final String DEFAULT_ERROR_CANNOT_CHECK_SPACE =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.cannot.check.space"); // NOI18N
     
     public static final long REQUIRED_SPACE_ADDITION =
             10L * 1024L * 1024L; // 10MB
