@@ -53,7 +53,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         this.project = project;
     }
     
-    private static void addFile(FileObject projectDirectory, String fileName, List/*<FileObject>*/ result) {
+    private static void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
         FileObject file = projectDirectory.getFileObject(fileName);
         
         if (file != null) {
@@ -136,24 +136,10 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
 	project.getReferenceHelper().fixReferences(originalPath);
     }
     
-    private static boolean isParent(File folder, File fo) {
-        if (folder.equals(fo))
-            return false;
-        
-        while (fo != null) {
-            if (fo.equals(folder))
-                return true;
-            
-            fo = fo.getParentFile();
-        }
-        
-        return false;
-    }
-    
     private void fixDistJarProperty (final String newName) {
         ProjectManager.mutex().writeAccess(new Runnable () {
             public void run () {
-                ProjectInformation pi = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
+                ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
                 String oldDistJar = pi == null ? null : "${dist.dir}/"+PropertyUtils.getUsablePropertyName(pi.getDisplayName())+".jar"; //NOI18N
                 EditableProperties ep = project.getUpdateHelper().getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 String propValue = ep.getProperty("dist.jar");  //NOI18N
