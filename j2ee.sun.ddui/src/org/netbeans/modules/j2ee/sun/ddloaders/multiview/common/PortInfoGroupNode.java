@@ -25,6 +25,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.PortInfo;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 
@@ -86,6 +87,17 @@ public class PortInfoGroupNode extends NamedBeanGroupNode {
 //    }
     
     // ------------------------------------------------------------------------
+    // Support for DescriptorReader interface implementation
+    // ------------------------------------------------------------------------
+    @Override 
+    protected CommonBeanReader getModelReader() {
+        String serviceRefName = getParentNodeName();
+        NamedBeanGroupNode serviceRefGroupNode = getParentGroupNode();
+        String ejbName = serviceRefGroupNode != null ? serviceRefGroupNode.getParentNodeName() : null;
+        return new PortComponentRefMetadataReader(serviceRefName, ejbName);
+    }
+    
+    // ------------------------------------------------------------------------
     // BeanResolver interface implementation
     // ------------------------------------------------------------------------
     public CommonDDBean createBean() {
@@ -97,18 +109,18 @@ public class PortInfoGroupNode extends NamedBeanGroupNode {
     }
 
     public void setBeanName(CommonDDBean sunBean, String newName) {
-        throw new UnsupportedOperationException("Can't set name of port-info this way");
+        ((PortInfo) sunBean).setServiceEndpointInterface(newName);
     }
 
     public String getSunBeanNameProperty() {
-        throw new UnsupportedOperationException("No name property for port-info");
+        return PortInfo.SERVICE_ENDPOINT_INTERFACE;
     }
 
     public String getBeanName(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean standardBean) {
-        throw new UnsupportedOperationException("No binding for port-info (yet)");
+        return ((org.netbeans.modules.j2ee.dd.api.common.PortComponentRef) standardBean).getServiceEndpointInterface();
     }
 
     public String getStandardBeanNameProperty() {
-        throw new UnsupportedOperationException("No name property for bound port-info (yet?)");
+        return STANDARD_PORTCOMPONENT_REF_NAME;
     }
 }
