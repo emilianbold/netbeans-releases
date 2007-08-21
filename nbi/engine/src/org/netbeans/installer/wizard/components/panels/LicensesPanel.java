@@ -57,6 +57,8 @@ public class LicensesPanel extends WizardPanel {
         
         setProperty(ACCEPT_CHECKBOX_TEXT_PROPERTY,
                 DEFAULT_ACCEPT_CHECKBOX_TEXT);
+        setProperty(ERROR_CANNOT_GET_LOGIC_PROPERTY,
+                DEFAULT_ERROR_CANNOT_GET_LOGIC);
     }
     
     @Override
@@ -153,7 +155,7 @@ public class LicensesPanel extends WizardPanel {
                     }
                 } catch (InitializationException e) {
                     ErrorManager.notifyError(
-                            "Could not access configuration logic",
+                            component.getProperty(ERROR_CANNOT_GET_LOGIC_PROPERTY),
                             e);
                 }
                 text.append(StringUtils.CRLFCRLF);
@@ -228,6 +230,8 @@ public class LicensesPanel extends WizardPanel {
     // Constants
     public static final String ACCEPT_CHECKBOX_TEXT_PROPERTY =
             "accept.checkbox.text"; // NOI18N
+    public static final String ERROR_CANNOT_GET_LOGIC_PROPERTY = 
+            "error.cannot.get.logic";//NOI18N
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(LicensesPanel.class,
@@ -239,4 +243,7 @@ public class LicensesPanel extends WizardPanel {
     public static final String DEFAULT_ACCEPT_CHECKBOX_TEXT =
             ResourceUtils.getString(LicensesPanel.class,
             "LP.accept.checkbox.text"); // NOI18N
+    public static final String DEFAULT_ERROR_CANNOT_GET_LOGIC =
+            ResourceUtils.getString(LicensesPanel.class,
+            "LP.error.cannot.get.logic"); // NOI18N
 }
