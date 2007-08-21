@@ -48,7 +48,7 @@ public class ResultsWindowTest extends NbTestCase {
         
         JPopupMenuOperator jpmo = n.callPopup();
         jpmo.pushMenu(Utilities.RUN_FILE);
-        Utilities.takeANap(4000);
+        Utilities.takeANap(7000);
         ResultWindowOperator rwo = new ResultWindowOperator();
         assertTrue("Junit Output window should be visible", rwo.isVisible());
         rwo.close(); //close it

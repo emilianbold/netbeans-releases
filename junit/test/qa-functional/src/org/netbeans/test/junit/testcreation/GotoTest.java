@@ -146,6 +146,7 @@ public class GotoTest extends NbTestCase {
                 "see: http://www.netbeans.org/issues/show_bug.cgi?id=88599",
                 jmio.isEnabled());
         jbo.pushMenu(sf);
+        Utilities.takeANap(3000);
         EditorOperator eot = new EditorOperator("GoSuite"); //test suite for the package
         assertTrue("Test suite for \"" + TEST_PACKAGE_PACKAGEGOTO_NAME +
                  "\" (GoSuite.java) not opened!", eot.isVisible());
