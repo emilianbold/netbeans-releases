@@ -586,6 +586,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         }
         // end
         
+        // #94319 - shorten workdir path if the following is too long
+        // "Manager.getWorkDirPath()+File.separator+getClass().getName()+File.separator+name"
         int len1 = Manager.getWorkDirPath().length();
         String clazz = getClass().getName();
         int len2 = clazz.length();
@@ -717,61 +719,12 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     /** Deletes all files including subdirectories in test's working directory.
      * @throws IOException if any problem has occured during deleting files/directories
      */
-    public void clearWorkDir() throws IOException {;
+    public void clearWorkDir() throws IOException {
         synchronized (logStreamTable) {
             File workdir = getWorkDir();
             closeAllStreams();
             deleteSubFiles(workdir);
         }
-    }
-    
-    
-    // Logging stuff
-    
-    
-    
-    
-    /** return PrintStream poiting at the log file. If the file cannot be created
-     * (see getLogFile), PrintStream constructed from System.out is used.
-     *
-     * @return PrintStream to the log
-     */
-/*
- 
-    public PrintStream getLog() {
-       OutputStream logStream;
-       try {
-           logStream = new FileOutputStream(getLogFile());
-       } catch (IOException ioe) {
-           // if we can log to file, at least log to system.out
-           logStream = System.out;
-       }
-       return new PrintStream(logStream,true);
-    }
- */
-    
-    /*
-     * get log file
-     */
-    /** Tries to create log file for a particular test method. This file is
-     * located under working directory of the method (see getWorkDir method) and
-     * has name methodname.log.
-     * @throws IOException if the logfile cannot be created
-     * @return log file
-     */
-    /*
-    public File getLogFile() throws IOException {
-        String logFilename = getName() + ".log";
-        File logFile = new File(getWorkDir(),logFilename);
-        return logFile;
-    }
-     */
-    // we need to close all logs
-    
-    
-    private OutputStream gettOutputStreamInWorkDir(String filename) throws IOException {
-        File aStreamFile = new File(getWorkDir(),filename);
-        return null;
     }
     
     private String lastTestMethod=null;
@@ -799,7 +752,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             } else {
                 if (logStreamTable.containsKey(logName)) {
                     //System.out.println("Getting stream from cache:"+logName);
-                    return (PrintStream)logStreamTable.get(logName);
+                    return logStreamTable.get(logName);
                 }
             }
             // we didn't used this log, so let's create it
