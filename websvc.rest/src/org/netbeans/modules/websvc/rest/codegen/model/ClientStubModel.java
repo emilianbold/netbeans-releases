@@ -500,6 +500,10 @@ public class ClientStubModel {
             this.isRoot = isRoot;
         }
         
+        public boolean isReference() {
+            return getName() != null && getName().endsWith("Ref");
+        }
+        
         protected JavaSource getSource() {
             return this.src;
         }
