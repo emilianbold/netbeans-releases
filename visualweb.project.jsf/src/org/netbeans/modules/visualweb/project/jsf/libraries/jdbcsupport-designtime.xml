@@ -25,11 +25,6 @@ Microsystems, Inc. All Rights Reserved.
     <localizing-bundle>org.netbeans.modules.visualweb.project.jsf.libraries.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/rowset.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/sqlx.jar!/</resource>        
-    </volume>
-    <volume>
-        <type>javadoc</type>
-        <resource>jar:nbinst:///docs/rowset-doc.zip!/</resource>
     </volume>
 </library>
