@@ -510,11 +510,15 @@ public final class FileUtil extends Object {
     public static FileObject toFileObject(File file) {
         boolean asserts = false;
         assert asserts = true;
-        if (asserts && !file.equals(normalizeFile(file))) {
-            throw new IllegalArgumentException(
-                "Parameter file was not " + // NOI18N
-                "normalized. Was " + file + " instead of " + normalizeFile(file)
-            ); // NOI18N
+        if (asserts) {
+            File normFile = normalizeFile(file);
+            if (!file.equals(normFile)) {
+                Logger.getLogger(FileUtil.class.getName()).log(Level.WARNING, null, new IllegalArgumentException(
+                "Parameter file was not " + // NOI18N   
+                "normalized. Was " + file + " instead of " + normFile
+                ));
+            }
+            file = normFile;
         }
 
         FileObject retVal = null;
