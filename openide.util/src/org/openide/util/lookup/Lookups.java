@@ -107,7 +107,8 @@ public class Lookups {
      * from time to time. The returned lookup checks every time somebody calls
      * <code>lookup</code> or <code>lookupItem</code> method whether the
      * provider still returns the same lookup. If not, it updates state of
-     * all <code>Lookup.Result</code>s that it created (and that still exists).
+     * all {@link org.openide.util.Lookup.Result}s 
+     * that it created (and that still exists).
      * <P>
      * The user of this method has to implement its provider's <code>getLookup</code>
      * method (must be thread safe and fast, will be called often and from any thread)
@@ -115,7 +116,8 @@ public class Lookups {
      * changes the return value from the <code>getLookup</code> method and wants
      * to notify listeners on the lookup about that it should trigger the event
      * firing, for example by calling <code>lookup.lookup (Object.class)</code>
-     * that forces check of the return value of <code>getLookup</code>.
+     * directly on the lookup returned by this method
+     * that forces a check of the return value of {@link org.openide.util.Lookup.Provider#getLookup}</code>.
      *
      * @param provider the provider that returns a lookup to delegate to
      * @return lookup delegating to the lookup returned by the provider
