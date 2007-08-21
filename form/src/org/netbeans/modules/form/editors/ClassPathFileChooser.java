@@ -400,7 +400,7 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
     private FileObject getRoot(FileObject fo) {
         if (fo != null) {
             for (FileObject root : packageRoots) {
-                if (FileUtil.isParentOf(root, fo))
+                if (root == fo || FileUtil.isParentOf(root, fo))
                     return root;
             }
         }
@@ -433,10 +433,12 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
             FileObject[] roots = r.getRoots();
             if (roots.length > 0) {
                 for (FileObject fo : roots) {
-                    Node n = createPackageRootNode(fo, project, filter);
-                    if (n != null) {
-                        packageRoots.add(fo);
-                        nodeList.add(n);
+                    if (!onlySources || fo.canWrite()) { // if sources then writable sources
+                        Node n = createPackageRootNode(fo, project, filter);
+                        if (n != null) {
+                            packageRoots.add(fo);
+                            nodeList.add(n);
+                        }
                     }
                 }
             }
