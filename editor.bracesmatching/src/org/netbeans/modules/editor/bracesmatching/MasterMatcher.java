@@ -144,9 +144,12 @@ public final class MasterMatcher {
             int maxBwdLookahead = getMaxLookahead(true);
             int maxFwdLookahead = getMaxLookahead(false);
 
+            boolean documentLocked = DocumentUtilities.isReadLocked(document);
+            
             if (task != null) {
                 // a task is running, perhaps just add a new job to it
-                if (lastResult.getCaretOffset() == caretOffset && 
+                if (!documentLocked &&
+                    lastResult.getCaretOffset() == caretOffset &&
                     lastResult.getAllowedDirection() == allowedSearchDirection &&
                     lastResult.getCaretBias() == caretBias &&
                     lastResult.getMaxBwdLookahead() == maxBwdLookahead &&
@@ -166,9 +169,14 @@ public final class MasterMatcher {
                 lastResult = new Result(document, caretOffset, allowedSearchDirection, caretBias, maxBwdLookahead, maxFwdLookahead);
                 lastResult.addNavigationJob(caret, select);
 
-                // Fire up a new task
-                task = PR.post(lastResult);
-                waitFor = task;
+                if (documentLocked) {
+                    // To prevent deadlocks as in #110500 we will run the task synchronously
+                    lastResult.run();
+                } else {
+                    // Fire up a new task
+                    task = PR.post(lastResult);
+                    waitFor = task;
+                }
             }
         }
         
