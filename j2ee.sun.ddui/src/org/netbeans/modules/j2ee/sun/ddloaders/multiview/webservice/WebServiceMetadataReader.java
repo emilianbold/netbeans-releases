@@ -93,7 +93,7 @@ public class WebServiceMetadataReader extends CommonBeanReader {
                     PortComponent [] ports = webServiceDesc.getPortComponent();
                     if(ports != null && ports.length > 0) {
                         Map<String, Object> portGroupMap = new HashMap<String, Object>();
-                        webServiceDescMap.put(DDBinding.PROP_PORT, portGroupMap);
+                        webServiceDescMap.put(DDBinding.PROP_PORTCOMPONENT, portGroupMap);
                         for(PortComponent port: ports) {
                             String portName = port.getPortComponentName();
                             if(Utils.notEmpty(portName)) {

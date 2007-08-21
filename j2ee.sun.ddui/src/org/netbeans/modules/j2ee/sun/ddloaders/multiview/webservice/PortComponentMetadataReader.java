@@ -48,7 +48,7 @@ public class PortComponentMetadataReader extends CommonBeanReader {
     private String parentName;
     
     public PortComponentMetadataReader(final String parentName) {
-        super(DDBinding.PROP_PORT);
+        super(DDBinding.PROP_PORTCOMPONENT);
         this.parentName = parentName;
     }
     
