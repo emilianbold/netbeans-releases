@@ -1597,7 +1597,7 @@ public class InteractionManager {
                 // "ancestor" is the currently selected component
                 // we're over: "cycle" outwards
 //                DesignBean parent = null;
-                Element parentComponentRootElement = null;
+//                Element parentComponentRootElement = null;
 
 //                MarkupDesignBean ancestorMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(ancestor);
 //                if (webform.getActions().canSelectParent(ancestor.getDesignBean())) {
@@ -1606,10 +1606,11 @@ public class InteractionManager {
 //                if (SelectionManager.canSelectParent(ancestorMarkupDesignBean)) {
                 Element ancestorComponentRootElement = CssBox.getElementForComponentRootCssBox(ancestor);
 //                if (SelectionManager.canSelectParent(ancestorComponentRootElement)) {
-                if (canSelectParent(ancestorComponentRootElement)) {
+//                if (canSelectParent(ancestorComponentRootElement)) {
 //                    parent = ancestorMarkupDesignBean.getBeanParent();
-                    parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(ancestorComponentRootElement);
-                }
+//                    parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(ancestorComponentRootElement);
+//                }
+                Element parentComponentRootElement = getSelectableParent(ancestorComponentRootElement);
 
                 boolean found = false;
 
@@ -2358,7 +2359,13 @@ public class InteractionManager {
 //                    SelectionManager.selectParent(WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)defaultSelectionBean));
 //                }
 //                SelectionManager.selectParent(getDefaultSelectionComponentRootElement());
-                webform.getSelection().selectComponent(getDefaultSelectionComponentRootElement());
+                // XXX #111692 Selecting parent.
+                // FIXME Duplicates code in designer/jsf/../SelectParentAction, unify.
+                Element defaultSelectionComponent = getDefaultSelectionComponentRootElement();
+                Element selectableParent = getSelectableParent(defaultSelectionComponent);
+                if (selectableParent != null) {
+                    webform.getSelection().selectComponent(selectableParent);
+                }
             }
         }
 
@@ -3095,9 +3102,10 @@ public class InteractionManager {
     
 
     /** XXX Copied from DesignerActions and SelectionManager later. */
-    private static boolean canSelectParent(/*DesignBean designBean*/Element componentRootElement) {
+//    private boolean canSelectParent(/*DesignBean designBean*/Element componentRootElement) {
+    private Element getSelectableParent(/*DesignBean designBean*/Element componentRootElement) {
         if (componentRootElement == null) {
-            return false;
+            return null;
         }
 
 //        DesignBean designBean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
@@ -3119,18 +3127,25 @@ public class InteractionManager {
         Element parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(componentRootElement);
 
 //        while (parent != null) {
-        if (parentComponentRootElement != null) {
+        while (parentComponentRootElement != null) {
+            
+            // XXX #111692 No corresponding box?
+            if (ModelViewMapper.findBox(webform.getPane().getPageBox(), parentComponentRootElement) == null) {
+                parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(parentComponentRootElement);
+                continue;
+            }
+            
 //            if (parent == model.getRootBean()) {
 //            if (parent == designContext.getRootContainer()) {
             if (WebForm.getDomProviderService().isRootContainerComponent(parentComponentRootElement)) {
-                return false;
+                return null;
             }
 
 //            if (Util.isSpecialBean(/*webform, */parent)) {
 //            if (parent instanceof MarkupDesignBean && WebForm.getDomProviderService().isSpecialComponent(
 //                    WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent))) {
             if (WebForm.getDomProviderService().isSpecialComponent(parentComponentRootElement)) {
-                return false;
+                return null;
             }
 
             /* No longer necessary
@@ -3140,10 +3155,10 @@ public class InteractionManager {
                 parent = parent.getLiveParent();
             }
              */
-            return true;
+            break;
         }
 
-        return false;
+        return parentComponentRootElement;
     }
     
     
