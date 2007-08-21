@@ -86,6 +86,8 @@ import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.sun.api.CmpMappingProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -610,6 +612,17 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             } else {
                 try {
                     grabInnerDM(false);
+                    if (null == domainDir) {
+                        DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
+                        domainDir =  dmProps.getLocation();
+                        if ("".equals(domainDir)) {
+                            isLocal = false;
+                        }
+                        String domainName = dmProps.getDomainName();
+                        domainDir = new File(domainDir).getCanonicalPath();
+                        domainDir += File.separator +
+                                domainName;
+                    }
                     if (isLocal()){// if the server is local, make sure we are talking to the correct one
                         //we do that by testing the server location known by the IDE with the server location known by the
                         // server
@@ -624,14 +637,6 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                             File domainLocationAsReturnedByTheServer = new File(dir).getParentFile();
                             
                             String l1 =  domainLocationAsReturnedByTheServer.getCanonicalPath();
-                            if (null == domainDir) {
-                                DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
-                                domainDir =  dmProps.getLocation();
-                                String domainName = dmProps.getDomainName();
-                                domainDir = new File(domainDir).getCanonicalPath();
-                                domainDir += File.separator +
-                                        domainName;
-                            }
                             
                             if (l1.equals(domainDir)==false){ //not the same location, so let's make sure we do not reutrn an invalid target
                                 
@@ -656,6 +661,8 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                         Thread.currentThread().setContextClassLoader(origClassLoader);
                         
                     }
+                } catch (IOException ioe) {
+                    Logger.getLogger(SunDeploymentManager.class.getName()).log(Level.FINER, null, ioe);
                 } finally {
                     releaseInnerDM();
                 }
