@@ -112,12 +112,12 @@ public class WebServiceGroupNode extends NamedBeanGroupNode {
     // ------------------------------------------------------------------------
     @Override
     public Map<String, Object> readDescriptor() {
-        CommonBeanReader reader = getAnnotationReader();
+        CommonBeanReader reader = getModelReader();
         return reader != null ? reader.readDescriptor(getWebServicesRootDD()) : null;
     }
     
     @Override 
-    protected CommonBeanReader getAnnotationReader() {
+    protected CommonBeanReader getModelReader() {
         return new WebServiceMetadataReader();
     }
     

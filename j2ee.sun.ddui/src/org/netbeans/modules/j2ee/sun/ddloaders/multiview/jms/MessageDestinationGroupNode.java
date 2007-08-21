@@ -116,7 +116,7 @@ public class MessageDestinationGroupNode extends NamedBeanGroupNode {
     // Support for DescriptorReader interface implementation
     // ------------------------------------------------------------------------
     @Override 
-    protected CommonBeanReader getAnnotationReader() {
+    protected CommonBeanReader getModelReader() {
         return new MessageDestinationMetadataReader();
     }
     
