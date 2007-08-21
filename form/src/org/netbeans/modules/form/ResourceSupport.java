@@ -932,8 +932,8 @@ public class ResourceSupport {
             && (force
                 || (!isI18nAutoMode()
                     && (isResourceAutoMode()
-                        || resourceService.projectUsesResources(getSourceFile()))))
-                        && !isAutoNamedProperty(prop))
+                        || resourceService.projectUsesResources(getSourceFile()))
+                    && !isAutoNamedProperty(prop))))
         {
             return resourceService.createResourcePanel(prop.getValueType(), getSourceFile());
         }
