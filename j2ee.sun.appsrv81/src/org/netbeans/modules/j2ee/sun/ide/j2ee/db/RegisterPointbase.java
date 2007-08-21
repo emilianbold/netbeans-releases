@@ -270,7 +270,14 @@ public class RegisterPointbase implements DatabaseRuntime {
         
         public void run() {
             try {
-                if ("".equals(DerbySupport.getLocation())) {
+                String loc = DerbySupport.getLocation();
+                File locFile = null;
+                if (null != loc) {
+                    locFile = new File(loc);
+                }
+                if ("".equals(loc)) {
+                    DerbySupport.setLocation(installDir.getAbsolutePath());
+                } else if (null != locFile && (!locFile.exists() || locFile.isFile())) {
                     DerbySupport.setLocation(installDir.getAbsolutePath());
                 } else if (null == derb) {
                     //  The user has an incorrect value in here
