@@ -380,7 +380,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     
     /**
      * Refreshes statuses of all files in the view. It does
-     * that by issuing the "svn status -u" command, updating the cache
+     * that by issuing the "hg status -mardui" command, updating the cache
      * and refreshing file nodes.
      */
     private void onRefreshAction() {
@@ -697,6 +697,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jPanel1 = new javax.swing.JPanel();
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
+        btnRefresh = new javax.swing.JButton();
         btnDiff = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         btnCommit = new javax.swing.JButton();
@@ -729,6 +730,15 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jPanel2.add(jSeparator2);
+
+        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/refresh.png"))); // NOI18N
+        btnRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
+        btnRefresh.setMaximumSize(new java.awt.Dimension(28, 28));
+        btnRefresh.setMinimumSize(new java.awt.Dimension(28, 28));
+        btnRefresh.setPreferredSize(new java.awt.Dimension(22, 25));
+        btnRefresh.addActionListener(this);
+        jPanel2.add(btnRefresh);
+        btnRefresh.getAccessibleContext().setAccessibleName("Refresh Status");
 
         btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/diff.png"))); // NOI18N
         btnDiff.setToolTipText(bundle.getString("CTL_Synchronize_Action_Diff_Tooltip")); // NOI18N
@@ -783,13 +793,20 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         if (evt.getSource() == btnDiff) {
             VersioningPanel.this.btnDiffActionPerformed(evt);
         }
-        else if (evt.getSource() == btnUpdate) {
-            VersioningPanel.this.btnUpdateActionPerformed(evt);
-        }
         else if (evt.getSource() == btnCommit) {
             VersioningPanel.this.btnCommitActionPerformed(evt);
         }
+        else if (evt.getSource() == btnUpdate) {
+            VersioningPanel.this.btnUpdateActionPerformed(evt);
+        }
+        else if (evt.getSource() == btnRefresh) {
+            VersioningPanel.this.btnRefreshActionPerformed(evt);
+        }
     }// </editor-fold>//GEN-END:initComponents
+
+private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
+        onRefreshAction();
+}//GEN-LAST:event_btnRefreshActionPerformed
     
     private void btnDiffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDiffActionPerformed
         onDiffAction();
@@ -807,6 +824,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCommit;
     private javax.swing.JButton btnDiff;
+    private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnUpdate;
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
