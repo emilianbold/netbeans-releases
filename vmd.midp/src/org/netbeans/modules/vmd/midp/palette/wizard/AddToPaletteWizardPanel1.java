@@ -45,7 +45,7 @@ public class AddToPaletteWizardPanel1 implements WizardDescriptor.Panel {
     }
 
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx (AddToPaletteWizardPanel1.class);
     }
 
     public boolean isValid() {

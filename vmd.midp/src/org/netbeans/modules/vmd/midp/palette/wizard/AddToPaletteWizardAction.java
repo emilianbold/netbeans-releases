@@ -116,7 +116,7 @@ public final class AddToPaletteWizardAction extends CallableSystemAction {
     }
 
     public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx (AddToPaletteWizardAction.class);
     }
 
     protected boolean asynchronous() {
