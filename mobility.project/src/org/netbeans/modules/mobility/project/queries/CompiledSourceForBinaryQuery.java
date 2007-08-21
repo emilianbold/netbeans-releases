@@ -162,7 +162,13 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             
         }
         
-        return new R(helper);
+        try {
+            URL distRoot = helper.resolveFile("dist").toURI().toURL(); //NOI18N
+            URL buildRoot = helper.resolveFile("build").toURI().toURL(); //NOI18N
+            if (J2MEProjectUtils.isParentOf(distRoot, binaryRoot) || J2MEProjectUtils.isParentOf(buildRoot, binaryRoot)) 
+                return new R(helper);
+        } catch (MalformedURLException mue) {}
+        return null;
     }
     
 }
