@@ -88,18 +88,6 @@ public class FreeConnectionWidget extends ConnectionWidget {
     }
 
     /**
-     * Returns a control point at a specific index.
-     * @param index the index in the list of control points
-     * @return the control point at specified index; null, if the connection widget does not have control points
-     * @throws ArrayIndexOutOfBoundsException when index is out of bounds
-     */
-    public Point getControlPoint (int index) {
-        List<Point> controlPoints=getControlPoints();
-        if (controlPoints.size () <= 0) return null;
-        return new Point (controlPoints.get (index));
-    }
-
-    /**
      * Sets a sensitivity.
      * @param createSensitivity the sensitivity for adding a control point
      * @param deleteSensitivity the sensitivity for removing a control point
