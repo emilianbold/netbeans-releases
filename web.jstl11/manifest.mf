@@ -4,4 +4,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/jstl11/Bundle.propert
 OpenIDE-Module-Specification-Version: 2.8
 OpenIDE-Module-Implementation-Version: 1.1.2
 OpenIDE-Module-Layer: org/netbeans/modules/web/jstl11/layer.xml
+AutoUpdate-Show-In-Client: false
 

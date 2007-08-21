@@ -112,6 +112,20 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.visualweb.errorhandler</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>2.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.visualweb.errorhandler.client</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>2.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.visualweb.extension.openide</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -170,6 +184,13 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.visualweb.libs.portletapi</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>2.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.visualweb.libs.rowset</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>2.0</specification-version>
@@ -239,6 +260,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.visualweb.samples.bundled</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.visualweb.web.ui.appbase</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -256,6 +283,18 @@
                     <code-name-base>org.netbeans.modules.visualweb.webui.designtime</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
+                        <specification-version>2.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.visualweb.webui.jsf.defaulttheme</code-name-base>
+                    <run-dependency>
+                        <specification-version>2.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.visualweb.webui.themes</code-name-base>
+                    <run-dependency>
                         <specification-version>2.0</specification-version>
                     </run-dependency>
                 </dependency>

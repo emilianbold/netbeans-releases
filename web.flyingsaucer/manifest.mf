@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.web.flyingsaucer/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/flyingsaucer/Bundle.properties
 OpenIDE-Module-Specification-Version: 1
 OpenIDE-Module-Implementation-Version: 1
+AutoUpdate-Show-In-Client: false
 
