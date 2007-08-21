@@ -72,12 +72,6 @@
     <!-- TODO find out what this is for -->
     <mapID target="org.netbeans.modules.subversion.client.SvnClientExceptionHandler" url="pending.html" />
 
-    <!-- Browse Repository Folders dialog (called from Checkout wizard, 2nd panel) -->
-    <mapID target="org.netbeans.modules.subversion.ui.browser.checkout" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
-
-    <!-- Search Revisions dialog (called from Checkout wizard, 2nd panel) -->
-    <mapID target="org.netbeans.modules.subversion.ui.search.checkout" url="svnmodule/csh/svn_search_rev_dialog.html" />
-
     <!-- Checkout wizard, panel 1 -->	
     <mapID target="org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.checkout" url="svnmodule/csh/svn_chkout_wizard_p1.html" />
 
@@ -87,7 +81,7 @@
     <!-- Commit dialog -->
     <mapID target="org.netbeans.modules.subversion.ui.commit.CommitAction" url="svnmodule/csh/svn_commit_dialog.html" />
 
-    <!-- Create Copy dialog -->
+    <!-- Copy dialog -->
     <mapID target="org.netbeans.modules.subversion.ui.copy.CreateCopy" url="svnmodule/csh/svn_copyto_dialog.html" />
 
     <!-- Subversion Diff window -->
@@ -96,8 +90,12 @@
     <!-- Subversion Import wizard, step 1 -->
     <mapID target="org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.import" url="svnmodule/csh/svn_import_wizard_p1.html" />
  
-    <!-- Subversion Import wizard, step 2 TODO: FIX TARGET -->
-    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction$ImportStep" url="svnmodule/csh/svn_import_wizard_p2.html" />
+    <!-- Subversion Import wizard, step 2 -->
+    <mapID target="org.netbeans.modules.subversion.ui.wizards.importstep.ImportStep" url="svnmodule/csh/svn_import_wizard_p2.html" />
+
+    <!-- Subversion Import wizard, step 3 currently shares target with step 2  -->
+    <!-- TODO: request unique target -->
+    <!-- <mapID target="" url="svnmodule/csh/svn_import_wizard_p3.html" /> -->
 
     <!-- Subversion Property Editor -->
     <mapID target="org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction" url="svnmodule/csh/svn_prop_editor.html" />
@@ -112,8 +110,8 @@
     <mapID target="org.netbeans.modules.subversion.ui.update.RevertModifications" url="svnmodule/csh/svn_revert_mod_dialog.html" />
 
     <!-- Subversion Search History window -->
-    <mapID target="org.netbeans.modules.subversion.ui.browser.searchhistory" url="svnmodule/csh/svn_history_viewer.html" />
- 
+    <mapID target="org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent" url="svnmodule/csh/svn_history_viewer.html" />
+
     <!-- Subversion Switch To dialog -->
     <mapID target="org.netbeans.modules.subversion.ui.copy.SwitchTo" url="svnmodule/csh/svn_switch_dialog.html" />
 
@@ -123,8 +121,55 @@
     <!-- Subversion Property Editor -->
     <mapID target="org.netbeans.modules.subversion.options.SvnOptionsController" url="svnmodule/csh/svn_prop_editor.html" />
 
+    <!-- Subversion Options window -->
+    <!-- TODO: get target (currently: 'netbeans.optionsDialog.advanced.ant') -->
+    <!-- <mapID target"" url="svnmodule/csh/svn_options.html" /> -->
+
     <!-- Subversion menu -->
     <mapID target="org.netbeans.modules.subversion.ui.status.OpenVersioningAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+
+    <!-- Search Revisions dialog (i.e. Search button) -->
+ 
+        <!-- Checkout wizard -->
+        <mapID target="org.netbeans.modules.subversion.ui.search.checkout" url="svnmodule/csh/svn_search_rev_dialog.html" />
+
+        <!-- Copy dialog -->
+        <mapID target="org.netbeans.modules.subversion.ui.search.copy" url="svnmodule/csh/svn_search_rev_dialog.html" />
+
+        <!-- Switch dialog -->
+        <mapID target="org.netbeans.modules.subversion.ui.search.switch" url="svnmodule/csh/svn_search_rev_dialog.html" />
+
+        <!-- Merge dialog -->
+        <mapID target="org.netbeans.modules.subversion.ui.search.merge" url="svnmodule/csh/svn_search_rev_dialog.html" />
+
+        <!-- Revert Modifications dialog -->
+        <mapID target="org.netbeans.modules.subversion.ui.search.revert" url="svnmodule/csh/svn_search_rev_dialog.html" />
+
+        <!-- TODO: find out what this target is for -->
+        <mapID target="org.netbeans.modules.subversion.ui.search.urlpattern" url="svnmodule/csh/svn_search_rev_dialog.html" />
+
+    <!-- Browse Repository Folders dialog (i.e. Browse button) -->
+
+        <!-- Checkout wizard -->
+        <mapID target="org.netbeans.modules.subversion.ui.browser.checkout" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
+
+        <!-- Copy dialog -->
+        <mapID target="org.netbeans.modules.subversion.ui.browser.copy" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
+
+        <!-- Switch dialog -->
+        <mapID target="org.netbeans.modules.subversion.ui.browser.switchto" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
+
+        <!-- Merge dialog -->
+        <mapID target="org.netbeans.modules.subversion.ui.browser.merge" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
+
+        <!-- Import wizard -->
+        <mapID target="org.netbeans.modules.subversion.ui.browser.import" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
+
+        <!-- Search History window -->
+        <mapID target="org.netbeans.modules.subversion.ui.browser.searchhistory" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
+
+        <!-- TODO: find out what this target is for -->
+        <mapID target="org.netbeans.modules.subversion.ui.browser.urlpattern" url="svnmodule/csh/svn_browse_rep_folders_dialog.html" />
 
 </map>
 
