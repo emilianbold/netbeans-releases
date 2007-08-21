@@ -122,8 +122,7 @@
     <mapID target="org.netbeans.modules.subversion.options.SvnOptionsController" url="svnmodule/csh/svn_prop_editor.html" />
 
     <!-- Subversion Options window -->
-    <!-- TODO: get target (currently: 'netbeans.optionsDialog.advanced.ant') -->
-    <!-- <mapID target"" url="svnmodule/csh/svn_options.html" /> -->
+    <!-- <mapID target="org.netbeans.modules.subversion.options.SvnOptionsController" url="svnmodule/csh/svn_options.html" /> -->
 
     <!-- Subversion menu -->
     <mapID target="org.netbeans.modules.subversion.ui.status.OpenVersioningAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
