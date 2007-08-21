@@ -645,4 +645,5 @@
 	<mapID target="webapps_quickref" url="web/about/webapps_quickref.html"/>
 	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html"/>
 	<mapID target="projraveweb_svc_web_services_process" url="web_svc/web_services_process.html"/>
+	<mapID target="projraveui_elements_dialogs_resolve_ref_probs_db" url="ui_elements/dialogs/resolve_ref_probs_db.html"/>
 </map>

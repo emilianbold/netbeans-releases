@@ -65,14 +65,6 @@
 				<file title="theme_structure.html"/>
 				<file title="webform.html"/>
 			</directory>
-			<directory title="config_setup">
-				<directory title="CVS">
-					<file title="Entries"/>
-					<file title="Repository"/>
-					<file title="Root"/>
-					<file title="Template"/>
-				</directory>
-			</directory>
 			<directory title="connect_data">
 				<directory title="CVS">
 					<file title="Entries"/>
@@ -439,6 +431,7 @@
 					<file title="number_converter_db.html"/>
 					<file title="property_binding_db.html"/>
 					<file title="resolve_data_source_db.html"/>
+					<file title="resolve_ref_probs_db.html"/>
 					<file title="theme_switch_info_db.html"/>
 					<file title="virtual_forms_db.html"/>
 				</directory>
@@ -1187,7 +1180,6 @@
 				<file title="web_services_process.html"/>
 			</directory>
 			<file title="credits.html"/>
-			<file title="no_topic.html"/>
 			<file title="rave_nbpack-idx.xml"/>
 			<file title="rave_nbpack-toc.xml"/>
 			<file title="rave_nbpack.hs"/>
