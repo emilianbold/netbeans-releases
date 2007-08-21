@@ -132,7 +132,7 @@
     <!-- End of "WSIT" section -->
 
 <!--Start of web service CSH -->
-	<mapID target="org.netbeans.modules.websvc.registry.ui.AddWebServiceDlg" url="webservice/csh/AddWebServiceDlg.html" />
+	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="webservice/csh/AddWebServiceDlg.html" />
 	<mapID target="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor" url="webservice/csh/wizards/WebServiceClientWizardDescriptor.html" />
 	<mapID target="org.netbeans.modules.websvc.dev.wizard.WebServiceTypePanel" url="webservice/csh/wizards/WebServiceWizardDescriptor.html" />
         <mapID target="org.netbeans.modules.websvc.dev.wizard.WebServiceFromWSDLPanel" url="webservice/csh/wizards/WebServiceWizardFromWSDLDescriptor.html" />
