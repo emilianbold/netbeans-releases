@@ -51,29 +51,26 @@ public class PortInfoNode extends NamedBeanNode {
         
         String sei = portInfo.getServiceEndpointInterface();
         if(Utils.notEmpty(sei)) {
-//            builder.append("Endpoint: ");
             builder.append(sei);
-        }
-        
-        WsdlPort wsdlPort = portInfo.getWsdlPort();
-        if(wsdlPort != null) {
-            String nsuri = wsdlPort.getNamespaceURI();
-            String localPart = wsdlPort.getLocalpart();
-            
-            if(Utils.notEmpty(nsuri)) {
-                if(builder.length() > 0) {
-                    builder.append(", ");
+        } else {
+            WsdlPort wsdlPort = portInfo.getWsdlPort();
+            if(wsdlPort != null) {
+                String nsuri = wsdlPort.getNamespaceURI();
+                String localPart = wsdlPort.getLocalpart();
+
+                if(Utils.notEmpty(nsuri)) {
+//                    if(builder.length() > 0) {
+//                        builder.append(", ");
+//                    }
+                    builder.append(nsuri);
                 }
-//                builder.append("URI: ");
-                builder.append(nsuri);
-            }
-            
-            if(Utils.notEmpty(localPart)) {
-                if(builder.length() > 0) {
-                    builder.append(", ");
+
+                if(Utils.notEmpty(localPart)) {
+                    if(builder.length() > 0) {
+                        builder.append(", ");
+                    }
+                    builder.append(localPart);
                 }
-//                builder.append("Local Part: ");
-                builder.append(localPart);
             }
         }
         
