@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +81,9 @@ MouseListener {
         final NbEditorDocument doc = (NbEditorDocument) c.getDocument ();
         if (highlight != null) highlight.remove ();
         highlight = null;
-        if (!e.isControlDown ()) return;
+        if (((e.getModifiers() | e.getModifiersEx()) & InputEvent.CTRL_DOWN_MASK) != InputEvent.CTRL_DOWN_MASK) {
+            return;
+        }
 
         int offset = c.viewToModel (e.getPoint ());
         highlight (doc, offset);
