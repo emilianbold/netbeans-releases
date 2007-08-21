@@ -78,7 +78,7 @@ public class ScreenEditorView implements DataEditorView, DeviceListener {
     }
 
     public HelpCtx getHelpCtx () {
-        return null; // TODO
+        return new HelpCtx (ScreenEditorView.class);
     }
 
     public JComponent getVisualRepresentation () {

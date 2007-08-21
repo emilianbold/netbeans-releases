@@ -75,7 +75,7 @@ public class FlowEditorView implements DataEditorView {
     }
 
     public HelpCtx getHelpCtx () {
-        return null; // TODO
+        return new HelpCtx (FlowEditorView.class);
     }
 
     public JComponent getVisualRepresentation () {
