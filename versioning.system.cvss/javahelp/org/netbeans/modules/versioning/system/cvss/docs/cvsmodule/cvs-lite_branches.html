@@ -1,113 +1,121 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
     <head>
         <title>Working with Branches</title>
-        <link rel="StyleSheet"
-        href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
     </head>
+
     <body>
         <h2>Working with Branches</h2>
+        
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>The IDE's CVS support enables you to maintain different versions of
-        an entire code base using branches. Branches are created by attaching a
-        branch tag to a file or folder in the repository. When you modify files
-        in a branch it does not affect the files in the main code line or
-        "trunk". You can, however, merge any modifications you make in the
-        branch back to the trunk later.</p>
+        
+        <p>The IDE's CVS support enables you to maintain different versions of an entire 
+            code base using branches. Branches are created by attaching a branch tag to 
+            a file or folder in the repository. When you modify files in a branch it does 
+            not affect the files in the main code line or "trunk". You can, however, merge 
+            any modifications you make in the branch back to the trunk at a later stage.</p>
+            
         <h3>Checking out Branches</h3>
-        <p>If you need to edit files on a branch that already exists, you
-        can check out the branch to copy the files to a local working
-        directory. You must, however, create a new local working directory
-        within which to checkout the branch. </p>
+        
+        <p>If you need to edit files on a branch that already exists, you can check out 
+            the branch to copy the files to a local working directory. You must, however, 
+            create a new local working directory within which to checkout the branch.</p>
 
-        <p><b>To check out a branch to a local working directory:</b></p>
+        <h4>To check out a branch to a local working directory:</h4>
+        
         <ol>
-            <li>Choose CVS &gt; Checkout from the main menu.</li>
-            <li>On the first page of the CVS Checkout wizard, specify the
-            location of the CVS repository by choosing from the CVS Root drop-down
-            menu. If you are unfamiliar with the syntax, click the Edit button and
-            enter the required information in the Edit CVS Root dialog.</li>
-            <li>Enter your password in the Password field. </li>
-            <li>If you are using a proxy, click the Proxy Configuration button
-            and enter the required information. Click Next.<!--Note that by default the IDE sets this to Use System Proxy Settings.--> </li>
-            <li>On the Module to Checkout page, specify the files and directories
-            you want to check out in the Module field or click the Browse button to
-            choose from a list of all modules in the repository. </li>
+            <li>Choose Versioning &gt; CVS &gt; Checkout from the main menu.</li>
+            
+            <li>On the first page of the CVS Checkout wizard, specify the location of the 
+                CVS repository by choosing a preconfigured URL from the CVS Root drop-down 
+                menu. If you are unfamiliar with the syntax, click the Edit button and 
+                enter the required information in the Edit CVS Root dialog.</li>
+            <li>Enter your repository password in the Password field.</li>
+            <li>If you are using a proxy, click the Proxy Configuration button and enter
+                the required information. Click Next.</li>
+            <li>On the Module to Checkout page, specify the files and directories you
+                want to check out in the Module field or click the Browse button to
+                choose from a list of all modules in the repository.</li>
             <li>Specify the branch, revision number, or tag to checkout in the
-            Branch field or click the Browse button to choose from a list of all
-            branches in the repository.</li>
+                Branch field or click the Browse button to choose from a list of all
+                branches in the repository.</li>
             <li>Specify the local working directory into which you want to check
-            out the selected branches. Alternately, you can click the Browse button
-            to navigate to the desired directory on your system.</li>
-            <li>Click Finish to check out the files.</li>
-            <p>The IDE initiates the Checkout command for the branch. The IDE's
-            Status bar indicates the progress of the files downloading from the
-            branch to your local working directory.</p>
+                out the selected branches. Alternately, you can click the Browse 
+                button to navigate to the desired directory on your system.</li>
+            <li>Click Finish to check out the files. The IDE initiates the checkout 
+                command for the branch. The IDE's Status bar, displaying in the
+                lower right corner of the IDE, indicates the progress of the files 
+                downloading from the repository branch to your local working 
+                directory.</li>
         </ol>
+        
         <h3>Switching to a Branch</h3>
-        <p>If you want to switch a project, directory, or file to a branch that
-        already exists for stabilization or experimentation purposes, you can
-        do so using the Switch to Branch command.</p>
-        <p><b>To switch to a branch:</b></p>
+        
+        <p>If you want to switch a project, directory, or file to a branch that already 
+            exists for stabilization or experimentation purposes, you can do so using 
+            the Switch to Branch command.</p>
+            
+        <h4>To switch to a branch:</h4>
         <ol>
-            <li>In the Projects, Files, or Versioning window, right-click the
-            file or folder you want to be the root of your branch and choose CVS
-            &gt; Switch to Branch.</li>
-            <li>In the Switch to Branch dialog, enter a Branch name or click Browse to see
-            a list of available branches.</li>
-            <li>Click Switch.</li>
-            <p>The IDE moves the selected file to the specified branch by adding a branch tag.</p>
+            <li>In the Projects, Files, or Versioning window, right-click the file or 
+                folder you want to be the root of your branch and choose CVS &gt; Switch 
+                to Branch.</li>
+            <li>In the Switch to Branch dialog, enter a Branch name or click Browse to 
+                see a list of available branches.</li>
+            <li>Click Switch. The IDE moves the selected file to the specified branch 
+                by adding a branch tag.</li>
         </ol>
+        
         <h3>Creating a Branch</h3>
+        
         <p>If you want to work on a separate version of your file system for
-        stabilization or experimentation purposes, you can do so by creating a
-        branch. Branches are created by adding a branch tag to a project,
-        directory, or file revision.</p>
-        <p><b>To create a branch:</b></p>
+            stabilization or experimentation purposes, you can do so by creating a
+            branch. Branches are created by adding a branch tag to a project,
+            directory, or file revision.</p>
+            
+        <h4>To create a branch:</h4>
+        
         <ol>
-            <li>In the Projects, Files, or Versioning window, right-click the
-            file or folder you want to be the root of your branch and choose CVS
-            &gt; Branch.</li>
+            <li>In the Projects, Files, or Versioning window, right-click the file 
+                or folder you want to be the root of your branch and choose CVS
+                &gt; Branch.</li>
             <li>In the Branch dialog, enter a Branch name or click Browse to see
                 a list of available branches.</li>
             <li>If you want to tag the file or directory, select the Tag Before
-            Branching checkbox and enter a Tag name.</li>
+                Branching checkbox and enter a Tag name.</li>
             <li>If you want to switch to the new branch after creating it, select
-                the Switch to This Branch Afterwards checkbox. </li>
-            <li>Click Branch.</li>
-            <p>The IDE creates the branch by adding a branch tag to the selected
-            file or directory.</p>
+                the Switch to This Branch Afterwards checkbox.</li>
+            <li>Click Branch. The IDE creates the branch by adding a branch tag to 
+                the selected file or directory.</li>
         </ol>
+        
         <ul class="note">
-            <li>When you add a branch tag, the branch is created in the
-            repository immediately and does not require using the Commit command.</li>
+            <li>When you add a branch tag, the branch is created in the repository
+                immediately and does not require using the Commit command.</li>
         </ul>
-        <p>For more information on working with branches, see the CVS
-        documentation at:</p>
+        
+        <p>For more information on working with branches, see the CVS documentation at:</p>
+        
         <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-        <param name="content" value="http://ximbiot.com/cvs/wiki/index.php?title=CVS--Concurrent_Versions_System_v1.12.12.1"> <param
-        name="text" value="&lt;html&gt;&lt;u&gt;http://ximbiot.com/cvs/wiki/index.php?title=CVS--Concurrent_Versions_System_v1.12.12.1&lt;/u&gt;&lt;/html&gt;"> <param
-        name="textFontSize" value="medium"> <param name="textColor"
-        value="blue"> </object></p>
+                <param name="content" value="http://ximbiot.com/cvs/wiki/index.php?title=CVS--Concurrent_Versions_System_v1.12.12.1"> 
+                <param name="text" value="&lt;html&gt;&lt;u&gt;http://ximbiot.com/cvs/wiki/index.php?title=CVS--Concurrent_Versions_System_v1.12.12.1&lt;/u&gt;&lt;/html&gt;"> 
+                <param name="textFontSize" value="medium"> <param name="textColor" value="blue">
+            </object></p>
+            
         <dl>
-            <dt> <a name="seealso">See Also</a></dt>
-            <dd> <a href="cvs-lite_merge.html">Merging File Revisions from a
-            Branch</a></dd>
-            <dd> <a href="cvs-lite_updating.html">Updating Files in a Local
-            Working Directory</a></dd>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="cvs-lite_merge.html">Merging File Revisions from a Branch</a></dd>
+            <dd><a href="cvs-lite_updating.html">Updating Files in a Local Working Directory</a></dd>
             <dd> <a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
         </dl>
-        <hr> <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
     </body>
 </html>

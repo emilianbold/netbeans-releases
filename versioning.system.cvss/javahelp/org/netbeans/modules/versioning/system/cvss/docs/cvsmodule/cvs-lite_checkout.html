@@ -1,69 +1,87 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
     <head>
         <title>Checking Out Files from a Remote Repository</title>
-        <link rel="StyleSheet"
-        href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
     </head>
+
     <body>
         <h2>Checking Out Files from a Remote Repository</h2>
+        
         <p><small><a href="#seealso">See Also</a></small></p>
+        
         <p>In order to work on shared files located in a remote repository, you
-        need to copy the necessary files and directories to your local working
-        directory. This is done by checking out the files from the repository.</p>
+            need to copy the necessary files and directories to your local working
+            directory. This is done by checking out the files from the repository.</p>
+        
         <h4>To check out files from a remote repository:</h4>
+        
         <ol>
-            <li>Choose CVS &gt; Checkout from the main menu.</li>
-            <li>On the first page of the CVS Checkout wizard, specify the
-            location of the CVS repository by choosing it from the CVS Root
-            drop-down menu. If you are unfamiliar with the syntax, you can click
-            the Edit button and enter the required information using the dialog. </li>
-            <li>Enter your password in the Password field. </li>
+            <li>Choose Versioning &gt; CVS &gt; Checkout from the main menu.</li>
+            <li>On the first page of the CVS Checkout wizard, specify the location of 
+                the CVS repository by choosing it from the CVS Root drop-down menu. 
+                If you are unfamiliar with the syntax, you can click the Edit button 
+                and enter the required information using the dialog. For information
+                on supported CVS protocols, view <a href="#rootTypes">supported CVS 
+                root types</a> below.</li>
+            <li>Enter your password in the Password field.</li>
             <li>If you are using a proxy, click the Proxy Configuration button
-                and enter the required information. Click Next.<!--Note 
-                that by default the IDE sets this to Use System Proxy Settings.-->
-            </li>
-            <li>On the Module to Checkout page, specify the modules
-            you want to check out in the Module field or click the Browse button to
-            choose from a list of all modules in the repository. Note that if you 
-            do not specify a module, the entire repository will be checked out.</li>
-            <li>If you need to specify a specific branch, revision number, or tag
-            for the checkout, enter the information in the Branch field or click
-            the Browse button to choose from a list of all branches in the
-            repository.</li>
-            <li>Specify the local working directory into which you want to check
-            out the selected modules or branches. Alternately, you can click the
-            Browse button to navigate to the desired directory on your system.</li>
-            <li>Click Finish to check out the files.</li>
-            <p>The IDE initiates the Check out command and the IDE's Status bar
-            indicates the progress of the files downloading from the branch to your
-            local working directory.</p>
+                and enter the required information. Click Next.</li>
+            <li>On the Module to Checkout page, specify the modules you want to check 
+                out in the Module field or click the Browse button to choose from a 
+                list of all modules in the repository. Note that if you do not specify 
+                a module, the entire repository will be checked out.</li>
+            <li>If you need to specify a specific branch, revision number, or tag for 
+                the checkout, enter the information in the Branch field or click the 
+                Browse button to choose from a list of all branches in the repository.</li>
+            <li>Specify the local working directory into which you want to check out
+                the selected modules or branches. Alternately, you can click the Browse
+                button to navigate to the desired directory on your system.</li>
+            <li>Click Finish to check out the files. The IDE initiates the check out 
+                command and the IDE's Status bar, displayed in the lower right corner 
+                of the IDE, indicates the progress of the files downloading from the 
+                repository to your local working directory.</li>
         </ol>
+        
         <ul class="note">
             <li>If the checked-out sources contain a project, a dialog will appear 
-            prompting you to open them in the IDE. 
-            If the sources do not contain a project, the dialog will appear prompting 
-            you to create a new project from the sources and then 
-            open them in the IDE.</li>
+                prompting you to open them in the IDE. If the sources do not contain 
+                a project, the dialog will appear prompting you to create a new project 
+                from the sources and then open them in the IDE.</li>
         </ul>
+        
+        <h4><a name="rootTypes">The IDE directly supports the following CVS root types:</a></h4>
+	
+        <ul>
+            <li><strong>pserver</strong>. For connecting to pserver repositories.<br> 
+                <tt>:pserver:username@hostname:/repository_path</tt></li>
+            <li><strong>ext</strong>. For connecting to CVS repositories using SSH, etc.<br> 
+                <tt>:pserver:username@hostname:/repository_path</tt></li>
+        </ul>
+        
+        <p>The following root types require an external CVS executable:</p>
+        
+	<ul>
+            <li><strong>fork</strong>. For protocol access to local CVS repository<br> 
+                <tt>:fork:/repository_path</tt></li>    
+            <li><strong>local</strong>. For direct access to local CVS repository<br> 
+                <tt>:local:/repository_path</tt></li> 
+	</ul>
+        
         <dl>
-            <dt> <a name="seealso">See Also</a></dt>
-            <dd> <a href="cvs-lite_commit.html">Committing Local Changes to a
-            Remote Repository</a></dd>
-            <dd> <a href="cvs-lite_diff.html">Comparing File Revisions</a></dd>
-            <dd> <a href="cvs-lite_setup.html">Setting Up CVS</a></dd>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="cvs-lite_commit.html">Committing Local Changes to a Remote
+                Repository</a></dd>
+            <dd><a href="cvs-lite_diff.html">Comparing File Revisions</a></dd>
+            <dd><a href="cvs-lite_setup.html">Setting Up CVS</a></dd>
         </dl>
-        <hr> <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
     </body>
 </html>

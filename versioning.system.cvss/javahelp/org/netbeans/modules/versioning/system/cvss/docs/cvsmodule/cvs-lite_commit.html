@@ -1,93 +1,102 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
     <head>
         <title>Committing Local Changes to a Remote Repository</title>
-        <link rel="StyleSheet"
-        href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
     </head>
+    
     <body>
         <h2>Committing Local Changes to a Remote Repository</h2>
+        
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>Once your working copies of version-controlled files have been
-        edited, you can then place your changes into the repository using the
-        Commit command. </p>
-        <!--todo : mention adding and removing-->
+        
+        <p>Once your working copies of version-controlled files have been edited, you 
+            can then place your changes into the repository using the Commit command.</p>
+
         <ul class="note">
-            <li>Project directories must be located within a local working
-            directory that is registered with the IDE in order to call CVS commands
-            on them.</li>
+            <li>Project directories must be located within a local working directory 
+                that is registered with the IDE in order to call CVS commands on them.</li>
         </ul>
+        
         <h4>To commit changes in local files to a remote repository:</h4>
         <ol>
-            <li>In the Versioning window, confirm that you want to commit the listed files. </li>
-            <li>Ensure that your local copies of the files are up-to-date by
-            clicking the Update All button prior to committing your
-            changes. </li>
-            <li>Once the Update command has finished, commit the files by 
-            clicking the Commit All button. If the files you want to commit do not already
-            exist in the repository, the Commit command will add them.</li>
-            <li>Enter a message describing your changes in the CVS Commit dialog 
-            that appears.
-            <li>Click Commit.</li>
-            <p>The IDE executes the Commit command.</p>
+            <li>In the <a href="csh/cvs-lite_versioning_window.html">Versioning window</a>, 
+                confirm that you want to commit the listed files.</li>
+            <li>Ensure that your local copies of the files are up-to-date by clicking the 
+                Update All (<img src="images/update.png" alt="update all icon">) button 
+                prior to committing your changes.</li>
+            <li>Once the Update command has finished, commit the files by clicking the 
+                Commit All (<img src="images/commit.png" alt="commit all icon">) button. 
+                If the files you want to commit do not already exist in the repository, 
+                the Commit command will add them.</li>
+            <li>Enter a message describing your changes in the CVS Commit dialog that 
+                appears and click Commit. The IDE executes the Commit command and the
+                selected files are committed to the repository.</li>
         </ol>
         
         <ul class="note">
-            <li>You can also commit files or directories from the Projects window, 
-            Files window, or Favorites window by right-clicking the files or directories 
-            you wish to commit and choose CVS &gt; Commit.</li>
+            <li>You can also commit files or directories from the Projects window, Files 
+                window, or Favorites window by right-clicking the files or directories 
+                you wish to commit and choosing CVS &gt; Commit.</li>
         </ul>
-        
         
         <h3>Excluding Files from a Commit</h3>
-        <p>The IDE enables you to specify which files in your local working
-        directory are recognized when using CVS commands. Using the Exclude from Commit 
-        command, you can set the IDE to temporarily disregard files when making commits.</p>
+        
+        <p>The IDE enables you to specify which files in your local working directory 
+            are recognized when using CVS commands. Using the Exclude from Commit 
+            command, you can set the IDE to temporarily disregard files when making 
+            commits.</p>
+            
         <h4>To exclude local files in your working directory:</h4>
+        
         <ol>
-            <li>Select the files or directories you wish to ignore in the
-            Versioning window, Projects window, Files window, or Favorites window. </li>
-            <li>Right-click and choose CVS &gt; Exclude from Commit. Note that the 
-            command is unavailable for files that already exist in the repository.</li>
-            <p>The IDE displays the file or directory name in strikethrough text in  
-            the Versioning window and disregards the items whenever the Commit command is
-            is called. Note that the files remain excluded until you include them.</p>
-        </ol>        
+            <li>Select the files or directories you wish to ignore in the Versioning 
+                window, Projects window, Files window, or Favorites window.</li>
+            <li>Right-click and select the CVS &gt; Exclude from Commit option. If 
+                you have the <a href="csh/cvs-lite_versioning_window.html">Versioning 
+                window</a> opened, note that the IDE displays the file or directory 
+                name in strike-through text and disregards the item(s) whenever the 
+                commit command is called. Note that the files remain excluded until 
+                you include them.</li>
+        </ol>
+        
         <ul class="note">
             <li>To remove the exclude status from a file or directory, right-click the
-            and choose CVS > Include in Commit.</li>
+                selected file or directory, choose CVS and deselect the Exclude from 
+                Commit option.</li>
         </ul>
+        
         <h3>Ignoring Files</h3>
+        
         <p>If your local working directory includes files or directories that you 
-        do not want to place under version control, you can set the IDE to 
-        ignore them permanantly using the Ignore command. </p>
+            do not want to place under version control, you can set the IDE to 
+            ignore them permanantly using the Ignore command.</p>
+            
         <h4>To ignore local files in your working directory:</h4>
+        
         <ol>
-            <li>Select the files or directories you wish to ignore in the
-            Versioning window, Projects window, Files window, or Favorites window. </li>
-            <li>Right-click and choose CVS &gt; Ignore. Note that the Ignore
-            command is unavailable for files that already exist in the repository.</li>
-            <p>The IDE ignores the file or directory whenever CVS commands are
-            called on them or the directories within which they are stored.</p>
+            <li>Select the files or directories you wish to ignore in the Versioning
+                window, Projects window, Files window, or Favorites window.</li>
+            <li>Right-click and choose CVS &gt; Ignore. Note that the Ignore command 
+                is unavailable for files that already exist in the repository. The 
+                IDE ignores the file or directory whenever CVS commands are called 
+                on them or the directories within which they are stored.</li>
         </ol>
+        
         <dl>
-            <dt> <a name="seealso">See Also</a></dt>
-            <dd> <a href="cvs-lite_checkout.html">Checking Out Files from a
-            Remote Repository</a></dd>
-            <dd> <a href="cvs-lite_diff.html">Comparing File Revisions</a></dd>
-				<dd> <a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="cvs-lite_checkout.html">Checking Out Files from a Remote 
+                Repository</a></dd>
+            <dd><a href="cvs-lite_diff.html">Comparing File Revisions</a></dd>
+            <dd><a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
         </dl>
-        <hr> <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
     </body>
 </html>

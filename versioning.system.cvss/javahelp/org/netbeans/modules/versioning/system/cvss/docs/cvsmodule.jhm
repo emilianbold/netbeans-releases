@@ -73,7 +73,8 @@
 
         <!-- CSH topics for Versioning Panel in Options Window -->
         <mapID target="org.netbeans.modules.versioning.system.cvss.options.CvsOptionsController" url="cvsmodule/csh/cvs-lite_options_window.html" />
-        <mapID target="netbeans.optionsDialog.advanced.ant" url="cvsmodule/cvs/cvs-lite_add_var_dialog.html" />
+
+        <!-- <mapID target="netbeans.optionsDialog.advanced.ant" url="cvsmodule/cvs/cvs-lite_add_var_dialog.html" /> -->
 
 	<!-- TODO: where is this one -->
 	<mapID target="cvs-lite_importfolder_dialog" url="cvsmodule/csh/cvs-lite_importfolder_dialog.html" />
