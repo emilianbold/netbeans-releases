@@ -521,7 +521,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             "DP.error.cannot.get.logic"); // NOI18N
     public static final String DEFAULT_ERROR_CANNOT_CHECK_SPACE =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.error.cannot.check.space"); // NOI18N
+            "DP.error.cannot.check.space"); // NOI18N
     
     public static final String DEFAULT_DESTINATION =
             ResourceUtils.getString(DestinationPanel.class,
