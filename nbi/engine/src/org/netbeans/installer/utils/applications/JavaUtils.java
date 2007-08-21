@@ -75,11 +75,6 @@ public class JavaUtils {
             if (!probe.exists() || !probe.isFile()) {
                 return false;
             }
-            
-            probe = new File(javaHome, "jre/lib/jce.jar");
-            if (!probe.exists() || !probe.isFile()) {
-                return false;
-            }
         } else {
             probe = new File(javaHome, "lib/charsets.jar");
             if (!probe.exists() || !probe.isFile()) {
