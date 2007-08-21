@@ -22,10 +22,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -145,6 +149,45 @@ public class TopLoggingNbLoggerConsoleTest extends TopLoggingTest {
             Logger.getLogger("").removeHandler(h);
             
         }
+    }
+
+
+    public void testDeadlockConsoleAndStdErr() throws Exception {
+        ConsoleHandler ch = new ConsoleHandler();
+        
+        Logger root = Logger.getLogger("");
+        root.addHandler(ch);
+        try {
+            doDeadlockConsoleAndStdErr(ch);
+        } finally {
+            root.removeHandler(ch);
+        }
+    }
+    
+    private void doDeadlockConsoleAndStdErr(final ConsoleHandler ch) {
+        class H extends Handler implements Runnable {
+            public void publish(LogRecord record) {
+                try {
+                    RequestProcessor.getDefault().post(this).waitFinished(100);
+                } catch (InterruptedException ex) {
+                    // ex.printStackTrace();
+                }
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+            
+            public void run() {
+                ch.publish(new LogRecord(Level.WARNING, "run"));
+            }
+        }
+        H handler = new H();
+        Logger.getLogger("stderr").addHandler(handler);
+        
+        System.err.println("Ahoj");
     }
     
 }

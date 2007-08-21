@@ -47,6 +47,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -305,6 +306,9 @@ public final class TopLogging {
 
     /** Allows tests to flush all standard handlers */
     static void flush(boolean clear) {
+        System.err.flush();
+        
+        
         Handler s = streamHandler;
         if (s != null) {
             s.flush();
@@ -599,10 +603,11 @@ public final class TopLogging {
 
     /** a stream to delegate to logging.
      */
-    private static final class LgStream extends PrintStream {
+    private static final class LgStream extends PrintStream implements Runnable {
         private Logger log;
         private StringBuffer sb = new StringBuffer();
-        private ThreadLocal<Integer> FLUSHING = new ThreadLocal<Integer>();
+        private static RequestProcessor RP = new RequestProcessor("StdErr Flush");
+        private RequestProcessor.Task flush = RP.create(this, true);
 
         public LgStream(Logger log) {
             super(new ByteArrayOutputStream());
@@ -610,7 +615,7 @@ public final class TopLogging {
         }
 
         public void write(byte[] buf, int off, int len) {
-            if (FLUSHING.get() != null) {
+            if (RP.isRequestProcessorThread()) {
                 return;
             }
             sb.append(new String(buf, off, len));
@@ -622,40 +627,48 @@ public final class TopLogging {
         }
 
         public void write(int b) {
-            if (FLUSHING.get() != null) {
+            if (RP.isRequestProcessorThread()) {
                 return;
             }
             sb.append((char)b);
             checkFlush();
         }
 
-        private void checkFlush() {
+        @Override
+        public void flush() {
             try {
-                FLUSHING.set(1);
-                doFlush();
-            } finally {
-                FLUSHING.set(null);
+                flush.waitFinished(500);
+            } catch (InterruptedException ex) {
+                // ok, flush failed, do not even print
+                // as we are inside the System.err code
             }
+            super.flush();
         }
-        private void doFlush() {
-            boolean justNewLine = false;
+
+        
+        
+        private void checkFlush() {
+            flush.schedule(100);
+        }
+        
+        public void run() {
+            int lines = 0;
             for (;;) {
-                int first = sb.indexOf("\n"); // NOI18N
-                if (first < 0) {
-                    break;
+                String toLog;
+                synchronized (sb) {
+                    int first = sb.indexOf("\n"); // NOI18N
+                    if (first < 0) {
+                        break;
+                    }
+                    if (first == 0) {
+                        sb.delete(0, 1);
+                        toLog = "\n";
+                    } else {
+                        toLog = sb.substring(0, first + 1);
+                        sb.delete(0, first + 1);
+                    }
                 }
-                justNewLine = false;
-                if (first == 0) {
-                    justNewLine = true;
-                    sb.delete(0, 1);
-                    continue;
-                }
-                log.log(Level.INFO, sb.substring(0, first + 1));
-                sb.delete(0, first + 1);
-            }
-            
-            if (justNewLine) {
-                log.log(Level.INFO, "\n");
+                log.log(Level.INFO, toLog);
             }
         }
     } // end of LgStream

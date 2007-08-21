@@ -219,6 +219,7 @@ public class TopLoggingTest extends NbTestCase {
         System.err.println("Ahoj");
         System.err.println("Jardo");
         new IllegalStateException("Hi").printStackTrace();
+        System.err.flush();
 
         if (handler != null) {
             handler.flush();
@@ -246,6 +247,7 @@ public class TopLoggingTest extends NbTestCase {
         System.err.println("BEGIN");
         System.err.println("");
         System.err.println("END");
+        System.err.flush();
 
         if (handler != null) {
             handler.flush();
