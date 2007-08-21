@@ -127,7 +127,7 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         addRefreshable(new ItemEditorHelper(jTxtName, new EndpointTextFieldEditorModel(synchronizer, WebserviceEndpoint.PORT_COMPONENT_NAME)));
         addRefreshable(new ItemEditorHelper(jTxtEndpointAddressURI, new EndpointTextFieldEditorModel(synchronizer, WebserviceEndpoint.ENDPOINT_ADDRESS_URI)));
         if(!isWebApp && as90FeaturesVisible) {
-            addRefreshable(new ItemEditorHelper(jTxtRealm, new EndpointTextFieldEditorModel(synchronizer, LoginConfig.REALM)));
+            addRefreshable(new ItemEditorHelper(jTxtRealm, new RealmTextFieldEditorModel(synchronizer)));
         }
         addRefreshable(new TransportComboBoxHelper(synchronizer, jCbxTransportGuarantee));
         addRefreshable(new AuthMethodComboBoxHelper(synchronizer, jCbxAuthentication));
@@ -811,6 +811,38 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
         }
         
     }
+    
+    private class RealmTextFieldEditorModel extends DDTextFieldEditorModel {
+
+        public RealmTextFieldEditorModel(XmlMultiViewDataSynchronizer synchronizer) {
+            super(synchronizer, LoginConfig.REALM);
+        }
+        
+        protected CommonDDBean getBean() {
+            return getBean(false);
+        }
+        
+        @Override
+        protected CommonDDBean getBean(boolean create) {
+            WebserviceEndpoint endpoint = (WebserviceEndpoint) endpointNode.getBinding().getSunBean();
+            LoginConfig lc = endpoint.getLoginConfig();
+            if(create && lc == null) {
+                lc = endpoint.newLoginConfig();
+                endpoint.setLoginConfig(lc);
+            }
+            return lc;
+        }
+        
+        @Override
+        protected void setValue(String value) {
+            super.setValue(value);
+
+            // If this was a virtual bean, commit it to the graph.
+            if(endpointNode.addVirtualBean()) {
+                // update if necessary
+            }
+        }
+    }    
     
     private class DebugEnabledCheckboxHelper extends ItemCheckBoxHelper {
 
