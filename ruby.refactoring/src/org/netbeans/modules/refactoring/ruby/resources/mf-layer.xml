@@ -116,11 +116,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         -->
     </folder> 
-    <folder name="Services">
-        <folder name="org-netbeans-modules-refactoring-ruby">
-            <file name="options"/>
-        </folder>
-    </folder>
 <!--
     <folder name="Actions">
         <folder name="Refactoring">

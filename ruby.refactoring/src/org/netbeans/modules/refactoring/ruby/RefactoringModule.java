@@ -18,11 +18,8 @@
  */
 package org.netbeans.modules.refactoring.ruby;
 
-import java.io.IOException;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  * Module installation class for Refactoring module.
@@ -36,7 +33,7 @@ import org.openide.filesystems.Repository;
 public class RefactoringModule {
 
     /** Holds the file objects whose attributes represents options */
-    private static FileObject optionsFile = null;
+    private static Preferences preferences = NbPreferences.forModule(RefactoringModule.class);
 
     /**
      * Gets the attribute of options fileobject. Attribute name is represented
@@ -48,14 +45,8 @@ public class RefactoringModule {
      *
      * @return attribute value or defaultValue if attribute is not found
      */
-    public static Object getOption(String key, Object defaultValue) {
-        if (optionsFile == null) {
-            findOptionsFile();
-        }
-        if (optionsFile == null)
-            return defaultValue;
-        Object o = optionsFile.getAttribute(key);
-        return o != null ? o : defaultValue;
+    public static boolean getOption(String key, boolean defaultValue) {
+        return preferences.getBoolean(key, defaultValue);
     }
 
     /**
@@ -66,19 +57,15 @@ public class RefactoringModule {
      * @param key    key with which the specified value is to be associated.
      * @param value  value to be associated with the specified key.
      */
-    public static void setOption(String key, Object value) {
-        if (optionsFile == null) {
-            findOptionsFile();
-        }
-        try {
-            optionsFile.setAttribute(key, value);
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
+    public static void setOption(String key, boolean value) {
+        preferences.putBoolean(key, value);
     }
     
-    private static void findOptionsFile() {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        optionsFile = fs.findResource("Services/org-netbeans-modules-refactoring-ruby/options"); // NOI18N
+    public static void setOption(String key, int value) {
+        preferences.putInt(key, value);
+    }
+
+    public static int getOption(String key, int defaultValue) {
+        return preferences.getInt(key, defaultValue);
     }
 }
