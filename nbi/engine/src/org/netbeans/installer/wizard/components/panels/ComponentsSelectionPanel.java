@@ -397,8 +397,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 }
             } catch (NativeException e) {
                 ErrorManager.notifyError(
-                        ResourceUtils.getString(ComponentsSelectionPanel.class, 
-                        panel.getProperty(ERROR_CANNOT_CHECK_SPACE_PROPERTY)),                        
+                        panel.getProperty(ERROR_CANNOT_CHECK_SPACE_PROPERTY),
                         e);
             }
             
