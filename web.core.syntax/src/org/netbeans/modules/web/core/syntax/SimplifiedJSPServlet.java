@@ -33,13 +33,14 @@ import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
 
 /**
@@ -68,10 +69,8 @@ public class SimplifiedJSPServlet {
             + "\t\tPageContext pageContext\n"
             + ") throws javax.servlet.ServletException, java.io.IOException {\n\n"; //NOI18N
     private static final String CLASS_FOOTER = "\n\t}\n}"; //NOI18N
-    @Deprecated
-    private final JspSyntaxSupport sup;
-
     private final Document doc;
+    private final FileObject fobj;
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
 
     private String mergedScriptlets = null;
@@ -84,7 +83,14 @@ public class SimplifiedJSPServlet {
     /** Creates a new instance of ScripletsBodyExtractor */
     public SimplifiedJSPServlet(Document doc) {
         this.doc = doc;
-        sup = (JspSyntaxSupport) new JSPKit().createSyntaxSupport((BaseDocument) doc);
+        
+        if (doc != null){
+            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+            fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile(): null;
+        } else {
+            logger.log(Level.SEVERE, "Unable to find FileObject for document");
+            fobj = null;
+        }
     }
 
     public void process() throws BadLocationException {
@@ -151,7 +157,7 @@ public class SimplifiedJSPServlet {
     private String createBeanVarDeclarations() {
         StringBuilder beanDeclarationsBuff = new StringBuilder();
 
-        PageInfo.BeanData[] beanData = sup.getBeanData();
+        PageInfo.BeanData[] beanData = getBeanData();
 
         if (beanData != null) {
             for (PageInfo.BeanData bean : beanData) {
@@ -161,10 +167,50 @@ public class SimplifiedJSPServlet {
 
         return beanDeclarationsBuff.toString();
     }
+    
+    private String[] getImports() {
+        PageInfo pi = getPageInfo();
+        if (pi == null) {
+            //report error but do not break the entire CC
+            logger.log(Level.WARNING, null, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null!"));
+            return null;
+        }
+        List<String> imports = pi.getImports();
+        return imports.toArray(new String[imports.size()]);
+    }
+    
+    private PageInfo.BeanData[] getBeanData() {
+
+        PageInfo pageInfo = getPageInfo();
+        //pageInfo can be null in some cases when the parser cannot parse
+        //the webmodule or the page itself
+        if (pageInfo != null) {
+            return pageInfo.getBeans();
+        }
+
+        //TagLibParseSupport support = (dobj == null) ?
+        //null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
+        //return support.getTagLibEditorData().getBeanData();
+        return null;
+    }
+    
+    private PageInfo getPageInfo(){
+        JspParserAPI.ParseResult parseResult = JspUtils.getCachedParseResult(doc, fobj, true, false);
+        
+        if (parseResult != null) {
+            parseResult = JspUtils.getCachedParseResult(doc, fobj, false, false);
+            
+            if (parseResult != null){
+                return parseResult.getPageInfo();
+            }
+        }
+        
+        return null;
+    }
 
     private String createImportStatements() {
         StringBuilder importsBuff = new StringBuilder();
-        String[] imports = sup.getImports();
+        String[] imports = getImports();
 
         if (imports != null) {
             // TODO: better support for situation when imports is null
