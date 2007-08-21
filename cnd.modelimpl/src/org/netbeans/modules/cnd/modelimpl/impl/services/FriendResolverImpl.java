@@ -57,10 +57,15 @@ public class FriendResolverImpl extends CsmFriendResolver {
      *
      *  void friendDecl::foo() {
      *  }
-     *
+     * @param friendDecl declaration to check (not null)
+     * @param target class to check
      * @return true if 'friendDecl' is the declarated friend declaration of 'target'
+     * @throws IllegalArgumentException if friendDecl is null
      */
     public boolean isFriend(CsmOffsetableDeclaration friendDecl, CsmClass target) {
+        if (friendDecl == null) {
+            throw new IllegalArgumentException("friendDecl must not be null");
+        }
         CsmClass containingClass = null;
         if (CsmKindUtilities.isMethodDefinition(friendDecl)){
             CsmFunction decl = CsmBaseUtilities.getFunctionDeclaration((CsmFunction)friendDecl);

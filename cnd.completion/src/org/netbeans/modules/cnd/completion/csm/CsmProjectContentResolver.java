@@ -570,7 +570,7 @@ public final class CsmProjectContentResolver {
     private List/*<CsmMember>*/ getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kinds[], String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses) {
         assert (clazz != null);
         CsmVisibility minVisibility;
-        if (contextDeclaration == null && staticOnly) {
+        if (contextDeclaration == null) {
             // we are in global context and are interested in all static members
             minVisibility = CsmInheritanceUtilities.MAX_VISIBILITY;
         } else {
