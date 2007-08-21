@@ -77,10 +77,11 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     public static final String STANDARD_RESOURCE_ENV_REF_NAME = ResourceEnvRef.RESOURCE_ENV_REF_NAME; // e.g. "ResourceEnvRefName"
     public static final String STANDARD_SERVICE_REF_NAME = ServiceRef.SERVICE_REF_NAME; // e.g. "ServiceRefName"
     public static final String STANDARD_ROLE_NAME = SecurityRoleMapping.ROLE_NAME; // e.g. "RoleName"
-    public static final String STANDARD_PORT_NAME = WebserviceDescription.WEBSERVICE_DESCRIPTION_NAME; // e.g. "WebserviceDescriptionName"
+    public static final String STANDARD_PORTCOMPONENT_NAME = WebserviceDescription.WEBSERVICE_DESCRIPTION_NAME; // e.g. "WebserviceDescriptionName"
     public static final String STANDARD_WEBSERVICE_DESC_NAME = WebserviceDescription.WEBSERVICE_DESCRIPTION_NAME; // e.g. "WebserviceDescriptionName"
     public static final String STANDARD_MSGDEST_NAME = MessageDestination.MESSAGE_DESTINATION_NAME; // e.g. "MessageDestination"
     public static final String STANDARD_MSGDEST_REF_NAME = MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME; // e.g. "MessageDestinationRef"
+    public static final String STANDARD_PORTCOMPONENT_REF_NAME = "PortComponentRef"; // NOI18N
     
     private static RequestProcessor processor = new RequestProcessor("SunDDNodeBuilder", 1);
     
@@ -440,13 +441,13 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     // DescriptorReader implementation
     // ------------------------------------------------------------------------
     public Map<String, Object> readDescriptor() {
-        CommonBeanReader reader = getAnnotationReader();
+        CommonBeanReader reader = getModelReader();
         return reader != null ? reader.readDescriptor(getStandardRootDD()) : null;
     }
 
     public Map<String, Object> readAnnotations() {
         Map<String, Object> result = null;
-        CommonBeanReader reader = getAnnotationReader();
+        CommonBeanReader reader = getModelReader();
         if(reader != null) {
             SectionNodeView view = getSectionNodeView();
             XmlMultiViewDataObject dObj = view.getDataObject();
@@ -455,7 +456,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         return result;
     }
     
-    protected CommonBeanReader getAnnotationReader() {
+    protected CommonBeanReader getModelReader() {
         return null;
     }
     
@@ -479,6 +480,22 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
             }
         }
         return parentName;
+    }
+    
+    protected NamedBeanGroupNode getParentGroupNode() {
+        NamedBeanGroupNode parentGroupNode = null;
+        Node parentNode = getParentNode();
+        // Hack to bypass the references group node, but then this entire method is a hack.
+        if(parentNode instanceof ReferencesNode) {
+            parentNode = parentNode.getParentNode();
+        }
+        if(parentNode instanceof NamedBeanNode) {
+            parentNode = parentNode.getParentNode();
+            if(parentNode instanceof NamedBeanGroupNode) {
+                parentGroupNode = (NamedBeanGroupNode) parentNode;
+            }
+        }
+        return parentGroupNode;
     }
     
     /** -----------------------------------------------------------------------
