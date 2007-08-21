@@ -46,6 +46,7 @@ class Ordering {
     private static final String ATTR_POSITION = "position"; // NOI18N
 
     static List<FileObject> getOrder(Collection<FileObject> children, final boolean logWarnings) throws IllegalArgumentException {
+        LOG.log(Level.FINE, "getOrder for {0}", children); // NOI18N
         Iterator<FileObject> it = children.iterator();
         if (!it.hasNext()) {
             return Collections.emptyList();
@@ -105,6 +106,9 @@ class Ordering {
                 continue;
             }
             Object val = parent.getAttribute(attr);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("  reading attribute " + parent + "(" + attr + ") -> " + val); // NOI18N
+            }
             if (!Boolean.TRUE.equals(val)) {
                 if (logWarnings && /* somehow this can happen, not sure how... */ val != null && !(val instanceof Boolean)) {
                     LOG.warning("Encountered non-boolean relative ordering attribute " + val + " from " + attr + " on " + parent.getPath());

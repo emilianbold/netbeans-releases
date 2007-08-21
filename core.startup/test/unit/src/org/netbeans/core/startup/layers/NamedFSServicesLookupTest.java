@@ -20,6 +20,8 @@
 package org.netbeans.core.startup.layers;
 
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.core.startup.MainLookup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -34,13 +36,20 @@ import org.openide.util.lookup.NamedServicesLookupTest;
  */
 public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
     private FileObject root;
+    private Logger LOG;
     
     public NamedFSServicesLookupTest(String name) {
         super(name);
     }
+
+    protected Level logLevel() {
+        return Level.FINE;
+    }
     
     @Override
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("Test." + getName());
+        
         Lookup.getDefault().lookup(ModuleInfo.class);
         assertEquals(MainLookup.class, Lookup.getDefault().getClass());
 
@@ -70,6 +79,8 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
     }
     
     public void testOrderingAttributes() throws Exception {
+        LOG.info("creating instances");
+        
         FileObject inst = FileUtil.createData(root, "inst/ordering/X.instance");
         inst.setAttribute("instanceCreate", Long.valueOf(1000));
         FileObject inst2 = FileUtil.createData(root, "inst/ordering/A.instance");
@@ -79,23 +90,35 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
         FileObject inst4 = FileUtil.createData(root, "inst/ordering/C.instance");
         inst4.setAttribute("instanceCreate", Long.valueOf(700));
         
-        inst.getParent().setAttribute("A.instance/C.instance", Boolean.TRUE);
-        inst.getParent().setAttribute("C.instance/X.instance", Boolean.TRUE);
-        inst.getParent().setAttribute("X.instance/B.instance", Boolean.TRUE);
+        LOG.info("Adding attributes to parrent");
+        FileObject parent = inst.getParent();
+        parent.setAttribute("A.instance/C.instance", Boolean.TRUE);
+        parent.setAttribute("C.instance/X.instance", Boolean.TRUE);
+        parent.setAttribute("X.instance/B.instance", Boolean.TRUE);
         
         
+        LOG.info("About to create lookup");
         Lookup l = Lookups.forPath("inst/ordering");
+        LOG.info("querying lookup");
         Iterator<? extends Long> lng = l.lookupAll(Long.class).iterator();
+        LOG.info("checking results");
+        
         assertEquals(Long.valueOf(500), lng.next());
         assertEquals(Long.valueOf(700), lng.next());
         assertEquals(Long.valueOf(1000), lng.next());
         assertEquals(Long.valueOf(1500), lng.next());
+        
+        LOG.info("Order is correct");
 
         Iterator<? extends Lookup.Item<Long>> items = l.lookupResult(Long.class).allItems().iterator();
+        
+        LOG.info("Checking IDs");
         assertEquals("inst/ordering/A", items.next().getId());
         assertEquals("inst/ordering/C", items.next().getId());
         assertEquals("inst/ordering/X", items.next().getId());
         assertEquals("inst/ordering/B", items.next().getId());
+        
+        LOG.info("Ids ok");
     }
 
     public void testNumericOrdering() throws Exception {
