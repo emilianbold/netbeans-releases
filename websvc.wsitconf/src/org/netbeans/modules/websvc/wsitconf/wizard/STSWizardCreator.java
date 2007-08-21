@@ -28,6 +28,7 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +48,10 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -70,11 +75,16 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public class STSWizardCreator {
+    public static final String MEX_NAME = "com.sun.xml.ws.mex.server.MEXEndpoint";
 
     protected static final int JSE_PROJECT_TYPE = 0;
     protected static final int WEB_PROJECT_TYPE = 1;
     protected static final int EJB_PROJECT_TYPE = 2;
 
+    private static final String SERVLET_NAME = "ServletName";
+    private static final String SERVLET_CLASS = "ServletClass";
+    private static final String URL_PATTERN = "UrlPattern";
+    
     private int projectType;
 
     private Project project;
@@ -181,7 +191,7 @@ public class STSWizardCreator {
     }
     
     public void generateProviderImplClass(Project project, FileObject targetFolder,
-            String targetName, final WsdlService service, final WsdlPort port, URL wsdlURL) throws Exception{
+            String targetName, final WsdlService service, final WsdlPort port, URL wsdlURL) throws Exception {
         initProjectInfo(project);
         
         String serviceID = service.getName();
@@ -349,6 +359,43 @@ public class STSWizardCreator {
         
         targetSource.runModificationTask(task).commit();
             
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            try {
+                WebApp wApp = DDProvider.getDefault ().getDDRoot(wm.getDeploymentDescriptor());                    
+                Servlet servlet = Util.getServlet(wApp, serviceImplPath);
+                if (servlet == null) {      //NOI18N
+                    try {
+                        servlet = (Servlet)wApp.addBean("Servlet",              //NOI18N
+                                new String[]{SERVLET_NAME,SERVLET_CLASS},    
+                                new Object[]{targetName,serviceImplPath},SERVLET_NAME);
+                        servlet.setLoadOnStartup(new java.math.BigInteger("0"));               //NOI18N
+                        wApp.addBean("ServletMapping", new String[]{SERVLET_NAME,URL_PATTERN}, //NOI18N
+                                new Object[]{targetName, "/" + targetName},SERVLET_NAME);      //NOI18N
+                        try {
+                            servlet = (Servlet)wApp.addBean("Servlet",              //NOI18N
+                                    new String[]{SERVLET_NAME,SERVLET_CLASS},    
+                                    new Object[]{MEX_NAME,MEX_NAME},SERVLET_NAME);
+                            servlet.setLoadOnStartup(new java.math.BigInteger("0"));     //NOI18N
+                            } catch (NameAlreadyUsedException ex) {
+                            // do nothing, this is ok - there should be only one instance of this
+                        }
+                        wApp.addBean("ServletMapping", new String[]{SERVLET_NAME,URL_PATTERN}, //NOI18N
+                                new Object[]{MEX_NAME, "/" + targetName + "/mex"},URL_PATTERN);  //NOI18N
+                        wApp.write(wm.getDeploymentDescriptor());
+                    } catch (NameAlreadyUsedException ex) {
+                        ex.printStackTrace();
+                    } catch (ClassNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    servlet.setLoadOnStartup(new java.math.BigInteger("1"));
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
         //open in the editor
         DataObject dobj = DataObject.find(implClassFo);
         openFileInEditor(dobj);

@@ -64,6 +64,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.ui.service.profiles.UsernameAuthenticationProfile;
@@ -1091,5 +1093,16 @@ public class Util {
             return fobjs[0];
         }
         return null;
-    }    
+    }
+    
+    public static Servlet getServlet(WebApp wa, String className) {
+        Servlet[] servlets = wa.getServlet();
+        for (Servlet s : servlets) {
+            if (className.equals(s.getServletClass())) {
+                return s;
+            }
+        }
+        return null;
+    }
+        
 }

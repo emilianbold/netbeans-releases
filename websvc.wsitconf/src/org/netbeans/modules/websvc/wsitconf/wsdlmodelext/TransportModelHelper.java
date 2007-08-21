@@ -29,6 +29,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
+import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.mtom.MtomQName;
@@ -125,7 +126,7 @@ public class TransportModelHelper {
                     WebApp wApp = DDProvider.getDefault ().getDDRoot(wm.getDeploymentDescriptor());                    
                     if (jsr109) {
                         String servletClassName = s.getImplementationClass();       //NOI18N
-                        Servlet servlet = getServlet(wApp, servletClassName);
+                        Servlet servlet = Util.getServlet(wApp, servletClassName);
                         if (servlet == null) {      //NOI18N
                             try {
                                 String servletName = s.getName();
@@ -187,16 +188,6 @@ public class TransportModelHelper {
         return false;
     }
 
-    private static Servlet getServlet(WebApp wa, String className) {
-        Servlet[] servlets = wa.getServlet();
-        for (Servlet s : servlets) {
-            if (className.equals(s.getServletClass())) {
-                return s;
-            }
-        }
-        return null;
-    }
-    
    public static void removeTCP(Binding b) {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         OptimizedTCPTransport tcp = getOptimizedTCPTransport(p);
