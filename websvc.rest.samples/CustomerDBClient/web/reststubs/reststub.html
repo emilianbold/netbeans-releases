@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>REST Client Stubs</title>
+        <!-- JS_DECLARE_START - DO NOT REMOVE-->
+        <script type="text/javascript" src="./common/js/support.js"></script>
+	<script type='text/javascript' src='./CustomerDB/js/CustomerDB.js'></script>
+	<script type='text/javascript' src='./CustomerDB/js/customers.js'></script>
+	<script type='text/javascript' src='./CustomerDB/js/discountcodes.js'></script>
+	<script type='text/javascript' src='./CustomerDB/js/customer.js'></script>
+	<script type='text/javascript' src='./CustomerDB/js/discountcode.js'></script>
+        <!-- JS_DECLARE_END - DO NOT REMOVE-->
+    </head>
+    <body>
+
+    <h1>Test Page - Javascript client stub for RESTful Web Services.</h1>
+
+    <div id="containerContent"> </div>
+
+    <!-- JS_USAGE_START - DO NOT REMOVE-->
+
+	<!-- Using JavaScript files for project CustomerDB-->
+	<script language='Javascript'>
+		var str = '';
+		//Example test code for CustomerDB
+		str = '<h2>Resources:</h2><br><table border="1">';
+		var app = new CustomerDB();
+		var resources = app.getResources();
+		for(i=0;i<resources.length;i++) {
+		  var resource = resources[i];
+		  var uri = resource.getUri();
+		  str += '<tr><td valign="top"><a href="'+uri+'" target="_blank">'+uri+'</a></td><td>';
+		  var items  = resource.getItems();
+		  if(items != undefined) {
+		    for(j=0;j<items.length;j++) {
+		        var item = items[j];
+		        var uri2 = item.getUri();
+		        str += '<a href="'+uri2+'" target="_blank">'+uri2+'</a><br/>';
+		        str += '&nbsp;&nbsp;<font size="-3">'+item.toString()+'</font><br/>';
+		    }
+		  }
+		  str += '</td></tr>';
+		}
+		str += '</table><br>';
+		var n = document.getElementById('containerContent');
+		n.innerHTML = n.innerHTML + str;
+
+	</script>
+    <!-- JS_USAGE_END - DO NOT REMOVE--> 
+    
+    </body>
+</html>
