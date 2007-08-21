@@ -60,11 +60,11 @@ public class IconEditor extends ResourceWrapperEditor implements NamedPropertyEd
 
     protected void setValueToResourcePanel() {
         Object value = delegateEditor.getValue();
-        if (value instanceof NbImageIcon) {
+        if (value instanceof NbImageIcon || value == null) {
             NbImageIcon nbIcon = (NbImageIcon) value;
-            String stringValue = nbIcon.getName();
-            String resName = nbIcon.getType() == org.netbeans.modules.form.editors.IconEditor.TYPE_CLASSPATH ?
-                nbIcon.getName() : null;
+            String stringValue = nbIcon != null ? nbIcon.getName() : "${null}"; // NOI18N
+            String resName = (nbIcon != null && nbIcon.getType() == org.netbeans.modules.form.editors.IconEditor.TYPE_CLASSPATH)
+                    ? nbIcon.getName() : null;
             resourcePanel.setValue(nbIcon, stringValue, resName);
         }
     }
