@@ -275,7 +275,13 @@ public abstract class RestSupport {
         }
 
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        
+        if (sgs.length == 0) {
+            return;
+        }
+        
         FileObject sourceRoot = sgs[0].getRootFolder();
+        
         Library library = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
         if (library == null) {
             return;
