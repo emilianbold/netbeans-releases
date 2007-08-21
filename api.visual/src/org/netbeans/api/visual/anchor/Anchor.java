@@ -157,9 +157,17 @@ public abstract class Anchor implements Widget.Dependency {
     }
 
     /**
+     * Notifies when the anchor is going to be revalidated.
+     * @since 2.8
+     */
+    protected void notifyRevalidate () {
+    }
+
+    /**
      * This method is called by revalidation-change of related widget and notifies all entries about the anchor change.
      */
     public final void revalidateDependency () {
+        notifyRevalidate ();
         for (Entry entry : entries)
             entry.revalidateEntry ();
     }

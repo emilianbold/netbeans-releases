@@ -91,6 +91,14 @@ public class VMDNodeAnchor extends Anchor {
         requiresRecalculation = true;
     }
 
+    /**
+     * Notifies when the anchor is going to be revalidated.
+     * @since 2.8
+     */
+    protected void notifyRevalidate () {
+        requiresRecalculation = true;
+    }
+
     private void recalculate () {
         if (! requiresRecalculation)
             return;
@@ -159,6 +167,8 @@ public class VMDNodeAnchor extends Anchor {
                 y = bounds.y + (a + 1) * bounds.height / (len + 1);
             results.put (entry, new Result (new Point (x, y), vertical ? Direction.BOTTOM : Direction.RIGHT));
         }
+
+        requiresRecalculation = false;
     }
 
     private Entry[] toArray (final HashMap<Entry, Float> map) {

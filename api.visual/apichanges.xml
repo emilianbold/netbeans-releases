@@ -519,6 +519,21 @@
             <class package="org.netbeans.api.visual.graph.layout" name="GraphLayoutSupport" link="yes"/>
             <issue number="111339"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>Anchor.notifyRevalidate method</summary>
+            <version major="2" minor="8"/>
+            <date day="21" month="8" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                Missing Anchor.notifyRevalidate method has been added. Now the Anchor should receive all necessary notification.
+                It is used by VMDNodeAnchor too.
+            </description>
+            <class package="org.netbeans.api.visual.anchor" name="Anchor" link="yes"/>
+            <issue number="111987"/>
+        </change>
     </changes>
 
     <htmlcontents>
