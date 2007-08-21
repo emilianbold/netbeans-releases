@@ -17,7 +17,28 @@
         <a href="#seealso">See Also</a> 
     </small></p>
 
-    <p>tbd
+   The <a href="about_service_providers.html">service provider pattern</a> provides
+   a mechanism for accessing objects in other modules. In the IDE, you have
+   a browser to inspect the interfaces that
+   modules in the system expose. Then you can
+   use the browser to register implementations
+   of the exposed interfaces.
+    
+    
+    <p><b>To use the Service Provider Browser:</b>
+    <ol>
+        <li><a href="../create_plugin/projectlevel_create/create_module.html">Create a module project</a>.
+        <li>In the Projects window, expand the Important Files node.
+        <li>Expand the META-INF services node. The 
+        interfaces exposed by the system are displayed.
+        <li>To implement an interface, right-click it
+        and choose Add New Service. Browse to the
+        implementing class.
+        <p>When you click OK, the implementing
+        class is registered in the META-INF services
+        node and is available to your application.
+    </ol>
+
         
         
 <dl>
