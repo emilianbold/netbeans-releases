@@ -284,13 +284,15 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         
         public Object getValueAt(int row, int column) {
             Object result = null;
-            MethodModel.Variable parameter = parameters.get(row);
-            if (parameter != null) {
-                switch (column) {
-                    case COL_NAME_INDEX: result = parameter.getName(); break;
-                    case COL_TYPE_INDEX: result = parameter.getType(); break;
-                    case COL_FINAL_INDEX: result = parameter.getFinalModifier(); break;
-                    default:
+            if (row >= 0) {
+                MethodModel.Variable parameter = parameters.get(row);
+                if (parameter != null) {
+                    switch (column) {
+                        case COL_NAME_INDEX: result = parameter.getName(); break;
+                        case COL_TYPE_INDEX: result = parameter.getType(); break;
+                        case COL_FINAL_INDEX: result = parameter.getFinalModifier(); break;
+                        default:
+                    }
                 }
             }
             return result;

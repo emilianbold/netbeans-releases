@@ -256,7 +256,11 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
         
         public Object getValueAt(int row, int column) {
-            return exceptions.get(row);
+            Object result = null;
+            if (row >= 0) {
+                result = exceptions.get(row);
+            }
+            return result;
         }
         
         public String getColumnName(int column) {
