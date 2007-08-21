@@ -53,6 +53,7 @@
     <mapID target="apisupport_create_wizard" url="create_plugin/filelevel_create/create_wizard.html"/>
 	
     <mapID target="about_communicate" url="communicate_plugin/about_communicate.html"/>
+    <mapID target="about_service_providers" url="communicate_plugin/about_service_providers.html"/>
     <mapID target="using_service_provider_browser" url="communicate_plugin/using_service_provider_browser.html"/>
 	
     <mapID target="apisupport_building_plugins" url="build_plugin/building_plugins.html"/>
