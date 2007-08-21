@@ -137,6 +137,7 @@ implements FileChangeListener, DataObject.Container {
         fo.addFileChangeListener (WeakListener.fileChange (this, fo));
     }
  */
+    @Override
     public String toString () {
         return "FolderList{" + folder + "}"; // NOI18N
     }
@@ -222,6 +223,9 @@ implements FileChangeListener, DataObject.Container {
     */
     public DataObject[] getChildren () {
         List<DataObject> res = getChildrenList ();
+        if (res == null) {
+            return new DataObject[0];
+        }
         DataObject[] arr = new DataObject[res.size ()];
         res.toArray (arr);
         return arr;
@@ -878,6 +882,18 @@ implements FileChangeListener, DataObject.Container {
         public RequestProcessor.Task task;
 
         public void run () {
+            try {
+                computeResult();
+            } catch (Error t) {
+                err.log(Level.WARNING, "cannot compute data objects for " + folder, t); // NOI18N
+                throw t;
+            } catch (RuntimeException ex) {
+                err.log(Level.WARNING, "cannot compute data objects for " + folder, ex); // NOI18N
+                throw ex;
+            }
+        }
+        
+        private void computeResult() {
             final boolean LOG = err.isLoggable(Level.FINE);
             if (LOG) err.fine("ListTask.run 1 on " + folder);
             // invokes the refresh task before we do anything else
@@ -891,11 +907,12 @@ implements FileChangeListener, DataObject.Container {
 
             result = getObjects (filter);
             assert result != null;
-            err.fine("ListTask.run 3");
+            err.log(Level.FINE, "ListTask.run 3: {0}", result);
             
             folderCreated = true;
         }
         
+        @Override
         public String toString() {
             return "ListTask@" + Integer.toHexString(System.identityHashCode(this)) + "[" + folder + "]"; // NOI18N
         }
