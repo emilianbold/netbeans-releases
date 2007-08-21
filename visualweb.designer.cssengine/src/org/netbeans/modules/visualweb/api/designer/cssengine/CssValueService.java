@@ -121,6 +121,7 @@ public interface CssValueService {
     public boolean isVisibleValue(CssValue cssValue);
     
     public boolean isOfPrimitivePercentageType(CssValue cssValue);
+    public boolean isOfPrimitiveEmsType(CssValue cssValue);
     
     public CssValue getBothCssValueConstant();
     public CssValue getCollapseCssValueConstant();

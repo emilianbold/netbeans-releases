@@ -477,7 +477,7 @@ public class CssBox implements Box {
 //                        XhtmlCss.BACKGROUND_POSITION_INDEX));
             CssListValue cssPositionValue = CssProvider.getValueService().getComputedCssListValue(
                     CssProvider.getEngineService().getComputedValueForElement(element, XhtmlCss.BACKGROUND_POSITION_INDEX));
-            bgPainter = new BackgroundImagePainter(bgImage, cssRepeatValue, cssPositionValue);
+            bgPainter = new BackgroundImagePainter(bgImage, cssRepeatValue, cssPositionValue, element, webform.getDefaultFontSize());
         }
     }
 

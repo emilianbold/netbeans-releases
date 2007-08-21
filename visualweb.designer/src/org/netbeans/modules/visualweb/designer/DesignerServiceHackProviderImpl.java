@@ -1173,7 +1173,7 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
                         CssProvider.getEngineService().getComputedValueForElement(element, XhtmlCss.BACKGROUND_POSITION_INDEX));
 //                BackgroundImagePainter bgPainter =
 //                    new BackgroundImagePainter(bgImage, repeatValue, positionValue);
-                BackgroundImagePainter bgPainter = new BackgroundImagePainter(bgImage, cssRepeatValue, cssPositionValue);
+                BackgroundImagePainter bgPainter = new BackgroundImagePainter(bgImage, cssRepeatValue, cssPositionValue, element, defaultFontSize);
 
                 if (bgPainter != null) {
                     bgPainter.paint(og, 0, 0, width, height);

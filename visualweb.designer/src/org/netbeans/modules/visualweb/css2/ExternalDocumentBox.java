@@ -268,7 +268,7 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
                 CssListValue cssPositionValue = CssProvider.getValueService().getComputedCssListValue(
                         CssProvider.getEngineService().getComputedValueForElement(frameFormElement, XhtmlCss.BACKGROUND_POSITION_INDEX));
 //                bgPainter = new BackgroundImagePainter(bgImage, repeatValue, positionValue);
-                bgPainter = new BackgroundImagePainter(bgImage, cssRepeatValue, cssPositionValue);
+                bgPainter = new BackgroundImagePainter(bgImage, cssRepeatValue, cssPositionValue, frameFormElement, frameForm.getDefaultFontSize());
             }
         } else {
             super.initializeBackgroundImage();

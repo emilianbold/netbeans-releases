@@ -596,8 +596,14 @@ public class CssValueServiceImpl implements CssValueService {
         if (!(cssValue instanceof CssValueImpl)) {
             return false;
         }
-        
         return ((CssValueImpl)cssValue).getValue().getPrimitiveType() == CSSPrimitiveValue.CSS_PERCENTAGE;
+    }
+    
+    public boolean isOfPrimitiveEmsType(CssValue cssValue) {
+        if (!(cssValue instanceof CssValueImpl)) {
+            return false;
+        }
+        return ((CssValueImpl)cssValue).getValue().getPrimitiveType() == CSSPrimitiveValue.CSS_EMS;
     }
 
     public CssValue getBothCssValueConstant() {

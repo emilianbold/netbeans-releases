@@ -25,7 +25,9 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssListValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
+import org.netbeans.modules.visualweb.designer.CssUtilities;
 import org.openide.ErrorManager;
+import org.w3c.dom.Element;
 
 
 
@@ -60,7 +62,7 @@ public class BackgroundImagePainter {
      * Construct a new background painter with the given repeat and position
      */
 //    public BackgroundImagePainter(ImageIcon bgImage, Value repeatValue, ListValue positionValue) {
-    public BackgroundImagePainter(ImageIcon bgImage, CssValue cssRepeatValue, CssListValue cssPositionValue) {
+    public BackgroundImagePainter(ImageIcon bgImage, CssValue cssRepeatValue, CssListValue cssPositionValue, Element element, int defaultFontSize) {
         this.backgroundImage = bgImage;
 
         int repeat = BackgroundImagePainter.REPEAT;
@@ -114,9 +116,13 @@ public class BackgroundImagePainter {
 //                if (horiz.getPrimitiveType() == CSSPrimitiveValue.CSS_PERCENTAGE) {
                 if (CssProvider.getValueService().isOfPrimitivePercentageType(cssHoriz)) {
                     fractionX = cssHoriz.getFloatValue() / 100.0f;
+                } else if (CssProvider.getValueService().isOfPrimitiveEmsType(cssHoriz)) {
+                    int fontSize = CssUtilities.getDesignerFontForElement(element, null, defaultFontSize).getSize();
+                    left = (int)(cssHoriz.getFloatValue() * fontSize);
+                    // XXX we should allow negative percentages too!
+                    fractionX = -2.0f; // cause BackgroundImagePainter to ignore it
                 } else {
                     left = (int)cssHoriz.getFloatValue();
-
                     // XXX we should allow negative percentages too!
                     fractionX = -2.0f; // cause BackgroundImagePainter to ignore it
                 }
@@ -124,6 +130,10 @@ public class BackgroundImagePainter {
 //                if (vert.getPrimitiveType() == CSSPrimitiveValue.CSS_PERCENTAGE) {
                 if (CssProvider.getValueService().isOfPrimitivePercentageType(cssVert)) {
                     fractionY = cssVert.getFloatValue() / 100.0f;
+                } else if (CssProvider.getValueService().isOfPrimitiveEmsType(cssVert)) {
+                    int fontSize = CssUtilities.getDesignerFontForElement(element, null, defaultFontSize).getSize();
+                    top = (int)(cssVert.getFloatValue() * fontSize);
+                    fractionY = -2.0f; // cause BackgroundImagePainter to ignore it
                 } else {
                     top = (int)cssVert.getFloatValue();
                     fractionY = -2.0f; // cause BackgroundImagePainter to ignore it
