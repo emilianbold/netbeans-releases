@@ -60,7 +60,7 @@ public class LocalizationSupportPanelGUI extends JPanel implements ActionListene
     /** Creates new form I18nSupportAdvancedSettingsPanel */
     
     
-    private static final Dimension PREF_DIM = new Dimension(560, 350);
+    private static final Dimension PREF_DIM = new Dimension(500, 340);
     
     private static final ListCellRenderer CELL_RENDERER = new NodeCellRenderer();
     private Project project;

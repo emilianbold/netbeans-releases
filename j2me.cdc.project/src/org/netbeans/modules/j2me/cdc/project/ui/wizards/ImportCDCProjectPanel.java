@@ -62,7 +62,7 @@ import org.xml.sax.InputSource;
  */
 public class ImportCDCProjectPanel extends javax.swing.JPanel implements DocumentListener {
     
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(560, 350);
+    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
     static final String PROJECT_LOCATION = "ImportProjectLocation"; // NOI18N
     private static String prjType;
     /**

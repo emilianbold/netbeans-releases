@@ -63,7 +63,7 @@ import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
  */
 public class WtkPanel extends javax.swing.JPanel {
     
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(560, 350);
+    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
     
     public static final String WTK_LOCATION = "WtkLocation"; // NOI18N
     public static final String APP_LOCATION = "AppLocation"; // NOI18N

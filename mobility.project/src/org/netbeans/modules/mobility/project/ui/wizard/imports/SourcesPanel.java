@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  */
 public class SourcesPanel extends javax.swing.JPanel implements DocumentListener {
     
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(560, 350);
+    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
     
     public static final String SOURCES_LOCATION = "SourcesLocation"; // NOI18N
     public static final String JAD_LOCATION = "JadLocation"; // NOI18N

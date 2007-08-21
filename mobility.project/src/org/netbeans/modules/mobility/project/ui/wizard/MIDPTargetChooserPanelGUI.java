@@ -37,7 +37,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.J2MEProjectUtils;
-import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -56,7 +55,7 @@ import org.openide.util.RequestProcessor;
  */
 public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
     
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(560, 350);
+    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
     
     private static final ListCellRenderer CELL_RENDERER = new NodeCellRenderer();
     

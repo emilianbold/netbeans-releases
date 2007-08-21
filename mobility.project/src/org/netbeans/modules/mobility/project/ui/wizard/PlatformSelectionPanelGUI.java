@@ -45,7 +45,7 @@ import org.openide.util.NbBundle;
  */
 public class PlatformSelectionPanelGUI extends JPanel implements ActionListener {
     
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(560, 350);
+    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
     
     private final DefaultComboBoxModel deviceModel;
     private final HashMap<String,J2MEPlatform.J2MEProfile> name2profile;

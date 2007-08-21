@@ -58,6 +58,7 @@ import org.openide.util.Utilities;
  */
 public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerManager.Provider {
     
+    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
     private static final String SELECTION = NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_CfgSelectionPanel_Selection"); //NOI18N
     private static final String TEMPLATE_FILEOBJECT_PROPERTY = "template_fileobject"; //NOI18N
     private final ExplorerManager manager = new ExplorerManager();
@@ -69,6 +70,10 @@ public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerM
     /** Creates new form ConfigurationsSelectionPanelGUI */
     public ConfigurationsSelectionPanelGUI() {
         this(Collections.EMPTY_SET);
+    }
+    
+    public java.awt.Dimension getPreferredSize() {
+        return PREF_DIM;
     }
     
     public ConfigurationsSelectionPanelGUI(Set<String> bannedNames) {

@@ -45,7 +45,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
  */
 public class ProjectPanel extends javax.swing.JPanel {
     
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(560, 350);
+    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
     
     public static final String PROJECT_NAME = "ProjectName"; // NOI18N
     public static final String PROJECTS_HOME = "ProjectsHome"; // NOI18N
