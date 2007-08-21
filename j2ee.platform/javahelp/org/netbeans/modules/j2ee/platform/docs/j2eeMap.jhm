@@ -239,7 +239,6 @@
 
     <!-- Debug and test EJB section -->
     <mapID target="deploy_ejb" url="ejb/deploy/deploy_ejb.html" />
-    <mapID target="debug_ejb_freeform" url="ejb/debug/debug_ejb_freeform.html" />
     <mapID target="test_ejb" url="ejb/debug/test_ejb.html" />
     <mapID target="debug_ejb" url="ejb/debug/debug_ejb.html" />
     <mapID target="profile_ejb" url="ejb/debug/profile_ejb.html" />
