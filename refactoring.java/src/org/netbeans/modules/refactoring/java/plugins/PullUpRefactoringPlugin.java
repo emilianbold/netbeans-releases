@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -131,7 +132,16 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
             return new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_NoTargetType")); // NOI18N
         }
         
-        return null;
+        Problem p=null;
+        if (refactoring.getTargetType().getKind().isInterface()) {
+            for (MemberInfo i:info) {
+                if (!i.getModifiers().contains(Modifier.PUBLIC)) {
+                    p = createProblem(p, false, NbBundle.getMessage(PullUpRefactoringPlugin.class,"ERR_PullupNonPublicToInterface" ,i.getName()));
+                }
+            }
+        }
+        
+        return p;
     }
 
     @Override

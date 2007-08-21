@@ -79,6 +79,12 @@ public class PullUpTransformer extends RefactoringVisitor {
                         Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
                         mod.add(Modifier.ABSTRACT);
                         mod.remove(Modifier.FINAL);
+                        if (el.getKind().isInterface()) {
+                            mod.remove(Modifier.PUBLIC);
+                            mod.remove(Modifier.PROTECTED);
+                            mod.remove(Modifier.PRIVATE);
+                            mod.remove(Modifier.ABSTRACT);
+                        }
                         MethodTree nju = make.Method(
                                 make.Modifiers(mod),
                                 method.getName(),
