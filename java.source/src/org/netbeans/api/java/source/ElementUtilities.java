@@ -344,12 +344,12 @@ public final class ElementUtilities {
             Scope scope = trees.getScope(path);
             while (scope != null && scope instanceof JavacScope && !((JavacScope)scope).isStarImportScope()) {
                 for (Element local : scope.getLocalElements())
-                    if ((local.getKind().isClass() || local.getKind().isInterface()) &&
-                        (acceptor == null || acceptor.accept(local, null))) {
+                    if (local.getKind().isClass() || local.getKind().isInterface()) {
                         String name = local.getSimpleName().toString();
                         ArrayList<Element> h = hiders.get(name);
                         if (!isHidden(local, h, types)) {
-                            members.add((TypeElement)local);
+                            if (acceptor == null || acceptor.accept(local, null))
+                                members.add((TypeElement)local);
                             if (h == null) {
                                 h = new ArrayList<Element>();
                                 hiders.put(name, h);
@@ -362,28 +362,27 @@ public final class ElementUtilities {
             Element element = trees.getElement(path);
             if (element != null && element.getKind() == ElementKind.PACKAGE) {
                 for (Element member : element.getEnclosedElements()) {
-                    if (acceptor == null || acceptor.accept(member, null)) {
-                        String name = member.getSimpleName().toString();
-                        ArrayList<Element> h = hiders.get(name);
-                        if (!isHidden(member, h, types)) {
+                    String name = member.getSimpleName().toString();
+                    ArrayList<Element> h = hiders.get(name);
+                    if (!isHidden(member, h, types)) {
+                        if (acceptor == null || acceptor.accept(member, null))
                             members.add((TypeElement) member);
-                            if (h == null) {
-                                h = new ArrayList<Element>();
-                                hiders.put(name, h);
-                            }
-                            h.add(member);
+                        if (h == null) {
+                            h = new ArrayList<Element>();
+                            hiders.put(name, h);
                         }
+                        h.add(member);
                     }
                 }
             }
             while (scope != null) {
                 for (Element local : scope.getLocalElements())
-                    if ((local.getKind().isClass() || local.getKind().isInterface()) &&
-                        (acceptor == null || acceptor.accept(local, null))) {
+                    if (local.getKind().isClass() || local.getKind().isInterface()) {
                         String name = local.getSimpleName().toString();
                         ArrayList<Element> h = hiders.get(name);
                         if (!isHidden(local, h, types)) {
-                            members.add((TypeElement)local);
+                            if (acceptor == null || acceptor.accept(local, null))
+                                members.add((TypeElement)local);
                             if (h == null) {
                                 h = new ArrayList<Element>();
                                 hiders.put(name, h);

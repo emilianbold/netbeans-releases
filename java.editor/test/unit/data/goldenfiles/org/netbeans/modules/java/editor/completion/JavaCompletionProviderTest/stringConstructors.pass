@@ -11,7 +11,6 @@ public String(char[] arg0, int arg1, int arg2)
 public String(int[] arg0, int arg1, int arg2)
 public String(byte[] arg0, int arg1, int arg2, String arg3)
 public String(byte[] arg0, int arg1, int arg2, int arg3)
-String
 StringBuffer
 StringBuilder
 StringIndexOutOfBoundsException

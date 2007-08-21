@@ -135,7 +135,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             case METHOD:
                 return new MethodItem(elem, type, substitutionOffset, isInherited, isDeprecated, inImport, smartType);
             case CONSTRUCTOR:
-                return new ConstructorItem(elem, type, substitutionOffset, isDeprecated);
+                return new ConstructorItem(elem, type, substitutionOffset, isDeprecated, smartType);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
@@ -160,8 +160,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
-    public static final JavaCompletionItem createDefaultConstructorItem(TypeElement elem, int substitutionOffset) {
-        return new DefaultConstructorItem(elem, substitutionOffset);
+    public static final JavaCompletionItem createDefaultConstructorItem(TypeElement elem, int substitutionOffset, boolean smartType) {
+        return new DefaultConstructorItem(elem, substitutionOffset, smartType);
     }
     
     public static final JavaCompletionItem createAnnotationItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated) {
@@ -1606,6 +1606,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         private ElementHandle<ExecutableElement> elementHandle;
         private boolean isDeprecated;
+        private boolean smartType;
         private String simpleName;
         protected Set<Modifier> modifiers;
         private List<ParamDesc> params;
@@ -1613,10 +1614,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String sortText;
         private String leftText;
         
-        private ConstructorItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated) {
+        private ConstructorItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, boolean smartType) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(elem);
             this.isDeprecated = isDeprecated;
+            this.smartType = smartType;
             this.simpleName = elem.getEnclosingElement().getSimpleName().toString();
             this.modifiers = elem.getModifiers();
             this.params = new ArrayList<ParamDesc>();
@@ -1630,7 +1632,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public int getSortPriority() {
-            return 650;
+            return smartType ? 650 - SMART_TYPE : 650;
         }
         
         public CharSequence getSortText() {
@@ -1855,13 +1857,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String CONSTRUCTOR_COLOR = "<font color=#b28b00>"; //NOI18N
         private static ImageIcon icon;        
         
+        private boolean smartType;
         private String simpleName;
         private boolean isAbstract;
         private String sortText;
         private String leftText;
 
-        private DefaultConstructorItem(TypeElement elem, int substitutionOffset) {
+        private DefaultConstructorItem(TypeElement elem, int substitutionOffset, boolean smartType) {
             super(substitutionOffset);
+            this.smartType = smartType;
             this.simpleName = elem.getSimpleName().toString();
             this.isAbstract = elem.getModifiers().contains(Modifier.ABSTRACT);
         }
@@ -1871,7 +1875,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         public int getSortPriority() {
-            return 650;
+            return smartType ? 650 - SMART_TYPE : 650;
         }
 
         public CharSequence getSortText() {
