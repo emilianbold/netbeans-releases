@@ -413,12 +413,12 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     }
 
     boolean prepareForm(boolean load) {
-        if (formEditor == null) {
-            if (formDataObject != null) {
-                formEditor = formDataObject.getFormEditorSupport().getFormEditor();
-                if (formEditor == null) { // create a disconnected form editor
-                    formEditor = new FormEditor(formDataObject);
-                }
+        if (formDataObject != null) {
+            FormEditor fe = formDataObject.getFormEditorSupport().getFormEditor();
+            if (fe != null) { // use the current FormEditor (might change due to reload after undo)
+                formEditor = fe;
+            } else if (formEditor == null) { // create a disconnected form editor
+                formEditor = new FormEditor(formDataObject);
             }
         }
         if (formEditor != null) {
