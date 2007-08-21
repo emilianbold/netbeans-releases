@@ -7,6 +7,7 @@
     </Property>
   </Properties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -24,11 +25,11 @@
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="urlLabel" max="32767" attributes="1"/>
-                          <Component id="jLabel5" alignment="0" pref="135" max="32767" attributes="1"/>
+                          <Component id="jLabel5" alignment="0" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="urlComboBox" pref="450" max="32767" attributes="0"/>
+                          <Component id="urlComboBox" pref="393" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="revisionTextField" min="-2" pref="93" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
