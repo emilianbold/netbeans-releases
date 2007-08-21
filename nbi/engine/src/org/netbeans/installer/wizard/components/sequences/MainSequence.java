@@ -26,6 +26,7 @@ import java.util.Map;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.wizard.components.WizardSequence;
 import org.netbeans.installer.wizard.components.actions.CacheEngineAction;
@@ -135,8 +136,7 @@ public class MainSequence extends WizardSequence {
             // there is no real way to recover from this fancy error, so we
             // inform the user and die
             ErrorManager.notifyCritical(
-                    "A terrible and weird error happened - installer's " +
-                    "execution mode is not recognized");
+                    ResourceUtils.getString(MainSequence.class, ERROR_UKNOWN_MODE_KEY));
         }
         
         super.executeForward();
@@ -145,4 +145,6 @@ public class MainSequence extends WizardSequence {
     public boolean canExecuteForward() {
         return true;
     }
+    private static final String ERROR_UKNOWN_MODE_KEY =
+            "MS.error.mode"; //NOI18N
 }
