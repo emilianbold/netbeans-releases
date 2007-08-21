@@ -1,43 +1,103 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright Â© 2006 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
 <head>
-
+    
     <title>About Communicating Between Modules</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
     <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-    <h2>About Communicating Between Modules</h2>
-    <p><small> 
+<h2>About Communicating Between Modules</h2>
+<p><small> 
         <a href="#seealso">See Also</a> 
-    </small></p>
+</small></p>
 
-    <p>tbd
+<p>For registration
+    and discovery of any kind of interface or class,
+    in any module within the system,
+    the NetBeans Platform supports two uniformly
+    suitable solutions:
+    
+    <ul>
+        <li><b><tt>Lookup</tt>.</b> One of the most fundamental classes in the
+        NetBeans APIs is <tt>org.openide.util.Lookup</tt>. 
+        <li><b><tt>ServiceLoader</tt>.</b> This is the new
+        <tt>java.util.ServiceLoader</tt> class, introduced in JDK 1.6, and
+        described in <a href="about_service_providers.html">About Service Providers</a>.
+    </ul>
+    
+    <p>Factors that might determine which approach to take:
+    <ul>
+            <li><p>
+            <tt>Lookup</tt> is available in versions for older JDKs and
+            thus you can use it as a replacement of <tt>ServiceLoader</tt> 
+            when running on JDKs older than 1.6.
+            </p></li>
+            <li><p>
+            <tt>Lookup</tt> is ready to work inside of the NetBeans 
+            runtime container. It knows how to discover all the modules
+            in the system, how to effectively read its defined services, etc.
+            </p></li>
+            <li><p>
+            <tt>Lookup</tt> supports listeners. Client code can attach a
+            listener and observe changes in lookup content. This is a necessary
+            improvement to adapt to the dynamic environment created by the NetBeans
+            runtime container, where modules can be enabled or disabled at runtime, 
+            which in turn can affect the set of 
+            registered service providers.
+            </p></li>
+            <li><p>
+            <tt>Lookup</tt> is extensible and replaceable. While the
+            <tt>ServiceLoader</tt> class in JDK 1.6 is a final class with
+            hard-coded behavior, the NetBeans <tt>Lookup</tt> is an extensible class
+            that allows various implementations. This can be useful while
+            writing unit tests. Or you can write an enhanced version of
+            lookup that not only reads <tt>META-INF/services</tt> but,
+            for example, finds the requested service providers around the 
+            Internet, etc.
+            </p></li>
+            <li><p>
+            <tt>Lookup</tt> is a general purpose abstraction. While the 
+            JDK's <tt>ServiceLoader</tt> can de-facto have just one instance
+            per classloader, there can be thousands of independent <tt>Lookup</tt>
+            instances, each representing a single place to fish and query 
+            services and interfaces. In fact this is exactly the way 
+            <tt>Lookup</tt> is used in NetBeans&#8212;it represents the <i>context</i>
+            of each dialog, window element, node in a tree, etc.
+            </p></li>
+        </ul>
+      
+          <p>For a four-part tutorial 
+          series that covers Lookup,
+          see:
         
-        
-    <dl>
-        <dt><a name="seealso">See Also</a></dt>
-        <dd>  <a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
-        <dd><a href="../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
-        <dd>  <a href="building_zip.html">Building a ZIP Distribution</a></dd>
-        <dd><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-            <param name="content" value="Java Web Start Technology main page">
-            <param name="text" value="<html><u>http://java.sun.com/products/javawebstart/index.jsp</u></html>">
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://platform.netbeans.org/tutorials/60/nbm-selection-1.html">
+            <param name="text" value="<html><u>NetBeans Selection Management Tutorial&#8212;Using a TopComponent's Lookup</u></html>">
             <param name="textFontSize" value="medium">
-            <param name="textColor" value="blue"></dd>
+            <param name="textColor" value="blue">
         </object>
+        
+        
+        
+</p>   
 
-    </dl> 
-    <hr>
-    <small><a href="../credits.html">Legal Notices</a></small> 
-    <table cellpadding="20" border="0"> 
-        <tr><td>&nbsp;</td></tr> 
-        <tr><td>&nbsp;</td></tr> 
-        <tr><td>&nbsp;</td></tr> 
-    </table> 
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+    <dd><a href="about_service_providers.html">About Service Providers</a></dd>
+    <dd><a href="using_service_provider_browser.html">Using the Service Provider Browser</a></dd>
+</dl> 
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small> 
+<table cellpadding="20" border="0"> 
+    <tr><td>&nbsp;</td></tr> 
+    <tr><td>&nbsp;</td></tr> 
+    <tr><td>&nbsp;</td></tr> 
+</table> 
 </body></html>
