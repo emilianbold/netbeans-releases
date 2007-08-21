@@ -104,7 +104,7 @@ public class PullAction extends AbstractAction {
         final File root = HgUtils.getRootFile(ctx);
         if (root == null) return;
         String repository = root.getAbsolutePath();
-        final String pullPath = HgCommand.getPathDefault(root).getAbsolutePath();
+        final String pullPath = HgCommand.getPullDefault(root).getAbsolutePath();
         final String fromPrjName = HgProjectUtils.getProjectName(root);
         final String toPrjName = HgProjectUtils.getProjectName(root);
         
@@ -116,8 +116,8 @@ public class PullAction extends AbstractAction {
     }
 
     public boolean isEnabled() {
-        // If the repository has a default push/pull path then enable action
-        return HgRepositoryContextCache.getPathDefault(context) == null ? false: true;
+        // If the repository has a default pull path then enable action
+        return HgRepositoryContextCache.getPullDefault(context) == null ? false: true;
     }
 
     static void performPull(PullType type, VCSContext ctx, File root, String pullPath, String fromPrjName, String toPrjName) {

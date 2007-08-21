@@ -138,9 +138,13 @@ public class LogAction extends AbstractAction {
                                 prjName));
                         outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_PrjPath",
                                 prjFile.getAbsolutePath()));
-                        File pushPullPath = HgCommand.getPathDefault(root);
-                        if(pushPullPath != null){
-                            outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Path",pushPullPath.getAbsolutePath()));
+                        File pullPath = HgCommand.getPullDefault(root);
+                        if(pullPath != null){
+                            outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Pull_Path",pullPath.getAbsolutePath()));
+                        }
+                        File pushPath = HgCommand.getPushDefault(root);
+                        if(pushPath != null){
+                            outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Push_Path",pushPath.getAbsolutePath()));
                         }
                         
                         if(bMergeNeeded){

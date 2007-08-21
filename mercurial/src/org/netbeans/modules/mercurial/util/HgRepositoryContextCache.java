@@ -29,13 +29,15 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 public class HgRepositoryContextCache {
     private static boolean hasHistory;
     private static boolean hasHeads;
-    private static File pathDefault;
+    private static File pushDefault;
+    private static File pullDefault;
     private static File root;
     
     private static VCSContext rootCtx;
     private static VCSContext historyCtx;
     private static VCSContext headsCtx;
-    private static VCSContext pathCtx;
+    private static VCSContext pushCtx;
+    private static VCSContext pullCtx;
 
     public static boolean hasHistory(VCSContext ctx) {
         if(ctx == historyCtx && ctx != null && hasHistory){
@@ -60,14 +62,33 @@ public class HgRepositoryContextCache {
         }
     }
     
-    public static File getPathDefault(VCSContext ctx) {
-        if(ctx == pathCtx && ctx != null){
-            return pathDefault;
+    public static void resetPullDefault() {
+        pullCtx = null;
+    }
+
+    public static File getPullDefault(VCSContext ctx) {
+        if(ctx == pullCtx && ctx != null){
+            return pullDefault;
         }else{
             root = getRoot(ctx);
-            pathDefault = HgCommand.getPathDefault(root);
-            pathCtx = ctx;
-            return pathDefault;
+            pullDefault = HgCommand.getPullDefault(root);
+            pullCtx = ctx;
+            return pullDefault;
+        }
+    }
+    
+    public static void resetPushDefault() {
+        pushCtx = null;
+    }
+
+    public static File getPushDefault(VCSContext ctx) {
+        if(ctx == pushCtx && ctx != null){
+            return pushDefault;
+        }else{
+            root = getRoot(ctx);
+            pushDefault = HgCommand.getPushDefault(root);
+            pushCtx = ctx;
+            return pushDefault;
         }
     }
     

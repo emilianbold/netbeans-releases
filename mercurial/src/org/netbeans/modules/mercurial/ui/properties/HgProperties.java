@@ -46,6 +46,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
@@ -220,6 +221,8 @@ public class HgProperties implements ActionListener, DocumentListener {
                         String hgPropertyValue = hgPropertiesNodes[propTable.getModelIndex(i)].getValue();
                         HgModuleConfig.getDefault().setProperty(root, hgPropertyName, hgPropertyValue);
                     }
+                    HgRepositoryContextCache.resetPullDefault();
+                    HgRepositoryContextCache.resetPushDefault();
                 }
             };
             support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(HgProperties.class, "LBL_Properties_Progress"));

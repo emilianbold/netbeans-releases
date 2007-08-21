@@ -104,7 +104,9 @@ public class HgCommand {
     private static final String HG_RENAME_CMD = "rename";
     private static final String HG_RENAME_AFTER_CMD = "-A";
     private static final String HG_PATH_DEFAULT_CMD = "paths";
-    private static final String HG_PATH_DEFAULT_STR = "default = ";
+    private static final String HG_PATH_DEFAULT_OPT = "default";
+    private static final String HG_PATH_DEFAULT_PUSH_OPT = "default-push";
+ 
     
     // TODO: replace this hack 
     // Causes /usr/bin/hgmerge script to return when a merge
@@ -147,6 +149,7 @@ public class HgCommand {
     private static final String HG_UPDATE_SPAN_BRANCHES_ERR = "abort: update spans branches";
     private static final String HG_ALREADY_TRACKED_ERR = " already tracked!";
     private static final String HG_NOT_TRACKED_ERR = " no tracked!";
+    private static final String HG_NOT_FOUND_ERR = "not found!";
     private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message";
     private static final String HG_UNABLE_EXECUTE_COMMAND_ERR = "unable to execute hg command";
     private static final String HG_UNABLE_CLONE_ERR = "abort: destination ";
@@ -933,21 +936,36 @@ public class HgCommand {
     }
     
     /**
-     * Get the path default for the specified repository, i.e. the default
-     * destination for hg push and hg pull commmands.
+     * Get the pull default for the specified repository, i.e. the default
+     * destination for hg pull commmands.
      *
      * @param File repository of the mercurial repository's root directory
-     * @return File for path default
+     * @return File for pull default
      */
-    public static File getPathDefault(File repository) {
+    public static File getPullDefault(File repository) {
+        return getPathDefault(repository, HG_PATH_DEFAULT_OPT);
+    }
+
+    /**
+     * Get the push default for the specified repository, i.e. the default
+     * destination for hg push commmands.
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @return File for push default
+     */
+    public static File getPushDefault(File repository) {
+        return getPathDefault(repository, HG_PATH_DEFAULT_PUSH_OPT);
+    }
+
+    private static File getPathDefault(File repository, String type) {
         if (repository == null) return null;
-        
         List<String> command = new ArrayList();
 
         command.add(getHgCommand());
         command.add(HG_PATH_DEFAULT_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        command.add(type);
 
         String res = null;
         
@@ -957,8 +975,9 @@ public class HgCommand {
         } catch (HgException ex) {
             // Ignore Exception
         }
-        if( !list.isEmpty()){
-            res = list.get(0).substring(HG_PATH_DEFAULT_STR.length());
+        if( !list.isEmpty()
+                    && (!isErrorNotFound(list.get(0)))) {
+            res = list.get(0);
         }
         return res != null ? new File(res): null;
     }
@@ -1570,6 +1589,10 @@ public class HgCommand {
     
     private static boolean isErrorNotTracked(String msg) {
         return msg.indexOf(HG_NOT_TRACKED_ERR) > -1; // NOI18N
+    }
+
+    private static boolean isErrorNotFound(String msg) {
+        return msg.indexOf(HG_NOT_FOUND_ERR) > -1; // NOI18N
     }
     
     private static boolean isErrorCannotReadCommitMsg(String msg) {
