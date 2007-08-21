@@ -69,9 +69,6 @@
 
 <!-- CSH topics -->
 
-    <!-- TODO find out what this is for -->
-    <mapID target="org.netbeans.modules.subversion.client.SvnClientExceptionHandler" url="pending.html" />
-
     <!-- Checkout wizard, panel 1 -->	
     <mapID target="org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.checkout" url="svnmodule/csh/svn_chkout_wizard_p1.html" />
 
@@ -124,8 +121,17 @@
     <!-- Subversion Options window -->
     <!-- <mapID target="org.netbeans.modules.subversion.options.SvnOptionsController" url="svnmodule/csh/svn_options.html" /> -->
 
+    <!-- Subversion Manage Connection Settings dialog (accessed from Options window) -->
+    <!-- TODO: Request new target (currently: org.openide.util.HelpCtx.DEFAULT_HELP)
+
+    <!-- Subversion Manage Labels dialog (accessed from Options window) -->
+    <mapID target="org.netbeans.modules.subversion.options.AnnotationSettings" url="pending.html" />
+
     <!-- Subversion menu -->
     <mapID target="org.netbeans.modules.subversion.ui.status.OpenVersioningAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
+
+    <!-- TODO find out what this is for -->
+    <mapID target="org.netbeans.modules.subversion.client.SvnClientExceptionHandler" url="pending.html" />
 
     <!-- Search Revisions dialog (i.e. Search button) -->
  
