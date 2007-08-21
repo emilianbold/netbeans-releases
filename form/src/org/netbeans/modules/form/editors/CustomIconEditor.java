@@ -854,6 +854,9 @@ public class CustomIconEditor extends javax.swing.JPanel {
         if (!ignoreCombo) {// only if triggered directly by user
             String pkgName = packageCombo.getSelectedItem().toString();
             selectedPackage = packageRoot.getFileObject(pkgName.replace('.', '/'));
+            if (selectedPackage == null) {
+                selectedPackage = packageRoot;
+            }
             fileCombo.setModel(createFileComboModel(selectedPackage));
         }
     }//GEN-LAST:event_packageComboActionPerformed
