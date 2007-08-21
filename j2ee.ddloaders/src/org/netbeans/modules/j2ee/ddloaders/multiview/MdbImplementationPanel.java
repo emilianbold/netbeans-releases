@@ -54,18 +54,6 @@ public class MdbImplementationPanel extends MdbImplementationForm {
             }
         };
         getBeanClassTextField().setDocument(beanClassDocument);
-        JButton moveClassButton = getMoveClassButton();
-        moveClassButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-//                Utils.activateMoveClassUI(messageDriven.getEjbClass());
-            }
-        });
-        JButton renameClassButton = getRenameClassButton();
-        renameClassButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-//                Utils.activateRenameClassUI(messageDriven.getEjbClass());
-            }
-        });
         LinkButton.initLinkButton(getBeanClassLinkButton(), this, null, LINK_BEAN);
     }
 

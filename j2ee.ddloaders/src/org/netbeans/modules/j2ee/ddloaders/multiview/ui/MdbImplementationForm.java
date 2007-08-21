@@ -51,14 +51,12 @@ public class MdbImplementationForm extends SectionNodeInnerPanel {
 
         jLabel1 = new javax.swing.JLabel();
         beanClassTextField = new javax.swing.JTextField();
-        moveClassButton = new javax.swing.JButton();
-        renameClassButton = new javax.swing.JButton();
         spacerLabel = new javax.swing.JLabel();
         beanClassLinkButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(MdbImplementationForm.class, "LBL_BeanClass"));
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(MdbImplementationForm.class, "LBL_BeanClass")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -77,22 +75,6 @@ public class MdbImplementationForm extends SectionNodeInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(beanClassTextField, gridBagConstraints);
 
-        moveClassButton.setText(org.openide.util.NbBundle.getMessage(MdbImplementationForm.class, "LBL_MoveClass"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
-        add(moveClassButton, gridBagConstraints);
-
-        renameClassButton.setText(org.openide.util.NbBundle.getMessage(MdbImplementationForm.class, "LBL_RenameClass"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
-        add(renameClassButton, gridBagConstraints);
-
         spacerLabel.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -101,25 +83,18 @@ public class MdbImplementationForm extends SectionNodeInnerPanel {
         gridBagConstraints.weighty = 1.0;
         add(spacerLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(beanClassLinkButton, org.openide.util.NbBundle.getMessage(MdbImplementationForm.class, "LBL_GoToSource"));
+        org.openide.awt.Mnemonics.setLocalizedText(beanClassLinkButton, org.openide.util.NbBundle.getMessage(MdbImplementationForm.class, "LBL_GoToSource")); // NOI18N
         beanClassLinkButton.setBorderPainted(false);
         beanClassLinkButton.setContentAreaFilled(false);
         beanClassLinkButton.setFocusPainted(false);
         beanClassLinkButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        add(beanClassLinkButton, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+        add(beanClassLinkButton, new java.awt.GridBagConstraints());
+    }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton beanClassLinkButton;
     private javax.swing.JTextField beanClassTextField;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JButton moveClassButton;
-    private javax.swing.JButton renameClassButton;
     private javax.swing.JLabel spacerLabel;
     // End of variables declaration//GEN-END:variables
 
@@ -141,11 +116,4 @@ public class MdbImplementationForm extends SectionNodeInnerPanel {
         return beanClassLinkButton;
     }
 
-    public JButton getMoveClassButton() {
-        return moveClassButton;
-    }
-
-    public JButton getRenameClassButton() {
-        return renameClassButton;
-    }
 }
