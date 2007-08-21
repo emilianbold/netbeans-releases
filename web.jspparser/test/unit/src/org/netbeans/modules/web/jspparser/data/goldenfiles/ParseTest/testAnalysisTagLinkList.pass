@@ -1,4 +1,4 @@
---------- JspParserAPI.parseResult(), success: true
+--------- JspParserAPI.parseResult(), success: false
  ---- PAGEINFO
 ----- PageInfo -----
       imports:
@@ -63,9 +63,9 @@
       threadSafe          : true
       isErrorPage         : false
       errorPage           : null
-      scriptless          : true
+      scriptless          : false
       scriptingInvalid    : false
-      elIgnored           : true
+      elIgnored           : false
       omitXmlDecl         : null
       isJspPrefixHijacked : false
       doctypeName         : null
@@ -78,157 +78,7 @@
       pluginDcls:
       beans:
  ------- XML View (constructed from the original data structure) -----
-<?xml version="1.0" encoding="UTF-8" ?>
-<jsp:root
-  version="2.0"
-  xmlns:fmt="urn:jsptld:/WEB-INF/META-INF/fmt.tld"
-  xmlns:jsp="http://java.sun.com/JSP/Page"
-  jsp:id="0"
->
-<jsp:directive.tag
-  jsp:id="1"
-  pageEncoding="UTF-8"
-/>
-<jsp:text
-  jsp:id="2"
->
-<![CDATA[
-
-]]>
-</jsp:text>
-<jsp:directive.attribute
-  name="separator"
-  required="true"
-  fragment="true"
-  jsp:id="3"
-/>
-<jsp:text
-  jsp:id="4"
->
-<![CDATA[
-
-
-
-]]>
-</jsp:text>
-<jsp:text
-  jsp:id="5"
->
-<![CDATA[
-<a href="/docs/index.jsp">]]>
-</jsp:text>
-<fmt:message
-  key="home"
-  bundle="${bundle}"
-  jsp:id="6"
-/>
-<jsp:text
-  jsp:id="7"
->
-<![CDATA[
-</a>
-]]>
-</jsp:text>
-<jsp:invoke
-  fragment="separator"
-  jsp:id="8"
-/>
-<jsp:text
-  jsp:id="9"
->
-<![CDATA[
-
-]]>
-</jsp:text>
-<jsp:text
-  jsp:id="10"
->
-<![CDATA[
-<a href="/docs/parameters/Input.jsp">]]>
-</jsp:text>
-<fmt:message
-  key="parameters"
-  bundle="${bundle}"
-  jsp:id="11"
-/>
-<jsp:text
-  jsp:id="12"
->
-<![CDATA[
-</a>
-]]>
-</jsp:text>
-<jsp:invoke
-  fragment="separator"
-  jsp:id="13"
-/>
-<jsp:text
-  jsp:id="14"
->
-<![CDATA[
-
-]]>
-</jsp:text>
-<jsp:text
-  jsp:id="15"
->
-<![CDATA[
-<a href="/docs/cookies/CookieCutter.jsp">]]>
-</jsp:text>
-<fmt:message
-  key="cookies"
-  bundle="${bundle}"
-  jsp:id="16"
-/>
-<jsp:text
-  jsp:id="17"
->
-<![CDATA[
-</a>
-]]>
-</jsp:text>
-<jsp:invoke
-  fragment="separator"
-  jsp:id="18"
-/>
-<jsp:text
-  jsp:id="19"
->
-<![CDATA[
-
-]]>
-</jsp:text>
-<jsp:text
-  jsp:id="20"
->
-<![CDATA[
-<a href="/docs/localized/Babel.jsp">]]>
-</jsp:text>
-<fmt:message
-  key="localized"
-  bundle="${bundle}"
-  jsp:id="21"
-/>
-<jsp:text
-  jsp:id="22"
->
-<![CDATA[
-</a>
-
-
-]]>
-</jsp:text>
-<jsp:doBody
-  jsp:id="23"
-/>
-<jsp:text
-  jsp:id="24"
->
-<![CDATA[
-
-]]>
-</jsp:text>
-</jsp:root>
+no XML view
 
  ---- NODES
 
@@ -268,4 +118,8 @@ Node [/WEB-INF/tags/linklist.tag(11,85), TemplateText] </a>
 
 Node [/WEB-INF/tags/linklist.tag(14,0), DoBodyAction] <jsp:doBody></jsp:doBody>
 Node [/WEB-INF/tags/linklist.tag(14,13), TemplateText] 
+
+
+ ---- ERRORS
+ERROR in /WEB-INF/tags/linklist.tag at [5, 26] /WEB-INF/tags/linklist.tag [5;26] PWC6236: According to TLD or attribute directive in tag file, attribute bundle does not accept any expressions
 

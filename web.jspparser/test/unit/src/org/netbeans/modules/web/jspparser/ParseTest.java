@@ -118,6 +118,21 @@ public class ParseTest extends NbTestCase {
         }
     }
     
+    public void testJSPInclude() throws Exception {
+        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/jspInclude.jsp");
+    }
+    
+    public void testInclude() throws Exception {
+        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/include.jsp");
+    
+    }
+    
+    public void testIncludePreludeCoda() throws Exception {
+        JspParserAPI.ParseResult result = parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/includePreludeCoda.jsp");
+        log("Prelude: " + result.getPageInfo().getIncludePrelude());
+        log("Coda: " + result.getPageInfo().getIncludeCoda());        
+    }
+    
     // test for issue #70426
     public void testGetTagLibMap70426() throws Exception{
         Object o = ProjectSupport.openProject(Manager.getWorkDirPath()+"/emptyWebProject");
@@ -135,7 +150,7 @@ public class ParseTest extends NbTestCase {
         assertTrue("The JSTL/core library was not returned.", (library.get("http://java.sun.com/jsp/jstl/core")) != null);
     }
     
-    public void parserTestInProject(String projectFolderName, String pagePath) throws Exception{
+    public JspParserAPI.ParseResult parserTestInProject(String projectFolderName, String pagePath) throws Exception{
         log("Parsing test of page  " + pagePath + " in project " + projectFolderName + " started.");
         String projectPath = Manager.getWorkDirPath() + "/" + projectFolderName;
         Object o = ProjectSupport.openProject(projectPath);
@@ -168,6 +183,7 @@ public class ParseTest extends NbTestCase {
         
         assertNotNull(outFile);
         assertFile(outFile, goldenF, getWorkDir());
+        return result;
     }
     
     private static int fileNr = 1;

@@ -139,7 +139,7 @@
       errorPage           : null
       scriptless          : true
       scriptingInvalid    : false
-      elIgnored           : true
+      elIgnored           : false
       omitXmlDecl         : null
       isJspPrefixHijacked : false
       doctypeName         : null
