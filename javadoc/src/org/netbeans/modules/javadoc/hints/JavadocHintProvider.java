@@ -823,7 +823,7 @@ public final class JavadocHintProvider extends AbstractHint {
             GenerateJavadocFix jdFix = new GenerateJavadocFix(description, handle, javac.getFileObject(), this.spec);
             
             fixes.add(jdFix);
-            fixAll.addFix(jdFix);
+//            fixAll.addFix(jdFix);
             
             // XXX add Inherit javadoc
             
