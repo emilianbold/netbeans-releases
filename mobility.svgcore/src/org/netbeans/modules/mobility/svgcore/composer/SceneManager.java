@@ -40,7 +40,9 @@ import org.netbeans.modules.mobility.svgcore.composer.actions.SelectAction;
 import org.netbeans.modules.mobility.svgcore.composer.actions.SelectActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.SkewActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.TranslateActionFactory;
+import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
 import org.netbeans.modules.mobility.svgcore.view.svg.SVGStatusBar;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
@@ -66,10 +68,11 @@ public final class SceneManager {
     private transient SVGImage                    m_svgImage;
     private transient SVGLocatableElement         m_popupElement = null;
     private transient String                      m_selectedId = null;
+    private           float                       m_animationDuration = PerseusController.ANIMATION_DEFAULT_DURATION; 
     
     /** persistent properties */
-    private boolean  m_isReadOnly = true;
-            float    m_zoomRatio  = (float)1.0;
+    private boolean  m_isReadOnly   = true;
+            float    m_zoomRatio    = (float)1.0;
     
     public static interface SelectionListener {
         public void selectionChanged( SVGObject [] newSelection, SVGObject [] oldSelection, boolean isReadOnly);
@@ -106,6 +109,43 @@ public final class SceneManager {
 
         m_screenMgr = new ScreenManager(this);
         updateStatusBar();
+        
+        Thread th = new Thread() {
+            public void run() {
+                int count = 0;
+                org.openide.util.Lookup lookup = getLoookup();
+                while(true) {
+                    try {
+                        System.out.println("#" + count++);
+                        java.lang.Object o = lookup.lookup(org.netbeans.modules.mobility.svgcore.composer.SVGObject.class);
+                        if (o != null) {
+                            java.lang.System.out.println("SVGObject found: " + o);
+                        } else {
+                            java.lang.System.out.println("SVGObject not found");
+                        }
+                        o = lookup.lookup(org.w3c.dom.svg.SVGLocatableElement.class);
+                        if (o != null) {
+                            java.lang.System.out.println("SVGLocatableElement found: " + o);
+                        } else {
+                            java.lang.System.out.println("SVGLocatableElement not found");
+                        }
+
+                Lookup.Template<?> templ = new Lookup.Template(SVGObject.class);
+                if (lookup.lookupItem(templ) != null) {
+                    System.out.println("Template found");
+                } else {
+                    System.out.println("Template not found");
+                }        
+
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        };
+        th.setDaemon(true);
+       // th.start();
     }
 
     public synchronized void setImage(SVGImage svgImage) {
@@ -162,11 +202,13 @@ public final class SceneManager {
     public void serialize(ObjectOutputStream out) throws IOException {
         out.writeBoolean(m_isReadOnly);
         out.writeFloat(m_zoomRatio);
+        //out.writeFloat(m_animDuration);
     }
 
     public void deserialize(ObjectInputStream in) throws IOException {
-        m_isReadOnly = in.readBoolean();
-        m_zoomRatio = in.readFloat();
+        m_isReadOnly   = in.readBoolean();
+        m_zoomRatio    = in.readFloat();
+        //m_animDuration = in.readFloat();
     }
     
     public void registerPopupActions( Action [] actions, Lookup lookup) {
@@ -186,18 +228,18 @@ public final class SceneManager {
         m_screenMgr.registerPopupMenu(popup);
     }
     
-    public Action [] getMenuActions() {
-        List<Action> factoryMenuActions = new ArrayList();
+    public AbstractSVGAction [] getMenuActions() {
+        List<AbstractSVGAction> factoryMenuActions = new ArrayList<AbstractSVGAction>();
         
         for (ComposerActionFactory factory : m_registeredActions) {
-            Action [] actions;
+            AbstractSVGAction [] actions;
             if ( (actions=factory.getMenuActions()) != null) {
-                for (Action action : actions) {
+                for (AbstractSVGAction action : actions) {
                     factoryMenuActions.add(action);
                 }
             }
         } 
-        return factoryMenuActions.toArray( new Action[factoryMenuActions.size()]);
+        return factoryMenuActions.toArray( new AbstractSVGAction[factoryMenuActions.size()]);
     }
 
     public SVGDataObject getDataObject() {
@@ -231,11 +273,21 @@ public final class SceneManager {
     public void removeSelectionListener( SelectionListener listener) {
         m_selectionListeners.remove(listener);
     }
+
+    public float getAnimationDuration() {
+        return m_animationDuration;
+    }
+    
+    public void updateAnimationDuration(float time) {
+        if ( time > m_animationDuration) {
+            m_animationDuration = time;
+        }
+    }
     
     public boolean isReadOnly() {
         return m_isReadOnly;
     }
-    
+        
     public void setReadOnly(boolean isReadOnly) {
         if ( m_isReadOnly != isReadOnly) {
             m_isReadOnly = isReadOnly;

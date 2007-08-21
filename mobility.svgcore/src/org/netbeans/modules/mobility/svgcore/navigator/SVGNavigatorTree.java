@@ -40,37 +40,34 @@ public final class SVGNavigatorTree extends JTree {
     static boolean showIdOnly         = false;
     static boolean showAnimationsOnly = false;  
     
-    private final SVGDataObject         dObj;
-    private       DefaultTreeModel      treeModel;
-    
-    private boolean firstPaint;
+    private final SVGDataObject     m_dObj;
+    private final DefaultTreeModel  m_treeModel;    
+    private       boolean           m_firstPaint;
 
     public SVGNavigatorTree(SVGDataObject dObj) throws Exception {
         super();
-        this.dObj = dObj;
+        m_dObj = dObj;
         
-        firstPaint = true;
+        m_firstPaint = true;
         setShowsRootHandles(true);
         setRootVisible(false);
-        setCellRenderer(new SVGNavigatorTreeCellRenderer());
         putClientProperty("JTree.lineStyle", "Angled");  //NOI18N       
-        initialize();
+        
+        DocumentElement rootElement = dObj.getModel().getModel().getRootElement();
+        SVGNavigatorNode rootTna = new SVGNavigatorNode(rootElement, this, null, VISIBILITY_DIRECT);
+
+        m_treeModel = new DefaultTreeModel(rootTna);
+        setModel(m_treeModel);   
+        
+        setCellRenderer(new SVGNavigatorTreeCellRenderer());
     }
     
-    void initialize() throws Exception {
-        treeModel = new DefaultTreeModel(null);
-        setModel(treeModel);         
-        DocumentElement rootElement = dObj.getModel()._getModel().getRootElement();
-        SVGNavigatorNode rootTna = new SVGNavigatorNode(rootElement, this, null, VISIBILITY_DIRECT);
-        treeModel.setRoot(rootTna);  
-    }
-
     public DefaultTreeModel getTreeModel() {
-        return treeModel;
+        return m_treeModel;
     }
     
     public SVGDataObject getDataObject() {
-        return this.dObj;
+        return m_dObj;
     }
     
     public void filterChanged() {
@@ -89,10 +86,10 @@ public final class SVGNavigatorTree extends JTree {
     
     /** Overriden to calculate correct row height before first paint */
     public void paint(Graphics g) {
-        if (firstPaint) {
+        if (m_firstPaint) {
             int height = g.getFontMetrics(getFont()).getHeight();
             setRowHeight(height + 2);
-            firstPaint = false;
+            m_firstPaint = false;
         }
         super.paint(g);
     }
@@ -102,7 +99,7 @@ public final class SVGNavigatorTree extends JTree {
     }
     
     public TreePath selectNode( String id) {
-        DocumentElement de = dObj.getModel().getElementById(id);
+        DocumentElement de = m_dObj.getModel().getElementById(id);
         if (de != null) {
             SVGNavigatorNode rootNode = (SVGNavigatorNode) treeModel.getRoot();
             SVGNavigatorNode node = rootNode.findNode(de);

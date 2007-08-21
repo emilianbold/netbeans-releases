@@ -14,7 +14,6 @@ package org.netbeans.modules.mobility.svgcore.view.svg;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
@@ -58,7 +57,7 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
 
     public void componentOpened() {
         super.componentOpened();
-        ((SVGDataObject) dObj).getModel().initialize();
+        ((SVGDataObject) dObj).getModel().attachToOpenedDocument();
         if (svgView != null) {
             svgView.componentOpened();
         }
@@ -90,7 +89,7 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
 
     public synchronized JComponent getVisualRepresentation() {
         if (svgView == null) {
-            svgView = new SVGViewTopComponent(getSceneManager());
+            svgView = new SVGViewTopComponent((SVGDataObject) dObj);
             
         }
         return svgView;

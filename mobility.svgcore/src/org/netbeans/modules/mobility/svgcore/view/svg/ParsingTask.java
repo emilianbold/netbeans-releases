@@ -20,6 +20,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.microedition.m2g.SVGImage;
@@ -32,7 +34,6 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.model.EncodingInputStream;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
@@ -87,7 +88,7 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         public void fillNumbers(SVGFileModel fileModel) {
             if ( m_line == -1) {
                 int p1 = m_text.indexOf('"');
-                if (p1 != -1) {
+                if (p1 != -1 && m_text.indexOf("\" is missing on element") == -1) {
                     int p2 = m_text.lastIndexOf('"');
                     if ( p2 > p1) {
                         String invalidValue = m_text.substring(p1, p2+1);
@@ -113,13 +114,14 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         }
     }
 
+    private final SVGDataObject       m_dObj;
     private final JPanel              m_panel;
     private final JEditorPane         m_textPane;
     private final SVGViewTopComponent m_svgView;
-    private final SVGFileModel        m_fileModel;
-    private final DocumentModel       m_docModel;
+//    private final SVGFileModel        m_fileModel;
 
     public ParsingTask(SVGDataObject dObj, SVGViewTopComponent svgView) throws Exception {
+        m_dObj = dObj;
         m_svgView = svgView;
         m_panel = new javax.swing.JPanel();
         m_panel.setLayout(new java.awt.BorderLayout());
@@ -134,9 +136,7 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         m_textPane.addHyperlinkListener( this);
         m_panel.add(new JScrollPane(m_textPane), BorderLayout.CENTER);
         setPriority( Thread.MIN_PRIORITY);
-        m_fileModel = dObj.getModel();
         // ensure that model is valid
-        m_docModel  = m_fileModel._getModel();
     }
 
     public JComponent getPanel() {
@@ -149,19 +149,23 @@ final class ParsingTask extends Thread implements HyperlinkListener {
 
     public void run() {
         try {
+            SVGFileModel fileModel = m_dObj.getModel();
             try {
-                final SVGImage svgImage = m_fileModel.parseSVGImage();
+                System.setErr( new PrintStream(new OutputStream() {
+                    public void write(int b) throws IOException {
+                    }
+                }));
+                final SVGImage svgImage = fileModel.parseSVGImage();
                 assert svgImage != null;
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         m_svgView.showImage(svgImage);
                     }
                 });  
-            } catch (IOException e) {
-                showParsingErrors(m_docModel.getDocument(), e);
             } catch(Exception e) {
-                e.printStackTrace();
-                showParsingErrors(m_docModel.getDocument(), e);
+                showParsingErrors(fileModel.getModel().getDocument(), e);
+            } finally {
+                System.setErr(System.err);
             }
         } catch(Exception e) {
             e.printStackTrace();
@@ -173,9 +177,9 @@ final class ParsingTask extends Thread implements HyperlinkListener {
              e.getDescription() != null) {            
             int [] position = string2position(e.getDescription());
             if (position != null) {
-                int offset = m_fileModel.getOffsetByPosition(position[0], position[1]);
-                SVGSourceMultiViewElement.selectPosition(m_fileModel.getDataObject(),
-                                                         offset, true);
+                SVGFileModel fileModel = m_dObj.getModel();
+                int offset = fileModel.getOffsetByPosition(position[0], position[1]);
+                SVGSourceMultiViewElement.selectPosition(m_dObj,offset, true);
             }
         }        
     }
@@ -251,12 +255,12 @@ final class ParsingTask extends Thread implements HyperlinkListener {
             }
         };
 
-        InputStream in = new EncodingInputStream( (BaseDocument) doc, m_fileModel.getDataObject().getEncodingHelper().getEncoding());
+        InputStream in = new EncodingInputStream( (BaseDocument) doc, m_dObj.getEncodingHelper().getEncoding());
         try { 
             InputSource isource = new InputSource(in);
             //System.out.println("Parsing XML document");
             XMLUtil.parse( isource, true, true, errorHandler, EntityCatalog.getDefault());
-        } catch (SAXParseException e) {
+        } catch( SAXException e) { 
             //Not interested in these errors ...
         } catch (Exception e) {
             System.err.println(e.getClass().getName() + " " + e.getLocalizedMessage());
@@ -271,7 +275,7 @@ final class ParsingTask extends Thread implements HyperlinkListener {
         }
         
         for ( ErrorDescription ed : errors) {
-            ed.fillNumbers(m_fileModel);
+            ed.fillNumbers( m_dObj.getModel());
         }
         
         updateText(composeMessageText( errors));

@@ -12,45 +12,52 @@
  */   
 package org.netbeans.modules.mobility.svgcore.export;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.awt.Dialog;
+import java.awt.Dimension;
 import javax.microedition.m2g.SVGImage;
-import javax.microedition.m2g.ScalableGraphics;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.w3c.dom.Document;
-import org.w3c.dom.svg.SVGLocatableElement;
-import org.w3c.dom.svg.SVGMatrix;
-import org.w3c.dom.svg.SVGRect;
-import org.w3c.dom.svg.SVGSVGElement;
 
-public final class SaveElementAsImage extends CookieAction{// implements Presenter.Popup, Presenter.Menu {
+/**
+ *
+ * @author Pavel Benes, suchys
+ */
+public final class SaveElementAsImage extends CookieAction {// implements Presenter.Popup, Presenter.Menu {
     
     protected void performAction(Node[] activatedNodes) {
-        Lookup l = activatedNodes[0].getLookup();
-        SVGLocatableElement element = (SVGLocatableElement) l.lookup(SVGLocatableElement.class);
-        SVGDataObject doj = (SVGDataObject) l.lookup(SVGDataObject.class);
-        SVGImage image = (SVGImage) l.lookup(SVGImage.class);
-
-        renderElement(doj.getPrimaryFile(), element, image);        
+        Lookup        l      = activatedNodes[0].getLookup();
+        SVGDataObject doj    = (SVGDataObject) l.lookup(SVGDataObject.class);
+        SVGObject     svgObj = (SVGObject) l.lookup(SVGObject.class);
+        SVGImage      image  = (SVGImage) l.lookup(SVGImage.class);
+        
+        if (svgObj != null && image != null) {
+            try {
+                SVGImageRasterizerPanel panel = new SVGImageRasterizerPanel(doj, svgObj.getElementId());
+                panel.setMinimumSize(new Dimension(700, 500));
+                DialogDescriptor        dd    = new DialogDescriptor(panel, NbBundle.getMessage(SaveElementAsImage.class, "TITLE_ImageExport"));
+                Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+                SaveAnimationAsImageAction.setDialogMinimumSize( dlg);
+                dlg.setVisible(true);
+                
+                if (dd.getValue() == DialogDescriptor.OK_OPTION){
+                    AnimationRasterizer.export(doj, panel);
+                }
+            } catch( Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
     }
     
     protected int mode() {
-        return CookieAction.MODE_ONE;
+        return CookieAction.MODE_ANY;
     }
     
     public String getName() {
@@ -58,11 +65,9 @@ public final class SaveElementAsImage extends CookieAction{// implements Present
     }
     
     protected Class[] cookieClasses() {
-        return new Class[] {
-            SVGLocatableElement.class
-        };
+        return new Class[] { SVGDataObject.class};
     }
-    
+        
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
@@ -85,8 +90,10 @@ public final class SaveElementAsImage extends CookieAction{// implements Present
      * @param doc the related Document
      * @param svg the root SVG element.
      */
-    private void renderElement(final FileObject primaryFile, final SVGLocatableElement elt,
+    /*
+    private void renderElement(SVGDataObject doj, final SVGLocatableElement elt,
             final SVGImage svgImage ) {
+        FileObject primaryFile = doj.getPrimaryFile();
         
         J2MEProject project = null;
         Project p = FileOwnerQuery.getOwner (primaryFile);
@@ -95,15 +102,15 @@ public final class SaveElementAsImage extends CookieAction{// implements Present
         }
 
         //SVGRasterizerPanel panel = new SVGRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(primaryFile, null), project != null);
-        SVGAnimationRasterizerPanel panel = new SVGAnimationRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(primaryFile, null), project != null,false);
+        SVGAnimationRasterizerPanel panel = new SVGAnimationRasterizerPanel(doj);
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_ImageExport"));
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
-        int imageWidth = panel.getImageWidth();
-        int imageHeigth = panel.getImageHeigth();
-        AnimationRasterizer.ImageType imageType = panel.getSelectedImageFormat();
-        float compressionQuality = panel.getCompressionQuality();
-        boolean progressive = panel.isProgressive();        
-        boolean forAllConfig = panel.isForAllConfigurations();
+        //int imageWidth = panel.getImageWidth();
+        //int imageHeigth = panel.getImageHeigth();
+        //AnimationRasterizer.ImageType imageType = panel.getFormat();
+        //float compressionQuality = panel.getCompressionQuality();
+        //boolean progressive = panel.isProgressive();        
+        //boolean forAllConfig = panel.isForAllConfigurations();
 
         if (dd.getValue() == DialogDescriptor.OK_OPTION){
             //
@@ -148,16 +155,14 @@ public final class SaveElementAsImage extends CookieAction{// implements Present
             bbox.setX(allBBox.getX() + allBBox.getWidth());
             svg.setRectTrait("viewBox", bbox);
 
-            AnimationRasterizer.exportElement(primaryFile, project, svgImage, elt.getId(), imageWidth, imageHeigth, 
-                                                imageType,progressive,compressionQuality,
-                                                0.0f, 0.0f, 1, true, forAllConfig);
+            AnimationRasterizer.exportElement(primaryFile, project, svgImage, elt.getId(), panel);
     
             svg.setRectTrait("viewBox", viewBox);
             elt.setMatrixTrait("transform", origTxf);
             svgImage.setViewportWidth(w);
             svgImage.setViewportHeight(h);
         }
-
+*/
 //    /**
 //     * The overlay image.
 //     */
@@ -190,7 +195,7 @@ public final class SaveElementAsImage extends CookieAction{// implements Present
 //        sg.releaseTarget();
         
         // Restore values.
-    }
+//    }
 
 //    public JMenuItem getPopupPresenter() {
 //        JMenuItem result = new JMenuItem("Export...");  //remember JMenu is a subclass of JMenuItem

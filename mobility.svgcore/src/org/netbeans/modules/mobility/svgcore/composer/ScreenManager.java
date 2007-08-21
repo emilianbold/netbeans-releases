@@ -53,6 +53,7 @@ public final class ScreenManager {
     private       Cursor         m_cursor;    
     private       boolean        m_showAllArea;
     private       boolean        m_showTooltip;
+    private       boolean        m_assignFocus;
     private       boolean        m_highlightObject;
     private       short          m_changeTicker = 0;
     
@@ -62,7 +63,7 @@ public final class ScreenManager {
         m_showAllArea     = false;
         m_showTooltip     = true;
         m_highlightObject = true;
-        reset();
+        m_assignFocus     = false;
     }
     
     void initialize() {
@@ -194,6 +195,14 @@ public final class ScreenManager {
     
     public boolean getShowTooltip() {
         return m_showTooltip;
+    }
+
+    public void setAssignFocus(boolean assignFocus) {
+        m_assignFocus = assignFocus;
+    }
+    
+    public boolean getAssignFocus() {
+        return m_assignFocus;
     }
     
     public void setHighlightObject(boolean highlightObject) {

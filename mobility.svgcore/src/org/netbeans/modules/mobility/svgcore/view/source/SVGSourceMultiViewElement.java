@@ -65,7 +65,7 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
 
     public void componentOpened() {
         super.componentOpened();
-        ((SVGDataObject) dObj).getModel().initialize();
+        ((SVGDataObject) dObj).getModel().attachToOpenedDocument();
         
         //tell the model that real document is available
         //((SVGDataObject) dObj).getModel().refresh();

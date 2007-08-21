@@ -30,24 +30,37 @@ import org.openide.util.actions.Presenter;
  */
 public abstract class AbstractSVGAction extends AbstractAction implements Presenter.Popup {
     private static final String ICON_PATH_PREFIX = "org/netbeans/modules/mobility/svgcore/resources/"; //NOI18N
-    private final String lblResId;
+    private final String m_lblResId;
+    private final int    m_toolbarPos;
     
     public AbstractSVGAction(String iconName, String hintResId, String lblResId) {
         this( iconName, hintResId, lblResId, true);
     }
 
     public AbstractSVGAction(String iconName, String hintResId, String lblResId, boolean enabled) {
-        this.lblResId = lblResId;
+        this(iconName, hintResId, lblResId, enabled, 100);
         putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage( ICON_PATH_PREFIX + iconName)));
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SVGViewTopComponent.class, hintResId));
         setEnabled(enabled);
     }
+
+    public AbstractSVGAction(String iconName, String hintResId, String lblResId, boolean enabled, int position) {
+        m_lblResId = lblResId;
+        putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage( ICON_PATH_PREFIX + iconName)));
+        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SVGViewTopComponent.class, hintResId));
+        setEnabled(enabled);
+        m_toolbarPos = position;
+    }
     
     public JMenuItem getPopupPresenter() {
         JMenuItem menu = new JMenuItem(this);
-        menu.setText(NbBundle.getMessage(SVGViewTopComponent.class, lblResId)); //NOI18N
+        menu.setText(NbBundle.getMessage(SVGViewTopComponent.class, m_lblResId)); //NOI18N
         menu.setToolTipText(null);
         menu.setIcon(null);
         return menu;
+    }    
+    
+    public int getPositionInToolbar() {
+        return m_toolbarPos;
     }    
 }

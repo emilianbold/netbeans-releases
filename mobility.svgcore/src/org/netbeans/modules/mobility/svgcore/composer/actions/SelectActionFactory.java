@@ -33,7 +33,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  */
 public class SelectActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction       m_navigateBackAction = 
-        new AbstractSVGAction("back.png", "HINT_SelectionBack", "LBL_SelectionBack", false) {  //NOI18N
+        new AbstractSVGAction("back.png", "HINT_SelectionBack", "LBL_SelectionBack", false, 0) {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 if ( m_selectionHistoryIndex > 0){
                     String [] selection = m_selectionHistory.get(--m_selectionHistoryIndex);
@@ -44,7 +44,7 @@ public class SelectActionFactory extends AbstractComposerActionFactory implement
     };            
 
     private final AbstractSVGAction       m_navigateForwardAction = 
-        new AbstractSVGAction("forward.png", "HINT_SelectionForward", "LBL_SelectionForward", false) {  //NOI18N
+        new AbstractSVGAction("forward.png", "HINT_SelectionForward", "LBL_SelectionForward", false, 1) {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 if ( m_selectionHistoryIndex < m_selectionHistory.size() - 1){
                     String [] selection = m_selectionHistory.get(++m_selectionHistoryIndex);
@@ -55,7 +55,7 @@ public class SelectActionFactory extends AbstractComposerActionFactory implement
     };            
 
     private final AbstractSVGAction       m_navigateUpAction = 
-        new AbstractSVGAction("up.png", "HINT_SelectionUp", "LBL_SelectionUp", false) {  //NOI18N
+        new AbstractSVGAction("up.png", "HINT_SelectionUp", "LBL_SelectionUp", false, 2) {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
                 if (selected != null && selected.length > 0) {
@@ -121,7 +121,7 @@ public class SelectActionFactory extends AbstractComposerActionFactory implement
         }
     }
     
-    public AbstractSVGAction [] getActions() {
+    public AbstractSVGAction [] getMenuActions() {
         return new AbstractSVGAction [] { m_navigateBackAction, m_navigateForwardAction, m_navigateUpAction};
     }
 

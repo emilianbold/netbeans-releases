@@ -65,6 +65,8 @@ public class SVGDataObject extends XmlMultiViewDataObject {
     public static final int    XML_VIEW_INDEX   = 0;
     public static final int    SVG_VIEW_INDEX   = 1;
     public static final String PROP_EXT_CHANGE  = "external_change"; //NOI18N
+    public static final String EXT_SVG          = "svg";
+    public static final String EXT_SVGZ         = "svgz";
     
     private static final Image SVGFILE_ICON = org.openide.util.Utilities.loadImage("org/netbeans/modules/mobility/svgcore/resources/svg.png"); // NOI18N
     
@@ -96,6 +98,11 @@ public class SVGDataObject extends XmlMultiViewDataObject {
             });
         }
 
+        protected void notifyClosed() {
+            super.notifyClosed();
+            release();
+        }
+        
         protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream)
         throws IOException, BadLocationException {
             FileObject fo = getPrimaryFile();
@@ -215,6 +222,14 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         return m_sceneManager;        
     }
        
+    private synchronized void release() {
+        if (m_model != null) {
+            m_model.detachDocument();
+        }
+        m_model = null;
+        m_sceneManager = null;        
+    }
+    
     protected synchronized XmlMultiViewEditorSupport getEditorSupport() {
         if(editorSupport == null) {
             editorSupport = new SVGEditorSupport();
@@ -239,7 +254,7 @@ public class SVGDataObject extends XmlMultiViewDataObject {
     }   
 
     public static boolean isSVGZ(String fileExt) {
-        return "svgz".equals(fileExt.toLowerCase()); //NOI18N
+        return EXT_SVGZ.equals(fileExt.toLowerCase()); //NOI18N
     }
     
     @SuppressWarnings({"deprecation"})

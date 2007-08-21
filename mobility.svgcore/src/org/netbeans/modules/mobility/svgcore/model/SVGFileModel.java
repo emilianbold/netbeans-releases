@@ -50,7 +50,7 @@ import org.openide.util.Exceptions;
  *
  * @author Pavel Benes
  */
-public class SVGFileModel {
+public final class SVGFileModel {
     protected static final String    XML_TAG        = "tag";  //NOI18N
     protected static final String    XML_EMPTY_TAG  = "empty_tag"; //NOI18N
     protected static final String    XML_ERROR_TAG  = "error"; //NOI18N
@@ -58,7 +58,6 @@ public class SVGFileModel {
         
     public interface ModelListener {
         public void modelChanged();
-        //public void modelSwitched();
     }
 
     public abstract class FileModelTransaction implements Runnable {
@@ -77,16 +76,16 @@ public class SVGFileModel {
             try {
                 checkModel();
                 assert SwingUtilities.isEventDispatchThread() : "Transaction must be called in AWT thread.";                
-                m_bDoc.atomicLock();
+                getDoc().atomicLock();
                 //m_isTransactionInProgress = true;
                 transaction();
             } catch(Exception e) {
-                m_bDoc.atomicUndo();
+                getDoc().atomicUndo();
                 //System.out.println("Transaction failed!");
                 e.printStackTrace();
             } finally {
                 //m_isTransactionInProgress = false;
-                m_bDoc.atomicUnlock();
+                getDoc().atomicUnlock();
                 //System.out.println("Transaction completed.");
                 if ( m_fireUpdate) {
                     getDataObject().fireContentChanged();
@@ -101,14 +100,14 @@ public class SVGFileModel {
     
     private final XmlMultiViewEditorSupport m_edSup;
     private final ElementMapping            m_mapping;
-    private       List<ModelListener>       m_modelListeners = new ArrayList<ModelListener>();
-    private       BaseDocument              m_bDoc;
+    private final List<ModelListener>       m_modelListeners   = new ArrayList<ModelListener>();
+    private final Object                    m_lock             = new Object();
+    private volatile BaseDocument           m_bDoc;
     private       DocumentModel             m_model;
     private       boolean                   m_isChanged        = true;
     private volatile boolean                m_eventInProgress  = false;
     private volatile boolean                m_sourceChanged    = false;
     private volatile boolean                m_updateInProgress = false;
-    private          Object                 m_lock             = new Object();
     private volatile boolean                m_undoInProcess    = false;
     
     private final DocumentListener          docListener = new DocumentListener() {
@@ -213,24 +212,52 @@ public class SVGFileModel {
         m_mapping = new ElementMapping( getDataObject().getEncodingHelper().getEncoding());
     }        
 
-    public synchronized void initialize() {
+    public synchronized void attachToOpenedDocument() {
+        assert SwingUtilities.isEventDispatchThread() : "Model initialisation must be called from AWT thread!";
         if (m_bDoc == null) {
-            assert javax.swing.SwingUtilities.isEventDispatchThread();
-            javax.swing.JEditorPane[] panes = m_edSup.getOpenedPanes();
-            assert panes != null && panes.length > 0;
-            m_bDoc  = (BaseDocument) panes[0].getDocument();
+            m_bDoc = getOpenedDoc();
+            //System.out.println("Using already opened document.");
+            assert m_bDoc != null;
             m_bDoc.addDocumentListener(docListener);
-       }
+        } else {
+            assert m_bDoc == getOpenedDoc() : "Model mismatch";
+        }
+    }
+    
+    public synchronized void detachDocument() {
+        m_model = null;
+        m_bDoc  = null;
+        m_modelListeners.clear();
+        //System.out.println("Removing the document.");
+    }
+    
+    private BaseDocument getOpenedDoc() {
+        JEditorPane[] panes = m_edSup.getOpenedPanes();
+        if (panes != null || panes.length > 0) {
+            return (BaseDocument) panes[0].getDocument();
+        } else {
+            return null;
+        }
+    }
+    
+    private synchronized BaseDocument getDoc() {
+        if ( m_bDoc == null) {
+            try {
+                //System.out.println("Opening new document.");
+                m_bDoc = (BaseDocument) m_edSup.openDocument();
+                assert m_bDoc != null;
+                m_bDoc.addDocumentListener(docListener);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return m_bDoc;        
     }
     
     private synchronized void checkModel() {
-        assert m_bDoc != null;
         if (m_model == null) {
-            if ( m_bDoc == null) {
-                throw new IllegalStateException("Model must be initialized first");
-            }
             try {
-                m_model = org.netbeans.modules.editor.structure.api.DocumentModel.getDocumentModel(m_bDoc);
+                m_model = org.netbeans.modules.editor.structure.api.DocumentModel.getDocumentModel(getDoc());
                 m_model.addDocumentModelListener(modelListener);
                 m_model.addDocumentModelStateListener(modelStateListener);
             } catch (DocumentModelException ex) {
@@ -289,89 +316,8 @@ public class SVGFileModel {
         }
         setChanged(true);
     }
-        
-/*    
-    public synchronized void refresh() {
-        try {
-            checkDocument();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-       
-    private JEditorPane getOpenedEditor() {
-        final JEditorPane [] panes = new JEditorPane[1];
-                
-        if ( SwingUtilities.isEventDispatchThread()) {
-            JEditorPane [] temp = m_edSup.getOpenedPanes();
-            if (temp != null && temp.length > 0) {
-                panes[0] = temp[0];
-            }
-        } else {
-            try {
-                SwingUtilities.invokeAndWait( new Runnable() {
-                    public void run() {
-                        JEditorPane [] temp = m_edSup.getOpenedPanes();
-                        if (temp != null && temp.length > 0) {
-                            panes[0] = temp[0];
-                        }
-                    }
-                });
-            } catch( Exception e) {
-                e.printStackTrace();
-            }
-        }
-        
-        if (panes[0] != null) {
-            System.out.println("Opened doc: " + panes[0].getDocument());
-        } else {
-            System.out.println("No editor opened");
-        }
-        return panes[0];
-    }
- 
-    private void checkDocument() throws IOException, DocumentModelException {
-        assert m_bDoc != null;
-    }
-
-    private void _checkDocument() throws IOException, DocumentModelException {
-        JEditorPane editor = getOpenedEditor();
-        
-        if (m_bDoc == null) {
-            if (editor != null) {
-                // reuse document from opened editor, if exists
-                createModel( (BaseDocument) editor.getDocument(), true);
-            } else {
-                // otherwise create the document from scratch
-                //m_kit = JEditorPane.createEditorKitForContentType(SVGDataLoader.REQUIRED_MIME);
-                //Use in NB 6.0
-                EditorKit kit = CloneableEditorSupport.getEditorKit( SVGDataLoader.REQUIRED_MIME);
-                
-                //TODO Read file content in another thread
-                createModel( (BaseDocument) kit.createDefaultDocument(), false);
-                try {
-                    kit.read( m_edSup.getInputStream(), m_bDoc, 0);
-                } catch (BadLocationException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        } else {
-            if (editor != null) {
-                BaseDocument opened = (BaseDocument) editor.getDocument();
-                if ( opened != m_bDoc) {
-                    m_bDoc.removeDocumentListener(docListener);
-                    //m_kit   = editor.getEditorKit();
-                    createModel(opened, true);
-                }
-            }
-        }
-        assert m_model != null;
-        //assert m_kit   != null;
-        assert m_bDoc    != null;
-    }
-  */
     
-    public synchronized DocumentModel _getModel() throws Exception {
+    public synchronized DocumentModel getModel() throws Exception {
         checkModel();
         return m_model;
     }
@@ -437,8 +383,7 @@ public class SVGFileModel {
     }
 
     public int firstIndexOf( String str) {
-        assert m_bDoc != null;
-        CharSeq content = m_bDoc.getText();
+        CharSeq content = getDoc().getText();
         int charNum = content.length();
         int strLen  = str.length();
         if (strLen > 0) {
@@ -457,8 +402,7 @@ public class SVGFileModel {
     }
     
     public int [] getPositionByOffset(int offset) {
-        assert m_bDoc != null;
-        Element root  = m_bDoc.getDefaultRootElement();
+        Element root  = getDoc().getDefaultRootElement();
         int lineCount = root.getElementCount();
         for (int i = 0; i < lineCount; i++) {
             Element el = root.getElement(i);
@@ -471,8 +415,7 @@ public class SVGFileModel {
     }
     
     public int getOffsetByPosition(int line, int column) {
-        assert m_bDoc != null;
-        Element root = m_bDoc.getDefaultRootElement();
+        Element root = getDoc().getDefaultRootElement();
         line = Math.max(line, 1);
         line = Math.min(line, root.getElementCount());
         int pos = root.getElement(line - 1).getStartOffset() + column;
@@ -520,7 +463,7 @@ public class SVGFileModel {
             protected void transaction() throws BadLocationException {
                 DocumentElement de       = checkIntegrity(id);
                 int             startOff = de.getStartOffset();
-                m_bDoc.remove(startOff, de.getEndOffset() - startOff + 1);
+                getDoc().remove(startOff, de.getEndOffset() - startOff + 1);
             }
         });
     }
@@ -544,14 +487,15 @@ public class SVGFileModel {
                 DocumentElement svgRoot = getSVGRoot(m_model);
 
                 if (svgRoot != null) {
+                    BaseDocument doc = getDoc();
                     DocumentElement lastChild = getLastTagChild(svgRoot);
                     int    insertPosition;
                     if (lastChild != null) {
                         //insert new text after last child
                         insertPosition = lastChild.getEndOffset()+1;
-                        m_bDoc.insertString(insertPosition, insertString, null);
+                        doc.insertString(insertPosition, insertString, null);
                     } else {
-                        String docText  = m_bDoc.getText(0, m_bDoc.getLength());
+                        String docText  = doc.getText(0, doc.getLength());
                         int    startOff = svgRoot.getStartOffset();
                         int    c = 0;
                         
@@ -561,13 +505,13 @@ public class SVGFileModel {
                         
                         if (c == '/') {
                             if (docText.charAt(insertPosition) == '<') {
-                                m_bDoc.insertString(insertPosition, insertString, null);
+                                doc.insertString(insertPosition, insertString, null);
                             } else {
                                 StringBuilder sb = new StringBuilder( docText.substring(startOff, insertPosition+1));
                                 sb.append(">");  //NOI18N
                                 sb.append(insertString);
                                 sb.append("\n</svg>"); //NOI18N
-                                m_bDoc.replace(startOff, svgRoot.getEndOffset() - startOff + 1, sb.toString(), null);
+                                doc.replace(startOff, svgRoot.getEndOffset() - startOff + 1, sb.toString(), null);
                             }    
                         } else {
                             //TODO report invalid svg doc
@@ -596,8 +540,8 @@ public class SVGFileModel {
                 } else {
                     endOff = elem.getEndOffset() - 1;
                 }
-
-                String fragment = m_bDoc.getText(startOff, endOff - startOff + 1);
+                BaseDocument doc      = getDoc();
+                String       fragment = doc.getText(startOff, endOff - startOff + 1);
                 int p;
                 if ( (p=fragment.indexOf(attrName)) != -1) {
                     p += attrName.length();
@@ -608,7 +552,7 @@ public class SVGFileModel {
                             while( ++q < fragment.length()) {
                                 if (fragment.charAt(q) =='"') {
                                     p++;
-                                    m_bDoc.replace(startOff + p, q-p , attrValue, null);
+                                    doc.replace(startOff + p, q-p , attrValue, null);
                                     return;
                                 }
                             }
@@ -621,7 +565,7 @@ public class SVGFileModel {
                     sb.append("=\""); //NOI18N
                     sb.append(attrValue);
                     sb.append( "\" "); //NOI18N
-                    m_bDoc.insertString(startOff, sb.toString(), null);
+                    doc.insertString(startOff, sb.toString(), null);
                 }            
             }
         });
@@ -637,6 +581,7 @@ public class SVGFileModel {
                 DocumentElement firstChild = getFirstTagChild(de.getParentElement());
 
                 if (de != firstChild) {
+                    BaseDocument doc = getDoc();
                     int    startOffset = de.getStartOffset();
                     int    length      = de.getEndOffset() - startOffset + 1;
                     String elemText    = getElementText(de, id);
@@ -644,8 +589,8 @@ public class SVGFileModel {
                     int insertOffset = firstChild.getStartOffset();
                     assert insertOffset < startOffset;
 
-                    m_bDoc.remove(startOffset, length);
-                    m_bDoc.insertString(insertOffset, elemText, null);
+                    doc.remove(startOffset, length);
+                    doc.insertString(insertOffset, elemText, null);
                 }        
             }
         });       
@@ -661,15 +606,16 @@ public class SVGFileModel {
                 DocumentElement lastChild = getLastTagChild(de.getParentElement());
 
                 if (de != lastChild) {
-                    int startOffset = de.getStartOffset();
-                    int length      = de.getEndOffset() - startOffset + 1;
-                    String elemText = getElementText(de, id);
+                    BaseDocument doc         = getDoc();
+                    int          startOffset = de.getStartOffset();
+                    int          length      = de.getEndOffset() - startOffset + 1;
+                    String       elemText    = getElementText(de, id);
 
                     int insertOffset = lastChild.getEndOffset() + 1;
                     assert startOffset < insertOffset;
 
-                    m_bDoc.insertString(insertOffset, elemText, null);
-                    m_bDoc.remove(startOffset, length);
+                    doc.insertString(insertOffset, elemText, null);
+                    doc.remove(startOffset, length);
                 }
             }
         });
@@ -685,15 +631,16 @@ public class SVGFileModel {
                 DocumentElement nextChild = getNextTagSibling(de);
 
                 if (nextChild != null) {
-                    int startOffset = de.getStartOffset();
-                    int length      = de.getEndOffset() - startOffset + 1;
-                    String elemText = m_bDoc.getText(startOffset, length);
+                    BaseDocument doc         = getDoc();
+                    int          startOffset = de.getStartOffset();
+                    int          length      = de.getEndOffset() - startOffset + 1;
+                    String       elemText    = doc.getText(startOffset, length);
 
                     int insertOffset = nextChild.getEndOffset() + 1;
                     assert startOffset < insertOffset;
 
-                    m_bDoc.insertString(insertOffset, elemText, null);
-                    m_bDoc.remove(startOffset, length);
+                    doc.insertString(insertOffset, elemText, null);
+                    doc.remove(startOffset, length);
                 }
             }
         });
@@ -709,15 +656,16 @@ public class SVGFileModel {
                 DocumentElement previousChild = getPreviousTagSibling(de);
 
                 if (previousChild != null) {
-                    int startOffset = de.getStartOffset();
-                    int length      = de.getEndOffset() - startOffset + 1;
-                    String elemText = m_bDoc.getText(startOffset, length);
+                    BaseDocument doc         = getDoc();
+                    int          startOffset = de.getStartOffset();
+                    int          length      = de.getEndOffset() - startOffset + 1;
+                    String       elemText    = doc.getText(startOffset, length);
 
                     int insertOffset = previousChild.getStartOffset();
                     assert startOffset > insertOffset;
 
-                    m_bDoc.remove(startOffset, length);
-                    m_bDoc.insertString(insertOffset, elemText, null);
+                    doc.remove(startOffset, length);
+                    doc.insertString(insertOffset, elemText, null);
                 }
             }
         });
@@ -776,7 +724,7 @@ public class SVGFileModel {
                 //System.out.println("Forcing model update");
                 m_model.forceUpdate();
             } else if (!m_updateInProgress) {
-                System.out.println("Model already up to date.");
+                //System.out.println("Model already up to date.");
                 return;
             } 
             
@@ -945,7 +893,7 @@ public class SVGFileModel {
         int    startOffset = de.getStartOffset();
         int    length      = de.getEndOffset() - startOffset + 1;
 
-        String elemText = m_bDoc.getText(startOffset, length);
+        String elemText = getDoc().getText(startOffset, length);
 
         if (id != null && !de.getAttributes().isDefined("id")) {
             StringBuilder sb = new StringBuilder(elemText);
@@ -1018,10 +966,9 @@ public class SVGFileModel {
     }
         
     private void checkIntegrity(DocumentElement de) {
-        assert m_bDoc != null;
         checkModel();
         assert de != null;
-        assert de.getDocument() == m_bDoc : "Element is not part of the current document";
+        assert de.getDocument() == getDoc() : "Element is not part of the current document";
         assert de.getDocumentModel() == m_model : "Element is not part of the current document model";
     }    
     

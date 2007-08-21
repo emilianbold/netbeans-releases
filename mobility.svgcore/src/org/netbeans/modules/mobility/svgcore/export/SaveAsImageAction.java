@@ -21,23 +21,21 @@
 
 package org.netbeans.modules.mobility.svgcore.export;
 
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.mobility.project.J2MEProject;
+import java.awt.Dialog;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author suchys
+ * @author Pavel Benes, suchys
  */
-public class SaveAsImageAction extends CookieAction{
+public final class SaveAsImageAction extends CookieAction{
     
     /** Creates a new instance of SaveAsImage */
     public SaveAsImageAction() {
@@ -51,29 +49,20 @@ public class SaveAsImageAction extends CookieAction{
 
     protected void performAction(Node[] n) {
         SVGDataObject doj = (SVGDataObject) n[0].getLookup().lookup(SVGDataObject.class);
-        if (doj != null){            
-            J2MEProject project = null;
-            final FileObject primaryFile = doj.getPrimaryFile ();
-            Project p = FileOwnerQuery.getOwner (primaryFile);
-            if (p != null && p instanceof J2MEProject){
-                project = (J2MEProject) p;
-            }
-                
-            //SVGRasterizerPanel panel = new SVGRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(doj.getPrimaryFile(), null), project != null);
-            SVGAnimationRasterizerPanel panel = new SVGAnimationRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(primaryFile, null), project != null,false);
-            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_ImageExport"));
-            DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
-            int imageWidth = panel.getImageWidth();
-            int imageHeigth = panel.getImageHeigth();
-            AnimationRasterizer.ImageType imageType = panel.getSelectedImageFormat();
-            float compressionQuality = panel.getCompressionQuality();
-            boolean progressive = panel.isProgressive();
-            boolean forAllConfig = panel.isForAllConfigurations();
+        if (doj != null){       
+            try {
+                SVGImageRasterizerPanel panel = new SVGImageRasterizerPanel(doj, null);
+                DialogDescriptor        dd    = new DialogDescriptor(panel, NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_ImageExport"));
 
-            if (dd.getValue() == DialogDescriptor.OK_OPTION){
-                AnimationRasterizer.export(doj.getPrimaryFile(), project, imageWidth, imageHeigth, 
-                        imageType,progressive,compressionQuality,
-                        0.0f, 0.0f, 1, true, forAllConfig);
+                Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+                SaveAnimationAsImageAction.setDialogMinimumSize(dlg);
+                dlg.setVisible(true);
+
+                if (dd.getValue() == DialogDescriptor.OK_OPTION){
+                    AnimationRasterizer.export(doj, (AnimationRasterizer.Params) panel);
+                }
+            } catch( Exception e) {
+                Exceptions.printStackTrace(e);
             }
         }
     }

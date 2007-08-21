@@ -31,6 +31,7 @@ import javax.microedition.m2g.SVGImage;
 import javax.microedition.m2g.ScalableImage;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.options.SvgcoreSettings;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -153,7 +154,7 @@ public class Util {
     private static SVGImage loadImageWithProgress(FileObject fo) throws IOException {
         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Util.class, "MSG_Loading", fo.getNameExt()));
         handle.start(200);
-        if ("svg".equals(fo.getExt().toLowerCase())){  //NOI18N
+        if ( SVGDataObject.EXT_SVG.equals(fo.getExt().toLowerCase())){  //NOI18N
             ProgressInputStream pis = null;
             try {
                 pis = new ProgressInputStream(fo.getInputStream(), fo.getSize(), handle);

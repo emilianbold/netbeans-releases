@@ -32,16 +32,26 @@ public class HighlightActionFactory extends AbstractComposerActionFactory {
     }
 
     public synchronized ComposerAction startAction(InputEvent e, boolean isOutsideEvent) {        
-        if ( !isOutsideEvent &&
-             !m_sceneMgr.isReadOnly() &&                
-             e.getID() == MouseEvent.MOUSE_MOVED && 
-             !m_sceneMgr.containsAction(HighlightAction.class)) {
-            MouseEvent me = (MouseEvent)e;
-            SVGObject [] objects = m_sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
-            if (objects != null && objects.length > 0 && objects[0] != null)  {
-                return new HighlightAction(this, objects[0]);
+        if ( !isOutsideEvent && e.getID() == MouseEvent.MOUSE_MOVED) {
+            if ( !m_sceneMgr.isReadOnly() &&  !m_sceneMgr.containsAction(HighlightAction.class)) {
+                MouseEvent me = (MouseEvent)e;
+                SVGObject [] objects = m_sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
+                if (objects != null && objects.length > 0 && objects[0] != null)  {
+                    return new HighlightAction(this, objects[0]);
+                }
+            } else {
+                if (m_sceneMgr.getScreenManager().getAssignFocus()) {
+                    MouseEvent me = (MouseEvent)e;
+                    SVGObject [] objects = m_sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
+                    if (objects != null && objects.length > 0 && objects[0] != null)  {
+                        m_sceneMgr.getPerseusController().focusElement(objects[0]);
+                    } else {
+                        m_sceneMgr.getPerseusController().focusElement(null);
+                    }
+                }
             }
-        }   
+            
+        }
         return null;
     }
 }

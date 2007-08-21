@@ -18,7 +18,6 @@
 
 package org.netbeans.modules.mobility.svgcore.export;
 
-import java.awt.Dimension;
 import java.io.IOException;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -40,27 +39,22 @@ import org.openide.util.RequestProcessor;
  *
  * @author Pavel Benes
  */
-public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
-    private       SpinnerNumberModel m_previewSpinnerModel;
-    private final ComponentGroup     m_startTime;    
-    private final ComponentGroup     m_stopTime;    
-
+public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
+    private final ComponentGroup m_currentTime;
     /** Creates new form SVGAnimationRasterizer */
-    public SVGAnimationRasterizerPanel(SVGDataObject dObj) throws IOException, BadLocationException {
-        super(dObj, null);
+    public SVGImageRasterizerPanel(SVGDataObject dObj, String elementId) throws IOException, BadLocationException {
+        super(dObj, elementId);
         initComponents();
-        createCompressionGroup( compressionLevelCombo, compressionQualitySpinner);
-        m_startTime = createTimeGroup( startTimeSpinner, startTimeSlider, true);
-        m_stopTime  = createTimeGroup( stopTimeSpinner, stopTimeSlider, false);
         
-        radioExportAll.setEnabled(isInProject());
+        m_currentTime = createTimeGroup( currentTimeSpinner, animationSlider, true);
+        createCompressionGroup( compressionLevelCombo, compressionQualitySpinner);
+        
+        radioExportAll.setEnabled(isInProject() && m_elementId == null);
+        radioExportCurrent.setEnabled(isInProject());
+        
         m_ratio = m_dim.getHeight() / m_dim.getWidth();
         spinnerHeight.setModel(new SpinnerNumberModel((int)m_dim.getHeight(), 1, 2048, 1));
         spinnerWidth.setModel(new SpinnerNumberModel((int)m_dim.getWidth(), 1, 2048, 1));
-        
-        framesPerSecSpinner.setModel( new SpinnerNumberModel( 2, 0.1, 30, 1));
-        previewFrameSpinner.setModel( m_previewSpinnerModel = new SpinnerNumberModel(1, 1, 10, 1));
-        
         spinnerWidth.getModel().addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 if (keepRatio.isSelected()){
@@ -69,22 +63,10 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 updateImage(spinnerWidth, true);
             }
         });
-
-        m_previewSpinnerModel.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                updateImage(previewFrameSpinner, false);
-            }
-        });
-
-        framesPerSecSpinner.getModel().addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                updateImage(framesPerSecSpinner, true);
-            }
-        });
-
+        
         updateImage(null, true);
     }
-    
+            
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -111,45 +93,31 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
         transparentCheckBox = new javax.swing.JCheckBox();
         compressionQualitySpinner = new javax.swing.JSpinner();
         timeLinePanel = new javax.swing.JPanel();
-        startTimeSpinner = new JSpinner( new SpinnerNumberModel( 0.0, 0.0, 30.0, 1.0));
+        currentTimeSpinner = new JSpinner( new SpinnerNumberModel( 0.0, 0.0, 30.0, 1.0));
         javax.swing.JLabel startTimeLabel = new javax.swing.JLabel();
-        javax.swing.JLabel stopTimeLabel = new javax.swing.JLabel();
-        stopTimeSpinner = new javax.swing.JSpinner();
-        startTimeSlider = new javax.swing.JSlider();
-        stopTimeSlider = new javax.swing.JSlider();
-        javax.swing.JLabel framesPerSecLabel = new javax.swing.JLabel();
-        framesPerSecSpinner = new javax.swing.JSpinner();
+        animationSlider = new javax.swing.JSlider();
         exportPanel = new javax.swing.JPanel();
         radioExportCurrent = new javax.swing.JRadioButton();
         radioExportAll = new javax.swing.JRadioButton();
-        allFramesCheckBox = new javax.swing.JCheckBox();
         jPanel3 = new javax.swing.JPanel();
+        imageHolder = new javax.swing.JScrollPane();
         jPanel4 = new javax.swing.JPanel();
         imageTypeLabel = new javax.swing.JLabel();
         imageSizeLabel = new javax.swing.JLabel();
         fileNameLabel = new javax.swing.JLabel();
-        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
-        animationSizeLabel = new javax.swing.JLabel();
-        imageHolder = new javax.swing.JScrollPane();
-        javax.swing.JLabel previewLabel = new javax.swing.JLabel();
-        previewFrameSpinner = new javax.swing.JSpinner();
-        maxPreviewFrameLabel = new javax.swing.JLabel();
-        frameTimeLabel = new javax.swing.JLabel();
 
-        setOpaque(false);
-
-        sizePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_ImageSize"))); // NOI18N
+        sizePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_ImageSize"))); // NOI18N
 
         jLabel11.setLabelFor(spinnerWidth);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel11, org.openide.util.NbBundle.getBundle(SVGAnimationRasterizerPanel.class).getString("LBL_AnimationImageWidth")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel11, org.openide.util.NbBundle.getBundle(SVGImageRasterizerPanel.class).getString("LBL_AnimationImageWidth")); // NOI18N
 
         jLabel12.setLabelFor(spinnerHeight);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel12, org.openide.util.NbBundle.getBundle(SVGAnimationRasterizerPanel.class).getString("LBL_AnimationImageHeight")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel12, org.openide.util.NbBundle.getBundle(SVGImageRasterizerPanel.class).getString("LBL_AnimationImageHeight")); // NOI18N
 
         spinnerHeight.setEnabled(false);
 
         keepRatio.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(keepRatio, org.openide.util.NbBundle.getBundle(SVGAnimationRasterizerPanel.class).getString("LBL_AnimationKeepRatio")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(keepRatio, org.openide.util.NbBundle.getBundle(SVGImageRasterizerPanel.class).getString("LBL_AnimationKeepRatio")); // NOI18N
         keepRatio.setToolTipText("Images for other configurations are transformed using screen ratio.");
         keepRatio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         keepRatio.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -177,7 +145,7 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                     .add(sizePanelLayout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(keepRatio)))
-                .addContainerGap(80, Short.MAX_VALUE))
+                .addContainerGap(79, Short.MAX_VALUE))
         );
         sizePanelLayout.setVerticalGroup(
             sizePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -193,9 +161,9 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 .add(keepRatio))
         );
 
-        optionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_ImageOptions"))); // NOI18N
+        optionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_ImageOptions"))); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_OptionsFormat")); // NOI18N
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_OptionsFormat")); // NOI18N
 
         formatComboBox.setModel(createImageTypeComboBoxModel());
         formatComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -206,11 +174,11 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        progressiveCheckBox.setText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_OptionsProgressive")); // NOI18N
+        progressiveCheckBox.setText(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_OptionsProgressive")); // NOI18N
         progressiveCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         progressiveCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        compressionLabel.setText(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_OptionsQuality")); // NOI18N
+        compressionLabel.setText(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_OptionsQuality")); // NOI18N
 
         compressionQualityLabel.setText("Quality");
 
@@ -234,16 +202,16 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                         .add(84, 84, 84)
                         .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE))
                     .add(optionsPanelLayout.createSequentialGroup()
-                        .add(jLabel2)
-                        .add(18, 18, 18)
-                        .add(formatComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 75, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(49, 49, 49))
-                    .add(optionsPanelLayout.createSequentialGroup()
-                        .add(progressiveCheckBox)
-                        .addContainerGap(95, Short.MAX_VALUE))
+                        .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(optionsPanelLayout.createSequentialGroup()
+                                .add(jLabel2)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(formatComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(progressiveCheckBox))
+                        .addContainerGap(56, Short.MAX_VALUE))
                     .add(optionsPanelLayout.createSequentialGroup()
                         .add(transparentCheckBox)
-                        .addContainerGap(91, Short.MAX_VALUE))
+                        .addContainerGap(90, Short.MAX_VALUE))
                     .add(optionsPanelLayout.createSequentialGroup()
                         .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, compressionLevelCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -251,8 +219,8 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(compressionQualityLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(compressionQualitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 48, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(47, 47, 47))))
+                        .add(compressionQualitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(54, 54, 54))))
         );
         optionsPanelLayout.setVerticalGroup(
             optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -273,44 +241,27 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(compressionLevelCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(compressionQualityLabel)
-                    .add(compressionQualitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(compressionQualitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(compressionQualityLabel)))
         );
 
-        timeLinePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_AnimationFrameTime"))); // NOI18N
+        timeLinePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_AnimationFrameTime"))); // NOI18N
 
-        startTimeLabel.setLabelFor(startTimeSpinner);
-        org.openide.awt.Mnemonics.setLocalizedText(startTimeLabel, org.openide.util.NbBundle.getBundle(SVGAnimationRasterizerPanel.class).getString("LBL_AnimationTime")); // NOI18N
-
-        stopTimeLabel.setText("Stop Time");
-
-        framesPerSecLabel.setText("Frames per second");
+        startTimeLabel.setLabelFor(currentTimeSpinner);
+        org.openide.awt.Mnemonics.setLocalizedText(startTimeLabel, org.openide.util.NbBundle.getBundle(SVGImageRasterizerPanel.class).getString("LBL_AnimationTime")); // NOI18N
 
         org.jdesktop.layout.GroupLayout timeLinePanelLayout = new org.jdesktop.layout.GroupLayout(timeLinePanel);
         timeLinePanel.setLayout(timeLinePanelLayout);
         timeLinePanelLayout.setHorizontalGroup(
             timeLinePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(timeLinePanelLayout.createSequentialGroup()
+                .addContainerGap()
                 .add(timeLinePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(timeLinePanelLayout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(framesPerSecLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 14, Short.MAX_VALUE)
-                        .add(framesPerSecSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(startTimeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, stopTimeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE)
-                    .add(timeLinePanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(timeLinePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(timeLinePanelLayout.createSequentialGroup()
-                                .add(stopTimeLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 27, Short.MAX_VALUE)
-                                .add(stopTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 84, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(timeLinePanelLayout.createSequentialGroup()
-                                .add(startTimeLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 26, Short.MAX_VALUE)
-                                .add(startTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 83, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                        .add(startTimeLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(currentTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(animationSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
                 .addContainerGap())
         );
         timeLinePanelLayout.setVerticalGroup(
@@ -318,65 +269,40 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
             .add(timeLinePanelLayout.createSequentialGroup()
                 .add(timeLinePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(startTimeLabel)
-                    .add(startTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(startTimeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(currentTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(timeLinePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(stopTimeLabel)
-                    .add(stopTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(stopTimeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(timeLinePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(framesPerSecLabel)
-                    .add(framesPerSecSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(24, 24, 24))
+                .add(animationSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
-        exportPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_ExportLabel"))); // NOI18N
+        exportPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_ExportLabel"))); // NOI18N
 
         buttonGroup1.add(radioExportCurrent);
         radioExportCurrent.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(radioExportCurrent, org.openide.util.NbBundle.getBundle(SVGAnimationRasterizerPanel.class).getString("LBL_AnimationOnlyActiveConfiguration")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(radioExportCurrent, org.openide.util.NbBundle.getBundle(SVGImageRasterizerPanel.class).getString("LBL_AnimationOnlyActiveConfiguration")); // NOI18N
         radioExportCurrent.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         radioExportCurrent.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         buttonGroup1.add(radioExportAll);
-        org.openide.awt.Mnemonics.setLocalizedText(radioExportAll, org.openide.util.NbBundle.getBundle(SVGAnimationRasterizerPanel.class).getString("LBL_AnimationAllConfigurations")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(radioExportAll, org.openide.util.NbBundle.getBundle(SVGImageRasterizerPanel.class).getString("LBL_AnimationAllConfigurations")); // NOI18N
         radioExportAll.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         radioExportAll.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        allFramesCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(allFramesCheckBox, org.openide.util.NbBundle.getMessage(SVGAnimationRasterizerPanel.class, "LBL_AnimationInSingleFile")); // NOI18N
-        allFramesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        allFramesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        allFramesCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                allFramesInSingleFileChanged(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout exportPanelLayout = new org.jdesktop.layout.GroupLayout(exportPanel);
         exportPanel.setLayout(exportPanelLayout);
         exportPanelLayout.setHorizontalGroup(
             exportPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(exportPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(exportPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(radioExportAll)
-                    .add(allFramesCheckBox)
-                    .add(radioExportCurrent))
-                .addContainerGap(1, Short.MAX_VALUE))
+                    .add(radioExportCurrent)
+                    .add(radioExportAll)))
         );
         exportPanelLayout.setVerticalGroup(
             exportPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(exportPanelLayout.createSequentialGroup()
                 .add(radioExportCurrent)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(radioExportAll)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, Short.MAX_VALUE)
-                .add(allFramesCheckBox))
+                .add(radioExportAll))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -389,10 +315,6 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
 
         fileNameLabel.setText("C:\\Program Files\\");
 
-            jLabel1.setText("/");
-
-            animationSizeLabel.setText("1.3M");
-
             org.jdesktop.layout.GroupLayout jPanel4Layout = new org.jdesktop.layout.GroupLayout(jPanel4);
             jPanel4.setLayout(jPanel4Layout);
             jPanel4Layout.setHorizontalGroup(
@@ -400,14 +322,9 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                 .add(jPanel4Layout.createSequentialGroup()
                     .addContainerGap()
                     .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(fileNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                        .add(fileNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
                         .add(imageTypeLabel)
-                        .add(jPanel4Layout.createSequentialGroup()
-                            .add(imageSizeLabel)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(animationSizeLabel)))
+                        .add(imageSizeLabel))
                     .addContainerGap())
             );
             jPanel4Layout.setVerticalGroup(
@@ -416,22 +333,11 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                     .addContainerGap()
                     .add(imageTypeLabel)
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(imageSizeLabel)
-                        .add(animationSizeLabel)
-                        .add(jLabel1))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(imageSizeLabel)
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(fileNameLabel)
                     .addContainerGap())
             );
-
-            imageHolder.setPreferredSize(new java.awt.Dimension(300, 300));
-
-            previewLabel.setText("Preview of frame");
-
-            maxPreviewFrameLabel.setText("/ 30");
-
-            frameTimeLabel.setText("2.5 [s]");
 
             org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
             jPanel3.setLayout(jPanel3Layout);
@@ -441,28 +347,14 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                     .addContainerGap()
                     .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3Layout.createSequentialGroup()
-                            .add(previewLabel)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(previewFrameSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 49, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(maxPreviewFrameLabel)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 123, Short.MAX_VALUE)
-                            .add(frameTimeLabel)))
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE))
                     .addContainerGap())
             );
             jPanel3Layout.setVerticalGroup(
                 jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
                     .addContainerGap()
-                    .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(previewLabel)
-                        .add(maxPreviewFrameLabel)
-                        .add(previewFrameSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(frameTimeLabel))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
+                    .add(imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                     .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .addContainerGap())
@@ -477,15 +369,15 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                     .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(optionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 210, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(sizePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(org.jdesktop.layout.GroupLayout.TRAILING, sizePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(org.jdesktop.layout.GroupLayout.TRAILING, optionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 209, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(timeLinePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(exportPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 210, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(exportPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .addContainerGap())
             );
             layout.setVerticalGroup(
                 layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
+                .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                     .addContainerGap()
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -495,15 +387,11 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
                             .add(optionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(timeLinePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(exportPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .addContainerGap())
             );
         }// </editor-fold>//GEN-END:initComponents
-
-private void allFramesInSingleFileChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allFramesInSingleFileChanged
-    updateImage((JComponent) evt.getSource(), true);
-}//GEN-LAST:event_allFramesInSingleFileChanged
 
 private void transparencyChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transparencyChanged
     updateImage((JComponent) evt.getSource(), true);
@@ -511,27 +399,26 @@ private void transparencyChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
 
 private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formatComboBoxActionPerformed
     // TODO add your handling code here:
-     updateImage((JComponent) evt.getSource(), true);
+     updateImage((JComponent)evt.getSource(), true);
 }//GEN-LAST:event_formatComboBoxActionPerformed
 
     private void keepRatioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keepRatioActionPerformed
     // TODO add your handling code here:
      spinnerHeight.setEnabled( !keepRatio.isSelected());   
 }//GEN-LAST:event_keepRatioActionPerformed
+
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox allFramesCheckBox;
-    private javax.swing.JLabel animationSizeLabel;
+    private javax.swing.JSlider animationSlider;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel compressionLabel;
     private javax.swing.JComboBox compressionLevelCombo;
     private javax.swing.JLabel compressionQualityLabel;
     private javax.swing.JSpinner compressionQualitySpinner;
+    private javax.swing.JSpinner currentTimeSpinner;
     private javax.swing.JPanel exportPanel;
     private javax.swing.JLabel fileNameLabel;
     private javax.swing.JComboBox formatComboBox;
-    private javax.swing.JLabel frameTimeLabel;
-    private javax.swing.JSpinner framesPerSecSpinner;
     private javax.swing.JScrollPane imageHolder;
     private javax.swing.JLabel imageSizeLabel;
     private javax.swing.JLabel imageTypeLabel;
@@ -539,23 +426,17 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JCheckBox keepRatio;
-    private javax.swing.JLabel maxPreviewFrameLabel;
     private javax.swing.JPanel optionsPanel;
-    private javax.swing.JSpinner previewFrameSpinner;
     private javax.swing.JCheckBox progressiveCheckBox;
     private javax.swing.JRadioButton radioExportAll;
     private javax.swing.JRadioButton radioExportCurrent;
     private javax.swing.JPanel sizePanel;
     private javax.swing.JSpinner spinnerHeight;
     private javax.swing.JSpinner spinnerWidth;
-    private javax.swing.JSlider startTimeSlider;
-    private javax.swing.JSpinner startTimeSpinner;
-    private javax.swing.JSlider stopTimeSlider;
-    private javax.swing.JSpinner stopTimeSpinner;
     private javax.swing.JPanel timeLinePanel;
     private javax.swing.JCheckBox transparentCheckBox;
     // End of variables declaration//GEN-END:variables
-    
+
     public int getImageWidth(){
         return overrideWidth != -1 ? overrideWidth : ((Integer)spinnerWidth.getValue()).intValue();
     }
@@ -564,25 +445,13 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
         return overrideHeight != -1 ? overrideHeight : ((Integer)spinnerHeight.getValue()).intValue();
     }
         
-    public float getStartTime(){
-        return ((Double)startTimeSpinner.getValue()).floatValue();
-    }
-
-    public float getEndTime(){
-        return ((Double)stopTimeSpinner.getValue()).floatValue();
-    }
-    
-    public float getFramesPerSecond(){
-        return ((Double)framesPerSecSpinner.getValue()).floatValue();
-    }
-    
     public boolean isForAllConfigurations(){
         return radioExportAll.isSelected();
     }
         
     public float getCompressionQuality() {
-        int value = ((Integer)compressionQualitySpinner.getValue()).intValue();
-        return ((float)value)/100f;
+        int sliderValue = ((Number)compressionQualitySpinner.getValue()).intValue();
+        return ((float)sliderValue)/100f;
     }
     
     public boolean isProgressive() {
@@ -592,135 +461,77 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
     public boolean isTransparent() {
         return transparentCheckBox.isSelected();
     }
-    
-    public boolean isInSingleImage() {
-        return allFramesCheckBox.isSelected();
-    }
-    
-    public int getNumberFrames() {
-        return (int) ((getEndTime() - getStartTime()) * getFramesPerSecond());
-    }
         
     public AnimationRasterizer.ImageType getImageType() {
         return (AnimationRasterizer.ImageType)formatComboBox.getSelectedItem();
-    }    
-    private Thread m_sizeCalculationThread;
+    }  
     
-    protected void updateImage(JComponent source, boolean isOutputChanged) {
-        if ( !m_updateInProgress) {
-            m_updateInProgress = true;
-            //System.out.println("Updating model " + source);
-            final JLabel label = new JLabel( "Updating image...");
-            label.setHorizontalAlignment(SwingConstants.CENTER);
-            label.setVerticalAlignment(SwingConstants.CENTER);
-            label.setMinimumSize( new Dimension( 100, 100));
-            imageHolder.setViewportView(label);
-
-            updateTimelineBounds(source);
-
-            ImageType imgType = getImageType();
-            boolean supportsCompression = imgType.supportsCompression();
-
-            compressionQualitySpinner.setEnabled(supportsCompression);
-            compressionLevelCombo.setEnabled(supportsCompression);
-            compressionLabel.setEnabled(supportsCompression);
-            compressionQualityLabel.setEnabled(supportsCompression);
-
-            if (imgType.supportsTransparency()) {
-                transparentCheckBox.setEnabled(true);
-            } else {
-                transparentCheckBox.setEnabled(false);
-                transparentCheckBox.setSelected(false);
-            }
-
-            float startTime    = getStartTime(),
-                  endTime      = getEndTime(),
-                  framesPerSec = getFramesPerSecond();
-            
-            final float duration      = endTime - startTime;
-            final int   totalFrameNum = Math.round(duration * framesPerSec);
-            
-            m_previewSpinnerModel.setMaximum(totalFrameNum);
-            if ( m_startTime.findWrapper(source) != null) {
-                previewFrameSpinner.setValue( new Integer(1));
-            } else if ( m_stopTime.findWrapper(source) != null) {
-                previewFrameSpinner.setValue( new Integer(totalFrameNum));
-            }
-            final int currentFrame = ((Integer) previewFrameSpinner.getValue()).intValue() - 1;
-            assert currentFrame >= 0;
-            final float frameTime  = startTime + currentFrame / framesPerSec;
-
-            String filenameRoot = AnimationRasterizer.createFileNameRoot(m_dObj, this, null, true);
-            final String fileName = AnimationRasterizer.createFileName(filenameRoot, this, currentFrame, totalFrameNum);
-
-            if ( isOutputChanged) {
-                animationSizeLabel.setText("(calculating animation size)");
-
-                if ( m_sizeCalculationThread != null) {
-                    m_sizeCalculationThread.interrupt();
-                }
-                m_sizeCalculationThread = new Thread() {
-                    public void run() {
-                        try {
-                            final int size = AnimationRasterizer.calculateAnimationSize(getSVGImage(), SVGAnimationRasterizerPanel.this);
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    animationSizeLabel.setText(getSizeText(size));
-                                }
-                            });
-                        } catch( InterruptedException e) {
-                        } catch (Exception ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                };
-                m_sizeCalculationThread.setDaemon(true);
-                m_sizeCalculationThread.setPriority(Thread.MIN_PRIORITY);
-                m_sizeCalculationThread.setName("AnimationSizeCalculationThread");
-                m_sizeCalculationThread.start();
-            }
-            
-            RequestProcessor.getDefault().post( new Runnable() {
-                public void run() {
-                    try {
-                        final AnimationRasterizer.PreviewInfo preview = AnimationRasterizer.previewFrame( getSVGImage(), SVGAnimationRasterizerPanel.this, currentFrame, frameTime);
-                        SwingUtilities.invokeLater( new Runnable() {
-                            public void run() {
-                                //String sizeText =  + 
-                                //        " (cca. " + getSizeText(preview.m_imageSize * totalFrameNum) + ")";
-                                imageSizeLabel.setText( getSizeText(preview.m_imageSize));
-                                imageTypeLabel.setText(preview.m_imageFormat);
-                                maxPreviewFrameLabel.setText("/ " + totalFrameNum);
-                                frameTimeLabel.setText( roundTime(frameTime) + "/" + roundTime(duration) + " [s]");
-                                //TODO Handle images not saved yet
-                                fileNameLabel.setText(fileName);
-                                label.setText(null);
-                                label.setIcon(new ImageIcon(preview.m_image));
-                                label.invalidate();
-                                imageHolder.validate();
-                                imageHolder.repaint();
-                            }
-                        });
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    } finally {
-                        m_updateInProgress = false;
-                    }
-                }
-            });
-        }
+    public float getStartTime(){
+        return m_currentTime.getValue();
     }
     
-    private void updateTimelineBounds(JComponent source) {
-        ComponentGroup.ComponentWrapper wrapper;
-        if ( (wrapper = m_startTime.findWrapper(source)) != null) {
-            float value = wrapper.getValue();
-            stopTimeSlider.setMinimum( Math.round( value * 100));
-            ((SpinnerNumberModel)stopTimeSpinner.getModel()).setMinimum( new Double(value));
-        } else if ((wrapper = m_stopTime.findWrapper(source)) != null) {
-            float value = wrapper.getValue();
-            startTimeSlider.setMaximum( Math.round( value * 100));
-            ((SpinnerNumberModel)startTimeSpinner.getModel()).setMaximum( new Double(value));
+    public int getNumberFrames() {
+        return 1;
+    }
+    
+    public boolean isInSingleImage() {
+        return true;
+    }
+        
+    protected void updateImage(JComponent source, boolean isOutputChanged) {
+        final JLabel label = new JLabel( "Updating image...");
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setVerticalAlignment(SwingConstants.CENTER);
+        imageHolder.setViewportView(label);
+        
+        final ImageType imgType = getImageType();
+        boolean supportsCompression = imgType.supportsCompression();
+        
+        compressionQualitySpinner.setEnabled(supportsCompression);
+        compressionLevelCombo.setEnabled(supportsCompression);
+        compressionLabel.setEnabled(supportsCompression);
+        compressionQualityLabel.setEnabled(supportsCompression);
+        
+        if (imgType.supportsTransparency()) {
+            transparentCheckBox.setEnabled(true);
+        } else {
+            transparentCheckBox.setEnabled(false);
+            transparentCheckBox.setSelected(false);
         }
+        
+        String filenameRoot      = AnimationRasterizer.createFileNameRoot(m_dObj, this, null, true);
+        final String fileName    = AnimationRasterizer.createFileName(filenameRoot, this, -1, -1);
+        final float  currentTime = m_currentTime.getValue();
+        
+        RequestProcessor.getDefault().post( new Runnable() {
+            public void run() {
+                try {
+                    final AnimationRasterizer.PreviewInfo preview = AnimationRasterizer.previewFrame( getSVGImage(), SVGImageRasterizerPanel.this, -1, currentTime);
+                    SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            String sizeText;
+                            if ( preview.m_imageSize < 1024) {
+                                sizeText = preview.m_imageSize + " Bytes";
+                            } else {
+                                sizeText = (Math.round(preview.m_imageSize / 102.4) / 10.0) + " KBytes";
+                            }
+                            imageSizeLabel.setText( sizeText);
+                            imageTypeLabel.setText(preview.m_imageFormat);
+                            //TODO Handle images not saved yet
+                            fileNameLabel.setText( fileName);
+                            label.setText(null);
+                            label.setIcon(new ImageIcon(preview.m_image));
+                            label.invalidate();
+                            imageHolder.validate();
+                            imageHolder.repaint();
+                        }
+                    });
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                } 
+            }
+        });
     }
 }
+    
+    

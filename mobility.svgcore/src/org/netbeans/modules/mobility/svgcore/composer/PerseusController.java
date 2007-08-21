@@ -17,6 +17,7 @@ import com.sun.perseus.awt.SVGAnimatorImpl;
 import com.sun.perseus.builder.ModelBuilder;
 import com.sun.perseus.j2d.Point;
 import com.sun.perseus.model.AbstractAnimate;
+import com.sun.perseus.model.CompositeGraphicsNode;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ModelNode;
 import com.sun.perseus.model.SVG;
@@ -55,12 +56,10 @@ public final class PerseusController {
     public static final int ANIMATION_RUNNING       = 2;
     public static final int ANIMATION_PAUSED        = 3;
 
-    //public static final String ATTR_ID              = "id";
-    
-    public static final float DEFAULT_MAX           = 30.0f;
-    public static final float DEFAULT_STEP          = 0.1f;
-    public static final String ID_VIEWBOX_MARKER    = "$VIEWBOX$"; //NOI18N
-    public static final String ID_BBOX_MARKER       = "$BBOX$"; //NOI18N
+    public static final float ANIMATION_DEFAULT_DURATION = 30.0f;
+    public static final float ANIMATION_DEFAULT_STEP     = 0.1f;
+    public static final String ID_VIEWBOX_MARKER         = "$VIEWBOX$"; //NOI18N
+    public static final String ID_BBOX_MARKER            = "$BBOX$"; //NOI18N
         
     protected final SceneManager        m_sceneMgr;
     protected       SVGAnimatorImpl     m_animator;
@@ -88,8 +87,7 @@ public final class PerseusController {
                 child = child.getNextSiblingNode();
             }
         }
-        return false;
-        
+        return false;        
     }
     
     void initialize() {
@@ -148,6 +146,10 @@ public final class PerseusController {
     //TODO use only one of the methods bellow
     public DocumentNode getSVGDocument() {
         return m_svgDoc;        
+    }
+    
+    public void focusElement( SVGObject svgObj) {
+        m_svgImage.focusOn( svgObj != null ? svgObj.getSVGElement() : null);
     }
     
     public SVGSVGElement getSVGRootElement() {
@@ -325,6 +327,39 @@ public final class PerseusController {
         return elt;
     }
     
+    public static SVGElement hideAllButSubtree( ModelNode node, String id) {
+        if ( node instanceof SVGElement) {
+            SVGElement elem = (SVGElement) node;
+            if ( id.equals(elem.getId())) {
+                return elem;
+            } 
+        }
+        
+        ModelNode child = node.getFirstChildNode();
+        SVGElement visibleChild = null;
+        
+        while( child != null) {
+            SVGElement e;
+            if ( (e=hideAllButSubtree(child, id)) != null) {
+                visibleChild = e;
+            }
+            child = child.getNextSiblingNode();
+        }
+        if ( node instanceof CompositeGraphicsNode) {
+            CompositeGraphicsNode elem = (CompositeGraphicsNode) node;
+            if (visibleChild == null) {
+                elem.setVisibility(false);
+                elem.setTrait(SVGConstants.SVG_VISIBILITY_ATTRIBUTE, "hidden");
+            }
+        }
+        return visibleChild;
+    }
+    
+    public static SVGElement findElementById( SVGSVGElement root, String id) {
+        SVGElement elem = getElementById( (ModelNode) root, id);
+        return elem;
+    }
+
     protected SVGElement getElementById(String id) {
         SVGElement elem = getElementById( (ModelNode) getSVGRootElement(), id);
         //assert elem != null;
@@ -373,10 +408,10 @@ public final class PerseusController {
             m_animationState = ANIMATION_PAUSED;
         }
     }
-
+    
     public void stopAnimator(){
         if (m_animationState == ANIMATION_RUNNING ||
-            m_animationState == ANIMATION_PAUSED){
+            m_animationState == ANIMATION_PAUSED) {
             m_animator.stop();
             m_animator.play();
             m_animator.pause();
@@ -387,17 +422,23 @@ public final class PerseusController {
     }
 
     public float getAnimatorTime() {
-        m_animator.invokeLater( new Runnable() {
-            public void run() {
-                m_currentTime = getSVGRootElement().getCurrentTime();
-            }         
-        });
+        try {
+            m_animator.invokeAndWait(new Runnable() {
+                public void run() {
+                    m_currentTime = getSVGRootElement().getCurrentTime();
+                    m_sceneMgr.updateAnimationDuration(m_currentTime);
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         return m_currentTime;
     }
     
     public void setAnimatorTime(float time) {
         if (m_animator != null ){
             m_currentTime = time;
+            m_sceneMgr.updateAnimationDuration(m_currentTime);
             if ( m_animator.getState() != SVGAnimatorImpl.STATE_STOPPED) {
                 m_animator.invokeLater( new Runnable() {
                     public void run() {
@@ -556,10 +597,10 @@ public final class PerseusController {
         UpdateAdapter updateAdapter = new UpdateAdapter();
         documentNode.setUpdateListener(updateAdapter);
 
-        long t = System.currentTimeMillis();
+        //long t = System.currentTimeMillis();
         ModelBuilder.loadDocument(is, documentNode,
                 SVGComposerPrototypeFactory.getPrototypes(documentNode));
-        System.out.println("Load document took " + (System.currentTimeMillis() - t) + "[ms]");
+        //System.out.println("Load document took " + (System.currentTimeMillis() - t) + "[ms]");
         
         if (updateAdapter.hasLoadingFailed()) {
             if (updateAdapter.getLoadingFailedException() != null) {

@@ -72,9 +72,9 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
         return navigatorContentInstance;
     }
     
-    private final JPanel        emptyPanel;    
-    private final JLabel        msgLabel;    
-    private       SVGDataObject peerDO = null;
+    private final JPanel                 emptyPanel;    
+    private final JLabel                 msgLabel;    
+    private       SVGDataObject          peerDO = null;
     private       NavigatorContentPanel  navigatorPanel = null; 
         
     private SVGNavigatorContent() {
@@ -187,19 +187,6 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
             public void modelChanged() {
                 tree.repaint();
             }
-
-            public void modelSwitched() {
-                SwingUtilities.invokeLater(new Runnable() {
-                   public void run() {
-                       try {
-                        tree.initialize();
-                        tree.repaint();
-                       } catch( Exception e) {
-                           e.printStackTrace();
-                       }
-                   } 
-                });
-            }            
         };       
         
         public NavigatorContentPanel(SVGDataObject doj) throws Exception {

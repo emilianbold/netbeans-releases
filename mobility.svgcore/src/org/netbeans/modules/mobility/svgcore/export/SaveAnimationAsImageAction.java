@@ -21,22 +21,22 @@
 
 package org.netbeans.modules.mobility.svgcore.export;
 
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.mobility.project.J2MEProject;
-import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author suchys
+ * @author Pavel Benes, suchys
  */
 public class SaveAnimationAsImageAction extends CookieAction {
     
@@ -50,35 +50,44 @@ public class SaveAnimationAsImageAction extends CookieAction {
         putValue("noIconInMenu", Boolean.TRUE);
     }
         
+    public static void setDialogMinimumSize(final Dialog dlg) {
+        dlg.pack();
+        final Dimension minSize = dlg.getSize();
+        dlg.setMinimumSize(minSize);
+        
+        if (minSize != null) {
+            dlg.addComponentListener(new ComponentAdapter() {
+                public void componentResized(ComponentEvent e) {
+                    int w = dlg.getWidth();
+                    int h = dlg.getHeight();
+                    
+                    int _w = Math.max( w, minSize.width + 40);
+                    int _h = Math.max( h, minSize.height + 20);
+                    
+                    if ( w != _w || h != _h) {
+                        dlg.setSize( new Dimension(_w, _h));
+                    }
+                }
+            });
+        }
+    }
+    
     protected void performAction(Node[] n) {
         SVGDataObject doj = (SVGDataObject) n[0].getLookup().lookup(SVGDataObject.class);
-        ProjectConfigurationsHelper configurationHelper = null;
-        if (doj != null){            
-            J2MEProject project = null;
-            final FileObject primaryFile = doj.getPrimaryFile ();
-            Project p = FileOwnerQuery.getOwner (primaryFile);
-            if (p != null && p instanceof J2MEProject){
-                project = (J2MEProject) p;
-            }
-                
-            SVGAnimationRasterizerPanel panel = new SVGAnimationRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(doj.getPrimaryFile(), null), project != null, true);
-            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_AnimationExport"));
-            DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
-            int imageWidth = panel.getImageWidth();
-            int imageHeigth = panel.getImageHeigth();
-            AnimationRasterizer.ImageType imageType = panel.getSelectedImageFormat();
-            float compressionQuality = panel.getCompressionQuality();
-            boolean progressive = panel.isProgressive();
-            float startTime = panel.getStartTime();
-            float endTime = panel.getEndTime();
-            int numberOfSteps = panel.getNumberOfSteps();
-            boolean inSingleImage = panel.isInSingleImage();
-            boolean forAllConfig = panel.isForAllConfigurations();            
+        if (doj != null){   
+            try {
+                SVGAnimationRasterizerPanel panel = new SVGAnimationRasterizerPanel(doj);
+                DialogDescriptor            dd    = new DialogDescriptor(panel, NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_AnimationExport"));
 
-            if (dd.getValue() == DialogDescriptor.OK_OPTION){
-                AnimationRasterizer.export(doj.getPrimaryFile(), project, imageWidth, imageHeigth,
-                                        imageType,progressive,compressionQuality,
-                                        startTime, endTime, numberOfSteps, inSingleImage, forAllConfig);
+                Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+                setDialogMinimumSize( dlg);
+                dlg.setVisible(true);
+
+                if (dd.getValue() == DialogDescriptor.OK_OPTION){
+                    AnimationRasterizer.export(doj, panel);
+                }
+            } catch( Exception e) {
+                Exceptions.printStackTrace(e);
             }
         }
     }
