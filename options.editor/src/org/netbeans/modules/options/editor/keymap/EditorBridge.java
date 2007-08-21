@@ -120,7 +120,7 @@ public final class EditorBridge extends KeymapManager {
         return Collections.unmodifiableMap(result);
     }
 
-    private Map<ShortcutAction, Set<String>> readKeymapDefaults(String profile) {
+    public Map<ShortcutAction, Set<String>> getDefaultKeymap(String profile) {
         Map<ShortcutAction, Set<String>> result = new HashMap<ShortcutAction, Set<String>>();
         readKeymap(profile, null, true, result);
         for (String mimeType : getEditorSettings().getMimeTypes()) {

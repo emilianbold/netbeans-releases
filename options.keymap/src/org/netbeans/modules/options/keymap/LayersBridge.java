@@ -193,7 +193,7 @@ public class LayersBridge extends KeymapManager {
     /**
      * Returns Map (GlobalAction > Set (String (shortcut))).
      */
-    Map<ShortcutAction, Set<String>> getKeymapDefaults (String profile) {
+    public Map<ShortcutAction, Set<String>> getDefaultKeymap (String profile) {
         if (!keymapDefaults.containsKey (profile)) {
             DataFolder root = getRootFolder (SHORTCUTS_FOLDER, null);
             Map<ShortcutAction, Set<String>> m = readKeymap (root);

@@ -172,7 +172,7 @@ public class KeymapModel {
             Map<ShortcutAction,Set<String>> res = new 
                     HashMap<ShortcutAction,Set<String>>();
             for (KeymapManager m : getKeymapManagerInstances()) {
-                Map<ShortcutAction,Set<String>> mm = m.getKeymap(profile);
+                Map<ShortcutAction,Set<String>> mm = m.getDefaultKeymap(profile);
                 res = mergeShortcuts(res, mm);
             }
             keyMapDefaults.put(profile, res);

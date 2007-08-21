@@ -62,11 +62,18 @@ public abstract class KeymapManager {
 
     /**
      * Retrieves the action shortcuts assignments for given profile.
-     * @param profileName 
-     * @return 
+     * @param profileName The name of the profile to get shortcuts for.
+     * @return Shortcuts for given profile.
      */
     public abstract Map<ShortcutAction, Set<String>> getKeymap(String profileName);
 
+    /**
+     * Retrieves the default action shortcuts assignments for given profile.
+     * @param profileName The name of the profile to get shortcuts for.
+     * @return Default shortcuts for given profile.
+     */
+    public abstract Map<ShortcutAction, Set<String>> getDefaultKeymap(String profileName);
+    
     /**
      * Saves the given action shortcuts assignment under given profile name.
      * @param profileName 
