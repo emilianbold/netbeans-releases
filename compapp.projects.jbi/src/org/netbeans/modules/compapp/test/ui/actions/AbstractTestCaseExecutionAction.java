@@ -75,19 +75,19 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
         FileObject buildXMLFile = projectDir.getFileObject(project.getBuildXmlName());
         
         FileObject testDir = project.getTestDirectory();
-        Enumeration testFolders = testDir.getFolders(true);
-        String testCasesCSV = ""; // NOI18N
-        while(testFolders.hasMoreElements()) {
-            FileObject testFolder = (FileObject)testFolders.nextElement();
-            String testFolderName = testFolder.getName();
-            //accumulate everything except "results" folder and other well-known folders
-            if(!testFolderName.equals("results") && 
-                    !testFolderName.equalsIgnoreCase("cvs")) { // NOI18N
-                testCasesCSV +=  testFolderName + ","; // NOI18N
-            }
-        }
-        testCasesCSV = testCasesCSV.substring(0, testCasesCSV.length() - 1);
-        String testCasesProperty = "testcases=" + testCasesCSV; // NOI18N
+//        Enumeration testFolders = testDir.getFolders(true);
+//        String testCasesCSV = ""; // NOI18N
+//        while(testFolders.hasMoreElements()) {
+//            FileObject testFolder = (FileObject)testFolders.nextElement();
+//            String testFolderName = testFolder.getName();
+//            //accumulate everything except "results" folder and other well-known folders
+//            if(!testFolderName.equals("results") && 
+//                    !testFolderName.equalsIgnoreCase("cvs")) { // NOI18N
+//                testCasesCSV +=  testFolderName + ","; // NOI18N
+//            }
+//        }
+//        testCasesCSV = testCasesCSV.substring(0, testCasesCSV.length() - 1);
+//        String testCasesProperty = "testcases=" + testCasesCSV; // NOI18N
         
         String selectedTestCasesCSV = ""; // NOI18N
         for (Node activatedNode : activatedNodes) {
@@ -101,13 +101,13 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
         
         try {
             String testDirPath = FileUtil.toFile(testDir).getAbsolutePath();
-            String fileName = testDirPath + "/all-tests.properties"; // NOI18N
-            BufferedWriter fw = new BufferedWriter(new FileWriter(fileName));
-            fw.write(testCasesProperty);
-            fw.close();
+//            String fileName = testDirPath + "/all-tests.properties"; // NOI18N
+//            BufferedWriter fw = new BufferedWriter(new FileWriter(fileName));
+//            fw.write(testCasesProperty);
+//            fw.close();
             
-            fileName = testDirPath + "/selected-tests.properties"; // NOI18N
-            fw = new BufferedWriter(new FileWriter(fileName));
+            String fileName = testDirPath + "/selected-tests.properties"; // NOI18N
+            BufferedWriter fw = new BufferedWriter(new FileWriter(fileName));
             fw.write(selectedTestCasesProperty);
             fw.close();
             
