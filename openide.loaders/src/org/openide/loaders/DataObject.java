@@ -1086,7 +1086,9 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         * @return an unmodifiable set of data objects
         */
         public Set<DataObject> getModifiedSet() {
-            return Collections.unmodifiableSet(syncModified);
+            synchronized (syncModified) {
+                return new HashSet<DataObject>(syncModified);
+            }
         }
 
         /** Get modified objects.
