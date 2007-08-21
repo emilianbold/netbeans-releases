@@ -557,7 +557,7 @@ public class TargetServer {
      * @param po progress object which will be tracked.
      * @param incremental is it incremental deploy?
      */
-    private void trackDeployProgressObject(ProgressUI ui, ProgressObject po, boolean incremental) {
+    private void trackDeployProgressObject(ProgressUI ui, ProgressObject po, boolean incremental) throws ServerException {
         long deploymentTimeout = instance.getDeploymentTimeout();
         long startTime = System.currentTimeMillis();
         try {
@@ -573,7 +573,7 @@ public class TargetServer {
                 }
             }
         } catch (TimedOutException e) {
-            // deployment failed
+            throw new ServerException(NbBundle.getMessage(TargetServer.class, "MSG_DeploymentTimeoutExceeded"));
         }
     }
 }
