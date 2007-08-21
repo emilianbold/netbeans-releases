@@ -43,11 +43,13 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 public class ResolveConflictsExecutor extends HgProgressSupport {
     
     private static final String TMP_PREFIX = "merge"; // NOI18N
+    private static final String ORIG_SUFFIX = ".orig."; // NOI18N  
     
     static final String CHANGE_LEFT = "<<<<<<< "; // NOI18N
     static final String CHANGE_RIGHT = ">>>>>>> "; // NOI18N
     static final String CHANGE_DELIMETER = "======="; // NOI18N
-
+    static final String CHANGE_BASE_DELIMETER = "|||||||"; // NOI18N
+    
     private String leftFileRevision = null;
     private String rightFileRevision = null;
 
@@ -104,12 +106,12 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         String originalRightFileRevision = rightFileRevision;
         if (leftFileRevision != null) leftFileRevision.trim();
         if (rightFileRevision != null) rightFileRevision.trim();
-        if (leftFileRevision == null || leftFileRevision.equals(file.getName())) {
+        if (leftFileRevision == null || leftFileRevision.equals(file.getAbsolutePath() + ORIG_SUFFIX)){
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
         } else {
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", leftFileRevision); // NOI18N
         }
-        if (rightFileRevision == null || rightFileRevision.equals(file.getName())) {
+        if (rightFileRevision == null || rightFileRevision.equals(file.getAbsolutePath() + ORIG_SUFFIX)) {
             rightFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
         } else {
             rightFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", rightFileRevision); // NOI18N
@@ -155,11 +157,24 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
             String line;
             boolean isChangeLeft = false;
             boolean isChangeRight = false;
+            boolean isChangeBase = false; 
             int f1l1 = 0, f1l2 = 0, f2l1 = 0, f2l2 = 0;
             StringBuffer text1 = new StringBuffer();
             StringBuffer text2 = new StringBuffer();
             int i = 1, j = 1;
             while ((line = r.readLine()) != null) {
+                // As the Graphical Merge Visualizer does not support 3 way diff, 
+                // remove the base diff itself.
+                // Only show the diffs of the two heads against the base
+                if (line.startsWith(CHANGE_BASE_DELIMETER)) {
+                    isChangeBase = true;
+                    continue;
+                }
+                if (isChangeBase && line.startsWith(CHANGE_DELIMETER)) {
+                    isChangeBase = false;
+                } else if (isChangeBase) {
+                    continue;
+                }
                 if (line.startsWith(CHANGE_LEFT)) {
                     if (generateDiffs) {
                         if (leftFileRevision == null) {
