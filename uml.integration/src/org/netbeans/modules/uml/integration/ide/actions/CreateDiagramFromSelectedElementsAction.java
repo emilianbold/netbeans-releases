@@ -106,18 +106,25 @@ public final class CreateDiagramFromSelectedElementsAction extends CookieAction
     {
         boolean retVal = false;
         
-        for(Node curNode: nodes)
+        for (Node curNode: nodes)
         {
             IElement curElement = (IElement)curNode.getCookie(IElement.class);
-            retVal = (curElement != null ? canDiagramBeCreatedFromElement(curElement): false);
+
+            // if an operation is selected, 
+            // then there can only be one selected element
+            if (curElement instanceof IOperation && nodes.length > 1)
+                retVal = false;
+
+            else if (canDiagramBeCreatedFromElement(curElement))
+                retVal = true;
+            
             
             // Basically if frist node that fails the test will cause the action
             // to be disabled.
-            if(retVal == false)
-            {
+            if (!retVal)
                 break;
-            }
-        }
+        } // for
+        
         return retVal;
     }
     
@@ -159,6 +166,7 @@ public final class CreateDiagramFromSelectedElementsAction extends CookieAction
                 // in order to support CDFS
                 if (pElement instanceof IOperation)
                 {
+                    canCreate = false;
                     IUMLParsingIntegrator integrator = getUMLParsingIntegrator();
                     boolean canRE = integrator.canOperationBeREed((IOperation) pElement);
                     if (canRE)
