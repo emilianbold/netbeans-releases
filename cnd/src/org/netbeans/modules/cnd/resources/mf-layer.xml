@@ -20,14 +20,16 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
 
+    <!-- See IZ 112796
     <folder name="Menu">
         <folder name="Help">
             <file name="NetBeansCCDevelopmentPack.url" url="nbresloc:/org/netbeans/modules/cnd/resources/NetBeansCCDevelopmentPack.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="position" intvalue="100"/>
             </file>
-	</folder> <!-- Help -->
-    </folder> <!-- Menu -->
+	</folder>
+    </folder>
+    -->
 
     <folder name="OptionsDialog"> 
         <file name="CndOptionsCategory.instance">
@@ -268,7 +270,7 @@ Microsystems, Inc. All Rights Reserved.
 
 	<folder name="JavaHelp">
 	    <file name="org-netbeans-modules-cnd-helpset.xml" url="helpset-decl.xml">
-                <attr name="position" intvalue="2100"/>
+                <attr name="position" intvalue="850"/>
             </file>
         </folder> <!-- JavaHelp -->
 
