@@ -200,14 +200,14 @@
         <openesb-buildnumber 
             file="${temp.file}" 
             prefix="openesb"/>
-        
+
+        <!--        
         <get
             src="${glassfish.builds.host}/java/re/swdp/1.0/promoted/fcs/latest/bundles/"
             dest="${temp.file}"/>
         <swdp-buildnumber 
             file="${temp.file}" 
             prefix="swdp"/>
-        
         <get
             src="${glassfish.builds.host}/java/re/javaeesdk/5.0_03/archive/fcs/latest/bundles/"
             dest="${temp.file}"/>
@@ -238,7 +238,7 @@
 
 
         <property name="javaeesdk-javadocs.build.number" value="20060907"/>
-        
+        -->
         <!--
         <get
             src="${sjsam.builds.host}/projects/am-javaee/update3beta/"
@@ -291,9 +291,6 @@ binary.cache.host=${binary.cache.host}
 nb.builds.host=${nb.builds.host}
 glassfish.builds.host=${glassfish.builds.host}
 openesb.builds.host=${openesb.builds.host}
-sjsam.builds.host=${sjsam.builds.host}
-portalpack.builds.host=${portalpack.builds.host}
-
 remote.work.dir=~/.netbeans-trunk-nightly-${build.number}
 	</echo>
 
@@ -314,11 +311,13 @@ openesb.build.number.real=${openesb.build.number.real}
 	</echo>
 
 	<!-- SJSAM properties -->
+	<!--
         <echo file="${environment.properties}" append="true">
+sjsam.builds.host=${sjsam.builds.host}
 sjsam.milestone.number=${sjsam.milestone.number}
 sjsam.build.number=${sjsam.build.number}
 	</echo>
-
+	-->
 	<!-- SWDP properties -->
 	<!--
         <echo file="${environment.properties}" append="true">
@@ -330,7 +329,10 @@ swdp.macro.number=${swdp.macro.number}
 	-->
 
 	<!-- Java EE SDK component properties -->
+	<!--
         <echo file="${environment.properties}" append="true">
+portalpack.builds.host=${portalpack.builds.host}
+
 javaeesdk-firstcup.milestone.number=${javaeesdk-firstcup.milestone.number}
 javaeesdk-firstcup.build.number=${javaeesdk-firstcup.build.number}
 javaeesdk-firstcup.macro.number=${javaeesdk-firstcup.macro.number}
@@ -355,7 +357,7 @@ wsrp.milestone.number=${wsrp.milestone.number}
 wsrp.build.number=${wsrp.build.number}
 portalpack.build.number=${portalpack.build.number}
         </echo>
-
+        -->
 	<!-- SJSAS Image properties -->
          <echo file="${environment.properties}" append="true">
 remote.host.windows=${remote.host.windows}
@@ -411,12 +413,15 @@ jarsigner.storepass=${jarsigner.storepass}
                 <exclude name="**/openesb*${glassfish.milestone.number}.${openesb.build.number}*"/>
                 
                 <!-- sjsam -->
-                <exclude name="**/sjsam*${glassfish.milestone.number}.${sjsam.build.number}*"/>
+                <!--
+		<exclude name="**/sjsam*${glassfish.milestone.number}.${sjsam.build.number}*"/>
+		-->
                 
                 <!-- tomcat -->
                 <exclude name="**/tomcat*"/>
 
 		<!-- javaeesdk components -->
+		<!--
                 <exclude name="**/javaeesdk-samples*${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}*"/>
 		<exclude name="**/javaeesdk-blueprints*${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}*"/>
 		<exclude name="**/javaeesdk-firstcup*${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}*"/>
@@ -424,7 +429,7 @@ jarsigner.storepass=${jarsigner.storepass}
 		<exclude name="**/portletcontainer*${portletcontainer.milestone.number}.${portletcontainer.build.number}*"/>
 		<exclude name="**/wsrp*${wsrp.milestone.number}.${wsrp.build.number}*"/>
                 <exclude name="**/sjsas*${sjsas.milestone.number}.${sjsas.build.number}*"/>
-		<exclude name="**/nb-portalpack*${portalpack.build.number}*"/>
+		<exclude name="**/nb-portalpack*${portalpack.build.number}*"/>-->
 
             </fileset>
         </delete>
