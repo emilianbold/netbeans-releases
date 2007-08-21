@@ -45,15 +45,6 @@
                             <Property name="eventSource" typeID="C#EventSource" value="R15"/>
                         </Component>
                     </Component>
-                    <Component componentID="18" typeID="C#ListElementEventSource">
-                        <Property name="eventHandler" typeID="C#EventHandler" value="R26"/>
-                        <Property name="string" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;MENU_ITEM_1&quot;)"/>
-                        <Component componentID="26" typeID="C#SwitchDisplayableEventHandler">
-                            <Property name="eventSource" typeID="C#EventSource" value="R18"/>
-                            <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R13"/>
-                            <Property name="alert" typeID="Cjavax.microedition.lcdui.Alert" value="R22"/>
-                        </Component>
-                    </Component>
                     <Component componentID="19" typeID="C#ListElementEventSource">
                         <Property name="eventHandler" typeID="C#EventHandler" value="R27"/>
                         <Property name="string" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;MENU_ITEM_2&quot;)"/>
@@ -63,13 +54,13 @@
                             <Property name="alert" typeID="Cjavax.microedition.lcdui.Alert" value="R23"/>
                         </Component>
                     </Component>
-                    <Component componentID="20" typeID="C#ListElementEventSource">
-                        <Property name="eventHandler" typeID="C#EventHandler" value="R28"/>
-                        <Property name="string" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;MENU_ITEM_3&quot;)"/>
-                        <Component componentID="28" typeID="C#SwitchDisplayableEventHandler">
-                            <Property name="eventSource" typeID="C#EventSource" value="R20"/>
+                    <Component componentID="18" typeID="C#ListElementEventSource">
+                        <Property name="eventHandler" typeID="C#EventHandler" value="R26"/>
+                        <Property name="string" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;MENU_ITEM_1&quot;)"/>
+                        <Component componentID="26" typeID="C#SwitchDisplayableEventHandler">
+                            <Property name="eventSource" typeID="C#EventSource" value="R18"/>
                             <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R13"/>
-                            <Property name="alert" typeID="Cjavax.microedition.lcdui.Alert" value="R24"/>
+                            <Property name="alert" typeID="Cjavax.microedition.lcdui.Alert" value="R22"/>
                         </Component>
                     </Component>
                     <Component componentID="21" typeID="C#ListElementEventSource">
@@ -79,6 +70,15 @@
                             <Property name="eventSource" typeID="C#EventSource" value="R21"/>
                             <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R13"/>
                             <Property name="alert" typeID="Cjavax.microedition.lcdui.Alert" value="R25"/>
+                        </Component>
+                    </Component>
+                    <Component componentID="20" typeID="C#ListElementEventSource">
+                        <Property name="eventHandler" typeID="C#EventHandler" value="R28"/>
+                        <Property name="string" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;MENU_ITEM_3&quot;)"/>
+                        <Component componentID="28" typeID="C#SwitchDisplayableEventHandler">
+                            <Property name="eventSource" typeID="C#EventSource" value="R20"/>
+                            <Property name="displayable" typeID="Cjavax.microedition.lcdui.Displayable" value="R13"/>
+                            <Property name="alert" typeID="Cjavax.microedition.lcdui.Alert" value="R24"/>
                         </Component>
                     </Component>
                     <Component componentID="31" typeID="C#CommandEventSource">
@@ -91,13 +91,6 @@
                         </Component>
                     </Component>
                 </Component>
-                <Component componentID="22" typeID="Cjavax.microedition.lcdui.Alert">
-                    <Property name="instanceName" typeID="Pjava.lang.String" value="Valert"/>
-                    <Property name="title" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;A1_TITLE&quot;)"/>
-                    <Property name="commandListener" typeID="C#CommandListener" value="R7"/>
-                    <Property name="timeout" typeID="Pint" value="V-2"/>
-                    <Property name="type" typeID="Ejavax.microedition.lcdui.AlertType" value="EINFO"/>
-                </Component>
                 <Component componentID="23" typeID="Cjavax.microedition.lcdui.Alert">
                     <Property name="instanceName" typeID="Pjava.lang.String" value="Valert1"/>
                     <Property name="title" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;A2_TITLE&quot;)"/>
@@ -106,18 +99,25 @@
                     <Property name="timeout" typeID="Pint" value="V-2"/>
                     <Property name="type" typeID="Ejavax.microedition.lcdui.AlertType" value="EINFO"/>
                 </Component>
-                <Component componentID="24" typeID="Cjavax.microedition.lcdui.Alert">
-                    <Property name="instanceName" typeID="Pjava.lang.String" value="Valert2"/>
-                    <Property name="title" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;A3_TITLE&quot;)"/>
+                <Component componentID="22" typeID="Cjavax.microedition.lcdui.Alert">
+                    <Property name="instanceName" typeID="Pjava.lang.String" value="Valert"/>
+                    <Property name="title" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;A1_TITLE&quot;)"/>
                     <Property name="commandListener" typeID="C#CommandListener" value="R7"/>
-                    <Property name="string" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;A3_TITLE&quot;)"/>
                     <Property name="timeout" typeID="Pint" value="V-2"/>
+                    <Property name="type" typeID="Ejavax.microedition.lcdui.AlertType" value="EINFO"/>
                 </Component>
                 <Component componentID="25" typeID="Cjavax.microedition.lcdui.Alert">
                     <Property name="instanceName" typeID="Pjava.lang.String" value="Valert3"/>
                     <Property name="title" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;A4_TITLE&quot;)"/>
                     <Property name="commandListener" typeID="C#CommandListener" value="R7"/>
                     <Property name="string" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;A4_TEXT&quot;)"/>
+                    <Property name="timeout" typeID="Pint" value="V-2"/>
+                </Component>
+                <Component componentID="24" typeID="Cjavax.microedition.lcdui.Alert">
+                    <Property name="instanceName" typeID="Pjava.lang.String" value="Valert2"/>
+                    <Property name="title" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;A3_TITLE&quot;)"/>
+                    <Property name="commandListener" typeID="C#CommandListener" value="R7"/>
+                    <Property name="string" typeID="Pjava.lang.String" value="ULocalizationSupport.getMessage(&quot;A3_TITLE&quot;)"/>
                     <Property name="timeout" typeID="Pint" value="V-2"/>
                 </Component>
             </Component>
@@ -138,11 +138,11 @@
         </Component>
     </Document>
     <FlowScene version="1">
-        <Node componentID="23" descriptorID="componentNode23" x="35" y="32"/>
         <Node componentID="25" descriptorID="componentNode25" x="34" y="335"/>
-        <Node componentID="13" descriptorID="componentNode13" x="226" y="155"/>
-        <Node componentID="2" descriptorID="componentNode2" x="423" y="334"/>
-        <Node componentID="24" descriptorID="componentNode24" x="481" y="167"/>
         <Node componentID="22" descriptorID="componentNode22" x="419" y="31"/>
+        <Node componentID="2" descriptorID="componentNode2" x="423" y="334"/>
+        <Node componentID="13" descriptorID="componentNode13" x="226" y="155"/>
+        <Node componentID="23" descriptorID="componentNode23" x="35" y="32"/>
+        <Node componentID="24" descriptorID="componentNode24" x="481" y="167"/>
     </FlowScene>
 </VisualDesign>

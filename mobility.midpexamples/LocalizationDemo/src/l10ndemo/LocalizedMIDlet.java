@@ -72,7 +72,7 @@ public class LocalizedMIDlet extends MIDlet implements CommandListener {
 //#         LocalizationSupport.initLocalizationSupport("cs_CZ");
 //#endif
         
-//#ifdef Deutch
+//#ifdef Deutsch
 //#         /* This is used only for german configuration 
 //#          * we want the application to run always in German
 //#          * no matter what the microedition.locale property is set.
@@ -89,7 +89,7 @@ public class LocalizedMIDlet extends MIDlet implements CommandListener {
 //#          * Otherwise the localization support is initialized
 //#          * when a getMessage() method is called for the first time.            
 //#          */
-//#         LocalizationSupport.initLocalizationSupport("de");
+//#         LocalizationSupport.initLocalizationSupport("es_MX");
 //#endif        
 
         
