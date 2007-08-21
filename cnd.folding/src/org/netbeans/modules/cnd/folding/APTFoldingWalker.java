@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.apt.support.*;
         return lang.getFilteredStream(getTokenStream());
     }
     
+    @Override
     public TokenStream getTokenStream() {
         // get original
         // remove comments and hanlde includes
@@ -112,13 +113,25 @@ import org.netbeans.modules.cnd.apt.support.*;
         createEndifFold(apt);
     }
     
+    @Override
+    protected void onErrorNode(APT apt) {
+        onOtherPreprocNode(apt);
+    }
+
+    @Override
     protected void onOtherNode(APT apt) {
         onOtherPreprocNode(apt);
     }
     
+    @Override
     protected void onStreamNode(APT apt) {
         addIncludesIfNeeded();
     }
+    
+    @Override
+    protected void onEOF() {
+        addIncludesIfNeeded();
+    }    
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
     
@@ -183,6 +196,7 @@ import org.netbeans.modules.cnd.apt.support.*;
      * overrides APTWalker.stopOnErrorDirective 
      * We should be able to make folds after #error as well
      */
+    @Override
     protected boolean stopOnErrorDirective() {
 	return false;
     }

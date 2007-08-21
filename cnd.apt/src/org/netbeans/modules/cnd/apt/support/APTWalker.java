@@ -174,6 +174,10 @@ public abstract class APTWalker {
         // do nothing
     }
 
+    protected void onEOF() {
+        // do nothing
+    }
+    
     /**
      * Determines whether the walker should stop or proceed
      * as soon as it encounteres #error directive
@@ -308,6 +312,7 @@ public abstract class APTWalker {
                 }
             }
             if (finished()) {
+                onEOF();
                 return APTUtils.EOF_TOKEN;
             } else {        
                 toNextNode();
