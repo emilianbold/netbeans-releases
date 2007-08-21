@@ -138,7 +138,7 @@ final public class HtmlTags {
         META, NOBR, NOFRAMES, NOSCRIPT, OBJECT, OL, OPTION, P, PARAM,
         PRE, Q, S, SAMP, SCRIPT, SELECT, SMALL, SPAN, STRIKE, STRONG, 
         STYLE, SUB, SUP, TABLE, TBODY, TD, TEXTAREA, TFOOT, TH, THEAD, 
-        TITLE, TR, TT, U, UL, VAR, null
+        TITLE, TR, TT, U, UL, VAR
     };
     
     /** Return the set of known tags */
