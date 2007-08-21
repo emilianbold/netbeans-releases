@@ -74,6 +74,36 @@ public class SerialDataConvertorTest extends NbTestCase {
         
         folder = DataFolder.findFolder (bb);
     }
+     public void testSaveCookieChanges() throws Exception {
+         class MyListener implements LookupListener {
+             int i = 0;
+             public void resultChanged(LookupEvent ev) {
+                 i++;
+             }
+         }
+         MyListener ml = new MyListener();
+         LocalFileSystem lfs = new LocalFileSystem();
+         InstanceDataObject i = InstanceDataObject.create (folder, null, lfs, null);
+         assertNull(i.getCookie(SaveCookie.class));
+         Lookup.Result<SaveCookie> scr =  i.getLookup().lookup(new Lookup.Template(SaveCookie.class));        
+         scr.addLookupListener(ml);
+         Collection<? extends SaveCookie>  saveCookies = scr.allInstances();
+         assertFalse(saveCookies.contains(lfs));
+         
+         lfs.setRootDirectory(getWorkDir());        
+         SaveCookie sv = i.getCookie(SaveCookie.class);
+         assertNotNull(sv);
+         saveCookies = scr.allInstances();
+         assertTrue("Cookie " + sv + "is there: " + saveCookies, saveCookies.contains(sv));        
+         assertEquals(1, ml.i);
+         sv.save();
+         sv = i.getCookie(SaveCookie.class);
+         assertNull(sv);        
+         saveCookies = scr.allInstances();        
+         assertTrue(saveCookies.isEmpty());                
+         assertEquals(2, ml.i);
+         i.getPrimaryFile().delete();
+     }
     
     public void test50177ProblemSimulation () throws Exception {
         FileObject testFolder = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot (), "Services");
