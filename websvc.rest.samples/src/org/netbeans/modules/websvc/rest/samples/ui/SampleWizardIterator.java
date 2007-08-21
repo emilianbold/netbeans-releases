@@ -57,6 +57,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     public transient WizardDescriptor wiz;
+    private boolean addJerseyLibrary = true;
     private String projectConfigNamespace = RestSampleProjectProperties.WEB_PROJECT_CONFIGURATION_NAMESPACE;
  
     public SampleWizardIterator() {}
@@ -85,6 +86,10 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         this.projectConfigNamespace = namespace;
     }
     
+    public void setAddJerseyLibrary(boolean flag) {
+        addJerseyLibrary = flag;
+    }
+    
     public Set/*<FileObject>*/ instantiate() throws IOException {
         Set resultSet = new LinkedHashSet();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR));
@@ -99,7 +104,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         // top level directory.       
         dir = dir.createFolder(name);
         dirF = FileUtil.toFile(dir);
-        
+    
         RestSampleUtils.unZipFile(template.getInputStream(), dir);
         
         if (projectConfigNamespace != null)
@@ -107,8 +112,9 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
  
         Project p = ProjectManager.getDefault().findProject(dir);
         myProject = p;
-      
-        RestSampleUtils.addJerseyLibrary(myProject);
+    
+        if (addJerseyLibrary)
+            RestSampleUtils.addJerseyLibrary(myProject);
         
         // Always open top dir as a project:
         resultSet.add(dir);

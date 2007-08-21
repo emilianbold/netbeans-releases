@@ -42,6 +42,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/CustomerDBSampleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
+                    <!-- CustomerDBClient Sample -->
+                    <file name="CustomerDBClientSampleProject" url="CustomerDBClient.zip">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/projectIcon.gif"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.rest.samples.ui.CustomerDBClientSampleWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/CustomerDBClientSampleDescription.html"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

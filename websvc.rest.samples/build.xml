@@ -28,6 +28,7 @@
     -->
     <target name="jar" depends="zip-rest-hello-world,
                                 zip-rest-customer-db,
+                                zip-rest-customer-db-client,
                                 projectized-common.jar"/>
 
     <!-- initialize necessary properties for Identity sample targets-->
@@ -50,6 +51,14 @@
         <zip destfile="${rest.samples.resources}/CustomerDB.zip"
             update="true">
         <zipfileset dir="CustomerDB"/>
+        </zip>
+    </target>
+    
+      <!-- Target for CustomerDBClient sample -->
+    <target name="zip-rest-customer-db-client" depends="init-zip-samples">
+        <zip destfile="${rest.samples.resources}/CustomerDBClient.zip"
+            update="true">
+        <zipfileset dir="CustomerDBClient"/>
         </zip>
     </target>
     
