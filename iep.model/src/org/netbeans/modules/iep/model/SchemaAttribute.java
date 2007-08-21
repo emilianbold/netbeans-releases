@@ -12,13 +12,23 @@ public interface SchemaAttribute extends Component {
 	
 	public static final String PROP_COMMENT = "comment";
 	
-	String getAttributeName() throws Exception;
+	String getAttributeName();
     
-    String getAttributeType() throws Exception;
+	void setAttributeName(String attributeName);
+	
+    String getAttributeType();
     
-    String getAttributeSize() throws Exception;
+    void setAttributeType(String attributeType);
     
-    String getAttributeScale() throws Exception;
+    String getAttributeSize();
     
-    String getAttributeComment() throws Exception;
+    void setAttributeSize(String attributeSize);
+    
+    String getAttributeScale();
+    
+    void setAttributeScale(String attributeScale);
+    
+    String getAttributeComment();
+    
+    void setAttributeComment(String attributeComment);
 }

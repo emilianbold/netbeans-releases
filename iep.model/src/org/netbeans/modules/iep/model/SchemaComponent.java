@@ -17,4 +17,8 @@ public interface SchemaComponent extends Component {
     SchemaComponent duplicateSchema(String name);
     
     SchemaAttribute findSchemaAttribute(String attributeName);
+    
+    void addSchemaAttribute(SchemaAttribute sa);
+    
+    void removeSchemaAttribute(SchemaAttribute sa); 
 }

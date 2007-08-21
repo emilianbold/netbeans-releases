@@ -58,8 +58,22 @@ public class SchemaComponentImpl extends ComponentImpl implements SchemaComponen
 		return false;
 	}
 
-	public void setSchemaAttributes(List<SchemaAttribute> columns)  {
-		
+	public void setSchemaAttributes(List<SchemaAttribute> attrs)  {
+		if(attrs != null) {
+			Iterator<SchemaAttribute> it = attrs.iterator();
+			while(it.hasNext()) {
+				SchemaAttribute sa = it.next();
+				String attrName = sa.getAttributeName();
+				if(attrName != null) {
+					SchemaAttribute existingSA = findSchemaAttribute(attrName);
+					if(existingSA != null) {
+						removeSchemaAttribute(existingSA);
+					}
+				}
+				
+				addSchemaAttribute(sa);
+			}
+		}
 	}
 
 	public SchemaAttribute findSchemaAttribute(String attributeName) {
@@ -84,4 +98,24 @@ public class SchemaComponentImpl extends ComponentImpl implements SchemaComponen
 		return attr;
 	}
 
+	public void addSchemaAttribute(SchemaAttribute sa) {
+		if(sa != null) {
+			String attrName = sa.getAttributeName();
+			if(attrName != null) {
+				SchemaAttribute existingSA = findSchemaAttribute(attrName);
+				if(existingSA != null) {
+					removeSchemaAttribute(existingSA);
+					addChildComponent(sa);
+				}
+			}
+		}
+		
+	}
+	
+	public void removeSchemaAttribute(SchemaAttribute sa) {
+		if(sa != null) {
+			removeChildComponent(sa);
+		}
+		
+	}
 }

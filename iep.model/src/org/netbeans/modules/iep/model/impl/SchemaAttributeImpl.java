@@ -15,7 +15,7 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		super(model, element);
 	}
 
-	public String getAttributeName() throws Exception {
+	public String getAttributeName() {
 		String propValue = null;
 		Property p = super.getProperty(PROP_NAME);
 		if(p != null) {
@@ -24,7 +24,17 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		return propValue;
 	}
 
-	public String getAttributeScale() throws Exception {
+	public void setAttributeName(String attributeName) {
+		Property p = super.getProperty(PROP_NAME);
+		if(p == null) {
+			p = getModel().getFactory().createProperty(getModel());
+			p.setName(PROP_NAME);
+		}
+		
+		p.setValue(attributeName);
+	}
+	
+	public String getAttributeScale() {
 		String propValue = null;
 		Property p = super.getProperty(PROP_SCALE);
 		if(p != null) {
@@ -33,7 +43,18 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		return propValue;
 	}
 
-	public String getAttributeSize() throws Exception {
+	public void setAttributeScale(String attributeScale) {
+		Property p = super.getProperty(PROP_SCALE);
+		if(p == null) {
+			p = getModel().getFactory().createProperty(getModel());
+			p.setName(PROP_SCALE);
+		}
+		
+		p.setValue(attributeScale);
+		
+	}
+	
+	public String getAttributeSize() {
 		String propValue = null;
 		Property p = super.getProperty(PROP_SIZE);
 		if(p != null) {
@@ -41,8 +62,19 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		}
 		return propValue;
 	}
+	
+	public void setAttributeSize(String attributeSize) {
+		Property p = super.getProperty(PROP_SIZE);
+		if(p == null) {
+			p = getModel().getFactory().createProperty(getModel());
+			p.setName(PROP_SIZE);
+		}
+		
+		p.setValue(attributeSize);
+		
+	}
 
-	public String getAttributeType() throws Exception {
+	public String getAttributeType()  {
 		String propValue = null;
 		Property p = super.getProperty(PROP_TYPE);
 		if(p != null) {
@@ -51,7 +83,18 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		return propValue;
 	}
 
-	public String getAttributeComment() throws Exception {
+	public void setAttributeType(String attributeType) {
+		Property p = super.getProperty(PROP_TYPE);
+		if(p == null) {
+			p = getModel().getFactory().createProperty(getModel());
+			p.setName(PROP_TYPE);
+		}
+		
+		p.setValue(attributeType);
+		
+	}
+	
+	public String getAttributeComment() {
 		String propValue = null;
 		Property p = super.getProperty(PROP_COMMENT);
 		if(p != null) {
@@ -60,5 +103,15 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		return propValue;
 	}
 
+	public void setAttributeComment(String attributeComment) {
+		Property p = super.getProperty(PROP_COMMENT);
+		if(p == null) {
+			p = getModel().getFactory().createProperty(getModel());
+			p.setName(PROP_COMMENT);
+		}
+		
+		p.setValue(attributeComment);
+		
+	}
 	
 }
