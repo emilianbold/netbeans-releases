@@ -296,7 +296,7 @@ public final class VeryPretty extends JCTree.Visitor {
         printPackage(tree.pid);
         boolean hasImports = false;
         List<JCTree> l = tree.defs;
-        while (l.nonEmpty() && l.head.tag == JCTree.IMPORT){
+        while (l.nonEmpty() && l.head.getTag() == JCTree.IMPORT){
             if (!hasImports) {
                 blankLines(cs.getBlankLinesBeforeImports());
                 hasImports = true;
@@ -613,7 +613,7 @@ public final class VeryPretty extends JCTree.Visitor {
             print(' ');
         int col = out.col;
 	if (tree.init.nonEmpty()) {
-	    if (tree.init.head.tag == JCTree.VARDEF) {
+	    if (tree.init.head.getTag() == JCTree.VARDEF) {
 		printNoParenExpr(tree.init.head);
 		for (List<? extends JCTree> l = tree.init.tail; l.nonEmpty(); l = l.tail) {
 		    JCVariableDecl vdef = (JCVariableDecl) l.head;
@@ -925,11 +925,11 @@ public final class VeryPretty extends JCTree.Visitor {
     public void visitApply(JCMethodInvocation tree) {
         int prevPrec = this.prec;
         this.prec = TreeInfo.postfixPrec;
-        if (tree.meth.tag == JCTree.SELECT) {
+        if (tree.meth.getTag() == JCTree.SELECT) {
             JCFieldAccess left = (JCFieldAccess)tree.meth;
             printExpr(left.selected);
             print('.');
-            if (left.selected.tag == JCTree.APPLY) {
+            if (left.selected.getTag() == JCTree.APPLY) {
                 switch(cs.wrapChainedMethodCalls()) {
                 case WRAP_IF_LONG:
                     int rm = cs.getRightMargin();
@@ -999,7 +999,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	    print("new ");
 	    int n = tree.elems != null ? 1 : 0;
 	    JCTree elemtype = tree.elemtype;
-	    while (elemtype.tag == JCTree.TYPEARRAY) {
+	    while (elemtype.getTag() == JCTree.TYPEARRAY) {
 		n++;
 		elemtype = ((JCArrayTypeTree) elemtype).elemtype;
 	    }
@@ -1065,7 +1065,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	printExpr(tree.lhs, TreeInfo.assignopPrec + 1);
 	if (cs.spaceAroundAssignOps())
             print(' ');
-	print(treeinfo.operatorName(tree.tag - JCTree.ASGOffset));
+	print(treeinfo.operatorName(tree.getTag() - JCTree.ASGOffset));
         print('=');
 	int rm = cs.getRightMargin();
         switch(cs.wrapAssignOps()) {
@@ -1088,9 +1088,9 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitUnary(JCUnary tree) {
-	int ownprec = TreeInfo.opPrec(tree.tag);
-	Name opname = treeinfo.operatorName(tree.tag);
-	if (tree.tag <= JCTree.PREDEC) {
+	int ownprec = TreeInfo.opPrec(tree.getTag());
+	Name opname = treeinfo.operatorName(tree.getTag());
+	if (tree.getTag() <= JCTree.PREDEC) {
             if (cs.spaceAroundUnaryOps()) {
                 needSpace();
                 print(opname);
@@ -1113,8 +1113,8 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitBinary(JCBinary tree) {
-	int ownprec = TreeInfo.opPrec(tree.tag);
-	Name opname = treeinfo.operatorName(tree.tag);
+	int ownprec = TreeInfo.opPrec(tree.getTag());
+	Name opname = treeinfo.operatorName(tree.getTag());
         int col = out.col;
 	printExpr(tree.lhs, ownprec);
 	if(cs.spaceAroundBinaryOps())
@@ -1247,8 +1247,8 @@ public final class VeryPretty extends JCTree.Visitor {
     
     @Override
     public void visitWildcard(JCWildcard tree) {
-	print("" + tree.kind);
-	if (tree.kind != BoundKind.UNBOUND)
+	print("" + tree.kind.kind);
+	if (tree.kind.kind != BoundKind.UNBOUND)
 	    printExpr(tree.inner);
     }
     
@@ -1500,7 +1500,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 blankLines(tree, true);
 	    printPrecedingComments(tree, !member);
             printExpr(tree, TreeInfo.notExpression);
-	    int tag = tree.tag;
+	    int tag = tree.getTag();
 	    if(JCTree.APPLY<=tag && tag<=JCTree.MOD_ASG) print(';');
             printTrailingComments(tree, !member);
             blankLines(tree, false);
@@ -1976,7 +1976,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private Name fullName(JCTree tree) {
-	switch (tree.tag) {
+	switch (tree.getTag()) {
 	case JCTree.IDENT:
 	    return ((JCIdent) tree).name;
 	case JCTree.SELECT:
@@ -2014,7 +2014,7 @@ public final class VeryPretty extends JCTree.Visitor {
     
     /** Is the given tree an enumerator definition? */
     private static boolean isEnumerator(JCTree tree) {
-        return tree.tag == JCTree.VARDEF && (((JCVariableDecl) tree).mods.flags & ENUM) != 0;
+        return tree.getTag() == JCTree.VARDEF && (((JCVariableDecl) tree).mods.flags & ENUM) != 0;
     }
 
     private String replace(String a,String b) {

@@ -148,7 +148,7 @@ public final class ASTService {
      * @see #clone
      */
     public void setElement(Tree tree, Element element) {
-        switch (((JCTree)tree).tag) {
+        switch (((JCTree)tree).getTag()) {
             case TOPLEVEL:
                 ((JCCompilationUnit)tree).packge = (Symbol.PackageSymbol)element;
                 break;
@@ -203,7 +203,7 @@ public final class ASTService {
             return false;
         long flags = 0L;
         JCTree t = (JCTree)tree;
-        switch (t.tag) {
+        switch (t.getTag()) {
           case JCTree.CLASSDEF:
             flags = ((JCClassDecl)t).mods.flags;
             break;
@@ -262,7 +262,7 @@ public final class ASTService {
     public int getStartPos(Tree tree) {
 	if (tree == null)
 	    return Position.NOPOS;
-	switch(((JCTree)tree).tag) {
+	switch(((JCTree)tree).getTag()) {
             case(JCTree.APPLY):
                 return getStartPos(((JCMethodInvocation)tree).meth);
             case(JCTree.ASSIGN):
@@ -335,7 +335,7 @@ public final class ASTService {
 	    return mapPos;
 
         JCTree t = (JCTree)tree;
-	switch(t.tag) {
+	switch(t.getTag()) {
 	    case(JCTree.BITOR_ASG): case(JCTree.BITXOR_ASG): case(JCTree.BITAND_ASG):
 	    case(JCTree.SL_ASG): case(JCTree.SR_ASG): case(JCTree.USR_ASG):
 	    case(JCTree.PLUS_ASG): case(JCTree.MINUS_ASG): case(JCTree.MUL_ASG):

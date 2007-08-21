@@ -35,7 +35,6 @@ public class FieldGroupTree extends JCTree implements Tree {
     private boolean enumeration;
 
     public FieldGroupTree(List<JCVariableDecl> vars, boolean enumeration) {
-        super(0);
         this.vars = vars;
         pos = TreeInfo.getStartPos(vars.get(0));
         this.enumeration = enumeration;
@@ -76,5 +75,9 @@ public class FieldGroupTree extends JCTree implements Tree {
     @Override
     public int hashCode() {
         return vars.hashCode();
+    }
+
+    public int getTag() {
+        return 0;
     }
 }

@@ -1024,7 +1024,7 @@ public class CasualDiff {
         int[] lhsBounds = getBounds(oldT.lhs);
         copyTo(localPointer, lhsBounds[0]);
         localPointer = diffTree(oldT.lhs, newT.lhs, lhsBounds);
-        if (oldT.tag != newT.tag) { // todo (#pf): operatorName() does not work
+        if (oldT.getTag() != newT.getTag()) { // todo (#pf): operatorName() does not work
             copyTo(localPointer, oldT.pos);
             printer.print(getAssignementOperator(newT));
             localPointer = oldT.pos + getAssignementOperator(oldT).length();
@@ -1062,10 +1062,10 @@ public class CasualDiff {
         int[] argBounds = getBounds(oldT.arg);
         copyTo(localPointer, argBounds[0]);
         localPointer = diffTree(oldT.arg, newT.arg, argBounds);
-        if (oldT.tag != newT.tag) {
+        if (oldT.getTag() != newT.getTag()) {
             copyTo(localPointer, oldT.pos);
-            printer.print(operatorName(newT.tag));
-            localPointer = oldT.pos + operatorName(oldT.tag).length();
+            printer.print(operatorName(newT.getTag()));
+            localPointer = oldT.pos + operatorName(oldT.getTag()).length();
         }
         copyTo(localPointer, bounds[1]);
         return bounds[1];
@@ -1077,10 +1077,10 @@ public class CasualDiff {
         int[] lhsBounds = getBounds(oldT.lhs);
         copyTo(localPointer, lhsBounds[0]);
         localPointer = diffTree(oldT.lhs, newT.lhs, lhsBounds);
-        if (oldT.tag != newT.tag) {
+        if (oldT.getTag() != newT.getTag()) {
             copyTo(localPointer, oldT.pos);
-            printer.print(operatorName(newT.tag));
-            localPointer = oldT.pos + operatorName(oldT.tag).toString().length();
+            printer.print(operatorName(newT.getTag()));
+            localPointer = oldT.pos + operatorName(oldT.getTag()).toString().length();
         }
         int[] rhsBounds = getBounds(oldT.rhs);
         copyTo(localPointer, rhsBounds[0]);
@@ -1408,13 +1408,13 @@ public class CasualDiff {
             return true;
         if (t1 == null || t2 == null)
             return false;
-        if (t1.tag != t2.tag)
+        if (t1.getTag() != t2.getTag())
             return false;
         if (!deepMatch)
             return true;
         
         // don't use visitor, since we want fast-fail behavior
-        switch (t1.tag) {
+        switch (t1.getTag()) {
           case JCTree.TOPLEVEL:
               return ((JCCompilationUnit)t1).sourcefile.equals(((JCCompilationUnit)t2).sourcefile);
           case JCTree.IMPORT:
@@ -2156,7 +2156,7 @@ public class CasualDiff {
     
     // from TreesService
     private static JCTree leftMostTree(JCTree tree) {
-        switch (tree.tag) {
+        switch (tree.getTag()) {
             case(JCTree.APPLY):
                 return leftMostTree(((JCMethodInvocation)tree).meth);
             case(JCTree.ASSIGN):
@@ -2243,7 +2243,7 @@ public class CasualDiff {
         diffPrecedingComments(oldT, newT);
         int retVal = -1;
 
-        if (oldT.tag != newT.tag) {
+        if (oldT.getTag() != newT.getTag()) {
             if (((compAssign.contains(oldT.getKind()) && compAssign.contains(newT.getKind())) == false) &&
                 ((binaries.contains(oldT.getKind()) && binaries.contains(newT.getKind())) == false) &&
                 ((unaries.contains(oldT.getKind()) && unaries.contains(newT.getKind())) == false)) {
@@ -2253,7 +2253,7 @@ public class CasualDiff {
             }
         }
 
-        switch (oldT.tag) {
+        switch (oldT.getTag()) {
           case JCTree.TOPLEVEL:
               diffTopLevel((JCCompilationUnit)oldT, (JCCompilationUnit)newT);
               break;

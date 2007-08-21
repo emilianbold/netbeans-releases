@@ -150,7 +150,7 @@ System.err.println("Need width calc for "+tree);
 	if (tree.elemtype != null) {
 	    width+=4;
 	    JCTree elemtype = tree.elemtype;
-	    while (elemtype.tag == JCTree.TYPEARRAY) {
+	    while (elemtype.getTag() == JCTree.TYPEARRAY) {
 		width+=2;
 		elemtype = ((JCArrayTypeTree) elemtype).elemtype;
 	    }
@@ -207,7 +207,7 @@ System.err.println("Need width calc for "+tree);
     public void visitAssignop(JCAssignOp tree) {
 	open(prec, TreeInfo.assignopPrec);
 	width+=3;
-	width(treeinfo.operatorName(tree.tag - JCTree.ASGOffset));
+	width(treeinfo.operatorName(tree.getTag() - JCTree.ASGOffset));
 	width(tree.lhs, TreeInfo.assignopPrec + 1);
 	width(tree.rhs, TreeInfo.assignopPrec);
     }
@@ -218,15 +218,15 @@ System.err.println("Need width calc for "+tree);
 	width(tree.rhs, TreeInfo.assignPrec);
     }
     public void visitUnary(JCUnary tree) {
-	int ownprec = treeinfo.opPrec(tree.tag);
-	Name opname = treeinfo.operatorName(tree.tag);
+	int ownprec = treeinfo.opPrec(tree.getTag());
+	Name opname = treeinfo.operatorName(tree.getTag());
 	open(prec, ownprec);
 	width(opname);
 	width(tree.arg, ownprec);
     }
     public void visitBinary(JCBinary tree) {
-	int ownprec = treeinfo.opPrec(tree.tag);
-	Name opname = treeinfo.operatorName(tree.tag);
+	int ownprec = treeinfo.opPrec(tree.getTag());
+	Name opname = treeinfo.operatorName(tree.getTag());
 	open(prec, ownprec);
 	width(opname);
 	width+=2;
