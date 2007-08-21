@@ -312,7 +312,12 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         set.setName("ItemConfiguration"); // NOI18N
         set.setDisplayName(getString("ItemConfigurationTxt"));
         set.setShortDescription(getString("ItemConfigurationHint"));
-        set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromBuildTxt"), getString("ExcludedFromBuildHint"))); // NOI18N
+        if ((getConfiguration() instanceof MakeConfiguration) &&
+            ((MakeConfiguration)getConfiguration()).isMakefileConfiguration()){
+            set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromCodeAssistanceTxt"), getString("ExcludedFromCodeAssistanceHint"))); // NOI18N
+        } else {
+            set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromBuildTxt"), getString("ExcludedFromBuildHint"))); // NOI18N
+        }
         set.put(new ToolNodeProp());
         sheet.put(set);
         
