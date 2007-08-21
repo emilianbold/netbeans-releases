@@ -32,7 +32,12 @@ public interface CsmModelListener extends EventListener {
     /** Is called upon project opening */
     void projectOpened(CsmProject project);
 
-    /** Is called upon project closing */
+    /** 
+     * Is called upon project closing.
+     * At the moment of this call the project isn't really closed;
+     * (this is more convenient to clients)
+     * TODO: consider renaming to projectClosing
+     */
     void projectClosed(CsmProject project);
 
     /**
