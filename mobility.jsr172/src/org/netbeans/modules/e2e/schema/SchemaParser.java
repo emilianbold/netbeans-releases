@@ -89,7 +89,7 @@ public class SchemaParser extends DefaultHandler {
 
     private void addPrimitiveTypes() {
         Type string_type = new Type( SchemaConstants.TYPE_STRING, Type.FLAVOR_PRIMITIVE );
-        string_type.setJavaTypeName( "java.lang.String" );
+        string_type.setJavaTypeName( "String" );
         schemaHolder.addSchemaType( string_type );
         Type int_type = new Type( SchemaConstants.TYPE_INT, Type.FLAVOR_PRIMITIVE );
         int_type.setJavaTypeName( "int" );

@@ -259,7 +259,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                             }
 
 
-                            off.write( operation.getName() + "( ");
+                            off.write( operation.getName() + "(");
                             
                             Input input = operation.getInput();
                             if (input != null){
@@ -278,7 +278,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                     }
                                 }
                             } 
-                            off.write(" ) throws java.rmi.RemoteException;\n");
+                            off.write(") throws java.rmi.RemoteException;\n");
                         }
                     }
                 }
@@ -458,19 +458,32 @@ public class WSDL2JavaImpl implements WSDL2Java {
                         // Generate code in JavaBeans style
                         
                         off.write( "\n" );
-                        off.write( "private " + propertyType + (isArray ? "[] " : " ") + propertyVariableName + ";\n" );
-                        if( configuration.getGenerateDataBinding() && Type.FLAVOR_SEQUENCE == sce.getType().getFlavor()) {
-                            off.write( "private " + propertyType + "ArrayItem " + propertyVariableName + "_array_item = " + 
-                                "new " + propertyType + "ArrayItem( " + propertyVariableName + ");\n");
+                        if( !configuration.getGenerateDataBinding()) {
+                            off.write( "private " + propertyType + (isArray ? "[] " : " ") + propertyVariableName + ";\n" );
+                        } else {
+                            if( !isArray ) {
+                                off.write( "private " + propertyType + " " + propertyVariableName + ";\n" );
+                            } else {
+                                off.write( "private " + propertyType + "ArrayItem " + propertyVariableName + "_array_item = " + 
+                                    "new " + propertyType + "ArrayItem();\n");
+                            }
                         }
                         off.write( "\n" );
                         
                         off.write( "public void " + setter( propertyName ) + "( " + propertyType + (isArray ? "[] " : " ") + propertyVariableName + " ) {\n" );
-                        off.write( "this." + propertyVariableName + " = " + propertyVariableName + ";\n" );
+                        if( isArray ) {
+                            off.write( propertyVariableName + "_array_item.setArray(" + propertyVariableName + ");\n" );
+                        } else {
+                            off.write( "this." + propertyVariableName + " = " + propertyVariableName + ";\n" );
+                        }
                         off.write( "}\n\n" );
                         
                         off.write( "public " + propertyType + (isArray ? "[] " : " ") + getter( propertyName ) + "() {\n" );
-                        off.write( "return " + propertyVariableName + ";\n" );
+                        if( isArray ) {
+                            off.write( "return " + propertyVariableName + "_array_item.getArray();\n" );
+                        } else {
+                            off.write( "return " + propertyVariableName + ";\n" );
+                        }
                         off.write( "}\n" );
 
                     } else if( WSDL2Java.Configuration.TYPE_STRUCTURES == configuration.getGenerateType()) {
@@ -480,7 +493,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                         off.write( "public " + propertyType + (isArray ? "[] " : " ") + propertyVariableName + ";\n" );
                     }
 
-                    if( sce.getMaxOccurs() > 1 && sce.getType().getFlavor() != Type.FLAVOR_PRIMITIVE ) {
+                    if( sce.getMaxOccurs() > 1 ) {
                         usedArrayTypeNames.add( sce.getType().getName());
                     }
 
@@ -497,9 +510,17 @@ public class WSDL2JavaImpl implements WSDL2Java {
                         String propertyName = sce.getName().getLocalPart();
                         String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
                         String propertyType = sce.getType().getName().getLocalPart();
+                        boolean isArray = sce.getMaxOccurs() > 1;
+                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
+                            propertyType = getWrapperTypeName( sce.getType());
+                        }
                         
                         off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
-                        off.write( "return " + getWrapperTypeName( sce.getType()) + ".class;\n" );
+                        if( isArray ) {
+                            off.write( "return org.netbeans.microedition.databinding.IndexableDataSet.class;\n" );
+                        } else {
+                            off.write( "return " + propertyType + ".class;\n" );
+                        }
                         off.write( "}\n" );
                     }
                 }
@@ -517,15 +538,16 @@ public class WSDL2JavaImpl implements WSDL2Java {
                         String propertyType = sce.getType().getName().getLocalPart();
                         
                         off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
-                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
-                            off.write( "return " + wrapPrimitiveType( sce.getType(), propertyVariableName ) + ";\n" );
-                        } else {
+//                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
+//                            off.write( "return " + wrapPrimitiveType( sce.getType(), propertyVariableName ) + ";\n" );
+//                        } else {
                             if( sce.getMaxOccurs() > 1 ) {
                                 off.write( "return " + propertyVariableName + "_array_item;\n" );
                             } else {
-                                off.write( "return " + propertyVariableName + ";\n" );
+                            off.write( "return " + wrapPrimitiveType( sce.getType(), propertyVariableName ) + ";\n" );
+//                                off.write( "return " + propertyVariableName + ";\n" );
                             }
-                        }
+//                        }
                         off.write( "}\n" );
                     }
                 }
@@ -542,17 +564,22 @@ public class WSDL2JavaImpl implements WSDL2Java {
                         String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
                         String propertyType = sce.getType().getName().getLocalPart();
                         
-                        off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
-                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
-                            off.write( propertyVariableName + " = " + unwrapPrimitiveType( sce, " value" ) + ";\n" );
-                        } else {
-                            off.write( propertyVariableName + " = (" + propertyType +") value;\n" );
+                        // Generate set only for non array fields
+                        if( sce.getMaxOccurs() <= 1 ) {
+                            off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
+                            if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
+                                off.write( propertyVariableName + " = " + unwrapPrimitiveType( sce, " value" ) + ";\n" );
+                            } else {
+                                off.write( propertyVariableName + " = (" + propertyType +") value;\n" );
+                            }
+                            off.write( "}\n" );
                         }
-                        off.write( "}\n" );
                     }
                 }
                 off.write( "}\n" );
                 off.write( "\n" );
+                
+                // setAsString
                 off.write( "public void setAsString(String dataItemName, String value) throws DataBindingException {\n" );
                 for( SchemaConstruct sc : type.getSubconstructs()) {
                     if( SchemaConstruct.ConstructType.ELEMENT == sc.getConstructType()) {
@@ -561,13 +588,16 @@ public class WSDL2JavaImpl implements WSDL2Java {
                         String propertyVariableName = propertyName.substring( 0, 1 ).toLowerCase() + propertyName.substring( 1 );
                         String propertyType = sce.getType().getName().getLocalPart();
                         
-                        off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
-                        if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
-                            off.write( propertyVariableName + " = " + parsePrimitiveType( sce, "value" ) + ";\n" );
-                        } else {
-                            off.write( "throw new DataBindingException( \"Illegal assigment.\");\n" );
+                        // Generate set only for non array fields
+                        if( sce.getMaxOccurs() <= 1 ) {
+                            off.write( "if( \"" + propertyVariableName + "\".equals(dataItemName)) {\n" );
+                            if( Type.FLAVOR_PRIMITIVE == sce.getType().getFlavor()) {
+                                off.write( propertyVariableName + " = " + parsePrimitiveType( sce, "value" ) + ";\n" );
+                            } else {
+                                off.write( "throw new DataBindingException( \"Illegal assigment.\");\n" );
+                            }
+                            off.write( "}\n" );
                         }
-                        off.write( "}\n" );
                     }
                 }
                 off.write( "}\n" );
@@ -606,7 +636,12 @@ public class WSDL2JavaImpl implements WSDL2Java {
                 throw new IllegalArgumentException( "Invalid element type." );
             }
 
-            String typeName = type.getName() == null ? element.getName().getLocalPart() : type.getName().getLocalPart();
+            String typeName = "";
+            if( Type.FLAVOR_PRIMITIVE == type.getFlavor()) {
+                typeName = type.getJavaTypeName();
+            } else {
+                typeName = type.getName() == null ? element.getName().getLocalPart() : type.getName().getLocalPart();
+            }
             String name = typeName + "ArrayItem";
             File outputDirectoryF = new File( configuration.getOutputDirectory());
             FileObject outputDirectoryFO = FileUtil.toFileObject( FileUtil.normalizeFile( outputDirectoryF ));
@@ -634,59 +669,100 @@ public class WSDL2JavaImpl implements WSDL2Java {
                 String parentName = parentType.getName().getLocalPart();
                 off.write( "public class " + name + " extends " + parentName + " implements IndexableDataSet {\n" );
             }
+            off.write( "\n" );
+            
+            // field representing the array
+            off.write( "private " + typeName + "[] values = new " + typeName + "[] {};\n" );
+            off.write( "\n" );
+            
+            // default constructor
+            off.write( "/**\n" );
+            off.write( " * Public default constructor for class " + name + "\n" );
+            off.write( " */\n" );
             off.write( "public " + name + "() {\n" );
             off.write( "}\n" );
             off.write( "\n" );
+            
+            // constructor with parameter
             off.write( "public " + name + "( " + typeName + "[] values ) {\n" );
             off.write( "this.values = values;\n" );
             off.write( "}\n" ); 
-
             off.write( "\n" );
-            off.write( "private " + typeName + "[] values;\n" );
-            off.write( "\n" );
+            
+            // isReadOnly
             off.write( "public boolean isReadOnly() {\n" );
             off.write( "return false;\n" );
             off.write( "}\n" );
             off.write( "\n" );
+            
+            // getSize
             off.write( "public int getSize() {\n" );
-            off.write( "return values.length;\n" );
+                off.write( "return values.length;\n" );
             off.write( "}\n" );
             off.write( "\n" );
+            
+            // getRow
             off.write( "public Object getRow(int index) throws DataBindingException {\n" );
-            off.write( "if(index >=0 && index < values.length) {\n" );
-            if( type.getFlavor() == Type.FLAVOR_PRIMITIVE ) {
-                off.write( "return " + wrapPrimitiveType( type, "values[index]" ) + ";\n" );
-            } else {
-                off.write( "return values[index];\n" );
-            }   
+                off.write( "if(index >=0 && index < values.length) {\n" );
+                if( type.getFlavor() == Type.FLAVOR_PRIMITIVE ) {
+                    off.write( "return " + wrapPrimitiveType( type, "values[index]" ) + ";\n" );
+                } else {
+                    off.write( "return values[index];\n" );
+                }   
             off.write( "}\n" );
             off.write( "throw new DataBindingException(\"Index is out of range.\");\n" );
             off.write( "}\n" );
             off.write( "\n" );
+            
+            // setRow
             off.write( "public void setRow( int index, Object value ) throws DataBindingException {\n" );
             off.write( "if( index >=0 && index < values.length ) {\n" );
             if( type.getFlavor() == Type.FLAVOR_PRIMITIVE ) {
-                off.write( "values[index] = " + unwrapPrimitiveType( element, name ) + ";\n" );
+                if( element == null ) {
+                    off.write( "values[index] = " + unwrapPrimitiveType( type, "value" ) + ";\n" );
+                } else {
+                    off.write( "values[index] = " + unwrapPrimitiveType( element, "value" ) + ";\n" );
+                }
             } else {
                 off.write( "values[index] = (" + typeName + ") value;\n" );
             } 
-            off.write( "DataBinder.fireDataSetChanged( this, new Integer( index ));" );
+            off.write( "DataBinder.fireDataSetChanged( this, new Integer( index ));\n" );
             off.write( "}\n" );
             off.write( "throw new DataBindingException(\"Index is out of range.\");\n" );
             off.write( "}\n" );
             off.write( "\n" );
+            
+            // insertRow
             off.write( "public void insertRow(int index, Object value) throws DataBindingException {\n" );
+            off.write( "if( index >= 0 && index <= values.length ) {\n" );
+            off.write( typeName + " _newArray[] = new " + typeName + "[values.length + 1];\n" );
+            off.write( "if( index > 1 ) System.arraycopy(values, 0, _newArray, 0, index - 1 );\n" );
+            off.write( "if( index < values.length ) System.arraycopy(values, index, _newArray, index + 1, values.length - index );\n" );
+            off.write( "_newArray[index] = (" + typeName + ")value;\n" );
+            off.write( "values = _newArray;\n" );
             off.write( "DataBinder.fireDataSetChanged( this, new Integer( index ));" );
             off.write( "}\n" );
+            off.write( "}\n" );
             off.write( "\n" );
+            
+            // deleteRow
             off.write( "public void deleteRow(int index) throws DataBindingException {\n" );
+            off.write( "if( index >= 0 && index < values.length ) {\n" );
+            off.write( typeName + " _newArray[] = new " + typeName + "[values.length - 1];\n" );
+            off.write( "if(index > 0) System.arraycopy(values, 0, _newArray, 0, index - 1);\n" );
+            off.write( "if(index == 0) System.arraycopy(values, index + 1, _newArray, index, values.length - index - 1 );\n" );
+            off.write( "}\n" );
             off.write( "DataBinder.fireDataSetChanged( this, new Integer( index ));" );
             off.write( "}\n" );
             off.write( "\n" );
+            
+            // getType
             off.write( "public Class getType( String arg0 ) throws DataBindingException {\n" );
             off.write( "return " + typeName + ".class;\n" );
             off.write( "}\n" );
             off.write( "\n" );
+            
+            // getValue
             off.write( "public Object getValue(String attribute) throws DataBindingException {\n" );
             off.write( "if( \"length\".equals( attribute )) {\n" );
             off.write( "return new Integer( values.length );\n" );
@@ -694,17 +770,35 @@ public class WSDL2JavaImpl implements WSDL2Java {
             off.write( "throw new DataBindingException( \"Invalid attribute name.\" );\n" );
             off.write( "}\n" );
             off.write( "\n" );
+            
+            // setValue
             off.write( "public void setValue(String attribute, Object value) throws DataBindingException {\n" );
             off.write( "throw new DataBindingException(\"Invalid attribute name.\");\n" );
             off.write( "}\n" );
             off.write( "\n" );
+            
+            // setAsString
             off.write( "public void setAsString(String attribute, String value) throws DataBindingException {\n" );
             off.write( "throw new DataBindingException(\"Invalid attribute name.\");\n" );
             off.write( "}\n" );
             off.write( "\n" );
+            
+            // isReadOnly
             off.write( "public boolean isReadOnly(String attribute) throws DataBindingException {\n" );
             off.write( "return true;\n" );
             off.write( "}\n" );
+
+            // getArray
+            off.write( typeName + "[] getArray() {\n" );
+                off.write( "return values;\n" );
+            off.write( "}\n" );
+            off.write( "\n" );
+            
+            // setArray
+            off.write( "void setArray(" + typeName + " values[] ) {\n" );
+            off.write( "this.values = values;\n" );
+            off.write( "}\n" );
+                    
             off.write( "}\n" );
             off.close();
         }        
@@ -822,7 +916,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                 break;
                             }
 
-                            off.write( operation.getName() + "( ");
+                            off.write( operation.getName() + "(");
                             
                             Input input = operation.getInput();
                             if (input != null) {
@@ -841,7 +935,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                 }
                             }
                             
-                            off.write( " ) throws java.rmi.RemoteException {\n" );
+                            off.write( ") throws java.rmi.RemoteException {\n" );
                             // Wrap to Object[] array                            
                             for( Iterator<Part> it = input.getMessage().getParts().iterator(); it.hasNext(); ) {
                                 Part part = it.next();
@@ -985,7 +1079,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                         off.write( wrapPrimitiveType( t, "obj" + ( isA ? "[i]" : "" ) + "." + getter( variableName ) + "()" ));
                                     } else {
                                         if( sce.isNillable()) {
-                                            off.write( "null" );
+                                            off.write( "obj" + ( isA ? "[i]" : "" ) + "." + getter( variableName ) + "()" );
                                         } else {
                                             off.write( "???" );
                                         }
@@ -1050,7 +1144,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                         off.write( "result" + ( isA ? "[i]" : "" ) + "." + setter( variableName ) + "(" + unwrapPrimitiveType( sce, objectVariableName + "[" + i + "]" ) + ");\n" );
                                     } else {
                                         if( sce.isNillable()) {
-                                            off.write( "result" + ( isA ? "[i]" : "" ) + "." + setter( variableName ) + "( " + "_ArrayFromObject((Object[]) " + objectVariableName + "[" + i + "] ));\n" );
+                                            off.write( "result" + ( isA ? "[i]" : "" ) + "." + setter( variableName ) + "(" + "(" + t.getJavaTypeName() + "[]) " + objectVariableName + "[" + i + "]);\n" );
                                         } else {
                                             off.write( "???" );
                                         }
@@ -1196,6 +1290,28 @@ public class WSDL2JavaImpl implements WSDL2Java {
             return "new Short(" + value + ")";
         }
         
+        return value;
+    }
+    
+    private String unwrapPrimitiveType( Type type, String value ) {
+        QName typeName = type.getName();
+        if( SchemaConstants.TYPE_INT.equals( typeName )) {
+            return "((Integer)" + value + ").intValue()";
+        } else if( SchemaConstants.TYPE_BOOLEAN.equals( typeName )) {
+            return "((Boolean)" + value + ").booleanValue()";
+        } else if( SchemaConstants.TYPE_BYTE.equals( typeName )) {
+            return "((Byte)" + value + ").byteValue()";
+        } else if( SchemaConstants.TYPE_DOUBLE.equals( typeName )) {
+            return "((Double)" + value + ").doubleValue()";
+        } else if( SchemaConstants.TYPE_FLOAT.equals( typeName )) {
+            return "((Float)" + value + ").floatValue()";
+        } else if( SchemaConstants.TYPE_LONG.equals( typeName )) {
+            return "((Long)" + value + ").longValue()";
+        } else if( SchemaConstants.TYPE_SHORT.equals( typeName )) {
+            return "((Short)" + value + ").shortValue()";
+        } else if( SchemaConstants.TYPE_STRING.equals( typeName )) {
+            return "(String)" + value;
+        }
         return value;
     }
     
