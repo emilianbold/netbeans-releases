@@ -121,13 +121,13 @@ public class HgProperties implements ActionListener, DocumentListener {
     protected void initPropertyNameCbx() {
         List<String> lstName = new ArrayList<String>(8);
 
-        lstName.add(HGPROPNAME_USERNAME);
-        lstName.add(HGPROPNAME_DEFAULT_PUSH);
         lstName.add(HGPROPNAME_DEFAULT_PULL);
+        lstName.add(HGPROPNAME_DEFAULT_PUSH);
+        lstName.add(HGPROPNAME_USERNAME);
 
         ComboBoxModel comboModel = new DefaultComboBoxModel(new Vector(lstName));
         panel.comboName.setModel(comboModel);
-        panel.comboName.getEditor().setItem("");
+        panel.comboName.setSelectedIndex(0);
     }
     
     protected String getPropertyValue() {
