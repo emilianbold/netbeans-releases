@@ -19,13 +19,4 @@
 -->
 <project name="org.netbeans.modules.bpel.debugger.bdi" default="netbeans" basedir=".">
     <import file="../../../nbbuild/templates/projectized.xml"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/modules/ext/bdi"/>
-        <copy todir="${cluster}/modules/ext/bdi">
-            <fileset dir="external">
-                <include name="bdi.jar"/>
-            </fileset>
-        </copy>
-    </target>
 </project>
