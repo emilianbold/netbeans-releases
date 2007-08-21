@@ -384,12 +384,21 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
                     + result.getName() + "." + backingTemplate.getPrimaryFile().getExt()
                     + " was created by somebody else. It is not necessary now, fix it!"); // NOI18N
         } else {
-            DataObject newBackingJava = backingTemplate.createFromTemplate(backingTargetFolder, result.getName());
+            DataObject newBackingJava = null;
+            try {
+                newBackingJava = backingTemplate.createFromTemplate(backingTargetFolder, result.getName());
+            }catch (Exception ex) {
+                // XXX NB issue #113284
+                ex.printStackTrace();
+            }
             
             try {
-                newBackingJava.getPrimaryFile().setAttribute(JsfJavaDataObject.JSF_ATTRIBUTE, Boolean.TRUE);
+                
                 // XXX NB issue #81746.
-                newBackingJava.getPrimaryFile().setAttribute("NBIssue81746Workaround", Boolean.TRUE); // NOI18N
+                if (newBackingJava != null) {
+                    newBackingJava.getPrimaryFile().setAttribute("NBIssue81746Workaround", Boolean.TRUE); // NOI18N
+                    newBackingJava.getPrimaryFile().setAttribute(JsfJavaDataObject.JSF_ATTRIBUTE, Boolean.TRUE);
+                }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
