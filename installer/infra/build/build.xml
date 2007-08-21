@@ -231,7 +231,7 @@
             prefix="wsrp"/>
 
         <get
-            src="${portalpack.builds.host}/hudson/job/PortalPack_trunk_Nightly_Build/lastSuccessfulBuild/buildNumber"
+            src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb6/build.txt"
             dest="${temp.file}"/>
         <loadfile property="portalpack.build.number"
       	    srcFile="${temp.file}"/>
