@@ -1384,8 +1384,8 @@ public class BaseOptions extends OptionSupport {
         Settings.touchValue(getKitClass(), SettingsNames.RENDERING_HINTS);
     }
     
-    public Map getCodeFoldingProps(){
-        Map map = new HashMap();
+    public Map<String, Boolean> getCodeFoldingProps(){
+        Map<String, Boolean> map = new HashMap<String, Boolean>();
         
         Boolean val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_ENABLE);
         map.put(SettingsNames.CODE_FOLDING_ENABLE, val);
