@@ -610,16 +610,16 @@ public class ResourceSupport {
         if (property.getName().equals("name") && property instanceof RADProperty
                 && property.getValueType() == String.class) {
             RADComponent metacomp = ((RADProperty)property).getRADComponent();
-            if (!(oldValue instanceof String)) {
-                oldValue = metacomp.getName();
+            String oldName = oldValue instanceof String
+                    ? (String) oldValue : metacomp.getName();
+            String newName = property.isChanged() && newValue instanceof String
+                    ? (String) newValue : metacomp.getName();
+            if (!newName.equals(oldName)) {
+                componentRenamed(metacomp, oldName, newName);
             }
-            if (!property.isChanged() || !(newValue instanceof String)) {
-                newValue = metacomp.getName();
+            if (!(oldValue instanceof ExternalValue) && !(newValue instanceof ExternalValue)) {
+                return;
             }
-            if (!newValue.equals(oldValue)) {
-                componentRenamed(metacomp, (String)oldValue, (String)newValue);
-            }
-            return;
         }
 
         if (isResourceType(property.getValueType())) {
@@ -932,11 +932,17 @@ public class ResourceSupport {
             && (force
                 || (!isI18nAutoMode()
                     && (isResourceAutoMode()
-                        || resourceService.projectUsesResources(getSourceFile())))))
+                        || resourceService.projectUsesResources(getSourceFile()))))
+                        && !isAutoNamedProperty(prop))
         {
             return resourceService.createResourcePanel(prop.getValueType(), getSourceFile());
         }
         else return null;
+    }
+
+    private boolean isAutoNamedProperty(FormProperty prop) {
+        return isAutoName() && prop instanceof RADProperty
+                && getNameProperty(((RADProperty)prop).getRADComponent()) == prop;
     }
 
     public static List<FileObject> getAutomatedResourceFiles(FormModel formModel) {
