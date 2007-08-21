@@ -187,7 +187,8 @@ public abstract class CommonBeanReader
             implements MetadataModelAction<AppClientMetadata, Map<String, Object>> {
 
         public Map<String, Object> run(AppClientMetadata metadata) throws Exception {
-            return genCommonProperties(metadata.getRoot());
+            CommonDDBean newParent = normalizeParent(metadata.getRoot());
+            return genCommonProperties(newParent);
         }
         
     }
