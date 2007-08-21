@@ -24,8 +24,6 @@
 package org.netbeans.modules.visualweb.dataconnectivity;
 
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
-import org.netbeans.modules.visualweb.dataconnectivity.explorer.ideDb.BundledDatabaseHelper;
-import org.netbeans.modules.visualweb.dataconnectivity.utils.DbPortUtilities;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DesignTimeInitialContextFactory;
 import java.beans.Introspector;
 import java.io.File;
@@ -36,16 +34,8 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DerbyWaiter;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.openide.windows.WindowManager;
-
-// Comment out the code that was added to create Driver entries for DataDirect drivers
-// import java.net.URL;
-// import java.net.MalformedURLException;
-// import org.netbeans.api.db.explorer.JDBCDriver;
-// import org.netbeans.api.db.explorer.JDBCDriverManager;
-// import org.netbeans.api.db.explorer.DatabaseException;
 
 /**
  * Initialization code for dataconnectivity module.
@@ -58,29 +48,10 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
     private static String DATACONNECTIVITY_BEANINFO_PATH 
         = "org.netbeans.modules.visualweb.dataconnectivity.designtime"; // NOI18N
 
-    public static final String DBPORT_property = "derbyPort" ; // NOI18N
-
-    // String ideHome = System.getProperty("netbeans.home"); //NOI18N
-
-    private String userDir = System.getProperty("netbeans.user"); //NOI18N
-
-    private static final String installPropsReef = "system/install.properties"; //NOI18N
-    private static final String installPropsThresher = "config/com-sun-rave-install.properties"; //NOI18N
-
     public void restored() {
-
-        Log.err.log("Entering DataconnectivityModuleInstaller.restored()");
-//         long start = System.TimeMillis();
-//         long time1 = start, time2;
-
-        setBundledDBPort() ;
-
+        // initialize settings for data source naming option
         DataconnectivitySettings.getInstance() ;
-
-        // Load the bundled database info
-        String bundledDBFile = System.getProperty("rave.bundled.database") ;
-        BundledDatabaseHelper.getInfo(bundledDBFile) ;
-
+        
         //!JK Temporary place to register the rowset customizer.  This call may change.
         //!JK See Carl for details.
         //!JK Also, temporary place to add JSFCL_DATA_BEANINFO_PATH to the beanInfoSearchPath
@@ -104,31 +75,16 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
             bisp.add(this.DATACONNECTIVITY_BEANINFO_PATH);
             Introspector.setBeanInfoSearchPath((String[])bisp.toArray(new String[0]));
         }                        
-        
-//         time2 = System.currentTimeMillis();
-//         System.err.println("DataconnectivityModuleInstaller.restored() t1 dt=" + (time2 - time1));
-//         time1 = time2;
-        
+       
         //!JK temporary place to set InitialContextFactoryBuilder because the context is being
         //!JK polluted by jars being loaded by deployment
         DesignTimeInitialContextFactory.setInitialContextFactoryBuilder();
         
-//         time2 = System.currentTimeMillis();
-//         System.err.println("DataconnectivityModuleInstaller.restored() t2 dt=" + (time2 - time1));
-//        time1 = time2;
-               
+        // database registration for sample databases and legacy projects
         init();
-        
-
-
-        
-  
+                
        // Won't include other databases yet
-       // SampleDatabaseCreator.createAll("jsc", "jsc", "jsc", "JSC", "modules/ext/jsc.zip", true, "localhost", 1527);                
        // SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "modules/ext/vir.zip", true, "localhost", 1527);                
-
-//         time2 = System.currentTimeMillis();
-//         System.err.println("DataconnectivityModuleInstaller.restored() t3 dt=" + (time2 - time1) + "  Total: " + (time2 - start));
     }
        
     // Wait for IDE to start before taking care of database registration
@@ -144,46 +100,12 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
                 if (contextFile != null)
                     new DerbyWaiter(contextFile.exists());  // waits for Derby drivers to be registered before migrating userdir settings
                 else {
-                // Create sample database in Shortfin
+                    // Create sample database
                     if (ConnectionManager.getDefault().getConnection("jdbc:derby://localhost:1527/travel [travel on TRAVEL]") == null)
                         new DerbyWaiter(false);
-                //SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);
                 }
                 
             }
         }  );
-    }
-    
-    // public static String compString = "jdbc:pointbase:server://localhost:9092/"; //NOI18N
-    public static String compString = "jdbc:derby://localhost:1527/"; //NOI18N   
-    
-    /***
-     * determine the bundled database port.
-     * Users:  check rave-install.properties.  
-     * Developers:  overruled if RAVE_J2EE_HOME is set (look in pointbase.ini).
-     */
-    public void setBundledDBPort() {
-        // get the properties written by the installer.
-        // first look in the new thresher location.  If not found, check the old location.
-        File installPropsFile = InstalledFileLocator.getDefault().locate( installPropsThresher ,null,false ) ;
-        if ( installPropsFile == null ) {
-            installPropsFile = InstalledFileLocator.getDefault().locate( installPropsReef ,null,false ) ;
-        }
-
-        String port = null ; // default
-        
-        String derbyPropertyPort = DbPortUtilities.getDerbyPortFromDerbyProperties() ;
-        if ( derbyPropertyPort != null ) {
-            port = derbyPropertyPort ;
-        } else {
-                // read the port from the config file
-            String fPort = DbPortUtilities.getPropFromFile( installPropsFile, "derbyPort" ) ;
-            if ( fPort != null) port = fPort ;
-        } 
-        
-        if ( port == null)
-           port = "1527" ; // default
- 
-        System.setProperty(DBPORT_property, port); //NOI18N
-    }    
+    }       
 }
