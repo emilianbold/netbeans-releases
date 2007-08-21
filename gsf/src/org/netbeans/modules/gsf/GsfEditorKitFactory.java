@@ -41,8 +41,8 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import javax.swing.text.TextAction;
-//import org.netbeans.api.editor.fold.FoldHierarchy;
-//import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.gsf.BracketCompletion;
 import org.netbeans.api.gsf.CancellableTask;
 import org.netbeans.api.gsf.EditorAction;
@@ -665,39 +665,39 @@ public class GsfEditorKitFactory {
         }
     }
 
-    //public static class ExpandAllCodeBlockFolds extends BaseAction{
-    //    public ExpandAllCodeBlockFolds(){
-    //        super(expandAllCodeBlockFolds);
-    //        putValue(SHORT_DESCRIPTION, NbBundle.getBundle(GsfEditorKitFactory.class).getString("expand-all-code-block-folds"));
-    //        putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(GsfEditorKitFactory.class).getString("popup-expand-all-code-block-folds"));
-    //    }
-    //
-    //    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-    //        FoldHierarchy hierarchy = FoldHierarchy.get(target);
-    //        // Hierarchy locking done in the utility method
-    //        List types = new ArrayList();
-    //        types.add(GsfFoldManager.CODE_BLOCK_FOLD_TYPE);
-    //        //types.add(GsfFoldManager.IMPORTS_FOLD_TYPE);
-    //        FoldUtilities.expand(hierarchy, types);
-    //    }
-    //}
-    //
-    //public static class CollapseAllCodeBlockFolds extends BaseAction{
-    //    public CollapseAllCodeBlockFolds(){
-    //        super(collapseAllCodeBlockFolds);
-    //        putValue(SHORT_DESCRIPTION, NbBundle.getBundle(GsfEditorKitFactory.class).getString("collapse-all-code-block-folds"));
-    //        putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(GsfEditorKitFactory.class).getString("popup-collapse-all-code-block-folds"));
-    //    }
-    //
-    //    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-    //        FoldHierarchy hierarchy = FoldHierarchy.get(target);
-    //        // Hierarchy locking done in the utility method
-    //        List types = new ArrayList();
-    //        types.add(GsfFoldManager.CODE_BLOCK_FOLD_TYPE);
-    //        ///types.add(GsfFoldManager.IMPORTS_FOLD_TYPE);
-    //        FoldUtilities.collapse(hierarchy, types);
-    //    }
-    //}
+    public static class ExpandAllCodeBlockFolds extends BaseAction{
+        public ExpandAllCodeBlockFolds(){
+            super(expandAllCodeBlockFolds);
+            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(GsfEditorKitFactory.class).getString("expand-all-code-block-folds"));
+            putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(GsfEditorKitFactory.class).getString("popup-expand-all-code-block-folds"));
+        }
+    
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            FoldHierarchy hierarchy = FoldHierarchy.get(target);
+            // Hierarchy locking done in the utility method
+            List types = new ArrayList();
+            types.add(GsfFoldManager.CODE_BLOCK_FOLD_TYPE);
+            //types.add(GsfFoldManager.IMPORTS_FOLD_TYPE);
+            FoldUtilities.expand(hierarchy, types);
+        }
+    }
+    
+    public static class CollapseAllCodeBlockFolds extends BaseAction{
+        public CollapseAllCodeBlockFolds(){
+            super(collapseAllCodeBlockFolds);
+            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(GsfEditorKitFactory.class).getString("collapse-all-code-block-folds"));
+            putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(GsfEditorKitFactory.class).getString("popup-collapse-all-code-block-folds"));
+        }
+    
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            FoldHierarchy hierarchy = FoldHierarchy.get(target);
+            // Hierarchy locking done in the utility method
+            List types = new ArrayList();
+            types.add(GsfFoldManager.CODE_BLOCK_FOLD_TYPE);
+            ///types.add(GsfFoldManager.IMPORTS_FOLD_TYPE);
+            FoldUtilities.collapse(hierarchy, types);
+        }
+    }
     
     /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
     static abstract class AbstractCamelCasePosition extends BaseAction {

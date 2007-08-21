@@ -20,6 +20,7 @@
 package org.netbeans.api.gsf;
 
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.gsf.annotations.NonNull;
 
 /**
@@ -41,7 +42,7 @@ public interface StructureScanner {
     
     /**
      * @todo Do this in the same pass as the structure scan?
-     * Compute a list of foldable regions
+     * Compute a list of foldable regions, named "codeblocks", "comments", "imports", "initial-comment", ...
      */
-    List<OffsetRange> folds(@NonNull CompilationInfo info);
+    Map<String,List<OffsetRange>> folds(@NonNull CompilationInfo info);
 }

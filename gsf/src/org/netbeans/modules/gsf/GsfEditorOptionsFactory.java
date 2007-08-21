@@ -30,7 +30,7 @@ import org.openide.util.Lookup;
  * @author tor
  */
 public class GsfEditorOptionsFactory implements EditorOptionsFactory {
-
+    
     public EditorOptions get(String mimeType) {
         // Cache?
         return new GsfEditorOptions(mimeType);

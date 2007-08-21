@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.BadLocationException;
 import org.jruby.ast.CallNode;
 
 import org.jruby.ast.ClassNode;
@@ -61,6 +62,8 @@ import org.netbeans.api.gsf.Modifier;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.StructureItem;
 import org.netbeans.api.gsf.StructureScanner;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
 import org.netbeans.modules.ruby.elements.AstConstantElement;
@@ -68,6 +71,7 @@ import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstFieldElement;
 import org.netbeans.modules.ruby.elements.AstMethodElement;
 import org.netbeans.modules.ruby.elements.AstModuleElement;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -269,18 +273,59 @@ public class StructureAnalyzer implements StructureScanner {
         return analysisResult;
     }
 
-    public List<OffsetRange> folds(CompilationInfo info) {
+    public Map<String,List<OffsetRange>> folds(CompilationInfo info) {
         Node root = AstUtilities.getRoot(info);
 
         if (root == null) {
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
 
-        List<OffsetRange> folds = new ArrayList<OffsetRange>();
+        RubyParseResult rpr = (RubyParseResult)info.getParserResult();
+        AnalysisResult analysisResult = rpr.getStructure();
 
-        addFolds(root, folds);
+        Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
+        List<OffsetRange> codefolds = new ArrayList<OffsetRange>();
+        folds.put("codeblocks", codefolds); // NOI18N
 
+        try {
+            BaseDocument doc = (BaseDocument)info.getDocument();
+
+            addFolds(doc, analysisResult.getElements(), folds, codefolds);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         return folds;
+    }
+    
+    private void addFolds(BaseDocument doc, List<? extends AstElement> elements, 
+            Map<String,List<OffsetRange>> folds, List<OffsetRange> codeblocks) throws BadLocationException {
+        for (AstElement element : elements) {
+            switch (element.getKind()) {
+            case CLASS:
+            case MODULE:
+                Node node = element.getNode();
+
+                OffsetRange range = AstUtilities.getRange(node);
+                // Only make nested classes/modules foldable, similar to what the java editor is doing
+                if (range.getStart() > Utilities.getRowStart(doc, range.getStart())) {
+                    codeblocks.add(range);
+                }
+
+                break;
+            case METHOD:
+            case CONSTRUCTOR:
+                node = element.getNode();
+                codeblocks.add(AstUtilities.getRange(node));
+
+                break;
+            }
+            
+            List<? extends AstElement> children = element.getChildren();
+            if (children != null && children.size() > 0) {
+                addFolds(doc, children, folds, codeblocks);
+            }
+        }
     }
 
     private void scan(Node node, AstPath path, String in, Set<String> includes, AstElement parent) {
@@ -647,23 +692,6 @@ public class StructureAnalyzer implements StructureScanner {
         return null;
     }
     
-
-    private void addFolds(Node node, List<OffsetRange> folds) {
-        // Recursively search for methods or method calls that match the name and arity
-        // TODO - reuse datastructure obtained from full structural scan above
-        if (node instanceof ClassNode || node instanceof ModuleNode ||
-                node instanceof MethodDefNode || node instanceof SClassNode) {
-            folds.add(AstUtilities.getRange(node));
-        }
-
-        @SuppressWarnings("unchecked")
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            addFolds(child, folds);
-        }
-    }
-
     AnalysisResult analyze(RubyParseResult result) {
         return scan(result);
     }

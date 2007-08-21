@@ -106,6 +106,7 @@ public class RubyTokenId extends GsfTokenId {
                     return getUsedTokens();
                 }
 
+                @Override
                 protected Map<String, Collection<GsfTokenId>> createTokenCategories() {
                     Map<String, Collection<GsfTokenId>> cats =
                         new HashMap<String, Collection<GsfTokenId>>();
