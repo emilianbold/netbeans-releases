@@ -74,7 +74,7 @@ public class Model {
                 continue;
             }
             
-            Map m = baseOptions.getCodeFoldingProps ();
+            Map<String, Boolean> m = baseOptions.getCodeFoldingProps ();
 
             m.put (
                 SettingsNames.CODE_FOLDING_ENABLE,
@@ -138,7 +138,7 @@ public class Model {
         Set mimeTypes = EditorSettings.getDefault().getMimeTypes();
         for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
             String mimeType = (String) i.next();
-            BaseOptions baseOptions = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
+            BaseOptions baseOptions = getOptions(mimeType);
 
             if (baseOptions == null) {
                 continue;
@@ -262,7 +262,7 @@ public class Model {
     }
     
     private static BaseOptions getOptions (String mimeType) {
-        return (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
+        return MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
     }
 }
 

@@ -124,7 +124,7 @@ class IndentationModel {
         applyParameterToAll ("setExpandTabs", Boolean.valueOf(isExpandTabs ()), Boolean.TYPE); //NOI18N
         applyParameterToAll ("setSpacesPerTab", getSpacesPerTab (), Integer.TYPE); //NOI18N
         applyParameterToAll ("setTabSize", getTabSize(), Integer.TYPE); //NOI18N
-        applyParameterToAll ("setRightMargin", getRightMargin(), Integer.TYPE); //NOI18N
+        applyParameterToAll ("setTextLimitWidth", getRightMargin(), Integer.TYPE); //NOI18N
     }
     
     void revertChanges () {
@@ -224,41 +224,54 @@ class IndentationModel {
             IndentEngine indentEngine = baseOptions.getIndentEngine ();
             mimeTypeBoundEngines.add(indentEngine);
             
-            try {
-                ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
-                // XXX: HACK
-                if (baseOptions.getClass().getName().equals("org.netbeans.modules.java.editor.options.JavaOptions") && //NOI18N
-                    !indentEngine.getClass().getName().equals("org.netbeans.modules.editor.java.JavaIndentEngine")) //NOI18N
-                {
+            ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+            // XXX: HACK
+            if (baseOptions.getClass().getName().equals("org.netbeans.modules.java.editor.options.JavaOptions") && //NOI18N
+                !indentEngine.getClass().getName().equals("org.netbeans.modules.editor.java.JavaIndentEngine")) //NOI18N
+            {
+                try {
                     Class javaIndentEngineClass = classLoader.loadClass("org.netbeans.modules.editor.java.JavaIndentEngine"); //NOI18N
-                    indentEngine = (IndentEngine) Lookup.getDefault ().lookup (javaIndentEngineClass);
+                    indentEngine = (IndentEngine) Lookup.getDefault().lookup(javaIndentEngineClass);
                     baseOptions.setIndentEngine(indentEngine);
+                } catch (Exception ex) {
                 }
-                if (baseOptions.getClass().getName().equals("org.netbeans.modules.web.core.syntax.JSPOptions") && //NOI18N
-                    !indentEngine.getClass().getName().equals("org.netbeans.modules.web.core.syntax.JspIndentEngine")) //NOI18N
-                {
+            }
+            if (baseOptions.getClass().getName().equals("org.netbeans.modules.web.core.syntax.JSPOptions") && //NOI18N
+                !indentEngine.getClass().getName().equals("org.netbeans.modules.web.core.syntax.JspIndentEngine")) //NOI18N
+            {
+                try {
                     Class jspIndentEngineClass = classLoader.loadClass("org.netbeans.modules.web.core.syntax.JspIndentEngine"); //NOI18N
                     indentEngine = (IndentEngine) Lookup.getDefault ().lookup (jspIndentEngineClass);
                     baseOptions.setIndentEngine(indentEngine);
+                } catch (Exception ex) {
                 }
-                
-                if (parameterName.equals("setTabSize")) { //NOI18N
-                    baseOptions.setTabSize((Integer)parameterValue);
-                } else if (parameterName.equals("setRightMargin")) { //NOI18N
-                    baseOptions.setTextLimitWidth((Integer)parameterValue);
-                } else {
-                    Method method = indentEngine.getClass ().getMethod (
-                        parameterName,
-                        new Class [] {parameterType}
-                    );
-                    method.invoke (indentEngine, new Object [] {parameterValue});
-                }
+            }
+
+            // update BaseOptions
+            try {
+                Method method = baseOptions.getClass ().getMethod (
+                    parameterName,
+                    new Class [] { parameterType }
+                );
+                method.invoke (baseOptions, new Object [] { parameterValue });
             } catch (Exception ex) {
+                // ignore
+            }
+            
+            // update IndentEngine
+            try {
+                Method method = indentEngine.getClass ().getMethod (
+                    parameterName,
+                    new Class [] { parameterType }
+                );
+                method.invoke (indentEngine, new Object [] { parameterValue });
+            } catch (Exception ex) {
+                // ignore
             }
         }
         
         // There can be other engines that are not currently hooked up with
-        // and BaseOptions/mime-type.
+        // BaseOptions/mime-type.
         
         Collection allEngines = Lookup.getDefault().lookupAll(IndentEngine.class);
         for (Iterator it = allEngines.iterator(); it.hasNext(); ) {
