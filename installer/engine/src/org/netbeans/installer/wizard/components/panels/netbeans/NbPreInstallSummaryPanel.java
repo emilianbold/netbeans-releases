@@ -65,6 +65,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         
         setProperty(INSTALLATION_FOLDER_PROPERTY,
                 DEFAULT_INSTALLATION_FOLDER);
+        setProperty(INSTALLATION_FOLDER_NETBEANS_PROPERTY,
+                DEFAULT_INSTALLATION_FOLDER_NETBEANS);
         setProperty(UNINSTALL_LIST_LABEL_TEXT_PROPERTY,
                 DEFAULT_UNINSTALL_LIST_LABEL_TEXT);
         setProperty(INSTALLATION_SIZE_PROPERTY,
@@ -104,7 +106,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     
     @Override
     public void initialize() {
-        final List<Product> toInstall = 
+        final List<Product> toInstall =
                 Registry.getInstance().getProductsToInstall();
         
         if (toInstall.size() > 0) {
@@ -189,8 +191,12 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 try {
                     
                     if (product.getLogic().registerInSystem()) {
-                        text.append(StringUtils.format(
-                                panel.getProperty(INSTALLATION_FOLDER_PROPERTY),
+                        String property = panel.getProperty(
+                                product.getUid().equals("nb-base") ?
+                                    INSTALLATION_FOLDER_NETBEANS_PROPERTY :
+                                    INSTALLATION_FOLDER_PROPERTY);
+                        
+                        text.append(StringUtils.format(property,                                
                                 product.getDisplayName()));
                         text.append(StringUtils.LF);
                         text.append("    " + product.getInstallationLocation());
@@ -283,7 +289,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 LogManager.log("Available roots : " + StringUtils.asString(roots));
                 
                 for (Product product: toInstall) {
-                    final File installLocation = product.getInstallationLocation();                    
+                    final File installLocation = product.getInstallationLocation();
                     final File root = FileUtils.getRoot(installLocation, roots);
                     final long productSize = product.getRequiredDiskSpace();
                     
@@ -293,8 +299,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         Long size = spaceMap.get(root);
                         size = Long.valueOf(
                                 (size != null ? size.longValue() : 0L) +
-                                productSize);                        
-                        spaceMap.put(root, size);                            
+                                productSize);
+                        spaceMap.put(root, size);
                     } else {
                         return StringUtils.format(
                                 panel.getProperty(ERROR_NON_EXISTENT_ROOT_PROPERTY),
@@ -444,6 +450,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     // Constants
     public static final String INSTALLATION_FOLDER_PROPERTY =
             "installation.folder"; // NOI18N
+    public static final String INSTALLATION_FOLDER_NETBEANS_PROPERTY =
+            "installation.folder.netbeans"; // NOI18N
     public static final String UNINSTALL_LIST_LABEL_TEXT_PROPERTY =
             "uninstall.list.label.text"; // NOI18N
     public static final String INSTALLATION_SIZE_PROPERTY =
@@ -481,6 +489,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     public static final String DEFAULT_INSTALLATION_FOLDER =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.installation.folder"); // NOI18N
+    public static final String DEFAULT_INSTALLATION_FOLDER_NETBEANS =
+            ResourceUtils.getString(NbPreInstallSummaryPanel.class,
+            "NPrISP.installation.folder.netbeans"); // NOI18N
     public static final String DEFAULT_UNINSTALL_LIST_LABEL_TEXT =
             ResourceUtils.getString(NbPreInstallSummaryPanel.class,
             "NPrISP.uninstall.list.label.text"); // NOI18N
