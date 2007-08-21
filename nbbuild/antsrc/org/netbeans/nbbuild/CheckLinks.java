@@ -284,7 +284,7 @@ public class CheckLinks extends MatchingTask {
             //System.out.println("u.toURL.getHost:" + u.toURL().getHost());
             //System.out.println("u.getPath:" + u.getPath());
             //If no module base name is specified as host name check if given
-            //resource is available in current module or globaly.
+            //resource is available in current module or globally.
             if (u.toURL().getHost() == null) {
                 task.log("WARNING: Missing host in nbdocs protocol URL. URI: " + u, Project.MSG_WARN);
                 task.log("WARNING: Referrer: " + referrer, Project.MSG_WARN);
@@ -321,7 +321,7 @@ public class CheckLinks extends MatchingTask {
                         }
                     }
                 } else {
-                    task.log("WARNING: Link not found globaly. URI: " + u, Project.MSG_WARN);
+                    task.log("WARNING: Link not found globally. URI: " + u, Project.MSG_WARN);
                     task.log("WARNING: Referrer: " + referrer, Project.MSG_WARN);
                     return;
                 } 
@@ -385,7 +385,7 @@ public class CheckLinks extends MatchingTask {
                             }
                         }
                     } else {
-                        task.log("WARNING: Link not found globaly. URI: " + u, Project.MSG_WARN);
+                        task.log("WARNING: Link not found globally. URI: " + u, Project.MSG_WARN);
                         task.log("WARNING: Referrer: " + referrer, Project.MSG_WARN);
                         return;
                     } 
