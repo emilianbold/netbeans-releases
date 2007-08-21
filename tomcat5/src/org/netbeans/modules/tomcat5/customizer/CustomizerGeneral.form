@@ -29,8 +29,8 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="shutdownPortSpinner" min="-2" max="-2" attributes="0"/>
                           <Component id="serverPortSpinner" min="-2" max="-2" attributes="0"/>
-                          <Component id="baseTextField" pref="310" max="32767" attributes="1"/>
-                          <Component id="homeTextField" alignment="0" pref="310" max="32767" attributes="1"/>
+                          <Component id="baseTextField" pref="395" max="32767" attributes="1"/>
+                          <Component id="homeTextField" alignment="0" pref="395" max="32767" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                   <Component id="usernameTextField" alignment="0" min="0" pref="0" max="32767" attributes="1"/>

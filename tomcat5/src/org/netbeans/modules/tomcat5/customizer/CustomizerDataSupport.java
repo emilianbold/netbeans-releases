@@ -73,6 +73,8 @@ public class CustomizerDataSupport {
     private SpinnerNumberModel      serverPortModel;
     private SpinnerNumberModel      shutdownPortModel;
     private SpinnerNumberModel      debugPortModel;
+    private SpinnerNumberModel      deploymentTimeoutModel;
+    private ButtonModel             driverDeploymentModel;
     
     // model dirty flags    
     private boolean jvmModelFlag;
@@ -93,6 +95,8 @@ public class CustomizerDataSupport {
     private boolean serverPortModelFlag;
     private boolean shutdownPortModelFlag;
     private boolean debugPortModelFlag;
+    private boolean deploymentTimeoutModelFlag;
+    private boolean driverDeploymentModelFlag;
     
     private TomcatProperties tp;
     private TomcatManager tm;
@@ -293,6 +297,24 @@ public class CustomizerDataSupport {
         
         boolean socketEnabled = TomcatProperties.DEBUG_TYPE_SOCKET.equalsIgnoreCase(tp.getDebugType());
         debugButtonGroup.setSelected(socketEnabled ? socketModel : sharedMemModel, true);
+        
+        // deploymentTimeoutModel
+        deploymentTimeoutModel = new SpinnerNumberModel(tp.getDeploymentTimeout(), 1, Integer.MAX_VALUE, 1);
+        deploymentTimeoutModel.addChangeListener(new ModelChangeAdapter() {
+            public void modelChanged() {
+                deploymentTimeoutModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
+            }
+        });
+        
+        // driverDeploymentModel
+        driverDeploymentModel = createToggleButtonModel(tp.getDriverDeployment());
+        driverDeploymentModel.addItemListener(new ModelChangeAdapter() {
+            public void modelChanged() {
+                driverDeploymentModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
+            }
+        });
     }
     
     /** Update the jvm model */
@@ -413,6 +435,14 @@ public class CustomizerDataSupport {
         return debugPortModel;
     }
     
+    public SpinnerNumberModel getDeploymentTimeoutModel() {
+        return deploymentTimeoutModel;
+    }
+    
+    public ButtonModel getDriverDeploymentModel() {
+        return driverDeploymentModel;
+    }
+    
     // private helper methods -------------------------------------------------
     
     /** Save all changes */
@@ -504,6 +534,16 @@ public class CustomizerDataSupport {
         if (debugPortModelFlag) {
             tp.setDebugPort(((Integer)debugPortModel.getValue()).intValue());
             debugPortModelFlag = false;
+        }
+        
+        if (deploymentTimeoutModelFlag) {
+            tp.setDeploymentTimeout(((Integer)deploymentTimeoutModel.getValue()).intValue());
+            deploymentTimeoutModelFlag = false;
+        }
+        
+        if (driverDeploymentModelFlag) {
+            tp.setDriverDeployment(driverDeploymentModel.isSelected());
+            driverDeploymentModelFlag = false;
         }
     }
     

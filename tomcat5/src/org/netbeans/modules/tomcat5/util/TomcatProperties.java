@@ -92,6 +92,7 @@ public class TomcatProperties {
     public  static final String PROP_RUNNING_CHECK_TIMEOUT = "runningCheckTimeout"; // NOI18N
     private static final String PROP_INSTANCE_ID   = "instance_id";     // NOI18N
     public  static final String PROP_AUTOREGISTERED = "autoregistered"; // NOI18N
+    private static final String PROP_DRIVER_DEPLOYMENT = "driverDeploymentEnabled"; // NOI18N
     
     
     // default values
@@ -118,6 +119,8 @@ public class TomcatProperties {
     public  static final int     DEF_VALUE_RUNNING_CHECK_TIMEOUT = 2000;
     private static final String  DEF_VALUE_DISPLAY_NAME  = 
             NbBundle.getMessage(TomcatProperties.class, "LBL_DefaultDisplayName");
+    private static final boolean DEF_VALUE_DRIVER_DEPLOYMENT = true;
+    private static final int     DEF_VALUE_DEPLOYMENT_TIMEOUT = 120;
     
     private TomcatManager tm;
     private InstanceProperties ip;
@@ -542,6 +545,35 @@ public class TomcatProperties {
     
     public void setSharedMem(String val) {
         ip.setProperty(PROP_SHARED_MEM, val);
+    }
+    
+    public int getDeploymentTimeout() {
+        String val = ip.getProperty(InstanceProperties.DEPLOYMENT_TIMEOUT);
+        if (val != null) {
+            try {
+                int timeout = Integer.parseInt(val);
+                if (timeout >= 1 && timeout <= Integer.MAX_VALUE) {
+                    return timeout;
+                }
+            } catch (NumberFormatException nfe) {
+                Logger.getLogger(TomcatProperties.class.getName()).log(Level.INFO, null, nfe);
+            }
+        }
+        return DEF_VALUE_DEPLOYMENT_TIMEOUT;
+    }
+    
+    public void setDeploymentTimeout(int timeout) {
+        ip.setProperty(InstanceProperties.DEPLOYMENT_TIMEOUT, Integer.toString(timeout));
+    }
+    
+    public boolean getDriverDeployment() {
+        String val = ip.getProperty(PROP_DRIVER_DEPLOYMENT);
+        return val != null ? Boolean.valueOf(val).booleanValue()
+                           : DEF_VALUE_DRIVER_DEPLOYMENT;
+    }
+    
+    public void setDriverDeployment(boolean enabled) {
+        ip.setProperty(PROP_DRIVER_DEPLOYMENT, Boolean.toString(enabled));
     }
     
     public List/*<URL>*/ getClasses() {

@@ -74,7 +74,7 @@ public class TomcatJDBCDriverDeployer implements JDBCDriverDeployer {
     }
 
     public boolean supportsDeployJDBCDrivers(Target target) {
-        return true;
+        return manager.getTomcatProperties().getDriverDeployment();
     }
 
     public ProgressObject deployJDBCDrivers(Target target, Set<Datasource> datasources) {        

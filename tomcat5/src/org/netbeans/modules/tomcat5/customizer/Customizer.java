@@ -59,13 +59,15 @@ public class Customizer extends JTabbedPane {
                              break;
                     case 1 : helpID = "tomcat_customizer_startup";    // NOI18N
                              break;
-                    case 2 : helpID = "tomcat_customizer_platform";   // NOI18N
+                    case 2 : helpID = "tomcat_customizer_platform";    // NOI18N
                              break;
-                    case 3 : helpID = "tomcat_customizer_classes";    // NOI18N
+                    case 3 : helpID = "tomcat_customizer_deployment";   // NOI18N
                              break;
-                    case 4 : helpID = "tomcat_customizer_sources";    // NOI18N
+                    case 4 : helpID = "tomcat_customizer_classes";    // NOI18N
                              break;
-                    case 5 : helpID = "tomcat_customizer_javadoc";    // NOI18N
+                    case 5 : helpID = "tomcat_customizer_sources";    // NOI18N
+                             break;
+                    case 6 : helpID = "tomcat_customizer_javadoc";    // NOI18N
                              break;
                 }
                 putClientProperty("HelpID", helpID); // NOI18N
@@ -77,6 +79,8 @@ public class Customizer extends JTabbedPane {
                 new CustomizerStartup(custData, manager.getTomcatProperties().getCatalinaHome()));
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Platform"),
                 new CustomizerJVM(custData));
+        addTab(NbBundle.getMessage(Customizer.class,"TXT_Deployment"),
+                new CustomizerDeployment(custData));
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Tab_Classes"), 
                CustomizerSupport.createClassesCustomizer(custData.getClassModel()));
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Tab_Sources"), 
