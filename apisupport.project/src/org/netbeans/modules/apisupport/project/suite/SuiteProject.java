@@ -74,7 +74,7 @@ import org.w3c.dom.Element;
 public final class SuiteProject implements Project {
     
     public static final String SUITE_ICON_PATH =
-            "org/netbeans/modules/apisupport/project/suite/resources/suite.gif"; // NOI18N
+            "org/netbeans/modules/apisupport/project/suite/resources/suite.png"; // NOI18N
     
     private final AntProjectHelper helper;
     private Lookup lookup;
