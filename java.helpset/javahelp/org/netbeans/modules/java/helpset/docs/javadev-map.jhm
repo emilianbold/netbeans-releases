@@ -83,7 +83,7 @@
 <mapID target="proj_move_copy_rename" url="project/proj_move_copy_rename.html" />
 <mapID target="proj_gloss_freeform" url="project/csh/glossary_freeform.html" />
 <mapID target="proj_gloss_standard" url="project/csh/glossary_standard.html" />
-<mapID target="proj_fav_window" url="project/csh/proj_fav_window.html" />
+
 
 
 <!--begin Refactoring section-->
