@@ -72,8 +72,6 @@ public class ServiceRefMetadataReader extends CommonBeanReader {
                     Map<String, Object> serviceRefMap = new HashMap<String, Object>();
                     result.put(serviceRefName, serviceRefMap);
                     serviceRefMap.put(DDBinding.PROP_NAME, serviceRefName);
-                    
-                    // TODO handle port-component-ref
                 }
             }
         }
