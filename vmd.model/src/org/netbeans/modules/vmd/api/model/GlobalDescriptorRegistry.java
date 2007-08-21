@@ -228,7 +228,7 @@ final class GlobalDescriptorRegistry {
         producers = tempProducers;
 
         System.out.println ("ReloadCore GlobalDescriptorRegistry for " + projectType); // NOI18N
-        for (ComponentDescriptor descriptor : descriptorsList)
+        for (ComponentDescriptor descriptor : descriptors.values ())
             System.out.println ("Loaded: " + descriptor.getTypeDescriptor ().getThisType ()); // NOI18N
 
         for (DescriptorRegistryListener listener : listeners)
