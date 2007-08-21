@@ -190,9 +190,11 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         };
         for (int i = 0; i < modelListCustomizers.length; i++) {
             Customizer c = modelListCustomizers[i];
-            c.addPropertyChangeListener(mcr);
-            c.setObject("load first"); // NOI18N
-            c.setObject("unload last"); // NOI18N
+            if (c != null) { // Can be null when debugger is finishing
+                c.addPropertyChangeListener(mcr);
+                c.setObject("load first"); // NOI18N
+                c.setObject("unload last"); // NOI18N
+            }
         }
         
         refreshModel();
