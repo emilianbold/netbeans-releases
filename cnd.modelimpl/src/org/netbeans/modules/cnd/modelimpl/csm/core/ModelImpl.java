@@ -470,6 +470,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
 	}
 
         Collection<CsmProject> prjsColl;
+        Collection<CsmProject> libs = new HashSet<CsmProject>();
 	
 	synchronized( lock ) {
             prjsColl = projects();
@@ -484,6 +485,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         for (Iterator projIter =prjsColl.iterator(); projIter.hasNext();) {
             ProjectBase project = (ProjectBase) projIter.next();
             disposeProject(project);
+            libs.addAll(project.getLibraries());
+        }
+        for (Iterator projIter =libs.iterator(); projIter.hasNext();) {
+            disposeProject((ProjectBase) projIter.next());
         }
         
         cleanModel();      
