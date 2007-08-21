@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.common.method.impl;
 
+import java.awt.Component;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -28,8 +29,11 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -66,6 +70,10 @@ public final class ParametersPanel extends javax.swing.JPanel {
         
         table.setRowHeight(typeCombo.getPreferredSize().height);
         
+        ListSelectionListener listSelectionListener = new ListSelectionListenerImpl();
+        table.getSelectionModel().addListSelectionListener(listSelectionListener);
+        table.getColumnModel().getSelectionModel().addListSelectionListener(listSelectionListener);
+
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 updateButtons();
@@ -208,6 +216,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
     int index = tableModel.addParameter();
     table.getSelectionModel().setSelectionInterval(index, index);
+    table.getColumnModel().getSelectionModel().setSelectionInterval(COL_NAME_INDEX, COL_NAME_INDEX);
     updateButtons();
 }//GEN-LAST:event_addButtonActionPerformed
     
@@ -372,4 +381,23 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         return aValueString;
     }
         
+    private class ListSelectionListenerImpl implements ListSelectionListener {
+
+        public void valueChanged(ListSelectionEvent e) {
+            table.editCellAt(table.getSelectedRow(), table.getSelectedColumn());
+            Component editor = table.getEditorComponent();
+            if (editor instanceof JComboBox) {
+                editor = ((JComboBox) editor).getEditor().getEditorComponent();
+            }
+            if (editor != null) {
+                editor.requestFocus();
+            }
+            if (editor instanceof JTextComponent) {
+                JTextComponent textComp = (JTextComponent) editor;
+                textComp.selectAll();
+            }
+        }
+
+    }
+
 }

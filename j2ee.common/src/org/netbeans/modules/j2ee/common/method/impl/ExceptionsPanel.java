@@ -19,17 +19,17 @@
 
 package org.netbeans.modules.j2ee.common.method.impl;
 
+import java.awt.Component;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.text.JTextComponent;
 import org.openide.util.NbBundle;
 
 /**
@@ -44,6 +44,10 @@ public final class ExceptionsPanel extends javax.swing.JPanel {
         initComponents();
         tableModel = new ExceptionsTableModel(parameters);
         table.setModel(tableModel);
+
+        ListSelectionListener listSelectionListener = new ListSelectionListenerImpl();
+        table.getSelectionModel().addListSelectionListener(listSelectionListener);
+        table.getColumnModel().getSelectionModel().addListSelectionListener(listSelectionListener);
 
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -187,6 +191,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
     int index = tableModel.addException();
     table.getSelectionModel().setSelectionInterval(index, index);
+    table.getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
     updateButtons();
 }//GEN-LAST:event_addButtonActionPerformed
 
@@ -276,4 +281,20 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         
     }
     
+    private class ListSelectionListenerImpl implements ListSelectionListener {
+
+        public void valueChanged(ListSelectionEvent e) {
+            table.editCellAt(table.getSelectedRow(), table.getSelectedColumn());
+            Component editor = table.getEditorComponent();
+            if (editor != null) {
+                editor.requestFocus();
+            }
+            if (editor instanceof JTextComponent) {
+                JTextComponent textComp = (JTextComponent) editor;
+                textComp.selectAll();
+            }
+        }
+
+    }
+
 }

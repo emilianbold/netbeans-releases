@@ -163,8 +163,18 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(returnTypeLabel, org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.returnTypeLabel.text")); // NOI18N
 
         returnTypeTextField.setText(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.returnTypeTextField.text")); // NOI18N
+        returnTypeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                returnTypeTextFieldFocusGained(evt);
+            }
+        });
 
         nameTextField.setText(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.nameTextField.text")); // NOI18N
+        nameTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                nameTextFieldFocusGained(evt);
+            }
+        });
 
         jLabel1.setLabelFor(nameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.jLabel1.text")); // NOI18N
@@ -245,6 +255,11 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         ejbqlTextArea.setColumns(20);
         ejbqlTextArea.setRows(5);
         ejbqlTextArea.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        ejbqlTextArea.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                ejbqlTextAreaFocusGained(evt);
+            }
+        });
         ejbqlScrollPane.setViewportView(ejbqlTextArea);
 
         org.jdesktop.layout.GroupLayout ejbqlPanelLayout = new org.jdesktop.layout.GroupLayout(ejbqlPanel);
@@ -310,6 +325,18 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
                 .add(errorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void nameTextFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameTextFieldFocusGained
+        nameTextField.selectAll();
+    }//GEN-LAST:event_nameTextFieldFocusGained
+
+    private void returnTypeTextFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_returnTypeTextFieldFocusGained
+        returnTypeTextField.selectAll();
+    }//GEN-LAST:event_returnTypeTextFieldFocusGained
+
+    private void ejbqlTextAreaFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_ejbqlTextAreaFocusGained
+        ejbqlTextArea.selectAll();
+    }//GEN-LAST:event_ejbqlTextAreaFocusGained
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
