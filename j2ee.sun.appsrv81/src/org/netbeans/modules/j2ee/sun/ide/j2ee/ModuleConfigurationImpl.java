@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurati
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -97,6 +98,9 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         
         // Support build extension for new resource persistence strategy
         File f = module.getResourceDirectory();
+        if(null != f && f.exists()){
+             ResourceUtils.migrateResources(f);
+        }
         while (null != f && !f.exists()) {
             f = f.getParentFile();
         }

@@ -1541,6 +1541,15 @@ public class ResourceUtils implements WizardConstants{
     
     /*
      * Consolidates *.sun-resource into sun-resources.xml 
+     * Called by registerResources in Utils (appsrv81 module)
+     * sun-resources.xml is created once.
+     */
+    public static void migrateResources(File resourceDir) {
+        migrateResources(FileUtil.toFileObject(resourceDir));
+    }
+    
+    /*
+     * Consolidates *.sun-resource into sun-resources.xml 
      * Called by SunResourceDataObject by the .sun-resource
      * loader. sun-resources.xml is created once.
      */
@@ -1629,7 +1638,7 @@ public class ResourceUtils implements WizardConstants{
             }
         }
     }
-    
+        
     private final static char BLANK = ' ';
     private final static char DOT   = '.';
     private final static char REPLACEMENT_CHAR = '_';
