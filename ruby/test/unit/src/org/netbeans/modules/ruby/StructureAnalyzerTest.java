@@ -18,6 +18,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.HtmlFormatter;
+import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.StructureItem;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
 import org.netbeans.modules.ruby.elements.AstClassElement;
@@ -163,8 +164,6 @@ public class StructureAnalyzerTest extends RubyTestBase {
         checkStructure("testfiles/unused.rb");
     }
 
-    
-    
     private void checkAttributes(String relFilePath) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
         RubyParseResult rbr = (RubyParseResult)info.getParserResult();
@@ -205,4 +204,99 @@ public class StructureAnalyzerTest extends RubyTestBase {
     public void testAttributes1() throws Exception {
         checkAttributes("testfiles/resolv.rb");
     }
+    
+    
+    private void checkFolds(String relFilePath) throws Exception {
+        CompilationInfo info = getInfo(relFilePath);
+        StructureAnalyzer analyzer = new StructureAnalyzer();
+        Map<String,List<OffsetRange>> foldsMap = analyzer.folds(info);
+        
+        // Write folding structure
+        String source = info.getText();
+        List<Integer> begins = new ArrayList<Integer>();
+        List<Integer> ends = new ArrayList<Integer>();
+        
+        begins.add(0);
+        
+        for (int i = 0; i < source.length(); i++) {
+            char c = source.charAt(i);
+            if (c == '\n') {
+                ends.add(i);
+                if (i < source.length()) {
+                    begins.add(i+1);
+                }
+            }
+        }
+        
+        ends.add(source.length());
+
+        assertEquals(begins.size(), ends.size());
+        List<Character> margin = new ArrayList<Character>(begins.size());
+        for (int i = 0; i < begins.size(); i++) {
+            margin.add(' ');
+        }
+
+        List<String> typeList = new ArrayList<String>(foldsMap.keySet());
+        Collections.sort(typeList);
+        for (String type : typeList) {
+            List<OffsetRange> ranges = foldsMap.get(type);
+            for (OffsetRange range : ranges) {
+                int beginIndex = Collections.binarySearch(begins, range.getStart());
+                if (beginIndex < 0) {
+                    beginIndex = -(beginIndex+2);
+                }
+                int endIndex = Collections.binarySearch(ends, range.getEnd());
+                if (endIndex < 0) {
+                    endIndex = -(endIndex+2);
+                }
+                for (int i = beginIndex; i <= endIndex; i++) {
+                    char c = margin.get(i);
+                    if (i == beginIndex) {
+                        c = '+';
+                    } else if (c != '+') {
+                        if (i == endIndex) {
+                            c = '-';
+                        } else {
+                            c = '|';
+                        }
+                    }
+                    margin.set(i, c);
+                }
+            }
+        }
+        
+        StringBuilder sb = new StringBuilder(3000);
+        for (int i = 0; i < begins.size(); i++) {
+            sb.append(margin.get(i));
+            sb.append(' ');
+            for (int j = begins.get(i), max = ends.get(i); j < max; j++) {
+                sb.append(source.charAt(j));
+            }
+            sb.append('\n');
+        }
+        String annotatedSource = sb.toString();
+        
+        assertDescriptionMatches(relFilePath, annotatedSource, false, ".folds");
+    }
+
+    public void testFolds1() throws Exception {
+        checkFolds("testfiles/resolv.rb");
+    }
+
+    public void testFolds2() throws Exception {
+        checkFolds("testfiles/postgresql_adapter.rb");
+    }
+
+    public void testFolds3() throws Exception {
+        checkFolds("testfiles/ape.rb");
+    }
+
+    public void testFolds4() throws Exception {
+        checkFolds("testfiles/date.rb");
+    }
+
+    public void testFolds5() throws Exception {
+        checkFolds("testfiles/unused.rb");
+    }
+
 }
