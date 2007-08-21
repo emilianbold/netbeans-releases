@@ -25,7 +25,6 @@ import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import junit.framework.TestCase;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
@@ -49,6 +48,11 @@ public class ToolbarPoolTest extends NbTestCase {
         super (testName);
     }
 
+    @Override
+    protected int timeOut() {
+        return 30000;
+    }
+    
     protected Level logLevel() {
         return Level.FINE;
     }
