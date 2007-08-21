@@ -69,6 +69,7 @@ public final class ParametersPanel extends javax.swing.JPanel {
         typeTableColumn.setCellEditor(new DefaultCellEditor(typeCombo));
         
         table.setRowHeight(typeCombo.getPreferredSize().height);
+        table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         
         ListSelectionListener listSelectionListener = new ListSelectionListenerImpl();
         table.getSelectionModel().addListSelectionListener(listSelectionListener);

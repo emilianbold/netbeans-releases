@@ -45,6 +45,8 @@ public final class ExceptionsPanel extends javax.swing.JPanel {
         tableModel = new ExceptionsTableModel(parameters);
         table.setModel(tableModel);
 
+        table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
+
         ListSelectionListener listSelectionListener = new ListSelectionListenerImpl();
         table.getSelectionModel().addListSelectionListener(listSelectionListener);
         table.getColumnModel().getSelectionModel().addListSelectionListener(listSelectionListener);
