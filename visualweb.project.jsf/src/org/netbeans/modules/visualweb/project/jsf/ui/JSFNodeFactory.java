@@ -102,12 +102,16 @@ public class JSFNodeFactory implements NodeFactory {
 
         public Node node(String key) {
             if (key == THEMES_FOLDER) {
-                ThemeNodeService themeService = (ThemeNodeService) Lookup.getDefault().lookup(ThemeNodeService.class);
-                if (themeService != null) {
-                    return themeService.getThemeNode(project);
-                } else {
-                    return null;
-                }
+                Lookup.Result<ThemeNodeService> themeNodeServices = Lookup.getDefault().lookup(new Lookup.Template<ThemeNodeService>(ThemeNodeService.class));
+                for (ThemeNodeService service: themeNodeServices.allInstances()) {
+                    // We can return only one node depending on the project
+                    Node themeNode = service.getThemeNode(project);
+                    if (themeNode != null) {
+                        return themeNode;
+                    }
+                } 
+
+                return null;
             } else if (key == COMPONENT_LIBS) {
                 ComponentLibraryService complibService = (ComponentLibraryService) Lookup.getDefault().lookup(ComponentLibraryService.class);
                 if (complibService != null) {
