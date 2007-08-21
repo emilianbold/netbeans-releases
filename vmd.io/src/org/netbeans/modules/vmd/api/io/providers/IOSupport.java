@@ -34,6 +34,7 @@ import org.netbeans.modules.vmd.io.editor.EditorViewElement;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Collection;

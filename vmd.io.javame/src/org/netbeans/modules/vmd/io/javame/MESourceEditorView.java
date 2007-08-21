@@ -20,11 +20,11 @@ package org.netbeans.modules.vmd.io.javame;
 
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import javax.swing.text.Document;
@@ -77,7 +77,7 @@ public final class MESourceEditorView implements DataEditorView {
     }
 
     public String getDisplayName () {
-        return NbBundle.getMessage (MESourceEditorView.class, "TITLE_SourceView"); // NOI18N
+        return ProjectUtils.getSourceEditorViewDisplayName ();
     }
 
     public HelpCtx getHelpCtx () {

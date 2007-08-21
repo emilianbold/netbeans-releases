@@ -16,16 +16,18 @@
  */
 package org.netbeans.modules.vmd.midp.actions;
 
-import java.io.IOException;
-import javax.swing.JEditorPane;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
+import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
+
+import javax.swing.*;
+import javax.swing.text.StyledDocument;
+import java.io.IOException;
 
 /**
  *
@@ -75,7 +77,7 @@ public class GoToSourceSupport {
                 if (document == null) {
                     return;
                 }
-                ProjectUtils.requestVisibility("Source"); //NOI18N
+                ProjectUtils.requestVisibility(ActiveViewSupport.getDefault().getActiveView().getContext(), ProjectUtils.getSourceEditorViewDisplayName ());
                 JEditorPane[] panes = editorSupport[0].getOpenedPanes();
                 if (panes == null || panes.length < 1) {
                     return;

@@ -19,8 +19,7 @@
 
 package org.netbeans.modules.vmd.api.screen.actions;
 
-import java.awt.event.ActionEvent;
-import javax.swing.SwingUtilities;
+import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
@@ -31,6 +30,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+
 /**
  *
  * @author Karol Harezlak
@@ -40,7 +42,7 @@ public class DesignerEditAction extends SystemAction  {
     private boolean enabled;
     
     public void actionPerformed(ActionEvent e) {
-        ProjectUtils.requestVisibility(ScreenEditorView.SCREEN_EDITOR_VIEW_DISPLAY_NAME);
+        ProjectUtils.requestVisibility(ActiveViewSupport.getDefault().getActiveView().getContext(), ScreenEditorView.SCREEN_EDITOR_VIEW_DISPLAY_NAME);
         requestComponentVisibility();
     }
     

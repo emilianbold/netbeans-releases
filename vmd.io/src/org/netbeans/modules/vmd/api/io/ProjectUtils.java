@@ -30,7 +30,7 @@ import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 import java.net.URI;
@@ -137,14 +137,10 @@ public final class ProjectUtils {
     /**
      *  RequestVisibity for TopComponent
      */
-    // TODO - add DataObjectContext parameter
-    public static void requestVisibility(String topComponentDisplayName) {
+    public static void requestVisibility (DataObjectContext context, String topComponentDisplayName) {
         for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
-            Lookup.Result devs = tc.getLookup().lookupResult(DataEditorView.class);
-            if (devs.allInstances().size() == 0)
-                continue;
-            DataEditorView dev = (DataEditorView) devs.allInstances().iterator().next();
-            if (dev.getContext() != ActiveViewSupport.getDefault().getActiveView().getContext())
+            DataEditorView dev = tc.getLookup().lookup(DataEditorView.class);
+            if (dev == null  ||  dev.getContext() != context)
                 continue;
             MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
             for (MultiViewPerspective perspective : handler.getPerspectives()) {
@@ -156,4 +152,12 @@ public final class ProjectUtils {
         }
     }
     
+    /**
+     * Returns a display name for source editor views
+     * @return the display name
+     */
+    public static String getSourceEditorViewDisplayName () {
+        return NbBundle.getMessage (ProjectUtils.class, "LBL_SourceEditorView"); // NOI18N
+    }
+
 }
