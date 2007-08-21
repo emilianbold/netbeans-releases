@@ -237,6 +237,12 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
         reformatFileContents("testfiles/resolv.rb");
     }
         
+    public void testFormatBegin() throws Exception {
+        // Test for http://scripting.netbeans.org/issues/show_bug.cgi?id=112259
+        // Check that the given source files reformat EXACTLY as specified
+        reformatFileContents("testfiles/begin.rb");
+    }
+        
     public void testFormatPostgres() throws Exception {
         // Check that the given source files reformat EXACTLY as specified
         reformatFileContents("testfiles/postgresql_adapter.rb");
