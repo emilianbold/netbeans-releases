@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -37,6 +37,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.DetailedStatus;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
@@ -51,6 +52,12 @@ import org.netbeans.installer.utils.helper.swing.NbiTreeTableModel;
 public class InstallationDetailsDialog extends NbiDialog {
     private NbiTreeTable   detailsTreeTable;
     private NbiScrollPane detailsScrollPane;
+    private static final String TITLE_INSTALLATION_DETAILS_KEY =
+            "IDD.installation.details.label";
+    private static final String TITLE_COMPONENTS_KEY =
+            "IDD.component.label";
+    private static final String TITLE_STATUS_KEY =
+            "IDD.status.label";
     
     public InstallationDetailsDialog() {
         super();
@@ -60,7 +67,9 @@ public class InstallationDetailsDialog extends NbiDialog {
     }
     
     private void initialize() {
-        setTitle("Installation details");
+        setTitle(ResourceUtils.getString(
+                InstallationDetailsDialog.class,
+                TITLE_INSTALLATION_DETAILS_KEY));
     }
     
     private void initComponents() {
@@ -215,9 +224,13 @@ public class InstallationDetailsDialog extends NbiDialog {
         public String getColumnName(int column) {
             switch (column) {
                 case 0:
-                    return "Component";
+                    return ResourceUtils.getString(
+                            InstallationDetailsDialog.class,
+                            TITLE_COMPONENTS_KEY);
                 case 1:
-                    return "Status";
+                    return ResourceUtils.getString(
+                            InstallationDetailsDialog.class,
+                            TITLE_STATUS_KEY);
                 default:
                     return null;
             }
@@ -261,7 +274,14 @@ public class InstallationDetailsDialog extends NbiDialog {
             super(treeTable);
         }
         
-        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        public Component getTreeCellRendererComponent(
+                JTree tree,
+                Object value,
+                boolean selected,
+                boolean expanded,
+                boolean leaf,
+                int row,
+                boolean hasFocus) {
             setOpaque(false);
             setForeground(treeTable.getForeground());
             setBackground(treeTable.getBackground());
@@ -274,7 +294,7 @@ public class InstallationDetailsDialog extends NbiDialog {
                 
                 setBorder(EMPTY_BORDER);
             } else {
-                setIcon(null);                
+                setIcon(null);
                 setText((value != null) ? value.toString() : "");
                 
                 setBorder(PADDED_BORDER);
@@ -284,12 +304,19 @@ public class InstallationDetailsDialog extends NbiDialog {
         }
     }
     
-    public static class InstallationStatusCellRenderer extends JLabel implements TableCellRenderer {
+    public static class InstallationStatusCellRenderer extends JLabel
+            implements TableCellRenderer {
         public InstallationStatusCellRenderer() {
             setBorder(new EmptyBorder(0, 5, 0, 5));
         }
         
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        public Component getTableCellRendererComponent(
+                JTable table,
+                Object value,
+                boolean isSelected,
+                boolean hasFocus,
+                int row,
+                int column) {
             setOpaque(false);
             setBackground(table.getBackground());
             setForeground(table.getForeground());
