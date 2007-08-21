@@ -33,6 +33,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -45,8 +46,11 @@ import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
+import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
+import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
@@ -83,6 +87,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
     private LabelWidget mParameterMessage;
     private LabelWidget mNameLabel;
     private OperationParameter mParameter;
+	private WidgetAction editorAction;
     
 
     /**
@@ -109,7 +114,27 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         }
         mParameterMessage.setVerticalAlignment(VerticalAlignment.CENTER);
         mParameterMessage.setAlignment(Alignment.CENTER);
-        
+        editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
+
+            public void setText(Widget w, String text) {
+                if (getWSDLComponent() != null && !getWSDLComponent().getName().equals(text))
+                    SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
+            }
+
+            public boolean isEnabled(Widget w) {
+                if (getWSDLComponent() != null) {
+                    return !isImported() && XAMUtils.isWritable(getWSDLComponent().getModel());
+                }
+                return false;
+            }
+
+            public String getText(Widget w) {
+                return mParameter.getName();
+            }
+
+        }, 
+        EnumSet.<InplaceEditorProvider.ExpansionDirection>of (InplaceEditorProvider.ExpansionDirection.LEFT, 
+                InplaceEditorProvider.ExpansionDirection.RIGHT));
         mParameterMessage.getActions().addAction(ActionFactory.createInplaceEditorAction(new ComboBoxInplaceEditorProvider(new ComboBoxInplaceEditor() {
             public boolean isEnabled(Widget widget) {
                 if (getWSDLComponent() != null) {
@@ -187,27 +212,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
             mNameLabel.setBackground (Color.WHITE);
             if (mParameter != null) {
                 mNameLabel.setLabel (mParameter.getName());
-                mNameLabel.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
-
-                    public void setText(Widget w, String text) {
-                        if (getWSDLComponent() != null && !getWSDLComponent().getName().equals(text))
-                            SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
-                    }
-
-                    public boolean isEnabled(Widget w) {
-                        if (getWSDLComponent() != null) {
-                            return !isImported() && XAMUtils.isWritable(getWSDLComponent().getModel());
-                        }
-                        return false;
-                    }
-
-                    public String getText(Widget w) {
-                        return mParameter.getName();
-                    }
-
-                }, 
-                EnumSet.<InplaceEditorProvider.ExpansionDirection>of (InplaceEditorProvider.ExpansionDirection.LEFT, 
-                        InplaceEditorProvider.ExpansionDirection.RIGHT)));
+                mNameLabel.getActions().addAction(editorAction);
             }
             mNameLabel.getActions().addAction(HoverActionProvider.getDefault(getScene()).getHoverAction());
             Font font = scene.getDefaultFont ().deriveFont (Font.BOLD);
@@ -215,6 +220,22 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
             mNameLabel.setAlignment(Alignment.CENTER);
             widget.addChild (mNameLabel);
             widget.addChild(mParameterMessage);
+            getActions().addAction(new WidgetAction.Adapter() {
+                
+                @Override
+                public State keyPressed (Widget widget, WidgetKeyEvent event) {
+                    if (event.getKeyCode() == KeyEvent.VK_F2) {
+                        if (editorAction == null || mNameLabel == null) return State.REJECTED;
+                        InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                        if (inplaceEditorController.openEditor (mNameLabel)) {
+                            return State.createLocked (widget, this);
+                        }
+                        return State.CONSUMED;
+                    }
+                    return State.REJECTED;
+                }
+            
+            });
         } else {
             addChild(mParameterMessage);
         }

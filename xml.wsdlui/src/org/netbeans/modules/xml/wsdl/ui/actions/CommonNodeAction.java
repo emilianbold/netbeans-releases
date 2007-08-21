@@ -19,6 +19,10 @@
 
 package org.netbeans.modules.xml.wsdl.ui.actions;
 
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.openide.nodes.Node;
 import org.openide.util.actions.CookieAction;
 
 
@@ -33,5 +37,23 @@ public abstract class CommonNodeAction extends CookieAction {
 
     protected boolean asynchronous() {
         return false;
+    }
+    
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+    	if (activatedNodes == null || activatedNodes.length > 1) return false;
+        if(activatedNodes.length != 0) {
+            Node node = activatedNodes[0];
+            WSDLComponent comp = node.getLookup().lookup(WSDLComponent.class);
+            if (comp != null) {
+            	WSDLModel model = comp.getModel();
+            	if (model != null && XAMUtils.isWritable(model)) {
+            		return super.enable(activatedNodes);
+            	} else {
+            		return false;
+            	}
+            }
+        }
+        return super.enable(activatedNodes);
     }
 }

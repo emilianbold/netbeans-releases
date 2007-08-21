@@ -21,11 +21,13 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.KeyEvent;
 import java.util.EnumSet;
 
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -47,6 +49,7 @@ public abstract class OperationWidget<T extends Operation>
     private T mOperationConstruct;
     private LabelWidget mOperationNameLabelWidget;
     protected RectangleWidget mOperationRectangleWidget;
+    private WidgetAction editorAction;
     
     public OperationWidget(Scene scene, T operation, Lookup lookup) {
         super(scene, operation, lookup);
@@ -56,7 +59,7 @@ public abstract class OperationWidget<T extends Operation>
         mOperationNameLabelWidget.setLabel(mOperationConstruct.getName());
         mOperationNameLabelWidget.setFont(scene.getDefaultFont().deriveFont(Font.BOLD));
         mOperationNameLabelWidget.setAlignment(Alignment.CENTER);
-        mOperationNameLabelWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
+        editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
             
             public void setText(Widget widget, String text) {
                 if (!getWSDLComponent().getName().equals(text.trim())) {
@@ -77,7 +80,24 @@ public abstract class OperationWidget<T extends Operation>
             
         },
                 EnumSet.<InplaceEditorProvider.ExpansionDirection>of(InplaceEditorProvider.ExpansionDirection.LEFT,
-                InplaceEditorProvider.ExpansionDirection.RIGHT)));
+                InplaceEditorProvider.ExpansionDirection.RIGHT));
+        mOperationNameLabelWidget.getActions().addAction(editorAction);
+        getActions().addAction(new WidgetAction.Adapter() {
+
+            @Override
+            public State keyPressed (Widget widget, WidgetKeyEvent event) {
+                if (event.getKeyCode() == KeyEvent.VK_F2) {
+                    if (editorAction == null || mOperationNameLabelWidget == null) return State.REJECTED;
+                    InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                    if (inplaceEditorController.openEditor (mOperationNameLabelWidget)) {
+                        return State.createLocked (widget, this);
+                    }
+                    return State.CONSUMED;
+                }
+                return State.REJECTED;
+            }
+
+        });
         mOperationRectangleWidget = new RectangleWidget(getScene(), 10, 67);
         
         if (isImported()) mOperationRectangleWidget.setColor(Color.GRAY);

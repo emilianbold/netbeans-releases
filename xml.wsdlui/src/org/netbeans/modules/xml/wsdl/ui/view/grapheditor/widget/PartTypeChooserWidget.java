@@ -73,7 +73,7 @@ public class PartTypeChooserWidget extends Widget implements ActionListener {
                 MessagesUtils.getPartTypeOrElementString(part));
         partTypeLabel.setFont(scene.getDefaultFont());
         
-        showPartTypeChooserButton = new ButtonWidget(scene, "...");
+        showPartTypeChooserButton = new ButtonWidget(scene, "...", true);
         showPartTypeChooserButton.setMargin(new Insets(1, 2, 1, 2));
         showPartTypeChooserButton.setActionListener(this);
         
@@ -83,11 +83,6 @@ public class PartTypeChooserWidget extends Widget implements ActionListener {
         setLayout(new LeftRightLayout(8));
         setBorder(BORDER);
         
-        PartnerScene pScene = (PartnerScene) getScene();
-        String weight = pScene.getWeight(part) + "showPartTypeChooserButton";
-        if (!pScene.getObjects().contains(weight)) {
-        	pScene.addObject(pScene.getWeight(part) + "showPartTypeChooserButton", showPartTypeChooserButton);
-        }
     }
     
     

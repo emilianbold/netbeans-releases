@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
+import java.awt.Dialog;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -80,7 +81,11 @@ public class PortTypeNewType extends NewType {
                                                            null);
                 panel.setDialogDescriptor(dd);
                 
-                if(DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+                Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+                dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
+                dlg.setVisible(true);
+                
+                if (dd.getValue() == DialogDescriptor.OK_OPTION) {
                     OperationConfigurationPanel ptPanel = panel.getPortTypeConfiguration();
                     Map configurationMap = new HashMap();
                     

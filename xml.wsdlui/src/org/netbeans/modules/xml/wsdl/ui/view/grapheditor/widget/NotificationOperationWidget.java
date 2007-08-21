@@ -60,7 +60,11 @@ public class NotificationOperationWidget
         
         Scene scene = getScene();
         Widget outputWidget = WidgetFactory.getInstance().createWidget(
-                scene, getWSDLComponent().getOutput(), getLookup());
+                scene, getWSDLComponent().getOutput(), getLookup(), true);
+        if (outputWidget.getParentWidget() != null && outputWidget.getParentWidget() != this) {
+            outputWidget = WidgetFactory.getInstance().createWidget(
+                    scene, getWSDLComponent().getOutput(), getLookup());
+        }
         Widget horizontalWidget = new Widget(scene);
         horizontalWidget.setLayout(new OneSideJustifiedLayout(isRightSided()));
         horizontalWidget.addChild(outputWidget);

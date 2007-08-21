@@ -131,7 +131,7 @@ public class GraphView extends JPanel {
         mDragLayer = scene.getDragOverLayer();
 
         scene.addChild(mDragLayer);
-        
+        sceneView.setFocusCycleRoot(true);
         panel = new JScrollPane(sceneView);
         panel.getVerticalScrollBar().setUnitIncrement(16);
         panel.getHorizontalScrollBar().setUnitIncrement(16);
@@ -254,14 +254,10 @@ public class GraphView extends JPanel {
      * @param  comp  model component to show.
      */
     public void showComponent(Component comp) {
-        Widget widget = scene.findWidget(comp);
-        if (widget != null) {
-            // Make the widget visible and select it (our select provider
-            // will make the widget visible within the scroll pane).
-            // Reset whatever the current selection is first.
-            scene.setSelectedObjects(Collections.emptySet());
-            scene.getSelectProvider().select(widget, widget.getLocation(), false);
-        }
+    	// Make the widget visible and select it (our select provider
+    	// will make the widget visible within the scroll pane).
+    	// Reset whatever the current selection is first.
+    	scene.userSelectionSuggested(Collections.singleton(comp), false);
     }
 
     /**

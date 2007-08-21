@@ -61,7 +61,6 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.TypesNewType;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;

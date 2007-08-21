@@ -30,7 +30,6 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.OneWayOperation;
@@ -60,7 +59,11 @@ public class OneWayOperationWidget extends OperationWidget<OneWayOperation> {
         
         Scene scene = getScene();
         Widget inputWidget = WidgetFactory.getInstance().createWidget(scene,
-                getWSDLComponent().getInput(), getLookup());
+                getWSDLComponent().getInput(), getLookup(), true);
+        if (inputWidget.getParentWidget() != null && inputWidget.getParentWidget() != this) {
+            inputWidget = WidgetFactory.getInstance().createWidget(scene,
+                    getWSDLComponent().getInput(), getLookup());
+        }
 
         Widget verticalWidget = new Widget(getScene());
         verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout());

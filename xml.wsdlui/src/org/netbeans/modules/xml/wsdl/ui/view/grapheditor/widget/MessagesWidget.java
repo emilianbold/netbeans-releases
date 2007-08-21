@@ -104,18 +104,13 @@ public class MessagesWidget extends Widget implements
         
         addMessageButton = new ButtonWidget(scene, NbBundle.getMessage(
                 MessagesWidget.class,
-                "LBL_MessagesWidget_AddMessage")); // NOI18N
+                "LBL_MessagesWidget_AddMessage"), true); // NOI18N
         addMessageButton.setActionListener(this);
         
         buttons = new Widget(scene);
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
         buttons.addChild(addMessageButton);
-        PartnerScene pScene = (PartnerScene) getScene();
-        String weight = "FA_AddMessagesButton";
-        if (!pScene.getObjects().contains(weight)) {
-        	pScene.addObject(weight, addMessageButton);
-        }
         
         headerWidget = new Widget(scene);
         headerWidget.setMinimumSize(new Dimension(
@@ -170,7 +165,7 @@ public class MessagesWidget extends Widget implements
     
     
     public void updateContent() {
-    	if (headerWidget.getChildren().contains(headerLabel)) {
+        if (headerWidget.getChildren().contains(headerLabel)) {
     		headerWidget.removeChild(headerLabel);
     	}
         contentWidget.removeChildren();

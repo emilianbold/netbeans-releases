@@ -54,7 +54,7 @@ public class PartWidget extends AbstractWidget<Part> {
     
     private LabelWidget nameWidget;
     private PartTypeChooserWidget typeWidget;
-	private WidgetAction editorAction;
+    private WidgetAction editorAction;
     
     public PartWidget(Scene scene, Part part, Lookup lookup) {
         super(scene, part, lookup);
@@ -62,7 +62,64 @@ public class PartWidget extends AbstractWidget<Part> {
         setLayout(ROW_LAYOUT);
         setBorder(BORDER);
         
+        editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
+            
+            public boolean isEnabled(Widget widget) {
+                Part part = getPart(widget);
+                if (part != null) {
+                    return XAMUtils.isWritable(part.getModel());
+                }
+                return false;
+            }
+
+            
+            public String getText(Widget widget) {
+                Part part = getPart(widget);
+                String name = (part != null) ? part.getName() : null;
+                return (name == null) ? "" : name; // NOI18N
+            }
+
+            
+            public void setText(Widget widget, String text) {
+                Part part = getPart(widget);
+                if (part != null && !part.getName().equals(text)) {
+                    // try rename silent and locally
+                    SharedUtils.locallyRenameRefactor(part, text);
+                }
+            }
+        
+            private Part getPart(Widget widget) {
+                PartWidget partWidget = getPartWidget(widget);
+                return (partWidget == null) ? null : partWidget.getWSDLComponent();
+            }
+            
+            
+            private PartWidget getPartWidget(Widget widget) {
+                for (Widget w = widget; w != null; w = w.getParentWidget()) {
+                    if (w instanceof PartWidget) {
+                        return (PartWidget) w;
+                    }
+                }
+                return null;
+            }
+        }, null);
         createContent();
+        getActions().addAction(new WidgetAction.Adapter() {
+            
+            @Override
+            public State keyPressed (Widget widget, WidgetKeyEvent event) {
+                if (event.getKeyCode() == KeyEvent.VK_F2) {
+                    if (editorAction == null || nameWidget == null) return State.REJECTED;
+                    InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                    if (inplaceEditorController.openEditor (nameWidget)) {
+                        return State.createLocked (widget, this);
+                    }
+                    return State.CONSUMED;
+                }
+                return State.REJECTED;
+            }
+        
+        });
     }
     
     
@@ -87,23 +144,6 @@ public class PartWidget extends AbstractWidget<Part> {
         nameWidget = createLabelWidget(getScene(), name);
         typeWidget = new PartTypeChooserWidget(getScene(), part);
         
-        
-        getActions().addAction(new WidgetAction.Adapter() {
-    		
-        	@Override
-			public State keyPressed (Widget widget, WidgetKeyEvent event) {
-				if (event.getKeyCode() == KeyEvent.VK_F2) {
-			        InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
-			        if (inplaceEditorController.openEditor (nameWidget)) {
-			        	return State.createLocked (widget, this);
-			        }
-			        return State.CONSUMED;
-				}
-				return State.REJECTED;
-			}
-		
-		});
-        
         addChild(nameWidget);
         addChild(typeWidget);
     }
@@ -121,49 +161,6 @@ public class PartWidget extends AbstractWidget<Part> {
         result.setFont(scene.getDefaultFont());
         result.setAlignment(LabelWidget.Alignment.LEFT);
         result.setVerticalAlignment(LabelWidget.VerticalAlignment.CENTER);
-/*        result.getActions().addAction(ActionFactory.createInplaceEditorAction(
-                (InplaceEditorProvider<JTextField>) new PartNameInplaceEditorProvider()));*/
-        editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
-    		
-        	public boolean isEnabled(Widget widget) {
-                Part part = getPart(widget);
-                if (part != null) {
-                    return XAMUtils.isWritable(part.getModel());
-                }
-                return false;
-            }
-
-            
-            public String getText(Widget widget) {
-                Part part = getPart(widget);
-                String name = (part != null) ? part.getName() : null;
-                return (name == null) ? "" : name; // NOI18N
-            }
-
-            
-            public void setText(Widget widget, String text) {
-                Part part = getPart(widget);
-                if (part != null && !part.getName().equals(text)) {
-                    // try rename silent and locally
-                    SharedUtils.locallyRenameRefactor(part, text);
-                }
-            }
-		
-            private Part getPart(Widget widget) {
-                PartWidget partWidget = getPartWidget(widget);
-                return (partWidget == null) ? null : partWidget.getWSDLComponent();
-            }
-            
-            
-            private PartWidget getPartWidget(Widget widget) {
-                for (Widget w = widget; w != null; w = w.getParentWidget()) {
-                    if (w instanceof PartWidget) {
-                        return (PartWidget) w;
-                    }
-                }
-                return null;
-            }
-		}, null);
         result.getActions().addAction(editorAction);
         return result;
     }

@@ -23,20 +23,16 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPopupMenu;
 
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.CycleFocusProvider;
@@ -53,17 +49,8 @@ import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.Fault;
-import org.netbeans.modules.xml.wsdl.model.Input;
-import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.Operation;
-import org.netbeans.modules.xml.wsdl.model.Output;
-import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.DragOverSceneLayer;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
@@ -85,6 +72,8 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
     private Font defaultFont = new JLabel().getFont();
     private SelectProvider selectProvider;
     private PartnerSceneCycleFocusProviderAndSceneListener cycleFocusProviderAndSceneListener;
+    private PartnerSceneCycleFocusProvider mycycleFocusProvider;
+    private List<Widget> selectedWidgets;
 
     public PartnerScene(WSDLModel model) {
         super();
@@ -92,39 +81,40 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         this.model = model;
         model.addComponentListener(this);
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS);
-        cycleFocusProviderAndSceneListener = new PartnerSceneCycleFocusProviderAndSceneListener(this);
+        cycleFocusProviderAndSceneListener = new PartnerSceneCycleFocusProviderAndSceneListener();
         
+        mycycleFocusProvider = new PartnerSceneCycleFocusProvider();
         buttonAction = new ButtonAction();
         selectProvider = new ObjectSelectProvider();
         selectAction = ActionFactory.createSelectAction(selectProvider);
         dndAction = new DnDAction();
-        focusAction = ActionFactory.createCycleFocusAction(cycleFocusProviderAndSceneListener);
+        focusAction = ActionFactory.createCycleFocusAction(mycycleFocusProvider);
 
         getPriorActions().addAction(focusAction);
-        getActions().addAction(new WidgetAction.Adapter() {
+        getPriorActions().addAction(new WidgetAction.Adapter() {
 
             @Override
             public State keyPressed(Widget widget, WidgetKeyEvent event) {
+                //temp
+/*                if (event.getKeyCode() == KeyEvent.VK_F3) {
+                    printFocusCycle(widget.getScene(), "", false, false);
+                }
+                if (event.getKeyCode() == KeyEvent.VK_F4) {
+                    if ((event.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+                        printFocusCycle(widget.getScene(), "", true, true);
+                    } else {
+                        printFocusCycle(widget.getScene(), "", true, false);
+                    }
+                }*/
+            	if (event.getKeyCode() == KeyEvent.VK_F5) {
+                    widget.getScene().validate();
+                }
+                //end temp
                 Widget w = getFocusedWidget();
                 if (w == null) return State.REJECTED;
+                
+                return w.getActions().keyPressed(w, event);
 
-                if (w instanceof AbstractWidget) {
-                	if ((event.getKeyCode() == KeyEvent.VK_F10 && (event.getModifiers () & InputEvent.SHIFT_DOWN_MASK) != 0) || event.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
-                		JPopupMenu popupMenu = ((AbstractWidget)w).getPopupMenu(w, null);
-                		if (popupMenu != null) {
-                			Scene scene = w.getScene ();
-                			JComponent view = scene.getView ();
-                			if (view != null) {
-                				Point widgetPoint = new Point(w.getLocation ().x + w.getBounds().getLocation ().x,  w.getLocation ().y + w.getBounds().getLocation ().y);
-                				Point visibleRect = scene.convertSceneToView (w.convertLocalToScene(widgetPoint));
-                				popupMenu.show (view, visibleRect.x + 10, visibleRect.y + 10);
-                			}
-                		}
-                		return State.CONSUMED;
-                	}
-                }
-//                } 
-                return State.REJECTED;
             }
         });
 
@@ -132,10 +122,23 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         getActions().addAction(buttonAction);
         getActions().addAction(dndAction);
         
-        this.addObjectSceneListener(cycleFocusProviderAndSceneListener, ObjectSceneEventType.OBJECT_SELECTION_CHANGED, 
-                                                                        ObjectSceneEventType.OBJECT_FOCUS_CHANGED, 
-                                                                        ObjectSceneEventType.OBJECT_ADDED, 
-                                                                        ObjectSceneEventType.OBJECT_REMOVED);
+        this.addObjectSceneListener(cycleFocusProviderAndSceneListener, ObjectSceneEventType.OBJECT_FOCUS_CHANGED, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        selectedWidgets = new ArrayList<Widget>();
+    }
+    private Logger mLogger = Logger.getLogger(PartnerScene.class.getName());
+    protected void printFocusCycle(Widget widget, String indent, boolean onlyFocusables, boolean onlyFocusableTrue) {
+        for (Widget w : widget.getChildren()) {
+            if (w instanceof FocusableWidget) {
+                if (!onlyFocusableTrue) {
+                    mLogger.log(Level.SEVERE, indent + w + ": Focusable : " + ((FocusableWidget)w).isFocusable());
+                } else if (((FocusableWidget)w).isFocusable()){
+                    mLogger.log(Level.SEVERE, indent + w + ": Focusable : "); 
+                }
+            } else if (!onlyFocusables){
+                mLogger.log(Level.SEVERE, indent + w.toString());
+            }
+            printFocusCycle(w, indent  + "--", onlyFocusables, onlyFocusableTrue);
+        }
     }
 
     public WSDLModel getModel() {
@@ -288,7 +291,6 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         public void select(Widget widget, Point localLocation, 
                 boolean invertSelection) 
         {
-            
             Object object = findObject(widget);
             
             if (object != null) {
@@ -309,9 +311,17 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
                     parent = parent.getParentWidget();
                 }
                 setFocusedObject (object);
+                setFocusedWidget(widget);
+                Rectangle bounds = widget.getClientArea();
+                if (bounds != null) {
+                    bounds = widget.getScene().convertSceneToView(widget.convertLocalToScene(bounds));
+                    widget.getScene().getView().scrollRectToVisible(bounds);
+                }
             } else {
                 userSelectionSuggested(Collections.emptySet(),
                         invertSelection);
+                widget.setState(widget.getState().deriveSelected(true));
+                getSelectedWidgets().add(widget);
             }
             
         }
@@ -374,180 +384,255 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         return false;
     }
     
-    static public class PartnerSceneCycleFocusProviderAndSceneListener implements CycleFocusProvider, ObjectSceneListener {
-            
-            TreeSet<Object> set;
-            Set<String> strSet;
-            PartnerScene partnerScene;
-            public PartnerSceneCycleFocusProviderAndSceneListener(PartnerScene scene) {
-                partnerScene = scene;
-                strSet = new TreeSet<String>();
-                set = new TreeSet<Object>(new Comparator<Object>() {
-                
-                    @SuppressWarnings("unchecked")
-                    public int compare(Object o1, Object o2) {
-                        return partnerScene.getWeight(o1).compareTo(partnerScene.getWeight(o2));
-                    }
-                
-                });
-            }
-            
-            public boolean switchPreviousFocus (Widget widget) {
-                Scene scene = widget.getScene ();
-                return scene instanceof PartnerScene  &&  switchFocus ((PartnerScene) scene, false);
-            }
+    @Override
+    public void userSelectionSuggested(Set<?> suggestedSelectedObjects,
+    		boolean invertSelection) {
+    	validate();
+    	super.userSelectionSuggested(suggestedSelectedObjects, invertSelection);
+    	for (Widget w : getSelectedWidgets()) {
+    		w.setState(w.getState().deriveSelected(false));
+    	}
+    	getSelectedWidgets().clear();
+    }
+    
+    protected List<Widget> getSelectedWidgets() {
+    	return selectedWidgets;
+    }
+    
+    static public class PartnerSceneCycleFocusProvider implements CycleFocusProvider {
+        
+        public boolean switchPreviousFocus (Widget widget) {
+            Scene scene = widget.getScene ();
+            return scene instanceof PartnerScene  &&  switchFocus ((PartnerScene) scene, false);
+        }
 
-            public boolean switchNextFocus (Widget widget) {
-                Scene scene = widget.getScene ();
-                return scene instanceof PartnerScene  &&  switchFocus ((PartnerScene) scene, true);
-            }
+        public boolean switchNextFocus (Widget widget) {
+            Scene scene = widget.getScene ();
+            return scene instanceof PartnerScene  &&  switchFocus ((PartnerScene) scene, true);
+        }
+        
+        private boolean switchFocus (PartnerScene scene, boolean forwardDirection) {
+            //Object object = scene.getFocusedObject();
+            Widget widget = scene.getFocusedWidget();
+            Widget next = null;
             
-            private boolean switchFocus (PartnerScene scene, boolean forwardDirection) {
-                Object object = scene.getFocusedObject();
-                
-                scene.setFocusedObject(findNextVisibleObject(object, forwardDirection));
-                
+            if (forwardDirection) {
+                if (widget == null) {
+                    next = getFirstFocusableWidget(scene);
+                } else {
+                    next = getNextFocusableWidget(widget);
+                    if (next == null) {
+                        next = getFirstFocusableWidget(scene);
+                    }
+                }
+            } else {
+                if (widget == null) {
+                    next = getLastFocusableWidget(scene);
+                } else {
+                    next = getPreviousFocusableWidget(widget);
+                    if (next == null) {
+                        next = getLastFocusableWidget(scene);
+                    }
+                }
+            }
+            if (next != null) {
+                scene.setFocusedWidget(next);
+                Object obj = scene.findObject(next);
+                if (obj != null && scene.findWidgets(obj).contains(next)) { 
+                	scene.setFocusedObject(obj);
+                } else {
+                    scene.userSelectionSuggested(Collections.emptySet(), false);
+                    next.setState(next.getState().deriveSelected(true));
+/*                    for (Widget w : scene.getSelectedWidgets()) {
+                    	w.setState(w.getState().deriveSelected(false));
+                    }
+                    scene.getSelectedWidgets().clear();*/
+                    scene.getSelectedWidgets().add(next);
+                }
                 return true;
             }
             
-            @SuppressWarnings ("unchecked")
-            private Object findNextVisibleObject(Object object, boolean forwardDirection) {
-                if (!set.isEmpty()) {
-                    Object next = object;
-                    if (next == null) {
-                        next = set.first();
-                    } else {
-                        SortedSet newSet = set;//set.headSet("someNonWSDLComponent");
-                        if (forwardDirection) {
-                            SortedSet tSet = newSet.tailSet(object);
-                            //this set also includes the "object" that we searched for.
-                            // so ignore the first element.
-                            Iterator iter = null;
-                            if (tSet.size() > 1) {
-                                iter = tSet.iterator();
-                                iter.next();
-                                if (iter.hasNext()) next = iter.next();
-                            } else {
-                                if (tSet.size() == 1) {
-                                    next = set.first();
-                                }
-                            }
-                        } else {
-                            SortedSet tSet = newSet.headSet(object);
-                            if (tSet.isEmpty()) {
-                                next = newSet.last();
-                            } else {
-                                next = tSet.last();
-                            }
-                        }
-                    }
-                    List<Widget> ws = partnerScene.findWidgets(next);
-                    if (ws != null && !ws.isEmpty()) {
-                        for (Widget w : ws) {
-                            Widget temp = w;
-                            do {
-                                if (!temp.isVisible())  break;
-                                if (temp instanceof ButtonWidget) {
-                                    if (!((ButtonWidget) temp).isButtonEnabled()) break;
-                                }
-                            } while ((temp = temp.getParentWidget()) != null);
+            return false;
+        }
+        
+        private Widget getFirstFocusableWidget(PartnerScene scene) {
+            return getNextFocusableWidgetInChildren(scene);
+        }
+        
+        
+        
+        private Widget getNextFocusableWidget(Widget widget) {
+            Widget next = getNextFocusableWidgetInChildren(widget);
+            if (next == null) {
+                next = getNextFocusableWidgetInSiblings(widget);
+            }
+            if (next != null) return next;
+            
+            return null;
+        }
+        
+        private Widget getPreviousFocusableWidget(Widget widget) {
+            return getPreviousFocusableWidgetInSiblings(widget);
+        }
 
-                            if (temp == null) {
-                                return next;
-                            } else {
-                                return findNextVisibleObject(next, forwardDirection);
-                            }
+        private Widget getNextFocusableWidgetInSiblings(Widget widget) {
+            if (widget == null) return null;
+            
+            Widget next = null;
+            Widget parent = widget.getParentWidget();
+            if (parent != null) {
+                List<Widget> siblings = parent.getChildren();
+                int index = siblings.indexOf(widget);
+                for (int i = index + 1; i < siblings.size(); i++) {
+                    Widget s = siblings.get(i);
+                    if (s instanceof FocusableWidget) {
+                        if (((FocusableWidget)s).isFocusable()) {
+                            return s;
+                        }
+                    } else {
+                        next = getNextFocusableWidget(siblings.get(i));
+                        if (next != null) {
+                            break;
                         }
                     }
                 }
-                return null;
             }
+            if (next == null) {
+                return getNextFocusableWidgetInSiblings(parent);
+            }
+            
+            return next;
+        }
 
-            @SuppressWarnings("unchecked")
+        private Widget getNextFocusableWidgetInChildren(Widget widget) {
+            for (Widget w : widget.getChildren()) {
+                if (w instanceof FocusableWidget) {
+                    FocusableWidget fw = (FocusableWidget) w;
+                    if (fw.isFocusable()) {
+                        return w;
+                    }
+                }
+                Widget next = getNextFocusableWidgetInChildren(w);
+                if (next != null) {
+                    return next;
+                }
+            }
+            return null;
+        }
+        
+        private Widget getLastFocusableWidget(PartnerScene scene) {
+            return getPreviousFocusableWidgetInChildren(scene);
+        }
+
+        private Widget getPreviousFocusableWidgetInSiblings(Widget widget) {
+            Widget parent = widget.getParentWidget();
+            Widget next = null;
+            if (parent != null) {
+                List<Widget> siblings = parent.getChildren();
+                int index = siblings.indexOf(widget);
+                for (int i = index - 1; i >= 0; i--) {
+                    next = getPreviousFocusableWidgetInChildren(siblings.get(i));
+                    if (next != null) return next;
+                }
+                if (parent instanceof FocusableWidget && (((FocusableWidget)parent).isFocusable())) {
+                    return parent;
+                }
+                next = getPreviousFocusableWidgetInSiblings(parent);
+                if (next != null) return next;
+            }
+            return null;
+        }
+        
+        private Widget getPreviousFocusableWidgetInChildren(Widget widget) {
+            if (widget == null) return null;
+            Widget next = null;
+            List<Widget> children = widget.getChildren();
+            for (int i = children.size() - 1; i >= 0; i--) {
+                Widget w = children.get(i);
+                next = getPreviousFocusableWidgetInChildren(w);
+                if (next != null) return next;
+                
+                if (w instanceof FocusableWidget) {
+                    if (((FocusableWidget)w).isFocusable()) {
+                        return w;
+                    }
+                }
+            }
+            if (widget instanceof FocusableWidget && (((FocusableWidget)widget).isFocusable())) {
+                return widget;
+            }
+            return null;
+        }
+    }
+    
+    static public class PartnerSceneCycleFocusProviderAndSceneListener implements ObjectSceneListener {
+            
             public void focusChanged(ObjectSceneEvent event,
                     Object previousFocusedObject, Object newFocusedObject) {
                 if (newFocusedObject == null) return;
                 ObjectScene scene = event.getObjectScene();
-                if (!scene.getSelectedObjects().contains(newFocusedObject)) {
-                    Set set = new HashSet();
-                    set.add(newFocusedObject);
-                    scene.setSelectedObjects(set);
+                if (scene instanceof PartnerScene) {
+                    PartnerScene partnerScene = (PartnerScene) scene;
+                    List<Widget> widgets = scene.findWidgets(newFocusedObject);
+
+                    Widget fw = scene.getFocusedWidget();
+                    if (fw != null) {
+                        if (widgets.contains(fw)) {
+                            Rectangle bounds = fw.getClientArea();
+                            if (bounds != null) {
+                                bounds = partnerScene.convertSceneToView(fw.convertLocalToScene(bounds));
+                                partnerScene.getView().scrollRectToVisible(bounds);
+                            }
+                        }
+                        if (!scene.getSelectedObjects().contains(newFocusedObject)) {
+                        	scene.userSelectionSuggested(Collections.singleton(newFocusedObject), false);
+                        }
+                    }
                 }
             }
 
             public void objectAdded(ObjectSceneEvent event, Object addedObject) {
-                set.add(addedObject);
-                strSet.add(partnerScene.getWeight(addedObject));
+                // do nothing
             }
             
             public void objectRemoved(ObjectSceneEvent event,
                     Object removedObject) {
-                set.remove(removedObject);
-                strSet.remove(partnerScene.getWeight(removedObject));
+                // do nothing
             }
             
             public void highlightingChanged(ObjectSceneEvent event,
                     Set<Object> previousHighlighting,
                     Set<Object> newHighlighting) {
-                
+                // do nothing
             }
 
             public void hoverChanged(ObjectSceneEvent event,
                     Object previousHoveredObject, Object newHoveredObject) {
-                
+                // do nothing
             }
 
             public void objectStateChanged(ObjectSceneEvent event,
                     Object changedObject, ObjectState previousState,
                     ObjectState newState) {
-                
+                // do nothing
             }
 
             public void selectionChanged(ObjectSceneEvent event,
                     Set<Object> previousSelection, Set<Object> newSelection) {
-                if (newSelection == null || newSelection.isEmpty()) return;
-                
-                Object obj = newSelection.iterator().next();
-                Widget widget = partnerScene.findWidget(obj);
-                Rectangle bounds = widget.getClientArea();
-                if (bounds != null) {
-                    bounds = partnerScene.convertSceneToView(widget.convertLocalToScene(bounds));
-                    partnerScene.getView().scrollRectToVisible(bounds);
-                }
+            	ObjectScene scene = event.getObjectScene();
+            	Widget w = scene.getFocusedWidget();
+            	Object focusedObject = scene.getFocusedObject();
+            	if (w != null && w != scene.findObject(w)) { // in case of button widgets
+                	if (!newSelection.isEmpty()) {
+                		Object obj = newSelection.iterator().next();
+                		scene.setFocusedWidget(scene.findWidget(obj));
+                		scene.setFocusedObject(obj);
+                	}            		
+            	} else { 
+            		if (!newSelection.isEmpty() && !newSelection.contains(focusedObject)) {
+                		scene.setFocusedObject(newSelection.iterator().next());
+                	}            		
+            	}
             }
     }
-    
-    public String getWeight(Object obj) {
-        if (obj instanceof WSDLComponent) {
-            return getWeight((WSDLComponent) obj);
-        } else if (obj instanceof String) {
-            return (String) obj;
-        }
-        return "Z";
-    }
-    
-    public String getWeight(WSDLComponent comp) {
-        String zeroPaddedNumber = String.format("%010d", comp.findPosition());
-        if (comp instanceof PartnerLinkType) {
-            return "AZ" + zeroPaddedNumber;
-        } else if (comp instanceof Role) {
-            return getWeight(comp.getParent()) + "BZ" + zeroPaddedNumber;
-        } else if (comp instanceof PortType) {
-            return "CZ" + zeroPaddedNumber;
-        } else if (comp instanceof Operation) {
-            return getWeight(comp.getParent()) + "DZ" + zeroPaddedNumber;
-        } else if (comp instanceof Input) {
-            return getWeight(comp.getParent()) + "EZ" + zeroPaddedNumber;
-        } else if (comp instanceof Output) {
-            return getWeight(comp.getParent()) + "EZ" + zeroPaddedNumber;
-        } else if (comp instanceof Fault) {
-            return getWeight(comp.getParent()) + "EZ" +  zeroPaddedNumber;
-        } else if (comp instanceof Message) {
-            return "FZ" + zeroPaddedNumber;
-        } else if (comp instanceof Part) {
-            return getWeight(comp.getParent()) + "GZ" + zeroPaddedNumber;
-        }
-        return "Z";
-    }
-
 }

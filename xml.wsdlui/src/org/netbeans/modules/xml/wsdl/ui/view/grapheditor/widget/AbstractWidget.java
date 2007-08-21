@@ -38,6 +38,8 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -82,7 +84,7 @@ import org.openide.windows.TopComponent;
  * @author Nathan Fiedler
  */
 public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
-        implements ComponentListener, PopupMenuProvider {
+        implements ComponentListener, PopupMenuProvider, FocusableWidget, PropertyChangeListener {
     
     /** The WSDL component this widget represents; may be null. */
     private T wsdlComponent;
@@ -98,6 +100,7 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
     private WSDLModel model;
     
     private Border currentBorder;
+	private PropertyChangeListener weakModelListener;
     
     
     /**
@@ -117,8 +120,10 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         });
         if (component != null) {
             lookupContent.add(component);
+            setWSDLComponent(component);
+            weakModelListener = WeakListeners.propertyChange(this, component.getModel());
+            component.getModel().addPropertyChangeListener(weakModelListener);
         }
-        setWSDLComponent(component);
         getActions().addAction(ActionFactory.createPopupMenuAction(this));
     }
 
@@ -136,6 +141,11 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         }
         // Remove our compopnent listener.
         registerListener(null);
+        
+        if (weakModelListener != null) {
+        	wsdlComponent.getModel().removePropertyChangeListener(weakModelListener);
+        }
+        
         try {
             if (model.startTransaction()) {
                 model.removeChildComponent(wsdlComponent);
@@ -228,7 +238,7 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         if (node != null && wsdlComponent != null) {
             Set<WSDLComponent> set = new HashSet<WSDLComponent>();
             set.add(getWSDLComponent());
-            ((PartnerScene) getScene()).setSelectedObjects(set);
+            ((PartnerScene)getScene()).userSelectionSuggested(set, false);
             TopComponent tc = findTopComponent();
             Lookup lookup;
             if (tc != null) {
@@ -418,4 +428,17 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
     public void valueChanged(ComponentEvent event) {
         checkUpdate(event);
     }
+    
+    public boolean isFocusable() {
+        Widget temp = this;
+        while (temp.isVisible() && (temp = temp.getParentWidget()) != null);
+        
+        if (temp == null) return true;
+        
+        return false;
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+    }
+    
 }

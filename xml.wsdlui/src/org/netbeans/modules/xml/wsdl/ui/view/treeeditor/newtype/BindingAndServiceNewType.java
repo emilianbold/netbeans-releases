@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
+import java.awt.Dialog;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -101,8 +102,11 @@ public class BindingAndServiceNewType extends NewType {
         }
         panel.setServicePortName(portName);
         
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
+        dlg.setVisible(true);
         
-        if (DialogDisplayer.getDefault().notify(descriptor) == DialogDescriptor.OK_OPTION) {
+        if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
             String bindName = panel.getBindingName();
             LocalizedTemplateGroup bindingType = panel.getBindingType();
             //this could be null for a binding which does not have a sub type

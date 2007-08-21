@@ -30,6 +30,7 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.ListIterator;
@@ -38,7 +39,9 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
 import org.netbeans.api.visual.layout.Layout;
@@ -55,6 +58,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortTypeNode;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -77,6 +81,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     private boolean leftSided;
     private int GAP = 25;
     private int MINIMUM_WIDTH = 225;
+    private WidgetAction editorAction;
 
     /**
      * Creates a new instance of RoleWidget.
@@ -95,9 +100,93 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         setMinimumSize(new Dimension(MINIMUM_WIDTH, 0));
         setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, GAP));
         setOpaque(true);
+        editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
+
+            public void setText(Widget widget, String text) {
+                String errorMessage = null;
+                if (text == null || text.trim().length() == 0) {
+                    errorMessage = NbBundle.getMessage(RoleWidget.class, "MSG_BlankRoleName", text);
+                } else if (!Utils.isValidNCName(text)) { 
+                    errorMessage = NbBundle.getMessage(RoleWidget.class, "MSG_InvalidRoleName", text);
+                }
+                
+                if (errorMessage != null) {
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(errorMessage, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);
+                    return;
+                }
+                
+                WSDLModel model = mPartnerLinkType.getModel();
+                boolean newRoleCreated = false;
+                Role role = getWSDLComponent();
+                try {
+                    if (model.startTransaction()) {
+                        if (role == null) {
+                            role = (Role) mPartnerLinkType.getModel().
+                                    getFactory().create(mPartnerLinkType,
+                                    BPELQName.ROLE.getQName());
+                            if (mPartnerLinkType.getRole1() == null) {
+                                mPartnerLinkType.setRole1(role);
+                            } else if (mPartnerLinkType.getRole2() == null) {
+                                mPartnerLinkType.setRole2(role);
+                            }
+                            newRoleCreated = true;
+                        }
+                        role.setName(text);
+                    }
+                } finally {
+                    model.endTransaction();
+                }
+                if (newRoleCreated) {
+                    updateContent();
+                }
+                if (role != null) {
+                    ActionHelper.selectNode(role);
+                }
+                
+            }
+
+            public boolean isEnabled(Widget widget) {
+                if (mPartnerLinkType != null) {
+                    return XAMUtils.isWritable(mPartnerLinkType.getModel());
+                }
+                return false;
+            }
+
+            public String getText(Widget widget) {
+                Role role = getWSDLComponent();
+                if (role == null) {
+                    String name = mPartnerLinkType.getName() + "Role"; //generate a new name;
+                    if (mPartnerLinkType.getRole1() != null && mPartnerLinkType.getRole1().getName().equals(name)
+                            || mPartnerLinkType.getRole2() != null && mPartnerLinkType.getRole2().getName().equals(name)) {
+                        name = name + "1";
+                    }
+                    
+                    return name; 
+                }
+                return role.getName();
+            }
+
+        }, null);
         updateContent();
         if (getWSDLComponent() != null)
             getActions().addAction(((PartnerScene)getScene()).getDnDAction());
+        getActions().addAction(new WidgetAction.Adapter() {
+
+            @Override
+            public State keyPressed (Widget widget, WidgetKeyEvent event) {
+                if (event.getKeyCode() == KeyEvent.VK_F2) {
+                    if (editorAction == null || mLabelWidget == null) return State.REJECTED;
+                    InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                    if (inplaceEditorController.openEditor (mLabelWidget)) {
+                        return State.createLocked (widget, this);
+                    }
+                    return State.CONSUMED;
+                }
+                return State.REJECTED;
+            }
+
+        });
     }
     
     private String getName() {
@@ -192,76 +281,17 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
        // mLabelWidget.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         mLabelWidget.setMinimumSize(new Dimension(MINIMUM_WIDTH, WidgetConstants.TEXT_LABEL_HEIGHT));
         addChild(mLabelWidget);
-
-        mLabelWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
-
-            public void setText(Widget widget, String text) {
-                String errorMessage = null;
-                if (text == null || text.trim().length() == 0) {
-                    errorMessage = NbBundle.getMessage(RoleWidget.class, "MSG_BlankRoleName", text);
-                } else if (!Utils.isValidNCName(text)) { 
-                    errorMessage = NbBundle.getMessage(RoleWidget.class, "MSG_InvalidRoleName", text);
-                }
-                
-                if (errorMessage != null) {
-                    NotifyDescriptor desc = new NotifyDescriptor.Message(errorMessage, NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notify(desc);
-                    return;
-                }
-                
-                WSDLModel model = mPartnerLinkType.getModel();
-                boolean newRoleCreated = false;
-                try {
-                    if (model.startTransaction()) {
-                        Role role = getWSDLComponent();
-                        if (role == null) {
-                            role = (Role) mPartnerLinkType.getModel().
-                                    getFactory().create(mPartnerLinkType,
-                                    BPELQName.ROLE.getQName());
-                            if (mPartnerLinkType.getRole1() == null) {
-                                mPartnerLinkType.setRole1(role);
-                            } else if (mPartnerLinkType.getRole2() == null) {
-                                mPartnerLinkType.setRole2(role);
-                            }
-                            newRoleCreated = true;
-                        }
-                        role.setName(text);
-                    }
-                } finally {
-                    model.endTransaction();
-                }
-                if (newRoleCreated) {
-                    updateContent();
-                }
-            }
-
-            public boolean isEnabled(Widget widget) {
-                if (mPartnerLinkType != null) {
-                    return XAMUtils.isWritable(mPartnerLinkType.getModel());
-                }
-                return false;
-            }
-
-            public String getText(Widget widget) {
-                Role role = getWSDLComponent();
-                if (role == null) {
-                    String name = mPartnerLinkType.getName() + "Role"; //generate a new name;
-                    if (mPartnerLinkType.getRole1() != null && mPartnerLinkType.getRole1().getName().equals(name)
-                            || mPartnerLinkType.getRole2() != null && mPartnerLinkType.getRole2().getName().equals(name)) {
-                        name = name + "1";
-                    }
-                    
-                    return name; 
-                }
-                return role.getName();
-            }
-
-        }, null));
+        mLabelWidget.getActions().addAction(editorAction);
         WidgetFactory factory = WidgetFactory.getInstance();
         PortType portType = getPortType();
         if (portType != null) {
             mPortTypeWidget = (PortTypeWidget) factory.createWidget(
-                    getScene(), portType, getLookup());
+                    getScene(), portType, getLookup(), true);
+            //if already being used, create new one.
+            if (mPortTypeWidget.getParentWidget() != null) {
+                mPortTypeWidget = (PortTypeWidget) factory.createWidget(
+                        getScene(), portType, getLookup());
+            }
         } else {
             mPortTypeWidget = (PortTypeWidget) factory.createWidget(
                     getScene(), PortType.class, getLookup());
@@ -423,12 +453,6 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     
     @Override
     protected void paintWidget() {
-        super.paintWidget();
-        
-        if (getState().isSelected()) {
-            return;
-        }
-        
         Graphics2D g = getGraphics();
         Color old = g.getColor();
         Stroke stk = g.getStroke();
@@ -441,6 +465,9 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
             BasicStroke dotted = new BasicStroke(1, BasicStroke.CAP_BUTT, 
                     BasicStroke.JOIN_MITER, 5.0f, new float[]{10,5,10,5}, 0);
             g.setStroke(dotted);
+        }
+        if (getState().isSelected()) {
+            g.setColor(WidgetConstants.SELECTION_COLOR);
         }
         g.draw(createSelectionShape());
         g.setColor(old);

@@ -137,7 +137,7 @@ public class CollaborationsWidget extends Widget
         // Auto-create button.
         createButtonWidget = new ButtonWidget(scene,
                 NbBundle.getMessage(CollaborationsWidget.class,
-                "LBL_CollaborationsWidget_AutoCreate"));
+                "LBL_CollaborationsWidget_AutoCreate"), true);
         createButtonWidget.setActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // For each port type, create a role and partnerLinkType.
@@ -179,7 +179,7 @@ public class CollaborationsWidget extends Widget
         // Add partnerLinkType button.
         addButtonWidget = new ButtonWidget(scene,
                 NbBundle.getMessage(CollaborationsWidget.class,
-                "LBL_CollaborationsWidget_AddPartnerLinkType"));
+                "LBL_CollaborationsWidget_AddPartnerLinkType"),true);
         addButtonWidget.setActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 PartnerLinkType plt = null;
@@ -207,16 +207,6 @@ public class CollaborationsWidget extends Widget
         });
         actionWidget.addChild(addButtonWidget);
         
-        PartnerScene pScene = (PartnerScene) getScene();
-        String weight = "AA_AutoCreatePartnerLinkTypesButton";
-        if (!pScene.getObjects().contains(weight)) {
-        	pScene.addObject(weight, createButtonWidget);
-        }
-        weight = "AB_AddPartnerLinkTypesButton";
-        if (!pScene.getObjects().contains(weight)) {
-        	pScene.addObject(weight, addButtonWidget);
-        }
-
         return actionWidget;
     }
 

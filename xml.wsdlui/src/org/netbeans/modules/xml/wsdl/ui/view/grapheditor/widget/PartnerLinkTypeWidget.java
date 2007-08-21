@@ -33,8 +33,10 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
+import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.Scene;
@@ -80,48 +82,6 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     private void init() {
         setBorder(WidgetConstants.OUTER_BORDER);
         setLayout(LayoutFactory.createVerticalFlowLayout());
-        Widget actionsWidget = createActionsWidget();
-        mHeaderWidget = new HeaderWidget(getScene(), expander);
-        mHeaderWidget.setLayout(new LeftRightLayout(32));
-        addChild(mHeaderWidget);
-
-        mLabelWidget = createLabelWidget();
-        mHeaderWidget.setBorder(WidgetConstants.GRADIENT_BLUE_WHITE_BORDER);
-        mHeaderWidget.addChild(mLabelWidget);
-        getActions().addAction(ActionFactory.createForwardKeyEventsAction(mHeaderWidget, null));
-        
-        getActions().addAction(new WidgetAction.Adapter() {
-    		
-        	@Override
-			public State keyPressed (Widget widget, WidgetKeyEvent event) {
-				if (event.getKeyCode() == KeyEvent.VK_F2) {
-			        InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
-			        if (inplaceEditorController.openEditor (mLabelWidget)) {
-			        	return State.createLocked (widget, this);
-			        }
-			        return State.CONSUMED;
-				}
-				return State.REJECTED;
-			}
-		
-		});
-        
-        setMinimumSize(new Dimension(WidgetConstants.PARTNERLLINKTYPE_MINIMUM_WIDTH, 0));
-        mHeaderWidget.addChild(actionsWidget);
-        mHeaderWidget.setOpaque(true);
-        
-        mHeaderWidget.setMinimumSize(new Dimension(0, 30));
-
-        mContentWidget = new PartnerLinkTypeContentWidget(getScene(), mPartnerLinkType);
-        addChild(mContentWidget);
-        mContentWidget.setVisible(ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT));
-
-        getActions().addAction(((PartnerScene) getScene()).getDnDAction());
-    }
-
-    private Widget createLabelWidget() {
-        Widget labelWidget = new ImageLabelWidget(getScene(), IMAGE, mPartnerLinkType.getName());
-        labelWidget.setBorder(new EmptyBorder(4, 4, 1, 1));
         editorAction = ActionFactory.createInplaceEditorAction(
                 new TextFieldInplaceEditor() {
 
@@ -161,8 +121,53 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
             }
 
         }, null);
-        labelWidget.getActions().addAction(editorAction);
+        Widget actionsWidget = createActionsWidget();
+        mHeaderWidget = new HeaderWidget(getScene(), expander);
+        mHeaderWidget.setLayout(new LeftRightLayout(32));
+        addChild(mHeaderWidget);
+
+        mLabelWidget = createLabelWidget();
+        mHeaderWidget.setBorder(WidgetConstants.GRADIENT_BLUE_WHITE_BORDER);
+        mHeaderWidget.addChild(mLabelWidget);
         
+        getActions().addAction(new WidgetAction.Adapter() {
+
+            @Override
+            public State keyPressed (Widget widget, WidgetKeyEvent event) {
+                if (event.getKeyCode() == KeyEvent.VK_F2) {
+                    if (editorAction == null || mLabelWidget == null) return State.REJECTED;
+                    InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                    if (inplaceEditorController.openEditor (mLabelWidget)) {
+                        return State.createLocked (widget, this);
+                    }
+                    return State.CONSUMED;
+                } else if (event.getKeyCode() == KeyEvent.VK_ENTER) {
+                	if (mHeaderWidget != null) {
+                		return mHeaderWidget.getActions().keyPressed(widget, event);
+                	}
+                }
+                return State.REJECTED;
+            }
+
+        });
+        
+        setMinimumSize(new Dimension(WidgetConstants.PARTNERLLINKTYPE_MINIMUM_WIDTH, 0));
+        mHeaderWidget.addChild(actionsWidget);
+        mHeaderWidget.setOpaque(true);
+        
+        mHeaderWidget.setMinimumSize(new Dimension(0, 30));
+
+        mContentWidget = new PartnerLinkTypeContentWidget(getScene(), mPartnerLinkType);
+        addChild(mContentWidget);
+        mContentWidget.setVisible(ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT));
+
+        getActions().addAction(((PartnerScene) getScene()).getDnDAction());
+    }
+
+    private Widget createLabelWidget() {
+        Widget labelWidget = new ImageLabelWidget(getScene(), IMAGE, mPartnerLinkType.getName());
+        labelWidget.setBorder(new EmptyBorder(4, 4, 1, 1));
+        labelWidget.getActions().addAction(editorAction);
         return labelWidget;
     }
 

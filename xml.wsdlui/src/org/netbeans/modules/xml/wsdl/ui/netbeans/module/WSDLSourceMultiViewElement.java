@@ -29,7 +29,6 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;

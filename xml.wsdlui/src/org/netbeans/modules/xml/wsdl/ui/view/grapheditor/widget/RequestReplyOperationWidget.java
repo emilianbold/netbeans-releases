@@ -29,8 +29,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 
-import java.awt.Dimension;
-
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.Scene;
@@ -67,9 +65,17 @@ public class RequestReplyOperationWidget
         Lookup lookup = getLookup();
         WidgetFactory factory = WidgetFactory.getInstance();
         Widget inputWidget = factory.createWidget(scene,
-                getWSDLComponent().getInput(), lookup);
+                getWSDLComponent().getInput(), lookup, true);
+        if (inputWidget.getParentWidget() != null && inputWidget.getParentWidget() != this) {
+            inputWidget = factory.createWidget(scene,
+                    getWSDLComponent().getInput(), lookup);
+        }
         Widget outputWidget = factory.createWidget(scene,
-                getWSDLComponent().getOutput(), lookup);
+                getWSDLComponent().getOutput(), lookup, true);
+        if (outputWidget.getParentWidget() != null && outputWidget.getParentWidget() != this) {
+            outputWidget = factory.createWidget(scene,
+                    getWSDLComponent().getOutput(), lookup);
+        }
         
         verticalWidget = new Widget(scene);
         verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 3));

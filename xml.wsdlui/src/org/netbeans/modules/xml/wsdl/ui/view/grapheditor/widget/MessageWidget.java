@@ -47,10 +47,7 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
-
-import javax.swing.JTextField;
 
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
@@ -71,7 +68,6 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.TextFieldInplaceEditorProvider;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.AbstractComponent;
@@ -107,6 +103,52 @@ public class MessageWidget extends AbstractWidget<Message>
         super(scene, message, lookup);
         setMinimumSize(new Dimension(WidgetConstants.MESSAGE_MINIMUM_WIDTH, 0));
         
+        editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
+            
+            public boolean isEnabled(Widget widget) {
+                Message message = getMessage(widget);
+                if (message != null) {
+                    return XAMUtils.isWritable(message.getModel());
+                }
+                return false;
+            }
+
+            
+            public String getText(Widget widget) {
+                Message message = getMessage(widget);
+                String name = (message != null) ? message.getName() : null;
+                return (name != null) ? name : ""; // NOI18N
+            }
+
+            
+            public void setText(Widget widget, String text) {
+                Message message = getMessage(widget);
+                if (message != null && !message.getName().equals(text)) {
+                    // try rename silent and locally
+                    SharedUtils.locallyRenameRefactor(message, text);
+                 }
+            }
+            
+            
+            private Message getMessage(Widget widget) {
+                MessageWidget messageWidget = getMessageWidget(widget);
+                return (messageWidget != null) 
+                        ? messageWidget.getWSDLComponent() 
+                        : null;
+            }
+            
+            
+            private MessageWidget getMessageWidget(Widget widget) {
+                for (Widget w = widget; w != null; w = w.getParentWidget()) {
+                    if (w instanceof MessageWidget) {
+                        return (MessageWidget) w;
+                    }
+                }
+                return null;
+            }
+        
+        }, null);
+        
         boolean expanded = ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT);
         expanderWidget = new ExpanderWidget(scene, this, expanded);
         
@@ -115,7 +157,7 @@ public class MessageWidget extends AbstractWidget<Message>
 
         addPartButton = new ButtonWidget(scene, NbBundle.getMessage(
                 MessageWidget.class, 
-                "LBL_MessageWidget_AddPart")); // NOI18N
+                "LBL_MessageWidget_AddPart"), true); // NOI18N
         addPartButton.setActionListener(this);
         removePartButton = new ButtonWidget(scene, NbBundle.getMessage(
                 MessageWidget.class, 
@@ -139,15 +181,26 @@ public class MessageWidget extends AbstractWidget<Message>
         contentWidget.setVisible(expanded);
         
         getActions().addAction(((PartnerScene) scene).getDnDAction());
-        PartnerScene pScene = (PartnerScene) scene;
-        String weight = pScene.getWeight(getWSDLComponent()) + "_AddPartButton";
-        if (!pScene.getObjects().contains(weight)) {
-        	pScene.addObject(weight, addPartButton);
-        }
-        weight = pScene.getWeight(getWSDLComponent()) + "_RemovePartButton";
-        if (!pScene.getObjects().contains(weight)) {
-            pScene.addObject(weight, removePartButton);
-        }
+        getActions().addAction(new WidgetAction.Adapter() {
+
+            @Override
+            public State keyPressed (Widget widget, WidgetKeyEvent event) {
+                if (event.getKeyCode() == KeyEvent.VK_F2) {
+                    if (editorAction == null || labelWidget == null) return State.REJECTED;
+                    InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                    if (inplaceEditorController.openEditor (labelWidget)) {
+                        return State.createLocked (widget, this);
+                    }
+                    return State.CONSUMED;
+                } else if (event.getKeyCode() == KeyEvent.VK_ENTER) {
+                	if (header != null) {
+                		return header.getActions().keyPressed(widget, event);
+                	}
+                }
+                return State.REJECTED;
+            }
+
+        });
     }
     
     private void removeContent() {
@@ -172,23 +225,6 @@ public class MessageWidget extends AbstractWidget<Message>
         
         contentWidget.addChild(buttons);
 
-        getActions().addAction(ActionFactory.createForwardKeyEventsAction(header, null));
-        getActions().addAction(new WidgetAction.Adapter() {
-
-        	@Override
-        	public State keyPressed (Widget widget, WidgetKeyEvent event) {
-        		if (event.getKeyCode() == KeyEvent.VK_F2) {
-        			InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
-        			if (inplaceEditorController.openEditor (labelWidget)) {
-        				return State.createLocked (widget, this);
-        			}
-        			return State.CONSUMED;
-        		}
-        		return State.REJECTED;
-        	}
-
-        });
-        
         updateButtonState();
     }
 
@@ -394,57 +430,7 @@ public class MessageWidget extends AbstractWidget<Message>
         
         Widget result = new ImageLabelWidget(scene, IMAGE, name, 
                 getPartCount(message));
-        editorAction = ActionFactory
-        .createInplaceEditorAction(new TextFieldInplaceEditor() {
-		
-        	public boolean isEnabled(Widget widget) {
-                Message message = getMessage(widget);
-                if (message != null) {
-                    return XAMUtils.isWritable(message.getModel());
-                }
-                return false;
-            }
-
-            
-            public String getText(Widget widget) {
-                Message message = getMessage(widget);
-                String name = (message != null) ? message.getName() : null;
-                return (name != null) ? name : ""; // NOI18N
-            }
-
-            
-            public void setText(Widget widget, String text) {
-                Message message = getMessage(widget);
-                if (message != null && !message.getName().equals(text)) {
-                    // try rename silent and locally
-                    SharedUtils.locallyRenameRefactor(message, text);
-                 }
-            }
-            
-            
-            private Message getMessage(Widget widget) {
-                MessageWidget messageWidget = getMessageWidget(widget);
-                return (messageWidget != null) 
-                        ? messageWidget.getWSDLComponent() 
-                        : null;
-            }
-            
-            
-            private MessageWidget getMessageWidget(Widget widget) {
-                for (Widget w = widget; w != null; w = w.getParentWidget()) {
-                    if (w instanceof MessageWidget) {
-                        return (MessageWidget) w;
-                    }
-                }
-                return null;
-            }
-		
-		}, null);
         result.getActions().addAction(editorAction);
-//        result.getActions().addAction(ActionFactory
-//        		.createInplaceEditorAction((InplaceEditorProvider<JTextField>) 
-//        				new MessageNameInplaceEditorProvider()));
-        
         return result;
     }
 
@@ -460,7 +446,6 @@ public class MessageWidget extends AbstractWidget<Message>
         result.addChild(expanderWidget);
         result.setLayout(new LeftRightLayout(32));
         result.setBorder(WidgetConstants.GRADIENT_BLUE_WHITE_BORDER);
-        getActions().addAction(ActionFactory.createForwardKeyEventsAction(result, null));
         return result;
     }
 
@@ -600,31 +585,31 @@ public class MessageWidget extends AbstractWidget<Message>
 
         Part part = null;
         if (model.startTransaction()) {
-        	try {
-        		if (position.column == 0) {
-        			part = model.getFactory().createPart();
-        			part.setName(MessagesUtils.createNewPartName(message));
-        			((AbstractComponent<WSDLComponent>) message).insertAtIndex(Message.PART_PROPERTY, part, position.row);
-        		} else {
-        			Part[] parts = message.getParts().toArray(new Part[0]);
-        			part = parts[position.row];
-        		}
-        		if (part != null) {
-        			if (sc instanceof GlobalType) {
-        				part.setType(model.getDefinitions().createSchemaReference(
-        						(GlobalType) sc, GlobalType.class));
-        				part.setElement(null);
-        			} else {
-        				part.setElement(model.getDefinitions().createSchemaReference(
-        						(GlobalElement) sc, GlobalElement.class));
-        				part.setType(null);
-        			}
-        		} else {
-        			model.rollbackTransaction();
-        		}
-        	} finally {
-        		if (model.isIntransaction()) model.endTransaction();
-        	}
+            try {
+                if (position.column == 0) {
+                    part = model.getFactory().createPart();
+                    part.setName(MessagesUtils.createNewPartName(message));
+                    ((AbstractComponent<WSDLComponent>) message).insertAtIndex(Message.PART_PROPERTY, part, position.row);
+                } else {
+                    Part[] parts = message.getParts().toArray(new Part[0]);
+                    part = parts[position.row];
+                }
+                if (part != null) {
+                    if (sc instanceof GlobalType) {
+                        part.setType(model.getDefinitions().createSchemaReference(
+                                (GlobalType) sc, GlobalType.class));
+                        part.setElement(null);
+                    } else {
+                        part.setElement(model.getDefinitions().createSchemaReference(
+                                (GlobalElement) sc, GlobalElement.class));
+                        part.setType(null);
+                    }
+                } else {
+                    model.rollbackTransaction();
+                }
+            } finally {
+                if (model.isIntransaction()) model.endTransaction();
+            }
         }
 
         return true;

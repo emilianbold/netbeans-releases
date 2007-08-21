@@ -116,6 +116,7 @@ public class ExpanderWidget extends ButtonWidget implements ActionListener {
         isExpanded = expanded;
         setMargin(new Insets(2, 2, 2, 2));
         setActionListener(this);
+        getActions().removeAction(((PartnerScene)scene).getSelectAction());
     }
 
 //    /**

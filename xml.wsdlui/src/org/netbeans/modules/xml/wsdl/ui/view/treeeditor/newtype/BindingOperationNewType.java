@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
+import java.awt.Dialog;
 import java.io.IOException;
 import java.util.Collection;
 
@@ -80,8 +81,11 @@ public class BindingOperationNewType extends NewType {
                         DialogDescriptor.OK_CANCEL_OPTION, 
                         DialogDescriptor.CANCEL_OPTION, 
                         null);
+            Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+            dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
+            dlg.setVisible(true);
             
-            if(DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+            if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             	selectedOperations = operationView.getSelectedOperations();
             }
         }

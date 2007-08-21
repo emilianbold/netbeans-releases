@@ -42,7 +42,7 @@ import org.netbeans.api.visual.widget.Widget;
  *
  * @author anjeleevich
  */
-public class ButtonWidget extends Widget {
+public class ButtonWidget extends Widget implements FocusableWidget {
 
     private ImageWidget imageWidget = null;
     private LabelWidget labelWidget = null;
@@ -59,21 +59,29 @@ public class ButtonWidget extends Widget {
     
     
     private ActionListener actionListener = null;
+    private boolean focusable;
 
     
     public ButtonWidget(Scene scene, String text) {
-        this(scene, null, text);
+        this(scene, text, false);
     }
     
+    public ButtonWidget(Scene scene, String text, boolean focusable) {
+        this(scene, null, text, focusable);
+    }
     
     public ButtonWidget(Scene scene, Image icon) {
-        this(scene, icon, null);
+        this(scene, icon, null, false);
+    }
+    
+    public ButtonWidget(Scene scene, Image icon, boolean focusable) {
+        this(scene, icon, null, focusable);
     }
     
     
-    public ButtonWidget(Scene scene, Image icon, String text) {
+    public ButtonWidget(Scene scene, Image icon, String text, boolean focusable) {
         super(scene);
-        
+        this.focusable = focusable;
         setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory
                 .SerialAlignment.CENTER, 4));
         setIconAndText(icon, text);
@@ -261,11 +269,12 @@ public class ButtonWidget extends Widget {
     	
     	if (!previousState.isFocused() && state.isFocused()) {
     		focused = true;
-    		repaint();
+            revalidate();
     	} else if (previousState.isFocused() && !state.isFocused()){
     		focused = false;
-    		repaint();
-    	}
+            revalidate();
+        }
+    	repaint();
     }
     
     
@@ -344,5 +353,28 @@ public class ButtonWidget extends Widget {
     private static final Color BACKGROUND_COLOR_DISABLED = new Color(0xE4E4E4);
     private static final Color ENABLED_TEXT_COLOR = new Color(0x222222);
     private static final Color DISABLED_TEXT_COLOR = new Color(0x888888);
+
+
+    public boolean isFocusable() {
+        return focusable && isButtonEnabled() && isWidgetVisible();
+    }
+    
+    private boolean isWidgetVisible() {
+        Widget temp = this;
+        while (temp.isVisible() && (temp = temp.getParentWidget()) != null);
+        
+        if (temp == null) return true;
+        
+        return false;
+    }
+    
+    public void setFocusable(boolean focusable) {
+        this.focusable = focusable; 
+    }
+    
+    @Override
+    public String toString() {
+        return (labelWidget != null ? labelWidget.getLabel() : "");
+    }
 }
  

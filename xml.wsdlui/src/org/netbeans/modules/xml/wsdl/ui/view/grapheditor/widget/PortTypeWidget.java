@@ -83,6 +83,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.actions.schema.ExtensibilityElementCreatorVisitor;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
@@ -114,6 +115,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     private Border disabledBorder = BorderFactory.createCompositeBorder(new Border[] {BorderFactory.createDashedBorder(Color.GRAY, 10, 5), WidgetConstants.GRADIENT_GRAY_WHITE_BORDER});
     private Border importedBorder = BorderFactory.createCompositeBorder(new Border[] {BorderFactory.createLineBorder(1, Color.BLACK), WidgetConstants.GRADIENT_GREEN_WHITE_BORDER});
     private Border border;
+    private WidgetAction editorAction;
     
     
     public static enum State {
@@ -130,6 +132,49 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
      */
     public PortTypeWidget(Scene scene, PortType portType, Lookup lookup) {
         super(scene, portType, lookup);
+        editorAction = ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
+
+            public void setText(Widget widget, String text) {
+                if (text == null || text.trim().length() == 0) return;
+                if (getWSDLComponent() == null) {
+                    WSDLModel model = getModel();
+                    if (model.startTransaction()) {
+                        PortType portType = null;
+                        try {
+                            //create new one first time.
+                            portType = model.getFactory().createPortType();
+                            portType.setName(text);
+                            model.getDefinitions().addPortType(portType);
+                            mRole.setPortType(mRole.createReferenceTo(portType, PortType.class));
+                        } finally {
+                            model.endTransaction();
+                        }
+                        if (portType != null) {
+                            ActionHelper.selectNode(portType);
+                        }
+                    }
+                } else {
+                    if (!getWSDLComponent().getName().equals(text)) {
+                        // try rename silent and locally
+                        SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
+                    }
+                }
+                if (getWSDLComponent() != null) {
+                    ActionHelper.selectNode(getWSDLComponent());
+                }
+            }
+
+            public boolean isEnabled(Widget widget) {
+                return !isImported() && isWritable();
+            }
+
+            public String getText(Widget widget) {
+                if (getWSDLComponent() != null)
+                    return getWSDLComponent().getName();
+                return NameGenerator.getInstance().generateUniquePortTypeName(getModel());
+            }
+
+        }, null);
         mPLTContentWidget = getLookup().lookup(PartnerLinkTypeContentWidget.class);
         mRole = getLookup().lookup(Role.class);
         if (mRole != null) {
@@ -141,7 +186,22 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         
         init();
         
+        getActions().addAction(new WidgetAction.Adapter() {
+            
+            @Override
+            public State keyPressed (Widget widget, WidgetKeyEvent event) {
+                if (event.getKeyCode() == KeyEvent.VK_F2) {
+                    if (editorAction == null || mNameWidget == null) return State.REJECTED;
+                    InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                    if (inplaceEditorController.openEditor (mNameWidget)) {
+                        return State.createLocked (widget, this);
+                    }
+                    return State.CONSUMED;
+                }
+                return State.REJECTED;
+            }
         
+        });
     }
 
     private void init() {
@@ -221,7 +281,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         mNameWidget.setFont(font);
         
         nameHolderWidget.setBorder(border);
-        showComboBoxBtnWidget = new ButtonWidget(getScene(), IMAGE_EXPAND);
+        showComboBoxBtnWidget = new ButtonWidget(getScene(), IMAGE_EXPAND, true);
         //showComboBoxBtnWidget.setMaximumSize(new Dimension(20, 20));
         showComboBoxBtnWidget.getActions().addAction(createInplaceEditorAction(
                 new ComboBoxInplaceEditorProvider(new ComboBoxInplaceEditor() {
@@ -313,43 +373,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                 }
                 
             });
-            
-            mNameWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new TextFieldInplaceEditor() {
-
-                public void setText(Widget widget, String text) {
-                    if (text == null || text.trim().length() == 0) return;
-                    if (getWSDLComponent() == null) {
-                        WSDLModel model = getModel();
-                        if (model.startTransaction()) {
-                            try {
-                                //create new one first time.
-                                PortType portType = model.getFactory().createPortType();
-                                portType.setName(text);
-                                model.getDefinitions().addPortType(portType);
-                                mRole.setPortType(mRole.createReferenceTo(portType, PortType.class));
-                            } finally {
-                                model.endTransaction();
-                            }
-                        }
-                    } else {
-                        if (!getWSDLComponent().getName().equals(text)) {
-                            // try rename silent and locally
-                            SharedUtils.locallyRenameRefactor(getWSDLComponent(), text);
-                        }
-                    }
-                }
-
-                public boolean isEnabled(Widget widget) {
-                    return !isImported() && isWritable();
-                }
-
-                public String getText(Widget widget) {
-                    if (getWSDLComponent() != null)
-                        return getWSDLComponent().getName();
-                    return NameGenerator.getInstance().generateUniquePortTypeName(getModel());
-                }
-
-            }, null));
+            mNameWidget.getActions().addAction(editorAction);
         }
         
 

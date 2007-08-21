@@ -62,9 +62,17 @@ public class SolicitResponseOperationWidget
         WidgetFactory factory = WidgetFactory.getInstance();
         Lookup lookup = getLookup();
         Widget inputWidget = factory.createWidget(scene,
-                getWSDLComponent().getInput(), lookup);
+                getWSDLComponent().getInput(), lookup, true);
+        if (inputWidget.getParentWidget() != null && inputWidget.getParentWidget() != this) {
+            inputWidget = factory.createWidget(scene,
+                    getWSDLComponent().getInput(), lookup);
+        }
         Widget outputWidget = factory.createWidget(scene,
-                getWSDLComponent().getOutput(), lookup);
+                getWSDLComponent().getOutput(), lookup, true);
+        if (outputWidget.getParentWidget() != null && outputWidget.getParentWidget() != this) {
+            outputWidget = factory.createWidget(scene,
+                    getWSDLComponent().getOutput(), lookup);
+        }
 
         verticalWidget = new Widget(scene);
         verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 3));

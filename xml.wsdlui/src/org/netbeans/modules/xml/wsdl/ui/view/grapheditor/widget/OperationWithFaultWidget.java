@@ -66,7 +66,10 @@ public abstract class OperationWithFaultWidget<T extends Operation> extends Oper
     private void populateFaults(Widget verticalWidget){
         if(currentFaults.size() > 0 ){
             for(Fault fault : currentFaults){
-                Widget faultWidget = WidgetFactory.getInstance().createWidget(getScene(), fault, getLookup());
+                Widget faultWidget = WidgetFactory.getInstance().createWidget(getScene(), fault, getLookup(), true);
+                if (faultWidget.getParentWidget() != null && faultWidget.getParentWidget() != this) {
+                    faultWidget = WidgetFactory.getInstance().createWidget(getScene(), fault, getLookup());
+                }
                 verticalWidget.addChild(faultWidget);
             }
         }
@@ -89,8 +92,10 @@ public abstract class OperationWithFaultWidget<T extends Operation> extends Oper
         if(newFaults.size() > 0){
             verticalWidget.removeChild(dummyWidget);
             for(Fault fault : newFaults){
-                Widget faultWidget = WidgetFactory.getInstance().createWidget(getScene(),
-                        fault, getLookup());
+                Widget faultWidget = WidgetFactory.getInstance().createWidget(getScene(), fault, getLookup(), true);
+                if (faultWidget.getParentWidget() != null && faultWidget.getParentWidget() != this) {
+                    faultWidget = WidgetFactory.getInstance().createWidget(getScene(), fault, getLookup());
+                }
                  verticalWidget.addChild(faultWidget); //adjust for dummy widget. add the fault before dummy widget.
             }
             verticalWidget.addChild(dummyWidget);
