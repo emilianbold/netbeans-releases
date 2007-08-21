@@ -50,6 +50,10 @@ public class APTFoldingProviderTestCase extends BaseTestCase {
         performTest("error_directive.cc");
     }
     
+    public void testLastIncludes() throws Exception {
+        performTest("lastIncludes.cc");
+    }
+    
     private void performTest(String source) throws Exception {
         System.out.println(getWorkDir());
         File testSourceFile = getDataFile(source);
