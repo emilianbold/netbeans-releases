@@ -187,24 +187,25 @@ public class UpdateManagerImpl extends Object {
         return logger;
     }
     
-    private static List<UpdateUnit> filterUnitsByAskedTypes (Collection<UpdateUnit> units, List<UpdateManager.TYPE> types) {
+   private static List<UpdateUnit> filterUnitsByAskedTypes (Collection<UpdateUnit> units, List<UpdateManager.TYPE> types) {
         List<UpdateUnit> askedUnits = new ArrayList<UpdateUnit> ();
 
-        boolean simpleModules = types.contains (UpdateManager.TYPE.MODULE);
+        //hotfix for #113193 - reevaluate and probably fix better
+        List<UpdateManager.TYPE> tmpTypes =  new ArrayList<UpdateManager.TYPE>(types);
+        if (tmpTypes.contains (UpdateManager.TYPE.MODULE) && !tmpTypes.contains (UpdateManager.TYPE.KIT_MODULE)) {
+            tmpTypes.add (UpdateManager.TYPE.KIT_MODULE);
+        }
         
         for (UpdateUnit unit : units) {
             UpdateUnitImpl impl = Trampoline.API.impl (unit);
-            if (impl instanceof KitModuleUpdateUnitImpl) {
-                ((KitModuleUpdateUnitImpl) impl).setLookLikeSimpleModule (simpleModules);
-            }
-            if (types.contains (impl.getType ())) {
+            if (tmpTypes.contains (impl.getType ())) {
                 askedUnits.add (unit);
             }
         }
 
         return askedUnits;
-    }
-    
+    } 
+   
     private static List<UpdateManager.TYPE> type2checkedList (UpdateManager.TYPE... types) {
         List<UpdateManager.TYPE> l = Arrays.asList (types);
         if (types != null && types.length > 1) {

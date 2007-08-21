@@ -24,7 +24,6 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
 
 public class KitModuleUpdateUnitImpl extends ModuleUpdateUnitImpl {
-    private boolean simpleModule = false;
     
     public KitModuleUpdateUnitImpl (String codename) {
         super (codename);
@@ -32,14 +31,7 @@ public class KitModuleUpdateUnitImpl extends ModuleUpdateUnitImpl {
 
     @Override
     public TYPE getType () {
-        return simpleModule ?
-            UpdateManager.TYPE.MODULE :
-            UpdateManager.TYPE.KIT_MODULE;
-    }
-    
-    public void setLookLikeSimpleModule (boolean likeSimpleModule) {
-        this.simpleModule = likeSimpleModule;
-    }
-    
+        return UpdateManager.TYPE.KIT_MODULE;
+    }    
 }
 
