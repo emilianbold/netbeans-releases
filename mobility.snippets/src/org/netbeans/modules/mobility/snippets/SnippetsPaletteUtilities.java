@@ -27,35 +27,33 @@ public class SnippetsPaletteUtilities {
     public SnippetsPaletteUtilities() {
     }
     
-    public static void insert(String s, JTextComponent target)
-    throws BadLocationException {
+    public static void insert(String s, JTextComponent target) throws BadLocationException {
         insert(s, target, true);
     }
     
-    public static void insert(String s, JTextComponent target, boolean reformat)
-    throws BadLocationException {
-        
-        if (s == null)
-            s = "";
-        
+    public static void insert(String s, JTextComponent target, boolean reformat) throws BadLocationException {
+        if (s == null) s = "";
         Document doc = target.getDocument();
-        if (doc == null)
-            return;
-        
-        if (doc instanceof BaseDocument)
-            ((BaseDocument)doc).atomicLock();
-        
-        int start = insert(s, target, doc);
-        
-        if (reformat && start >= 0 && doc instanceof BaseDocument) {  // format the inserted text
-            int end = start + s.length();
-            Formatter f = ((BaseDocument)doc).getFormatter();
-            f.reformat((BaseDocument)doc, start, end);
+        if (doc == null) return;
+        Formatter f = null;
+        if (reformat && doc instanceof BaseDocument) {
+            f = ((BaseDocument)doc).getFormatter();
+            f.reformatLock();
         }
-        
-        if (doc instanceof BaseDocument)
-            ((BaseDocument)doc).atomicUnlock();
-        
+        try {
+            if (doc instanceof BaseDocument) ((BaseDocument)doc).atomicLock();
+            try {
+                int start = insert(s, target, doc);
+                if (f != null && start >= 0) {  // format the inserted text
+                    int end = start + s.length();
+                    f.reformat((BaseDocument)doc, start, end);
+                }
+            } finally {
+                if (doc instanceof BaseDocument) ((BaseDocument)doc).atomicUnlock();
+            }
+        } finally {
+            if (f != null) f.reformatUnlock();
+        }
     }
     
     private static int insert(String s, JTextComponent target, Document doc)
