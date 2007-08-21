@@ -217,6 +217,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         private String tooltip = null;
         private Icon icon = null;
         private ElementJavadoc javaDoc = null;
+        private final ClasspathInfo cpInfo;
 
         private boolean loaded = false;
 
@@ -231,6 +232,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             this.elementHandle = ElementHandle.create(element);
             this.elementKind = element.getKind();
             this.modifiers = element.getModifiers();
+            this.cpInfo = compilationInfo.getClasspathInfo();
 
             setName(element.getSimpleName().toString());
             setIcon(ElementIcons.getElementIcon(element.getKind(), element.getModifiers()));
@@ -321,8 +323,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         }
 
         protected void loadChildren() {
-            JavaSource javaSource = JavaSource.forFileObject(fileObject);
-
+            JavaSource javaSource = JavaSource.create(cpInfo);
             if (javaSource != null) {
                 try {
                     javaSource.runUserActionTask(new Task<CompilationController>() {
