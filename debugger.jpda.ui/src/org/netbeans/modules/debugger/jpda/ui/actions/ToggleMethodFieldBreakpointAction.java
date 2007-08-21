@@ -230,7 +230,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
         
         // 3) create a new breakpoint
         if (fieldName != null) {
-            b = FieldBreakpoint.create(className, fieldName, FieldBreakpoint.TYPE_MODIFICATION);
+            b = FieldBreakpoint.create(className, fieldName, FieldBreakpoint.TYPE_MODIFICATION | FieldBreakpoint.TYPE_ACCESS);
             b.setPrintText(NbBundle.getMessage(FieldBreakpointPanel.class, "CTL_Field_Breakpoint_Print_Text"));
         } else {
             b = MethodBreakpoint.create(className, methodName);
