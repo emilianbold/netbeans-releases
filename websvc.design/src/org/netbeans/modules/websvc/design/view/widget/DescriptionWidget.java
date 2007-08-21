@@ -70,7 +70,7 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
         
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
-                LayoutFactory.SerialAlignment.JUSTIFY, 8));
+                LayoutFactory.SerialAlignment.CENTER, 8));
         buttons.addChild(getExpanderWidget());
         getHeaderWidget().addChild(buttons);
     }

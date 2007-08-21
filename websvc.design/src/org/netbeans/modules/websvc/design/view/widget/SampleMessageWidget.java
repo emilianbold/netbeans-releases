@@ -19,20 +19,28 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.event.ActionEvent;
+import java.awt.geom.GeneralPath;
 import javax.swing.AbstractAction;
 import javax.xml.soap.SOAPMessage;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.javamodel.Utils;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -40,10 +48,6 @@ import org.openide.util.Utilities;
  */
 public class SampleMessageWidget extends AbstractTitledWidget {
     
-    private static final Image INPUT_IMAGE  = Utilities.loadImage
-            ("org/netbeans/modules/websvc/design/view/resources/input.png"); // NOI18N   
-    private static final Image OUTPUT_IMAGE  = Utilities.loadImage
-            ("org/netbeans/modules/websvc/design/view/resources/output.png"); // NOI18N   
     private static final Color INPUT_COLOR = new Color(128,128,255);
     private static final Color OUTPUT_COLOR = new Color(102,204,102);
 
@@ -62,8 +66,8 @@ public class SampleMessageWidget extends AbstractTitledWidget {
          * Represents the input message.
          */
         INPUT {
-            public Image getIcon() {
-                return INPUT_IMAGE;
+            public ButtonImageWidget getIcon(Scene scene) {
+                return new ButtonImageWidget(scene,16,getBorderColor(),true);
             }
             public String getDescription() {
                 return NbBundle.getMessage(SampleMessageWidget.class, "Hint_SampleInput");
@@ -82,8 +86,8 @@ public class SampleMessageWidget extends AbstractTitledWidget {
          * Represents the output message.
          */
         OUTPUT {
-            public Image getIcon() {
-                return OUTPUT_IMAGE;
+            public ButtonImageWidget getIcon(Scene scene) {
+                return new ButtonImageWidget(scene,16,getBorderColor(),false);
             }
             public String getDescription() {
                 return NbBundle.getMessage(SampleMessageWidget.class, "Hint_SampleOutput");
@@ -101,9 +105,9 @@ public class SampleMessageWidget extends AbstractTitledWidget {
 
         /**
          * 
-         * @return image the icon for this type of widget
+         * @return InputImageWidget the image widget for this type of widget
          */
-        public abstract Image getIcon();
+        public abstract ButtonImageWidget getIcon(Scene scene);
         
         /**
          * 
@@ -141,10 +145,9 @@ public class SampleMessageWidget extends AbstractTitledWidget {
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
         getHeaderWidget().addChild(buttons);
-        final ButtonWidget closeButton = new ButtonWidget(getScene(), "x");
-        closeButton.setLabelForeground(new Color(255,95,95));
-        closeButton.setLabelFont(scene.getFont().deriveFont(Font.BOLD));
-        closeButton.setRoundedBorder(0, 4, 0,type.getBorderColor());
+        final ButtonWidget closeButton = new ButtonWidget(getScene(), (String)null);
+        closeButton.setImage(new ExpanderImageWidget(scene,type.getBorderColor(),8));
+        closeButton.setRoundedBorder(0, 4, 4,type.getBorderColor());
         closeButton.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 SampleMessageWidget.this.removeFromParent();
@@ -157,5 +160,72 @@ public class SampleMessageWidget extends AbstractTitledWidget {
         paneWidget.setEditable(false);
         getContentWidget().addChild(paneWidget);
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(12, 6));
+    }
+
+    private static class ExpanderImageWidget extends ImageLabelWidget.PaintableImageWidget {
+        private static final Stroke STROKE = new BasicStroke(2.5F, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
+
+        public ExpanderImageWidget(Scene scene, Color color, int size) {
+            super(scene,color,size,size);
+        }
+
+        protected Stroke getImageStroke() {
+            return STROKE;
+        }
+
+        protected Shape createImage(int width, int height) {
+            GeneralPath path;
+            path = new GeneralPath();
+            path.moveTo(0, 0);
+            path.lineTo(width, height);
+            path.moveTo(0, height);
+            path.lineTo(width, 0);
+            return path;
+        }
+    }
+
+    private static class ButtonImageWidget extends ImageLabelWidget.PaintableImageWidget {
+        private boolean isInput;
+        public ButtonImageWidget(Scene scene, int size, Color color, boolean input) {
+            super(scene, color, size, size);
+            this.isInput = input;
+        }
+
+        protected Shape createImage(int width, int height) {
+            GeneralPath path = new GeneralPath();
+            int arrowWidth = height/3;
+            float x1 = isInput?0:width;
+            float x2 = isInput?3*width/4:width/4;
+            float gap = (width-arrowWidth)/2;
+            path.moveTo(x1, gap);
+            path.lineTo(width/2, gap);
+            path.lineTo(width/2, height/2-arrowWidth);
+            path.lineTo(x2, height/2);
+            path.lineTo(width/2, height/2+arrowWidth);
+            path.lineTo(width/2, gap+arrowWidth);
+            path.lineTo(x1, gap+arrowWidth);
+            path.closePath();
+            path.moveTo(width/2, height/8-1);
+            path.lineTo(width-x1, height/8-1);
+            path.moveTo(width/2, 7*height/8+1);
+            path.lineTo(width-x1, 7*height/8+1);
+            path.moveTo(x2, height/4);
+            path.lineTo(width-x1, height/4);
+            path.moveTo(x2, 3*height/4);
+            path.lineTo(width-x1, 3*height/4);
+            path.moveTo(isInput?7*width/8:width/8, height/2);
+            path.lineTo(width-x1, height/2);
+            return path;
+        }
+
+        protected void paintWidget() {
+            Rectangle bounds = getImage().getBounds();
+            Graphics2D gr = getGraphics();
+            Paint oldPaint = gr.getPaint();
+            gr.setPaint(new GradientPaint(0,bounds.y+(bounds.height/6),getForeground().brighter().brighter(),0,bounds.y+(bounds.height/2),getForeground().brighter(),true));
+            gr.fill(getImage());
+            gr.setPaint(oldPaint);
+            super.paintWidget();
+        }
     }
 }

@@ -59,8 +59,7 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
     public static int BORDER_RADIUS = 3;
     private Object key = new Object();
     
-    private Image image;
-    private Image selectedImage;
+    private Object selectedImage;
     private boolean selected;
 
     /**
@@ -181,18 +180,22 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
         if(selected!=flag) {
             selected=flag;
             if(selectedImage!=null) 
-                super.setImage(selected ? selectedImage: image);
+                setImage(selectedImage);
             revalidate(true);
         }
     }
     
-    @Override
-    public final void setImage(Image image) {
-        super.setImage(image);
-        this.image = image;
+    public final void setImage(Object image) {
+        this.selectedImage = getImage();
+        if(selectedImage==null)
+            this.selectedImage = getImageWidget();
+        if(image instanceof Image)
+            super.setImage((Image)image);
+        if(image instanceof Widget)
+            super.setImage((Widget)image);
     }
 
-    public final void setSelectedImage(Image selectedImage) {
+    public final void setSelectedImage(Object selectedImage) {
         this.selectedImage = selectedImage;
     }
 

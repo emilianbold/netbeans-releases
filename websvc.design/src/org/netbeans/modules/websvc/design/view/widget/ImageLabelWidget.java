@@ -19,9 +19,15 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.Stroke;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -73,9 +79,10 @@ public class ImageLabelWidget extends Widget {
         setComment(comment);
     }
     
-    public void setLabel(String label) {
+    public final void setLabel(String label) {
         if(labelWidget==null) {
             labelWidget = new LabelWidget(getScene(),label);
+            labelWidget.setUseGlyphVector(true);
             labelWidget.setAlignment(LabelWidget.Alignment.CENTER);
             addChild(imageWidget==null||getChildren().isEmpty()?0:1,labelWidget,1);
         } else {
@@ -84,17 +91,32 @@ public class ImageLabelWidget extends Widget {
         labelWidget.setVisible(label!=null);
     }
     
-    public void setImage(Image image) {
+    public final void setImage(Image image) {
         if(imageWidget==null) {
             imageWidget = new ImageWidget(getScene(),image);
             addChild(0,imageWidget,1);
         } else {
             imageWidget.setImage(image);
+            imageWidget.removeChildren();
         }
         imageWidget.setVisible(image!=null);
     }
     
-    public void setComment(String comment) {
+    public final void setImage(Widget widget) {
+        if(imageWidget==null) {
+            imageWidget = new ImageWidget(getScene(),null);
+            addChild(0,imageWidget,1);
+        } else {
+            imageWidget.setImage(null);
+            imageWidget.removeChildren();
+        }
+        if(widget!=null) {
+            imageWidget.addChild(widget);
+        }
+        imageWidget.setVisible(widget!=null);
+    }
+    
+    public final void setComment(String comment) {
         if(commentWidget==null) {
             commentWidget = new LabelWidget(getScene(),comment);
             addChild(commentWidget,1);
@@ -105,19 +127,24 @@ public class ImageLabelWidget extends Widget {
         commentWidget.setVisible(comment!=null);
     }
     
-    public String getLabel() {
+    public final String getLabel() {
         return labelWidget==null?null:labelWidget.getLabel();
     }
     
-    public Image getImage() {
+    public final Image getImage() {
         return imageWidget==null?null:imageWidget.getImage();
     }
     
-    public String getComment() {
+    protected final Widget getImageWidget() {
+        return imageWidget==null||imageWidget.getChildren().isEmpty()?null:
+            imageWidget.getChildren().get(0);
+    }
+    
+    public final String getComment() {
         return commentWidget==null?null:commentWidget.getLabel();
     }
     
-    public boolean isPaintAsDisabled() {
+    public final boolean isPaintAsDisabled() {
         if(labelWidget!=null) {
             return labelWidget.isPaintAsDisabled();
         }
@@ -130,7 +157,7 @@ public class ImageLabelWidget extends Widget {
         return false;
     }
     
-    public void setPaintAsDisabled(boolean flag) {
+    public final void setPaintAsDisabled(boolean flag) {
         if(labelWidget!=null) {
             labelWidget.setPaintAsDisabled(flag);
         }
@@ -142,7 +169,7 @@ public class ImageLabelWidget extends Widget {
         }
     }
     
-    public void setLabelForeground(Color forground) {
+    public final void setLabelForeground(Color forground) {
         if(labelWidget!=null) {
             labelWidget.setForeground(forground);
         }
@@ -151,11 +178,11 @@ public class ImageLabelWidget extends Widget {
         }
     }
     
-    public void setLabelFont(Font font) {
+    public final void setLabelFont(Font font) {
         labelWidget.setFont(font);
     }
     
-    public void setLabelEditor(TextFieldInplaceEditor editor) {
+    public final void setLabelEditor(TextFieldInplaceEditor editor) {
         if (this.editor!=null) {
             throw new IllegalStateException("An editor is already specified.");
         }
@@ -163,11 +190,11 @@ public class ImageLabelWidget extends Widget {
         getActions().addAction(ActionFactory.createInplaceEditorAction(editor));
     }
     
-    public boolean isEditable() {
+    public final boolean isEditable() {
         return editor!=null && editor.isEnabled(this);
     }
 
-    protected LabelWidget getLabelWidget() {
+    protected final LabelWidget getLabelWidget() {
         return labelWidget;
     }
     
@@ -181,4 +208,42 @@ public class ImageLabelWidget extends Widget {
     }
 
     public static final int DEFAULT_GAP = 4;
+    
+    public static abstract class PaintableImageWidget extends Widget {
+        
+        private static final Stroke STROKE = new BasicStroke(1.0F, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
+
+        private Shape shape;
+
+        public PaintableImageWidget(Scene scene, Color color, 
+                int preferredWidth, int preferredHeight) {
+            super(scene);
+            setPreferredSize(new Dimension(preferredWidth,preferredHeight));
+            setForeground(color);
+        }
+
+        protected abstract Shape createImage(int width, int height);
+
+        protected final Shape getImage() {
+            if (shape==null) {
+                shape = createImage(getBounds().width, getBounds().height);
+            }
+            return shape;
+        }
+
+        protected Stroke getImageStroke() {
+            return STROKE;
+        }
+
+        protected void paintWidget() {
+            Graphics2D gr = getGraphics();
+            Stroke previousStroke = gr.getStroke();
+            Paint oldPaint = gr.getPaint();
+            gr.setStroke(getImageStroke());
+            gr.setPaint(getForeground());
+            gr.draw(getImage());
+            gr.setStroke(previousStroke);
+            gr.setPaint(oldPaint);
+        }
+    }
 }

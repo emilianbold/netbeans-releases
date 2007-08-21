@@ -21,19 +21,19 @@ package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.geom.GeneralPath;
-import java.awt.image.BufferedImage;
 import java.util.Collections;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
@@ -51,12 +51,12 @@ import org.openide.util.Utilities;
  */
 public class OperationWidget extends AbstractTitledWidget {
     
-    private static final Image IMAGE_ONE_WAY  = Utilities.loadImage
-            ("org/netbeans/modules/websvc/design/view/resources/oneway_operation.png"); // NOI18N   
-    private static final Image IMAGE_REQUEST_RESPONSE  = Utilities.loadImage
-            ("org/netbeans/modules/websvc/design/view/resources/requestresponse_operation.png"); // NOI18N   
-    private static final Image IMAGE_NOTIFICATION  = Utilities.loadImage
-            ("org/netbeans/modules/websvc/design/view/resources/notification_operation.png"); // NOI18N   
+    private static final String IMAGE_ONE_WAY  = 
+            "org/netbeans/modules/websvc/design/view/resources/oneway_operation.png"; // NOI18N   
+    private static final String IMAGE_REQUEST_RESPONSE  = 
+            "org/netbeans/modules/websvc/design/view/resources/requestresponse_operation.png"; // NOI18N   
+    private static final String IMAGE_NOTIFICATION  = 
+            "org/netbeans/modules/websvc/design/view/resources/notification_operation.png"; // NOI18N   
 
     private Service service;
     private MethodModel operation;
@@ -108,13 +108,13 @@ public class OperationWidget extends AbstractTitledWidget {
         Image image = null;
         if(operation.isOneWay()) {
             typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_OneWay");
-            image = IMAGE_ONE_WAY;
+            image = Utilities.loadImage(IMAGE_ONE_WAY);
         } else if (!operation.getParams().isEmpty()) {
             typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_RequestResponse");
-            image = IMAGE_REQUEST_RESPONSE;
+            image = Utilities.loadImage(IMAGE_REQUEST_RESPONSE);
         } else {
             typeOfOperation = NbBundle.getMessage(OperationWidget.class, "LBL_Notification");
-            image = IMAGE_NOTIFICATION;
+            image = Utilities.loadImage(IMAGE_NOTIFICATION);
         }
         headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getOperationName()) {
             private Object key = new Object();
@@ -151,9 +151,10 @@ public class OperationWidget extends AbstractTitledWidget {
 
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
-                LayoutFactory.SerialAlignment.JUSTIFY, 8));
-        viewButton = new ButtonWidget(getScene(),IMAGE_TABBED,null);
-        viewButton.setSelectedImage(IMAGE_LIST);
+                LayoutFactory.SerialAlignment.CENTER, 8));
+        viewButton = new ButtonWidget(getScene(),null,null);
+        viewButton.setImage(new TabImageWidget(getScene(),16));
+        viewButton.setSelectedImage(new ListImageWidget(getScene(),16));
         viewButton.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 setTabbedView(!viewButton.isSelected());
@@ -162,7 +163,8 @@ public class OperationWidget extends AbstractTitledWidget {
         buttons.addChild(viewButton);
 
         for(final SampleMessageWidget.Type type:SampleMessageWidget.Type.values()) {
-            final ButtonWidget sampleButton = new ButtonWidget(getScene(), type.getIcon());
+            final ButtonWidget sampleButton = new ButtonWidget(getScene(), null, null);
+            sampleButton.setImage(type.getIcon(getScene()));
             sampleButton.setAction(new AbstractAction() {
                 SampleMessageWidget messageWidget;
                 public void actionPerformed(ActionEvent arg0) {
@@ -255,46 +257,49 @@ public class OperationWidget extends AbstractTitledWidget {
         }
     }
 
-    /** The expand button image. */
-    private static final Image IMAGE_TABBED = new BufferedImage(12, 12,
-            BufferedImage.TYPE_INT_ARGB);
-    /** The collapse button image. */
-    private static final Image IMAGE_LIST = new BufferedImage(12, 12,
-            BufferedImage.TYPE_INT_ARGB);
+    private static class ListImageWidget extends ImageLabelWidget.PaintableImageWidget {
 
-    static {
+        public ListImageWidget(Scene scene, int size) {
+            super(scene, Color.LIGHT_GRAY, size, size);
+            setBorder(BorderFactory.createLineBorder(0, Color.LIGHT_GRAY));
+            setBackground(Color.WHITE);
+            setOpaque(true);
+        }
 
-        // Create the expand image.
-        Graphics2D g2 = ((BufferedImage) IMAGE_TABBED).createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        float w = IMAGE_TABBED.getWidth(null);
-        float h = IMAGE_TABBED.getHeight(null);
-        GeneralPath gp = new GeneralPath();
-        gp.moveTo(0, 0);
-        gp.lineTo(w/2, 0);
-        gp.lineTo(w/2, h/4);
-        gp.lineTo(w, h/4);
-        gp.lineTo(w, h);
-        gp.lineTo(0, h);
-        gp.closePath();
-        g2.translate(0, 0 );
-        g2.setPaint(new Color(0x888888));
-        g2.fill(gp);
-
-        // Create the collapse image.
-        g2 = ((BufferedImage) IMAGE_LIST).createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        w = IMAGE_LIST.getWidth(null);
-        h = IMAGE_LIST.getHeight(null);
-        g2.translate(0, 0);
-        g2.setPaint(new Color(0x888888));
-        g2.drawLine(0, (int)h/4, 1, (int)h/4);
-        g2.drawLine(3, (int)h/4, (int)w, (int)h/4);
-        g2.drawLine(0, (int)h/2, 1,(int)h/2);
-        g2.drawLine(3, (int)h/2, (int)w, (int)h/2);
-        g2.drawLine(0, (int)(3*h/4), 1, (int)(3*h/4));
-        g2.drawLine(3, (int)(3*h/4), (int)w, (int)(3*h/4));
+        protected Shape createImage(int width, int height) {
+            GeneralPath path = new GeneralPath();
+            float gap = width/5;
+            path.moveTo(gap, height/4);
+            path.lineTo(width-gap, height/4);
+            path.moveTo(gap, height/2);
+            path.lineTo(width-gap, height/2);
+            path.moveTo(gap, 3*height/4);
+            path.lineTo(width-2*gap, 3*height/4);
+            return path;
+        }
     }
+
+    private static class TabImageWidget extends ImageLabelWidget.PaintableImageWidget {
+
+        public TabImageWidget(Scene scene, int size) {
+            super(scene, Color.LIGHT_GRAY, size, size);
+            setBorder(BorderFactory.createLineBorder(0, Color.LIGHT_GRAY));
+            setBackground(Color.WHITE);
+            setOpaque(true);
+        }
+
+        protected Shape createImage(int width, int height) {
+            GeneralPath path = new GeneralPath();
+            path.moveTo(1, height/6);
+            path.lineTo(2*width/3, height/6);
+            path.moveTo(1, height/3+1);
+            path.lineTo(width-1, height/3+1);
+            path.moveTo(width/3, height/6+1);
+            path.lineTo(width/3, height/3);
+            path.moveTo(2*width/3, height/6+1);
+            path.lineTo(2*width/3, height/3);
+            return path;
+        }
+    }
+
 }

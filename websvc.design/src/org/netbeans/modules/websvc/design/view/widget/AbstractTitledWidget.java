@@ -199,7 +199,7 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
                 collapseWidget();
             }
             getScene().validate();
-            expander.setExpanded(expanded);
+            expander.setSelected(expanded);
         }
     }
     

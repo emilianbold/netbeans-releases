@@ -146,7 +146,7 @@ public class OperationsWidget extends AbstractTitledWidget {
         
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
-                LayoutFactory.SerialAlignment.JUSTIFY, 8));
+                LayoutFactory.SerialAlignment.CENTER, 8));
         
         ButtonWidget addButton = new ButtonWidget(getScene(), addAction);
         addButton.setOpaque(true);

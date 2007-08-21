@@ -30,15 +30,11 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * @author Ajit Bhate
  */
 public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
-    
-//    private static final Image IMAGE  = Utilities.loadImage
-//            ("org/netbeans/modules/websvc/design/view/resources/fault.png"); // NOI18N   
 
     private MethodModel method;
 
@@ -78,7 +74,7 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
 
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
-                LayoutFactory.SerialAlignment.JUSTIFY, 8));
+                LayoutFactory.SerialAlignment.CENTER, 8));
 
         buttons.addChild(getExpanderWidget());
 
@@ -107,7 +103,8 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
 
     public Image getIcon() {
         return null;
-        //return IMAGE;
+//        return Utilities.loadImage
+//            ("org/netbeans/modules/websvc/design/view/resources/fault.png"); // NOI18N
     }
 
     public Widget getComponentWidget() {
