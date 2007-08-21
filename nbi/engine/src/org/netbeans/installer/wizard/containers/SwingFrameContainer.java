@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -367,7 +367,9 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             // we might fail here with a custom security manager (e.g. the netbeans
             // one); in this case just log the exception and "let it be" (c)
             ErrorManager.notifyDebug(
-                    "Cannot set the default close operation", 
+                    ResourceUtils.getString(
+                    SwingFrameContainer.class,
+                    RESOURCE_ERROR_SET_CLOSE_OPERATION),
                     e);
         }
         
@@ -840,7 +842,8 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      */
     private static final String RESOURCE_FAILED_TO_DOWNLOAD_WIZARD_ICON =
             "SFC.error.failed.to.download.icon"; // NOI18N
-    
+    private static final String RESOURCE_ERROR_SET_CLOSE_OPERATION =
+            "SFC.error.close.operation"; //NOI18N
     /**
      * Name of the {@link AbstractAction} which is invoked when the user presses the
      * <code>Escape</code> button.
