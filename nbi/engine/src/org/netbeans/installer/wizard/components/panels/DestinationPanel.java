@@ -63,7 +63,7 @@ public class DestinationPanel extends ErrorMessagePanel {
         setProperty(DESTINATION_LABEL_TEXT_PROPERTY,
                 DEFAULT_DESTINATION_LABEL_TEXT);
         setProperty(DESTINATION_BUTTON_TEXT_PROPERTY,
-                DEFAULT_DESTINATION_BUTTON_TEXT);        
+                DEFAULT_DESTINATION_BUTTON_TEXT);
         setProperty(ERROR_NULL_PROPERTY,
                 DEFAULT_ERROR_NULL);
         setProperty(ERROR_NOT_VALID_PROPERTY,
@@ -86,6 +86,10 @@ public class DestinationPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NOT_ENDS_WITH_APP);
         setProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY,
                 DEFAULT_ERROR_NOT_ENOUGH_SPACE);
+        setProperty(ERROR_CANNOT_GET_LOGIC_PROPERTY,
+                DEFAULT_ERROR_CANNOT_GET_LOGIC);
+        setProperty(ERROR_CANNOT_CHECK_SPACE_PROPERTY,
+                DEFAULT_ERROR_CANNOT_CHECK_SPACE);
     }
     
     @Override
@@ -187,7 +191,9 @@ public class DestinationPanel extends ErrorMessagePanel {
                     }
                 }
             } catch (InitializationException e) {
-                ErrorManager.notifyError("Cannot obtain confguration logic", e);
+                ErrorManager.notifyError(
+                        component.getProperty(ERROR_CANNOT_GET_LOGIC_PROPERTY),
+                        e);
             }
             
             destinationField.setText(destination);
@@ -206,7 +212,7 @@ public class DestinationPanel extends ErrorMessagePanel {
                         value);
             } catch (IOException e) {
                 ErrorManager.notifyError(
-                        "Cannot canonize path, which is strange",
+                        component.getProperty(ERROR_CANNOT_CANONIZE_PROPERTY),
                         e);
             }
         }
@@ -309,9 +315,11 @@ public class DestinationPanel extends ErrorMessagePanel {
                             StringUtils.formatSize(requiredSize - availableSize));
                 }
             } catch (InitializationException e) {
-                ErrorManager.notifyError("Cannot obtain configuration logic", e);
+                ErrorManager.notifyError(component.getProperty(
+                        ERROR_CANNOT_GET_LOGIC_PROPERTY), e);
             } catch (NativeException e) {
-                ErrorManager.notifyError("Cannot calculate free disk space", e);
+                ErrorManager.notifyError(component.getProperty(
+                        ERROR_CANNOT_CHECK_SPACE_PROPERTY), e);
             }
             
             return null;
@@ -416,7 +424,8 @@ public class DestinationPanel extends ErrorMessagePanel {
                             suffix).getAbsolutePath();
                     
                 } catch (InitializationException e) {
-                    ErrorManager.notifyError("Cannot obtain confguration logic", e);
+                    ErrorManager.notifyError(component.getProperty(
+                            ERROR_CANNOT_GET_LOGIC_PROPERTY), e);
                 }
                 
                 destinationField.setText(newDestination);
@@ -469,6 +478,10 @@ public class DestinationPanel extends ErrorMessagePanel {
             "error.not.ends.with.app"; // NOI18N
     public static final String ERROR_NOT_ENOUGH_SPACE_PROPERTY =
             "error.not.enough.space"; // NOI18N
+    public static final String ERROR_CANNOT_GET_LOGIC_PROPERTY =
+            "error.cannot.get.logic";//NOI18N
+    public static final String ERROR_CANNOT_CHECK_SPACE_PROPERTY =
+            "error.cannot.check.space"; // NOI18N
     
     public static final String DEFAULT_ERROR_NULL =
             ResourceUtils.getString(DestinationPanel.class,
@@ -503,6 +516,12 @@ public class DestinationPanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_NOT_ENOUGH_SPACE =
             ResourceUtils.getString(DestinationPanel.class,
             "DP.error.not.enough.space"); // NOI18N
+    public static final String DEFAULT_ERROR_CANNOT_GET_LOGIC =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.cannot.get.logic"); // NOI18N
+    public static final String DEFAULT_ERROR_CANNOT_CHECK_SPACE =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.cannot.check.space"); // NOI18N
     
     public static final String DEFAULT_DESTINATION =
             ResourceUtils.getString(DestinationPanel.class,
