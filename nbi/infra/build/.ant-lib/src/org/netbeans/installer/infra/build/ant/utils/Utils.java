@@ -285,7 +285,7 @@ public final class Utils {
         final String name = file.getName();
         if(name.endsWith(".jar")) {
             File jad = new File(file.getParent(),
-                    name.substring(1, name.length()-4) + ".jad");
+                    name.substring(0, name.length()-4) + ".jad");
             if(jad.exists()) {
                 FileInputStream fis = new FileInputStream(jad);
                 String string = read(fis).toString();  
@@ -297,9 +297,9 @@ public final class Utils {
                     final long size = new Long(matcher.group(1)).longValue();
                     final long realSize = file.length();
                     if(realSize!=size) {
-                        System.out.println("java descriptor file exist : " + jad);
-                        System.out.println("expected jar size : " + size);
-                        System.out.println("real jar size : " + realSize);
+                        System.out.println("... java descriptor file exist : " + jad);
+                        System.out.println("... expected jar size : " + size);
+                        System.out.println("... real jar size : " + realSize);
                         return false;
                     }
                 }
