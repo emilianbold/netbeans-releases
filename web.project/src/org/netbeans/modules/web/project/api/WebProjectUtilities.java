@@ -633,7 +633,8 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.DIST_JAVADOC_DIR, "${"+WebProjectProperties.DIST_DIR+"}/javadoc"); // NOI18N
         ep.setProperty(WebProjectProperties.NO_DEPENDENCIES, "false"); // NOI18N
         ep.setProperty(WebProjectProperties.JAVA_PLATFORM, "default_platform"); // NOI18N
-        ep.setProperty(WebProjectProperties.DEBUG_CLASSPATH, "${"+WebProjectProperties.JAVAC_CLASSPATH+"}:${"+WebProjectProperties.BUILD_CLASSES_DIR+"}:${"+WebProjectProperties.BUILD_EAR_CLASSES_DIR+"}"); // NOI18N
+        // #113297
+        ep.setProperty(WebProjectProperties.DEBUG_CLASSPATH, "${build.classes.dir.real}:${"+WebProjectProperties.JAVAC_CLASSPATH+"}:${"+WebProjectProperties.J2EE_PLATFORM_CLASSPATH+"}"); // NOI18N
         
         ep.setProperty("runmain.jvmargs", ""); // NOI18N
         ep.setComment("runmain.jvmargs", new String[] { // NOI18N

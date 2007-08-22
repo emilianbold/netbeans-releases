@@ -294,6 +294,7 @@ introduced by support for multiple source roots. -jglick
                         <xsl:attribute name="default">${build.classes.dir.real}</xsl:attribute>
                     </attribute>
                     <attribute>
+                        <!-- CAUTION: while changing classpath DO change debug.classpath as well - see #113297 -->
                         <xsl:attribute name="name">classpath</xsl:attribute>
                         <xsl:attribute name="default">${javac.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     </attribute>
