@@ -12,7 +12,11 @@
          "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-       
+    <tocitem text="IDE Basics">
+        <tocitem text="Getting Started">
+                <tocitem text="Enterprise Applications" target="ent_app_process" />
+        </tocitem>
+    </tocitem>       
     <tocitem text="Java Applications">
         <tocitem text="Refactoring Java Source">
             <tocitem text="Refactoring an Enterprise Bean" target="refactor_ejb"></tocitem>
