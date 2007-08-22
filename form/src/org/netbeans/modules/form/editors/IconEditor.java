@@ -78,7 +78,6 @@ public class IconEditor extends PropertyEditorSupport
 
     //private FormModel formModel;
     private FileObject sourceFile;
-    private CustomIconEditor customEditor;
 
     public void setValue(Object value) {
         if (sameValue(value, getValue()))
@@ -97,9 +96,6 @@ public class IconEditor extends PropertyEditorSupport
                 setCurrentPackage(getDefaultResourcePackage());
         }
         super.setValue(value);
-
-        if (customEditor != null)
-            customEditor.setValue(nbIcon);
 
         currentFiles = null; // hack - reset sometimes to read new folder content
     }
@@ -193,10 +189,9 @@ public class IconEditor extends PropertyEditorSupport
     }
     
     public Component getCustomEditor() {
-        if (customEditor == null) {
-            customEditor = new CustomIconEditor(this);
-        }
+        CustomIconEditor customEditor = new CustomIconEditor(this);
         customEditor.setValue((NbImageIcon)getValue());
+        currentFiles = null; // hack - reset sometimes to read new folder content
         return customEditor;
     }
 
