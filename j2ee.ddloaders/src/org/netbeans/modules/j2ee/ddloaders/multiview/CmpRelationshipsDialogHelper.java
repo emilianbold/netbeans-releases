@@ -64,15 +64,11 @@ public class CmpRelationshipsDialogHelper {
         private JCheckBox createCmrFieldCheckBox;
         private JTextField fieldNameTextField;
         private JComboBox fieldTypeComboBox;
-        private JCheckBox getterCheckBox;
-        private JCheckBox setterCheckBox;
 
         private String origEjbName;
         private String origFieldName;
         private String origFieldType;
         private EntityHelper origEntityHelper;
-//        protected Method origGetterMethod;
-//        protected Method origSetterMethod;
         protected boolean origGetter;
         protected boolean origSetter;
 
@@ -80,8 +76,6 @@ public class CmpRelationshipsDialogHelper {
 
         private String lastFieldName;
         private String lastFieldType = CLASS_COLLECTION;
-        private boolean lastGetter = true;
-        private boolean lastSetter = true;
         private boolean createCmrFieldChanged = true;
 
         private void init() {
@@ -115,62 +109,6 @@ public class CmpRelationshipsDialogHelper {
                 fieldType = null;
                 helper.setCmrField(null);
             }
-            boolean getter = hasGetter();
-            boolean setter = hasSetter();
-            boolean ejbNameChanged = !equal(origEjbName, ejbName);
-            boolean fieldChanged = !equal(origFieldName, fieldName) || !equal(origFieldType, fieldType);
-            boolean getterChanged = origGetter != getter || fieldChanged;
-            boolean setterChanged = origSetter != setter || fieldChanged;
-            if (ejbNameChanged || fieldChanged || getterChanged || setterChanged) {
-                if (origEntityHelper != null) {
-//                    if (getterChanged) {
-//                        Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origGetterMethod);
-//                    }
-//                    if (setterChanged) {
-//                        Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origSetterMethod);
-//                    }
-//                    if (fieldChanged) {
-//                        JavaClass beanClass = origEntityHelper.getBeanClass();
-//                        Utils.removeMethod(beanClass, origGetterMethod);
-//                        Utils.removeMethod(beanClass, origSetterMethod);
-//                    }
-                }
-                if (fieldName != null) {
-                    EntityHelper entityHelper;
-                    if (ejbNameChanged) {
-                        Entity entity = getEntity(ejbName);
-                        entityHelper = entity == null ? null : dataObject.getEntityHelper(entity);
-                    } else {
-                        entityHelper = origEntityHelper;
-                    }
-                    if (entityHelper != null) {
-                        EntityMethodController entityMethodController = entityHelper.getEntityMethodController();
-//                        entityMethodController.beginWriteJmiTransaction();
-//                        boolean rollback = true;
-//                        try {
-//                            String typeName = fieldType == null ? getEntity(opositeEjbName).getLocal() : fieldType;
-//                            Type type = JMIUtils.resolveType(typeName);
-//                            Method getterMethod = entityHelper.getGetterMethod(fieldName);
-//                            if (getterMethod == null) {
-//                                getterMethod = entityHelper.createAccessMethod(fieldName, type, true);
-//                            }
-//                            Method setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
-//                            if (setterMethod == null) {
-//                                setterMethod = entityHelper.createAccessMethod(fieldName, type, false);
-//                            }
-//                            if (getter && getterChanged) {
-//                                entityMethodController.addMethod(getterMethod, true, true);
-//                            }
-//                            if (setter && setterChanged) {
-//                                entityMethodController.addMethod(setterMethod, true, true);
-//                            }
-//                            rollback = false;
-//                        } finally {
-//                            entityMethodController.endWriteJmiTransaction(rollback);
-//                        }
-                    }
-                }
-            }
         }
 
         private boolean equal(String s1, String s2) {
@@ -199,14 +137,6 @@ public class CmpRelationshipsDialogHelper {
 
         private boolean isCreateCmrField() {
             return createCmrFieldCheckBox.isSelected();
-        }
-
-        private boolean hasSetter() {
-            return setterCheckBox.isSelected();
-        }
-
-        private boolean hasGetter() {
-            return getterCheckBox.isSelected();
         }
 
         private String getFieldType() {
@@ -257,15 +187,6 @@ public class CmpRelationshipsDialogHelper {
                 origFieldName = field.getCmrFieldName();
                 origFieldType = field.getCmrFieldType();
                 if (origEntityHelper != null) {
-////                    origGetterMethod = origEntityHelper.getGetterMethod(origFieldName);
-////                    origSetterMethod = origEntityHelper.getSetterMethod(origFieldName, origGetterMethod);
-////                    JavaClass localBusinessInterfaceClass = origEntityHelper.getLocalBusinessInterfaceClass();
-//                    origGetter = Utils.getMethod(localBusinessInterfaceClass, origGetterMethod) != null;
-//                    origSetter = Utils.getMethod(localBusinessInterfaceClass, origSetterMethod) != null;
-                    lastGetter = origGetter;
-                    lastSetter = origSetter;
-                    setLocalGetter(origGetter);
-                    setLocalSetter(origSetter);
                 }
                 setCreateCmrField(true);
                 setFieldName(origFieldName);
@@ -273,13 +194,6 @@ public class CmpRelationshipsDialogHelper {
             }
         }
 
-        private void setLocalSetter(boolean setter) {
-            setterCheckBox.setSelected(setter);
-        }
-
-        private void setLocalGetter(boolean getter) {
-            getterCheckBox.setSelected(getter);
-        }
 
         private void setCreateCmrField(boolean selected) {
             createCmrFieldCheckBox.setSelected(selected);
@@ -306,22 +220,12 @@ public class CmpRelationshipsDialogHelper {
                         setFieldName(lastFieldName);
                     }
                     fieldNameTextField.setEnabled(true);
-                    setLocalGetter(lastGetter);
-                    getterCheckBox.setEnabled(true);
-                    setLocalSetter(lastSetter);
-                    setterCheckBox.setEnabled(true);
                 } else {
-                    lastGetter = getterCheckBox.isSelected();
-                    lastSetter = setterCheckBox.isSelected();
                     if (fieldName.length() > 0) {
                         lastFieldName = fieldName;
                     }
                     setFieldName(null);
                     fieldNameTextField.setEnabled(false);
-                    setLocalGetter(false);
-                    getterCheckBox.setEnabled(false);
-                    setLocalSetter(false);
-                    setterCheckBox.setEnabled(false);
                 }
             }
             boolean opositeMultiple = opositeRole.isMultiple();
@@ -468,8 +372,6 @@ public class CmpRelationshipsDialogHelper {
         roleA.createCmrFieldCheckBox = form.getCreateCmrFieldCheckBox();
         roleA.fieldNameTextField = form.getFieldNameTextField();
         roleA.fieldTypeComboBox = form.getFieldTypeComboBox();
-        roleA.getterCheckBox = form.getGetterCheckBox();
-        roleA.setterCheckBox = form.getSetterCheckBox();
         roleA.init();
 
         roleB.roleNameTextField = form.getRoleNameTextField2();
@@ -480,8 +382,6 @@ public class CmpRelationshipsDialogHelper {
         roleB.createCmrFieldCheckBox = form.getCreateCmrFieldCheckBox2();
         roleB.fieldNameTextField = form.getFieldNameTextField2();
         roleB.fieldTypeComboBox = form.getFieldTypeComboBox2();
-        roleB.getterCheckBox = form.getGetterCheckBox2();
-        roleB.setterCheckBox = form.getSetterCheckBox2();
         roleB.init();
         return form;
     }
