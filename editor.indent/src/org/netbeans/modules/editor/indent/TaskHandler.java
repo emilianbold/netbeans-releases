@@ -133,6 +133,28 @@ public final class TaskHandler {
                 }
             }
         }
+
+        // HACK TODO PENDING WORKAROUND
+        // Temporary Workaround: the HTML formatter clobbers the Ruby formatter's
+        // work so make sure the Ruby formatter gets to work last in RHTML files
+        if (items != null && "application/x-httpd-eruby".equals(mimeType)) {
+            // Copy list, except for Ruby element, which we then add at the end
+            List<MimeItem> newItems = new ArrayList<MimeItem>(items.size());
+            MimeItem rubyItem = null;
+            for (MimeItem item : items) {
+                if (item.mimePath().getPath().equals("text/x-ruby")) { // NOI18N
+                    rubyItem = item;
+                } else {
+                    newItems.add(item);
+                }
+            }
+            if (rubyItem != null) {
+                newItems.add(rubyItem);
+            }
+            items = newItems;
+        }
+
+
         return (items != null);
     }
     
