@@ -24,19 +24,16 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.lookup.Lookups;
 
 public final class CndOptionsPanelController extends OptionsPanelController implements LookupListener {
 
     private OptionsPanelController[] controllers = new OptionsPanelController[0];
-    private Lookup.Result res = null;
+    private Lookup.Result<OptionsPanelController> res = null;
     private boolean inited = false;
     private CndOptionsPanel component = null;
     public CndOptionsPanelController() {
@@ -111,21 +108,14 @@ public final class CndOptionsPanelController extends OptionsPanelController impl
     }
 
     private OptionsPanelController[] findEmbeddedControllers() {
-        Collection out = Collections.EMPTY_LIST;
+        Collection<? extends OptionsPanelController> out = Collections.<OptionsPanelController>emptyList();
         if (res == null) { // init and remember
-            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
-            FileObject cndOptionsFolder = root.getFileObject(CND_OPTIONS_FOLDER_IN_SYSTEM_FILESYSTEM);        
-            if (cndOptionsFolder != null) {
-                DataFolder dataFolder = DataFolder.findFolder(cndOptionsFolder);
-                FolderLookup lkp = new FolderLookup(dataFolder);
-                res = lkp.getLookup().lookup(new Lookup.Template(OptionsPanelController.class));
-                res.addLookupListener(this);
-            }
+            res = Lookups.forPath(CND_OPTIONS_FOLDER_IN_SYSTEM_FILESYSTEM).lookupResult(OptionsPanelController.class);
         }
         if (res != null) {
             out = res.allInstances();
         }
-        return (OptionsPanelController[])out.toArray(new OptionsPanelController[out.size()]);
+        return out.toArray(new OptionsPanelController[out.size()]);
     }    
     
     public void resultChanged(LookupEvent ev) {
