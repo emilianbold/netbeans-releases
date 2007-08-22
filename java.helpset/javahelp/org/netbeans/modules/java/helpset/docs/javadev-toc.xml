@@ -5,6 +5,11 @@
 -->
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN" "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 <toc version="2.0">
+    <tocitem text="IDE Basics">
+        <tocitem text="Getting Started">
+                <tocitem text="Java Applications" target="proj_process" />
+        </tocitem>
+    </tocitem>
     <tocitem text="Java Applications"  expand="false">
     <tocitem text="Java Project Setup and Configuration" >
     <tocitem text="About Projects" target="proj_about" />
