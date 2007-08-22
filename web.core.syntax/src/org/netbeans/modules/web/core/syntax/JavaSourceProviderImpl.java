@@ -50,7 +50,7 @@ public class JavaSourceProviderImpl implements JavaSourceProvider {
             return false;
         }
         
-        return "jsp".equals(file.getExt()); //NOI18N
+        return "text/x-jsp".equals(file.getMIMEType()); //NOI18N
     }
     
     public PositionTranslatingJavaFileFilterImplementation forFileObject(FileObject file) {
