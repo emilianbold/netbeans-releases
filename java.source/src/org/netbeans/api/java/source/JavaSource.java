@@ -221,7 +221,10 @@ public final class JavaSource {
      */
     private static Map<Phase, String> phase2Message = new HashMap<Phase,String> ();
     
-    private static final Object INTERNAL_LOCK = new Object ();
+    
+    private static class InternalLock {};
+    
+    private static final Object INTERNAL_LOCK = new InternalLock ();
     
     /**
      * Init the maps
