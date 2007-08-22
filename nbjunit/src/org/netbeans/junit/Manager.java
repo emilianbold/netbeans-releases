@@ -221,8 +221,4 @@ public class Manager extends Object {
         }
         return file;
     }
-    
-    private static File shortenNames(File f) {
-        return f;
-    }
 }
