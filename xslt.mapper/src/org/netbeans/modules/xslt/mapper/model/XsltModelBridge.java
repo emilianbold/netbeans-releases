@@ -105,7 +105,14 @@ public class XsltModelBridge extends ModelBridge implements IMapperListener {
 
             //check if owner node has graph connected
             if (!owner.getPreviousNodes().isEmpty()) {
-                Node rootNode = owner.getPreviousNodes().get(0);
+                Node rootNode = null;
+                for (Node n: owner.getPreviousNodes()){
+                    if (n != null){
+                        rootNode = n;
+                        break;
+                    }
+                }
+             
                 if (rootNode != null) {
                     /*
                      * If yes, accept visitor on root element of this graph.

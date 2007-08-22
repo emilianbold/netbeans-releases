@@ -109,12 +109,19 @@ public class DiagramBuilder {
         //first check, if current node is already connected to any graph
         List<Node> upstreams = tree_node.getPreviousNodes();
 
+        Node upstream = null;
+        for (Node n : upstreams ){
+            if (n != null){
+                upstream = n;
+                break;
+            }
+        }
 
         XPathExpression current_expr = null;
 
         if (reuse) {
             if (!upstreams.isEmpty() && reuse) {
-                Node upstream = upstreams.get(0);
+
                 if (upstream != null) {
                     BuildExpressionVisitor visitor_be = new BuildExpressionVisitor(mapper.getContext());
 
