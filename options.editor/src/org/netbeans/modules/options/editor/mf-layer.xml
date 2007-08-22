@@ -33,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Defaults" url="../colors/AllLanguagesExample"/>
         </folder>
         <folder name="Actions">
+            <attr name="position" intvalue="0"/>
             <folder name="Edit">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.options.editor.Bundle"/>
                 <file name="start-macro-recording"/>
