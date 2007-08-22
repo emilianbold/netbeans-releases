@@ -108,7 +108,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         updateModel ();
     }
 
-    void destroy () {
+    synchronized void destroy () {
         DebuggerManager.getDebuggerManager ().removeDebuggerListener (
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
@@ -200,7 +200,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         refreshModel();
     }
     
-    private void refreshModel() {
+    private synchronized void refreshModel() {
         models.clear();
         models.add(treeModels);
         models.add(treeModelFilters);
