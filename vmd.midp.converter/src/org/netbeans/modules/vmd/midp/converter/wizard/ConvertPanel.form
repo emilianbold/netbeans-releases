@@ -30,7 +30,6 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="finishMessage" alignment="0" pref="476" max="32767" attributes="0"/>
                   <Component id="jSeparator1" alignment="0" pref="476" max="32767" attributes="0"/>
                   <Component id="progress" alignment="0" pref="476" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
@@ -43,6 +42,11 @@
                           <Component id="inputFileName" pref="337" max="32767" attributes="0"/>
                           <Component id="outputFileName" alignment="0" pref="337" max="32767" attributes="0"/>
                       </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="finishIcon" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="finishMessage" pref="470" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -67,7 +71,10 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="progress" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="finishMessage" pref="290" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="finishIcon" min="-2" max="-2" attributes="0"/>
+                  <Component id="finishMessage" pref="290" max="32767" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -126,6 +133,10 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator1">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JProgressBar" name="progress">
       <Properties>
@@ -135,6 +146,13 @@
     <Component class="javax.swing.JLabel" name="finishMessage">
       <Properties>
         <Property name="verticalAlignment" type="int" value="1"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="finishIcon">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/vmd/midp/converter/wizard/Bundle.properties" key="ConvertPanel.finishIcon.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
   </SubComponents>

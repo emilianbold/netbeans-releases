@@ -21,9 +21,10 @@ package org.netbeans.modules.vmd.midp.converter.wizard;
 
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -43,6 +44,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
     /** Creates new form ConvertPanel */
     public ConvertPanel() {
         initComponents();
+        finishIcon.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/warning.gif"))); // NOI18N
         startButton.setDefaultCapable(true);
         startButton.addActionListener(this);
         finishButton.setDefaultCapable(true);
@@ -60,6 +62,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
         outputFileName.setText ("Converted" + inputPrimaryFile.getName ()); // NOI18N
         outputFileName.setEditable(true);
         progress.setIndeterminate(false);
+        finishIcon.setVisible (false);
         finishMessage.setText(NbBundle.getMessage (ConvertPanel.class, "MSG_ShownMessage")); // NOI18N
         startButton.setEnabled(true);
         descriptor.setOptions(new Object[] { startButton, DialogDescriptor.CANCEL_OPTION });
@@ -76,6 +79,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
     
     public void switchToFinished () {
         progress.setIndeterminate(false);
+        finishIcon.setVisible (true);
         finishMessage.setText(NbBundle.getMessage (ConvertPanel.class, "MSG_FinishMessage")); // NOI18N
         descriptor.setOptions(new Object[] { finishButton });
     }
@@ -92,9 +96,10 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
         inputFileName = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         outputFileName = new javax.swing.JTextField();
-        jSeparator1 = new javax.swing.JSeparator();
+        javax.swing.JSeparator jSeparator1 = new javax.swing.JSeparator();
         progress = new javax.swing.JProgressBar();
         finishMessage = new javax.swing.JLabel();
+        finishIcon = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(500, 400));
 
@@ -115,6 +120,8 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
 
         finishMessage.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
+        finishIcon.setText(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.finishIcon.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -122,7 +129,6 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, progress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
@@ -132,7 +138,11 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(inputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, outputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE))))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, outputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(finishIcon)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -151,7 +161,9 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(progress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(finishIcon)
+                    .add(finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -164,11 +176,11 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel finishIcon;
     private javax.swing.JLabel finishMessage;
     private javax.swing.JTextField inputFileName;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField outputFileName;
     private javax.swing.JProgressBar progress;
     // End of variables declaration//GEN-END:variables
