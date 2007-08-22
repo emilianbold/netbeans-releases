@@ -81,7 +81,9 @@ public class WsTesterPageAction extends CookieAction {
                                 try {
                                     httpConnection.setRequestMethod("GET"); //NOI18N
                                     httpConnection.connect();
-                                    if (HttpURLConnection.HTTP_OK == httpConnection.getResponseCode())
+                                    int responseCode = httpConnection.getResponseCode();
+                                    // for secured web services the response code is 405: we should allow to show the response
+                                    if (HttpURLConnection.HTTP_OK == responseCode || HttpURLConnection.HTTP_BAD_METHOD == responseCode)
                                         connectionOK=true;
                                 } catch (java.net.ConnectException ex) {
                                     // doing nothing - display warning
