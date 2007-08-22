@@ -46,6 +46,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -74,7 +75,6 @@ import junit.framework.TestResult;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.DifferenceListener;
 import org.custommonkey.xmlunit.IgnoreTextAndAttributeValuesDifferenceListener;
-import org.openide.util.Exceptions;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -180,7 +180,6 @@ public class ConfiguredTest extends TestCase {
         Properties testcasesProps = loadProperties("test/selected-tests.properties");
         String testCasesCSV = (String)testcasesProps.get("testcases");
         String [] testCaseNames = testCasesCSV.split(",");
-        List testCases = Arrays.asList(testCaseNames);
         
         junit.framework.TestSuite suite = new junit.framework.TestSuite();
         
@@ -194,14 +193,12 @@ public class ConfiguredTest extends TestCase {
             }
         };
         
-        File[] testCaseDirs = new File("test").listFiles(); // NOI18N
-        
         // We want to make sure we don't test the same test case more than once.
         // This is for backward compatibility. Some existing projects might have the 
         // same test case defined more than once in the selected-tests.properties 
         // file due to an old bug, which was forgiven previously when we didn't
         // keep the test case order.
-        Set processedTestCases = new HashSet();         
+        Set<String> processedTestCases = new HashSet<String>();         
         
         // We want to keep the order specified in the selected-tests.properties file
         for (int i = 0; i < testCaseNames.length; i++) { 
@@ -233,34 +230,7 @@ public class ConfiguredTest extends TestCase {
                 Properties testProps = loadProperties(testPropertiesFile);
                 testProps.put("testpropertiesfilename", testPropertiesFiles[testCnt].getName());
                 testProps.put("absoluteinputdir", inputDirAbsolutePath);
-                testProps.put("inputdirname", inputDirName);
-                
-//                            String userDir = null;
-//                            String suiteName = null;
-//                            suiteName = null;
-//                            String testSuitePath = null;
-//                            String cycle = null;
-//                            
-//                            String outputHome = System.getenv("BUILD_OUTPUT_HOME");
-//                            try {
-//                                if ( outputHome != null ) {
-//                                    userDir = System.getProperty("user.dir");
-//                                    suiteName = userDir.substring(userDir.indexOf("jbicomps") + 14);
-//                                    suiteName = suiteName.replace(File.separatorChar,'.');
-//                                    testSuitePath = System.getenv("BUILD_OUTPUT_HOME") + File.separator + "drivertest";
-//                                    //cycle = prop.getProperty("currentCycle");
-//                                    cycle = "dummy";
-//	                                
-//    	                            if ( firstTime ) {
-//    	                            	firstTime = false;
-//    	                            	initSuite(testSuitePath, suiteName);
-//    	                            }	    	
-//    	                            initTest(testSuitePath, suiteName, testName);
-//                            	}
-//	                    	                            
-//                            } catch ( Throwable th) {
-//	                    }
-                
+                testProps.put("inputdirname", inputDirName);                
                 
                 // Invoke.properties files define simple service invocation tests
                 if (testPropertiesFile.endsWith("Invoke.properties")) {
@@ -315,7 +285,7 @@ public class ConfiguredTest extends TestCase {
     protected static String stackTraceElementToString( StackTraceElement [] ste ) {
     	String s = "";
     	for ( int i = 0; i < ste.length; i++ ) {
-    		s = s  + ste[i].toString() + "\n";
+    	    s = s  + ste[i].toString() + "\n";
     	}
     	return s;
     }
@@ -342,7 +312,7 @@ public class ConfiguredTest extends TestCase {
 
         boolean isExists = destFile.exists();
         if ( isExists ) {
-                destFile.delete();
+            destFile.delete();
         }
         destFile.createNewFile();
 		
@@ -376,7 +346,7 @@ public class ConfiguredTest extends TestCase {
 
         boolean isExists = destFile.exists();
         if ( isExists ) {
-                destFile.delete();
+            destFile.delete();
         }
         destFile.createNewFile();
 
@@ -395,12 +365,12 @@ public class ConfiguredTest extends TestCase {
             out.close();
     	} catch ( Throwable th ) {
             try { 
-                if ( out != null ) {
-                        out.close();
+                if (out != null) {
+                    out.close();
                 }
-                if ( ow != null ) {
-                        ow.close();
-                }	
+                if (ow != null) {
+                    ow.close();
+                }
             } catch ( Throwable th2 ) {    			
             }    		
     	}
@@ -431,7 +401,7 @@ public class ConfiguredTest extends TestCase {
                 File currentFile = inputDir[count];
 
                 if ( !currentFile.isDirectory() ) { 
-                	copyTestResourceFile(currentFile, new File(destDir + File.separator + currentFile.getName()));
+                    copyTestResourceFile(currentFile, new File(destDir + File.separator + currentFile.getName()));
                 }
             }
         }
@@ -452,7 +422,7 @@ public class ConfiguredTest extends TestCase {
         } else {
             File propFile = new File(valuePropertyFile);
             try {
-                    propFile.createNewFile();
+                 propFile.createNewFile();
             } catch ( Exception e ) {
             }
         }
@@ -466,10 +436,10 @@ public class ConfiguredTest extends TestCase {
         
         String content = suiteName + ":" + testName;
        
-        if ( tests == null ) {
-        	tests = content;
+        if (tests == null) {
+            tests = content;
         } else {
-        	tests = tests + ", " + content;
+            tests = tests + ", " + content;
         }
         
         FileOutputStream fos = new FileOutputStream(valuePropertyFile);
@@ -482,7 +452,7 @@ public class ConfiguredTest extends TestCase {
     
     protected static File[] getDirList(File baseDir) {
         
-        List retValue = new ArrayList();
+        List<File> retValue = new ArrayList<File>();
         if (baseDir.isDirectory()) {
             retValue.add(baseDir);
             
@@ -491,7 +461,7 @@ public class ConfiguredTest extends TestCase {
                 retValue.addAll(Arrays.asList(getDirList(children[ii])));
             }
         }
-        return (File[])retValue.toArray(new File[0]);
+        return retValue.toArray(new File[0]);
     }
     
     protected static String getRelativePath(File root, File subDir)
@@ -663,11 +633,11 @@ public class ConfiguredTest extends TestCase {
         
         try {
             // Determine all input and corresponding output files
-            java.util.LinkedHashMap inputToOutputFileNames = new java.util.LinkedHashMap();
-            java.util.Set entries = mProperties.entrySet();
-            java.util.Iterator iter = entries.iterator();
+            LinkedHashMap<String, String> inputToOutputFileNames = new LinkedHashMap<String, String>();
+            Set entries = mProperties.entrySet();
+            Iterator iter = entries.iterator();
             while (iter.hasNext()) {
-                java.util.Map.Entry entry = (java.util.Map.Entry) iter.next();
+                Map.Entry entry = (Map.Entry) iter.next();
                 String key = (String) entry.getKey();
                 if (key.startsWith("inputfile")) {
                     String inputFileName = (String) entry.getValue();
@@ -688,14 +658,14 @@ public class ConfiguredTest extends TestCase {
                 System.out.println("Test destination: " + destination);
             }
             
-            java.util.Map.Entry[] inOutEntries = (java.util.Map.Entry[]) inputToOutputFileNames.entrySet().toArray(new java.util.Map.Entry[0]);
+            Map.Entry[] inOutEntries = inputToOutputFileNames.entrySet().toArray(new Map.Entry[0]);
             
             Thread[] threads = new Thread[concurrentInvokes];
             ConcurrentTestSendOnlyRunnable[] runnables = new ConcurrentTestSendOnlyRunnable[concurrentInvokes];
             
             for (int threadCount = 0; threadCount < concurrentInvokes; threadCount++) {
                 // round robin of input/output files
-                java.util.Map.Entry entry = inOutEntries[(threadCount%inOutEntries.length)];
+                Map.Entry entry = inOutEntries[(threadCount%inOutEntries.length)];
                 String inputFileName = (String) entry.getKey();
                 String outputFileName = (String) entry.getValue();
                 String threadName = "Concurrent test thread " + threadCount;
@@ -824,12 +794,12 @@ public class ConfiguredTest extends TestCase {
         
         try {
             // Determine all input and corresponding output files
-            List individualPropMaps = new ArrayList();
-            Map individualPropMap = null;
-            java.util.Set entries = mProperties.entrySet();
-            java.util.Iterator iter = entries.iterator();
+            List<Map<String, String>> individualPropMaps = new ArrayList<Map<String, String>>();
+            Map<String, String> individualPropMap = null;
+            Set<Map.Entry<Object, Object>> entries = mProperties.entrySet();
+            Iterator<Map.Entry<Object, Object>> iter = entries.iterator();
             while (iter.hasNext()) {
-                java.util.Map.Entry entry = (java.util.Map.Entry) iter.next();
+                Map.Entry<Object, Object> entry = iter.next();
                 String key = (String) entry.getKey();
                 if (key.startsWith("inputfile")) {
                     String inputFileName = (String) entry.getValue();
@@ -845,7 +815,7 @@ public class ConfiguredTest extends TestCase {
                     if (outputFileName == null || expectedDestinationVal == null) {
                         throw new Exception("Test set up error. No corresponding property to define output file found for input file property " + key + ". Identified unique id is: " + fileId + " expected output file property: " + expectedOutputProperty);
                     } else {
-                        individualPropMap = new HashMap();
+                        individualPropMap = new HashMap<String, String>();
                         individualPropMap.put("inputfile", inputFileName);
                         individualPropMap.put("outputfile", outputFileName);
                         individualPropMap.put("destination", expectedDestinationVal);
@@ -862,14 +832,14 @@ public class ConfiguredTest extends TestCase {
             int totalNumberOfDestinations = individualPropMaps.size();
             Thread[] threads = new Thread[totalNumberOfDestinations];
             ConcurrentTestSendOnlyRunnable[] runnables = new ConcurrentTestSendOnlyRunnable[totalNumberOfDestinations];
-            Map individualDest = null;
+            Map<String, String> individualDest = null;
             for (int threadCount = 0; threadCount < totalNumberOfDestinations; threadCount++) {
                 // round robin of input/output files
-                individualDest = (Map) individualPropMaps.get(threadCount);
-                String inputFileName = (String) individualDest.get("inputfile");
-                String outputFileName = (String) individualDest.get("outputfile");
-                String destination = (String) individualDest.get("destination");
-                String soapAction = (String) individualDest.get("soapaction");
+                individualDest = individualPropMaps.get(threadCount);
+                String inputFileName = individualDest.get("inputfile");
+                String outputFileName = individualDest.get("outputfile");
+                String destination = individualDest.get("destination");
+                String soapAction = individualDest.get("soapaction");
                 
                 String threadName = "Correlation test thread " + threadCount;
                 String logPrefix = inputDirName + "\\" + testPropertiesFileName + " - " + threadName + ":";
@@ -977,14 +947,14 @@ public class ConfiguredTest extends TestCase {
         System.out.flush();
         
         try {
-            List individualPropMaps = new ArrayList();
+            List<Map<String, String>> individualPropMaps = new ArrayList<Map<String, String>>();
             
             Map properties = concurrentCorrelationBuildInfo(mProperties);
             
-            java.util.Iterator itr =  properties.entrySet().iterator();
+            Iterator itr =  properties.entrySet().iterator();
 
             while ( itr.hasNext() ) {
-            	Map prop = (Map)((Map.Entry)itr.next()).getValue();                
+            	Map<String, String> prop = (Map<String, String>)((Map.Entry)itr.next()).getValue();                
                 individualPropMaps.add(prop);
             }    
             
@@ -994,14 +964,14 @@ public class ConfiguredTest extends TestCase {
             int totalNumberOfDestinations = individualPropMaps.size();
             Thread[] threads = new Thread[totalNumberOfDestinations];
             ConcurrentTestSendOnlyRunnable[] runnables = new ConcurrentTestSendOnlyRunnable[totalNumberOfDestinations];
-            Map individualDest = null;
+            Map<String, String> individualDest = null;
             for (int threadCount = 0; threadCount < totalNumberOfDestinations; threadCount++) {
                 // round robin of input/output files
-                individualDest = (Map) individualPropMaps.get(threadCount);
-                String inputFileName = (String) individualDest.get("inputfile");
-                String outputFileName = (String) individualDest.get("outputfile");
-                String destination = (String) individualDest.get("destination");
-                String soapAction = (String) individualDest.get("soapaction");
+                individualDest = individualPropMaps.get(threadCount);
+                String inputFileName = individualDest.get("inputfile");
+                String outputFileName = individualDest.get("outputfile");
+                String destination = individualDest.get("destination");
+                String soapAction = individualDest.get("soapaction");
                 
                 String threadName = "Correlation test thread " + threadCount;
                 String logPrefix = inputDirName + "\\" + testPropertiesFileName + " - " + threadName + ":";
@@ -1132,8 +1102,8 @@ public class ConfiguredTest extends TestCase {
             // List<list<Map>> It holds a list of items equivalent to the number of
             // BPEL instances this test would result in. Each Item holds a list of
             // values that are used to invoke the BPEL.
-            List individualPropMaps = new ArrayList();
-            Map individualPropMap;
+            List<List<Map<String, String>>> individualPropMaps = new ArrayList<List<Map<String, String>>>();
+            Map<String, String> individualPropMap;
             int totalNumberOfDestinations = 0;
             
             for (int threadCount = 1; threadCount <= concurrentInvokes; threadCount++) {
@@ -1143,7 +1113,7 @@ public class ConfiguredTest extends TestCase {
                 StringBuffer threadOutputKeyPart = new StringBuffer();
                 threadOutputKeyPart.append(threadCount);
                 threadOutputKeyPart.append(".");
-                List noOfInvokesList = new ArrayList();
+                List<Map<String, String>> noOfInvokesList = new ArrayList<Map<String, String>>();
                 
                 for (int i = 1; i <= numberofInvokesPerBPEL; i++) {
                     StringBuffer threadIPKeyPart = new StringBuffer();
@@ -1186,7 +1156,7 @@ public class ConfiguredTest extends TestCase {
                                 "destination property: " + destKeyPart);
                     }
                     
-                    individualPropMap = new HashMap();
+                    individualPropMap = new HashMap<String, String>();
                     individualPropMap.put("inputfile", iputFileName);
                     individualPropMap.put("outputfile", outputFileName);
                     individualPropMap.put("destination", destination);
@@ -1202,17 +1172,17 @@ public class ConfiguredTest extends TestCase {
             }
             Thread[] threads = new Thread[totalNumberOfDestinations];
             CorrelationTestRunnable[] runnables = new CorrelationTestRunnable[totalNumberOfDestinations];
-            Map individualDest = null;
-            List threadDestinations = null;
+            Map<String, String> individualDest = null;
+            List<Map<String, String>> threadDestinations = null;
             for (int j = 0, threadCount = 0; j < individualPropMaps.size(); j++) {
-                threadDestinations = (List) individualPropMaps.get(j);
+                threadDestinations = individualPropMaps.get(j);
                 for (int i = 0, size = threadDestinations.size(); i < size; i++) {
                     
-                    individualDest = (Map) threadDestinations.get(i);
-                    String inputFileName = (String) individualDest.get("inputfile");
-                    String outputFileName = (String) individualDest.get("outputfile");
-                    String destination = (String) individualDest.get("destination");
-                    String soapAction = (String) individualDest.get("soapaction");
+                    individualDest = threadDestinations.get(i);
+                    String inputFileName = individualDest.get("inputfile");
+                    String outputFileName = individualDest.get("outputfile");
+                    String destination = individualDest.get("destination");
+                    String soapAction = individualDest.get("soapaction");
                     
                     String threadName = "Correlation test thread " + threadCount;
                     String logPrefix = inputDirName + "\\" + testPropertiesFileName + " - " + threadName + ":";
@@ -2161,7 +2131,7 @@ public class ConfiguredTest extends TestCase {
             }
             boolean responseIsTooLong = bytesRead != -1;
             boolean responseIsTooShort = nextByte == -1;
-            boolean responseNotMatch = !java.util.Arrays.equals(output, compare);
+            boolean responseNotMatch = !Arrays.equals(output, compare);
             
             boolean isFailure = responseIsTooLong || responseIsTooShort || responseNotMatch;
             if (isFailure || mGenerateOutputOnSuccess) {
@@ -2171,7 +2141,7 @@ public class ConfiguredTest extends TestCase {
                 String timeStampPrefix = getActualOutputTimeStampPrefix(actualOutputFile);
                 //--assertTrue(logPrefix + " Response is longer than expected. \nreceived: " + outputStream.toString() + "\nexpected: " + new String(compare), bytesRead != -1);
                 //--assertTrue(logPrefix + " Response is shorter than expected \nreceived: " + outputStream.toString() + "\nexpected: " + new String(compare), nextByte == -1);
-                //--assertTrue(logPrefix + " The response received does not match the expected response. \nreceived: " + outputStream.toString() + "\nexpected: " + new String(compare), java.util.Arrays.equals(output, compare));
+                //--assertTrue(logPrefix + " The response received does not match the expected response. \nreceived: " + outputStream.toString() + "\nexpected: " + new String(compare), Arrays.equals(output, compare));
                 assertTrue(timeStampPrefix + " " + logPrefix + " The response is longer than expected.", responseIsTooLong);
                 assertTrue(timeStampPrefix + " " + logPrefix + " The response is shorter than expected.", responseIsTooShort);
                 assertTrue(timeStampPrefix + " " + logPrefix + " The response received does not match the expected response.", responseNotMatch);
@@ -2400,7 +2370,7 @@ public class ConfiguredTest extends TestCase {
         Properties props = null;
         try {
             fis = new FileInputStream(new File(propertiesFile));
-            props = new java.util.Properties();
+            props = new Properties();
             props.load(fis);
         } finally {
             try {
@@ -3173,15 +3143,15 @@ public class ConfiguredTest extends TestCase {
     
     private static String[] parseCommand(String command) {
         StringTokenizer st = new StringTokenizer(command, " ");
-        List list = new ArrayList();
+        List<String> list = new ArrayList<String>();
         while (st.hasMoreTokens()) {
             list.add(st.nextToken());
         }
-        return (String[])list.toArray(new String[0]);
+        return list.toArray(new String[0]);
     }
     
-    private List loadScript(File scriptFile, Map inputTable) {
-        List taskList = new ArrayList();
+    private List loadScript(File scriptFile, Map<String, Input> inputTable) {
+        List<Runnable> taskList = new ArrayList<Runnable>();
         BufferedReader fileIn = null;
         try {
             fileIn = new BufferedReader(new InputStreamReader(new FileInputStream(scriptFile)));
@@ -3196,7 +3166,7 @@ public class ConfiguredTest extends TestCase {
                 String[] cmd = parseCommand(line);
                 if ("send".startsWith(cmd[0])) {
                     // send input.0 3
-                    taskList.add(new Send((Input)inputTable.get(cmd[1]), cmd[2]));
+                    taskList.add(new Send(inputTable.get(cmd[1]), cmd[2]));
                 } else if ("wait".startsWith(cmd[0])) {
                     // wait 3
                     taskList.add(new Wait(cmd[1]));
