@@ -127,7 +127,7 @@ public class RADComponentRenameRefactoringSupport {
     public void doRenameRefactoring(){
         //now we need to get into the Java phase and get a TreePathHandle
         //to the field we are renaming. We can then kick off a RenameRefactoring
-        DataObject dao = FormEditor.getFormDataObject(this.component.getFormModel());
+        FormDataObject dao = FormEditor.getFormDataObject(this.component.getFormModel());
         if(dao!=null){
             //we should be able to
             JavaSource js = JavaSource.forFileObject(dao.getPrimaryFile());
@@ -138,6 +138,10 @@ public class RADComponentRenameRefactoringSupport {
                     //this would only happen if setName were called without the correct component being
                     //selected some how...
                     return;
+                }
+                FormEditorSupport fes = dao.getFormEditorSupport();
+                if (fes.isModified()) {
+                    fes.saveDocument();
                 }
                 //ok, so we are now ready to actually setup our RenameRefactoring...we need the element TreePathHandle
                 Lookup rnl = Lookups.singleton(visitor.getHandle());
