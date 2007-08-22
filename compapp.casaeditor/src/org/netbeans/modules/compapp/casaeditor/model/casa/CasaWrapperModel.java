@@ -232,6 +232,15 @@ public class CasaWrapperModel extends CasaModelImpl {
     public String getBindingType(final CasaPort casaPort) {
         String bindingType = casaPort.getBindingType();
         if (bindingType == null) {
+            //IZ: 113545
+            try {
+                JbiBindingInfo bi = getBindingInfo(getLinkedWSDLPort(casaPort));
+                if (bi != null) {
+                    return bi.getBindingName();
+                }
+            } catch (Exception ex) {
+                // skip to use the default one..
+            }
             String bcCompName = getBindingComponentName(casaPort);
             bindingType = getDefaultBindingComponents().get(bcCompName);
         }
