@@ -43,8 +43,11 @@
 
     <testbag testattribs="all or javame" executor="installer-executor" name="installer javeme bandle test">
         <testset dir=".">
-            <patternset>
+            <patternset attribs="!solaris">
 	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJavaME.class"/>
+           </patternset>
+            <patternset attribs="solaris">
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJavaME.class/testInstaller" expectedFail="bug IZ# 113074"/>
            </patternset>
         </testset>
     </testbag>
