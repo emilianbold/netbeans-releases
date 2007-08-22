@@ -69,7 +69,7 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
         assertEquals(1, pcp.getConfigurations().size());
         assertNotNull(pcp.getActiveConfiguration());
         assertEquals(pcp.getActiveConfiguration(), pcp.getConfigurations().iterator().next());
-        assertEquals("<default>", pcp.getActiveConfiguration().getDisplayName());
+        assertEquals("<default config>", pcp.getActiveConfiguration().getDisplayName());
         assertTrue(pcp.hasCustomizer());
     }
 
@@ -86,7 +86,7 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
         assertEquals(Collections.singleton(ProjectConfigurationProvider.PROP_CONFIGURATIONS), l.events());
         List<ProjectConfiguration> configs = new ArrayList<ProjectConfiguration>(getConfigurations(pcp));
         assertEquals(4, configs.size());
-        assertEquals("<default>", configs.get(0).getDisplayName());
+        assertEquals("<default config>", configs.get(0).getDisplayName());
         assertEquals("Debug", configs.get(1).getDisplayName());
         assertEquals("misc", configs.get(2).getDisplayName());
         assertEquals("Release", configs.get(3).getDisplayName());
@@ -111,7 +111,7 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
         TestListener l = new TestListener();
         pcp.addPropertyChangeListener(l);
         ProjectConfiguration def = pcp.getActiveConfiguration();
-        assertEquals("<default>", def.getDisplayName());
+        assertEquals("<default config>", def.getDisplayName());
         List<ProjectConfiguration> configs = new ArrayList<ProjectConfiguration>(getConfigurations(pcp));
         assertEquals(3, configs.size());
         ProjectConfiguration c = configs.get(2);
@@ -180,7 +180,7 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
         assertEquals("false", eval.getProperty("debug"));
         assertEquals("stuff", eval.getProperty("more"));
         c = configs.get(0);
-        assertEquals("<default>", c.getDisplayName());
+        assertEquals("<default config>", c.getDisplayName());
         setActiveConfiguration(pcp, c);
         assertEquals(new HashSet<String>(Arrays.asList("config", "debug", "more")), l.events());
         assertEquals(null, eval.getProperty("config"));
