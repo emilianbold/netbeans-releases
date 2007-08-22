@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.prefs.Preferences;
@@ -108,7 +109,6 @@ public class RubyInstallation {
     private FileObject rubylibFo;
     private FileObject rubyStubsFo;
     private String ruby;
-    private String rubybin;
     private String rubylib;
     private String gem;
     private String rake;
@@ -143,18 +143,24 @@ public class RubyInstallation {
     }
 
     public String getRubyBin() {
-        if (rubybin == null) {
-            String r = getRuby();
+        return getRubyBin(true);
+    }
+    
+    public String getRubyBin(boolean canonical) {
+        String rubybin = null;
+        String r = getRuby(canonical);
 
-            if (r != null) {
-                rubybin = new File(r).getParent();
-            }
+        if (r != null) {
+            rubybin = new File(r).getParent();
         }
-
         return rubybin;
     }
 
     public String getRuby() {
+        return getRuby(true);
+    }
+    
+    public String getRuby(boolean canonical) {
         if (ruby == null) {
             // Test and preindexing hook
             ruby = System.getProperty("ruby.interpreter");
@@ -181,6 +187,13 @@ public class RubyInstallation {
             }
         }
 
+        if (ruby != null && canonical) {
+            try {
+                return new File(ruby).getCanonicalFile().getAbsolutePath();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Cannot get canonical path", e);
+            }
+        }
         return ruby;
     }
     
@@ -389,14 +402,18 @@ public class RubyInstallation {
         return rubylib;
     }
     
+    public String getRubyLibGemDir() {
+        return getRubyLibGemDir(true);
+    }
+    
     /**
      * Return the gem directory for the current ruby installation.
      * Returns the gem root, not the gem subdirectory.
      * Not cached.
      */
-    public String getRubyLibGemDir() {
+    public String getRubyLibGemDir(boolean canonical) {
         String gemdir = null;
-        File rubyHome = getRubyHome();
+        File rubyHome = getRubyHome(canonical);
 
         if (rubyHome == null) {
             File gemDir =
@@ -414,6 +431,9 @@ public class RubyInstallation {
 
         if (!lib.isDirectory()) {
             String gemHome = System.getProperty("GEM_HOME"); // NOI18N
+            if (gemHome == null) {
+                gemHome = System.getenv().get("GEM_HOME");
+            }
             if (gemHome != null) {
                 lib = new File(gemHome); // NOI18N
                 if (!lib.isDirectory()) {
@@ -513,8 +533,12 @@ public class RubyInstallation {
     }
 
     public File getRubyHome() {
+        return getRubyHome(true);
+    }
+    
+    public File getRubyHome(boolean canonical) {
         try {
-            String rp = getRuby();
+            String rp = getRuby(canonical);
             if (rp == null) {
                return null;
             }
@@ -615,24 +639,28 @@ public class RubyInstallation {
      */
     public String findGemExecutable(final String toFind) {
         String exec = null;
-        String bin = getRubyBin();
-        if (bin != null) {
-            LOGGER.finest("Looking for '" + toFind + "' gem executable; used intepreter: '" + bin + "'"); // NOI18N
-            exec = bin + File.separator + toFind;
-            if (!new File(exec).isFile()) {
-                LOGGER.finest("'" + exec + "' is not a file."); // NOI18N
-                exec = null;
+        boolean canonical = true; // default
+        do {
+            String bin = getRubyBin(canonical);
+            if (bin != null) {
+                LOGGER.finest("Looking for '" + toFind + "' gem executable; used intepreter: '" + bin + "'"); // NOI18N
+                exec = bin + File.separator + toFind;
+                if (!new File(exec).isFile()) {
+                    LOGGER.finest("'" + exec + "' is not a file."); // NOI18N
+                    exec = null;
+                }
+            } else {
+                LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
             }
-        } else {
-            LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
-        }
-        if (exec == null) {
-            exec = getRubyLibGemDir() + File.separator + "bin" + File.separator + toFind; // NOI18N
-            if (!new File(exec).isFile()) {
-                LOGGER.fine("'" + exec + "' is not a file."); // NOI18N
-                exec = null;
+            if (exec == null) {
+                exec = getRubyLibGemDir(canonical) + File.separator + "bin" + File.separator + toFind; // NOI18N
+                if (!new File(exec).isFile()) {
+                    LOGGER.fine("'" + exec + "' is not a file."); // NOI18N
+                    exec = null;
+                }
             }
-        }
+            canonical ^= true;
+        } while (!canonical && exec == null);
         return exec;
     }
 
@@ -868,19 +896,16 @@ public class RubyInstallation {
     }
 
     public void setRuby(String ruby) {
-        // Normalize path
-        try {
-            ruby = new File(ruby).getCanonicalFile().getAbsolutePath();
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-
+        File rubyF = new File(ruby);
+        ruby = rubyF.getAbsolutePath();
         if (!ruby.equals(getRuby())) {
             getPreferences().put(KEY_RUBY, ruby);
+        }
+        if (!FileUtil.normalizeFile(rubyF).equals(FileUtil.normalizeFile(new File(getRuby())))) {
+            // reset only in case it is not a link to the same file
             this.ruby = ruby;
             // Recompute lazily:
             this.gem = null;
-            this.rubybin = null;
             this.rubylib = null;
             this.rubylibFo = null;
             this.rubyStubsFo = null;
