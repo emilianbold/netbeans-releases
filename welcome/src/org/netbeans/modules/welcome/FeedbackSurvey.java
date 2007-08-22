@@ -68,7 +68,8 @@ final class FeedbackSurvey {
 
             URL u = new URL(url);
             URLConnection conn = u.openConnection();
-            if (!"text/html".equals(conn.getContentType())) { // NOI18N
+            String type = conn.getContentType();
+            if (type == null || !type.startsWith("text/html")) { // NOI18N
                 LOG.log(Level.INFO, "Wrong mimetype - {0} - skipping survey", conn.getContentType()); // NOI18N
                 return;
             }
