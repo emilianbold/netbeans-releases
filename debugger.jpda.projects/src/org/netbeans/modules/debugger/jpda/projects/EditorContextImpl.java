@@ -57,6 +57,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 
 import javax.lang.model.util.Elements;
 import javax.lang.model.element.Element;
@@ -591,35 +592,17 @@ public class EditorContextImpl extends EditorContext {
         }
     }
         
-    private static TypeElement getTypeElement(CompilationController ci, String binaryName) {
-        List<? extends TypeElement> typeElements = ci.getTopLevelElements();
-        Elements elms = ci.getElements();
-        for (TypeElement e : typeElements) {
-            TypeElement te = getTypeElement(elms, e, binaryName);
-            if (te != null) {
-                return te;
-            }
+    private static TypeElement getTypeElement(CompilationController ci,
+                                              String binaryName,
+                                              String[] classExcludeNames) {
+        ClassScanner cs = new ClassScanner(ci.getTrees(), ci.getElements(),
+                                           binaryName, classExcludeNames);
+        TypeElement te = cs.scan(ci.getCompilationUnit(), null);
+        if (te != null) {
+            return te;
+        } else {
+            return null;
         }
-        return null;
-    }
-    
-    private static TypeElement getTypeElement(Elements elms, Element element, String binaryName) {
-        ElementKind kind = element.getKind();
-        if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE) {
-            TypeElement classElement = (TypeElement) element;
-            String binaryClassName = elms.getBinaryName(classElement).toString();
-            if (match(binaryClassName, binaryName)) {
-                return classElement;
-            }
-        }
-        List<? extends Element> enclosed = element.getEnclosedElements();
-        for (Element e : enclosed) {
-            TypeElement te = getTypeElement(elms, e, binaryName);
-            if (te != null) {
-                return te;
-            }
-        }
-        return null;
     }
     
     /**
@@ -664,8 +647,9 @@ public class EditorContextImpl extends EditorContext {
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
                         return;
+                    
                     Elements elms = ci.getElements();
-                    TypeElement classElement = getTypeElement(ci, className);
+                    TypeElement classElement = getTypeElement(ci, className, null);
                     if (classElement == null) return ;
                     List classMemberElements = elms.getAllMembers(classElement);
                     for (Iterator it = classMemberElements.iterator(); it.hasNext(); ) {
@@ -770,11 +754,28 @@ public class EditorContextImpl extends EditorContext {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
                         return;
                     
-                    List<? extends TypeElement> typeElements = ci.getTopLevelElements();
-                    for (TypeElement te : typeElements) {
-                        addMethodLineNumbers(dataObject, ci, te,
-                                             className, classExcludeNames,
-                                             methodName, methodSignature, result);
+                    TypeElement classElement = getTypeElement(ci, className, classExcludeNames);
+                    if (classElement == null) return ;
+                    List classMemberElements = ci.getElements().getAllMembers(classElement);
+                    for (Iterator it = classMemberElements.iterator(); it.hasNext(); ) {
+                        Element elm = (Element) it.next();
+                        if (elm.getKind() == ElementKind.METHOD || elm.getKind() == ElementKind.CONSTRUCTOR) {
+                            String name;
+                            if (elm.getKind() == ElementKind.CONSTRUCTOR && !methodName.equals("<init>")) {
+                                name = elm.getEnclosingElement().getSimpleName().toString();
+                            } else {
+                                name = elm.getSimpleName().toString();
+                            }
+                            if (name.equals(methodName)) {
+                                if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
+                                    SourcePositions positions =  ci.getTrees().getSourcePositions();
+                                    Tree tree = ci.getTrees().getTree(elm);
+                                    int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
+                                    EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+                                    result.add(new Integer(NbDocument.findLineNumber(editor.openDocument(), pos) + 1));
+                                }
+                            }
+                        }
                     }
                 }
             },true);
@@ -787,58 +788,6 @@ public class EditorContextImpl extends EditorContext {
             resultArray[i] = result.get(i).intValue();
         }
         return resultArray;
-    }
-    
-    private static void addMethodLineNumbers(
-        DataObject dataObject,
-        CompilationController ci,
-        Element element,
-        String className,
-        String[] classExcludeNames,
-        String methodName,
-        String methodSignature,
-        List<Integer> result
-    ) throws IOException {
-        ElementKind kind = element.getKind();
-        if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE) {
-            TypeElement classElement = (TypeElement) element;
-            Elements elms = ci.getElements();
-            String binaryClassName = elms.getBinaryName(classElement).toString();
-            if (match(binaryClassName, className)) {
-                if (classExcludeNames != null) {
-                    for (String classExcludeName : classExcludeNames) {
-                        if (match(binaryClassName, classExcludeName)) {
-                            continue;
-                        }
-                    }
-                }
-                List classMemberElements = elms.getAllMembers(classElement);
-                for (Iterator it = classMemberElements.iterator(); it.hasNext(); ) {
-                    Element elm = (Element) it.next();
-                    if (elm.getKind() == ElementKind.METHOD || elm.getKind() == ElementKind.CONSTRUCTOR) {
-                        String name;
-                        if (elm.getKind() == ElementKind.CONSTRUCTOR && !methodName.equals("<init>")) {
-                            name = elm.getEnclosingElement().getSimpleName().toString();
-                        } else {
-                            name = elm.getSimpleName().toString();
-                        }
-                        if (name.equals(methodName)) {
-                            if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
-                                SourcePositions positions =  ci.getTrees().getSourcePositions();
-                                Tree tree = ci.getTrees().getTree(elm);
-                                int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
-                                EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-                                result.add(new Integer(NbDocument.findLineNumber(editor.openDocument(), pos) + 1));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        List<? extends Element> enclosed = element.getEnclosedElements();
-        for (Element e : enclosed) {
-            addMethodLineNumbers(dataObject, ci, e, className, classExcludeNames, methodName, methodSignature, result);
-        }
     }
     
     private static boolean egualMethodSignatures(String s1, String s2) {
@@ -1493,8 +1442,15 @@ public class EditorContextImpl extends EditorContext {
                             }
                         } 
                         if (!isMemberClass) {
-                            Scope scope = ci.getTreeUtilities().scopeFor(currentOffset);
-                            TypeElement te = scope.getEnclosingClass();
+                            TreePath currentPath = ci.getTreeUtilities().pathFor(currentOffset);
+                            Tree tree = currentPath.getLeaf();
+                            TypeElement te;
+                            if (tree.getKind() == Tree.Kind.CLASS) {
+                                te = (TypeElement) ci.getTrees().getElement(currentPath);
+                            } else {
+                                Scope scope = ci.getTreeUtilities().scopeFor(currentOffset);
+                                te = scope.getEnclosingClass();
+                            }
                             if (te != null) {
                                 currentElementPtr[0] = ElementUtilities.getBinaryName(te);
                             }
@@ -1655,17 +1611,6 @@ public class EditorContextImpl extends EditorContext {
         } catch (DataObjectNotFoundException ex) {
             return null;
         }
-    }
-    
-    private static boolean match (String name, String pattern) {
-        if (pattern.startsWith ("*"))
-            return name.endsWith (pattern.substring (1));
-        else
-        if (pattern.endsWith ("*"))
-            return name.startsWith (
-                pattern.substring (0, pattern.length () - 1)
-            );
-        return name.equals (pattern);
     }
     
     private class EditorLookupListener extends Object implements LookupListener, PropertyChangeListener {
