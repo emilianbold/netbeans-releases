@@ -113,7 +113,7 @@ public class JaxRpcServiceCreator implements ServiceCreator {
         Runnable r = new Runnable() {
             public void run() {
                 try {
-                    handle.start();
+                    handle.start(100);
                     generateWsFromWsdl(handle);
                 } catch (Exception e) {
                     //finish progress bar
