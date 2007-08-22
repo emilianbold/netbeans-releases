@@ -2787,6 +2787,10 @@ public class WebForm implements Designer {
 
         public void resizeRow(Element tableComponentRootElement, int row, int height) {
         }
+
+        public boolean areLinkedToSameBean(Element oneElement, Element otherElement) {
+            return false;
+        }
     } // End of DummyDomProviderService.
     
     

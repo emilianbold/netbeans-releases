@@ -186,5 +186,8 @@ public interface DomProviderService {
     public int testResizeRow(Element tableComponentRootElement, int row, int column, int height);
     public void resizeColumn(Element tableComponentRootElement, int column, int width);
     public void resizeRow(Element tableComponentRootElement, int row, int height);
+    
+    // XXX
+    public boolean areLinkedToSameBean(Element oneElement, Element otherElement);
 
 }

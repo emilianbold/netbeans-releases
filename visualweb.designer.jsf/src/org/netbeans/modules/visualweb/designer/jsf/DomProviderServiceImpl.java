@@ -1208,5 +1208,13 @@ public class DomProviderServiceImpl implements DomProviderService {
         
         markupTableDesignInfo.resizeRow(markupDesignBean, row, height);
     }
+    
+    public boolean areLinkedToSameBean(Element oneElement, Element otherElement) {
+        MarkupDesignBean oneMarkupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(oneElement);
+        if (oneMarkupDesignBean == null) {
+            return false;
+        }
+        return oneMarkupDesignBean == MarkupUnit.getMarkupDesignBeanForElement(otherElement);
+    }
 
 }

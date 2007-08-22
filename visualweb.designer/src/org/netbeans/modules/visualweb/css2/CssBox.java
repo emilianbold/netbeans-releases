@@ -599,7 +599,8 @@ public class CssBox implements Box {
      * form or iframe box. */
     protected void computeRectangles(Element componentRootElement, List<Rectangle> list) {
 //        if (getDesignBean() == component) {
-        if (getElementForComponentRootCssBox(this) == componentRootElement) {
+        if (getElementForComponentRootCssBox(this) == componentRootElement
+        || WebForm.getDomProviderService().areLinkedToSameBean(element, componentRootElement)) {
             // allocations get mutated by later
             // transformations so I've gotta make a copy
             list.add(new Rectangle(getAbsoluteX(), getAbsoluteY(), getWidth(), getHeight()));
@@ -644,7 +645,8 @@ public class CssBox implements Box {
     // This will replace the above.
     protected Rectangle computeBounds(Element componentRootElement, Rectangle bounds) {
 //        if (getDesignBean() == component) {
-        if (getElementForComponentRootCssBox(this) == componentRootElement) {
+        if (getElementForComponentRootCssBox(this) == componentRootElement
+        || WebForm.getDomProviderService().areLinkedToSameBean(element, componentRootElement)) {
             Rectangle r = new Rectangle(getAbsoluteX(), getAbsoluteY(), getWidth(), getHeight());
 
             if (bounds == null) {
