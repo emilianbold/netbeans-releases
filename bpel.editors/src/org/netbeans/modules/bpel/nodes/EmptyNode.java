@@ -57,9 +57,6 @@ public class EmptyNode extends BpelNode<Empty> {
         PropertyUtils.registerAttributeProperty(this, mainPropertySet,
                 NamedElement.NAME, NAME, "getName", "setName", null); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
-                DOCUMENTATION, "getDocumentation", "setDocumentation"); // NOI18N
-        //
         return sheet;
     }
 

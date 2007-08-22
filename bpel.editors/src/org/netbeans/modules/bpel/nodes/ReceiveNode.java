@@ -152,9 +152,6 @@ public class ReceiveNode extends BpelNode<Receive> {
         property.setValue("suppressCustomEditor", Boolean.TRUE); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
-        PropertyUtils.registerProperty(this, mainPropertySet,
-                DOCUMENTATION, "getDocumentation", "setDocumentation"); // NOI18N
-        //
         return sheet;
     }
     
