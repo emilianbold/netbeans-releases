@@ -52,7 +52,7 @@ public class StepTest extends NbTestCase {
     }
     
     public void testStepOver () throws Exception {
-        File file = new File (sourceRoot + "build.xml");
+        File file = new File (sourceRoot, "build.xml");
         file = FileUtil.normalizeFile(file);
         DebuggerAntLogger.getDefault ().debugFile (file);
         FileObject fileObject = FileUtil.toFileObject (file);
