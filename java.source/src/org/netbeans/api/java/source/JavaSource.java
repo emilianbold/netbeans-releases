@@ -25,6 +25,7 @@ import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symbol.CompletionFailure;
 import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.parser.DocCommentScanner;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Abort;
 import com.sun.tools.javac.util.CancelAbort;
@@ -1021,6 +1022,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         ErrorHandlingJavadocEnter.preRegister(context);
         JavadocMemberEnter.preRegister(context);       
         JavadocEnv.preRegister(context, getClasspathInfo());
+        DocCommentScanner.Factory.preRegister(context);
+        com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;
     }
     
