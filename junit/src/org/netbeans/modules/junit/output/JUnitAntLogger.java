@@ -58,14 +58,17 @@ public final class JUnitAntLogger extends AntLogger {
     /** default constructor for lookup */
     public JUnitAntLogger() { }
     
+    @Override
     public boolean interestedInSession(AntSession session) {
         return true;
     }
     
+    @Override
     public String[] interestedInTargets(AntSession session) {
         return AntLogger.ALL_TARGETS;
     }
     
+    @Override
     public String[] interestedInTasks(AntSession session) {
         return INTERESTING_TASKS;
     }
@@ -137,16 +140,19 @@ public final class JUnitAntLogger extends AntLogger {
         return (taskType != null) && (taskType != TaskType.OTHER_TASK);
     }
     
+    @Override
     public boolean interestedInScript(File script, AntSession session) {
         return true;
     }
     
+    @Override
     public int[] interestedInLogLevels(AntSession session) {
         return LEVELS_OF_INTEREST;
     }
     
     /**
      */
+    @Override
     public void messageLogged(final AntEvent event) {
         if (isTestTaskRunning(event)) {
             if (event.getLogLevel() != AntEvent.LOG_VERBOSE) {
@@ -167,6 +173,7 @@ public final class JUnitAntLogger extends AntLogger {
     
     /**
      */
+    @Override
     public void taskStarted(final AntEvent event) {
         TaskType taskType = detectTaskType(event);
         if (isTestTaskType(taskType)) {
@@ -198,6 +205,7 @@ public final class JUnitAntLogger extends AntLogger {
     
     /**
      */
+    @Override
     public void taskFinished(final AntEvent event) {
         AntSessionInfo sessionInfo = getSessionInfo(event.getSession());
         if (isTestTaskType(sessionInfo.currentTaskType)) {
@@ -209,6 +217,7 @@ public final class JUnitAntLogger extends AntLogger {
     
     /**
      */
+    @Override
     public void buildFinished(final AntEvent event) {
         AntSession session = event.getSession();
         AntSessionInfo sessionInfo = getSessionInfo(session);
