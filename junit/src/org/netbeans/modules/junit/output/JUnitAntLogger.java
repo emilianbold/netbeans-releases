@@ -102,6 +102,7 @@ public final class JUnitAntLogger extends AntLogger {
             
             className = event.evaluate(className);
             if (className.equals("junit.textui.TestRunner")             //NOI18N
+                    || className.startsWith("org.junit.runner.")        //NOI18N
                     || className.equals(
     "org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner")) {  //NOI18N
                 TaskStructure[] nestedElems = taskStructure.getChildren();
