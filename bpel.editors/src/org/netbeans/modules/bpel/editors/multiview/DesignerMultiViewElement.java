@@ -39,7 +39,7 @@ import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.NavigationTools;
 import org.netbeans.modules.bpel.design.PartnerLinkFilterButton;
 import org.netbeans.modules.bpel.design.SequenceFilterButton;
-import org.netbeans.modules.bpel.design.DiagramImpl;
+import org.netbeans.modules.bpel.diagram.DiagramImpl;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataNode;
 import org.openide.windows.TopComponent;
