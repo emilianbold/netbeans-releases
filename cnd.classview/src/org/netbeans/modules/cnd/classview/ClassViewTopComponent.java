@@ -117,7 +117,6 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
 
     @Override
     protected void componentOpened() {
-        System.out.println("componentOpened");
         if (view == null) {
             view = new ClassView();
             setLayout(new BorderLayout());
