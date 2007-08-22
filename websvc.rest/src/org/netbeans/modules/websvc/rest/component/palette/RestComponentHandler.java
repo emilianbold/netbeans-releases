@@ -24,12 +24,12 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.websvc.rest.codegen.JAXWSwrapperRESTServiceGenerator;
-import org.netbeans.modules.websvc.rest.codegen.RESTServiceGenerator;
-import org.netbeans.modules.websvc.rest.codegen.WADLResourceCodeGenerator;
+import org.netbeans.modules.websvc.rest.codegen.WsdlComponentGenerator;
+import org.netbeans.modules.websvc.rest.codegen.RestComponentGenerator;
+import org.netbeans.modules.websvc.rest.codegen.WadlComponentGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.JaxwsBasedResourceBean;
 import org.netbeans.modules.websvc.rest.support.Utils;
-import org.netbeans.modules.websvc.rest.wizard.RESTServicesProgressPanel;
+import org.netbeans.modules.websvc.rest.wizard.ProgressDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -50,9 +50,7 @@ public class RestComponentHandler implements ActiveEditorDrop {
     private FileObject targetFO;
     private RestComponentData data;
     private RequestProcessor.Task generatorTask;
-    private boolean finishGenerate;
-    private RESTServicesProgressPanel progressPanel = new RESTServicesProgressPanel();
-    
+ 
     public RestComponentHandler() {
     }
     
@@ -68,14 +66,19 @@ public class RestComponentHandler implements ActiveEditorDrop {
         Node n = pItem.lookup(Node.class);
         final RestComponentData data = RestPaletteFactory.getRestComponentData(n);
         final String type = data.getService().getMethods().get(0).getType();
+        
+        final ProgressDialog dialog = new ProgressDialog(NbBundle.getMessage(
+                RestComponentHandler.class, "LBL_RestComponentProgress",
+                n.getName()));
+        
         generatorTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 try {
-                    RESTServiceGenerator codegen = null;
+                    RestComponentGenerator codegen = null;
                     if (RestComponentData.isWSDL(type))
-                        codegen = new JAXWSwrapperRESTServiceGenerator(targetFO, data); 
+                        codegen = new WsdlComponentGenerator(targetFO, data); 
                     else if (RestComponentData.isWADL(type))
-                        codegen = new WADLResourceCodeGenerator(targetFO, data);
+                        codegen = new WadlComponentGenerator(targetFO, data);
                     if (codegen.needsInputs()) {
                         InputValuesPanel panel = new InputValuesPanel(codegen.getInputParameterTypes(), project);
                         DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(RestComponentHandler.class, "LBL_ConstantParams"));
@@ -86,20 +89,20 @@ public class RestComponentHandler implements ActiveEditorDrop {
                             return;
                         }     
                     }    
-                    codegen.generate();
+                    
+                    codegen.generate(dialog.getProgressHandle());
                     Utils.showMethod(targetFO, codegen.getSubResourceLocator());
                 } catch(Exception ioe) {
                     errors.add(ioe);
                 } finally {
-                    finishGenerate = true;
-                    finishProgress();
+                    dialog.close();
                 }
             }
         });
         
         generatorTask.schedule(50);
-        finishGenerate = false;
-        startProgress();
+        
+        dialog.open();
         
         if (errors.size() > 0) {
             for (Exception e : errors) {
@@ -125,25 +128,4 @@ public class RestComponentHandler implements ActiveEditorDrop {
         return d.getPrimaryFile();
     }
     
-    /**
-     * Starts associated progress if not yet started. Allows to share
-     * progress with execution preparation phase (cache ops).
-     *
-     * @param details progress detail messag eor null
-     */
-    private void startProgress() {
-        //keep showing the dialog if user closes the dialog and transform is not finished
-        while(!finishGenerate) {
-            // clear/hide dialog if any
-            progressPanel.hideDialog();
-            
-            String msg = "";
-            progressPanel.createDialog(msg);
-            progressPanel.showDialog(msg);
-        }
-    }
-    
-    private void finishProgress() {
-        progressPanel.hideDialog();
-    }
 }

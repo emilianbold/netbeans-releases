@@ -95,9 +95,9 @@ public class WebRestSupportLookupProvider implements LookupProvider {
         PrivilegedTemplates templates = new PrivilegedTemplates() {
             public String[] getPrivilegedTemplates() {
                 return new String[] {
-                    "Templates/WebServices/RESTServicesFromEntities", // NOI18N
-                    "Templates/WebServices/RESTServicesFromPatterns",  //NOI18N
-                    "Templates/WebServices/RESTClientStubs"    //NOI18N
+                    "Templates/WebServices/RestServicesFromEntities", // NOI18N
+                    "Templates/WebServices/RestServicesFromPatterns",  //NOI18N
+                    "Templates/WebServices/RestClientStubs"    //NOI18N
                 };
             }
         };

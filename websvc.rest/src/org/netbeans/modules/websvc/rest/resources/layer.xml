@@ -4,33 +4,33 @@
     <folder name="Templates">
         <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
-            <file name="RESTServicesFromEntities">         
+            <file name="RestServicesFromEntities">         
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.RESTServicesFromEntitiesIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.EntityRestServicesIterator"/>
                 <!--attr name="templateCategory" stringvalue="web-services"/-->
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RESTServicesFromEntities.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RestServicesFromEntities.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/RestService.png"/> 
             </file>
-            <file name="RESTServicesFromPatterns">
+            <file name="RestServicesFromPatterns">
                 <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.GenericRESTServicesIterator"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RESTServicesFromPatterns.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.PatternRestServicesIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RestServicesFromPatterns.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/RestService.png"/> 
             </file>
-            <file name="RESTClientStubs">
+            <file name="RestClientStubs">
                 <attr name="position" intvalue="350"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.ClientStubWizardIterator"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/clientStub.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/ClientStub.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/RestService.png"/> 
             </file>
             <file name="DefaultResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/DefaultResource.template">
                 <attr name="position" intvalue="0"/>

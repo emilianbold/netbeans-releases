@@ -41,7 +41,7 @@ import org.openide.util.lookup.Lookups;
 
 public class RestServicesNode extends AbstractNode { //implements PropertyChangeListener{
     private Project project;
-    private static final Image REST_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/restservices.png", true ); // NOI18N
+    private static final Image REST_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/RestServices.png", true ); // NOI18N
     static Icon folderIconCache;
     static Icon openedFolderIconCache;
     

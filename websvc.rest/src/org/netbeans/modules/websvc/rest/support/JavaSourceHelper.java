@@ -63,8 +63,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
-import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
-import org.netbeans.modules.websvc.rest.codegen.EntityRESTServicesCodeGenerator;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;

@@ -33,7 +33,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.websvc.rest.codegen.EntityRESTServicesCodeGenerator;
+import org.netbeans.modules.websvc.rest.codegen.EntityRestServicesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.ResourceBean;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
@@ -214,7 +214,7 @@ public class Util {
     }
     
     public static String deriveResourceClassName(String resourceName) {
-        return resourceName + EntityRESTServicesCodeGenerator.RESOURCE_SUFFIX;
+        return resourceName + EntityRestServicesGenerator.RESOURCE_SUFFIX;
     }
 
     public static String deriveUri(String resourceName, String currentUri) {
@@ -332,9 +332,9 @@ public class Util {
             };
             
             Node selectedNode = NodeOperation.getDefault().select(
-                    NbBundle.getMessage(GenericRESTServicePanelVisual.class,
+                    NbBundle.getMessage(SingletonSetupPanelVisual.class,
                                         "LBL_WinTitle_SelectClass"),    //NOI18N
-                    NbBundle.getMessage(GenericRESTServicePanelVisual.class,
+                    NbBundle.getMessage(SingletonSetupPanelVisual.class,
                                         "LBL_SelectRepresentationClass"),       //NOI18N
                     rootNode,
                     acceptor)[0];

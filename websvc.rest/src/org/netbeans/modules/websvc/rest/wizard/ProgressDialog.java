@@ -97,7 +97,7 @@ public class ProgressDialog {
         
         public ProgressPanel(ProgressHandle pHandle) {
             messageLabel = ProgressHandleFactory.createDetailLabelComponent(pHandle);
-            messageLabel.setText(NbBundle.getMessage(RESTServicesFromEntitiesIterator.class,
+            messageLabel.setText(NbBundle.getMessage(ProgressDialog.class,
                     "MSG_StartingProgress"));
             progressBar = ProgressHandleFactory.createProgressComponent(pHandle);
             
