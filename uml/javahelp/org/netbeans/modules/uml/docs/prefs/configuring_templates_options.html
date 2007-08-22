@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Configuring Templates Options (UML Modeling)</title>
+</head>
+<body>
+<h2>Configuring Domain Templates Options (UML Modeling)</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Templates tab in the UML panel of the Options window enables you to customize  domain template settings that are used during the UML Modeling's code generation process. 
+
+<p>Domain templates, which you define, is the mapping of an element type and a stereotype to a particular code generation template file. The three domain templates currently available are  Basic Class, Basic Interface, and Basic Enumeration, all of which are designed for plain old java objects (POJOs). The sole purpose of creating domain templates is to generate text from an existing UML model. The default output format is Java code, but it can be C++, JavaScript, XML, Ruby, etc. The output format is completely determined by the template files that are defined for a particular domain template. </p>
+<p>Domain templates can be grouped into categories. You can create a category with as few or 
+as many domain templates as you want. Categories of domain templates are displayed in tree form. 
+Each domain template has a set of properties that can be customized.</p>
+<p><b>To add a new domain template category:</b></p>
+<ol>
+<li>Select the Categories node and click Add.</li>
+<li>Select the node for the new category and press F2 or triple-click the node to change the default name of the new category.</li>
+</ol> 
+<p><b>To remove an existing domain template category: </b></p>
+<ul>
+<li>Select the category to be deleted and click Remove.</li>
+</ul>
+<p><b>To add a new domain template:</b></p>
+<ol>
+<li>Select the node for the category in which to add the domain template and click Add. </li>
+<li>Select the node for the new domain template and press F2 or triple-click the node to change the default name of the new category. </li>
+</ol>
+<p><b>To remove a domain template:</b></p>
+<ul>
+  <li>Select the domain template to be deleted and click Remove.</li>
+</ul>
+
+<p><b>To modify a domain template's properties:</b></p>
+Select the node for the domain template and modify any of the following properties:
+<ul>
+   <li><b>Element Type.</b> Specifies the domain template's model element type. You may select only one model element type 
+       from the drop-down list.</li>
+   <li><b>Stereotype.</b> Specifies the custom defined stereotype for the domain template. Some examples are <code>my-foo</code>, <code>ejb-stateless</code>, <code>persistence</code>, etc. </li> 
+   <li><b>Description.</b> Provides a brief description of the domain template. </li>
+  <li><b>Output Parameters.</b> Lists the template files and other output parameters to be used during the code generation process
+   when an element is identified as being of this type of domain template. Click Add Template  to define the following output parameters for a new template file:
+    <ul>
+      <li><b>Filename format. </b>Customized the filename with a prefix, suffix, or both with the use of the <i>{name}</i> token, where<i> name</i> is the model element name. Default filename is the same as the model element name.</li>
+         <li><b>Extension. </b>Customizes the extension to be used on the generated source file. </li>
+         <li><b>Folder Path. </b>Specifies a custom sub-folder path  of the model element package's sub-folder path. This field is usually left blank.</li>
+         <li><b>Template File. </b>Filename of the template that will be used to generate the source code.</li>
+    </ul>
+	<p>Select a row and click Edit to modify a set of existing output parameters for a template file. Select a row and click Remove to delete a set of output parameters.</p>
+  </li>
+</ul>
+
+
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="categories_in_preferences_editor.html">UML Categories in the Options Window</a></dd>
+  <dd><a href="nbdocs:/org/netbeans/modules/usersguide/configure/configure_options.html">Using the Options Window</a></dd>
+</dl>
+<hr>
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+  <tr><td>&nbsp;</td></tr>
+  <tr><td>&nbsp;</td></tr>
+  <tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

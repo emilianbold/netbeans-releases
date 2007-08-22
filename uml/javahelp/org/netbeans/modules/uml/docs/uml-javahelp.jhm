@@ -156,6 +156,7 @@
 	<mapID target="uml_diagrams_editing_diagram_elements_selecting_all_similar" url="diagrams/editing_diagram_elements_selecting_all_similar.html"/>
 	<mapID target="uml_diagrams_editing_diagram_elements_using_redefine_db" url="diagrams/editing_diagram_elements_using_redefine_db.html"/>
 	<mapID target="uml_diagrams_generating_code" url="diagrams/generating_code.html"/>
+	<mapID target="uml_diagrams_source_code_synchronization" url="diagrams/source_code_synchronization.html"/>
 	<mapID target="uml_diagrams_labeling_class_diagram_elements" url="diagrams/labeling_class_diagram_elements.html"/>
 	<mapID target="uml_diagrams_labeling_class_diagram_elements_assigning_preset_values" url="diagrams/labeling_class_diagram_elements_assigning_preset_values.html"/>
 	<mapID target="uml_diagrams_labeling_class_diagram_elements_assigning_userdef_values" url="diagrams/labeling_class_diagram_elements_assigning_userdef_values.html"/>
@@ -214,6 +215,7 @@
 	<mapID target="uml_prefs_categories_in_preferences_editor" url="prefs/categories_in_preferences_editor.html"/>
 	<mapID target="uml_prefs_configuring_uml_modeling" url="prefs/configuring_uml_modeling.html"/>
 	<mapID target="uml_prefs_using_preferences_editor" url="prefs/using_preferences_editor.html"/>
+	<mapID target="uml_prefs_configuring_templates_options" url="prefs/configuring_templates_options.html"/>
 	<mapID target="uml_reqs_support_about_reqs_support" url="reqs_support/about_reqs_support.html"/>
 	<mapID target="uml_reqs_support_integrating_doors_tool" url="reqs_support/integrating_doors_tool.html"/>
 	<mapID target="uml_reqs_support_associating_doors_project" url="reqs_support/associating_doors_project.html"/>
