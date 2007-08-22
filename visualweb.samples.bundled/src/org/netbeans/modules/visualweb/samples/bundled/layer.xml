@@ -20,11 +20,47 @@
                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
                            <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
                         </file>
+                        <file name="SinglePageCrudTable" url="SinglePageCrudTable.zip">
+                           <attr name="template" boolvalue="true"/>
+                           <attr name="templateCategory" stringvalue="web-types"/>
+                           <attr name="position" intvalue="200"/>
+                           <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/SinglePageCrudTable.html"/>
+                           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
+                           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
+                           <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
+                        </file>
+                        <file name="SinglePageCrudForm" url="SinglePageCrudForm.zip">
+                           <attr name="template" boolvalue="true"/>
+                           <attr name="templateCategory" stringvalue="web-types"/>
+                           <attr name="position" intvalue="300"/>
+                           <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/SinglePageCrudForm.html"/>
+                           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
+                           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
+                           <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
+                        </file>
+                        <file name="TwoPageCrudTable" url="TwoPageCrudTable.zip">
+                           <attr name="template" boolvalue="true"/>
+                           <attr name="templateCategory" stringvalue="web-types"/>
+                           <attr name="position" intvalue="400"/>
+                           <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/TwoPageCrudTable.html"/>
+                           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
+                           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
+                           <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
+                        </file>
+                        <file name="MovieAdmin" url="MovieAdmin.zip">
+                           <attr name="template" boolvalue="true"/>
+                           <attr name="templateCategory" stringvalue="web-types"/>
+                           <attr name="position" intvalue="500"/>
+                           <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/MovieAdmin.html"/>
+                           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
+                           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
+                           <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
+                        </file>
                     </folder>
                 </folder>
             </folder>
         </folder>
-    </folder>  
+    </folder>
 
     <!-- Java Code Clips in palette -->
     <folder name="CreatorJavaPalette">

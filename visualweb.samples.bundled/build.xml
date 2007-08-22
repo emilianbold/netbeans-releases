@@ -19,7 +19,15 @@
         <!-- sample webapps -->
         <mkdir dir="${webapps.desc.dest}" />
         <copy file="${webapps.desc}/TravelCenter.html" todir="${webapps.desc.dest}" />
-        <zip basedir="${webapps.repos}/TravelCenter" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/TravelCenter.zip" />   
+        <zip basedir="${webapps.repos}/TravelCenter" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/TravelCenter.zip" />
+        <copy file="${webapps.desc}/SinglePageCrudForm.html" todir="${webapps.desc.dest}" />
+        <zip basedir="${webapps.repos}/SinglePageCrudForm" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/SinglePageCrudForm.zip" />
+        <copy file="${webapps.desc}/SinglePageCrudTable.html" todir="${webapps.desc.dest}" />
+        <zip basedir="${webapps.repos}/SinglePageCrudTable" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/SinglePageCrudTable.zip" />   
+        <copy file="${webapps.desc}/TwoPageCrudTable.html" todir="${webapps.desc.dest}" />
+        <zip basedir="${webapps.repos}/TwoPageCrudTable" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/TwoPageCrudTable.zip" />
+        <copy file="${webapps.desc}/MovieAdmin.html" todir="${webapps.desc.dest}" />
+        <zip basedir="${webapps.repos}/MovieAdmin" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/MovieAdmin.zip" />
     </target>
     
     <target name="netbeans-extra" depends="-init">
