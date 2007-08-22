@@ -28,13 +28,18 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.*;
@@ -225,9 +230,7 @@ public class TestUtils {
         String absolutePath = FileUtil.toFile(classFile).getAbsolutePath();
 
         String directoryPath = absolutePath.substring(absolutePath.indexOf(classFile.getName()));
-
         File testFile = new File(directoryPath + testClassName + ".java");
-
         return FileUtil.toFileObject(testFile);
     }
 
@@ -237,8 +240,6 @@ public class TestUtils {
      * for JavaSource
      *
      */
-
-
     public static boolean testMethodExists(ClassTree tstClass, String testMethodName) {
         assert tstClass.getKind() == Tree.Kind.CLASS;
         List<? extends Tree> members = tstClass.getMembers();
@@ -320,6 +321,7 @@ public class TestUtils {
         return handles;
     }
 
+
     public static List<ClassTree> findTopClasses(CompilationUnitTree compilationUnit, TreeUtilities treeUtils) {
         List<? extends Tree> typeDecls = compilationUnit.getTypeDecls();
         if ((typeDecls == null) || typeDecls.isEmpty()) {
@@ -327,7 +329,6 @@ public class TestUtils {
         }
 
         List<ClassTree> result = new ArrayList<ClassTree>(typeDecls.size());
-
         for (Tree typeDecl : typeDecls) {
             if (typeDecl.getKind() == Tree.Kind.CLASS) {
                 ClassTree clsTree = (ClassTree) typeDecl;
@@ -340,8 +341,8 @@ public class TestUtils {
         return result;
     }
 
-    public static List<ElementHandle<TypeElement>> findTopClasses(JavaSource javaSource) throws IOException {
-        TopClassFinderTask finder = new TopClassFinderTask();
+    public static HashMap<ElementHandle<TypeElement>,List<ExecutableElement>> findTopClasses(JavaSource javaSource, boolean tpm) throws IOException {
+        TopClassFinderTask finder = new TopClassFinderTask(tpm);
         javaSource.runUserActionTask(finder, true);
         return finder.getTopClassElems();
     }
@@ -374,9 +375,12 @@ public class TestUtils {
 
     private static class TopClassFinderTask implements CancellableTask<CompilationController> {
         private volatile boolean cancelled;
-        private List<ElementHandle<TypeElement>> topClassElems;
+        final private boolean testPkgPrivateMethods;
 
-        private TopClassFinderTask() {
+        private HashMap<ElementHandle<TypeElement>,List<ExecutableElement>> topClassMap = new HashMap<ElementHandle<TypeElement>,List<ExecutableElement>>();
+
+        private TopClassFinderTask(boolean tpm) {
+            testPkgPrivateMethods = tpm;
         }
 
         public void cancel() {
@@ -389,11 +393,72 @@ public class TestUtils {
                 return;
             }
 
-            topClassElems = findTopClassElemHandles(parameter, parameter.getCompilationUnit());
+            
+            List<ElementHandle<TypeElement>> ltce = findTopClassElemHandles(parameter, parameter.getCompilationUnit());
+            
+            for (ElementHandle<TypeElement> tce : ltce)
+            {
+                topClassMap.put(tce,findTestableMethods(tce.resolve(parameter)));
+            }
+        }
+        
+        private boolean isTestableMethod(ExecutableElement method) {
+            if (method.getKind() != ElementKind.METHOD) {
+                throw new IllegalArgumentException();
+            }
+
+            return isMethodAcceptable(method);
+        }
+        
+         private boolean isMethodAcceptable(ExecutableElement method) {
+            Set<Modifier> methodAccessModifiers
+                = TestUtils.createModifierSet(Modifier.PUBLIC,
+                Modifier.PROTECTED);
+            Set<Modifier> modifiers = method.getModifiers();
+
+            if (modifiers.contains(Modifier.PUBLIC) && methodAccessModifiers.contains(Modifier.PUBLIC))
+                return true;
+            else if (modifiers.contains(Modifier.PROTECTED) && methodAccessModifiers.contains(Modifier.PROTECTED))
+                return true;
+            else if (!(modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED))
+                    &&  testPkgPrivateMethods && !modifiers.contains(Modifier.PRIVATE))
+                return true;
+            else
+                return false;
         }
 
-        public List<ElementHandle<TypeElement>> getTopClassElems() {
-            return this.topClassElems;
+        
+        private List<ExecutableElement> findTestableMethods(TypeElement classElem) {
+            List<ExecutableElement> methods
+                    = ElementFilter.methodsIn(classElem.getEnclosedElements());
+
+            if (methods.isEmpty()) {
+                return Collections.<ExecutableElement>emptyList();
+            }
+
+            List<ExecutableElement> testableMethods = null;
+
+            int skippedCount = 0;
+            for (ExecutableElement method : methods) {
+                if (isTestableMethod(method)) {
+                    if (testableMethods == null) {
+                        testableMethods = new ArrayList<ExecutableElement>(
+                                methods.size() - skippedCount);
+                    }
+                    testableMethods.add(method);
+                } else {
+                    skippedCount++;
+                }
+            }
+
+
+            return (testableMethods != null)
+                    ? testableMethods
+                    : Collections.<ExecutableElement>emptyList();
+        }
+
+        public HashMap<ElementHandle<TypeElement>,List<ExecutableElement>> getTopClassElems() {
+            return this.topClassMap;
         }
     }
 }
