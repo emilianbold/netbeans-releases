@@ -139,6 +139,7 @@ import org.netbeans.modules.cnd.apt.support.*;
         
     private boolean onStartPreprocNode(APT apt) {
         filter.onPreprocNode(apt);
+        addIncludesIfNeeded();
         ppStartDirectives.push(apt);        
         return true;
     }
