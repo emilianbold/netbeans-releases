@@ -104,30 +104,37 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         }
     }
     
+    @Override
     public Image getIcon(int type) {
         return computeIcon(false, type);
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         return computeIcon(true, type);
     }
 
+    @Override
     public String getName() {
         return g.getName();
     }
 
+    @Override
     public String getDisplayName() {
         return g.getDisplayName();
     }
 
+    @Override
     public boolean canRename() {
         return false;
     }
 
+    @Override
     public boolean canDestroy() {
         return false;
     }
 
+    @Override
     public boolean canCut() {
         return false;
     }
@@ -141,26 +148,31 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     }
     
     
+    @Override
     public Action[] getActions(boolean context) {
         Action[] result = initActions();
         return result;
     }
 
 
+    @Override
     public Action getPreferredAction() {
         return SystemAction.get(GenerateAction.class);
     }
 
     // From ActionFilterNode
     private Action[] actionCache;
+    
     private Action[] initActions () {
-        if (generator == Generator.NONE) {
-            return super.getActions();
-        }
-        
         if (actionCache == null) {
             Action[] existing = super.getActions();
-            Action[] additional = new Action[] { SystemAction.get(GenerateAction.class), null, CommonProjectActions.newFileAction(), null }; // null: separator
+            Action[] additional;
+            if (generator == Generator.NONE) {
+                additional = new Action[] { CommonProjectActions.newFileAction(), null }; // null: separator
+            } else {
+                additional = new Action[] { SystemAction.get(GenerateAction.class), null,
+                  CommonProjectActions.newFileAction(), null }; // null: separator
+            }
             if (existing != null && existing.length > 0) {
                 actionCache = new Action[existing.length+additional.length];
                 System.arraycopy(additional, 0, actionCache, 0, additional.length);
