@@ -170,8 +170,6 @@
                 <package>org.netbeans.modules.xml.xam.ui.layout</package>
                 <package>org.netbeans.modules.xml.xam.ui.multiview</package>
                 <package>org.netbeans.modules.xml.xam.ui.search</package>
-                <package>org.netbeans.modules.xml.xam.ui.search.api</package>
-                <package>org.netbeans.modules.xml.xam.ui.search.spi</package>
                 <package>org.netbeans.modules.xml.xam.ui.undo</package>
             </friend-packages>
         </data>

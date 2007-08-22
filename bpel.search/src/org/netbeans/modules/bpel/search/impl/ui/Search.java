@@ -36,11 +36,11 @@ import javax.swing.JPanel;
 import org.openide.DialogDescriptor;
 import org.netbeans.modules.print.ui.PrintUI;
 
-import org.netbeans.modules.xml.xam.ui.search.api.SearchException;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchMatch;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchOption;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchTarget;
-import org.netbeans.modules.xml.xam.ui.search.spi.SearchEngine;
+import org.netbeans.modules.xml.search.api.SearchException;
+import org.netbeans.modules.xml.search.api.SearchMatch;
+import org.netbeans.modules.xml.search.api.SearchOption;
+import org.netbeans.modules.xml.search.api.SearchTarget;
+import org.netbeans.modules.xml.search.spi.SearchEngine;
 
 /**
  * @author Vladimir Yaroslavskiy

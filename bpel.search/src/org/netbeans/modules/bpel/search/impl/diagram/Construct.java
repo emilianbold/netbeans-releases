@@ -28,8 +28,8 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.bpel.editors.api.Diagram;
 import org.netbeans.modules.bpel.editors.api.DiagramElement;
 
-import org.netbeans.modules.xml.xam.ui.search.api.SearchException;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchOption;
+import org.netbeans.modules.xml.search.api.SearchException;
+import org.netbeans.modules.xml.search.api.SearchOption;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
 

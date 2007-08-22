@@ -35,13 +35,13 @@ import org.netbeans.modules.xml.xam.ui.search.SearchControlPanel;
 import org.netbeans.modules.xml.xam.ui.search.SearchProvider;
 import org.netbeans.modules.xml.xam.ui.search.Query;
 
-import org.netbeans.modules.xml.xam.ui.search.api.SearchElement;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchEvent;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchException;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchMatch;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchOption;
-import org.netbeans.modules.xml.xam.ui.search.spi.SearchEngine;
-import org.netbeans.modules.xml.xam.ui.search.spi.SearchListener;
+import org.netbeans.modules.xml.search.api.SearchElement;
+import org.netbeans.modules.xml.search.api.SearchEvent;
+import org.netbeans.modules.xml.search.api.SearchException;
+import org.netbeans.modules.xml.search.api.SearchMatch;
+import org.netbeans.modules.xml.search.api.SearchOption;
+import org.netbeans.modules.xml.search.spi.SearchEngine;
+import org.netbeans.modules.xml.search.spi.SearchListener;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
 

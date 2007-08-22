@@ -19,7 +19,7 @@
 package org.netbeans.modules.bpel.search.impl.action;
 
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchTarget;
+import org.netbeans.modules.xml.search.api.SearchTarget;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
 

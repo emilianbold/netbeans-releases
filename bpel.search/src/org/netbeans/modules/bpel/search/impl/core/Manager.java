@@ -24,11 +24,11 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
 
-import org.netbeans.modules.xml.xam.ui.search.api.SearchManager;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchMatch;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchPattern;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchTarget;
-import org.netbeans.modules.xml.xam.ui.search.spi.SearchEngine;
+import org.netbeans.modules.xml.search.api.SearchManager;
+import org.netbeans.modules.xml.search.api.SearchMatch;
+import org.netbeans.modules.xml.search.api.SearchPattern;
+import org.netbeans.modules.xml.search.api.SearchTarget;
+import org.netbeans.modules.xml.search.spi.SearchEngine;
 
 import org.netbeans.modules.bpel.search.impl.action.SearchAction;
 import org.netbeans.modules.bpel.search.impl.ui.Find;

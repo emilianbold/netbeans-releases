@@ -26,11 +26,11 @@ import org.netbeans.modules.xml.xam.Named;
 
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 
-import org.netbeans.modules.xml.xam.ui.search.api.SearchException;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchMatch;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchOption;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchTarget;
-import org.netbeans.modules.xml.xam.ui.search.spi.SearchEngine;
+import org.netbeans.modules.xml.search.api.SearchException;
+import org.netbeans.modules.xml.search.api.SearchMatch;
+import org.netbeans.modules.xml.search.api.SearchOption;
+import org.netbeans.modules.xml.search.api.SearchTarget;
+import org.netbeans.modules.xml.search.spi.SearchEngine;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
 

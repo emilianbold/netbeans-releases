@@ -35,8 +35,8 @@ import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.ModelCookie;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchManagerAccess;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchTarget;
+import org.netbeans.modules.xml.search.api.SearchManagerAccess;
+import org.netbeans.modules.xml.search.api.SearchTarget;
 
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaColumnsView;

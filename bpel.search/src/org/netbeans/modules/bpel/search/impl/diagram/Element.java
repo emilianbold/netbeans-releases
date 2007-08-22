@@ -19,7 +19,7 @@
 package org.netbeans.modules.bpel.search.impl.diagram;
 
 import org.netbeans.modules.bpel.editors.api.DiagramElement;
-import org.netbeans.modules.xml.xam.ui.search.api.SearchElement;
+import org.netbeans.modules.xml.search.api.SearchElement;
 
 /**
  * @author Vladimir Yaroslavskiy
