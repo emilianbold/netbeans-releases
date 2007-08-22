@@ -549,7 +549,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
                 int hangingIndent = continued ? (hangingIndentSize) : 0;
 
-                if (isRhtmlDocument && balance == 0) {
+                if (isRhtmlDocument) {
                     // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
                     initialIndent = LexUtilities.getLineIndent(doc, offset);
                 }
