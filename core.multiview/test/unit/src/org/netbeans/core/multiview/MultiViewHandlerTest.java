@@ -139,7 +139,10 @@ public class MultiViewHandlerTest extends NbTestCase {
         assertEquals("",elem3.getLog());
         
         // test related hack, easy establishing a  connection from Desc->perspective
+//        System.err.println("start caring..........................");
         hand.requestActive(Accessor.DEFAULT.createPerspective(desc1));
+//        System.err.println("elem1=" + elem1.getLog());
+//        System.err.println("elem2=" + elem2.getLog());
         assertEquals("componentOpened-componentShowing-componentActivated-", elem1.getLog());
         assertEquals("componentOpened-componentShowing-componentActivated-componentDeactivated-componentHidden-", elem2.getLog());
         assertEquals("",elem3.getLog());

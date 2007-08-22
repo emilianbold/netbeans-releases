@@ -19,38 +19,15 @@
 
 package org.netbeans.core.multiview;
 
-import java.awt.BorderLayout;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.KeyStroke;
-import org.netbeans.core.api.multiview.MultiViewHandler;
-import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.multiview.MultiViewModel.ActionRequestObserverFactory;
-import org.netbeans.core.multiview.MultiViewModel.ElementSelectionListener;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
-import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.awt.UndoRedo;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
-import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
 
@@ -257,9 +234,6 @@ public final class MultiViewTopComponent
                 MultiViewTopComponent.this.requestActive();
             }
             if (peer.model.getActiveDescription() != description) {
-                if (activated) {
-                    peer.model.getActiveElement().componentDeactivated();
-                } 
                 peer.tabs.changeActiveManually(description);
                 if (activated) {
                     peer.model.getActiveElement().componentActivated();

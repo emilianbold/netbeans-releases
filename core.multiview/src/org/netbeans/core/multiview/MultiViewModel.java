@@ -19,7 +19,6 @@
 
 package org.netbeans.core.multiview;
 
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,8 +26,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
@@ -36,7 +33,6 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 
-import org.openide.windows.TopComponent;
 
 /** 
  * Model handling maintainance of descriptions, creation of elements and selection 

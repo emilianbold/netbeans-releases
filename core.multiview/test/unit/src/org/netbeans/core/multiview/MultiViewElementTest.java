@@ -146,8 +146,11 @@ public class MultiViewElementTest extends NbTestCase {
         elem1.resetLog();
         elem2.resetLog();
         elem3.resetLog();
-        
+//        System.err.println("start Caring.........................");
         elem1.doRequestActive();
+//        System.err.println("elem1=" + elem1.getLog());
+//        System.err.println("elem2=" + elem2.getLog());
+
         assertEquals("componentShowing-componentActivated-", elem1.getLog());
         assertEquals("componentDeactivated-componentHidden-", elem2.getLog());
         assertEquals("",elem3.getLog());

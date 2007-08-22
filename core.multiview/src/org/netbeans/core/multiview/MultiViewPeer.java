@@ -627,6 +627,10 @@ public final class MultiViewPeer  {
     private class SelectionListener implements ElementSelectionListener {
         
         public void selectionChanged(MultiViewDescription oldOne, MultiViewDescription newOne) {
+            if (isActivated()) {
+                MultiViewElement el = model.getElementForDescription(oldOne);
+                el.componentDeactivated();
+            }
             hideElement(oldOne);
             showCurrentElement();
             delegateUndoRedo.updateListeners(model.getElementForDescription(oldOne),
@@ -655,7 +659,6 @@ public final class MultiViewPeer  {
         public void requestActive(MultiViewPerspective pers) {
             MultiViewDescription desc = Accessor.DEFAULT.extractDescription(pers);
             if (model.getActiveDescription() != desc) {
-                model.getActiveElement().componentDeactivated();
                 tabs.changeActiveManually(desc);
                 model.getActiveElement().componentActivated();
             }

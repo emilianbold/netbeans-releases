@@ -19,10 +19,8 @@
 
 package org.netbeans.core.spi.multiview;
 
-import java.util.TooManyListenersException;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JToolBar;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 
