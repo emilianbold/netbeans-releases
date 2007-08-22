@@ -22,19 +22,19 @@ public abstract class InvocationAbstraction {
      * @return The return value for the method NULL IS NOT SUPPORTED!!!!
      * @throws java.lang.Exception Thrown when a protocol error occurs
      */
-
-    <#list mapping.getServiceMappings() as service>
-    <#list service.getMethods() as method>
     public abstract Object invoke(HttpSession session, DataInput input) throws Exception;
 
+    <#-- I am not sure, how/if void should be registered here -->
     public static int[] getIds() {
             return new int[] {
+                <#list mapping.getServiceMappings() as service>
+                <#list service.getMethods() as method>
                 <#list method.getParameters() as parameter>
-                    ${registry.getRegisteredTypeId( parameter.getType())}<#if parameter_has_next>, </#if>
+                    ${registry.getRegisteredTypeId( parameter.getType())}<#if parameter_has_next || method_has_next || service_has_next>, </#if>
+                </#list>
+                </#list>
                 </#list>
                 };
         };
-    </#list>
-    </#list>
 }
 //GEN-END:Client

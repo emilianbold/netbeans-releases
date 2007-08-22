@@ -123,7 +123,7 @@ public class ${mapping.getServerMapping().getClassName()} extends HttpServlet {
                 requestID = in.readInt();
                 Object returnValue = invokeMethod(session,requestID,in);
                 out.writeShort(resultCode);
-                Utility.writeResults(out, returnValue, ((InvocationAbstraction)METHODS.get(new Integer(requestID))).getIds());
+                Utility.writeResults(out, returnValue, InvocationAbstraction.getIds());
             }
             
             in.close();

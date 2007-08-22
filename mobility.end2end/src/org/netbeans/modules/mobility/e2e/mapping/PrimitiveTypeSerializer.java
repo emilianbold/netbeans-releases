@@ -258,6 +258,7 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         } else if( stringClassData.equals( type )) {
             return stream + ".writeUTF(" + fromObject( type, object ) + ");";
         } else if( voidClassData.equals( type )) {
+            throw new IllegalArgumentException("Void object is not serializable");//return stream + ".writeShort(" + fromObject( type, object ) + ");";
         } else if( BooleanClassData.equals( type )) {
             return stream + ".writeBoolean(" + fromObject( booleanClassData, object ) + ");";
         } else if( ByteClassData.equals( type )) {

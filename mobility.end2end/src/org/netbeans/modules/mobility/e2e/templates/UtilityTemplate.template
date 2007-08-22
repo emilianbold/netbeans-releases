@@ -18,10 +18,8 @@ public class Utility {
 
     /** Registered types */
     <#list instanceTypes as type>
-        <#if type.getName() != "void">
-            <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
-            private final static int ${serializer.instanceOf( type )?upper_case?replace( "[]", "_ARRAY" )?replace( ".", "_" ) }_TYPE = ${registry.getRegisteredTypeId( type )};
-        </#if>
+        <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
+        private final static int ${serializer.instanceOf( type )?upper_case?replace( "[]", "_ARRAY" )?replace( ".", "_" ) }_TYPE = ${registry.getRegisteredTypeId( type )};
     </#list>
 
     /** Marker for null. Null is a type and a value together. */
@@ -69,10 +67,12 @@ public class Utility {
             case ${registry.getRegisteredTypeId( type )}:
                 <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
                 output.writeShort(${serializer.instanceOf( type )?upper_case?replace( "[]", "_ARRAY" )?replace( ".", "_" ) }_TYPE);                    
-                <#if type.isPrimitive()>
-                    ${serializer.toStream( mapping, type, "output", serializer.fromObject( type, "o" ))}
-                <#else>
-                    ${serializer.toStream( mapping, type, "output", "o" )}
+                <#if type.getName() != "void">
+                    <#if type.isPrimitive()>
+                        ${serializer.toStream( mapping, type, "output", serializer.fromObject( type, "o" ))}
+                    <#else>
+                        ${serializer.toStream( mapping, type, "output", "o" )}
+                    </#if>
                 </#if>
                 break;
         </#list>
@@ -94,18 +94,16 @@ public class Utility {
         switch (type) {
         <#list parameterInstanceTypes as type>
             <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
-            <#if type.getName() != "void">
-                case ${registry.getRegisteredTypeId( type )}:
-                    <#if type.isPrimitive() && !type.isArray()>
-                        <#assign typeFromStream = serializer.fromStream( mapping, type, "in", null )/>
-                        // Primitive
-                        return ${serializer.toObject( type, typeFromStream )};
-                    <#else>
-                        // COmplex
-                        ${serializer.fromStream( mapping, type, "in", "result" )}
-                        return result;
-                    </#if>
-            </#if>
+            case ${registry.getRegisteredTypeId( type )}:
+                <#if type.isPrimitive() && !type.isArray()>
+                    <#assign typeFromStream = serializer.fromStream( mapping, type, "in", null )/>
+                    // Primitive
+                    return ${serializer.toObject( type, typeFromStream )};
+                <#else>
+                    // COmplex
+                    ${serializer.fromStream( mapping, type, "in", "result" )}
+                    return result;
+                </#if>
         </#list>
             case NULL_TYPE: /* null */
                 return null;
