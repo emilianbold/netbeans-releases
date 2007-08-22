@@ -99,19 +99,6 @@ public class EjbFacadeWizardIteratorTest extends SourceTestSupport {
         
     }
     
-    public void testGetUniqueClassName() throws IOException{
-        File testFile = new File(getWorkDir(), "Test.java");
-        testFile.mkdir();
-        EjbFacadeWizardIterator wizardIterator = new EjbFacadeWizardIterator();
-        String result = wizardIterator.getUniqueClassName("Test", FileUtil.toFileObject(getWorkDir()));
-        assertEquals("Test_1", result);
-        
-        File testFile2 = new File(getWorkDir(), "Test_1.java");
-        testFile2.mkdir();
-        result = wizardIterator.getUniqueClassName("Test", FileUtil.toFileObject(getWorkDir()));
-        assertEquals("Test_2", result);
-    }
-    
     public void testGenerate() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         String originalContent =
