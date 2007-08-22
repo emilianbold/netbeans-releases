@@ -21,7 +21,7 @@
     <mapID target="adminconsole"                                url="general/adminconsole.html" />
     <mapID target="jsp_connectionpool_tomcatmodule"             url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
     
-<!--<mapID target="lookup_jms"                              url="general/def_jms_lookup.html" />
+<!-- <mapID target="lookup_jms"                              url="general/def_jms_lookup.html" />
     <mapID target="lookup_jdbc"                                 url="general/def_jdbcresource_lookup.html" />-->
 
     
@@ -69,7 +69,7 @@
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode"          url="ejbconfigeditors/sunconfig.html" />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbView"                       url="ejbconfigeditors/entitybean.html" />    
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbNode"                       url="ejbconfigeditors/entitybean.html" />
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.ReferencesNode                 url="ejbconfigeditors/entitybean.html" />  
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.ReferencesNode"                url="ejbconfigeditors/entitybean.html" />  
     <mapID target="AS_CFG_CmpEntityEjb"                                                                 url="ejbconfigeditors/entitybean.html" />
 
     <!-- sun-application-client.xml DD editor CSH -->
