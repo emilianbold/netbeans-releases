@@ -212,6 +212,9 @@ public class Expression {
 				else if(m_RootToken != null)
 				{  
 					String tokenType = m_RootToken.getType();   
+                                        if (tokenType.equalsIgnoreCase("string constant"))
+                                            pInfo.sendCreationEvent(pParentNode, 1L, pDispatcher, null);
+                                        
 					PrimitiveInstanceInformation primRef = new PrimitiveInstanceInformation();
 					if(primRef != null)
 					{
