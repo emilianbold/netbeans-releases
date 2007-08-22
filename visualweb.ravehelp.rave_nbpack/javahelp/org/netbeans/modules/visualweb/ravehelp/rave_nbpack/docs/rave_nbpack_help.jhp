@@ -412,8 +412,6 @@
 						<file title="Template"/>
 					</directory>
 					<file title="add_complib.html"/>
-					<file title="add_data_source_db.html"/>
-					<file title="add_database_conn_db.html"/>
 					<file title="add_library.html"/>
 					<file title="add_project.html"/>
 					<file title="add_query_criteria.html"/>

@@ -48,7 +48,6 @@
 					</tocitem>
 					<tocitem text="Setting Up Database Connections">
 						<tocitem text="Data Source Drag and Drop" target="projrave_ui_elements_options_visual_editor" />
-						<tocitem text="Adding a Data Source" target="projrave_ui_elements_dialogs_add_data_source_db" />
 						<tocitem text="Resolving a Data Source" target="projrave_ui_elements_dialogs_resolve_data_source_db" />
 					</tocitem>
 					<tocitem text="Using the Java DB Database Server" expand="false">

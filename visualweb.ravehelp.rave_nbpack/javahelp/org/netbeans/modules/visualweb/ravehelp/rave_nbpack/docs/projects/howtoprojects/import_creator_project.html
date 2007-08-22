@@ -57,18 +57,13 @@
                The IDE scans the project classpath.
             </p>
           </li>
-          <li>
-            If you are connecting to a Java DB database using the Sun Java System Application
-            Server 9, restart the IDE.
-          </li>
+         
         </ol>
         <p>
            <b>Connecting to a Database</b>
         </p>
         <p>
-           In NetBeans 6.0, you must resolve all data sources before you run the application. When
-          you migrate the Java Studio Creator 2.1 user directory, third party complibs migrate to
-          the NetBeans 6.0 directory and appear in the Component Library Manager.
+           You must connect to a database before the application can access data from it.
         </p>
         <ol>
           <li>
@@ -88,18 +83,18 @@
            <b>Resolving Data Sources</b>
         </p>
         <p>
-           In NetBeans 6.0, you must resolve all data sources before you run the application. When
+           In NetBeans 6.0, you must resolve all data sources before you attempt to run the application. When
           you migrate the Java Studio Creator 2.1 user directory, third party complibs migrate to
           the NetBeans 6.0 directory and appear in the Component Library Manager.
         </p>
         <ol>
-          <li>
-            In the Projects window, the project node is red and displays a badge when there is a
+          <li> In the Projects window, the project node is red and displays a badge when there is a
             missing data source.
-          </li>
-          <li>
-            To resolve a data source, right-click the Data Source References node and choose
-            Resolve Data Sources.
+            <ol>
+              <li> To resolve a data source, right-click the <em>project-name</em> node and choose
+              Resolve Data Source Problem.
+              </li>
+            </ol>
           </li>
           <li>
             In the Resolve Data Source(s) dialog box, select the database name from the list and
@@ -110,16 +105,14 @@
             </p>
           </li>
           <li>
-            Select the data souce you want to resolve and click OK. 
-            <p>
-               The <a href="../../ui_elements/dialogs/add_database_conn_db.html">Add Database
+            Select the data souce you want to resolve and click Add Connection. 
+              <p>
+               The <a href="../../ui_elements/dialogs/new_database_connection_db.html">New Database
               Connection</a> dialog box opens.
             </p>
             <ul class="note">
               <li>
-                <b>Note:</b> If the project you are importing uses a Java DB database, go to step
-                9.
-              </li>
+                <b>Note:</b> If the project you are importing uses a Java DB database, the applicable information should appear in the dialog box. Go to step 12.</li>
             </ul>
           </li>
           <li>
@@ -153,21 +146,18 @@
           <li>
             Click Close. 
             <p>
-               The Add Data Connection dialog box opens.
+               The New Data Connection dialog box opens.
             </p>
           </li>
           <li>
             Select the server type from the drop down list.
           </li>
           <li>
-            Enter a User ID and a Password. 
-            <p>
-               &nbsp;
-            </p>
-          </li>
-          <li>
-            Enter the Database URL and click Add to add the Data Source.
-          </li>
+          Enter the Database URL.</li>
+          <li>Enter a User ID and a Password. </li>
+          
+        <li>Click OK to add the database connection. </li>
+        <li>Click Close to exit the Resolve Data Sources dialog box. </li>
         </ol>
         <ul class="note">
           <li>
@@ -231,8 +221,8 @@
         Notices</small></a> 
         <table cellpadding="50" border="0">
           <tr>
-            <td>
-              &nbsp;
+            <td>&nbsp;
+              
             </td>
           </tr>
         </table>

@@ -218,8 +218,6 @@
 	<mapID target="projrave_projects_howtoprojects_create_sample_app" url="projects/howtoprojects/create_sample_app.html"/>
 	<mapID target="projrave_projects_howtoprojects_import_creator_project" url="projects/howtoprojects/import_creator_project.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_complib" url="ui_elements/dialogs/add_complib.html"/>
-	<mapID target="projrave_ui_elements_dialogs_add_data_source_db" url="ui_elements/dialogs/add_data_source_db.html"/>
-	<mapID target="projrave_ui_elements_dialogs_add_database_conn_db" url="ui_elements/dialogs/add_database_conn_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_library" url="ui_elements/dialogs/add_library.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_project" url="ui_elements/dialogs/add_project.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_query_criteria" url="ui_elements/dialogs/add_query_criteria.html"/>
