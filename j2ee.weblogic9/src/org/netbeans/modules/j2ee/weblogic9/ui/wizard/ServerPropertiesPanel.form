@@ -202,6 +202,9 @@
         <Component class="javax.swing.JTextField" name="usernameField">
           <Properties>
             <Property name="columns" type="int" value="15"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="DEFAULT_USERNAME" type="code"/>
+            </Property>
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -239,6 +242,9 @@
         <Component class="javax.swing.JPasswordField" name="passwordField">
           <Properties>
             <Property name="columns" type="int" value="15"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="DEFAULT_PASSWORD" type="code"/>
+            </Property>
           </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">

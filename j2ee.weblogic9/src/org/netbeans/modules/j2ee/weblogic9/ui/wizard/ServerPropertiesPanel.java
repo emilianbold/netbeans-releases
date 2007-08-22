@@ -59,6 +59,10 @@ import org.xml.sax.SAXException;
  */
 public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardDescriptor.Panel {
 
+    private static final String DEFAULT_USERNAME = "weblogic"; // NOI18N
+
+    private static final String DEFAULT_PASSWORD = "weblogic"; // NOI18N
+
     /**
      * Since the WizardDescriptor does not expose the property name for the
      * error message label, we have to keep it here also
@@ -494,7 +498,7 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
      * XXX
      * ServerTypeLabel and ServerTypeCombo are not present in form due to
      * issue #64480 (remote instances not supported in 5.0)
-     * 
+     *
      * In future this should change.
      */
 
@@ -620,6 +624,7 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
         jPanel1.add(usernameLabel, gridBagConstraints);
 
         usernameField.setColumns(15);
+        usernameField.setText(DEFAULT_USERNAME);
         usernameField.getDocument().addDocumentListener(updateListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -639,6 +644,7 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
         jPanel1.add(passwordLabel, gridBagConstraints);
 
         passwordField.setColumns(15);
+        passwordField.setText(DEFAULT_PASSWORD);
         passwordField.getDocument().addDocumentListener(updateListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
