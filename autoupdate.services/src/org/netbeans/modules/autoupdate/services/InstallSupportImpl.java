@@ -63,6 +63,7 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -793,13 +794,21 @@ public class InstallSupportImpl {
                 }
             } else if (org.netbeans.updater.UpdaterFrame.FINISHED.equals (arg0.getPropertyName ())){
                 // XXX: the modules list should be refresh automatically when config/Modules/ changes
-                FileObject modulesRoot = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); // NOI18N
+                final FileObject modulesRoot = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); // NOI18N
                 err.log(Level.FINE,
                         "It\'s a hack: Call refresh on " + modulesRoot +
                         " file object.");
                 if (modulesRoot != null) {
-                    modulesRoot.getParent().refresh();
-                    modulesRoot.refresh();
+                    try {
+                        Repository.getDefault().getDefaultFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                            public void run() throws IOException {
+                                modulesRoot.getParent().refresh();
+                                modulesRoot.refresh();
+                            }
+                        });
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             } else {
                 assert false : "Unknown property " + arg0.getPropertyName ();

@@ -75,7 +75,7 @@ public class DefaultTestCase extends NbTestCase {
         
         TestUtils.setUserDir (getWorkDirPath ());
         TestUtils.testInit();
-        MockServices.setServices(MyProvider.class, CustomItemsProvider.class);
+        MockServices.setServices(MyProvider.class, CustomItemsProvider.class, InstallIntoNewClusterTest.NetBeansClusterCreator.class);
         assert Lookup.getDefault().lookup(MyProvider.class) != null;
         assert Lookup.getDefault().lookup(CustomItemsProvider.class) != null;
         UpdateUnitProviderFactory.getDefault().refreshProviders (null, true);

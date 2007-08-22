@@ -138,10 +138,11 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
     
     
     private UpdateElement installModuleImpl (UpdateUnit toInstall, UpdateElement installElement, final boolean installSupport) throws Exception {
+        fileChanges = new Boolean[]{false,false};
         installElement = (installElement != null) ? installElement : toInstall.getAvailableUpdates ().get (0);
-        
-        File configModules = new File (getWorkDir (), "config/Modules");
-        File modules = new File (getWorkDir (), "modules");
+        File f = InstallManager.findTargetDirectory(installElement.getUpdateUnit ().getInstalled (), Trampoline.API.impl(installElement),false);
+        File configModules = new File (f, "config/Modules");
+        File modules = new File (f, "modules");
         int configModulesSize = (configModules.listFiles () != null) ? configModules.listFiles ().length : 0;
         int modulesSize = (modules.listFiles () != null) ? modules.listFiles ().length : 0;
         assertFalse (fileChanges[0]);
@@ -408,7 +409,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         assertNotNull (toUnInstall);
         
         assertSame (toUnInstall, Utilities.toUpdateUnit (toUnInstall.getCodeName ()));
-        
+        UpdateElement installElement = toUnInstall.getInstalled();
         OperationContainer<OperationSupport> container = OperationContainer.createForUninstall ();
         OperationContainer.OperationInfo operationInfo = container.add (toUnInstall.getInstalled ());
         assertNotNull (operationInfo);
@@ -417,10 +418,12 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         assertNotNull (support);
         support.doOperation (null);
         assertNull (toUnInstall.getInstalled ());
-        
-        assertTrue (configModules.listFiles ().length < configModulesSize);
-        //assertTrue(modules.listFiles().length < modulesSize);
-        assertTrue (foConfigModules.getPath (), foConfigModules.getChildren ().length < foConfigModulesSize);
+
+        if (Trampoline.API.impl(installElement).getInstallInfo ().getTargetCluster () == null) {
+            assertTrue (configModules.listFiles ().length < configModulesSize);
+            //assertTrue(modules.listFiles().length < modulesSize);
+            assertTrue (foConfigModules.getPath (), foConfigModules.getChildren ().length < foConfigModulesSize);
+        }
         
         assertTrue (fileChanges[1]);
         fileChanges[1]=false;

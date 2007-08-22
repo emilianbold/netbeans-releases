@@ -19,30 +19,39 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.core.startup.MainLookup;
+import org.netbeans.core.startup.layers.LocalFileSystemEx;
+import org.netbeans.modules.autoupdate.updateprovider.InstalledUpdateProvider;
 import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
 import org.netbeans.updater.UpdateTracking;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Jiri Rechtacek
  */
-public class InstallManager {
+public class InstallManager extends InstalledFileLocator{
     
     // special directories in NB files layout
     static final String NBM_LIB = "lib"; // NOI18N
     static final String NBM_CORE = "core"; // NOI18N
     
     private static final Logger ERR = Logger.getLogger ("org.netbeans.modules.autoupdate.services.InstallManager");
+    private static List<File> clusters = new ArrayList<File>();
     
     static File findTargetDirectory (UpdateElement installed, UpdateElementImpl update, boolean isGlobal) {
         File res = null;
@@ -117,6 +126,7 @@ public class InstallManager {
             if (targetCluster != null && targetCluster.equals(cluster.getName())) {
                 if (!cluster.exists()) {
                     cluster.mkdirs();
+                    extendSystemFileSystem(cluster);
                 }
                 if (cluster.canWrite()) {
                     res = cluster;
@@ -161,6 +171,23 @@ public class InstallManager {
             }
         }
         return res;
+    }
+
+    private static void extendSystemFileSystem(File cluster) {
+        try {
+            File extradir = new File(cluster, "config");//NOI18N
+            extradir.mkdir();
+            LocalFileSystemEx lfse = new LocalFileSystemEx();
+            lfse.setRootDirectory(extradir);
+            MainLookup.register(lfse);
+            synchronized (InstallManager.class) {
+                clusters.add(cluster);
+            }
+        } catch (PropertyVetoException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     // can be null for fixed modules
@@ -268,5 +295,72 @@ public class InstallManager {
         
         return res;
     }
+
+    public File locate(String relativePath, String codeNameBase, boolean localized) {
+        if (relativePath.length() == 0) {
+            throw new IllegalArgumentException("Cannot look up \"\" in InstalledFileLocator.locate"); // NOI18N
+        }
+        if (relativePath.charAt(0) == '/') {
+            throw new IllegalArgumentException("Paths passed to InstalledFileLocator.locate should not start with '/': " + relativePath); // NOI18N
+        }
+        int slashIdx = relativePath.lastIndexOf('/');
+        if (slashIdx == relativePath.length() - 1) {
+            throw new IllegalArgumentException("Paths passed to InstalledFileLocator.locate should not end in '/': " + relativePath); // NOI18N
+        }
+        
+        String prefix, name;
+        if (slashIdx != -1) {
+            prefix = relativePath.substring(0, slashIdx + 1);
+            name = relativePath.substring(slashIdx + 1);
+            assert name.length() > 0;
+        } else {
+            prefix = "";
+            name = relativePath;
+        }
+            if (localized) {
+                int i = name.lastIndexOf('.');
+                String baseName, ext;
+                if (i == -1) {
+                    baseName = name;
+                    ext = "";
+                } else {
+                    baseName = name.substring(0, i);
+                    ext = name.substring(i);
+                }
+                String[] suffixes = org.netbeans.Util.getLocalizingSuffixesFast();
+                for (int j = 0; j < suffixes.length; j++) {
+                    String locName = baseName + suffixes[j] + ext;
+                    File f = locateExactPath(prefix, locName);
+                    if (f != null) {
+                        return f;
+                    }
+                }
+                return null;
+            } else {
+                return locateExactPath(prefix, name);
+            }
+        
+    }
     
+    /** Search all top dirs for a file. */
+    private static File locateExactPath(String prefix, String name) {
+        synchronized(InstallManager.class) {
+            File[] dirs = clusters.toArray(new File[clusters.size()]);
+            for (int i = 0; i < dirs.length; i++) {
+                File f = makeFile(dirs[i], prefix, name);
+                if (f.exists()) {                    
+                    return f;
+                }
+            }            
+        }        
+        return null;
+    }
+    
+    private static File makeFile(File dir, String prefix, String name) {
+        File f = FileUtil.normalizeFile(new File(dir, prefix.replace('/', File.separatorChar) + name));
+        if (f.exists()) {
+            System.out.println("exists: " + f.exists() + "   " + f.getAbsolutePath());
+        }
+        return f;
+    }
 }

@@ -42,6 +42,11 @@
     
 </module>
 
+<module codenamebase="com.sun.testmodule.cluster" distribution="nbresloc:/org/netbeans/api/autoupdate/data/com-sun-testmodule-cluster.nbm" downloadsize="2515" homepage="" license="AD9FBBC9" moduleauthor="" needsrestart="false" releasedate="2007/01/30" targetcluster="test">
+    <manifest OpenIDE-Module="com.sun.testmodule.cluster" OpenIDE-Module-Implementation-Version="070130" OpenIDE-Module-Java-Dependencies="Java &gt; 1.4" OpenIDE-Module-Name="cluster" OpenIDE-Module-Requires="org.openide.modules.ModuleFormat1" OpenIDE-Module-Specification-Version="1.0"/>
+    
+</module>
+
 <license name="AD9FBBC9">[NO LICENSE SPECIFIED]
 </license>
 </module_updates>
