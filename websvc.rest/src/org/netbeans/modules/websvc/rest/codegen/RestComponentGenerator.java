@@ -412,7 +412,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
         TypeElement targetResourceType = JavaSourceHelper.getTypeElement(targetResourceJS);
         TypeElement representationType = JavaSourceHelper.getXmlRepresentationClass(
                 
-                targetResourceType,EntityRestServicesGenerator.CONVERTER_SUFFIX);
+                targetResourceType,EntityResourcesGenerator.CONVERTER_SUFFIX);
         if (representationType != null) {
             JavaSource representationJS = JavaSourceHelper.forTypeElement(representationType, project);
             ModificationResult result = representationJS.runModificationTask(
@@ -433,7 +433,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
     public FileObject getConverterFolder() {
         FileObject converterDir = destDir;
         if (destDir.getParent() != null) {
-            FileObject dir = destDir.getParent().getFileObject(EntityRestServicesGenerator.CONVERTER_FOLDER);
+            FileObject dir = destDir.getParent().getFileObject(EntityResourcesGenerator.CONVERTER_FOLDER);
             if (dir != null) {
                 converterDir = dir;
             }

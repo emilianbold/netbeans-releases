@@ -27,7 +27,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
-import org.netbeans.modules.websvc.rest.codegen.model.ResourceBeanModel;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;

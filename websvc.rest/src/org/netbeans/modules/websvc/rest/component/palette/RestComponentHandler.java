@@ -27,7 +27,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.rest.codegen.WsdlComponentGenerator;
 import org.netbeans.modules.websvc.rest.codegen.RestComponentGenerator;
 import org.netbeans.modules.websvc.rest.codegen.WadlComponentGenerator;
-import org.netbeans.modules.websvc.rest.codegen.model.JaxwsBasedResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.model.WsdlResourceBean;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.modules.websvc.rest.wizard.ProgressDialog;
 import org.openide.DialogDescriptor;

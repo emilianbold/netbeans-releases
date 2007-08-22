@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : yahoo-ns.xml
+    Created on : June 6, 2007, 10:23 AM
+    Author     : Ayub Khan
+    Description:
+        Purpose of the document follows.
+        This document is an instance of component.xsd that describes the rest component
+        "strike iron". This document describes the name, description, icons for the
+        strike iron component. wsdl element define the wsdl for the service from 
+        the strike iron. Rest is self explanatory.
+        'name' attribute represents the name of the category along with its path 
+        in the palette. There can be any hierarchy. For Eg:- 
+        /Yahoo/BasicServices/NewsSearch etc. Use the 'bundle' attribute
+        to localize the names shown on the palette. For eg:- In Bundle file specify
+        /Yahoo=Yahoo or /Yahoo/NewsSearch=News Search etc.,
+-->
+
+<component
+        xmlns="http://xml.netbeans.org/websvc/rest/component/1.0"
+        xmlns:tns="http://xml.netbeans.org/websvc/rest/component/1.0/yahoons"
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
+        xsi:schemaLocation='http://xml.netbeans.org/websvc/rest/component/1.0 component.xsd'
+        name="NewsSearch"
+        category="/Yahoo"
+        nameKey="NewsSearch_Name"
+        categoryKey="Yahoo_Name"
+        bundle="org.netbeans.modules.websvc.rest.component.Bundle">
+    
+    <description key="NewsSearch_Desc" 
+                 bundle="org.netbeans.modules.websvc.rest.component.Bundle"/>
+    
+    <icons>
+        <icon url="org/netbeans/modules/websvc/rest/component/resources/yahoo.png" size="16"/>
+        <icon url="org/netbeans/modules/websvc/rest/component/resources/yahoo.png" size="32"/>
+    </icons>
+    
+    <service name="newsSearch">
+        <method name="//resource[@path='newsSearch']/method[@href='#search']"
+                type="http://research.sun.com/wadl/2006/10"
+                url="nbres:/org/netbeans/modules/websvc/rest/component/resources/yahoo-ns.wadl">
+            <!-- name value is path identifying the method in wadl -->                  
+            <documentation>
+                The Yahoo News Search service provides online searching of news
+                stories from around the world.
+            </documentation>
+        </method>
+    </service>
+    
+</component>

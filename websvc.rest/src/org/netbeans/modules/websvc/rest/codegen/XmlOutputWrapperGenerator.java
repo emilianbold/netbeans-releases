@@ -24,7 +24,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
-import org.netbeans.modules.websvc.rest.codegen.model.JaxwsBasedResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.model.WsdlResourceBean;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
@@ -53,8 +53,8 @@ public class XmlOutputWrapperGenerator {
         this.packageName = packageName;
         this.jaxbOutputClassNames = jaxbOutputClassNames;
         wrapElementName = Util.lowerFirstChar(className);
-        if (wrapElementName.endsWith(EntityRestServicesGenerator.CONVERTER_SUFFIX)) {
-            wrapElementName = wrapElementName.substring(0,wrapElementName.lastIndexOf(EntityRestServicesGenerator.CONVERTER_SUFFIX));
+        if (wrapElementName.endsWith(EntityResourcesGenerator.CONVERTER_SUFFIX)) {
+            wrapElementName = wrapElementName.substring(0,wrapElementName.lastIndexOf(EntityResourcesGenerator.CONVERTER_SUFFIX));
         }
     }
 

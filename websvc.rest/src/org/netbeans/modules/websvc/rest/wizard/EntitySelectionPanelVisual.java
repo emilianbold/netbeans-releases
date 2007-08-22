@@ -49,8 +49,8 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
-import org.netbeans.modules.websvc.rest.codegen.model.ModelBuilder;
-import org.netbeans.modules.websvc.rest.codegen.model.ResourceBeanModel;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.support.MetadataModelReadHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -73,8 +73,8 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
     private String  persistenceUnit;
     MetadataModelReadHelper<EntityMappingsMetadata, EntityMappings> entitiesHelper;
     private EntityMappings mappings;
-    private ModelBuilder builder;
-    private ResourceBeanModel resourceModel;
+    private EntityResourceModelBuilder builder;
+    private EntityResourceBeanModel resourceModel;
     
     //private List<EntityMappings> waitForMappings = new ArrayList<EntityMappings>();
     //private PersistenceUnit persistenceUnit;
@@ -439,7 +439,7 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
                            try {
                                mappings =  entitiesHelper.getResult();
                                List<Entity> entities = getAllEntities();
-                               builder = new ModelBuilder(project, entities);
+                               builder = new EntityResourceModelBuilder(project, entities);
                                for (Entity entity : entities) {
                                    addElement(entity);
                                }
@@ -505,7 +505,7 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
             return false;
         } 
 
-        ResourceBeanModel model = getResourceModel();
+        EntityResourceBeanModel model = getResourceModel();
         if (model != null && ! model.isValid()) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EntitySelectionPanel_InvalidEntityClasses");
             return false;
@@ -519,7 +519,7 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
         return new ArrayList<Entity>(Arrays.asList(mappings.getEntity()));
     }
 
-    private ResourceBeanModel getResourceModel() {
+    private EntityResourceBeanModel getResourceModel() {
         if (resourceModel == null) {
             refreshModel();
         }

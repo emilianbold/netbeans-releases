@@ -20,31 +20,55 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
-import org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.Pattern;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 /**
  * @author nam
  */
-final class PatternSelectionPanel extends AbstractPanel {
-    private org.openide.util.HelpCtx helpCtx;
-    private PatternSelectionPanelVisual component;
-    private Pattern selectedPattern;
+final class PatternResourcesSetupPanel extends AbstractPanel {
+    private Component component;
+    private Pattern currentPattern = PatternResourcesSetupPanel.Pattern.CONTAINER;
     
     /** Create the wizard panel descriptor. */
-    public PatternSelectionPanel(String name, WizardDescriptor wizardDescriptor) {
+    public PatternResourcesSetupPanel(String name, WizardDescriptor wizardDescriptor) {
         super(name, wizardDescriptor);
     }
     
     public boolean isFinishPanel() {
-        return false;
+        return true;
     }
 
+    public enum Pattern {
+        CONTAINER(ContainerItemSetupPanelVisual.class),
+        STANDALONE(SingletonSetupPanelVisual.class),
+        CLIENTCONTROLLED(ContainerItemSetupPanelVisual.class);
+        
+        private Class<? extends Component> componentClass;
+        Pattern(Class<? extends Component> componentClass) {
+            this.componentClass = componentClass;
+        }
+        
+        public Component createUI(String name) {
+            try {
+                return componentClass.getConstructor(String.class).newInstance(name);
+            } catch(Exception ex) {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+    }
+
+    public void setCurrentPattern(Pattern pattern) {
+        if (currentPattern != pattern) {
+            component = null;
+            currentPattern = pattern;
+        }
+    }
+    
     public Component getComponent() {
         if (component == null) {
-            component = new PatternSelectionPanelVisual(panelName);
-            component.addChangeListener(this);
+            component = currentPattern.createUI(panelName);
+            ((Settings)component).addChangeListener(this);
         }
         return component;
     }
@@ -53,18 +77,4 @@ final class PatternSelectionPanel extends AbstractPanel {
         return HelpCtx.DEFAULT_HELP;
     }
     
-    public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
-    }
-
-    @Override
-    public void storeSettings(Object settings) {
-        super.storeSettings(settings);
-        selectedPattern = (Pattern) ((WizardDescriptor)settings).getProperty(WizardProperties.PATTERN_SELECTION);
-    }
-
-    public Pattern getSelectedPattern() {
-        return selectedPattern;
-    }
 }

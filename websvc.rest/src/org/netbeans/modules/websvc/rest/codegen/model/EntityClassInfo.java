@@ -38,7 +38,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
  * @author PeterLiu
  */
 public class EntityClassInfo {
-    private ModelBuilder builder;
+    private EntityResourceModelBuilder builder;
     private Entity entity;
     private String name;
     private String type;
@@ -48,7 +48,7 @@ public class EntityClassInfo {
     
     
     /** Creates a new instance of ClassInfo */
-    public EntityClassInfo(Entity entity, Project project, ModelBuilder builder) {
+    public EntityClassInfo(Entity entity, Project project, EntityResourceModelBuilder builder) {
         this.entity = entity;
         this.fieldInfos = new ArrayList<FieldInfo>();
         this.builder = builder;

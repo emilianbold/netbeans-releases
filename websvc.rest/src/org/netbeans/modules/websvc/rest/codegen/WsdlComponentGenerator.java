@@ -67,7 +67,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
-import org.netbeans.modules.websvc.rest.codegen.model.JaxwsBasedResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.model.WsdlResourceBean;
 import org.netbeans.modules.websvc.rest.codegen.model.JaxwsOperationInfo;
 import org.netbeans.modules.websvc.rest.component.palette.RestComponentData;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
@@ -90,12 +90,12 @@ import static com.sun.source.tree.Tree.Kind.*;
 public class WsdlComponentGenerator extends RestComponentGenerator {
  
     public WsdlComponentGenerator(FileObject targetFile, RestComponentData data) {
-        super(targetFile, new JaxwsBasedResourceBean(data, FileOwnerQuery.getOwner(targetFile)));
+        super(targetFile, new WsdlResourceBean(data, FileOwnerQuery.getOwner(targetFile)));
     }
     
     public Map<String,String> getInputParameterTypes() {
         Map<String,String> ret = new HashMap<String,String>();
-        for(JaxwsOperationInfo info : ((JaxwsBasedResourceBean)bean).getOperationInfos()) {
+        for(JaxwsOperationInfo info : ((WsdlResourceBean)bean).getOperationInfos()) {
             String[] names = info.getInputParameterNames();
             String[] types = info.getInputParameterTypes();
             for (int i=0; i<names.length; i++) {
@@ -106,7 +106,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
     }
     
     public void setConstantInputValues(Map<String,Object> constantParamValues) {
-        ((JaxwsBasedResourceBean)bean).setConstantParams(constantParamValues);
+        ((WsdlResourceBean)bean).setConstantParams(constantParamValues);
     }
     
     public boolean needsInputs() {
@@ -114,7 +114,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
     }
     
     private void setupWebServiceClient() {
-        for(JaxwsOperationInfo info : ((JaxwsBasedResourceBean)bean).getOperationInfos()) {
+        for(JaxwsOperationInfo info : ((WsdlResourceBean)bean).getOperationInfos()) {
             info.setupWebServiceClient();
         }
     }
@@ -143,10 +143,10 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
     public FileObject generateJaxbOutputWrapper() throws IOException {
         FileObject converterFolder = getConverterFolder();
         String packageName = SourceGroupSupport.packageForFolder(converterFolder);
-        ((JaxwsBasedResourceBean)bean).setOutputWrapperPackageName(packageName);
-        String[] returnTypeNames = ((JaxwsBasedResourceBean)bean).getOutputTypes();
+        ((WsdlResourceBean)bean).setOutputWrapperPackageName(packageName);
+        String[] returnTypeNames = ((WsdlResourceBean)bean).getOutputTypes();
         XmlOutputWrapperGenerator gen = new XmlOutputWrapperGenerator(
-                converterFolder, ((JaxwsBasedResourceBean)bean).getOutputWrapperName(), packageName, returnTypeNames);
+                converterFolder, ((WsdlResourceBean)bean).getOutputWrapperName(), packageName, returnTypeNames);
         return gen.generate();
     }
     
@@ -165,7 +165,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
             modifyGETMethod();
         } else {
             wrapperResourceJS = JavaSource.forFileObject(wrapperResourceFile);
-            ((JaxwsBasedResourceBean)bean).initConstantParams(wrapperResourceJS);
+            ((WsdlResourceBean)bean).initConstantParams(wrapperResourceJS);
         }
     }
     
@@ -180,7 +180,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
                 String methodBody = "{" + getOverridingStatements(); //NOI18N
                 methodBody += "$CONVERTER$ representation = new $CONVERTER$(); ".replace("$CONVERTER$", converterName);
                 
-                for (JaxwsOperationInfo info : ((JaxwsBasedResourceBean)bean).getOperationInfos()) {
+                for (JaxwsOperationInfo info : ((WsdlResourceBean)bean).getOperationInfos()) {
                     methodBody += getWSInvocationCode(info);
                 }
                 methodBody += "return representation; }";
@@ -299,13 +299,13 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
                 argumentBuffer1.append("\t"+argumentTypeName+" "+argumentName+" = "+resolveInitValue(argumentTypeName)+"\n"); //NOI18N
             }
             List<WsdlParameter> parameters = info.getOperation().getParameters();
-            Set<String> constants = ((JaxwsBasedResourceBean)bean).getConstantParamNames();
+            Set<String> constants = ((WsdlResourceBean)bean).getConstantParamNames();
             for (int i=0; i<parameters.size(); i++) {
                 String argument = parameters.get(i).getName();
                 if (constants.contains(argument)) {
-                    Object value = ((JaxwsBasedResourceBean)bean).getConstantParamValue(argument);
+                    Object value = ((WsdlResourceBean)bean).getConstantParamValue(argument);
                     if (value instanceof Enum) {
-                        argument = ((JaxwsBasedResourceBean)bean).getConstantParamType(argument) + "." + value;
+                        argument = ((WsdlResourceBean)bean).getConstantParamType(argument) + "." + value;
                     } else {
                         argument = GenericResourceGenerator.toConstantName(argument);
                     }

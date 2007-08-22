@@ -8,9 +8,9 @@
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.EntityRestServicesIterator"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.EntityResourcesIterator"/>
                 <!--attr name="templateCategory" stringvalue="web-services"/-->
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RestServicesFromEntities.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/EntityResources.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/RestService.png"/> 
             </file>
@@ -18,8 +18,8 @@
                 <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.PatternRestServicesIterator"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RestServicesFromPatterns.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.PatternResourcesIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/PatternResources.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/RestService.png"/> 
             </file>
@@ -27,8 +27,8 @@
                 <attr name="position" intvalue="350"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.ClientStubWizardIterator"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/ClientStub.html"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.ClientStubsIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/ClientStubs.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/RestService.png"/> 
             </file>
@@ -85,10 +85,10 @@
     
     <folder name="RestComponents">
         <folder name="Google">
-            <file name="google-map.xml" url="/org/netbeans/modules/websvc/rest/component/google-map.xml"/>
+            <file name="google-map.xml" url="/org/netbeans/modules/websvc/rest/component/resources/google-map.xml"/>
         </folder>
         <folder name="Yahoo">
-            <file name="yahoo-ns.xml" url="/org/netbeans/modules/websvc/rest/component/yahoo-ns.xml"/>
+            <file name="yahoo-ns.xml" url="/org/netbeans/modules/websvc/rest/component/resources/yahoo-ns.xml"/>
         </folder>
     </folder>    
     

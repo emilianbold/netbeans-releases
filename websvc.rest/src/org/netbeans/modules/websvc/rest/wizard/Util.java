@@ -33,8 +33,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.websvc.rest.codegen.EntityRestServicesGenerator;
-import org.netbeans.modules.websvc.rest.codegen.model.ResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -214,7 +214,7 @@ public class Util {
     }
     
     public static String deriveResourceClassName(String resourceName) {
-        return resourceName + EntityRestServicesGenerator.RESOURCE_SUFFIX;
+        return resourceName + EntityResourcesGenerator.RESOURCE_SUFFIX;
     }
 
     public static String deriveUri(String resourceName, String currentUri) {
@@ -267,7 +267,7 @@ public class Util {
         return Inflector.getInstance().pluralize(name);
     }
     
-    public static String getPluralName(ResourceBean bean) {
+    public static String getPluralName(EntityResourceBean bean) {
         if (bean.isContainer()) {
             return bean.getName();
         } else {
@@ -275,7 +275,7 @@ public class Util {
         }
     }
     
-    public static String getSingularName(ResourceBean bean) {
+    public static String getSingularName(EntityResourceBean bean) {
         if (bean.isContainer()) {
             return Inflector.getInstance().singularize(bean.getName());
         } else {

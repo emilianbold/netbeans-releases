@@ -32,7 +32,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.codegen.model.WADLBasedResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.model.WadlResourceBean;
 import org.netbeans.modules.websvc.rest.codegen.model.JaxwsOperationInfo;
 import org.netbeans.modules.websvc.rest.component.palette.RestComponentData;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
@@ -50,10 +50,10 @@ import static com.sun.source.tree.Tree.Kind.*;
 public class WadlComponentGenerator extends RestComponentGenerator {
 
     public WadlComponentGenerator(FileObject targetFile, RestComponentData data) throws IOException {
-        this(targetFile, new WADLBasedResourceBean(data));
+        this(targetFile, new WadlResourceBean(data));
     }
     
-    public WadlComponentGenerator(FileObject targetFile, WADLBasedResourceBean bean) {
+    public WadlComponentGenerator(FileObject targetFile, WadlResourceBean bean) {
         super(targetFile, bean);
         this.targetFile = targetFile;
         this.destDir = targetFile.getParent();
@@ -78,7 +78,7 @@ public class WadlComponentGenerator extends RestComponentGenerator {
     }
     
     public void setConstantInputValues(Map<String,Object> constantParamValues) {
-        ((WADLBasedResourceBean)bean).setConstantParams(constantParamValues);
+        ((WadlResourceBean)bean).setConstantParams(constantParamValues);
     }
     
     public boolean needsInputs() {
@@ -110,10 +110,10 @@ public class WadlComponentGenerator extends RestComponentGenerator {
     public FileObject generateJaxbOutputWrapper() throws IOException {
         FileObject converterFolder = getConverterFolder();
         String packageName = SourceGroupSupport.packageForFolder(converterFolder);
-        ((WADLBasedResourceBean)bean).setOutputWrapperPackageName(packageName);
-        String[] returnTypeNames = ((WADLBasedResourceBean)bean).getOutputTypes();
+        ((WadlResourceBean)bean).setOutputWrapperPackageName(packageName);
+        String[] returnTypeNames = ((WadlResourceBean)bean).getOutputTypes();
         XmlOutputWrapperGenerator gen = new XmlOutputWrapperGenerator(
-                converterFolder, ((WADLBasedResourceBean)bean).getOutputWrapperName(), packageName, returnTypeNames);
+                converterFolder, ((WadlResourceBean)bean).getOutputWrapperName(), packageName, returnTypeNames);
         return gen.generate();
     }
     
@@ -141,7 +141,7 @@ public class WadlComponentGenerator extends RestComponentGenerator {
                 paramStr = sb1.toString();
                 if(bean.getQueryParams().length > 0)
                     paramStr = paramStr.substring(0, paramStr.length()-1);
-                methodBody += "String url = \""+((WADLBasedResourceBean)bean).getUrl()+"\";\n";
+                methodBody += "String url = \""+((WadlResourceBean)bean).getUrl()+"\";\n";
                 methodBody += "        "+converterName+" converter = new "+converterName+"();\n";
                 methodBody += "        try {\n";
                 methodBody += "             RestConnection cl = new RestConnection();\n";
@@ -178,7 +178,7 @@ public class WadlComponentGenerator extends RestComponentGenerator {
             modifyGETMethod();
         } else {
             wrapperResourceJS = JavaSource.forFileObject(wrapperResourceFile);
-            ((WADLBasedResourceBean)bean).initConstantParams(wrapperResourceJS);
+            ((WadlResourceBean)bean).initConstantParams(wrapperResourceJS);
         }
     }    
 }

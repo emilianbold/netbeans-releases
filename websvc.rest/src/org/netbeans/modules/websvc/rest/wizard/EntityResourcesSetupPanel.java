@@ -20,30 +20,28 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
-import org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.Pattern;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 /**
- * @author nam
+ * @author Pavel Buzek
  */
-final class PatternSelectionPanel extends AbstractPanel {
-    private org.openide.util.HelpCtx helpCtx;
-    private PatternSelectionPanelVisual component;
-    private Pattern selectedPattern;
+final class EntityResourcesSetupPanel extends AbstractPanel {
+    
+    private EntityResourcesSetupPanelVisual component;
     
     /** Create the wizard panel descriptor. */
-    public PatternSelectionPanel(String name, WizardDescriptor wizardDescriptor) {
+    public EntityResourcesSetupPanel(String name, WizardDescriptor wizardDescriptor) {
         super(name, wizardDescriptor);
     }
     
     public boolean isFinishPanel() {
-        return false;
+        return true;
     }
 
     public Component getComponent() {
         if (component == null) {
-            component = new PatternSelectionPanelVisual(panelName);
+            component = new EntityResourcesSetupPanelVisual(panelName);
             component.addChangeListener(this);
         }
         return component;
@@ -56,15 +54,5 @@ final class PatternSelectionPanel extends AbstractPanel {
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
-    }
-
-    @Override
-    public void storeSettings(Object settings) {
-        super.storeSettings(settings);
-        selectedPattern = (Pattern) ((WizardDescriptor)settings).getProperty(WizardProperties.PATTERN_SELECTION);
-    }
-
-    public Pattern getSelectedPattern() {
-        return selectedPattern;
     }
 }

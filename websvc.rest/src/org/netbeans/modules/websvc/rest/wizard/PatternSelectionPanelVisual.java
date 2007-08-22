@@ -24,7 +24,7 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.rest.wizard.PatternRestServicesSetupPanel.Pattern;
+import org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.Pattern;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 

@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://xml.netbeans.org/websvc/rest/component/1.0"
+            xmlns:tns="http://xml.netbeans.org/websvc/rest/component/1.0"
+            elementFormDefault="qualified">
+    <xsd:annotation>
+        <xsd:documentation>
+            This document describes the schema to build rest components. This 
+            document describes the name, description, icons for the
+            strike iron component. wsdl element define the wsdl for the service from 
+            the strike iron. Rest is self explanatory.
+            'name' attribute represents the category in the palette. There can be any
+            hierarchy. For Eg:- /StrikeIron/ZipCode etc. Use the 'bundle' attribute
+            to localize the names shown on the palette. For eg:- In Bundle file specify
+            /StrikeIron=Strike Iron or /StrikeIron/ZipCode=Zip Code etc.,
+        </xsd:documentation>
+    </xsd:annotation>
+    <xsd:element name="component">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="description">
+                    <xsd:complexType>
+                        <xsd:attribute name="key" type="xsd:string" use="required"/>
+                        <xsd:attribute name="bundle" type="xsd:string" use="required"/>
+                    </xsd:complexType> 
+                </xsd:element>
+                <xsd:element name="icons">
+                    <xsd:complexType>
+                        <xsd:sequence minOccurs="1" maxOccurs="unbounded">
+                            <xsd:element name="icon">
+                                <xsd:complexType>
+                                    <xsd:attribute name="url" type="xsd:string" use="required"/>
+                                    <xsd:attribute name="size" type="xsd:integer" use="required"/>
+                                </xsd:complexType> 
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:group ref="tns:Service"/>
+            </xsd:sequence>
+            <xsd:attribute name="name" type="xsd:string" use="required"/>
+            <xsd:attribute name="category" type="xsd:string" use="required"/>
+            <xsd:attribute name="nameKey" type="xsd:string" use="required"/>
+            <xsd:attribute name="categoryKey" type="xsd:string" use="required"/>
+            <xsd:attribute name="bundle" type="xsd:string" use="required"/>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:group name="Service">
+        <xsd:choice>                        
+            <xsd:element name="service" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        service element represents a service. It has a name will 
+                        be used to specify the value of UriTemplate annotation 
+                        in generated (REST) code.
+                    </xsd:documentation>
+                </xsd:annotation>            
+                <xsd:complexType>
+                    <xsd:sequence minOccurs="1" maxOccurs="unbounded">
+                        <xsd:element name="method">
+                            <xsd:annotation>
+                                <xsd:documentation>
+                                    a method represents one operation in case of WSDL. In case
+                                    of wsdl 'input' and 'output' can be empty. The implementation
+                                    will use the wsdl document to determine the input and output.
+                                    the input and output here is to support REST components
+                                    where there is no WADL file available.
+                                </xsd:documentation>
+                            </xsd:annotation>                          
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="documentation" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                                    <xsd:element name="input" minOccurs="0" maxOccurs="1">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                This element is mainly used if infact the WADL url 
+                                                is not available and is not specified in component.xml.
+                                                For WSDL, this element can be ommited.
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                        <xsd:complexType>
+                                            <xsd:sequence>
+                                                <xsd:element name="params" minOccurs="0" maxOccurs="1">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence>
+                                                            <xsd:element name="param" minOccurs="0" maxOccurs="unbounded">
+                                                                <xsd:complexType>
+                                                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                                                    <xsd:attribute name="type" type="xsd:string" use="required"/>
+                                                                </xsd:complexType>
+                                                            </xsd:element>  
+                                                        </xsd:sequence>
+                                                    </xsd:complexType>
+                                                </xsd:element>
+                                            </xsd:sequence>
+                                        </xsd:complexType>
+                                    </xsd:element> 
+                                    <xsd:element name="output" minOccurs="0" maxOccurs="1">
+                                        <xsd:annotation>
+                                            <xsd:documentation>
+                                                This element is mainly used if infact the WADL url 
+                                                is not available and is not specified in component.xml.
+                                                For WSDL, this element can be ommited.
+                                            </xsd:documentation>
+                                        </xsd:annotation>
+                                        <xsd:complexType>
+                                            <xsd:sequence>
+                                                <xsd:element name="media" minOccurs="0" maxOccurs="1">
+                                                    <xsd:complexType>
+                                                        <xsd:attribute name="type" type="xsd:string" use="required"/>
+                                                    </xsd:complexType>
+                                                </xsd:element>
+                                            </xsd:sequence>
+                                        </xsd:complexType>
+                                    </xsd:element> 
+                                </xsd:sequence>
+                                <xsd:attribute name="name" type="xsd:string" use="required">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            'name' represents name of the method
+                                        </xsd:documentation>
+                                    </xsd:annotation>                                 
+                                </xsd:attribute>
+                                <xsd:attribute name="serviceName" type="xsd:string" use="optional">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            service name value is wsdl:service/wsdl:port[@name]
+                                        </xsd:documentation>
+                                    </xsd:annotation>                                 
+                                </xsd:attribute>
+                                <xsd:attribute name="portName" type="xsd:string" use="optional">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            port name value is wsdl:service/wsdl:port[@name]
+                                        </xsd:documentation>
+                                    </xsd:annotation>                                 
+                                </xsd:attribute>                            
+                                <xsd:attribute name="type" type="xsd:string" use="required">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            'type' defines the type of service WSDL, WADL etc.,
+                                            For WSDL it is WSDL or 'http://schemas.xmlsoap.org/wsdl/' or
+                                            WSDL:[http://schemas.xmlsoap.org/wsdl/], 
+                                            for WADL it is WADL or 'http://research.sun.com/wadl/2006/10' or
+                                            WADL:[http://research.sun.com/wadl/2006/10]
+                                        </xsd:documentation>
+                                    </xsd:annotation>
+                                </xsd:attribute>
+                                <xsd:attribute name="url" type="xsd:string">
+                                    <xsd:annotation>
+                                        <xsd:documentation>
+                                            'url' defines the url of the WSDL or WADL document
+                                        </xsd:documentation>
+                                    </xsd:annotation>                                 
+                                </xsd:attribute>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                    <!-- name value is wsdl:service[@name] -->
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                </xsd:complexType>                                          
+            </xsd:element>
+            <xsd:element name="classes">
+                <xsd:complexType>
+                    <xsd:sequence minOccurs="1" maxOccurs="unbounded">
+                        <xsd:element name="class">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="documentation" type="xsd:string"/>
+                                    <xsd:element name="instanceCreate" minOccurs="0" maxOccurs="1">
+                                        <xsd:complexType>
+                                            <xsd:sequence>
+                                                <xsd:element name="documentation" type="xsd:string"/>
+                                                <xsd:element name="params">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+                                                            <xsd:element name="param">
+                                                                <xsd:complexType>
+                                                                    <xsd:attribute name="name" type="xsd:string"/>
+                                                                    <xsd:attribute name="type" type="xsd:string"/>
+                                                                    <xsd:attribute name="default" type="xsd:string"/>
+                                                                </xsd:complexType>
+                                                            </xsd:element>
+                                                        </xsd:sequence>
+                                                    </xsd:complexType>
+                                                </xsd:element>                                                            
+                                                <xsd:element name="return" type="xsd:string"/>
+                                            </xsd:sequence>
+                                            <xsd:attribute name="method" type="xsd:string"/>
+                                        </xsd:complexType>                                          
+                                    </xsd:element>
+                                </xsd:sequence>
+                                <xsd:attribute name="name" type="xsd:string"/>
+                            </xsd:complexType>                                        
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:choice>
+    </xsd:group>    
+</xsd:schema>

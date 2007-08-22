@@ -32,10 +32,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
-import org.netbeans.modules.websvc.rest.codegen.EntityRestServicesGenerator;
+import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
-import org.netbeans.modules.websvc.rest.wizard.PatternRestServicesSetupPanel.Pattern;
+import org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.Pattern;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
@@ -346,7 +346,7 @@ private void containerRepresentationClassChanged(java.awt.event.KeyEvent evt) {/
     private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resourceNameChanged
     String newName = resourceNameTextField.getText();
     if (! resourceClassNameOveridden) {
-        classTextField.setText(newName + EntityRestServicesGenerator.RESOURCE_SUFFIX);
+        classTextField.setText(newName + EntityResourcesGenerator.RESOURCE_SUFFIX);
     }
 //    if (! uriOveridden) {
 //        String currentUri = uriTextField.getText();

@@ -31,7 +31,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
-import org.netbeans.modules.websvc.rest.codegen.EntityRestServicesGenerator;
+import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -272,7 +272,7 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
 private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resourceNameChanged
     String newName = resourceNameTextField.getText();
     if (! resourceClassNameOveridden) {
-        classTextField.setText(Util.upperFirstChar(newName) + EntityRestServicesGenerator.RESOURCE_SUFFIX);
+        classTextField.setText(Util.upperFirstChar(newName) + EntityResourcesGenerator.RESOURCE_SUFFIX);
     }
     if (! uriOveridden) {
         uriTextField.setText(Util.lowerFirstChar(newName));
