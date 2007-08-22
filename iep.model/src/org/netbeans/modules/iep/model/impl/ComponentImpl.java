@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.iep.model.Component;
+import org.netbeans.modules.iep.model.Documentation;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPQNames;
@@ -143,5 +144,23 @@ public class ComponentImpl extends IEPComponentBase implements Component {
         return mType;
     }
     
+    public void setDocumentation(Documentation doc) {
+    	if(doc != null) {
+    		Documentation oldDoc = getDocumentation();
+    		if(oldDoc != null) {
+    			removeChild(oldDoc);
+    		} else {
+    			addAfter(COMPONENT_CHILD, doc, TypeCollection.FOR_COMPONENT.types());
+    		}
+    	}
+    }
     
+    public Documentation getDocumentation() {
+    	List<Documentation> children = getChildren(Documentation.class);
+    	if(children.size() != 0) {
+    		return children.get(0);
+    	}
+    	
+    	return null;
+    }
 }

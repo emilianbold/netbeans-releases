@@ -21,6 +21,7 @@ package org.netbeans.modules.iep.model.impl;
 
 import javax.xml.namespace.QName;
 import org.netbeans.modules.iep.model.Component;
+import org.netbeans.modules.iep.model.Documentation;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
@@ -86,5 +87,8 @@ public class IEPComponentFactoryImpl implements IEPComponentFactory {
 		return new SchemaAttributeImpl(model);
 	}
 
+	public Documentation createDocumentation(IEPModel model) {
+		return new DocumentationImpl(model);
+	}
 	
 }

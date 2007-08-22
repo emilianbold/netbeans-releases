@@ -40,4 +40,7 @@ public interface IEPComponentFactory extends ComponentFactory<IEPComponent> {
         SchemaComponent createSchema(IEPModel model);
         
         SchemaAttribute createSchemaAttribute(IEPModel model);
+        
+        Documentation createDocumentation(IEPModel model);
+        
 }

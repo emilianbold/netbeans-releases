@@ -52,5 +52,9 @@ public interface Component extends IEPComponent {
     
     Property getProperty(String name);
     
+    void setDocumentation(Documentation doc);
+    
+    Documentation getDocumentation();
+    
     TcgComponentType getComponentType();
 }

@@ -22,6 +22,7 @@ package org.netbeans.modules.iep.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.iep.model.Component;
+import org.netbeans.modules.iep.model.Documentation;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.Property;
 
@@ -33,8 +34,9 @@ import org.netbeans.modules.iep.model.Property;
 public enum TypeCollection {
 	EMPTY(createEmpty()),
 	FOR_COMPONENT (createComponent()),
-        FOR_PROPERTY (createProperty());
-        
+    FOR_PROPERTY (createProperty()),
+    FOR_DOCUMENTATION (createDocumentation());
+    
 	private Collection<Class<? extends IEPComponent>> types;
 
 	TypeCollection(Collection<Class<? extends IEPComponent>> types) {
@@ -56,12 +58,17 @@ public enum TypeCollection {
 		return c;
 	}
 
-        static Collection<Class<? extends IEPComponent>> createProperty() {
+    static Collection<Class<? extends IEPComponent>> createProperty() {
 		Collection<Class<? extends IEPComponent>> c = createEmpty();
 		c.add(Component.class);
                 c.add(Property.class);
 		return c;
 	}
         
-	
+    static Collection<Class<? extends IEPComponent>> createDocumentation() {
+		Collection<Class<? extends IEPComponent>> c = createEmpty();
+		c.add(Component.class);
+        c.add(Documentation.class);
+		return c;
+	}
 }

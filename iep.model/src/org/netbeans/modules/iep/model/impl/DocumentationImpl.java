@@ -14,7 +14,7 @@ public class DocumentationImpl extends IEPComponentBase implements Documentation
     }
 
     public DocumentationImpl(IEPModel model) {
-        this(model, createNewElement(IEPQNames.COMPONENT.getQName(), model));
+        this(model, createNewElement(IEPQNames.DOCUMENTATION.getQName(), model));
     }
 
     public void accept(IEPVisitor visitor) {
@@ -26,13 +26,12 @@ public class DocumentationImpl extends IEPComponentBase implements Documentation
         return child;
     }
 
-    public void setContent(String content) {
-    	
+    public void setTextContent(String content) {
+    	super.setText(TEXT_CONTENT_PROPERTY, content);
     	
     }
     
-    public String getContent() {
-    	// TODO Auto-generated method stub
-    	return null;
+    public String getTextContent() {
+    	return super.getText();
     }
 }
