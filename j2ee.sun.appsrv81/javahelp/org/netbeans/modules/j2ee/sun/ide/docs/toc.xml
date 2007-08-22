@@ -17,7 +17,7 @@
                 <tocitem text="Setting up a JDBC Resource"  target="def_jdbcresource"/>
                 <tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcatmodule"/>
                 <tocitem text="Setting up a JMS Resource"  target="def_jms"/>
-                <tocitem text="Setting up a JavaMail Resource"  target="def_javamail"/>
+                <tocitem text="Setting up a JavaMail Session Resource"  target="def_javamail"/>
 <!--            <tocitem text="Setting up a Persistence Manager Resource on the Sun Java System Application Server"  target="def_persistence"/> -->
                 <tocitem text="Registering and Deleting a Resource"  target="register_resource"/>
                 <tocitem text="Managing Users"  target="sjs_manageuser"/>
