@@ -97,11 +97,6 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -538,27 +533,20 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(FindAction.class));
             
             // honor 57874 contact
-            
-            try {
-                FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Projects/Actions"); // NOI18N
-                if (fo != null) {
-                    DataObject dobj = DataObject.find(fo);
-                    FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                    Lookup.Template<Object> query = new Lookup.Template<Object>(Object.class);
-                    Lookup lookup = actionRegistry.getLookup();
-                    Iterator<? extends Object> it = lookup.lookup(query).allInstances().iterator();
-                    while (it.hasNext()) {
-                        Object next = it.next();
-                        if (next instanceof Action) {
-                            actions.add((Action) next);
-                        } else if (next instanceof JSeparator) {
-                            actions.add(null);
-                        }
-                    }
+ 
+            Lookup lookup = Lookups.forPath("Projects/Actions"); // NOI18N
+            Lookup.Template query = new Lookup.Template(Object.class);
+            Iterator it = lookup.lookup(query).allInstances().iterator();
+            if (it.hasNext()) {
+                actions.add(null);
+            }
+            while (it.hasNext()) {
+                Object next = it.next();
+                if (next instanceof Action) {
+                    actions.add((Action) next);
+                } else if (next instanceof JSeparator) {
+                    actions.add(null);
                 }
-            } catch (DataObjectNotFoundException ex) {
-                // data folder for existing fileobject expected
-                Exceptions.printStackTrace(ex);
             }
             
             actions.add(null);

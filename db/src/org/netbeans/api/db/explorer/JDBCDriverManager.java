@@ -28,13 +28,10 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.db.explorer.actions.AddDriverAction;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.lookup.Lookups;
 
 /**
  * This class manages the list of JDBC drivers registered in the Database Explorer.
@@ -198,11 +195,6 @@ public final class JDBCDriverManager {
     }
     
     private synchronized Lookup.Result getLookupResult() {
-        if (result == null) {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(JDBCDriverConvertor.DRIVERS_PATH);
-            DataFolder folder = DataFolder.findFolder(fo);
-            result = new FolderLookup(folder).getLookup().lookup(new Lookup.Template(JDBCDriver.class));
-        }
-        return result;
+        return Lookups.forPath(JDBCDriverConvertor.DRIVERS_PATH).lookupResult(JDBCDriver.class);
     }
 }

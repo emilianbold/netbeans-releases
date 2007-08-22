@@ -35,15 +35,9 @@ import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 //import org.openide.util.HelpCtx;
@@ -113,28 +107,20 @@ public class RootNode extends org.openide.nodes.AbstractNode {
         
         // honor 57874 contact
         
-        try {
-            Repository repository  = Repository.getDefault();
-            FileSystem sfs = repository.getDefaultFileSystem();
-            FileObject fo = sfs.findResource("Projects/Actions");  // NOI18N
-            if (fo != null) {
-                DataObject dobj = DataObject.find(fo);
-                FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                Lookup.Template query = new Lookup.Template(Object.class);
-                Lookup lookup = actionRegistry.getLookup();
-                Iterator it = lookup.lookup(query).allInstances().iterator();
-                while (it.hasNext()) {
-                    Object next = it.next();
-                    if (next instanceof Action) {
-                        actions.add(next);
-                    } else if (next instanceof JSeparator) {
-                        actions.add(null);
-                    }
-                }
+ 
+        Lookup lookup = Lookups.forPath("Projects/Actions"); // NOI18N
+        Lookup.Template query = new Lookup.Template(Object.class);
+        Iterator it = lookup.lookup(query).allInstances().iterator();
+        if (it.hasNext()) {
+            actions.add(null);
+        }
+        while (it.hasNext()) {
+            Object next = it.next();
+            if (next instanceof Action) {
+                actions.add(next);
+            } else if (next instanceof JSeparator) {
+                actions.add(null);
             }
-        } catch (DataObjectNotFoundException ex) {
-            // data folder for exitinf fileobject expected
-            ErrorManager.getDefault().notify(ex);
         }
         
 //        actions.add(null);

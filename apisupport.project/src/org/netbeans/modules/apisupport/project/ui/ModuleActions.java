@@ -22,6 +22,7 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,9 +57,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -112,9 +110,10 @@ public final class ModuleActions implements ActionProvider {
         actions.add(null);
         actions.add(SystemAction.get(FindAction.class));
         // Honor #57874 contract:
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Projects/Actions"); // NOI18N
-        if (fo != null && fo.isFolder()) {
-            for (Object next : new FolderLookup(DataFolder.findFolder(fo)).getLookup().lookupAll(Object.class)) {
+        Collection<? extends Object> res = Lookups.forPath("Projects/Actions").lookupAll(Object.class); // NOI18N
+        if (!res.isEmpty()) {
+            actions.add(null);
+            for (Object next : res) {
                 if (next instanceof Action) {
                     actions.add((Action) next);
                 } else if (next instanceof JSeparator) {

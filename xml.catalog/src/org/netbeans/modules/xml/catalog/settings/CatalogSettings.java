@@ -27,13 +27,6 @@ import org.openide.*;
 import org.openide.util.io.NbMarshalledObject;
 
 import org.netbeans.modules.xml.catalog.spi.*;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -221,16 +214,7 @@ public final class CatalogSettings implements Externalizable {
      */
     private static Lookup getUserCatalogsLookup() {
         if (userCatalogLookup == null) {
-            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
-            FileObject folder = sfs.findResource(REGISTRATIONS);
-            // do not cache any module providing it can be enabled at any time
-            if (folder == null) return Lookups.fixed(new Object[0]);
-            try {
-                DataFolder dataFolder = (DataFolder) DataObject.find(folder);
-                userCatalogLookup = new FolderLookup(dataFolder).getLookup();
-            } catch (DataObjectNotFoundException ex) {
-                throw new IllegalStateException("There must be DataFolder for " + folder + "!");
-            }
+            userCatalogLookup = Lookups.forPath(REGISTRATIONS);
         }
         return userCatalogLookup;
     }

@@ -37,16 +37,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 
 import org.netbeans.modules.websvc.registry.model.WebServiceGroup;
@@ -58,6 +51,7 @@ import org.netbeans.modules.websvc.registry.util.Util;
 import org.netbeans.modules.websvc.registry.wsdl.WSDLInfo;
 
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -73,16 +67,8 @@ public class RegistryViewImpl implements WebServicesRegistryView, PropertyChange
     public Node getRegistryRootNode() {
         Node rootNode = null;
 
-        try {
-            FileSystem defaultFileSystem = Repository.getDefault().getDefaultFileSystem();
-            FileObject fo = defaultFileSystem.findResource("UI/Runtime");    //NOI18N
-            DataFolder df = (DataFolder) DataObject.find(fo);
-            Lookup l = new FolderLookup(df).getLookup();
-            rootNode = (WebServicesRootNode) l.lookup(WebServicesRootNode.class);
-        } catch (DataObjectNotFoundException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            rootNode = null;
-        }
+        Lookup l = Lookups.forPath("UI/Runtime"); // NOI18N
+        rootNode = (WebServicesRootNode) l.lookup(WebServicesRootNode.class);
 
         return rootNode;
     }

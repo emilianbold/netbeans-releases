@@ -48,16 +48,12 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 
 
 /**A wrapper node for project's root node that adds CVS badges+Project/Actions.
@@ -101,27 +97,15 @@ public final class ProjectNodeWrapper extends FilterNode implements Runnable, Fi
                 result.add(actions[cntr]);
             } else {
                 // honor 57874 contact:
-                try {
-                    Repository repository  = Repository.getDefault();
-                    FileSystem sfs = repository.getDefaultFileSystem();
-                    FileObject fo = sfs.findResource("Projects/Actions");  // NOI18N
-                    if (fo != null) {
-                        DataObject dobj = DataObject.find(fo);
-                        FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                        Lookup lookup = actionRegistry.getLookup();
-                        Iterator<? extends Object> it = lookup.lookupAll(Object.class).iterator();
-                        while (it.hasNext()) {
-                            Object next = it.next();
-                            if (next instanceof Action) {
-                                result.add((Action) next);
-                            } else if (next instanceof JSeparator) {
-                                result.add(null);
-                            }
-                        }
+                Lookup lookup = Lookups.forPath("Projects/Actions");
+                Iterator<? extends Object> it = lookup.lookupAll(Object.class).iterator();
+                while (it.hasNext()) {
+                    Object next = it.next();
+                    if (next instanceof Action) {
+                        result.add((Action) next);
+                    } else if (next instanceof JSeparator) {
+                        result.add(null);
                     }
-                } catch (DataObjectNotFoundException ex) {
-                    // data folder for exitinf fileobject expected
-                    ErrorManager.getDefault().notify(ex);
                 }
             }
         }

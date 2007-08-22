@@ -29,21 +29,13 @@ import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.modules.xml.spi.dom.*;
 import org.netbeans.modules.xml.api.cookies.ScenarioCookie;
 import org.netbeans.modules.xsl.api.XSLCustomizer;
-import org.netbeans.modules.xsl.api.XSLScenario;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.loaders.FolderLookup;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.InstanceDataObject;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 import org.w3c.dom.*;
-import org.w3c.dom.NodeList;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -809,32 +801,15 @@ public final class XSLGrammarQuery implements GrammarQuery{
      * Looks up registered XSLCustomizer objects which will be used by this object
      */
     private static XSLCustomizer lookupCustomizerInstance() {
-        try {
-            // Load the XSLCustomizer from the XML layer
-            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-            FileObject fo = fs.findResource(CUSTOMIZER_FOLDER);
-            if (fo == null) return null;
-            DataObject df = DataObject.find(fo);
-            if (!(df instanceof DataObject.Container)) {
-                return null;
-            }
+        Lookup.Template template =
+            new Lookup.Template(XSLCustomizer.class);
 
-            // ??? What is it? Should not we use naming instead?
-
-            FolderLookup lookup =
-                new FolderLookup((DataObject.Container) df);
-            Lookup.Template template =
-                new Lookup.Template(XSLCustomizer.class);
-
-            Lookup.Item lookupItem = lookup.getLookup().lookupItem(template);
-            if (lookupItem == null) {
-                return null;
-            }
-
-            return (XSLCustomizer)lookupItem.getInstance();
-        } catch (DataObjectNotFoundException e) {
+        Lookup.Item lookupItem = Lookups.forPath(CUSTOMIZER_FOLDER).lookupItem(template);
+        if (lookupItem == null) {
             return null;
         }
+
+        return (XSLCustomizer)lookupItem.getInstance();
     }
 
     /**

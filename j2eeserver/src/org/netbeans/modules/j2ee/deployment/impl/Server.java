@@ -45,6 +45,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport;
+import org.openide.util.lookup.Lookups;
 
 
 public class Server implements Node.Cookie {
@@ -75,8 +76,8 @@ public class Server implements Node.Cookie {
         
         dep = NetbeansDeployment.createGraph(descriptor.getInputStream());
         
-        lkp = new FolderLookup (DataFolder.findContainer (fo)).getLookup ();
-        factory = (DeploymentFactory) lkp.lookup (DeploymentFactory.class);
+        lkp = Lookups.forPath(fo.getPath());
+        factory = lkp.lookup (DeploymentFactory.class);
         if (factory != null) {
             factoryCls = factory.getClass ();
         } else {

@@ -27,16 +27,14 @@ package org.netbeans.modules.j2ee.deployment.impl.ui;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.nodes.*;
 import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+import org.openide.util.lookup.Lookups;
 
 /**
  * The server registry node is a node representing the registry in global options.
@@ -155,15 +153,6 @@ implements ServerRegistry.PluginListener, InstanceListener {
     }
     
     public static ServerRegistryNode getServerRegistryNode() {
-        try {
-            FileSystem defaultFileSystem = Repository.getDefault().getDefaultFileSystem();
-            FileObject fo = defaultFileSystem.findResource("UI/Runtime");    //NOI18N
-            DataFolder df = (DataFolder) DataObject.find(fo);
-            org.openide.util.Lookup l = new FolderLookup(df).getLookup();
-            return (ServerRegistryNode) l.lookup(ServerRegistryNode.class);
-        } catch (DataObjectNotFoundException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
-            return null;
-        }
+        return Lookups.forPath("UI/Runtime").lookup(ServerRegistryNode.class);
     }
 }

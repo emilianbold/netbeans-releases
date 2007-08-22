@@ -27,13 +27,10 @@ import java.util.List;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -142,11 +139,6 @@ public class ConnectionList {
     }
     
     private synchronized Lookup.Result getLookupResult() {
-        if (result == null) {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(DatabaseConnectionConvertor.CONNECTIONS_PATH);
-            DataFolder folder = DataFolder.findFolder(fo);
-            result = new FolderLookup(folder).getLookup().lookup(new Lookup.Template(DatabaseConnection.class));
-        }
-        return result;
+        return Lookups.forPath(DatabaseConnectionConvertor.CONNECTIONS_PATH).lookupResult(DatabaseConnection.class);
     }
 }

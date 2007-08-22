@@ -27,15 +27,9 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
-import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * GrammarQuery service provider definition. Manager methods
@@ -182,25 +176,8 @@ public abstract class GrammarQueryManager {
                 return registrations.allInstances().iterator();
             }
 
-            // try to initialize it
-            
-            try {
-                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-                FileObject fo = fs.findResource(FOLDER);      
-                DataObject df = DataObject.find(fo);
-                if (df instanceof DataObject.Container) {
-                    FolderLookup lookup =
-                        new FolderLookup((DataObject.Container) df);
-                    Lookup.Template template =
-                        new Lookup.Template(GrammarQueryManager.class);
-                    registrations = lookup.getLookup().lookup(template);
-                    return registrations.allInstances().iterator();
-                } else {
-                    return new ArrayList(0).iterator();
-                }
-            } catch (DataObjectNotFoundException ex) {
-                return new ArrayList(0).iterator();
-            }
+            registrations = Lookups.forPath(FOLDER).lookupResult(GrammarQueryManager.class);
+            return registrations.allInstances().iterator();
         }
     }
 }

@@ -23,11 +23,8 @@ import java.util.Iterator;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.explorer.MetaDataListener;
 import org.netbeans.modules.db.explorer.DbMetaDataListener;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -55,8 +52,6 @@ public class DbMetaDataListenerImpl implements DbMetaDataListener {
     }
 
     private static Lookup.Result getListeners() {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(REFRESH_LISTENERS_PATH);
-        DataFolder folder = DataFolder.findFolder(fo);
-        return new FolderLookup(folder).getLookup().lookup(new Lookup.Template(MetaDataListener.class));
+        return Lookups.forPath(REFRESH_LISTENERS_PATH).lookupResult(MetaDataListener.class);
     }
 }
