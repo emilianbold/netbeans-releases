@@ -40,6 +40,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
@@ -320,8 +321,22 @@ public class AddWsOperationHelper {
                         Collection<MethodModel> wsOperations = new ArrayList<MethodModel>();
                         boolean foundWebMethodAnnotation=false;
                         for(ExecutableElement method:allMethods) {
-                            MethodModel methodModel = MethodModelSupport.createMethodModel(controller, method);
-                            wsOperations.add(methodModel);
+                            // check if return type is a valid type
+                            if (method.getReturnType().getKind() == TypeKind.ERROR) break;
+                            // check if param types are valid types
+                            
+                            boolean validParamTypes = true;
+                            List<? extends VariableElement> params = method.getParameters();
+                            for (VariableElement param:params) {
+                                if (param.asType().getKind() == TypeKind.ERROR) {
+                                    validParamTypes = false;
+                                    break;
+                                }
+                            }
+                            if (validParamTypes) {
+                                MethodModel methodModel = MethodModelSupport.createMethodModel(controller, method);
+                                wsOperations.add(methodModel);
+                            }
                         } // for
                         result.setResult(wsOperations);
                     }
