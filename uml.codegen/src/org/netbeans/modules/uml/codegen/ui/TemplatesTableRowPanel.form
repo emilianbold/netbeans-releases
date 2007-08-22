@@ -23,24 +23,24 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="filenameFormatLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="filenameFormatLabel" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="folderLabel" min="-2" pref="83" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="folderLabel" pref="83" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="extensionLabel" alignment="0" min="-2" pref="83" max="-2" attributes="0"/>
-                  <Component id="templateFileLabel" alignment="0" min="-2" pref="83" max="-2" attributes="0"/>
+                  <Component id="extensionLabel" alignment="0" pref="83" max="32767" attributes="0"/>
+                  <Component id="templateFileLabel" alignment="0" pref="83" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="extensionText" alignment="0" pref="219" max="32767" attributes="0"/>
                   <Component id="folderText" alignment="0" pref="219" max="32767" attributes="0"/>
                   <Component id="filenameFormatText" alignment="0" pref="219" max="32767" attributes="0"/>
                   <Component id="templateFileCombo" alignment="1" pref="219" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
