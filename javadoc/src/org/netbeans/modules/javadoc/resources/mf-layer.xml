@@ -123,5 +123,10 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    <folder name="WarmUp">
+        <file name="org-netbeans-modules-javadoc-JavadocMenuWarmup.instance">
+            <attr name="instanceCreate" newvalue="org.netbeans.modules.javadoc.search.JavadocMenuWarmup" />
+        </file>
+    </folder>
     
 </filesystem>
