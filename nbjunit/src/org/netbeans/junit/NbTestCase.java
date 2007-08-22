@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     /** the amount of time the test was executing for
      */
     private long time;
+    /** our working directory */
+    private String workDirPath;
     
     
     /**
@@ -150,6 +153,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * Runs the test case, while conditionally skip some according to result of
      * {@link #canRun} method.
      */
+    @Override
     public void run(final TestResult result) {
         if (canRun()) {
             System.setProperty("netbeans.full.hack", "true"); // NOI18N
@@ -212,6 +216,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * count down and aborts the <code>runTest</code> if the time out expires.
      * @exception Throwable if any exception is thrown
      */
+    @Override
     public void runBare() throws Throwable {
         abstract class Guard implements Runnable {
             private boolean finished;
@@ -222,8 +227,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             public void run() {
                 try {
                     doSomething();
-                } catch (Throwable t) {
-                    this.t = Log.wrapWithMessages(t);
+                } catch (Throwable thrwn) {
+                    this.t = Log.wrapWithMessages(thrwn);
                 } finally {
                     synchronized (this) {
                         finished = true;
@@ -574,6 +579,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @return a path to a test method working directory
      */
     public String getWorkDirPath() {
+        if (workDirPath != null) {
+            return workDirPath;
+        }
+        
         String name = getName();
         // start - PerformanceTestCase overrides getName() method and then
         // name can contain illegal characters
@@ -603,9 +612,22 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             name = abbrevCapitals(name);
         }
         
-        return Manager.getWorkDirPath() + File.separator + 
-           clazz + File.separator + name;
+        String p = Manager.getWorkDirPath() + File.separator + clazz + File.separator + name;
+        String realP;
+        
+        for (int i = 0; ; i++) {
+            realP = i == 0 ? p : p + "-" + i;
+            if (usedPaths.add(realP)) {
+                break;
+            }
+        }
+        
+        
+        workDirPath = realP;
+        return realP;
     }
+
+    private static Set<String> usedPaths = new HashSet<String>();
     
     private static String abbrevDots(String dotted) {
         StringBuffer sb = new StringBuffer();
@@ -780,16 +802,19 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             this.f = f;
         }
 
+        @Override
         public void write(byte[] b, int off, int len) throws IOException {
             add(len);
             out.write(b, off, len);
         }
 
+        @Override
         public void write(byte[] b) throws IOException {
             add(b.length);
             out.write(b);
         }
 
+        @Override
         public void write(int b) throws IOException {
             add(1);
             out.write(b);
@@ -1259,6 +1284,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     private static String findRefsFromRoot(final Object target, final Set<?> rootsHint) throws Exception {
+        @SuppressWarnings("unchecked")
         Map m = LiveReferences.fromRoots(Collections.singleton(target), (Set<Object>)rootsHint, null);
         Path p = (Path)m.get(target);
         if (p != null) return p.toString();

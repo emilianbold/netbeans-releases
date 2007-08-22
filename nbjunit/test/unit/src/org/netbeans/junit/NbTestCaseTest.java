@@ -19,6 +19,7 @@
 
 package org.netbeans.junit;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -129,10 +130,20 @@ public class NbTestCaseTest extends NbTestCase {
         fail("The assertion should fail");
     }
     
-    public void testWorkDirLength() {
+    private static String previous;
+    
+    public void testWorkDirLength() throws IOException {
         System.setProperty("nbjunit.too.long", "10");
-        
+
+        getLog().println("Ahoj");
+        clearWorkDir();
+
         String s = getWorkDirPath();
+        if (s.equals(previous)) {
+            fail("Inside one testcase, one directory shall not be used multiple times: " + previous + " now: " + s);
+        }
+        previous = s;
+            
         if (s.length() > 200) {
             fail("Too long (" + s.length() + "): " + s);
         }
@@ -142,5 +153,9 @@ public class NbTestCaseTest extends NbTestCase {
         if (s.indexOf("testWorkDir") > 0) {
             fail("no testWorkDir: " + s);
         }
+    }
+    
+    public void testWorkDirLengthsimilarname() throws IOException {
+        testWorkDirLength();
     }
 }
