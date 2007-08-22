@@ -13,8 +13,9 @@ these two issues:
 http://www.netbeans.org/issues/show_bug.cgi?id=98212
 http://www.netbeans.org/issues/show_bug.cgi?id=112679
 
-Hence we have applied only one patch on
-org.apache.xml.resolver.Catalog.java that is the addition of this new API:
+Hence we have applied the following patches on xml-commons-resolver-1.2:
+
+1. Add a new API to org.apache.xml.resolver.Catalog.java:
 
   /**
    * Return all registered public IDs.
@@ -32,4 +33,5 @@ org.apache.xml.resolver.Catalog.java that is the addition of this new API:
       return v.iterator();
   }
 
-The patch is applied on xml-commons-resolver-1.2.
+2. Handle null in org.apache.xml.resolver.CatalogManager.java::readProperties()
+  + if (propertyFile == null) return;
