@@ -3,7 +3,7 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-	<tocitem text="C and C++ Development">
+	<tocitem text="C and C++ Development" expand="false">
 		<tocitem text="Getting Started">
 			<tocitem text="C and C++ Development Overview" target="CandC++Overview" />
 			<tocitem text="Key C and C++ Development Concepts" target="KeyCandC++Concepts" />
