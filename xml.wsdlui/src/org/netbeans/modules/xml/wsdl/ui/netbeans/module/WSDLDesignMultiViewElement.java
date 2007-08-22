@@ -33,7 +33,6 @@ import java.awt.Color;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Date;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -215,6 +214,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
         super.componentActivated();
         ExplorerUtils.activateActions(explorerManager, true);
         wsdlDataObject.getWSDLEditorSupport().syncModel();
+        WSDLMultiViewFactory.updateGroupVisibility(WSDLDesignMultiViewDesc.PREFERRED_ID);
         // Ensure the graph widgets have the focus.
         // Also helps to make F1 open the correct help topic.
         if (graphComponent != null) {
@@ -226,6 +226,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
     public void componentDeactivated() {
         ExplorerUtils.activateActions(explorerManager, false);
         super.componentDeactivated();
+        WSDLMultiViewFactory.updateGroupVisibility(WSDLDesignMultiViewDesc.PREFERRED_ID);
     }
     
     @Override

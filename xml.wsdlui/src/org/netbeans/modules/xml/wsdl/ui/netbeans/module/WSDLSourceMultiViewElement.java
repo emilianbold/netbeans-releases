@@ -252,6 +252,7 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
         super.componentActivated();            
         WSDLEditorSupport editor = wsdlDataObject.getWSDLEditorSupport();
         editor.addUndoManagerToDocument();
+        WSDLMultiViewFactory.updateGroupVisibility(WSDLSourceMultiviewDesc.PREFERRED_ID);
     }
     @Override
     public void componentDeactivated() {
@@ -277,11 +278,12 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
         // lest we get redundant undoable edits added to the queue.
         editor.syncModel();
         editor.removeUndoManagerFromDocument();
+        WSDLMultiViewFactory.updateGroupVisibility(WSDLSourceMultiviewDesc.PREFERRED_ID);
     }
     
     @Override
     public void componentOpened() {
-	super.componentOpened();
+    	super.componentOpened();
     }
     
     
@@ -318,6 +320,8 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
         editor.syncModel();
         editor.removeUndoManagerFromDocument();
     }
+    
+    
     
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {

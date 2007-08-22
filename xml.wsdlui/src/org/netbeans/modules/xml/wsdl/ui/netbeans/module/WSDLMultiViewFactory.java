@@ -24,7 +24,10 @@ import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponentGroup;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -90,5 +93,44 @@ public class WSDLMultiViewFactory {
                 }
             }
         }
+    }
+    
+    public static Boolean groupVisible = Boolean.FALSE; 
+    
+    public static void updateGroupVisibility(String preferredId) {
+        WindowManager wm = WindowManager.getDefault();
+        TopComponentGroup group = wm.findTopComponentGroup("wsdl_ui"); // NOI18N
+        if (group == null) {
+            return; // group not found (should not happen)
+        }
+        //
+        boolean isDesignViewSelected = false;
+        for (Mode mode : wm.getModes()) {
+            TopComponent selected = mode.getSelectedTopComponent();
+            if (selected != null) {
+                MultiViewHandler mvh = MultiViews.findMultiViewHandler(selected);
+                if (mvh != null) {
+                    MultiViewPerspective mvp = mvh.getSelectedPerspective();
+                    if (mvp != null) {
+                        String id = mvp.preferredID();
+                        if (preferredId.equals(id)) {
+                            isDesignViewSelected = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        synchronized (groupVisible) {
+        	if (isDesignViewSelected && !groupVisible) {
+        		group.open();
+        		groupVisible = Boolean.TRUE;
+        	} else if (!isDesignViewSelected && groupVisible){
+        		group.close();
+        		groupVisible = Boolean.FALSE;
+        	}
+        }
+        
+
     }
 }

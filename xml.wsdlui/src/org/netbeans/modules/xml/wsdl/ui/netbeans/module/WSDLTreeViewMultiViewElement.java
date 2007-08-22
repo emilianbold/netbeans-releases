@@ -23,7 +23,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
-import java.util.Iterator;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -35,13 +34,12 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultEditorKit;
 
-import org.netbeans.core.api.multiview.MultiViewHandler;
-import org.netbeans.core.api.multiview.MultiViewPerspective;
-import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.xml.search.api.SearchManager;
+import org.netbeans.modules.xml.search.api.SearchManagerAccess;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.validation.ValidateAction;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -54,8 +52,6 @@ import org.netbeans.modules.xml.xam.ui.category.CategoryPane;
 import org.netbeans.modules.xml.xam.ui.category.DefaultCategoryPane;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
-import org.netbeans.modules.xml.search.api.SearchManager;
-import org.netbeans.modules.xml.search.api.SearchManagerAccess;
 import org.openide.actions.FindAction;
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
@@ -67,10 +63,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
-import org.openide.windows.TopComponentGroup;
-import org.openide.windows.WindowManager;
 
 /**
  * @author radval
@@ -234,7 +227,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         super.componentActivated();
         ExplorerUtils.activateActions(manager, true);
         mObj.getWSDLEditorSupport().syncModel();
-        updateGroupVisibility();
+        WSDLMultiViewFactory.updateGroupVisibility(WSDLTreeViewMultiViewDesc.PREFERRED_ID);
         // Ensure the graph widgets have the focus.
         // Also helps to make F1 open the correct help topic.
         if (categoryPane != null) {
@@ -246,7 +239,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     public void componentDeactivated() {
         ExplorerUtils.activateActions(manager, false);
         super.componentDeactivated();
-        updateGroupVisibility();
+        WSDLMultiViewFactory.updateGroupVisibility(WSDLTreeViewMultiViewDesc.PREFERRED_ID);
     }
     
     @Override
@@ -274,45 +267,6 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(WSDLTreeViewMultiViewDesc.class);
-    }
-
-    private static Boolean groupVisible = null;
-    
-    private void updateGroupVisibility() {
-        WindowManager wm = WindowManager.getDefault();
-        final TopComponentGroup group = wm.findTopComponentGroup("wsdl_ui"); // NOI18N
-        if (group == null) {
-            return; // group not found (should not happen)
-        }
-        //
-        boolean isWSDLViewSelected = false;
-        Iterator it = wm.getModes().iterator();
-        while (it.hasNext()) {
-            Mode mode = (Mode) it.next();
-            TopComponent selected = mode.getSelectedTopComponent();
-            if (selected != null) {
-            MultiViewHandler mvh = MultiViews.findMultiViewHandler(selected);
-                if (mvh != null) {
-                    MultiViewPerspective mvp = mvh.getSelectedPerspective();
-                    if (mvp != null) {
-                        String id = mvp.preferredID();
-                        if (WSDLTreeViewMultiViewDesc.PREFERRED_ID.equals(id)) {
-                            isWSDLViewSelected = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        //
-        if (isWSDLViewSelected && !Boolean.TRUE.equals(groupVisible)) {
-            group.open();
-        } else if (!isWSDLViewSelected && !Boolean.FALSE.equals(groupVisible)) {
-            group.close();
-        }
-        //
-        groupVisible = isWSDLViewSelected ? Boolean.TRUE : Boolean.FALSE;
-        
     }
 
     @Override
