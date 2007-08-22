@@ -28,13 +28,10 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 import javax.swing.UIManager;
 import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
-import org.openide.nodes.Children;
 import org.openide.explorer.view.BeanTreeView;
 
 /**
@@ -59,26 +56,21 @@ public class MethodCheckedTreeBeanView extends BeanTreeView implements ChangeLis
     
     public MethodCheckedTreeBeanView() {
         super();
-        // System.out.println("MethodCheckedTreeBeanView");
         FocusListener[] fl = tree.getFocusListeners();
         for (int i = 0; i < fl.length; i++) {
             if (fl[i].getClass().getName().startsWith("org.openide")){  //NOI18N
                 tree.removeFocusListener(fl[i]);
             }
         }
-        
         MouseListener[] ml = tree.getMouseListeners();
         for (int i = 0; i < ml.length; i++) {
             if (ml[i].getClass().getName().startsWith("org.openide")){  //NOI18N
                 tree.removeMouseListener(ml[i]);
             }
         }
-        
-        
         tree.setCellRenderer(renderer = new MethodCheckedNodeRenderer(tree.getCellRenderer()));
         tree.setCellEditor(editor = new MethodCheckedNodeEditor(tree));
         data = new HashMap<String,Object>();
-        //  System.out.println("after   rrrrrrr" + editor.getClass().getName());
         tree.setEditable(true);
         renderer.setContentStorage(this);
         editor.setContentStorage(this);
@@ -98,108 +90,53 @@ public class MethodCheckedTreeBeanView extends BeanTreeView implements ChangeLis
     }
     
     private synchronized Object updateState(final Node fo) {
-        if( fo.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE ) != null &&
-                    !((Boolean)fo.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE )).booleanValue()) return null;
-        
-        String path ;
-        
-        if (fo.equals(root)){
-            path = rootPath;
-        } else{
-            final String[] nodesPath = NodeOp.createPath(fo,root);
-            path = manipulatePath(nodesPath);
-        }
-        // System.out.println("updateState of  " + fo.getDisplayName());
-        // System.out.println("in update state path.length = "+ path.length);
+        Boolean valid = (Boolean)fo.getValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE);
+        if( valid != null && !valid.booleanValue()) return null;
+        final String path = fo.equals(root) ? rootPath : manipulatePath(NodeOp.createPath(fo,root));
         if (!acceptPath(path)) return null; // null means invalid
-        //System.out.println("updateState of  " + fo.getDisplayName());
-        //printPath(path);
-        
         Object state = data.get(path);
-        //  printState(state);
         final boolean forceState = state == SELECTED || state == UNSELECTED;
-        // System.out.println("before getChildrenList");
         final List<Node> childrenList = getDescendants(fo,forceState);
-        if (childrenList != null){
-            //System.out.println("ChildrenList not null");
+        if (forceState) {
             for ( final Node chNode : childrenList ) {
-                
-                if (forceState) {
-                    //System.out.println("in forceState");
-                    final String[] cpNodes = NodeOp.createPath(chNode ,root);
-                    //System.out.println("chngNode ="+ chNode.getDisplayName());
-                    final String cp = manipulatePath(cpNodes);
-                    if (acceptPath(cp)) data.put(cp, state);
-                } else {
-                    //System.out.println("NO forceState");
-                    final Object childState = updateState(chNode);
-                    if (childState != null) {
-                        if (state == null) state = childState;
-                        else if (state != childState) state = MIXED;
-                    }
+                final String cp = manipulatePath(NodeOp.createPath(chNode, root));
+                if (acceptPath(cp)) data.put(cp, state);
+            }
+        } else {
+            for ( final Node chNode : childrenList ) {
+                final Object childState = updateState(chNode);
+                if (childState != null) {
+                    if (state == null) state = childState;
+                    else if (state != childState) state = MIXED;
                 }
             }
         }
         if (state == null) state = UNSELECTED; // if no valid children then SELECTED
-        //String  finstate = state.equals(SELECTED)?"selected":"unselected";
-        //System.out.println("finstate = "+ finstate + "   ");
-        if (path.length() > 0) data.put(path, state);
+        if (acceptPath(path)) data.put(path, state);
         return state;
     }
     
     public Object getState(final Node fo) { // finds first SELECTED or UNSELECTED from root
-        String path;
-        //  System.out.println("in getState = " + fo.getDisplayName() + " root = "+ root.getDisplayName());
-        if (fo.equals(root)){
-            path = rootPath;
-        } else{
-            final String [] pathNodes = NodeOp.createPath(fo,root);
-            path = manipulatePath(pathNodes);
-        }
-        // printPath(path);
+        String path = fo.equals(root) ? rootPath : manipulatePath(NodeOp.createPath(fo,root));
         if (!acceptPath(path)) return null; //invalid
-        //System.out.println("path != null = " + data.get(path).toString());
         final Object state = data.get(path);
         return state != null ? state : UNSELECTED;
     }
     
     public synchronized void setState(Node fo, final boolean selected) {
-        String  path;
-        //System.out.println("in setState" + fo.getDisplayName() + printSelected(selected));
-        if (fo.equals(root)){
-            path = rootPath;
-        } else{
-            final String [] pathNodes = NodeOp.createPath(fo,root);
-            path = manipulatePath(pathNodes);
-            
-        }
-        printMap(data);
+        String path = fo.equals(root) ? rootPath : manipulatePath(NodeOp.createPath(fo,root));
         if (path == null || path.length() == 0) return; // invalid file object
-        // System.out.println("retutrn invalid for "+ fo.getDisplayName());
         data.put(path, selected ? SELECTED : UNSELECTED); // set the one
-        
         if (!fo.equals(root)){
             data.remove(rootPath);
-            
             fo = fo.getParentNode();
-            if (fo != null)
-                //System.out.println("parent node =  "+ fo.getDisplayName());
-                while (fo != null && !root.equals(fo)) { // clean the path to parent
-                //System.out.println("in loop : " + fo.getDisplayName());
-                final String [] pathNodes = NodeOp.createPath(fo,root);
-                final String removePath = manipulatePath(pathNodes);
-                
-                data.remove(removePath);
+            while (fo != null && !root.equals(fo)) { // clean the path to parent
+                data.remove(manipulatePath(NodeOp.createPath(fo,root)));
                 fo = fo.getParentNode();
-                }
+            }
         }
-        //System.out.println("Before updatestate(root)");
-        printMap(data);
         updateState(root); // renew the path from parent
         fireChange();
-        //System.out.println("After updatestate(root)");
-        printMap(data);
-        //if (properties != null || propertyName != null) properties.put(propertyName, getExcludesRegex());
     }
     
     private void fireChange() {
@@ -217,74 +154,9 @@ public class MethodCheckedTreeBeanView extends BeanTreeView implements ChangeLis
     }
     
     public void initTreeWithAllUnselected(){
-        //System.out.println("initTreeWithAllUnselected root = " + root.getDisplayName());
-        String pathNodes;
-        final Node[] nodes = findAllNodes();
-        for (int i=0;i<nodes.length;i++){
-            if (nodes[i].equals(root)){
-                pathNodes = rootPath;
-                //  System.out.println("in node[i].equals rootttttt");
-            } else{
-                //System.out.println("node = " + nodes[i].getDisplayName());
-                pathNodes = manipulatePath(NodeOp.createPath( nodes[i], root));
-                
-            }
-            data.put(pathNodes,UNSELECTED);
-            
-        }
-        
-    }
-    
-    private Node[] findAllNodes(){
-        final List<Node> nodesList = new ArrayList<Node>();
-        
-        // System.out.println("in findAllNodes root = " + root.getDisplayName());
-        
-        findAllNodes(root,nodesList);
-        if (nodesList == null)
-            return null;
-        final Node nodes[] = new Node[ nodesList.size() ];
-        nodesList.toArray( nodes );
-        return nodes;
-    }
-    
-    
-    
-    private void  findAllNodes(final Node currentNode,final List<Node> nodesList){
-        if (currentNode == null)
-            return;
-        if (currentNode.isLeaf()) {
-            nodesList.add(currentNode);
-            
-        } else{
-            nodesList.add(currentNode);
-            final Children children = currentNode.getChildren();
-            if (children != null){
-                final Node[] subNodes = children.getNodes();
-                for (int k = 0;k < subNodes.length; k++) {
-                    findAllNodes(subNodes[k],nodesList);
-                }
-            }
-        }
-    }
-    
-    
-    public static  void printPath(final String path){
-        //System.out.print("path = ");
-        if (path == null) {
-            ///
-            //System.out.println("null");
-            return;
-        }
-        
-        //System.out.println(path);
-    }
-    
-    public static  void printPath(final String[] path){
-//        System.out.print("path = ");
-        if (path == null) {
-//            System.out.println("null");
-            return;
+        data.put(rootPath, UNSELECTED);
+        for (Node node : getDescendants(root, true)) {
+            data.put(manipulatePath(NodeOp.createPath( node, root)),UNSELECTED);
         }
     }
     
@@ -296,75 +168,51 @@ public class MethodCheckedTreeBeanView extends BeanTreeView implements ChangeLis
     }
     
     public synchronized void registerData(final Map<String,Object> data) {
-        
         this.data = data;
-        
         updateState(root);
         renderer.setContentStorage(this);
         editor.setContentStorage(this);
     }
         
-    private void printMap(final Map<String,Object> data){
-        //System.out.println(" **** MAP *****" );
-        final Set<String> keys = data.keySet();
-        for ( final String key : keys ) {
-            printPath(key);
-            final Object elem = data.get(key);
-            if (elem !=null)             {
-                printPath(key);
-            }
-        }
-    }
+//    private void printMap(final Map<String,Object> data){
+//        System.out.println(" **** MAP *****" );
+//        final Set<String> keys = data.keySet();
+//        for ( final String key : keys ) {
+//            printPath(key);
+//            final Object elem = data.get(key);
+//            if (elem !=null)             {
+//                printPath(key);
+//            }
+//        }
+//    }
+//    
+//    public static  void printPath(final String path){
+//        System.out.print("path = ");
+//        if (path == null) {
+//            System.out.println("null");
+//            return;
+//        }
+//        System.out.println(path);
+//    }
     
     
     private String manipulatePath(final String[] nodesPath){
         StringBuffer returnString = new StringBuffer();
-        for (int i=0;i<nodesPath.length - 1 ;i++){
-            returnString = returnString.append(nodesPath[i]);
-            returnString = returnString.append("."); // NOI18N
-            
-        }
-        returnString = returnString.append(nodesPath[nodesPath.length - 1]);
-        return returnString.toString();
+        for (int i=0;i<nodesPath.length - 1 ;i++) returnString.append(nodesPath[i]).append('.');
+        return returnString.append(nodesPath[nodesPath.length - 1]).toString();
     }
     
     private List<Node> getDescendants(final Node n,final boolean recursive){
         final List<Node> result = new ArrayList<Node>();
-        if (n == null  || n.isLeaf())
-            return null;
-        
-        for (final Enumeration e = n.getChildren().nodes(); e.hasMoreElements() ;) {
-            final Node subNode = (Node)e.nextElement();
-            result.add(subNode);
-            if (recursive){
-                final List<Node> subNodesList = getDescendants(subNode,true);
-                if (subNodesList != null){
-                    result.addAll(subNodesList);
-                }
-            }
-        }
-        
+        getDescendants(result, n, recursive);
         return result;
-        
-        
     }
     
-    private void printTree(final Node root){
-        if( root == null ) {
-            //System.out.println("root = null");
-            
-            return;
-        }
-        if( root.isLeaf()){
-            //System.out.println(root.getName() + " = " + root.getClass().getName());
-            return;
-        }
-        
-        for (final Enumeration e = root.getChildren().nodes(); e.hasMoreElements() ;) {
-            final Node n = (Node)e.nextElement();
-            //System.out.println( n.getName() + " = " + n.getClass().getName());
-            printTree(n);
-            
+    private void getDescendants(List<Node> list, final Node n,final boolean recursive){
+        if (n != null) for (final Enumeration e = n.getChildren().nodes(); e.hasMoreElements() ;) {
+            final Node subNode = (Node)e.nextElement();
+            list.add(subNode);
+            if (recursive) getDescendants(list, subNode,true);
         }
     }
     
@@ -384,43 +232,16 @@ public class MethodCheckedTreeBeanView extends BeanTreeView implements ChangeLis
         return nodes;
     }
     
-    public Node findNode( final String packageAndName ){
-        //System.out.println("in findNode for " + packageAndName +"  tree ====    ");
-        printTree(root);
-        
-        if (packageAndName == null)
-            return null;
-        if (packageAndName.equals(rootPath))
-            return root;
+    public Node findNode(final String packageAndName){
+        if (packageAndName == null) return null;
+        if (packageAndName.equals(rootPath)) return root;
         try{
-            final String[] sections = seperatePath(packageAndName);           
-            return NodeOp.findPath(root,sections);
+            return NodeOp.findPath(root ,packageAndName.split("\\.")); //NOI18N
         }catch (org.openide.nodes.NodeNotFoundException ex){
-            //System.out.println("NodeNotFoundException" );
             return null;
         }
     }
     
-    private String[] seperatePath(final String path){
-        //FIXME
-        //System.out.println("in seperatePath " + path);
-        final StringTokenizer tk = new StringTokenizer(path,"."); //NOI18N
-        final int numTokens = tk.countTokens();
-        String[] segments = new String[numTokens];
-        int i=0;
-        //just for presentation
-        // should be the project/src direcory
-        // segments[i++] = root.getName();
-        //  System.out.println("root name = "+ root.getName());
-        while (tk.hasMoreTokens()) {
-            final String segment = tk.nextToken();
-            //System.out.println("segment =" + segment);
-            segments[i++] = segment;
-        }
-        
-        return segments;
+    public void stateChanged(final ChangeEvent e) {
     }
-    
-    public void stateChanged(@SuppressWarnings("unused")
-	final ChangeEvent e){}
 }
