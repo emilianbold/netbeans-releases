@@ -62,7 +62,10 @@
                         <f:facet name="header">
                             <h:outputText value="ManufacturerId"/>
                         </f:facet>
-                        <h:outputText value="#{item.manufacturerId}"/>
+                        <h:commandLink action="#{manufacturer.detailSetup}">
+                            <f:param name="manufacturerId" value="#{item.manufacturerId.manufacturerId}"/>
+                            <h:outputText value="#{item.manufacturerId.manufacturerId}"/>
+                        </h:commandLink>
                     </h:column>
                     <h:column>
                         <f:facet name="header">
