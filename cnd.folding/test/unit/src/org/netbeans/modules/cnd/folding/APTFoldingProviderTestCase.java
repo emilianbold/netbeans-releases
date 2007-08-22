@@ -54,6 +54,11 @@ public class APTFoldingProviderTestCase extends BaseTestCase {
         performTest("lastIncludes.cc");
     }
     
+    public void testMixedPrepocDirectives() throws Exception {
+        performTest("mixedPreprocDirectives.cc");
+    }
+    
+    
     private void performTest(String source) throws Exception {
         System.out.println(getWorkDir());
         File testSourceFile = getDataFile(source);
