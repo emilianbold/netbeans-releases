@@ -20,6 +20,7 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import java.awt.*;
+import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 
 /**
@@ -31,31 +32,33 @@ import javax.swing.JComponent;
  * @author Dafe Simonek
  */
 class StackLayout implements LayoutManager {
-    /**
-     * Default size when no components are contained
-     */
-    private static Dimension emptySize = null;
+    
+    // #100486 - hold visibleComp weakly, because removeLayoutComponent may not
+    // be called and then visibleComp is not freed. See StackLayoutTest for details.
     /**
      * Holds currently visible component or null if no comp is visible
      */
-    private Component visibleComp = null;
+    private WeakReference<Component> visibleComp = null;
 
     /**
      * Set the currently displayed component.  If passed null for the component,
      * all contained components will be made invisible (sliding windows do this)
+     * @param c Component to show
+     * @param parent Parent container
      */
     public void showComponent(Component c, Container parent) {
-        if (visibleComp != c) {
+        Component comp = getVisibleComponent();
+        if (comp != c) {
             if (!parent.isAncestorOf(c) && c != null) {
                 parent.add(c);
             }
             synchronized (parent.getTreeLock()) {
-                if (visibleComp != null) {
-                    visibleComp.setVisible(false);
+                if (comp != null) {
+                    comp.setVisible(false);
                 }
-                visibleComp = c;
+                visibleComp = new WeakReference<Component>(c);
                 if (c != null) {
-                    visibleComp.setVisible(true);
+                    c.setVisible(true);
                 }
 		// trigger re-layout
 		if (c instanceof JComponent) {
@@ -68,9 +71,11 @@ class StackLayout implements LayoutManager {
         }
     }
     
-    /** Allows support for content policies */
+    /** Allows support for content policies 
+     * @return Currently visible component or null
+     */
     public Component getVisibleComponent() {
-        return visibleComp;
+        return visibleComp == null ? null : visibleComp.get();
     }
 
     /**
@@ -82,7 +87,7 @@ class StackLayout implements LayoutManager {
             comp.setVisible(false);
             // keep consistency if showComponent was already called on this
             // component before
-            if (comp == visibleComp) {
+            if (comp == getVisibleComponent()) {
                 visibleComp = null;
             }
 /*System.out.println("Border dump for " + comp.getName());
@@ -108,7 +113,7 @@ borderDump((javax.swing.JComponent)comp, "");*/
     
     public void removeLayoutComponent(Component comp) {
         synchronized (comp.getTreeLock()) {
-            if (comp == visibleComp) {
+            if (comp == getVisibleComponent()) {
                 visibleComp = null;
             }
             // kick out removed component as visible, so that others
@@ -118,6 +123,7 @@ borderDump((javax.swing.JComponent)comp, "");*/
     }
 
     public void layoutContainer(Container parent) {
+        Component visibleComp = getVisibleComponent();
         if (visibleComp != null) {
             synchronized (parent.getTreeLock()) {
                 Insets insets = parent.getInsets();
