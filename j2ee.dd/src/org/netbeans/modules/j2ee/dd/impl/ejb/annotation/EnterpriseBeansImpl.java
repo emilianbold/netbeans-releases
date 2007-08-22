@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.dd.impl.ejb.annotation;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -28,6 +29,8 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
@@ -43,15 +46,50 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Persisten
 public class EnterpriseBeansImpl implements EnterpriseBeans {
 
     private final AnnotationModelHelper helper;
-    private final PersistentObjectManager<SessionImpl> sessionManager;
-    private final PersistentObjectManager<MessageDrivenImpl> messageDrivenManager;
+    private PropertyChangeSupport propChangeSupport;
+    private PersistentObjectManager<SessionImpl> sessionManager;
+    private PersistentObjectManager<MessageDrivenImpl> messageDrivenManager;
 
-    public EnterpriseBeansImpl(AnnotationModelHelper helper) {
+    private EnterpriseBeansImpl(AnnotationModelHelper helper) {
         this.helper = helper;
-        sessionManager = helper.createPersistentObjectManager(new SessionProvider());
-        messageDrivenManager = helper.createPersistentObjectManager(new MessageDrivenProvider());
     }
     
+    public static EnterpriseBeansImpl create(AnnotationModelHelper helper) {
+        EnterpriseBeansImpl instance = new EnterpriseBeansImpl(helper);
+        instance.initialize();
+        return instance;
+    }
+    
+    /**
+     * Initializing outside the constructor to avoid escaping "this" from
+     * the constructor.
+     */
+    private void initialize() {
+        sessionManager = helper.createPersistentObjectManager(new SessionProvider());
+        messageDrivenManager = helper.createPersistentObjectManager(new MessageDrivenProvider());
+        propChangeSupport = new PropertyChangeSupport(this);
+        sessionManager.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                // TODO: which path should be used? is it needed at all?
+                propChangeSupport.firePropertyChange("/EnterpriseBeans/Session", null, null); // NOI18N
+            }
+        });
+        messageDrivenManager.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                // TODO: which path should be used? is it needed at all?
+                propChangeSupport.firePropertyChange("/EnterpriseBeans/MessageDriven", null, null); // NOI18N
+            }
+        });
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        propChangeSupport.addPropertyChangeListener(pcl);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        propChangeSupport.removePropertyChangeListener(pcl);
+    }
+
     // <editor-fold desc="Model implementation">
 
     public Ejb[] getEjbs() {
@@ -240,14 +278,6 @@ public class EnterpriseBeansImpl implements EnterpriseBeans {
     }
 
     public void removeEjb(Ejb value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

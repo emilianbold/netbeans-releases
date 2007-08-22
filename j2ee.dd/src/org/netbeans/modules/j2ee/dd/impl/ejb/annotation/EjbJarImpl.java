@@ -45,13 +45,15 @@ import org.xml.sax.SAXParseException;
 public class EjbJarImpl implements EjbJar {
     
     private final AnnotationModelHelper helper;
+    private final EnterpriseBeans enterpriseBeans;
 
     public EjbJarImpl(AnnotationModelHelper helper) {
         this.helper = helper;
+        this.enterpriseBeans = EnterpriseBeansImpl.create(helper);
     }
     
     public EnterpriseBeans getEnterpriseBeans() {
-        return new EnterpriseBeansImpl(helper);
+        return enterpriseBeans;
     }
 
     public BigDecimal getVersion() {

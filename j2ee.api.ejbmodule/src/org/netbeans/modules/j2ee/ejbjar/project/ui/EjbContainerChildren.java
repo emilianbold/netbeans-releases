@@ -59,6 +59,22 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
         this.ejbModule = ejbModule;
         this.nodeFactory = nodeFactory;
         this.project = project;
+        try {
+            ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+                public Void run(EjbJarMetadata metadata) {
+                    org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = metadata.getRoot();
+                    if (ejbJar != null) {
+                        EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+                        if (enterpriseBeans != null) {
+                            enterpriseBeans.addPropertyChangeListener(EjbContainerChildren.this);
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
     }
 
     protected void addNotify() {
@@ -68,8 +84,6 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
-        //TODO: RETOUCHE listening on model to propagate changes to logical view
-//        model.addPropertyChangeListener(this);
     }
 
     private void updateKeys() throws IOException {
@@ -138,6 +152,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
     }
 
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+        
         SwingUtilities.invokeLater(new Runnable() {
             
             public void run() {
