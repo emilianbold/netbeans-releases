@@ -10,10 +10,16 @@
 </HEAD>
 <BODY>
 
-<h2>MIDP Project Properties: General</h2>
+<h2>Mobility Project Properties: General</h2>
 <p> <small><a href="#seealso">See Also</a></small></p>
-<p>You can view the general properties of a project by choosing File &gt; <em> &quot;&lt;active project
-name&gt;&quot;</em> properties. In the Project Properties dialog, select General. </p>
+<p>Use the General Properties Page to: </p>
+<ul>
+  <li>view the basic properties of a Mobility project. </li>
+  <li>set the application version to advance incrementally with each build.</li>
+  <li>use or ignore<a href="../configuration/preprocess_about.html"> preprocessing 
+    directives</a> in your code. </li>
+</ul>
+<p><strong>Project Properties</strong></p>
 <p>The General project properties page displays the following properties: </p>
 <ul>
   <li><strong>Project Name.</strong> The name of the current project.</li>
@@ -24,9 +30,20 @@ name&gt;&quot;</em> properties. In the Project Properties dialog, select General
 </ul>
   <p>These fields cannot be edited. </p>
 
-<p>You can check or uncheck the Rebuild Required Projects check box. If this
-  box is checked, the required projects will be rebuilt before the active project
+<p>You can check or uncheck the Rebuild Required Projects check box. If this box 
+  is checked, the required projects will be rebuilt before the active project 
   is built.</p>
+<p><strong>Application Versioning</strong></p>
+<p>The Application Version Number field displays the version number of the current 
+  build. This field cannot be edited.</p>
+<p>The Application Version Counter field displays the next version number to be 
+  used. The default advance is 0.0.1. To advance the number beyond this, use the 
+  drop-down menu to select a new digit, or enter the value into the field. For 
+  example, changing the value to 3 results in a build number of 0.0.3. changing 
+  the value to 100 results in the version number 0.1.0. </p>
+<p><strong>Using the Preprocessor</strong></p>
+<p>This check box is checked by default. If you do not want to use preprocessor 
+  directives, uncheck this box. </p>
 <dl>
   <dt><a name="seealso">See Also</a></dt>
   <dd><a href="../projects/proj_creating.html">Creating a MIDP Project</a></dd>

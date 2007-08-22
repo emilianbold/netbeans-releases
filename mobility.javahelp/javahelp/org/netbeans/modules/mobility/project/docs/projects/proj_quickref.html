@@ -88,19 +88,29 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
     <td>Add an emulator platform</td>
     <td><ol>
         <li>Right-click on a project and choose Properties.</li>
-        <li>Choose Platform from the right pane and click Manage Emulators. </li>
+        <li>Choose Platform from the left pane and click Manage Emulators. </li>
         <li>In the Java Platform Manager, Click Add Platform and follow the steps 
           of the <a href="../emulator/emulator_adding.html">Add Platform</a> wizard 
           to add the emulator platform. </li>
       </ol>
       <ul>
-        <li>Alternatively, you can open the Java Platform Manager by choosing 
-          Tools &gt; Java Platforms.</li>
+        <li>Alternately, you can open the Java Platform Manager by choosing Tools 
+          &gt; Java Platforms.</li>
       </ul></td>
   </tr>
   <tr valign="top">
-    <td>&nbsp;</td>
-    <td>&nbsp;</td>
+    <td>Automatically change the application version with each build</td>
+    <td><ul>
+        <li>Right-click on a project and choose Properties.</li>
+        <li>Choose General from the left pane. </li>
+        <li>Edit the Application Version Counter field displays the next version 
+          number to be used. The default advance is 0.0.1. <br>
+          To advance the number beyond this, use the drop-down menu to select 
+          a new digit, or enter the value into the field. For example, changing 
+          the value to 3 results in a build number of 0.0.3. changing the value 
+          to 100 results in the version number 0.1.0. </li>
+      </ul>
+      <p>&nbsp;</p></td>
   </tr>
   <tr valign="top"> 
     <td>Edit the Application Descriptor (JAD) File<a name="jad"></a></td>
