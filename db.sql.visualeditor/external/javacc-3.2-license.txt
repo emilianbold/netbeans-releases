@@ -2,7 +2,6 @@ Name: JavaCC
 Version: 3.2
 Description: Parser generator for SQL parser.
 Origin: https://javacc.dev.java.net/files/documents/17/686/javacc-3.2.zip
-Files: javacc.jar
 
 Use of JavaCC version 3.2. is governed by the terms of the license below:
 
