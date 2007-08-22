@@ -145,7 +145,10 @@ final class CloseButtonTabbedPane extends JTabbedPane {
             if (b.x + b.width >= tabsz.width
                 || b.y + b.height >= tabsz.height)
                 return null;
-
+             // bugfix #110654
+             if (b.width == 0 || b.height == 0) {
+                 return null;
+             }
             if( (isWindowsVistaLaF() || isWindowsXPLaF() || isWindowsLaF()) && i == getSelectedIndex() ) {
                 b.x -= 3;
                 b.y -= 2;
