@@ -239,9 +239,8 @@ public class ProductCodeController {
                 o = (ProductCode) model.getRowData();
                 o = em.merge(o);
             } else {
-                String param = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("productCodeId");
-                Integer id = new Integer(param);
-                o = em.find(ProductCode.class, id);
+                String param = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("prodCode");
+                o = em.find(ProductCode.class, param);
             }
             return o;
         } finally {
