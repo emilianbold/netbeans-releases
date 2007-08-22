@@ -1,0 +1,15 @@
+<tr class="<%= article.status %>" id="article_<%= article.id %>">
+  <td><%= image_tag "mephisto/icons/#{status_icon[article.status][1]}", :class => "#{status_icon[article.status][0]} icon", :title => "This article is #{article.status}", :alt => "#{article.status}" %></td>
+  <td class="article_title"><%= link_to(article.title, {:action => 'edit', :id => article}) %></td>
+  <td class="ccount">
+<% if article.comments.size == 0 %>
+      none
+  <% else %>
+  <%=  link_to article.comments.size.to_s.rjust(2, '0'), { :action => 'comments', :id => article } %>
+  <% end %>
+    <font> foo</font>
+  </td>
+  <td><span class="date"><%= published_at_for article %></span></td>
+  <td><%= article.published? ? link_to(image_tag('/images/mephisto/icons/24-zoom-in.png', :style => 'vertical-align: middle'), article.full_permalink) : '&nbsp;' %></td>        
+
+</tr>

@@ -16,13 +16,26 @@
  */
 package org.netbeans.modules.ruby.rhtml;
 
+import java.awt.event.ActionEvent;
+import javax.swing.Action;
+import javax.swing.JEditorPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Caret;
 import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.ruby.Formatter;
 import org.netbeans.modules.ruby.IndentPrefs;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
+import org.netbeans.modules.html.editor.indent.HtmlIndentTask;
+import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
+import org.netbeans.spi.editor.indent.Context;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -38,16 +51,13 @@ public class RhtmlFormattingTest extends RubyTestBase {
     protected BaseDocument getDocument(String s) {
         BaseDocument doc = super.getDocument(s);
         doc.putProperty(org.netbeans.api.lexer.Language.class, RhtmlTokenId.language());
+        doc.putProperty("mimeType", RubyInstallation.RHTML_MIME_TYPE);
         
         return doc;
     }
     
-    public void format(String source, String reformatted, FormattingPreferences preferences) throws Exception {
-        Formatter formatter = new Formatter();
-        if (preferences == null) {
-            preferences = new IndentPrefs(2,2);
-        }
-        
+    public String format(String source, FormattingPreferences preferences) throws Exception {
+        // Must run in AWT thread (BaseKit.install() checks for that)
         String BEGIN = "%<%"; // NOI18N
         int startPos = source.indexOf(BEGIN);
         if (startPos != -1) {
@@ -70,20 +80,87 @@ public class RhtmlFormattingTest extends RubyTestBase {
         
         //ParserResult result = parse(fo);
         ParserResult result = null;
+
+        // First format HTML, since the Ruby formatter relies on that
+        //new FormattingContext()
+        //HtmlIndentTask htmlTask = new HtmlIndentTask();
+        JTextArea ta = new JTextArea(doc);
+        Caret caret = ta.getCaret();
+        caret.setDot(startPos);
+        
+        JEditorPane pane = new JEditorPane();
+        pane.setDocument(doc);
+        RhtmlKit kit = new RhtmlKit();
+        pane.setEditorKit(kit); 
+        assertEquals(RubyInstallation.RHTML_MIME_TYPE, pane.getDocument().getProperty("mimeType"));
+        Action a = kit.getActionByName(BaseKit.formatAction);
+        assertNotNull(a);
+        a.actionPerformed(new ActionEvent(pane, 0, ""));
+
+        String htmlFormatted = doc.getText(0, doc.getLength());
+        
+        Formatter formatter = new Formatter();
+        if (preferences == null) {
+            preferences = new IndentPrefs(2,2);
+        }
+        
         formatter.reindent(doc, startPos, endPos, result, preferences);
 
         String formatted = doc.getText(0, doc.getLength());
+        
+        return formatted;
+    }
+    
+    protected boolean runInEQ() {
+        // Must run in AWT thread (BaseKit.install() checks for that)
+        return true;
+    }
+
+    public void format(String source, String reformatted, FormattingPreferences preferences) throws Exception {
+        String formatted = format(source, preferences);
         assertEquals(reformatted, formatted);
     }
     
+    public void reformatFileContents(String file) throws Exception {
+        FileObject fo = getTestFile(file);
+        assertNotNull(fo);
+        BaseDocument doc = getDocument(fo);
+        assertNotNull(doc);
+        String before = doc.getText(0, doc.getLength());
+
+        FormattingPreferences preferences = new IndentPrefs(2,2);
+        String formatted = format(before, preferences);
+        assertDescriptionMatches(file, formatted, false, ".formatted");
+    }
+    
     public void testFormat1() throws Exception {
+        reformatFileContents("testfiles/format1.rhtml");
+    }
+    
+    public void testFormat2() throws Exception {
+        reformatFileContents("testfiles/format2.rhtml");
+    }
+    
+    public void testFormat3() throws Exception {
+        reformatFileContents("testfiles/format3.rhtml");
+    }
+    
+    public void testFormat4() throws Exception {
+        reformatFileContents("testfiles/format4.rhtml");
+    }
+    
+    public void testFormat5() throws Exception {
         format("<%\ndef foo\nwhatever\nend\n%>\n",
                 "<%\ndef foo\n  whatever\nend\n%>\n", null);
     }
     
-    // Not yet working
-    //public void testFormat2() throws Exception {
-    //    format("<% if true %>\nhello\n%<= foo %>\n<% end %>\n",
-    //            "<% if true %>\n  hello\n%  <= foo %>\n<% end %>\n", null);
-    //}
+//    public void testFormat6() throws Exception {
+//        format("<% if true %>\nhello\n%<= foo %>\n<% end %>\n",
+//                "<% if true %>\n  hello\n%  <= foo %>\n<% end %>\n", null);
+//    }
+//
+//    public void testFormat7() throws Exception {
+//        format("<% foo %><% if true %>\nhello\n%<= foo %>\n<% end %>\n",
+//                "<% foo %><% if true %>\n  hello\n%  <= foo %>\n<% end %>\n", null);
+//    }
 }
