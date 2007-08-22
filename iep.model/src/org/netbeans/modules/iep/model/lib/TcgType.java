@@ -204,7 +204,7 @@ public class TcgType implements Serializable {
      */
     public static final TcgType STRING_LIST = new TcgType("stringList") {
 
-        public String format(TcgProperty prop, Object value) {
+        public String format(Object value) {
             return formatList(STRING, value);
         }
 
