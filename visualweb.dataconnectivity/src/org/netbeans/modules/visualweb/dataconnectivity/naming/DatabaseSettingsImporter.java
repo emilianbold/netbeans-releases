@@ -550,7 +550,7 @@ public class DatabaseSettingsImporter {
      * @param ress
      *
      */
-    public void updateWebXml(Project project, ArrayList <RequestedResource> ress) {
+    public void updateWebXml(Project project, List <RequestedResource> ress) {
         WebModule wmod = WebModule.getWebModule(project.getProjectDirectory());
         FileObject deployDescFO = wmod.getDeploymentDescriptor();
         WebApp webApp = getWebApp(deployDescFO);

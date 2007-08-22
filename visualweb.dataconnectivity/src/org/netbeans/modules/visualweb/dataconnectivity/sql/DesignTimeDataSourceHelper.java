@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -497,9 +498,9 @@ public class DesignTimeDataSourceHelper {
         // Get the data sources in the project then bind them to the project's context
         String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(currentProj);
         String[] hardCodedDataSources = ProjectDataSourceTracker.getHardcodedDataSources(currentProj);
-        ArrayList <RequestedResource> jdbcResources = new ArrayList();
+        List <RequestedResource> jdbcResources = new ArrayList<RequestedResource>();
         RequestedJdbcResource jdbcResource = null;
-        ArrayList <DesignTimeDataSource> ds = null;
+        List <DesignTimeDataSource> ds = null;
         Map binding = new HashMap();
         
         ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(currentProj);
@@ -530,7 +531,7 @@ public class DesignTimeDataSourceHelper {
                 DesignTimeDataSourceService dataSourceService = null;
                 
                 for (String name : dynamicDataSources) {
-                    ArrayList<DataSourceInfo> dataSourcesInfo = DatabaseSettingsImporter.getInstance().getDataSourcesInfo();
+                    List<DataSourceInfo> dataSourcesInfo = DatabaseSettingsImporter.getInstance().getDataSourcesInfo();
                     Iterator it = dataSourcesInfo.iterator();
                     while (it.hasNext()) {
                         dsInfo = (DataSourceInfo)it.next();
