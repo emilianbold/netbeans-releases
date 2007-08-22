@@ -23,6 +23,7 @@ import java.beans.BeanDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 
@@ -148,7 +149,11 @@ public final class HelpCtx extends Object {
      * @return the help for that component (never <code>null</code>)
      */
     public static HelpCtx findHelp(java.awt.Component comp) {
-        err.fine("findHelp on " + comp);
+        if (err.isLoggable(Level.FINEST)) {
+            err.log(Level.FINEST, "findHelp on " + comp, new Exception());
+        } else {
+            err.fine("findHelp on " + comp);
+        }
 
         while (comp != null) {
             if (comp instanceof HelpCtx.Provider) {
