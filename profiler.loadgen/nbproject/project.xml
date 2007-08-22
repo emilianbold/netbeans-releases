@@ -56,7 +56,9 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.apache.jmeter.module</friend>
+            </friend-packages>
         </data>
     </configuration>
 </project>
