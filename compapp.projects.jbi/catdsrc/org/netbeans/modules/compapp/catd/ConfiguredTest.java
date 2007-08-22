@@ -614,7 +614,12 @@ public class ConfiguredTest extends TestCase {
             return;
         }
         int concurrentInvokes = Integer.parseInt(concurrentInvokesStr);
-        int testTimeout = Integer.parseInt(testTimeoutStr);
+        int testTimeout = Integer.parseInt(testTimeoutStr);        
+        if ("true".equals(System.getProperty("inDebug"))) {
+            testTimeout = 0; // disable timeout
+        }
+        //System.out.println("timeout: " + testTimeout);
+        
         int invokesPerThread = 1;
         if (invokesPerThreadStr != null) {
             invokesPerThread = Integer.parseInt(invokesPerThreadStr);
@@ -769,8 +774,7 @@ public class ConfiguredTest extends TestCase {
                     + " in Development");
             return;
         }
-        String description = mProperties.getProperty("description");
-        
+        String description = mProperties.getProperty("description");        
         //String concurrentInvokesStr = mProperties.getProperty("concurrentinvokes");
         String comparisonType = "#" + mProperties.getProperty("comparisontype");
         String testTimeoutStr = mProperties.getProperty("testtimeout");
@@ -788,6 +792,9 @@ public class ConfiguredTest extends TestCase {
         int testTimeout = 0;
         if (testTimeoutStr != null && !testTimeoutStr.trim().equals("")) {
             testTimeout = Integer.parseInt(testTimeoutStr);
+        }
+        if ("true".equals(System.getProperty("inDebug"))) {
+            testTimeout = 0; // disable timeout
         }
         System.out.print("Test " + inputDirName + "\\" + testPropertiesFileName);
         System.out.flush();
@@ -943,6 +950,9 @@ public class ConfiguredTest extends TestCase {
         if (testTimeoutStr != null && !testTimeoutStr.trim().equals("")) {
             testTimeout = Integer.parseInt(testTimeoutStr);
         }
+        if ("true".equals(System.getProperty("inDebug"))) {
+            testTimeout = 0; // disable timeout
+        }
         System.out.print("Test " + inputDirName + "\\" + testPropertiesFileName);
         System.out.flush();
         
@@ -1086,6 +1096,9 @@ public class ConfiguredTest extends TestCase {
         int testTimeout = 0;
         if (testTimeoutStr != null && !testTimeoutStr.trim().equals("")) {
             testTimeout = Integer.parseInt(testTimeoutStr);
+        }
+        if ("true".equals(System.getProperty("inDebug"))) {
+            testTimeout = 0; // disable timeout
         }
         System.out.print("Test " + inputDirName + "\\" + testPropertiesFileName);
         System.out.flush();
@@ -1276,6 +1289,7 @@ public class ConfiguredTest extends TestCase {
      * outputfile.1=DocElemOutput.xml
      */
     public void testFileRequest() throws Exception {
+        
         String description = mProperties.getProperty("description");
         String clearFeeder = mProperties.getProperty("clearfeederdirectory");
         String clearEater = mProperties.getProperty("cleareaterdirectory");
@@ -1306,7 +1320,9 @@ public class ConfiguredTest extends TestCase {
         if (testTimeoutStr != null) {
             testTimeoutSecs = Integer.parseInt(testTimeoutStr);
         }
-        
+        if ("true".equals(System.getProperty("inDebug"))) {
+            testTimeoutSecs = 0; // disable timeout
+        }
         System.out.print("Test " + inputDirName + "\\" + testPropertiesFileName);
         System.out.flush();
         try {
@@ -1390,6 +1406,7 @@ public class ConfiguredTest extends TestCase {
      * output.expected=expected.xml
      */
     public void testFtpRequest() throws Exception {
+                
         String description = mProperties.getProperty("test.desc");
         String clearInputDir = mProperties.getProperty("clear.input.dir");
         String clearOutputDir = mProperties.getProperty("clear.output.dir");
@@ -1437,6 +1454,9 @@ public class ConfiguredTest extends TestCase {
         int testTimeoutSecs = 0;
         if (testTimeoutStr != null) {
             testTimeoutSecs = Integer.parseInt(testTimeoutStr);
+        }
+        if ("true".equals(System.getProperty("inDebug"))) {
+            testTimeoutSecs = 0; // disable timeout
         }
         
         if (inputCountStr != null) {
