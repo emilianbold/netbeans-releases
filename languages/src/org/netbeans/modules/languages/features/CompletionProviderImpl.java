@@ -211,7 +211,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                     tokenHierarchy,
                     component.getCaret ().getDot ()
                 );
-                if (tokenSequence.offset () > offset) {
+                if (!tokenSequence.isEmpty() && tokenSequence.offset () > offset) {
                     // border of embedded language
                     // [HACK] borders should be represented by some tokens!!!
                     return;
@@ -219,7 +219,9 @@ public class CompletionProviderImpl implements CompletionProvider {
                 String mimeType = tokenSequence.language ().mimeType ();
                 Language language = LanguagesManager.getDefault ().
                     getLanguage (mimeType);
-                compute (tokenSequence, offset, resultSet, doc, language);
+                if (!tokenSequence.isEmpty()) {
+                    compute (tokenSequence, offset, resultSet, doc, language);
+                }
                 addParserTags (resultSet, language);
             } catch (LanguageDefinitionNotFoundException ex) {
                 resultSet.finish ();
