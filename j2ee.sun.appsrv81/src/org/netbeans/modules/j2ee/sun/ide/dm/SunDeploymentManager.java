@@ -1175,7 +1175,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                     NbBundle.getMessage(SunDeploymentManager.class,
                     "ERR_AUTH_DIALOG_MSG", new Object[] { ((serverTitle != null) ? serverTitle :           // NOI18N
                         NbBundle.getMessage(SunDeploymentManager.class, "WORD_SERVER")),    // NOI18N
-                    e.getLocalizedMessage() } ),
+                    stripSlashHtml(e.getLocalizedMessage()) } ),
                     NbBundle.getMessage(SunDeploymentManager.class,"ERR_AUTH_DIALOG_TITLE"));   //NOI18N
             desc.setModal(false);
             desc.setMessageType(DialogDescriptor.ERROR_MESSAGE);
@@ -1184,6 +1184,21 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             DialogDisplayer.getDefault().notify(desc);
         }
         
+    }
+    
+    /** take the </html> off the end of a string.
+     *  makes it easier to embed the strings in a string with 
+     * markup safely
+     */
+    private String stripSlashHtml(String input) {
+        String retVal = null;
+        int dex = input.toLowerCase().lastIndexOf("</html>");
+        if (dex > -1) {
+            retVal = input.substring(0, dex);
+        } else {
+            retVal = input;
+        }
+        return retVal;        
     }
     
     private String getInstanceDisplayName() {
