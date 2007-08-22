@@ -19,27 +19,12 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import java.util.Map;
-import javax.swing.KeyStroke;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.TokenContext;
-import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.editor.ext.ExtSettingsInitializer;
-import org.openide.actions.CutAction;
-import org.openide.actions.CopyAction;
-import org.openide.actions.PasteAction;
-import org.openide.actions.DeleteAction;
-import org.openide.actions.NewAction;
-import org.openide.actions.ToolsAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.windows.TopComponent;
 
 /** Extended settings for CC */ 
 public class CCSettingsInitializer extends Settings.AbstractInitializer {
@@ -67,22 +52,12 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
      *   The map can be empty if this is the first initializer
      *   that updates it or if no previous initializers updated it.
      */
+    @SuppressWarnings("unchecked")
     public void updateSettingsMap(Class kitClass, Map settingsMap) {
-
-        // Update cc colorings
-        if (kitClass == BaseKit.class) {
-            new CCSettingsDefaults.CCTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
-        }
         
         if (kitClass == ccKitClass) {
             SettingsUtil.updateListSetting(settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
                 new TokenContext[] { CCTokenContext.context });
-
-	    // key bindings in CCSettingsDefaults.java 
-	    SettingsUtil.updateListSetting(settingsMap, SettingsNames.KEY_BINDING_LIST, 
-					   CCSettingsDefaults.getCCKeyBindings());
-
-            settingsMap.put(SettingsNames.ABBREV_MAP, CCSettingsDefaults.getCCAbbrevMap(kitClass));
 
             settingsMap.put(ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE,
                             CCSettingsDefaults.defaultCaretSimpleMatchBrace);
@@ -91,7 +66,7 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
                             CCSettingsDefaults.defaultHighlightMatchBrace);
 
             settingsMap.put(SettingsNames.IDENTIFIER_ACCEPTOR,
-                            CCSettingsDefaults.defaultIdentifierAcceptor);
+                            CCSettingsDefaults.defaultCCIdentifierAcceptor);
 
             settingsMap.put(SettingsNames.ABBREV_RESET_ACCEPTOR,
                             CCSettingsDefaults.defaultAbbrevResetAcceptor);
@@ -122,13 +97,13 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
                             CCSettingsDefaults.defaultIndentHotCharsAcceptor);
 
 	    // Code folding settings
-	    settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, CCSettingsDefaults.defaultCodeFoldingEnable);
+	    settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, CCSettingsDefaults.defaultCCCodeFoldingEnable);
             
 	    settingsMap.put(SettingsNames.PAIR_CHARACTERS_COMPLETION,
 			    CCSettingsDefaults.defaultPairCharactersCompletion);
             
             settingsMap.put(ExtSettingsNames.JAVADOC_AUTO_POPUP,
-                            CCSettingsDefaults.defaultJavaDocAutoPopup);
+                            CCSettingsDefaults.defaultCCDocAutoPopup);
         }
     }
 }

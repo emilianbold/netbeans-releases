@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE codetemplates PUBLIC  "-//NetBeans//DTD Editor Code Templates settings 1.0//EN"
+                                "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
+
+<codetemplates>
+        
+    <codetemplate abbreviation="def"><code><![CDATA[#define ]]></code></codetemplate> 
+    <codetemplate abbreviation="inc"><code><![CDATA[#include ]]></code></codetemplate> 
+    <codetemplate abbreviation="ifd"><code><![CDATA[#ifdef ]]></code></codetemplate> 
+    <codetemplate abbreviation="ifn"><code><![CDATA[#ifndef ]]></code></codetemplate> 
+    <codetemplate abbreviation="eif"><code><![CDATA[#endif]]></code></codetemplate> 
+    <codetemplate abbreviation="pra"><code><![CDATA[#pragma ]]></code></codetemplate> 
+    <codetemplate abbreviation="er"><code><![CDATA[#error ]]></code></codetemplate> 
+
+    <codetemplate abbreviation="br"><code><![CDATA[break]]></code></codetemplate> 
+    <codetemplate abbreviation="ca"><code><![CDATA[case ]]></code></codetemplate> 
+    <codetemplate abbreviation="cn"><code><![CDATA[continue]]></code></codetemplate> 
+    <codetemplate abbreviation="df"><code><![CDATA[default]]></code></codetemplate> 
+    <codetemplate abbreviation="re"><code><![CDATA[return ]]></code></codetemplate> 
+
+    <codetemplate abbreviation="uni"><code><![CDATA[union ]]></code></codetemplate>     
+    <codetemplate abbreviation="en"><code><![CDATA[enum ]]></code></codetemplate> 
+    <codetemplate abbreviation="ty"><code><![CDATA[typedef ]]></code></codetemplate>     
+    
+    <codetemplate abbreviation="st"><code><![CDATA[static ]]></code></codetemplate> 
+    <codetemplate abbreviation="dou"><code><![CDATA[double ]]></code></codetemplate> 
+    <codetemplate abbreviation="fl"><code><![CDATA[float ]]></code></codetemplate> 
+    <codetemplate abbreviation="lo"><code><![CDATA[long ]]></code></codetemplate> 
+    <codetemplate abbreviation="sh"><code><![CDATA[short ]]></code></codetemplate> 
+    <codetemplate abbreviation="sw"><code><![CDATA[switch ]]></code></codetemplate> 
+    <codetemplate abbreviation="uns"><code><![CDATA[unsigned ]]></code></codetemplate> 
+    <codetemplate abbreviation="voi"><code><![CDATA[void ]]></code></codetemplate> 
+
+    <codetemplate abbreviation="sw"><code><![CDATA[switch (]]></code></codetemplate> 
+    <codetemplate abbreviation="wh"><code><![CDATA[while (]]></code></codetemplate> 
+    
+    <codetemplate abbreviation="fori" contexts="BLOCK,CASE" descriptionId="CT_fori">
+        <code>
+<![CDATA[for (int ${IDX newVarName default="i"} = 0; ${IDX} < ${SIZE int default="size"}; ${IDX}++) {
+   ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${ARR array default="array"}[${IDX}];
+   ${selection line}${cursor}
+}
+]]>
+        </code>
+    </codetemplate>   
+    <codetemplate abbreviation="iff" contexts="BLOCK,CASE">
+        <code>
+<![CDATA[if (${EXP default="exp"}) {
+   ${selection line}${cursor}
+}
+]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="ifelse" contexts="BLOCK,CASE">
+        <code>
+<![CDATA[if (${EXP default="exp"}) {
+   ${selection line}${cursor}
+} else {
+}
+]]>
+        </code>
+    </codetemplate>   
+    <codetemplate abbreviation="whilexp" contexts="BLOCK,CASE">
+        <code>
+<![CDATA[while (${EXP default="exp"}) { 
+   ${selection line}${cursor} 
+}
+]]>
+        </code>
+    </codetemplate>    
+
+</codetemplates>

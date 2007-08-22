@@ -19,13 +19,7 @@
 
 package org.netbeans.modules.cnd.editor.makefile;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.TreeMap;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSettingsNames;
 
@@ -57,12 +51,9 @@ public class MakefileSettingsInitializer extends Settings.AbstractInitializer {
   *   The map can be empty if this is the first initializer
   *   that updates it or if no previous initializers updated it.
   */
+    @SuppressWarnings("unchecked")
   public void updateSettingsMap(Class kitClass, Map settingsMap) {
 
-    // Update f colorings
-    if (kitClass == BaseKit.class) {
-      new MakefileSettingsDefaults.MakefileTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
-    }
 
     if (kitClass == fKitClass) {
       SettingsUtil.updateListSetting(settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
@@ -70,8 +61,6 @@ public class MakefileSettingsInitializer extends Settings.AbstractInitializer {
                                        MakefileTokenContext.context,
                    }
                   );
-
-      settingsMap.put(SettingsNames.ABBREV_MAP, MakefileSettingsDefaults.getAbbrevMap());
 
       settingsMap.put(ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE,
                       MakefileSettingsDefaults.defaultCaretSimpleMatchBrace);
@@ -86,7 +75,7 @@ public class MakefileSettingsInitializer extends Settings.AbstractInitializer {
                       MakefileSettingsDefaults.defaultAbbrevResetAcceptor);
 
       settingsMap.put(SettingsNames.WORD_MATCH_MATCH_CASE,
-                      MakefileSettingsDefaults.defaultWordMatchMatchCase);
+                      MakefileSettingsDefaults.defaultMakeWordMatchMatchCase);
 
       settingsMap.put(SettingsNames.WORD_MATCH_STATIC_WORDS,
                       MakefileSettingsDefaults.defaultWordMatchStaticWords);

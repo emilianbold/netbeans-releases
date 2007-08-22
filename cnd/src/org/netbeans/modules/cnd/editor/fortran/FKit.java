@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JEditorPane;
-import javax.swing.JMenuItem;
 import javax.swing.Action;
 import javax.swing.text.Caret;
 import javax.swing.text.Position;
@@ -38,7 +37,6 @@ import javax.swing.text.BadLocationException;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.editor.*;
 import org.netbeans.modules.cnd.MIMENames;
@@ -49,14 +47,17 @@ import org.netbeans.modules.cnd.MIMENames;
 
 public class FKit extends NbEditorKit {
 
+    @Override
     public String getContentType() {
         return MIMENames.FORTRAN_MIME_TYPE;
     }
 
+    @Override
     public void install(JEditorPane c) {
         super.install(c);
     }
 
+    @Override
     public Document createDefaultDocument() {
         BaseDocument doc = new NbEditorDocument(this.getClass());
         // Force '\n' as write line separator // !!! move to initDocument()
@@ -68,15 +69,18 @@ public class FKit extends NbEditorKit {
      * @param doc document to operate on. It can be null in the cases the syntax
      *   creation is not related to the particular document
      */
+    @Override
     public Syntax createSyntax(Document doc) {
         return new FSyntax();
     }
 
     /** Create the formatter appropriate for this kit */
+    @Override
     public Formatter createFormatter() {
         return new FFormatter(this.getClass());
     }
 
+    @Override
     protected Action[] createActions() {
 	int arraySize = 2;
 	int numAddClasses = 0;
@@ -88,7 +92,7 @@ public class FKit extends NbEditorKit {
 	int index = 0;
 	if (actionClasses != null) {
 	    for (int i = 0; i < numAddClasses; i++) {
-		Class c = (Class)actionClasses.get(i);
+		Class c = actionClasses.get(i);
 		try {
 		    fortranActions[index] = (Action)c.newInstance();
 		} catch (java.lang.InstantiationException e) {
@@ -98,7 +102,7 @@ public class FKit extends NbEditorKit {
 		}
 		index++;
 	    }
-	};
+	}
 	fortranActions[index++] = new FDefaultKeyTypedAction();
 	fortranActions[index++] = new FFormatAction();
         return TextAction.augmentList(super.createActions(), fortranActions);
@@ -108,16 +112,17 @@ public class FKit extends NbEditorKit {
         This allows dependent modules to add editor actions to this
         kit on startup.
     */
-    private static ArrayList actionClasses = null;
+    private static ArrayList<Class> actionClasses = null;
 
 
     public static void addActionClass(Class action) {
 	if (actionClasses == null) {
-	    actionClasses = new ArrayList(2);
+	    actionClasses = new ArrayList<Class>(2);
 	}
 	actionClasses.add(action);
     }
 
+    @Override
     protected void updateActions() {
 	super.updateActions();
         addSystemActionMapping(formatAction, FFormatAction.class);
@@ -127,7 +132,7 @@ public class FKit extends NbEditorKit {
 
 	public FFormatAction() {
 	    super(BaseKit.formatAction,
-		  ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+		  MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
 	    putValue ("helpID", FFormatAction.class.getName ()); // NOI18N
 	}
 
@@ -192,6 +197,7 @@ public class FKit extends NbEditorKit {
     public static class FDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
 
         /** Check and possibly popup, hide or refresh the completion */
+        @Override
 	protected void checkCompletion(JTextComponent target, String typedText) {
 	    Completion completion = ExtUtilities.getCompletion(target);
 	    if (completion != null && typedText.length() > 0) {

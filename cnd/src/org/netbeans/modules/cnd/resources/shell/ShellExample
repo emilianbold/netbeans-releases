@@ -1,0 +1,8 @@
+#! /bin/bash
+
+for name in $@;do
+  # line comment
+  if [ -n $name ]; then
+     echo "delete the file $name (y/n/q)?"
+  fi
+done

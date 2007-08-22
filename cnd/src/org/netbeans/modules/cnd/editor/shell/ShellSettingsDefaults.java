@@ -22,11 +22,9 @@ package org.netbeans.modules.cnd.editor.shell;
 import java.awt.Font;
 import java.awt.Color;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.TreeMap;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 
 /**
@@ -67,6 +65,7 @@ public class ShellSettingsDefaults extends ExtSettingsDefaults {
 	  return abbrevMap;
   }
 
+  // THIS MUST BE MOVED INTO LAYER 
   static class ShellTokenColoringInitializer
   extends SettingsUtil.TokenColoringInitializer {
 

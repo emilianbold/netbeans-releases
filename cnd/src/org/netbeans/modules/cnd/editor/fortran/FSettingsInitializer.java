@@ -19,22 +19,10 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.TreeMap;
-import javax.swing.KeyStroke;
 
 import org.netbeans.editor.*;
-import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.editor.ext.ExtSettingsInitializer;
-
-// popup menu actions
-import org.openide.actions.SaveAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.CopyAction;
 import org.openide.actions.PasteAction;
@@ -72,14 +60,8 @@ public class FSettingsInitializer extends Settings.AbstractInitializer {
   *   The map can be empty if this is the first initializer
   *   that updates it or if no previous initializers updated it.
   */
+    @SuppressWarnings("unchecked")
   public void updateSettingsMap(Class kitClass, Map settingsMap) {
-
-    // Update f colorings
-    if (kitClass == BaseKit.class) {
-
-      new FSettingsDefaults.FTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
-      //new FSettingsDefaults.FLayerTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
-    }
 
     if (kitClass == fKitClass) {
       SettingsUtil.updateListSetting(settingsMap, 
@@ -89,11 +71,6 @@ public class FSettingsInitializer extends Settings.AbstractInitializer {
 					 //FLayerTokenContext.context
 				     }
 				     );
-
-	    // key bindings in FSettingsDefaults.java 
-	    SettingsUtil.updateListSetting(settingsMap,
-					   SettingsNames.KEY_BINDING_LIST, 
-					   FSettingsDefaults.defaultKeyBindings);
 
 	    SettingsUtil.updateListSetting(settingsMap,
                          ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
@@ -121,17 +98,6 @@ public class FSettingsInitializer extends Settings.AbstractInitializer {
 					 PropertiesAction.class.getName() }
 				  );
 
-            SettingsUtil.updateListSetting(settingsMap, SettingsNames.KEY_BINDING_LIST,
-                                           new MultiKeyBinding[] {
-                                               new MultiKeyBinding(
-                                                   KeyStroke.getKeyStroke(KeyEvent.VK_F1, InputEvent.ALT_MASK),
-                                                   FKit.gotoHelpAction
-                                               )
-                                           }
-                                          );
-	    
-      settingsMap.put(SettingsNames.ABBREV_MAP, FSettingsDefaults.getFAbbrevMap());
-
       settingsMap.put(SettingsNames.IDENTIFIER_ACCEPTOR,
                       FSettingsDefaults.defaultIdentifierAcceptor);
 
@@ -139,7 +105,7 @@ public class FSettingsInitializer extends Settings.AbstractInitializer {
                       FSettingsDefaults.defaultAbbrevResetAcceptor);
 
       settingsMap.put(SettingsNames.WORD_MATCH_MATCH_CASE,
-                      FSettingsDefaults.defaultWordMatchMatchCase);
+                      FSettingsDefaults.defaultFortranWordMatchMatchCase);
 
       settingsMap.put(SettingsNames.WORD_MATCH_STATIC_WORDS,
                       FSettingsDefaults.defaultWordMatchStaticWords);

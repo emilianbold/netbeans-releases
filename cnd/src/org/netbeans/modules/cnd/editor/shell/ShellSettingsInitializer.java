@@ -19,13 +19,7 @@
 
 package org.netbeans.modules.cnd.editor.shell;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.TreeMap;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSettingsNames;
 
@@ -57,6 +51,7 @@ public class ShellSettingsInitializer extends Settings.AbstractInitializer {
   *   The map can be empty if this is the first initializer
   *   that updates it or if no previous initializers updated it.
   */
+    @SuppressWarnings("unchecked")
   public void updateSettingsMap(Class kitClass, Map settingsMap) {
 
     // Update f colorings

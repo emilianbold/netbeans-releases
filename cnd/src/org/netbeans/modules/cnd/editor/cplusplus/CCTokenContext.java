@@ -26,7 +26,6 @@ import org.netbeans.editor.TokenID;
 import org.netbeans.editor.BaseImageTokenID;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.Utilities;
 
 /**
  * CC token-context defines token-ids and token-categories
@@ -818,7 +817,6 @@ public class CCTokenContext extends TokenContext {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) { //NOI18N
                 e.printStackTrace();
             }
-            Utilities.annotateLoggable(e);
         }
 
     }

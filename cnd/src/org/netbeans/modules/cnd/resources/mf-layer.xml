@@ -49,6 +49,8 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="x-c++" url="cplusplus/CCExample"/>
                 <file name="x-c" url="cplusplus/CExample"/>
                 <file name="x-fortran" url="fortran/FExample"/>
+                <file name="x-make" url="makefile/MakeExample"/>
+                <!--<file name="x-shell" url="shell/ShellExample"/>-->
             </folder>
         </folder>
     </folder>
@@ -67,18 +69,35 @@ Microsystems, Inc. All Rights Reserved.
 		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
 		</file>
 
-                <folder name="Defaults">
-                    <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
-                  
-                <folder name="NetBeans">
+                
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml"> 
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                
+                <folder name="CodeTemplates">
                     <folder name="Defaults">
-                        <file name="coloring.xml" url="cplusplus/Netbeans-CC-fontsColors.xml">
+                        <file name="codetemplates.xml" url="cplusplus/CC-DefaultAbbrevs.xml">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.cplusplus.Bundle"/>
                         </file>
                     </folder>
                 </folder>
-
+                
 		<folder name="SideBar">
 		    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="2500"/>
@@ -125,18 +144,35 @@ Microsystems, Inc. All Rights Reserved.
 		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
 		</file>
                 
-		<folder name="Defaults">
-                    <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
-                  
-                <folder name="NetBeans">
+                
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml"> 
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                
+                <folder name="CodeTemplates">
                     <folder name="Defaults">
-                        <file name="coloring.xml" url="cplusplus/Netbeans-CC-fontsColors.xml">
+                        <file name="codetemplates.xml" url="cplusplus/C-DefaultAbbrevs.xml">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.cplusplus.Bundle"/>
                         </file>
                     </folder>
                 </folder>
-
+                
 		<folder name="SideBar">
 		    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="2500"/>
@@ -178,20 +214,35 @@ Microsystems, Inc. All Rights Reserved.
 	    <folder name="x-fortran">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 
-		<folder name="Defaults">
-                    <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="fortran/Netbeans-Fortran-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.fortran.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
-                <file name="Settings.settings" url="FOptions.settings"/>
-                  
-                <folder name="NetBeans">
+                
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+                
+                <folder name="CodeTemplates">
                     <folder name="Defaults">
-                        <file name="coloring.xml" url="fortran/Netbeans-Fortran-fontsColors.xml">
+                        <file name="codetemplates.xml" url="fortran/Fortran-DefaultAbbrevs.xml">
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.fortran.Bundle"/>
                         </file>
                     </folder>
                 </folder>
                 
-		<folder name="Toolbars">
+                <file name="Settings.settings" url="FOptions.settings"/>
+
+                <folder name="Toolbars">
 		    <folder name="Default">
 			<file name="org-netbeans-modules-cnd-editor-parser-NavigateAction.instance">
                             <attr name="position" intvalue="900"/>
@@ -220,6 +271,24 @@ Microsystems, Inc. All Rights Reserved.
 	    <folder name="x-make">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="codetemplates.xml" url="makefile/Makefile-DefaultAbbrevs.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.makefile.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="makefile/Netbeans-Makefile-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.makefile.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                
 		<file name="Settings.settings" url="MakefileOptions.settings"/>
 		<file name="EditorKit.instance">
 		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.makefile.MakefileKit"/>
@@ -228,7 +297,25 @@ Microsystems, Inc. All Rights Reserved.
 
 	    <folder name="x-shell">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                
+
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="codetemplates.xml" url="shell/Shell-DefaultAbbrevs.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.shell.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <!--
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="shell/Netbeans-Shell-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.shell.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>                
+                -->
 		<file name="Settings.settings" url="ShellOptions.settings"/>
 		<file name="EditorKit.instance">
 		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.shell.ShellKit"/>
@@ -741,7 +828,7 @@ Microsystems, Inc. All Rights Reserved.
             </folder> <!-- x-shell -->
         </folder> <!-- text -->
     </folder> <!-- Loaders -->
-
+    
     <folder name="Actions">
 	<folder name="Build">
 	    <file name="org-netbeans-modules-cnd-actions-MakeAction.instance"/>
