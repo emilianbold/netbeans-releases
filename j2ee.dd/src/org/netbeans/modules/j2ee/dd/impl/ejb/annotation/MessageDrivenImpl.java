@@ -48,18 +48,15 @@ import org.netbeans.modules.j2ee.dd.api.ejb.PersistenceUnitRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.SecurityIdentity;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonAnnotationHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
 
-public class MessageDrivenImpl implements MessageDriven {
+public class MessageDrivenImpl extends PersistentObject implements MessageDriven {
 
-    // initialized in constructor
-    private final String name;
-    private final String ejbClass;
-    
-    // helpers
-    private final TypeElement typeElement;
-    private final AnnotationModelHelper helper;
+    // persistent
+    private String name;
+    private String ejbClass;
     
     private ResourceRef[] resourceRefs = null;
     private ResourceEnvRef[] resourceEnvRefs = null;
@@ -68,50 +65,59 @@ public class MessageDrivenImpl implements MessageDriven {
     private ServiceRef[] serviceRefs = null;
     
     public MessageDrivenImpl(AnnotationModelHelper helper, TypeElement typeElement) {
-        this.helper = helper;
-        this.typeElement = typeElement;
+        super(helper, typeElement);
+        boolean valid = refresh(typeElement);
+        assert valid;
+    }
+    
+    boolean refresh(TypeElement typeElement) {
+        Map<String, ? extends AnnotationMirror> annByType = getHelper().getAnnotationsByType(typeElement.getAnnotationMirrors());
+        AnnotationMirror annotationMirror = annByType.get("javax.ejb.MessageDriven"); // NOI18N
+        if (annotationMirror == null) {
+            return false;
+        }
         
-        Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
-        AnnotationParser parser = AnnotationParser.create(helper);
+        AnnotationParser parser = AnnotationParser.create(getHelper());
         parser.expectString("name", parser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
-        ParseResult parseResult = parser.parse(annByType.get("javax.ejb.MessageDriven")); //NOI18N
+        ParseResult parseResult = parser.parse(annotationMirror);
         name = parseResult.get("name", String.class); // NOI18N
         ejbClass = typeElement.getQualifiedName().toString();
+        return true;
     }
     
     private void initResourceRefs() {
         if (resourceRefs != null) {
             return;
         }
-        resourceRefs = CommonAnnotationHelper.getResourceRefs(helper, typeElement);
+        resourceRefs = CommonAnnotationHelper.getResourceRefs(getHelper(), getTypeElement());
     }
     
     private void initResourceEnvRefs() {
         if (resourceEnvRefs != null) {
             return;
         }
-        resourceEnvRefs = CommonAnnotationHelper.getResourceEnvRefs(helper, typeElement);
+        resourceEnvRefs = CommonAnnotationHelper.getResourceEnvRefs(getHelper(), getTypeElement());
     }
     
     private void initEnvEntries() {
         if (envEntries != null) {
             return;
         }
-        envEntries = CommonAnnotationHelper.getEnvEntries(helper, typeElement);
+        envEntries = CommonAnnotationHelper.getEnvEntries(getHelper(), getTypeElement());
     }
     
     private void initMessageDestinationRefs() {
         if (messageDestinationRefs != null) {
             return;
         }
-        messageDestinationRefs = CommonAnnotationHelper.getMessageDestinationRefs(helper, typeElement);
+        messageDestinationRefs = CommonAnnotationHelper.getMessageDestinationRefs(getHelper(), getTypeElement());
     }
     
     private void initServiceRefs() {
         if (serviceRefs != null) {
             return;
         }
-        serviceRefs = CommonAnnotationHelper.getServiceRefs(helper, typeElement);
+        serviceRefs = CommonAnnotationHelper.getServiceRefs(getHelper(), getTypeElement());
     }
     
     // <editor-fold desc="Model implementation">

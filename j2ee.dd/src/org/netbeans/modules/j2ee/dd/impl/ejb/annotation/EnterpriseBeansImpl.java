@@ -23,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -36,13 +37,19 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationScanner;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 
 public class EnterpriseBeansImpl implements EnterpriseBeans {
 
     private final AnnotationModelHelper helper;
+    private final PersistentObjectManager<SessionImpl> sessionManager;
+    private final PersistentObjectManager<MessageDrivenImpl> messageDrivenManager;
 
     public EnterpriseBeansImpl(AnnotationModelHelper helper) {
         this.helper = helper;
+        sessionManager = helper.createPersistentObjectManager(new SessionProvider());
+        messageDrivenManager = helper.createPersistentObjectManager(new MessageDrivenProvider());
     }
     
     // <editor-fold desc="Model implementation">
@@ -57,8 +64,23 @@ public class EnterpriseBeansImpl implements EnterpriseBeans {
     }
 
     public Session[] getSession() {
-        final List<Session> result = new ArrayList<Session>();
-        try {
+        Collection<SessionImpl> sessions = sessionManager.getObjects();
+        return sessions.toArray(new Session[sessions.size()]);
+    }
+
+    public MessageDriven[] getMessageDriven() {
+        Collection<MessageDrivenImpl> messageDrivens = messageDrivenManager.getObjects();
+        return messageDrivens.toArray(new MessageDriven[messageDrivens.size()]);
+    }
+
+    public Entity[] getEntity() {
+        return new Entity[0];
+    }
+
+    private final class SessionProvider implements ObjectProvider<SessionImpl> {
+
+        public List<SessionImpl> createInitialObjects() throws InterruptedException {
+            final List<SessionImpl> result = new ArrayList<SessionImpl>();
             helper.getAnnotationScanner().findAnnotations("javax.ejb.Stateless", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
                     result.add(new SessionImpl(SessionImpl.Kind.STATELESS, helper, type));
@@ -69,31 +91,63 @@ public class EnterpriseBeansImpl implements EnterpriseBeans {
                     result.add(new SessionImpl(SessionImpl.Kind.STATEFUL, helper, type));
                 }
             });
-        } catch (InterruptedException e) {
-            return new Session[0];
+            return result;
         }
-        return result.toArray(new Session[result.size()]);
+
+        public List<SessionImpl> createObjects(TypeElement type) {
+            final List<SessionImpl> result = new ArrayList<SessionImpl>();
+            if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.ejb.Stateless")) { // NOI18N
+                result.add(new SessionImpl(SessionImpl.Kind.STATELESS, helper, type));
+            }
+            if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.ejb.Stateful")) { // NOI18N
+                result.add(new SessionImpl(SessionImpl.Kind.STATEFUL, helper, type));
+            }
+            return result;
+        }
+
+        public boolean modifyObjects(TypeElement type, List<SessionImpl> objects) {
+            assert objects.size() == 1;
+            SessionImpl session = objects.get(0);
+            if (!session.refresh(type)) {
+                objects.remove(0);
+                return true;
+            }
+            return false;
+        }
     }
 
-    public MessageDriven[] getMessageDriven() {
-        final List<MessageDriven> result = new ArrayList<MessageDriven>();
-        try {
+    private final class MessageDrivenProvider implements ObjectProvider<MessageDrivenImpl> {
+
+        public List<MessageDrivenImpl> createInitialObjects() throws InterruptedException {
+            final List<MessageDrivenImpl> result = new ArrayList<MessageDrivenImpl>();
             helper.getAnnotationScanner().findAnnotations("javax.ejb.MessageDriven", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
                     result.add(new MessageDrivenImpl(helper, type));
                 }
             });
-        } catch (InterruptedException e) {
-            return new MessageDriven[0];
+            return result;
         }
-        return result.toArray(new MessageDriven[result.size()]);
+
+        public List<MessageDrivenImpl> createObjects(TypeElement type) {
+            final List<MessageDrivenImpl> result = new ArrayList<MessageDrivenImpl>();
+            if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.ejb.MessageDriven")) { // NOI18N
+                result.add(new MessageDrivenImpl(helper, type));
+            }
+            return result;
+        }
+
+        public boolean modifyObjects(TypeElement type, List<MessageDrivenImpl> objects) {
+            assert objects.size() == 1;
+            MessageDrivenImpl messageDriven = objects.get(0);
+            if (!messageDriven.refresh(type)) {
+                objects.remove(0);
+                return true;
+            }
+            return false;
+        }
     }
 
-    public Entity[] getEntity() {
-        return new Entity[0];
-    }
-
-    // </editor-fold>
+// </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Not implemented methods">
     

@@ -58,19 +58,22 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonAnnotationHelper;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbRefHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
 import org.openide.util.Exceptions;
 
-public class SessionImpl implements Session {
+public class SessionImpl extends PersistentObject implements Session {
     
     protected enum Kind { STATELESS, STATEFUL }
     
-    // initialized in constructor
-    private final String ejbName;
-    private final String ejbClass;
-    private final String sessionType;
+    private final Kind kind;
+    
+    // persistent
+    private String ejbName;
+    private String ejbClass;
+    private String sessionType;
     
     // lazy initialization
     private String[] businessLocal;
@@ -83,21 +86,27 @@ public class SessionImpl implements Session {
     private EnvEntry[] envEntries = null;
     private MessageDestinationRef[] messageDestinationRefs = null;
     
-    // helpers
-    private final AnnotationModelHelper helper;
-    private final TypeElement typeElement;
-    
     public SessionImpl(Kind kind, AnnotationModelHelper helper, TypeElement typeElement) {
-        this.helper = helper;
-        this.typeElement = typeElement;
+        super(helper, typeElement);
+        this.kind = kind;
+        boolean valid = refresh(typeElement);
+        assert valid;
+    }
+    
+    boolean refresh(TypeElement typeElement) {
+        Map<String, ? extends AnnotationMirror> annByType = getHelper().getAnnotationsByType(typeElement.getAnnotationMirrors());
+        AnnotationMirror annotationMirror = annByType.get(kind == Kind.STATELESS ? "javax.ejb.Stateless" : "javax.ejb.Stateful"); // NOI18N
+        if (annotationMirror == null) {
+            return false;
+        }
         
-        Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
-        AnnotationParser parser = AnnotationParser.create(helper);
+        AnnotationParser parser = AnnotationParser.create(getHelper());
         parser.expectString("name", parser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
-        ParseResult parseResult = parser.parse(annByType.get(kind == Kind.STATELESS ? "javax.ejb.Stateless" : "javax.ejb.Stateful")); //NOI18N
+        ParseResult parseResult = parser.parse(annotationMirror);
         ejbName = parseResult.get("name", String.class); // NOI18N
         ejbClass = typeElement.getQualifiedName().toString();
         sessionType = (kind == Kind.STATELESS) ? Session.SESSION_TYPE_STATELESS : Session.SESSION_TYPE_STATEFUL;
+        return true;
     }
     
     // <editor-fold desc="Helpers">
@@ -110,6 +119,8 @@ public class SessionImpl implements Session {
         if (businessLocal != null && businessRemote != null) {
             return;
         }
+        
+        TypeElement typeElement = getTypeElement();
         
         List<TypeElement> interfaces = new ArrayList<TypeElement>(); // all business interface candidates, EJB 3.0 Spec, Chapter 10.2
         for (TypeMirror typeMirror : typeElement.getInterfaces()) {
@@ -126,7 +137,7 @@ public class SessionImpl implements Session {
             }
         }
         
-        Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
+        Map<String, ? extends AnnotationMirror> annByType = getHelper().getAnnotationsByType(typeElement.getAnnotationMirrors());
 
         AnnotationMirror beanLocalAnnotation = annByType.get("javax.ejb.Local"); // @Local at bean class
         AnnotationMirror beanRemoteAnnotation = annByType.get("javax.ejb.Remote"); // @Remote at beans class
@@ -135,7 +146,7 @@ public class SessionImpl implements Session {
         List<String> annotatedRemoteInterfaces = new ArrayList<String>();
         
         for (TypeElement interfaceTypeElement : interfaces) {
-            annByType = helper.getAnnotationsByType(interfaceTypeElement.getAnnotationMirrors());
+            annByType = getHelper().getAnnotationsByType(interfaceTypeElement.getAnnotationMirrors());
             if (annByType.get("javax.ejb.Local") != null) {
                 annotatedLocalInterfaces.add(interfaceTypeElement.getQualifiedName().toString());
             }
@@ -169,7 +180,7 @@ public class SessionImpl implements Session {
      */
     private List<String> getClassesFromLocalOrRemote(AnnotationMirror beanLocalAnnotation) {
         final List<String> result = new ArrayList<String>();
-        AnnotationParser parser = AnnotationParser.create(helper);
+        AnnotationParser parser = AnnotationParser.create(getHelper());
         parser.expectClassArray("value", new ArrayValueHandler() { // NOI18N
             public Object handleArray(List<AnnotationValue> arrayMembers) {
                 for (AnnotationValue arrayMember : arrayMembers) {
@@ -199,7 +210,7 @@ public class SessionImpl implements Session {
         final List<EjbRef> resultEjbRefs = new ArrayList<EjbRef>();
         final List<EjbLocalRef> resultEjbLocalRefs = new ArrayList<EjbLocalRef>();
         
-        EjbRefHelper.setEjbRefsForClass(helper, typeElement, resultEjbRefs, resultEjbLocalRefs);
+        EjbRefHelper.setEjbRefsForClass(getHelper(), getTypeElement(), resultEjbRefs, resultEjbLocalRefs);
         
         ejbRefs = resultEjbRefs.toArray(new EjbRef[resultEjbRefs.size()]);
         ejbLocalRefs = resultEjbLocalRefs.toArray(new EjbLocalRef[resultEjbLocalRefs.size()]);
@@ -211,28 +222,28 @@ public class SessionImpl implements Session {
         if (serviceRefs != null) {
             return;
         }
-        serviceRefs = CommonAnnotationHelper.getServiceRefs(helper, typeElement);
+        serviceRefs = CommonAnnotationHelper.getServiceRefs(getHelper(), getTypeElement());
     }
     
     private void initResourceRefs() {
         if (resourceRefs != null) {
             return;
         }
-        resourceRefs = CommonAnnotationHelper.getResourceRefs(helper, typeElement);
+        resourceRefs = CommonAnnotationHelper.getResourceRefs(getHelper(), getTypeElement());
     }
     
     private void initResourceEnvRefs() {
         if (resourceEnvRefs != null) {
             return;
         }
-        resourceEnvRefs = CommonAnnotationHelper.getResourceEnvRefs(helper, typeElement);
+        resourceEnvRefs = CommonAnnotationHelper.getResourceEnvRefs(getHelper(), getTypeElement());
     }
     
     private void initEnvEntries() {
         if (envEntries != null) {
             return;
         }
-        envEntries = CommonAnnotationHelper.getEnvEntries(helper, typeElement);
+        envEntries = CommonAnnotationHelper.getEnvEntries(getHelper(), getTypeElement());
     }
     
     
@@ -240,7 +251,7 @@ public class SessionImpl implements Session {
         if (messageDestinationRefs != null) {
             return;
         }
-        messageDestinationRefs = CommonAnnotationHelper.getMessageDestinationRefs(helper, typeElement);
+        messageDestinationRefs = CommonAnnotationHelper.getMessageDestinationRefs(getHelper(), getTypeElement());
     }
     // </editor-fold>
 
