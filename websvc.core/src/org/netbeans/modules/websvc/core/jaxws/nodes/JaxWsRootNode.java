@@ -27,7 +27,6 @@ import java.util.Map;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -40,14 +39,13 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
-import org.openide.actions.ToolsAction;
+import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -63,7 +61,7 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
     static Icon openedFolderIconCache;
     
     public JaxWsRootNode(Project project, JaxWsModel jaxWsModel, FileObject[] srcRoots) {
-        super(new JaxWsRootChildren(jaxWsModel,srcRoots));
+        super(new JaxWsRootChildren(jaxWsModel,srcRoots), Lookups.fixed(project));
         setDisplayName(NbBundle.getBundle(JaxWsRootNode.class).getString("LBL_WebServices"));
         this.project=project;
         if(!Util.isJavaEE5orHigher(project)){
@@ -114,17 +112,12 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
             null,
             SystemAction.get(PasteAction.class),
             null,
-            SystemAction.get(ToolsAction.class)
+            SystemAction.get(PropertiesAction.class)
         };
     }
     
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
-    }
-    
-    private static Lookup createLookup(final FileObject srcRoot) {
-        Project owner = FileOwnerQuery.getOwner(srcRoot);
-        return (owner != null) ? Lookups.fixed(new Object[]{ owner }) : null;
     }
     
     private void listenToServerChanges(){
@@ -174,4 +167,25 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
             }
         }
     }
+    
+    // the following templates should be available on this node
+    /*
+    private static class WSRecommendedTemplates implements RecommendedTemplates, PrivilegedTemplates  {
+        private static final String[] TYPES = new String[] { 
+        "web-services",         // NOI18N
+        };
+        private static final String[] WS_TEMPLATES = new String[] {           
+            "Templates/WebServices/WebService.java",    // NOI18N
+            "Templates/WebServices/WebServiceFromWSDL.java",    // NOI18N
+        };
+        
+        public String[] getRecommendedTypes() {
+            return TYPES;
+        }
+        
+        public String[] getPrivilegedTemplates() {
+            return WS_TEMPLATES;
+        }
+    }
+    */
 }

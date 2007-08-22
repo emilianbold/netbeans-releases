@@ -30,7 +30,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
-import org.openide.actions.ToolsAction;
+import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -101,7 +101,7 @@ public class JaxWsClientRootNode extends AbstractNode {
             null,
             SystemAction.get(PasteAction.class),
             null,
-            SystemAction.get(ToolsAction.class)
+            SystemAction.get(PropertiesAction.class)
         };
     }
     
