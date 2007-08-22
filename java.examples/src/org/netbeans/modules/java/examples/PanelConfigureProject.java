@@ -37,11 +37,13 @@ import org.openide.util.HelpCtx;
  */
 final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
 
+    private final String title;
     private WizardDescriptor wizardDescriptor;
     private PanelConfigureProjectVisual component;
     
     /** Create the wizard panel descriptor. */
-    public PanelConfigureProject() {
+    public PanelConfigureProject(String title) {
+        this.title = title;
     }
     
     public boolean isFinishPanel() {
@@ -50,7 +52,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
 
     public Component getComponent() {
         if (component == null) {
-            component = new PanelConfigureProjectVisual(this);
+            component = new PanelConfigureProjectVisual(this, title);
         }
         return component;
     }

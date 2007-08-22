@@ -72,8 +72,8 @@ public class J2SESampleProjectIterator implements TemplateWizard.Iterator {
         if (name != null) {
             name = name.replaceAll(" ", ""); //NOI18N
         }
-        templateWizard.putProperty (WizardProperties.NAME, name);
-        basicPanel = new PanelConfigureProject();
+        templateWizard.putProperty (WizardProperties.NAME, name);        
+        basicPanel = new PanelConfigureProject(templateWizard.getTemplate().getNodeDelegate().getDisplayName());
         currentIndex = 0;
         updateStepsList ();
     }

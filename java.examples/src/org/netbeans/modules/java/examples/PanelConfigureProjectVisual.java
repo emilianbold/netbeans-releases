@@ -33,7 +33,7 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
     private PanelOptionsVisual optionsPanel;
 
     /** Creates new form PanelInitProject */
-    public PanelConfigureProjectVisual(PanelConfigureProject panel) {
+    public PanelConfigureProjectVisual(PanelConfigureProject panel, String title) {
         this.panel = panel;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
@@ -46,7 +46,7 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
 
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "LBL_NWP1_ProjectTitleName")); //NOI18N
-        putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJ2SEApp")); //NOI18N
+        putClientProperty ("NewProjectWizard_Title", title); //NOI18N
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
