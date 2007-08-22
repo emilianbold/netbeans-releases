@@ -24,23 +24,19 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-//import org.netbeans.api.gsfpath.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-//import org.netbeans.spi.gsfpath.project.support.ui.templates.JavaTemplates;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -56,11 +52,9 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
     private static final long serialVersionUID = 1L;
     
     public static final int TYPE_FILE = 0;
-    public static final int TYPE_PACKAGE = 1;
-    public static final int TYPE_PKG_INFO = 2;
-    public static final int TYPE_CLASS = 3;
-    public static final int TYPE_MODULE = 4;
-    public static final int TYPE_TEST = 5;
+    public static final int TYPE_CLASS = 1;
+    public static final int TYPE_MODULE = 2;
+    public static final int TYPE_TEST = 3;
     
     private int type = TYPE_FILE;
     
@@ -72,14 +66,6 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
         this.type = type;
     }    
     
-    public static NewRubyFileWizardIterator packageWizard() {
-        return new NewRubyFileWizardIterator( TYPE_PACKAGE );
-    }
-    
-    public static NewRubyFileWizardIterator packageInfoWizard () {
-        return new NewRubyFileWizardIterator( TYPE_PKG_INFO );
-    }
-
     public static NewRubyFileWizardIterator classWizard() {
         return new NewRubyFileWizardIterator( TYPE_CLASS );
     }
@@ -106,17 +92,9 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
             };
         }
         else {
-            
-            if ( this.type == TYPE_FILE ) {
-                return new WizardDescriptor.Panel[] {
-                    RubyTemplates.createPackageChooser( project, groups ),
-                };
-            }
-            else {                                
-                return new WizardDescriptor.Panel[] {
-                    new RubyTargetChooserPanel( project, groups, null, this.type, this.type == TYPE_PKG_INFO),
-                };
-            }
+            return new WizardDescriptor.Panel[] {
+                new RubyTargetChooserPanel( project, groups, null, this.type)
+            };
         }
                
     }
@@ -149,21 +127,15 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
         FileObject template = Templates.getTemplate( wiz );
         
         FileObject createdFile = null;
-        if ( this.type == TYPE_PACKAGE ) {
-            targetName = targetName.replace( '.', '/' ); // NOI18N
-            createdFile = FileUtil.createFolder( dir, targetName );
-        }
-        else {
-            DataObject dTemplate = DataObject.find( template );
-            
-            // Work around #109569
-            @SuppressWarnings("unchecked")
-            Map<String,Object> props = new HashMap(wiz.getProperties());
-            props.remove("project"); // NOI18N
+        DataObject dTemplate = DataObject.find( template );
 
-            DataObject dobj = dTemplate.createFromTemplate( df, targetName, props);
-            createdFile = dobj.getPrimaryFile();
-        }
+        // Work around #109569
+        @SuppressWarnings("unchecked")
+        Map<String,Object> props = new HashMap(wiz.getProperties());
+        props.remove("project"); // NOI18N
+
+        DataObject dobj = dTemplate.createFromTemplate( df, targetName, props);
+        createdFile = dobj.getPrimaryFile();
         
         return Collections.singleton( createdFile );
     }
@@ -218,11 +190,15 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
         return index > 0;
     }
     public void nextPanel() {
-        if (!hasNext()) throw new NoSuchElementException();
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
         index++;
     }
     public void previousPanel() {
-        if (!hasPrevious()) throw new NoSuchElementException();
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
         index--;
     }
     public WizardDescriptor.Panel current() {

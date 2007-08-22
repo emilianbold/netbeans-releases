@@ -24,34 +24,26 @@ import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JList;
-import javax.swing.JTextField;
-import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.DocumentFilter;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-//import org.netbeans.spi.gsfpath.project.support.ui.PackageView;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -64,12 +56,10 @@ import org.openide.util.RequestProcessor;
 
 /**
  * Permits user to select a package to place a Java class (or other resource) into.
- * @author Petr Hrebejk, Jesse Glick
+ * @author Petr Hrebejk, Jesse Glick, Tor Norbye
  */
 public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
   
-    private static final String DEFAULT_NEW_PACKAGE_NAME = 
-        NbBundle.getMessage( RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_DefaultNewPackageName" ); // NOI18N
     private static final String NEW_CLASS_PREFIX = 
         NbBundle.getMessage( RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_NewRubyClassPrefix" ); // NOI18N
     
@@ -98,7 +88,6 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         
         initComponents();      
         
-        // BEGIN TOR MODIFICATIONS
         // NOTE - even when adding a -module-, we will use the "class" textfield
         // to represent the name of the module, and the "module" text field to represent
         // modules surrounding the current module
@@ -125,51 +114,26 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             extendsLabel.setVisible(false);
             extendsText.setVisible(false);
         }
-        packageComboBox.setVisible(false);
-        packageLabel.setVisible(false);
-
-        // END TOR MODIFICATIONS
         
-        if ( type == NewRubyFileWizardIterator.TYPE_PACKAGE ) {
-            packageComboBox.setVisible( false );
-            packageLabel.setVisible( false );
-            Mnemonics.setLocalizedText (fileLabel, NbBundle.getMessage (RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_CreatedFolder_Label")); // NOI18N
-            Mnemonics.setLocalizedText (documentNameLabel, NbBundle.getMessage (RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_PackageName_Label")); // NOI18N
-            documentNameTextField.getDocument().addDocumentListener( this );
-        }
-        else if ( type == NewRubyFileWizardIterator.TYPE_PKG_INFO ) {
-            documentNameTextField.setEditable (false);
-        }
-        else {
-            packageComboBox.getEditor().addActionListener( this );
-            documentNameTextField.getDocument().addDocumentListener( this );
-        }
-        
+        documentNameTextField.getDocument().addDocumentListener( this );
                 
         if ( bottomPanel != null ) {
             bottomPanelContainer.add( bottomPanel, java.awt.BorderLayout.CENTER );
         }
                 
+        browseButton.addActionListener( this );
+        folderTextField.getDocument().addDocumentListener( this );
+        
         //initValues( project, null, null );
         
-
-        // Not very nice
-        Component packageEditor = packageComboBox.getEditor().getEditorComponent();
-        if ( packageEditor instanceof javax.swing.JTextField ) {
-            ((javax.swing.JTextField)packageEditor).getDocument().addDocumentListener( this );
-        }
-        else {
-            packageComboBox.addActionListener( this );
-        }
-        
         rootComboBox.setRenderer(new GroupListCellRenderer());        
-  //      packageComboBox.setRenderer(PackageView.listRenderer());
         rootComboBox.addActionListener( this );
         
         setPreferredSize( PREF_DIM );
         setName( NbBundle.getBundle (RubyTargetChooserPanelGUI.class).getString ("LBL_RubyTargetChooserPanelGUI_Name") ); // NOI18N
     }
             
+    @Override
     public void addNotify () {
         Dimension panel2Size = this.jPanel2.getPreferredSize();
         Dimension bottomPanelSize = this.bottomPanelContainer.getPreferredSize ();
@@ -202,45 +166,25 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         SourceGroup preselectedGroup = getPreselectedGroup( preselectedFolder );
         //ignoreRootCombo = true;
         rootComboBox.setSelectedItem( preselectedGroup );                       
+        folderTextField.setText(FileUtil.toFile(((SourceGroup)rootComboBox.getSelectedItem()).getRootFolder()).getPath());
+        
         //ignoreRootCombo = false;
-        Object preselectedPackage = getPreselectedPackage(preselectedGroup, preselectedFolder, packageComboBox.getModel());
-        if ( type == NewRubyFileWizardIterator.TYPE_PACKAGE ) {
-            String docName = preselectedPackage == null || preselectedPackage.toString().length() == 0 ? 
-                DEFAULT_NEW_PACKAGE_NAME : 
-                preselectedPackage.toString() + "." + DEFAULT_NEW_PACKAGE_NAME; // NOI18N
 
-            documentNameTextField.setText( docName );                    
-            int docNameLen = docName.length();
-            int defPackageNameLen = DEFAULT_NEW_PACKAGE_NAME.length();
-
-            documentNameTextField.setSelectionEnd( docNameLen - 1 );
-            documentNameTextField.setSelectionStart( docNameLen - defPackageNameLen );                
-        } else {
-            if (preselectedPackage != null) {
-                // packageComboBox.setSelectedItem( preselectedPackage );
-                packageComboBox.getEditor().setItem( preselectedPackage );
-            }
-            if (template != null) {
-            	if ( documentNameTextField.getText().trim().length() == 0 ) { // To preserve the class name on back in the wiazard
-                    if (this.type == NewRubyFileWizardIterator.TYPE_PKG_INFO) {
-                        documentNameTextField.setText (template.getName ());
-                    }
-                    else {
-                        //Ordinary file
-                        String prefix = NEW_CLASS_PREFIX;
-                        // See 91580
-                        Object customPrefix = template.getAttribute("templateNamePrefix"); // NOI18N
-                        if (customPrefix != null) {
-                            prefix = customPrefix.toString();
-                        }
-                        
-                        documentNameTextField.setText (prefix + template.getName ());
-                        documentNameTextField.selectAll ();
-                    }
+        if (template != null) {
+            if ( documentNameTextField.getText().trim().length() == 0 ) { // To preserve the class name on back in the wiazard
+                //Ordinary file
+                String prefix = NEW_CLASS_PREFIX;
+                // See 91580
+                Object customPrefix = template.getAttribute("templateNamePrefix"); // NOI18N
+                if (customPrefix != null) {
+                    prefix = customPrefix.toString();
                 }
+
+                documentNameTextField.setText (prefix + template.getName ());
+                documentNameTextField.selectAll ();
             }
-//            updatePackages( false );
         }
+
         // Determine the extension
         String ext = template == null ? "" : template.getExt(); // NOI18N
         expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
@@ -257,26 +201,18 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         return ((SourceGroup) rootComboBox.getSelectedItem()).getRootFolder();        
     }
     
-    public String getPackageFileName() {
+    public String getTargetFolder() {
         
-        if ( type == NewRubyFileWizardIterator.TYPE_PACKAGE ) {
-            return ""; // NOI18N
+        String folderName = folderTextField.getText().trim();
+        
+        if ( folderName.length() == 0 ) {
+            return null;
         }
-        
-        String packageName = packageComboBox.getEditor().getItem().toString();        
-        return  packageName.replace( '.', '/' ); // NOI18N        
+        else {           
+            return folderName.replace( File.separatorChar, '/' ); // NOI18N
+        }
     }
-    
-    /**
-     * Name of selected package, or "" for default package.
-     */
-    String getPackageName() {
-        if ( type == NewRubyFileWizardIterator.TYPE_PACKAGE ) {
-            return ""; // NOI18N
-        }
-        return packageComboBox.getEditor().getItem().toString();
-    }    
-    
+
     public String getTargetName() {
         String text = documentNameTextField.getText().trim();
         
@@ -289,7 +225,6 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
 
     }
 
-    // BEGIN TOR MODIFICATIONS
     public String getClassName() {
         String text = classText.getText().trim();
         
@@ -322,7 +257,6 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             return text;
         }
     }
-    // END TOR MODIFICATIONS
     
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
@@ -364,8 +298,9 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         projectTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         rootComboBox = new javax.swing.JComboBox();
-        packageLabel = new javax.swing.JLabel();
-        packageComboBox = new javax.swing.JComboBox();
+        jLabel2 = new javax.swing.JLabel();
+        folderTextField = new javax.swing.JTextField();
+        browseButton = new javax.swing.JButton();
         fileLabel = new javax.swing.JLabel();
         fileTextField = new javax.swing.JTextField();
 
@@ -482,21 +417,22 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         jPanel2.add(rootComboBox, gridBagConstraints);
         rootComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_rootComboBox")); // NOI18N
 
-        packageLabel.setLabelFor(packageComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(packageLabel, org.openide.util.NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_jLabel2")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_Folder")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        jPanel2.add(packageLabel, gridBagConstraints);
-
-        packageComboBox.setEditable(true);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        jPanel2.add(jLabel2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
-        jPanel2.add(packageComboBox, gridBagConstraints);
-        packageComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_packageComboBox")); // NOI18N
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        jPanel2.add(folderTextField, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_Browse")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        jPanel2.add(browseButton, gridBagConstraints);
 
         fileLabel.setLabelFor(fileTextField);
         org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_CreatedFile_Label")); // NOI18N
@@ -530,6 +466,7 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanelContainer;
+    private javax.swing.JButton browseButton;
     private javax.swing.JLabel classLabel;
     private javax.swing.JTextField classText;
     private javax.swing.JLabel documentNameLabel;
@@ -538,14 +475,14 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     private javax.swing.JTextField extendsText;
     private javax.swing.JLabel fileLabel;
     private javax.swing.JTextField fileTextField;
+    private javax.swing.JTextField folderTextField;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel moduleLabel;
     private javax.swing.JTextField moduleText;
-    private javax.swing.JComboBox packageComboBox;
-    private javax.swing.JLabel packageLabel;
     private javax.swing.JTextField projectTextField;
     private javax.swing.JComboBox rootComboBox;
     private javax.swing.JSeparator targetSeparator;
@@ -554,17 +491,29 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     // ActionListener implementation -------------------------------------------
         
     public void actionPerformed(java.awt.event.ActionEvent e) {
-        if ( rootComboBox == e.getSource() ) {            
-//            if ( !ignoreRootCombo && type != NewRubyFileWizardIterator.TYPE_PACKAGE ) {
-//                updatePackages( true );
-//            }
-            updateText();
-        }
-        else if ( packageComboBox == e.getSource() ) {
+        if ( browseButton == e.getSource() ) {
+            JFileChooser chooser = new JFileChooser();
+            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            chooser.setMultiSelectionEnabled(false);
+
+            String workDir = folderTextField.getText();
+            if (workDir.length() > 0) {
+                File workdirFile = new File(workDir);
+                chooser.setSelectedFile(workdirFile);
+                chooser.setCurrentDirectory(workdirFile);
+            }
+            chooser.setDialogTitle(NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "ChooseTargetFolder"));
+            if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
+                File file = FileUtil.normalizeFile(chooser.getSelectedFile());
+                folderTextField.setText(file.getAbsolutePath());
+            }
             updateText();
             fireChange();
         }
-        else if ( packageComboBox.getEditor()  == e.getSource() ) {
+        else if ( rootComboBox == e.getSource() )  {
+            FileObject root = ((SourceGroup)rootComboBox.getSelectedItem()).getRootFolder();
+            folderTextField.setText(FileUtil.toFile(root).getPath());
             updateText();
             fireChange();
         }
@@ -661,59 +610,16 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     
     // Private methods ---------------------------------------------------------
         
-    private RequestProcessor.Task updatePackagesTask = null;
-    
-    private static final ComboBoxModel WAIT_MODEL = new DefaultComboBoxModel( 
-        new String[] {
-            NbBundle.getMessage( RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_PackageName_PleaseWait" ) // NOI18N
-        } 
-    ); 
-    
-//    private void updatePackages( final boolean clean ) {
-//        WAIT_MODEL.setSelectedItem( packageComboBox.getEditor().getItem() );
-//        packageComboBox.setModel( WAIT_MODEL );
-//        
-//        if ( updatePackagesTask != null ) {
-//            updatePackagesTask.cancel();
-//        }
-//        
-//        updatePackagesTask = new RequestProcessor( "ComboUpdatePackages" ).post(
-//            new Runnable() {
-//            
-//                private ComboBoxModel model;
-//            
-//                public void run() {
-//                    if ( !SwingUtilities.isEventDispatchThread() ) {
-//                        model = PackageView.createListView((SourceGroup) rootComboBox.getSelectedItem());                        
-//                        SwingUtilities.invokeLater( this );
-//                    }
-//                    else {
-//                        if ( !clean ) {
-//                            model.setSelectedItem( packageComboBox.getEditor().getItem() );
-//                        }
-//                        packageComboBox.setModel( model );
-//                    }
-//                }
-//            }
-//        );
-//                
-//    }
-        
     private void updateText() {
-        SourceGroup g = (SourceGroup) rootComboBox.getSelectedItem();
-        FileObject rootFolder = g.getRootFolder();
-        String packageName = getPackageFileName();
+        String folderName = folderTextField.getText().trim();
+        
         String documentName = documentNameTextField.getText().trim();
-        if ( type == NewRubyFileWizardIterator.TYPE_PACKAGE ) {
-            documentName = documentName.replace( '.', '/' ); // NOI18N
-        }
-        else if ( documentName.length() > 0 ) {
+        if ( documentName.length() > 0 ) {
             documentName = documentName + expectedExtension;
         }
-        String createdFileName = FileUtil.getFileDisplayName( rootFolder ) + 
-            ( packageName.startsWith("/") || packageName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
-            packageName + 
-            ( packageName.endsWith("/") || packageName.endsWith( File.separator ) || packageName.length() == 0 ? "" : "/" ) + // NOI18N
+        String createdFileName = 
+            folderName + 
+            ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" ) + // NOI18N
             documentName;
         
         fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N        
@@ -729,40 +635,21 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         return groups[0];
     }
     
-    /**
-     * Get a package combo model item for the package the user selected before opening the wizard.
-     * May return null if it cannot find it; or a String instance if there is a well-defined
-     * package but it is not listed among the packages shown in the list model.
-     */
-    private Object getPreselectedPackage(SourceGroup group, FileObject folder, ListModel model) {
-        if ( folder == null ) {
-            return null;
+    private String getRelativeNativeName( FileObject root, FileObject folder ) {
+        if (root == null) {
+            throw new NullPointerException("null root passed to getRelativeNativeName"); // NOI18N
         }
-        FileObject root = group.getRootFolder();
         
-        String relPath = FileUtil.getRelativePath( root, folder );
+        String path;
         
-        if ( relPath == null ) {
-            // Group Root folder is no a parent of the preselected folder
-            // No package should be selected
-            return null; 
-        }        
+        if (folder == null) {
+            path = ""; // NOI18N
+        }
         else {
-            // Find the right item.            
-            String name = relPath.replace('/', '.');
-            /*
-            int max = model.getSize();
-            for (int i = 0; i < max; i++) {
-                Object item = model.getElementAt(i);
-                if (item.toString().equals(name)) {
-                    return item;
-                }
-            }
-             */
-            // Didn't find it.
-            // #49954: should nonetheless show something in the combo box.
-            return name;
-        }        
+            path = FileUtil.getRelativePath( root, folder );            
+        }
+        
+        return path == null ? "" : path.replace( '/', File.separatorChar ); // NOI18N
     }
     
     // Private innerclasses ----------------------------------------------------
@@ -774,6 +661,7 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         
         public GroupListCellRenderer() {}
         
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             SourceGroup g = (SourceGroup) value;
             super.getListCellRendererComponent(list, g.getDisplayName(), index, isSelected, cellHasFocus);

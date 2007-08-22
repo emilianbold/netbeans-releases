@@ -53,7 +53,7 @@ public final class SourceNodeFactory implements NodeFactory {
     }
     
     public NodeList createNodes(Project p) {
-        RubyProject project = (RubyProject)p.getLookup().lookup(RubyProject.class);
+        RubyProject project = p.getLookup().lookup(RubyProject.class);
         assert project != null;
         return new SourcesNodeList(project);
     }
@@ -259,7 +259,7 @@ public final class SourceNodeFactory implements NodeFactory {
         
         public void actionPerformed(ActionEvent e) {
             // RubyCustomizerProvider cp = (RubyCustomizerProvider) project.getLookup().lookup(RubyCustomizerProvider.class);
-            CustomizerProviderImpl cp = (CustomizerProviderImpl) project.getLookup().lookup(CustomizerProviderImpl.class);
+            CustomizerProviderImpl cp = project.getLookup().lookup(CustomizerProviderImpl.class);
             if (cp != null) {
                 cp.showCustomizer(nodeName, panelName);
             }
