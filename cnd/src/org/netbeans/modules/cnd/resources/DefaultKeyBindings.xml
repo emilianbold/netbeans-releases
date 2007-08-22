@@ -30,7 +30,7 @@
      this file, with minor diffs, in ide/applemenu.  Any changes made here should
      be made there too -->                            
 <bindings>
-    <bind actionName="comment" key="DS-T"/>
-    <bind actionName="uncomment" key="DS-D"/> 
+    <bind actionName="comment" key="D-SLASH"/>
+    <bind actionName="uncomment" key="DS-SLASH"/> 
     <bind actionName="goto-declaration" key="O-G"/> 
 </bindings>
