@@ -234,7 +234,12 @@
             src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb6/build.txt"
             dest="${temp.file}"/>
         <loadfile property="portalpack.build.number"
-      	    srcFile="${temp.file}"/>
+      	    srcFile="${temp.file}">
+	    <filterchain>
+    		<striplinebreaks/>
+  	    </filterchain>
+	</loadfile>
+
 
 
         <property name="javaeesdk-javadocs.build.number" value="20060907"/>
