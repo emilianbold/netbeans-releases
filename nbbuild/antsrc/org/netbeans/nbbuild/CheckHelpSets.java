@@ -133,9 +133,13 @@ public class CheckHelpSets extends Task {
                 throw new BuildException("Bogus map ID: " + id.id, new Location(hsfile.getAbsolutePath()));
             }
             log("Checking ID " + id.id, Project.MSG_VERBOSE);
+            List<String> errors = new ArrayList<String>();
             CheckLinks.scan(this, null, null, id.id, "", 
             u.toURI(), okurls, badurls, cleanurls, false, false, false, 2, 
-            Collections.<Mapper>emptyList());
+            Collections.<Mapper>emptyList(), errors);
+            for (String error : errors) {
+                log(error, Project.MSG_WARN);
+            }
         }
     }
     

@@ -43,7 +43,7 @@ public class CheckLinksTest extends NbTestCase {
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
             "<target name=\"all\" >" +
-            "  <checklinks checkexternal='false' failonerror='true' basedir='" + html.getParent() + "' >" +
+            "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
             "  </checklinks>" +
             "</target>" +
@@ -66,7 +66,7 @@ public class CheckLinksTest extends NbTestCase {
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
             "<target name=\"all\" >" +
-            "  <checklinks checkexternal='false' failonerror='true' basedir='" + html.getParent() + "' >" +
+            "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
             "    <filter accept='false' pattern='http://www.netbeans.org/download/[a-zA-Z0-9\\.]*/javadoc/.*' /> " +
             "  </checklinks>" +
@@ -94,7 +94,7 @@ public class CheckLinksTest extends NbTestCase {
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
             "<target name=\"all\" >" +
-            "  <checklinks checkexternal='false' failonerror='true' basedir='" + html.getParent() + "' >" +
+            "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
             "    <filter accept='false' pattern='http://www.sex.org/.*' /> " +
             "  </checklinks>" +
@@ -121,7 +121,7 @@ public class CheckLinksTest extends NbTestCase {
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
             "<target name=\"all\" >" +
-            "  <checklinks checkexternal='false' failonerror='true' basedir='" + html.getParent() + "' >" +
+            "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
             "    <filter accept='true' pattern='.*sex.*' /> " +
             "    <filter accept='false' pattern='http://www.sex.org/.*' /> " +
@@ -148,7 +148,7 @@ public class CheckLinksTest extends NbTestCase {
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
             "<target name=\"all\" >" +
-            "  <checklinks checkexternal='false' failonerror='true' basedir='" + html.getParent() + "' >" +
+            "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
             "    <filter accept='false' pattern='.*sex.*' /> " +
             "  </checklinks>" +
@@ -173,7 +173,7 @@ public class CheckLinksTest extends NbTestCase {
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
             "<target name=\"all\" >" +
-            "  <checklinks checkexternal='false' failonerror='true' basedir='" + html.getParent() + "' >" +
+            "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
             "  </checklinks>" +
             "</target>" +
@@ -196,7 +196,7 @@ public class CheckLinksTest extends NbTestCase {
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
             "<target name=\"all\" >" +
-            "  <checklinks checkexternal='false' failonerror='true' basedir='" + html.getParent() + "' >" +
+            "  <checklinks checkexternal='false' basedir='" + html.getParent() + "' >" +
             "    <include name=\"" + html.getName () + "\" />" +
             "  </checklinks>" +
             "</target>" +

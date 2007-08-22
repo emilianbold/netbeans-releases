@@ -44,7 +44,6 @@ ${javadoc.apichanges} API change list XML file; default no change list
 ${javadoc.arch}       architecture summary of the module; default a dummy summary
 ${javadoc.overview}   Overview HTML file; default a generic page
 ${javadoc.check.external.links}  set to "true" to check external HTTP links
-${javadoc.check.failonerror}     set to "true" if you want the build to fail due to broken link
 ${javadoc.header}     Special header text.
 ${javadoc.web.root}   Base URL for online Javadoc for linking; default http://www.netbeans.org/download/dev/javadoc
 
@@ -97,7 +96,6 @@ cause it to fail.
             <exclude name="**/*.xcf"/> <!-- GIMP versions of the images -->
         </fileset>
         <property name="javadoc.check.external.links" value="false"/>
-            <property name="javadoc.check.failonerror" value="false"/>
         <property name="javadoc.header" value="&amp;nbsp;"/>
 
         <!-- Determine API stability -->
@@ -449,7 +447,7 @@ cause it to fail.
                 <pathelement location="../nbantext.jar"/>
             </classpath>
         </taskdef>
-        <checklinks basedir="${javadoc.out.dir}" checkexternal="${javadoc.check.external.links}" failonerror="${javadoc.check.failonerror}" >
+        <checklinks basedir="${javadoc.out.dir}" checkexternal="${javadoc.check.external.links}" report="${javadoc.out.dir}/checklinks-errors-${javadoc.name}.xml">
             <include name="overview-summary.html"/>
             <include name="apichanges.html"/>
             <include name="architecture-summary.html"/>

@@ -494,7 +494,7 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
           checkexternal="${javadoc.check.external.links}" 
           checkforbidden="${javadoc.check.forbidden.links}" 
           checkspaces="false" 
-          failonerror="true" 
+          report="${netbeans.javadoc.dir}/checklinks-errors.xml"
         >
             <include name="*/overview-summary.html"/>
             <include name="*/apichanges.html"/>

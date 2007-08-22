@@ -52,10 +52,7 @@ import java.util.jar.Manifest;
 import javax.help.HelpSet;
 import javax.help.HelpSetException;
 import javax.help.IndexItem;
-import javax.help.IndexView;
-import javax.help.NavigatorView;
 import javax.help.TOCItem;
-import javax.help.TOCView;
 import javax.help.TreeItem;
 import javax.help.TreeItemFactory;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -401,9 +398,13 @@ public class CheckHelpSetsBin extends Task {
             log("Checking ID " + id.id, Project.MSG_VERBOSE);
             try {
                 //System.out.println("CALL OF CheckLinks.scan");
+                List<String> errors = new ArrayList<String>();
                 CheckLinks.scan(this, globalClassLoader, classLoaderMap, id.id, "",
                 new URI(u.toExternalForm()), okurls, badurls, cleanurls, false, false, false, 2, 
-                Collections.<Mapper>emptyList());
+                Collections.<Mapper>emptyList(), errors);
+                for (String error : errors) {
+                    log(error, Project.MSG_WARN);
+                }
                 //System.out.println("RETURN OF CheckLinks.scan");
             } catch (URISyntaxException ex) {
                 ex.printStackTrace();
@@ -413,6 +414,7 @@ public class CheckHelpSetsBin extends Task {
         }
     }
 
+    /* Unused:
     private void checkHelpSet(File hsfile) throws Exception {
         log("Checking helpset: " + hsfile);
         HelpSet hs = new HelpSet(null, hsfile.toURI().toURL());
@@ -458,6 +460,7 @@ public class CheckHelpSetsBin extends Task {
             }
         }
     }
+    */
     
     private final class VerifyTIFactory implements TreeItemFactory {
         

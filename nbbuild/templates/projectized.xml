@@ -163,7 +163,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     </target>
 
     <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn" unless="skip.javadoc">
-        <property name="javadoc.check.failonerror" value="false" />
         <!-- This should become an import at some point, perhaps: -->
         <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
             <property name="javadoc.base" location="."/>
