@@ -62,7 +62,7 @@ public class MeasureMenus  {
         suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debugging main menu"));
         suite.addTest(new MainSubMenus("testWinVersioningMenu", "Window | Versioning main menu"));
         suite.addTest(new MainSubMenus("testWinProfilingMenu", "Window | Profiling main menu"));
-        suite.addTest(new MainSubMenus("testHelpTutorials", "Help | Tutorials main menu"));
+//        suite.addTest(new MainSubMenus("testHelpTutorials", "Help | Tutorials main menu"));
         suite.addTest(new MainSubMenus("testHelpJavadoc", "Help | Javadoc References main menu"));
         
         suite.addTest(new ProjectsViewPopupMenu("testProjectNodePopupMenuProjects", "JSE Project node popup in Projects View"));
