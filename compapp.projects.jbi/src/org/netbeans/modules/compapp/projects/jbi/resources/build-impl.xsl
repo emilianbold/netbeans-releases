@@ -533,7 +533,9 @@ Microsystems, Inc. All Rights Reserved.
             </target>
             
             <target name="-post-debug">
-                <teardown-debug-environment/>
+                <teardown-debug-environment
+                    netBeansUserDir="${{netbeans.user}}" 
+                    j2eeServerInstance="${{j2ee.server.instance}}"/>
             </target>
             
             <xsl:comment>

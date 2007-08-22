@@ -18,9 +18,13 @@
  */
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
+import java.util.Map;
+import javax.management.MBeanServerConnection;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
+import org.apache.tools.ant.Project;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.compapp.jbiserver.GenericConstants;
+import org.netbeans.modules.compapp.jbiserver.management.AdministrationService;
 
 
 /**
@@ -28,18 +32,34 @@ import org.netbeans.api.debugger.DebuggerManager;
  *
  * @author jqian
  */
-public class TearDownDebugEnvironment extends Task {
+public class TearDownDebugEnvironment extends AbstractDebugEnvironmentTask {
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @throws BuildException DOCUMENT ME!
-     */
     public void execute() throws BuildException {
-        System.out.println("TearDownDebugEnvironment");
+        log("TearDownDebugEnvironment:", Project.MSG_DEBUG);
+        //log("Current thread:" + Thread.currentThread(), Project.MSG_DEBUG);
+        
         DebuggerManager.getDebuggerManager().finishAllSessions();
         
-        // TODO: restore SE debug property
-        // TODO: restore test case timeout property
-    }    
+        // Restore SE's debugEnabled property        
+        AdministrationService adminService = getAdminService();            
+        MBeanServerConnection connection = adminService.getServerConnection();
+                
+        Map<String, Boolean> debugEnabledMap = getDebugEnabledMap();
+        for (String seName : debugEnabledMap.keySet()) {
+            boolean wasDebugEnabled = debugEnabledMap.get(seName); 
+            if (!wasDebugEnabled) {
+                try {
+                    log("Restore debug-enabled property for " + seName, Project.MSG_DEBUG);
+                    
+                    ConfigureDeployments configurator = new ConfigureDeployments(
+                                GenericConstants.SERVICE_ENGINES_FOLDER_NAME, seName, connection);
+                    configurator.setProperty(SERVICE_ENGINE_DEBUG_FLAG, Boolean.FALSE);
+                } catch (Exception e) {
+                    log(e.getMessage(), Project.MSG_WARN);
+                }
+            }
+        }
+        
+        // TODO: Restore test case timeout property
+    }     
 }

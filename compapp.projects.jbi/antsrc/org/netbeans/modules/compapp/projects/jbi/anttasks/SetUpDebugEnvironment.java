@@ -18,9 +18,7 @@
  */
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
-import com.sun.jmx.mbeanserver.Repository;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,20 +30,15 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.apache.tools.ant.Project;
-//import org.netbeans.modules.bpel.debugger.api.AttachingCookie;
 import org.netbeans.modules.compapp.jbiserver.GenericConstants;
 import org.netbeans.modules.compapp.jbiserver.management.AdministrationService;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.netbeans.modules.compapp.debugger.CompAppSessionProvider;
 
 /**
@@ -55,26 +48,13 @@ import org.netbeans.modules.compapp.debugger.CompAppSessionProvider;
  */
 // TODO: increase test case timeout property or simply ignore it
 // when debug is enabled.
-public class SetUpDebugEnvironment extends Task {
+public class SetUpDebugEnvironment extends AbstractDebugEnvironmentTask {
     
-    private String j2eeServerInstance;
-    
-    private String netBeansUserDir;
-    
-    // Current assumption about the the debug flag and debug port for any SE.
-    // Otherwise, the SE needs to provide such info.
-    private static final String SERVICE_ENGINE_DEBUG_FLAG = "DebugEnabled"; // NOI18N
-    private static final String SERVICE_ENGINE_DEBUG_PORT = "DebugPort"; // NOI18N
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @throws BuildException DOCUMENT ME!
-     */
     public void execute() throws BuildException {
-
-        //Various debugger engines can discover a host from the given j2ee server instnace
-//        String host = "localhost"; // FIXME: do we support remote debugging?
+        log("SetUpDebugEnvironment:", Project.MSG_DEBUG);
+        //log("Current thread:" + Thread.currentThread(), Project.MSG_DEBUG);
+        
+        Map<String, Boolean> debugEnabledMap = initDebugEnabledMap();
         
         List<String> seNames = getUsedServiceEngineNames();
         
@@ -85,7 +65,7 @@ public class SetUpDebugEnvironment extends Task {
         //provide their debugger engines (i.e. BPEL Debugger Engine).
         //We put all the information that debugger
         //engines might need to debugParams map and suply it to the debug session.
-        Map debugParams = new HashMap();
+        Map<String, Object> debugParams = new HashMap<String, Object>();
         
         for (String seName : seNames) {
             try {
@@ -96,7 +76,13 @@ public class SetUpDebugEnvironment extends Task {
                 //TODO:probably, this should be refactored so that debugger engines
                 //enables the debugging of their SEs themselfs.
                 //That would require to make some of JBI Manager APIs public.
-                boolean debugEnabled = ((Boolean) configurator.getPropertyValue(SERVICE_ENGINE_DEBUG_FLAG)).booleanValue();
+                boolean debugEnabled = ((Boolean) configurator.getPropertyValue(SERVICE_ENGINE_DEBUG_FLAG)).booleanValue();  
+                
+                log("The original debug-enabled property for " + 
+                        seName + " is " + debugEnabled, Project.MSG_DEBUG);
+                
+                debugEnabledMap.put(seName, debugEnabled);
+                
                 if (!debugEnabled) {
                     configurator.setProperty(SERVICE_ENGINE_DEBUG_FLAG, Boolean.TRUE);
                 }
@@ -110,24 +96,13 @@ public class SetUpDebugEnvironment extends Task {
                     //discover the required Service Engine information themselfs
                     //from the given J2EE Server Instance. That would require to
                     //make some of JBI Manager APIs public.
-                    Map seParams = new HashMap();
+                    Map<String, Object> seParams = new HashMap<String, Object>();
                     seParams.put("port", debugPort); //NOI18N
                     debugParams.put(seName, seParams);
-                    // attaches the SE debugger to localhost:<portNumber>
-//                    DebuggerManager.getDebuggerManager().startDebugging(
-//                            DebuggerInfo.create(AttachingCookie.ID,
-//                            new Object[] {AttachingCookie.create(host, debugPort)}));
-                    
-                    // TMP
-//                    try {
-//                        Thread.currentThread().sleep(2000);
-//                    } catch (InterruptedException ex) {
-//                        ex.printStackTrace();
-//                    }
                 }
             } catch (Exception e) {
                 // If the SE doesn't support debugging, simply ignore it.
-                e.printStackTrace();
+                log(e.getMessage(), Project.MSG_WARN);
             }
         }
         
@@ -138,9 +113,9 @@ public class SetUpDebugEnvironment extends Task {
             try {
                 String projectBaseDir = getProject().getProperty("basedir"); //NOI18N
                 debugParams.put("projectBaseDir", projectBaseDir); //NOI18N
-                String j2eeServerInstance = getProject().
+                String serverInstance = getProject().
                         getProperty(JbiProjectProperties.J2EE_SERVER_INSTANCE);
-                debugParams.put("j2eeServerInstance", j2eeServerInstance); //NOI18N
+                debugParams.put("j2eeServerInstance", serverInstance); //NOI18N
                 
                 //that would start a debug session to which other modules
                 //could provide debugger engines
@@ -204,31 +179,5 @@ public class SetUpDebugEnvironment extends Task {
         }
         
         return ret;
-    }
-    
-    private AdministrationService getAdminService() {
-        String nbUserDir = getNetBeansUserDir();
-        String j2eeServerInstance = getJ2eeServerInstance();
-        
-        AdministrationService adminService = AdminServiceHelper.getAdminService(
-                nbUserDir, j2eeServerInstance);
-        
-        return adminService;
-    }
-    
-    public String getJ2eeServerInstance() {
-        return j2eeServerInstance;
-    }
-    
-    public void setJ2eeServerInstance(String j2eeServerInstance) {
-        this.j2eeServerInstance = j2eeServerInstance;
-    }
-    
-    public String getNetBeansUserDir() {
-        return netBeansUserDir;
-    }
-    
-    public void setNetBeansUserDir(String netBeansUserDir) {
-        this.netBeansUserDir = netBeansUserDir;
     }
 }
