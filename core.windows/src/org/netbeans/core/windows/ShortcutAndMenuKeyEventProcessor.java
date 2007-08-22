@@ -19,24 +19,35 @@
 
 package org.netbeans.core.windows;
 
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.core.NbKeymap;
-import org.netbeans.core.windows.view.ui.KeyboardPopupSwitcher;
-import org.openide.actions.ActionManager;
-import org.openide.awt.StatusDisplayer;
-import org.openide.util.Lookup;
-import org.openide.util.Utilities;
-
-import javax.swing.*;
-import javax.swing.text.Keymap;
-import java.awt.*;
+import java.awt.AWTKeyStroke;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyEventPostProcessor;
+import java.awt.KeyboardFocusManager;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Set;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JMenuBar;
+import javax.swing.KeyStroke;
+import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Keymap;
+import org.netbeans.core.NbKeymap;
 import org.netbeans.core.NbTopManager;
-
+import org.netbeans.core.windows.view.ui.KeyboardPopupSwitcher;
+import org.openide.actions.ActionManager;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * this class registers itself to the KeyboardFocusManager as a key event
@@ -152,17 +163,6 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
     }
 
     public boolean dispatchKeyEvent(KeyEvent ev) {
-        // XXX(-ttran) Sun JDK 1.4 on Linux: pressing Alt key produces
-        // KeyEvent.VK_ALT, but Alt+<key> produces Meta+<key>
-        // XXX is this still a problem? -jglick
-        if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-            int mods = ev.getModifiers();
-            if (mods == InputEvent.META_MASK) {
-                mods = (mods & ~ InputEvent.META_MASK) | InputEvent.ALT_MASK;
-                ev.setModifiers(mods);
-            }
-        }
-        
         // in some ctx, may need event filtering
         if (NbKeymap.getContext().length != 0) {
             // Ignore anything but KeyPressed inside ctx, #67187
@@ -269,7 +269,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
 
     private boolean processShortcut(KeyEvent ev) {
         //ignore shortcut keys when the IDE is shutting down
-        if( NbTopManager.get().isExiting() ) {
+        if( NbTopManager.isExiting() ) {
             ev.consume();
             return true;
         }
@@ -285,7 +285,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         // modal and nonmodal dialogs, but propagate from separate floating windows,
         // even if they are backed by JDialog
         if ((w instanceof Dialog) &&
-            !WindowManagerImpl.getInstance().isSeparateWindow(w) &&
+            !WindowManagerImpl.isSeparateWindow(w) &&
             !isTransmodalAction(ks)) {
             return false;
         }
@@ -295,10 +295,10 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         ActionEvent aev = new ActionEvent(
             ev.getSource(), ActionEvent.ACTION_PERFORMED, Utilities.keyToString(ks));
             
-        Keymap root = (Keymap)Lookup.getDefault().lookup(Keymap.class);
+        Keymap root = Lookup.getDefault().lookup(Keymap.class);
         Action a = root.getAction (ks);
         if (a != null && a.isEnabled()) {
-            ActionManager am = (ActionManager)Lookup.getDefault().lookup(ActionManager.class);
+            ActionManager am = Lookup.getDefault().lookup(ActionManager.class);
             am.invokeAction(a, aev);
             ev.consume();
             return true;
@@ -338,7 +338,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
      * action, or the key is not bound to anything in the global keymap
      */
     private static boolean isTransmodalAction (KeyStroke key) {
-        Keymap root = (Keymap)Lookup.getDefault().lookup(Keymap.class);
+        Keymap root = Lookup.getDefault().lookup(Keymap.class);
         Action a = root.getAction (key);
         if (a == null) return false;
         Object val = a.getValue ("OpenIDE-Transmodal-Action"); // NOI18N
