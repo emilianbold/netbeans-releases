@@ -162,7 +162,7 @@ public class CheckLinks extends MatchingTask {
         //task.log("scan: u=" + u + " referrer=" + referrer + " okurls=" + okurls + " badurls=" + badurls + " cleanurls=" + cleanurls + " recurse=" + recurse, Project.MSG_DEBUG);
         //System.out.println("");
         //System.out.println("CheckLinks.scan ref: " + referrer);
-        //System.out.println("CheckLinks.scan   u: " + u + " scheme:" + u.getScheme());
+        //System.out.println("CheckLinks.scan   u: " + u);
         if (okurls.contains(u) && recurse == 0) {
             // Yes it is OK.
             return;
@@ -334,10 +334,10 @@ public class CheckLinks extends MatchingTask {
                     //System.out.println("name:" + name);
                 }
                 URL res = null;
-                URLClassLoader moduleClassLoader = (URLClassLoader) classLoaderMap.get(u.getHost());
+                URLClassLoader moduleClassLoader = (URLClassLoader) classLoaderMap.get(u.toURL().getHost());
                 //Log warning
                 if (moduleClassLoader == null) {
-                    task.log("WARNING: Module " + u.getHost() + " not found among modules containing helpsets. URI: " + u, Project.MSG_WARN);
+                    task.log("WARNING: Module " + u.toURL().getHost() + " not found among modules containing helpsets. URI: " + u, Project.MSG_WARN);
                     task.log("WARNING: Referrer: " + referrer, Project.MSG_WARN);
                 }
                 if (moduleClassLoader != null) {
@@ -356,7 +356,7 @@ public class CheckLinks extends MatchingTask {
                 }
                 if (res == null) {
                     if (moduleClassLoader != null) {
-                        task.log("WARNING: Link not found in module " + u.getHost() + " URI: " + u, Project.MSG_WARN);
+                        task.log("WARNING: Link not found in module " + u.toURL().getHost() + " URI: " + u, Project.MSG_WARN);
                         task.log("WARNING: Referrer: " + referrer, Project.MSG_WARN);
                     }
                     res = globalClassLoader.getResource(name);
@@ -420,6 +420,7 @@ public class CheckLinks extends MatchingTask {
         } catch (IOException ioe) {
             task.log("WARNING: Broken link referred from: " + normalize(referrer, mappers) + referrerLocation 
             + " Broken link: " + base, Project.MSG_WARN);
+            task.log("WARNING: URI: " + u);
             task.log("ERROR: " + ioe, Project.MSG_VERBOSE);
             badurls.add(base);
             badurls.add(u);
@@ -428,6 +429,19 @@ public class CheckLinks extends MatchingTask {
             PrintWriter pw = new PrintWriter(sw);
             ioe.printStackTrace(pw);
             task.log(sw.toString(),Project.MSG_VERBOSE);
+            return;
+        } catch (NullPointerException exc) {
+            task.log("WARNING: NPE Link referred from: " + normalize(referrer, mappers) + referrerLocation 
+            + " Broken link: " + base, Project.MSG_WARN);
+            task.log("WARNING: URI: " + u);
+            task.log("ERROR: " + exc, Project.MSG_WARN);
+            badurls.add(base);
+            badurls.add(u);
+            //Log exception stack trace only in verbose mode
+            StringWriter sw = new StringWriter(500);
+            PrintWriter pw = new PrintWriter(sw);
+            exc.printStackTrace(pw);
+            task.log(sw.toString(),Project.MSG_WARN);
             return;
         }
         okurls.add(base);
