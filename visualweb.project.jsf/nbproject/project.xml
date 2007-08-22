@@ -126,7 +126,6 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
                     <build-prerequisite/>
@@ -266,6 +265,8 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.visualweb.project.jsfloader</friend>
                 <friend>org.netbeans.modules.visualweb.project.navigationloader</friend>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
+                <friend>org.netbeans.modules.visualweb.webui.jsf.defaulttheme</friend>
+                <friend>org.netbeans.modules.visualweb.webui.themes</friend>
                 <friend>org.netbeans.modules.visualweb.xhtml</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <package>org.netbeans.modules.visualweb.project.jsf.api</package>
