@@ -27,15 +27,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import javax.swing.*;
+
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 
 /**
@@ -243,6 +241,16 @@ public class BundleNodeCustomizer extends JPanel {
 
         String basicName = propDataObject.getPrimaryFile().getName();
         
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(BundleNodeCustomizer.class, "CTL_Deletebundle_Prompt"));
+        descriptor.setTitle(NbBundle.getMessage(BundleNodeCustomizer.class, "CTL_Deletebundle_Title"));
+        descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
+        descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+
+        Object res = DialogDisplayer.getDefault().notify(descriptor);
+        if (res != NotifyDescriptor.YES_OPTION) {
+            return;
+        }
+
         for(int i=0; i<selectedValues.length; i++) {
             PropertiesFileEntry entry = propDataObject.getBundleStructure().getEntryByFileName(basicName + PropertiesDataLoader.PRB_SEPARATOR_CHAR + selectedValues[i].toString());
             try {
