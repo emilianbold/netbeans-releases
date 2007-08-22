@@ -161,7 +161,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 List list = new ArrayList();
                 list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/weblogic.jar")));    // NOI18N
                 list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/api.jar")));         // NOI18N
-                
+                // file needed for jsp parsing WL9 and WL10
+                list.add(fileToUrl(new File(getPlatformRoot(), "server/lib/wls-api.jar")));         // NOI18N
+
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
                File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
