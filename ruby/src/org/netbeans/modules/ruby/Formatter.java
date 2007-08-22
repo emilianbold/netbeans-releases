@@ -62,7 +62,7 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class Formatter implements org.netbeans.api.gsf.Formatter {
-    private static final int KEEP_INDENT = -1;
+    private boolean isRhtmlDocument;
     private CodeStyle codeStyle;
     private int rightMarginOverride = -1;
 
@@ -121,73 +121,87 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         return ts.offset();
     }
     
-    private int getTokenBalance(BaseDocument doc, int begin, int end) {
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, begin);
-        if (ts == null) {
-            return 0;
-        }
-
-        ts.move(begin);
-
-        if (!ts.moveNext()) {
-            return 0;
-        }
-
-        int balance = 0;
-
-        do {
-            Token<?extends GsfTokenId> token = ts.token();
-            TokenId id = token.id();
-
+    private int getTokenBalanceDelta(TokenId id, Token<? extends GsfTokenId> token,
+            BaseDocument doc, TokenSequence<? extends GsfTokenId> ts, boolean includeKeywords) {
+        if (id == RubyTokenId.LPAREN || id == RubyTokenId.LBRACKET || id == RubyTokenId.LBRACE ||
+                // In some cases, the [ shows up as an identifier, for example in this expression:
+                //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
+                (id == RubyTokenId.IDENTIFIER && (token.text().toString().equals("[")))) { // NOI18N
+            return 1;
+        } else if (id == RubyTokenId.RPAREN || id == RubyTokenId.RBRACKET || id == RubyTokenId.RBRACE) {
+            return -1;
+        } else if (includeKeywords) {
             if (LexUtilities.isBeginToken(id, doc, ts)) {
-                balance++;
+                return 1;
             } else if (id == RubyTokenId.END) {
-                balance--;
-            } else if (id == RubyTokenId.LPAREN || id == RubyTokenId.LBRACKET || id == RubyTokenId.LBRACE ||
-                    // In some cases, the [ shows up as an identifier, for example in this expression:
-                    //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
-                    (id == RubyTokenId.IDENTIFIER && (token.text().toString().equals("[")))) { // NOI18N
-                balance++;
-            } else if (id == RubyTokenId.RPAREN || id == RubyTokenId.RBRACKET || id == RubyTokenId.RBRACE) {
-                balance--;
+                return -1;
             }
-        } while (ts.moveNext() && (ts.offset() < end));
-
-        return balance;
-    }
-
-    private int getBracketBalance(BaseDocument doc, int begin, int end) {
-        // Same as getTokenBalance, but limited to parentheses, brackets and braces
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, begin);
-        if (ts == null) {
-            return 0;
         }
 
-        ts.move(begin);
-
-        if (!ts.moveNext()) {
-            return 0;
-        }
-
-        int balance = 0;
-
-        do {
-            Token<?extends GsfTokenId> token = ts.token();
-            TokenId id = token.id();
-
-            if (id == RubyTokenId.LPAREN || id == RubyTokenId.LBRACKET || id == RubyTokenId.LBRACE ||
-                    // In some cases, the [ shows up as an identifier, for example in this expression:
-                    //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
-                    (id == RubyTokenId.IDENTIFIER && (token.text().toString().equals("[")))) { // NOI18N
-                balance++;
-            } else if (id == RubyTokenId.RPAREN || id == RubyTokenId.RBRACKET || id == RubyTokenId.RBRACE) {
-                balance--;
-            }
-        } while (ts.moveNext() && (ts.offset() < end));
-
-        return balance;
+        return 0;
     }
     
+    // TODO RHTML - there can be many discontiguous sections, I've gotta process all of them on the given line
+    private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords) {
+        int balance = 0;
+
+        if (isRhtmlDocument) {
+            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+            // Probably an RHTML file - gotta process it in sections since I can have lines
+            // made up of both whitespace, ruby, html and delimiters and all ruby sections
+            // can affect the token balance
+            TokenSequence<? extends TokenId> t = th.tokenSequence();
+            if (t == null) {
+                return 0;
+            }
+            t.move(begin);
+            if (!t.moveNext()) {
+                return 0;
+            }
+            
+            do {
+                Token<?extends TokenId> token = t.token();
+                TokenId id = token.id();
+                
+                if (id.primaryCategory().equals("ruby")) { // NOI18N
+                    TokenSequence<? extends GsfTokenId> ts = t.embedded(RubyTokenId.language());
+                    ts.move(begin);
+                    ts.moveNext();
+                    do {
+                        Token<?extends GsfTokenId> rubyToken = ts.token();
+                        if (rubyToken == null) {
+                            break;
+                        }
+                        TokenId rubyId = rubyToken.id();
+
+                        balance += getTokenBalanceDelta(rubyId, rubyToken, doc, ts, includeKeywords);
+                    } while (ts.moveNext() && (ts.offset() < end));
+                }
+
+            } while (t.moveNext() && (t.offset() < end));
+        } else {
+            TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, begin);
+            if (ts == null) {
+                return 0;
+            }
+            
+            ts.move(begin);
+
+            if (!ts.moveNext()) {
+                return 0;
+            }
+
+            do {
+                Token<?extends GsfTokenId> token = ts.token();
+                TokenId id = token.id();
+                
+                balance += getTokenBalanceDelta(id, token, doc, ts, includeKeywords);
+            } while (ts.moveNext() && (ts.offset() < end));
+        }
+
+        return balance;
+    }
+
     private boolean isInLiteral(BaseDocument doc, int offset) throws BadLocationException {
         // TODO: Handle arrays better
         // %w(January February March April May June July
@@ -242,15 +256,52 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
         return false;
     }
-
-    private int getEndIndent(BaseDocument doc, int offset) throws BadLocationException {
+    
+    /** 
+     * Get the first token on the given line. Similar to LexUtilities.getToken(doc, lineBegin)
+     * except (a) it computes the line begin from the offset itself, and more importantly,
+     * (b) it handles RHTML tokens specially; e.g. if a line begins with
+     * {@code
+     *    <% if %>
+     * }
+     * then the "if" embedded token will be returned rather than the RHTML delimiter, or even
+     * the whitespace token (which is the first Ruby token in the embedded sequence).
+     *    
+     * </pre>   
+     */
+    private Token<? extends GsfTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, lineBegin);
+            if (isRhtmlDocument) {
+                TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, lineBegin);
+                if (ts != null) {
+                    ts.moveNext();
+                    Token<?extends GsfTokenId> token = ts.token();
+                    while (token != null && token.id() == RubyTokenId.WHITESPACE) {
+                        if (!ts.moveNext()) {
+                            return null;
+                        }
+                        token = ts.token();
+                    }
+                    return token;
+                }
+            } else {
+                return LexUtilities.getToken(doc, lineBegin);
+            }
+        }
+        
+        return null;
+    }
+
+    private boolean isEndIndent(BaseDocument doc, int offset) throws BadLocationException {
+        int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
+
+        if (lineBegin != -1) {
+            Token<?extends GsfTokenId> token = getFirstToken(doc, offset);
             
             if (token == null) {
-                return KEEP_INDENT;
+                return false;
             }
             
             TokenId id = token.id();
@@ -258,40 +309,15 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             // If the line starts with an end-marker, such as "end", "}", "]", etc.,
             // find the corresponding opening marker, and indent the line to the same
             // offset as the beginning of that line.
-            OffsetRange begin = OffsetRange.NONE;
-            if ((LexUtilities.isIndentToken(id) && !LexUtilities.isBeginToken(id, doc, offset)) || id == RubyTokenId.END) {
-                TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, lineBegin);
-                ts.move(lineBegin);
-                ts.movePrevious();
-                begin = LexUtilities.findBegin(doc, ts);
-            } else if ((id == RubyTokenId.RBRACE)) {
-                TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, lineBegin);
-                ts.move(lineBegin);
-                ts.movePrevious();
-                begin = LexUtilities.findBwd(doc, ts, 
-                        RubyTokenId.LBRACE, RubyTokenId.RBRACE);
-            } else if (id == RubyTokenId.RBRACKET) {
-                TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, lineBegin);
-                ts.move(lineBegin);
-                ts.movePrevious();
-                begin = LexUtilities.findBwd(doc, ts, 
-                        RubyTokenId.LBRACKET, RubyTokenId.RBRACKET);
-            } else if (id == RubyTokenId.RPAREN) {
-                TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, lineBegin);
-                ts.move(lineBegin);
-                ts.movePrevious();
-                begin = LexUtilities.findBwd(doc, ts, 
-                        RubyTokenId.LPAREN, RubyTokenId.RPAREN);
-            }
-            if (begin != OffsetRange.NONE) {
-                return LexUtilities.getLineIndent(doc, begin.getStart());
-            }
+            return (LexUtilities.isIndentToken(id) && !LexUtilities.isBeginToken(id, doc, offset)) || id == RubyTokenId.END ||
+                id == RubyTokenId.RBRACE || id == RubyTokenId.RBRACKET || id == RubyTokenId.RPAREN;
         }
         
-        return KEEP_INDENT;
+        return false;
     }
     
     private boolean isLineContinued(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
+        // TODO RHTML - this isn't going to work for rhtml embedded strings...
         offset = Utilities.getRowLastNonWhite(doc, offset);
         if (offset == -1) {
             return false;
@@ -350,9 +376,11 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         FormattingPreferences preferences) {
         reindent(document, startOffset, endOffset, result, preferences, true);
     }
-    
+
     private void reindent(Document document, int startOffset, int endOffset, ParserResult result,
         FormattingPreferences preferences, boolean indentOnly) {
+        isRhtmlDocument = RubyUtils.isRhtmlDocument(document);
+        
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
@@ -390,8 +418,6 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             // is used during live code template insertions for example. However, when
             // wholesale formatting a whole document, leave these lines alone.
             boolean indentEmptyLines = (startOffset != 0 || endOffset != doc.getLength());
-            boolean inRhtml = RubyUtils.isRhtmlDocument(document);
-            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
 
             boolean includeEnd = endOffset == doc.getLength();
             
@@ -404,7 +430,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
                 // Iterate in reverse order such that offsets are not affected by our edits
                 assert indents.size() == offsets.size();
-
+                org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
                 for (int i = indents.size() - 1; i >= 0; i--) {
                     int indent = indents.get(i);
                     int lineBegin = offsets.get(i);
@@ -436,26 +462,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                     int currentIndent = LexUtilities.getLineIndent(doc, lineBegin);
 
                     if (currentIndent != indent) {
-                        if (inRhtml) {
-                            // Don't mess with lines that aren't in Ruby blocks, or that start with
-                            // HTML stuff
-                            TokenSequence<?extends GsfTokenId> ts = th.tokenSequence(RubyTokenId.language());
-                            if (ts != null) {
-                                ts.move(lineStart);
-                                if (ts.moveNext()) {
-                                    // Look at the language at this location
-                                    LanguagePath path = ts.languagePath();
-                                    if (!(path.innerLanguage() == RubyTokenId.language() ||
-                                            path.innerLanguage().mimeType().equals(RubyInstallation.RHTML_MIME_TYPE))) {
-                                        // HTML etc. - skip
-                                        continue;
-                                    }
-                                }
-                            }
-                        }
-                        // In RHTML files 
-                        
-                        doc.getFormatter().changeRowIndent(doc, lineBegin, indent);
+                        editorFormatter.changeRowIndent(doc, lineBegin, indent);
                     }
                 }
                 
@@ -543,9 +550,9 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 int hangingIndent = continued ? (hangingIndentSize) : 0;
 
                 if (isInLiteral(doc, offset)) {
-                    // Skip this line
+                    // Skip this line - leave formatting as it is prior to reformatting 
                     indent = LexUtilities.getLineIndent(doc, offset);
-                } else if ((indent = getEndIndent(doc, offset)) != KEEP_INDENT) {
+                } else if (isEndIndent(doc, offset)) {
                     indent = (balance-1) * indentSize + hangingIndent + initialIndent;
                 } else {
                     indent = balance * indentSize + hangingIndent + initialIndent;
@@ -568,8 +575,8 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
 
                 if (lineBegin != -1) {
-                    balance += getTokenBalance(doc, lineBegin, endOfLine);
-                    bracketBalance += getBracketBalance(doc, lineBegin, endOfLine);
+                    balance += getTokenBalance(doc, lineBegin, endOfLine, true);
+                    bracketBalance += getTokenBalance(doc, lineBegin, endOfLine, false);
                     continued = isLineContinued(doc, offset, bracketBalance);
                 }
 

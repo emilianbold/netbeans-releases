@@ -33,6 +33,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -113,6 +114,26 @@ public class LexUtilities {
     }
     
     @SuppressWarnings("unchecked")
+    private static TokenSequence<? extends GsfTokenId> findRhtmlDelimited(TokenSequence t, int offset) {
+        if (t.language().mimeType().equals(RubyInstallation.RHTML_MIME_TYPE)) {
+            t.move(offset);
+            if (t.moveNext() && t.token() != null && 
+                    "ruby-delimiter".equals(t.token().id().primaryCategory())) { // NOI18N
+                // It's a delimiter - move ahead and see if we find it
+                if (t.moveNext() && t.token() != null &&
+                        "ruby".equals(t.token().id().primaryCategory())) { // NOI18N
+                    TokenSequence<? extends TokenId> ets = t.embedded();
+                    if (ets != null) {
+                        return (TokenSequence<? extends GsfTokenId>)ets;
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    @SuppressWarnings("unchecked")
     public static TokenSequence<?extends GsfTokenId> getRubyTokenSequence(TokenHierarchy<Document> th, int offset) {
         TokenSequence<?extends GsfTokenId> ts = th.tokenSequence(RubyTokenId.language());
 
@@ -126,6 +147,11 @@ public class LexUtilities {
                     ts = t;
 
                     break;
+                } else {
+                    TokenSequence<? extends GsfTokenId> ets = findRhtmlDelimited(t, offset);
+                    if (ets != null) {
+                        return ets;
+                    }
                 }
             }
 
@@ -137,9 +163,13 @@ public class LexUtilities {
                         ts = t;
 
                         break;
+                    } else {
+                        TokenSequence<? extends GsfTokenId> ets = findRhtmlDelimited(t, offset);
+                        if (ets != null) {
+                            return ets;
+                        }
                     }
                 }
-
             }
         }
 
@@ -1146,6 +1176,7 @@ public class LexUtilities {
             return true;
         }
 
+        @Override
         public String toString() {
             if (this == LOCAL) {
                 return "LOCAL";
