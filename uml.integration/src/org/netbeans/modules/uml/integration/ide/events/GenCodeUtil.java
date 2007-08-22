@@ -68,7 +68,8 @@ public final class GenCodeUtil
 	boolean fullyQualified,
 	ClassInfo container)
     {
-	String  classTypeName = getTypeCodeGenType(classType, fullyQualified, container);	    
+	ClassInfo ci = ClassInfo.getRefClassInfo(classType, true, true);
+	String  classTypeName = ci.getCodeGenType(fullyQualified, container);
 
 //        if (mult != null && mult.getRangeCount() > 0)
         if (mult != null && isMultiDim(mult))
@@ -181,40 +182,9 @@ public final class GenCodeUtil
 
     public static String[] getFullyQualifiedCodeGenType(IClassifier classType)
     {
-	if (classType == null) {
-	    return null;
-	}
-        IPackage owningPkg = classType.getOwningPackage();
-	if (owningPkg == null) {
-	    return null;
-	}
-        String fullPkgName = owningPkg.getFullyQualifiedName(false);
-
-        // default package elements have the project as the owning package
-        if (owningPkg instanceof IProject)
-            fullPkgName = "";
-
-        // get fully qualified name - "com::foo::bar::Outer::Middle::Inner"
-        String qualName = classType.getFullyQualifiedName(false);
-        String fullClassName = qualName;
-
-        if (isValidClassType(fullClassName))
-        {
-            // extract the full class name - "Outer::Middle::Inner"
-            // and convert to dot notation = "Outer.Middle.Inner"
-
-            if (fullPkgName.length() > 0)
-            {
-                fullClassName = JavaClassUtils.convertUMLtoJava(
-                    qualName.substring(fullPkgName.length()+2));
-                fullPkgName = JavaClassUtils.convertUMLtoJava(fullPkgName);
-            }
-            // it's in the default package
-            else
-                fullClassName = JavaClassUtils.convertUMLtoJava(qualName);
-	    
-        }
-	return new String[] {fullPkgName, fullClassName};
+	ClassInfo ci = ClassInfo.getRefClassInfo(classType, true, true);
+	String[] packAndName = ci.getFullyQualifiedCodeGenType();
+	return packAndName;
     }
     
     public static String getTypeName(IClassifier clazz, boolean fullyQualified) 

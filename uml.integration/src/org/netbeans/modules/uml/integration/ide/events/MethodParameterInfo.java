@@ -259,19 +259,42 @@ public class MethodParameterInfo implements Cloneable
             return getType();
         }
         
-        return GenCodeUtil.getCodeGenType(
-            getParameterElement().getType(), 
-	    GenCodeUtil.getCollectionOverrideDataTypes
-	        (getParameterElement().getMultiplicity(), fullyQualified),
-            isUseGenerics(),
-//            getParameterElement().getMultiplicity().getRangeCount());
-//            GenCodeUtil.getMultiplicityMaxUpperRange(
-//                getParameterElement().getMultiplicity().getRanges()));
-            getParameterElement().getMultiplicity(),
-	    fullyQualified,
-	    getParentMethodInfo().getContainingClass());
+	if (fullyQualified) 
+	{
+	    if (codeGenTypeFullyQualified == null) 
+	    { 
+		codeGenTypeFullyQualified 
+		    = GenCodeUtil.getCodeGenType
+		    (getParameterElement().getType(), 
+		     GenCodeUtil.getCollectionOverrideDataTypes
+		         (getParameterElement().getMultiplicity(), fullyQualified),
+		     isUseGenerics(),
+		     getParameterElement().getMultiplicity(),
+		     fullyQualified,
+		     getParentMethodInfo().getContainingClass());
+	    }
+	    return codeGenTypeFullyQualified;
+	}
+	else 
+	{
+	    if (codeGenTypeShort == null) 
+	    { 
+		codeGenTypeShort 
+		    = GenCodeUtil.getCodeGenType
+		    (getParameterElement().getType(), 
+		     GenCodeUtil.getCollectionOverrideDataTypes
+		         (getParameterElement().getMultiplicity(), fullyQualified),
+		     isUseGenerics(),
+		     getParameterElement().getMultiplicity(),
+		     fullyQualified,
+		     getParentMethodInfo().getContainingClass());
+	    }
+	    return codeGenTypeShort;
+	}
     }
     
+    private String codeGenTypeFullyQualified = null;
+    private String codeGenTypeShort = null;
     
     public int getNumberOfDimensions()
     {

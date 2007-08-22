@@ -94,7 +94,9 @@ public class JavaCodegen implements ICodeGenerator
 
 	String tempTemplatesDirName = null;
 	FileObject tempTemplatesDirFO = null;
-		
+	
+	ClassInfo.eraseRefClasses();
+	
         for (IElement pElement: elements)
         {
             // has the task been canceled by the user?

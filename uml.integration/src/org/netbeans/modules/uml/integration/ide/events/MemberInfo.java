@@ -486,19 +486,43 @@ public class MemberInfo extends ElementInfo
         if (getAttribute() == null)
             return ""; // NOI18N
         
-        return GenCodeUtil.getCodeGenType(
-            getAttribute().getType(), 
-	    GenCodeUtil.getCollectionOverrideDataTypes(getAttribute().getMultiplicity(), fullyQualified),
-            isUseGenerics(),
-            // getAttribute().getMultiplicity().getRangeCount());
-//            GenCodeUtil.getMultiplicityMaxUpperRange(
-//                getAttribute().getMultiplicity().getRanges()));
-            getAttribute().getMultiplicity(),
-	    fullyQualified,
-	    getContainingClass());
+	if (fullyQualified) 
+	{
+	    if (codeGenTypeFullyQualified == null) 
+	    { 
+		codeGenTypeFullyQualified 
+		    = GenCodeUtil.getCodeGenType
+		    (getAttribute().getType(), 
+		     GenCodeUtil.getCollectionOverrideDataTypes
+		         (getAttribute().getMultiplicity(), fullyQualified),
+		     isUseGenerics(),
+		     getAttribute().getMultiplicity(),
+		     fullyQualified,
+		     getContainingClass());
+	    }
+	    return codeGenTypeFullyQualified;
+	}
+	else 
+	{
+	    if (codeGenTypeShort == null) 
+	    { 
+		codeGenTypeShort 
+		    = GenCodeUtil.getCodeGenType
+		    (getAttribute().getType(), 
+		     GenCodeUtil.getCollectionOverrideDataTypes
+		         (getAttribute().getMultiplicity(), fullyQualified),
+		     isUseGenerics(),
+		     getAttribute().getMultiplicity(),
+		     fullyQualified,
+		     getContainingClass());
+	    }
+	    return codeGenTypeShort;
+	}
     }
-    
 
+    private String codeGenTypeFullyQualified = null;
+    private String codeGenTypeShort = null;
+    
     /**
      * Updates the data member using the specified Symbol transaction.
      * @param trans The transaction that is to be used to update the correct symbol.

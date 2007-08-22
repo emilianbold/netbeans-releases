@@ -211,7 +211,7 @@ public class ClassInfo extends ElementInfo
     private Vector  mConstructors      = new Vector();
     
     /** The class's inner classes. */
-    private Vector  mInnerClasses      = new Vector();
+    private Vector<ClassInfo>  mInnerClasses      = new Vector<ClassInfo>();
     
     /** The class's implemented interfaces. */
     private Vector  mInterfaces        = new Vector();
@@ -618,6 +618,20 @@ public class ClassInfo extends ElementInfo
                 }
             }
         }
+
+	List<INamedElement> owned = clazz.getOwnedElements();
+	if (owned != null) 
+	{
+	    for(INamedElement el : owned) {
+		if (el instanceof IClass 
+		    || el instanceof IInterface 
+		    || el instanceof IEnumeration) 
+		{
+		    ClassInfo cinfo = getRefClassInfo((IClassifier)el, true, true);
+		    addInnerClass(cinfo);
+		}	    
+	    }
+	}
     }
     
     protected void setSuperclass(IClassifier clazz)
@@ -2234,25 +2248,39 @@ public class ClassInfo extends ElementInfo
      */
     public static ClassInfo getRefClassInfo(IClassifier c, boolean reuse)
     {
+        return getRefClassInfo(c, reuse, false);
+    }
+
+    public static ClassInfo getRefClassInfo(IClassifier c, boolean reuse, boolean fullInit)
+    {
         if (c == null) return null;
         
         ClassInfo ci = null;
         if (reuse)
         {
             ci = (ClassInfo) refClassInfos.get(c.getXMIID());
-            if (ci != null)
-                Log.out("Reusing ClassInfo " + ci.getName());
+            //if (ci != null)
+            //    Log.out("Reusing ClassInfo " + ci.getName());
         }
         if (ci == null)
         {
-            ci = new ClassInfo(null);
-            ci.setRefInfo(c);
-            
+	    if (fullInit) 
+	    {
+		ci = new ClassInfo(c);
+		ci.setMethodsAndMembers(c);
+		ci.setComment(c.getDocumentation());
+	    }       
+	    else 
+	    {
+		ci = new ClassInfo(null);
+		ci.setRefInfo(c);
+	    }
             if (reuse) refClassInfos.put(c.getXMIID(), ci);
         }
         
         return ci;
     }
+
     
     /**
      *  Clears all cached <code>ClassInfo</code>s created by getRefClassInfo().
@@ -2392,17 +2420,83 @@ public class ClassInfo extends ElementInfo
         return res;
     }
 
+    public String[] getFullyQualifiedCodeGenType()
+    {
+	if (fullyQualifiedName == null) 
+	{	    
+	    IClassifier classType = getClassElement();
+	    if (classType == null) {
+		return null;
+	    }
+	    IPackage owningPkg = classType.getOwningPackage();
+	    if (owningPkg == null) {
+		return null;
+	    }
+	    String fullPkgName = owningPkg.getFullyQualifiedName(false);
+	    
+	    // default package elements have the project as the owning package
+	    if (owningPkg instanceof IProject)
+		fullPkgName = "";
+
+	    // get fully qualified name - "com::foo::bar::Outer::Middle::Inner"
+	    String qualName = classType.getFullyQualifiedName(false);
+	    String fullClassName = qualName;
+
+	    if (GenCodeUtil.isValidClassType(fullClassName))
+	    {
+		// extract the full class name - "Outer::Middle::Inner"
+		// and convert to dot notation = "Outer.Middle.Inner"
+		
+		if (fullPkgName.length() > 0)
+		{
+		    fullClassName = JavaClassUtils.convertUMLtoJava
+			(qualName.substring(fullPkgName.length()+2));
+		    fullPkgName = JavaClassUtils.convertUMLtoJava(fullPkgName);
+		}
+		// it's in the default package
+		else
+		    fullClassName = JavaClassUtils.convertUMLtoJava(qualName);
+	    
+	    }
+	    fullyQualifiedName = new String[] {fullPkgName, fullClassName};
+	}
+	return fullyQualifiedName;
+    }
+
+    private String[] fullyQualifiedName = null;
+
     public String getShortClassName() {
 	return JavaClassUtils.getShortClassName(getName());
     }
 
-
     public String getCodeGenType(boolean fullyQualified, ClassInfo container)
     {
-	return GenCodeUtil.getTypeCodeGenType(getClassElement(), fullyQualified, container);
+	if (fullyQualified) 
+	{
+	    if (codeGenTypeFullyQualified == null) 
+	    { 
+		codeGenTypeFullyQualified 
+		    = GenCodeUtil.getTypeCodeGenType(getClassElement(), 
+						     fullyQualified, 
+						     container);
+	    }
+	    return codeGenTypeFullyQualified;
+	}
+	else 
+	{
+	    if (codeGenTypeShort == null) 
+	    { 
+		codeGenTypeShort 
+		    = GenCodeUtil.getTypeCodeGenType(getClassElement(), 
+						     fullyQualified, 
+						     container);
+	    }
+	    return codeGenTypeShort;
+	}
     }
 
-
+    private String codeGenTypeFullyQualified = null;
+    private String codeGenTypeShort = null;
 
     public Vector getFieldsCodeGenSorted() {
 	Vector<MemberInfo> res = new Vector<MemberInfo>();	
@@ -2552,27 +2646,10 @@ public class ClassInfo extends ElementInfo
 
     public ArrayList<ClassInfo> getMemberTypes() 
     {	
-	IClassifier clazz = getClassElement();
-	if (clazz == null) 
+	ArrayList<ClassInfo> res = new ArrayList<ClassInfo>();	
+	for(ClassInfo inner : mInnerClasses) 
 	{
-	    return null;
-	}
-	List<INamedElement> owned = clazz.getOwnedElements();
-	if (owned == null) 
-	{
-	    return null;
-	}
-	ArrayList<ClassInfo> res = new ArrayList<ClassInfo>();
-	for(INamedElement el : owned) {
-	    if (el instanceof IClass 
-		|| el instanceof IInterface 
-		|| el instanceof IEnumeration) 
-	    {
-		ClassInfo cinfo = new ClassInfo((IClassifier)el);
-		cinfo.setMethodsAndMembers((IClassifier)el);
-		cinfo.setComment(((IClassifier)el).getDocumentation());
-		res.add(cinfo);
-	    }	    
+	    res.add(inner);	    
 	}
 	return res;
     }
