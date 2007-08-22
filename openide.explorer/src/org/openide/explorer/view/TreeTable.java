@@ -1585,7 +1585,9 @@ class TreeTable extends JTable implements Runnable {
 
                 if (changeSelection && ((editor == null) || editor.shouldSelectCell(e))) {
                     setValueIsAdjusting(true);
-                    table.changeSelection(row, column, e.isControlDown(), e.isShiftDown());
+                    table.changeSelection(row, column, 
+                            Utilities.isMac() ? e.isMetaDown() : e.isControlDown(), //use META key on Mac to toggle selection
+                            e.isShiftDown());
                 }
             }
             
