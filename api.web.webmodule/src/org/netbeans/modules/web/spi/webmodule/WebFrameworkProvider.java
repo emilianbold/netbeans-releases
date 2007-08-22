@@ -91,8 +91,7 @@ public abstract class WebFrameworkProvider {
      * or when user adds the framework through project properties. A panel is also obtained for
      * customizing the framework. It can be two different panels, one for adding and one for customize
      * already added framework.
-     * @param customize It's false when the method is called before adding the framework to the web medule and true when the framework 
-     * is already added.
+     * @param wm The Web Module for which the panel is returned.
      * @return The panel for configuration the framework.
      */
     public abstract FrameworkConfigurationPanel getConfigurationPanel(WebModule wm);
