@@ -111,6 +111,7 @@ public final class SchemaDataObject extends MultiDataObject {
     static class SchemaNode extends DataNode implements ModelProvider {
         public SchemaNode(SchemaDataObject dobj) {
             super(dobj, Children.LEAF);
+            getCookieSet().add(this);
         }
 
         public Action getPreferredAction() {
