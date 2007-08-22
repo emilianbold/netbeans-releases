@@ -74,11 +74,7 @@ public class LayersBridge extends KeymapManager {
     public Map<String, Set<ShortcutAction>> getActions () {
         if (categoryToActions == null) {
             categoryToActions = new HashMap<String, Set<ShortcutAction>> ();
-            initActions ("OptionsDialog/Actions", null);               // NOI18N
-            initActions (
-                "Actions", 
-                NbBundle.getMessage (LayersBridge.class, "CTL_Other")
-            );
+            initActions ("Actions", null);               // NOI18N
             categoryToActions.remove ("Hidden");                       // NOI18N
             categoryToActions = Collections.unmodifiableMap (categoryToActions);
         }
