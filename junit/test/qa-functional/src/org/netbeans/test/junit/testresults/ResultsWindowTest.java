@@ -45,8 +45,10 @@ public class ResultsWindowTest extends NbTestCase {
         //open Test package
         Node n = Utilities.openFile(Utilities.TEST_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME + "|" + Utilities.TEST_CLASS_NAME);
-        
+
+        Utilities.takeANap(2000);
         JPopupMenuOperator jpmo = n.callPopup();
+        Utilities.takeANap(1000);
         jpmo.pushMenu(Utilities.RUN_FILE);
         Utilities.takeANap(7000);
         ResultWindowOperator rwo = new ResultWindowOperator();
