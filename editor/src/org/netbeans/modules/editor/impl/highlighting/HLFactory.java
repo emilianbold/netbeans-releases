@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.modules.editor.lib2.highlighting.CaretBasedBlockHighlighting.CaretRowHighlighting;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -50,6 +49,13 @@ public final class HLFactory implements HighlightsLayerFactory {
             ZOrder.BOTTOM_RACK, 
             true,  // fixedSize
             new GuardedBlocksHighlighting(d, mimeType)
+        ));
+        
+        layers.add(HighlightsLayer.create(
+            ComposedTextHighlighting.LAYER_TYPE_ID, 
+            ZOrder.TOP_RACK, 
+            true,  // fixedSize
+            new ComposedTextHighlighting(d, mimeType)
         ));
         
         if (TokenHierarchy.get(context.getDocument()) == null) {

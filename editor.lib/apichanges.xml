@@ -82,6 +82,21 @@ is the proper place.
 
     <changes>
 
+        <change id="BaseDocumentEvent.getChangeAttributes.added">
+            <summary>Added BaseDocumentEvent.getChangeAttributes</summary>
+            <version major="1" minor="17"/>
+            <date day="22" month="8" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    The <code>BaseDocumentEvent.getChangeAttributes()</code> was added
+                    in order to be able to find out the attributes supplied
+                    when calling <code>Document.insertString()</code>.
+                </p>
+            </description>
+        </change>
+
         <change id="ExtKit.ToggleCommentAction.added">
             <summary>Added ExtKit.ToggleCommentAction</summary>
             <version major="1" minor="16"/>
