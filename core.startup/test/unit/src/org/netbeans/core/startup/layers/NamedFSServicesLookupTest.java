@@ -19,11 +19,13 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.startup.MainLookup;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
@@ -122,29 +124,44 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
     }
 
     public void testNumericOrdering() throws Exception {
-        FileObject inst = FileUtil.createData(root, "inst/positional/X.instance");
-        inst.setAttribute("instanceCreate", Long.valueOf(1000));
-        inst.setAttribute("position", 3);
-        FileObject inst2 = FileUtil.createData(root, "inst/positional/A.instance");
-        inst2.setAttribute("instanceCreate", Long.valueOf(500));
-        inst2.setAttribute("position", 1);
-        FileObject inst3 = FileUtil.createData(root, "inst/positional/B.instance");
-        inst3.setAttribute("instanceCreate", Long.valueOf(1500));
-        inst3.setAttribute("position", 4);
-        FileObject inst4 = FileUtil.createData(root, "inst/positional/C.instance");
-        inst4.setAttribute("instanceCreate", Long.valueOf(700));
-        inst4.setAttribute("position", 2);
-        Lookup l = Lookups.forPath("inst/positional");
-        Iterator<? extends Long> lng = l.lookupAll(Long.class).iterator();
-        assertEquals(Long.valueOf(500), lng.next());
-        assertEquals(Long.valueOf(700), lng.next());
-        assertEquals(Long.valueOf(1000), lng.next());
-        assertEquals(Long.valueOf(1500), lng.next());
-        Iterator<? extends Lookup.Item<Long>> items = l.lookupResult(Long.class).allItems().iterator();
-        assertEquals("inst/positional/A", items.next().getId());
-        assertEquals("inst/positional/C", items.next().getId());
-        assertEquals("inst/positional/X", items.next().getId());
-        assertEquals("inst/positional/B", items.next().getId());
+        class Tst implements FileSystem.AtomicAction {
+            public void run() throws IOException {
+                init();
+            }
+            
+            void init() throws IOException {
+                FileObject inst = FileUtil.createData(root, "inst/positional/X.instance");
+                inst.setAttribute("instanceCreate", Long.valueOf(1000));
+                inst.setAttribute("position", 3);
+                FileObject inst2 = FileUtil.createData(root, "inst/positional/A.instance");
+                inst2.setAttribute("instanceCreate", Long.valueOf(500));
+                inst2.setAttribute("position", 1);
+                FileObject inst3 = FileUtil.createData(root, "inst/positional/B.instance");
+                inst3.setAttribute("instanceCreate", Long.valueOf(1500));
+                inst3.setAttribute("position", 4);
+                FileObject inst4 = FileUtil.createData(root, "inst/positional/C.instance");
+                inst4.setAttribute("instanceCreate", Long.valueOf(700));
+                inst4.setAttribute("position", 2);
+            }
+            
+            void verify() {
+                Lookup l = Lookups.forPath("inst/positional");
+                Iterator<? extends Long> lng = l.lookupAll(Long.class).iterator();
+                assertEquals(Long.valueOf(500), lng.next());
+                assertEquals(Long.valueOf(700), lng.next());
+                assertEquals(Long.valueOf(1000), lng.next());
+                assertEquals(Long.valueOf(1500), lng.next());
+                Iterator<? extends Lookup.Item<Long>> items = l.lookupResult(Long.class).allItems().iterator();
+                assertEquals("inst/positional/A", items.next().getId());
+                assertEquals("inst/positional/C", items.next().getId());
+                assertEquals("inst/positional/X", items.next().getId());
+                assertEquals("inst/positional/B", items.next().getId());
+            }
+        }
+        
+        Tst tst = new Tst();
+        root.getFileSystem().runAtomicAction(tst);
+        tst.verify();
     }
 
 }
