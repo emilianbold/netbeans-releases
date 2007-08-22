@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -22,24 +22,36 @@ Microsystems, Inc. All Rights Reserved.
     
     <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
     
-    <target name="set-environment">
-        <condition property="xtest.userdata|derby.path" value="e:\\space\\AppServer\\javadb">
-            <os family="windows"/>
-        </condition>
-        <condition property="xtest.userdata|derby.path" value="/space/appserver/javadb">
-            <os family="unix"/>
-        </condition>
-    </target>
-    
-     
-    <target name="runidetest" depends="init,init-cp,set-environment">
+    <target name="runidetest" depends="init,init-cp,check-appserver,commandline-suffix">
         <executeTests pluginname="ide">
             <classpath>
                 <path refid="test.qa-functional.run.cp"/>
             </classpath>
-           
         </executeTests>
     </target>
     
+    <target name="runidetest-debug" depends="setup-debugger,runidetest"/>
     
+    <target name="setup-debugger">
+        <property name="xtest.debug.port" value="1111"/>
+        <property name="xtest.debug.suspend" value="true"/>  
+    </target>
+    
+    <target name="check-appserver" depends="set-appserver-path">
+        <available file="${j2ee.appserver.path}/domains/domain1" property="j2ee.appserver.present"/>
+        <fail unless="j2ee.appserver.present" message="AppServer was not found in ${j2ee.appserver.path}. Set property j2ee.appserver.path to point to AppServer installation directory."/>
+    </target>
+    
+    <target name="set-appserver-path" unless="j2ee.appserver.path">
+        <condition property="j2ee.appserver.path" value="e:\\space\\AppServer">
+            <os family="windows"/>
+        </condition>
+        <condition property="j2ee.appserver.path" value="/space/appserver">
+            <os family="unix"/>
+        </condition>
+    </target>
+    
+    <target name="commandline-suffix">
+        <property name="xtest.ide.commandline.suffix" value='-J-Dcom.sun.aas.installRoot="${j2ee.appserver.path}"'/>
+    </target>
 </project>

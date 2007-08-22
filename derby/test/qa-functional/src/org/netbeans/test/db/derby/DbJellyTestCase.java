@@ -13,41 +13,43 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.test.db.derby;
 
 import org.netbeans.jellytools.JellyTestCase;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author lg198683
  */
 public class DbJellyTestCase extends JellyTestCase {
-    
+
     /** Creates a new instance of DbJellyTestCase */
     public DbJellyTestCase(String s) {
         super(s);
     }
 
-   
-    
-    
-    protected  void debug(String message){
-       
-            log(message);
-            System.out.println("> " + message);
-       
+    @Override
+    public void setUp() {
+        debug("########  "+getName()+"  #######");
     }
     
-     protected  void sleep(int sec) {
-        debug("Waiting "+sec+" sec ... ");
+    protected void debug(String message) {
+        log(message);
+        System.out.println("> " + message);
+    }
+
+    protected void sleep(int millis) {
+        debug("Waiting " + millis + " millis ... ");
         try {
-            Thread.currentThread().sleep(sec);
-        } catch (Exception ex) {}
+            Thread.currentThread().sleep(millis);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         debug("DONE");
     }
-    
 }

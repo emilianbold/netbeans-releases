@@ -13,22 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.test.db.derby;
 
-
-
-
 import java.sql.Connection;
-import java.sql.Driver;
-import java.util.Properties;
-import junit.extensions.TestSetup;
 import junit.framework.Test;
-import junit.framework.TestCase;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.modules.derby.StartAction;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.derby.DerbyOptions;
@@ -36,97 +28,42 @@ import org.netbeans.modules.derby.StopAction;
 import org.netbeans.test.db.util.DbUtil;
 import org.openide.util.actions.SystemAction;
 
-
-
-/*
- * MyTestCase.java
- *
- * Created on February 6, 2006, 1:39 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 /**
  *
  * @author lg198683
  */
 public class DerbyDatabaseTest extends DbJellyTestCase {
     
-    public static final String DERBY_CLASS_NAME = "org.apache.derby.jdbc.ClientDriver";
-    public static final String PORT="1527";
-    public static String location="";
-    
     public DerbyDatabaseTest(String s) {
-        
         super(s);
-        debug("derby location:"+location);
     }
     
-    
-    
     public void testStartAction() {
-       debug("Starting Java DB server"); 
-       StartAction start=(StartAction)SystemAction.get(StartAction.class);
+       StartAction start=SystemAction.get(StartAction.class);
        start.performAction();
        sleep(2000);
-      
     }
     
     public void testStopAction() throws Exception {
-        debug("Stoping Java DB server");
-
-        StopAction stop=(StopAction)SystemAction.get(StopAction.class);
+        StopAction stop=SystemAction.get(StopAction.class);
         stop.performAction();
-                
     }
     
-    
     public void testConnect() throws Exception{
-        debug("Connection to Java DB server");
-        DbUtil util=new DbUtil(location);
-        String s="jdbc:derby://localhost:1527/db;create=true";
-        Connection con=util.createConnection(s);
+        String url="jdbc:derby://localhost:1527/db;create=true";
+        Connection con=DbUtil.createDerbyConnection(url);
         con.close();
-        
    }
-        
     
-    
-    
-    
-    public static Test suite() {
+   public static Test suite() {
+        String tmpdir = System.getProperty("xtest.tmpdir");
+        System.out.println("> Setting the Derby System Home to: "+tmpdir);
+        DerbyOptions.getDefault().setSystemHome(tmpdir);
         
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new DerbyDatabaseTest("testStartAction")); 
         suite.addTest(new DerbyDatabaseTest("testConnect"));
         suite.addTest(new DerbyDatabaseTest("testStopAction"));
-        TestSetup setup=new TestSetup(suite){
-            
-            protected void setUp() throws Exception{
-                init();
-            }
-            
-            protected void tearDown() throws Exception {
-
-            }
-        };
-     
-        return setup;
+        return suite;
     }
-
-    private static void init() throws Exception {
-        location=DerbyOptions.getDefault().getLocation();
-        String systemHome=System.getProperty("xtest.tmpdir");
-        //DerbyOptions.getDefault().setLocation(location);
-        DerbyOptions.getDefault().setSystemHome(systemHome);
-        
-    }
-    
-    
-
-    
-    
-   
-    
 }

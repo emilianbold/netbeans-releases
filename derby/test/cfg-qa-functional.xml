@@ -15,28 +15,35 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="Configuration of Java DB functional tests">
 
-    <testbag testattribs="validation" executor="ide" name="JavDB Functional test">
+    <testbag testattribs="stable" executor="ide" name="JavDB Functional test">
         <testset dir="qa-functional/src">
             <patternset>
-               <!-- <include name="org/netbeans/test/db/derby/NegativeDerbyDatabaseTest.class"/>-->
                <include name="org/netbeans/test/db/derby/DerbyDatabaseTest.class"/>
                <include name="org/netbeans/test/db/derby/CreateDatabaseTest.class"/>
             </patternset>
         </testset>
     </testbag>
     
-   
+    <testbag testattribs="stable-debug" executor="ide-debug" name="JavDB Functional test - Debug Mode">
+        <testset dir="qa-functional/src">
+            <patternset>
+               <include name="**/DerbyDatabaseTest.class"/>
+               <include name="**/CreateDatabaseTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>   
  
     <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
     Similarly as with code executor, you can create your own to 
     prepare some neccessary stuff before running tests. -->
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <executor name="ide-debug" antfile="build-qa-functional.xml" target="runidetest-debug" default="false"/>
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
 </mconfig>
 

@@ -13,22 +13,20 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.test.db.derby;
 
-import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.modules.db.derby.CreateJavaDBDatabaseOperator;
+import org.netbeans.jellytools.modules.db.derby.actions.CreateDatabaseAction;
+import org.netbeans.jellytools.modules.db.derby.actions.StopServerAction;
 import org.netbeans.jellytools.modules.db.nodes.ConnectionNode;
-import org.netbeans.jellytools.modules.db.nodes.DatabasesNode;
-import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.StartAction;
-import org.netbeans.test.db.derby.lib.CreateDerbyDatabaseOperator;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -37,13 +35,9 @@ import org.openide.util.actions.SystemAction;
  */
 public class CreateDatabaseTest  extends DbJellyTestCase {
     private static String location="";
-    
     private static String USER="czesiu";
-    
     private static String PASSWORD="czesiu";
-    
     private static String DB="newdatabase";
-    
     private static String URL="jdbc:derby://localhost:1527/newdatabase";
 
     public CreateDatabaseTest(String s) {
@@ -51,62 +45,40 @@ public class CreateDatabaseTest  extends DbJellyTestCase {
     }
     
     public void testCreateDatabase(){
-        // <workaround for #112788>
+        // <workaround for #112788> - FIXME
         SystemAction.get(StartAction.class).performAction();
         sleep(2000);
         // </workaround>
-        debug("Creating Java DB Database");
-        new ActionNoBlock("Tools|Java DB Database|Create Database...", null).perform();
-        CreateDerbyDatabaseOperator operator=new CreateDerbyDatabaseOperator();
-        operator.typeDatabaseName(DB);
-        operator.typeUserName(USER);
-        operator.typePassword(PASSWORD);
+        new CreateDatabaseAction().perform();
+        CreateJavaDBDatabaseOperator operator = new CreateJavaDBDatabaseOperator();
+        operator.setDatabaseName(DB);
+        operator.setUserName(USER);
+        operator.setPassword(PASSWORD);
         operator.ok();
-        debug("Database created");
-        sleep(2000);
-        
     }
     
     public void testConnect() throws Exception {
-        debug("Connection to Java DB server");
         ConnectionNode connection=ConnectionNode.invoke(URL,USER,PASSWORD);   
         connection.connect();
-        debug("Disconecting");
         sleep(2000);
         connection.disconnect();
         sleep(1000);
     }
     
-    
     public void testStopServer(){
-         debug("Stopping database derver");
-         new ActionNoBlock("Tools|Java DB Database|Stop Java DB Server", null).perform();
+         new StopServerAction().perform();
+         sleep(5000);
     }
     
     public static Test suite() {
+        String tmpdir = System.getProperty("xtest.tmpdir");
+        System.out.println("> Setting the Derby System Home to: "+tmpdir);
+        DerbyOptions.getDefault().setSystemHome(tmpdir);
+        
         TestSuite suite=new TestSuite();
         suite.addTest(new CreateDatabaseTest("testCreateDatabase"));
         suite.addTest(new CreateDatabaseTest("testConnect"));
         suite.addTest(new CreateDatabaseTest("testStopServer"));        
-        TestSetup setup=new TestSetup(suite){
-           public void setUp() throws Exception {
-               init();
-           } 
-           
-        };
-        return setup;
-        
+        return suite;
     }
-    
-    public static void init() throws Exception {
-       // location=System.getProperty("derby.path");
-        String systemHome=System.getProperty("xtest.tmpdir");
-      //  DerbyOptions.getDefault().setLocation(location);
-        DerbyOptions.getDefault().setSystemHome(systemHome);
-    }
-    
-    
-    
-   
-    
 }

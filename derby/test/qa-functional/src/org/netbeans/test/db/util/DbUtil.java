@@ -24,8 +24,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.Driver;
-import java.util.Properties;
+import java.sql.SQLException;
 import org.netbeans.modules.derby.DbURLClassLoader;
+import org.netbeans.modules.derby.DerbyOptions;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -33,33 +35,33 @@ import org.netbeans.modules.derby.DbURLClassLoader;
  */
 public class DbUtil {
     public static final String DRIVER_CLASS_NAME = "org.apache.derby.jdbc.ClientDriver";
-    private String location;
     
-    public DbUtil(String location){
-        this.location=location;
-    }
-    
-    private File getDerbyFile(String relPath) {
-        return new File(location, relPath);
-    }
-    
-    private URL[] getDerbyNetDriverURLs() throws MalformedURLException {
-        URL[] driverURLs = new URL[1];
-        driverURLs[0] = getDerbyFile("lib/derbyclient.jar").toURI().toURL();
-        return driverURLs;
-    }
-    
-    private Driver getDerbyNetDriver() throws Exception {
-        URL[] driverURLs = getDerbyNetDriverURLs();
-        DbURLClassLoader l = new DbURLClassLoader(driverURLs);
-        Class c = Class.forName(DRIVER_CLASS_NAME, true, l);
-        return (Driver)c.newInstance();
-    }
-    
-    public Connection createConnection(String url) throws Exception{
-        Driver driver=getDerbyNetDriver();
-        Properties p=new Properties();
-        Connection con=driver.connect(url,new Properties());
+    public static Connection createDerbyConnection(String dbURL) {
+        // Derby Installation folder
+        String location = DerbyOptions.getDefault().getLocation();
+        File clientJar = new File(location, "lib/derbyclient.jar");
+        Connection con = null;
+        try {
+            URL[] driverURLs = new URL[]{clientJar.toURL()};
+            DbURLClassLoader loader = new DbURLClassLoader(driverURLs);
+            Driver driver = (Driver) Class.forName(DRIVER_CLASS_NAME, true, loader).newInstance();
+            con = driver.connect(dbURL, null);
+        } catch (MalformedURLException ex) {
+            Exceptions.attachMessage(ex, "Cannot convert to URL: "+clientJar);
+            Exceptions.printStackTrace(ex);
+        } catch (SQLException ex) {
+            Exceptions.attachMessage(ex, "Cannot conect to: "+dbURL);
+            Exceptions.printStackTrace(ex);
+        } catch (InstantiationException ex) {
+            Exceptions.attachMessage(ex, "Cannot instantiate: "+DRIVER_CLASS_NAME+" from: "+clientJar);
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.attachMessage(ex, "Cannot instantiate: "+DRIVER_CLASS_NAME+" from: "+clientJar);
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.attachMessage(ex, "Cannot obtain: "+DRIVER_CLASS_NAME+" from: "+clientJar);
+            Exceptions.printStackTrace(ex);
+        }
         return con;
     }
     
