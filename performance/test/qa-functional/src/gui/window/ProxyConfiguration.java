@@ -61,6 +61,8 @@ public class ProxyConfiguration extends PluginManager {
     
     public void prepare(){
         wizard = (WizardOperator) super.open();
+// waiting plugin initialization
+        waitNoEvent(5000);
         new JTabbedPaneOperator(wizard, 0).selectPage(TAB);
         
         openProxyButton = new JButtonOperator(wizard, BUTTON);
