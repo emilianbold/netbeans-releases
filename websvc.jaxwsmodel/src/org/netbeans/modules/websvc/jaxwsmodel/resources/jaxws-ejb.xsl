@@ -255,7 +255,7 @@ Microsystems, Inc. All Rights Reserved.
                                 extension="true"
                                 verbose="true"
                                 package="{$package_name}"
-                                destdir="${{classes.dir}}"
+                                destdir="${{build.generated.dir}}/wsimport/binaries"
                                 wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"
                                 catalog="{$catalog}">
                                 <xsl:if test="jaxws:binding">
@@ -301,7 +301,7 @@ Microsystems, Inc. All Rights Reserved.
                                 sourcedestdir="${{build.generated.dir}}/wsimport/service"
                                 extension="true"
                                 verbose="true"
-                                destdir="${{classes.dir}}"
+                                destdir="${{build.generated.dir}}/wsimport/binaries"
                                 wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"
                                 catalog="{$catalog}">
                                 <xsl:if test="jaxws:binding">
