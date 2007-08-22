@@ -326,14 +326,18 @@ public final class JUnitAntLogger extends AntLogger {
             if (childName.equals("arg")) {                              //NOI18N
                 String argValue = child.getAttribute("value");          //NOI18N
                 if (argValue == null) {
+                    argValue = child.getAttribute("line");              //NOI18N
+                }
+                if (argValue == null) {
                     continue;
                 }
                 argValue = event.evaluate(argValue);
                 if (argValue.startsWith("formatter=")) {                //NOI18N
-                    int clsNameStartIndex = "formatter=".length();      //NOI18N
-                    if ((argValue.indexOf(',', clsNameStartIndex) == -1)
-                            && argValue.substring(clsNameStartIndex)
-                               .equals(XML_FORMATTER_CLASS_NAME)) {
+                    String formatter = argValue.substring("formatter=".length());//NOI18N
+                    int commaIndex = formatter.indexOf(',');
+                    if ((commaIndex != -1)
+                        && formatter.substring(0, commaIndex)
+                           .equals(XML_FORMATTER_CLASS_NAME)) {
                         return true;
                     }
                 }

@@ -508,6 +508,9 @@ final class JUnitOutputReader {
             String taskChildName = taskChild.getName();
             if (taskChildName.equals("arg")) {                          //NOI18N
                 String valueAttr = taskChild.getAttribute("value");     //NOI18N
+                if (valueAttr == null) {
+                    valueAttr = taskChild.getAttribute("line");         //NOI18N
+                }
                 if (valueAttr != null) {
                     valueAttr = event.evaluate(valueAttr);
                     if (valueAttr.startsWith("formatter=")) {           //NOI18N
