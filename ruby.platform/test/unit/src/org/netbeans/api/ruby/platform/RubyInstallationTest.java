@@ -20,6 +20,7 @@
 package org.netbeans.api.ruby.platform;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 
@@ -30,6 +31,11 @@ public class RubyInstallationTest extends NbTestCase {
 
     public RubyInstallationTest(String testName) {
         super(testName);
+    }
+
+    protected @Override void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
     }
 
     public void testCompareGemVersions() {
@@ -47,38 +53,27 @@ public class RubyInstallationTest extends NbTestCase {
     }
 
     public void testChooseGems() throws Exception {
-        File home = getWorkDir();
-
-        // Build a fake ruby structure
-        File bin = new File(home, "bin");
-        bin.mkdirs();
-        File ruby = new File(bin, "ruby");
-        ruby.createNewFile();
-
-        File lib = new File(home, "lib");
-        File rubyLib = new File(lib, "ruby");
-        File gems = new File(rubyLib, "gems");
-        String version = "1.8";
-        File ruby18Libs = new File(rubyLib, version);
-        ruby18Libs.mkdirs();
-        File gemLibs = new File(gems, version + File.separator + "gems");
-        gemLibs.mkdirs();
-        File specs = new File(gems, version + File.separator + "specifications");
-        specs.mkdirs();
+        RubyInstallation ri = setUpRubyWithGems();
+        
+        String gemLibs = ri.getRubyLibGemDir();
+        File specs = new File(new File(ri.getRubyLibGemDir()), "specifications");
 
         // Put gems into the gemLibs dir
-        String[] gemDirs = new String[]{"foo-1.0.0", "notagem", "pdf-writer-0.1.1", "mongrel-1.0.0-mswin", "bar-baz-0.3.3-ruby",
-           "activerecord-1.15.1.6752", "activerecord-1.15.3.6752",};
+        String[] gemDirs = new String[]{"foo-1.0.0",
+                "notagem",
+                "pdf-writer-0.1.1",
+                "mongrel-1.0.0-mswin",
+                "bar-baz-0.3.3-ruby",
+                "activerecord-1.15.1.6752",
+                "activerecord-1.15.3.6752"};
         for (String gemDir : gemDirs) {
             new File(gemLibs, gemDir).mkdir();
             new File(specs, gemDir + ".gemspec").createNewFile();
         }
-        
+
         // Test for 106862
         new File(gemLibs, "sqlite-2.0.1").mkdirs();
         new File(gemLibs, "sqlite3-ruby-1.2.0").mkdirs();
-
-        RubyInstallation ri = new RubyInstallation(ruby.getAbsolutePath());
 
         // Now introspect on the structure
         Set<String> installedGems = ri.getInstalledGems();
@@ -101,5 +96,64 @@ public class RubyInstallationTest extends NbTestCase {
         assertEquals("0.3.3", ri.getVersion("bar-baz"));
         assertEquals("0.1.1", ri.getVersion("pdf-writer"));
         assertEquals("1.15.3.6752", ri.getVersion("activerecord"));
+    }
+
+    public void testFindGemExecutableInRubyBin() throws Exception {
+        RubyInstallation ri = setUpRubyWithGems();
+        touch("rdebug-ide", ri.getRubyBin());
+        assertNotNull(ri.findGemExecutable("rdebug-ide"));
+    }
+
+    public void testFindGemExecutableInGemRepo() throws Exception {
+        RubyInstallation ri = setUpRubyWithGems();
+        touch("rdebug-ide", new File(ri.getRubyLibGemDir(), "bin").getPath());
+        assertNotNull(ri.findGemExecutable("rdebug-ide"));
+    }
+
+    public void testFindGemExecutableWith_GEM_HOME() throws Exception {
+        File gemRepo = new File(getWorkDir(), "gemrepo");
+        File gemRepoBinF = new File(gemRepo, "bin");
+        gemRepoBinF.mkdirs();
+        System.setProperty("GEM_HOME", gemRepo.getAbsolutePath());
+        RubyInstallation ri = setUpRubyWithGems(false);
+        touch("rdebug-ide", gemRepoBinF.getAbsolutePath());
+        assertNotNull(ri.findGemExecutable("rdebug-ide"));
+    }
+
+    private RubyInstallation setUpRubyWithGems() throws Exception {
+        return setUpRubyWithGems(true);
+    }
+
+    private RubyInstallation setUpRubyWithGems(boolean rubygemsRepo) throws Exception {
+        File home = getWorkDir();
+
+        // Build a fake ruby structure
+        File bin = new File(home, "bin");
+        bin.mkdirs();
+        File ruby = new File(bin, "ruby");
+        ruby.createNewFile();
+
+        if (rubygemsRepo) {
+            // Build a fake rubygems repository
+            File lib = new File(home, "lib");
+            File rubyLib = new File(lib, "ruby");
+            File gems = new File(rubyLib, "gems");
+            String version = "1.8";
+            File ruby18Libs = new File(rubyLib, version);
+            ruby18Libs.mkdirs();
+            File gemLibs = new File(gems, version + File.separator + "gems");
+            gemLibs.mkdirs();
+            File specs = new File(gems, version + File.separator + "specifications");
+            specs.mkdirs();
+            File gembin = new File(gems, version + File.separator + "bin");
+            gembin.mkdirs();
+        }
+        return new RubyInstallation(ruby.getAbsolutePath());
+    }
+
+    private String touch(String path, String dir) throws IOException {
+        File f = new File(dir, path);
+        f.createNewFile();
+        return f.getAbsolutePath();
     }
 }
