@@ -230,20 +230,22 @@ public class DefaultModel implements Model, NodeListener {
 
     private boolean isRefreshingChildren = false;
     public void refresh() {
-        PaletteActions customActions = rootNode.getLookup().lookup( PaletteActions.class );
-        Action customRefreshAction = customActions.getRefreshAction();
-        if( null != customRefreshAction ) {
-            customRefreshAction.actionPerformed( new ActionEvent( getRoot(), 0, "refresh" ) ); //NOI18N
+        synchronized( rootNode ) {
+            PaletteActions customActions = rootNode.getLookup().lookup( PaletteActions.class );
+            Action customRefreshAction = customActions.getRefreshAction();
+            if( null != customRefreshAction ) {
+                customRefreshAction.actionPerformed( new ActionEvent( getRoot(), 0, "refresh" ) ); //NOI18N
+            }
+            clearSelection();
+            categoriesNeedRefresh = true;
+            isRefreshingChildren = true;
+            try {
+                rootNode.refreshChildren();
+            } finally {
+                isRefreshingChildren = false;
+            }
+            fireCategoriesChanged( null, false );
         }
-        clearSelection();
-        categoriesNeedRefresh = true;
-        isRefreshingChildren = true;
-        try {
-            rootNode.refreshChildren();
-        } finally {
-            isRefreshingChildren = false;
-        }
-        fireCategoriesChanged( null, false );
     }
     
     public void showCustomizer( PaletteController controller, Settings settings ) {
