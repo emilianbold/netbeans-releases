@@ -110,6 +110,7 @@ public class FindInFilesAction extends CallableSystemAction
     @Override
     protected void initialize() {
         super.initialize();
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
         putProperty(VAR_FIRST_ISENABLED, Boolean.TRUE);
 
         putProperty(REPLACING, Boolean.FALSE, false);
