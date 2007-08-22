@@ -527,12 +527,14 @@ Microsystems, Inc. All Rights Reserved.
             </target>
             
             <target name="-pre-debug">
+                <property name="inDebug" value="true"/>
                 <setup-debug-environment 
                     netBeansUserDir="${{netbeans.user}}" 
                     j2eeServerInstance="${{j2ee.server.instance}}"/>
             </target>
             
             <target name="-post-debug">
+                <property name="inDebug" value="false"/>
                 <teardown-debug-environment
                     netBeansUserDir="${{netbeans.user}}" 
                     j2eeServerInstance="${{j2ee.server.instance}}"/>
@@ -694,6 +696,7 @@ Microsystems, Inc. All Rights Reserved.
                         <pathelement path="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
                     </classpath>
                     <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
+                    <sysproperty key="inDebug" value="${{inDebug}}"/>
                     <!-- 
                     Netbeans JUnit Test Results Window will look for TEST-{TestClassName}.xml to parse and display
                     Hence

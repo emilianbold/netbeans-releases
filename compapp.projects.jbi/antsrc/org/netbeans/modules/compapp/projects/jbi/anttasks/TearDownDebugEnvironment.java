@@ -59,7 +59,5 @@ public class TearDownDebugEnvironment extends AbstractDebugEnvironmentTask {
                 }
             }
         }
-        
-        // TODO: Restore test case timeout property
     }     
 }

@@ -46,8 +46,6 @@ import org.netbeans.modules.compapp.debugger.CompAppSessionProvider;
  *
  * @author jqian
  */
-// TODO: increase test case timeout property or simply ignore it
-// when debug is enabled.
 public class SetUpDebugEnvironment extends AbstractDebugEnvironmentTask {
     
     public void execute() throws BuildException {
