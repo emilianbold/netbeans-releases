@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.SyntaxContext;
 
@@ -141,9 +142,15 @@ public class YAML {
         return true;
     }
     
+    public static String itemName (SyntaxContext context) {
+        ASTPath path = context.getASTPath ();
+        ASTNode item = (ASTNode) path.getLeaf ();
+        ASTNode node = item.getNode("SequenceValue");
+        if (node != null) {
+            return node.getTokenType("sequence").getIdentifier();
+        }
+        node = item.getNode("MapKey");
+        return node == null ? null : node.getTokenType("key").getIdentifier();
+    }
+    
 }
-
-
-
-
-

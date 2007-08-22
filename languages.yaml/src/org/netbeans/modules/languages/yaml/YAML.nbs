@@ -17,8 +17,8 @@
 
 ########### tokens #############################################################
 
-TOKEN:comment: ("#" [^"\n" "\r"]*)
-<AFTER_INDENT>:TOKEN:comment: ("#" [^"\n" "\r"]*):<DEFAULT>
+TOKEN:comment: ([" " "\t"]* "#" [^"\n" "\r"]*)
+#<AFTER_INDENT>:TOKEN:comment: ("#" [^"\n" "\r"]*):<DEFAULT>
 
 TOKEN:whitespace: ( " "* ["\n" "\r"]+)
 TOKEN:indent: ( [" " "\t"]* ):<AFTER_INDENT>
@@ -60,15 +60,10 @@ AST {
 
 FOLD:Collection
 
-#NAVIGATOR:Item: {
-#    display_name: "item";
-#    tooltip: "$$";
-#}
-
-#NAVIGATOR:Collection: {
-#    display_name: "collection";
-#    tooltip: "$$";
-#}
+NAVIGATOR:Item2: {
+    display_name: org.netbeans.modules.languages.yaml.YAML.itemName;
+    tooltip: "$$";
+}
 
 COMMENT_LINE {
     prefix:"#";
