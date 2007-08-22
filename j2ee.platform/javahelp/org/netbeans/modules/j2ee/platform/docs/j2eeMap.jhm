@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE map
@@ -16,13 +16,12 @@
 <!-- Start of "Developing Web Applications" help -->
     <mapID target="about_entwebapps" url="web/about_webtier.html" />
 
-        <!-- Start of "Create" section -->
-<mapID target="jsp_connectionpool_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
-<mapID target="jsp_compilation_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_enable_1_5.html" />
-<mapID target="tomcat_jwsdp" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_websvc_jwsdp.html" />
-<mapID target="tomcat_non_jwsdp" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_websvc.html" />
--->
-		<!-- End of "Create/JSP" subsection -->
+<!-- Start of "Create" section -->
+    <mapID target="jsp_connectionpool_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
+    <mapID target="jsp_compilation_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_enable_1_5.html" />
+    <mapID target="tomcat_jwsdp" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_websvc_jwsdp.html" />
+    <mapID target="tomcat_non_jwsdp" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_websvc.html" />
+<!-- End of "Create/JSP" subsection -->
 
 
 
