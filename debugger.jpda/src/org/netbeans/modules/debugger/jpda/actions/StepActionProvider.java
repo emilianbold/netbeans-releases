@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
@@ -70,6 +71,7 @@ implements Executor {
     private ContextProvider         lookupProvider;
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
     private SingleThreadedStepWatch stepWatch;
+    private boolean smartSteppingStepOut;
 
     
     private static boolean ssverbose = 
@@ -93,6 +95,10 @@ implements Executor {
         );
         this.lookupProvider = lookupProvider;
         setProviderToDisableOnLazyAction(this);
+        Map properties = (Map) lookupProvider.lookupFirst (null, Map.class);
+        if (properties != null) {
+            smartSteppingStepOut = properties.containsKey (StepIntoActionProvider.SS_STEP_OUT);
+        }
     }
 
 
@@ -296,8 +302,11 @@ implements Executor {
             // do not stop here -> start smart stepping!
             if (ssverbose)
                 System.out.println("\nSS:  SMART STEPPING START! ********** ");
-            getStepIntoActionProvider ().doAction 
-                (ActionsManager.ACTION_STEP_INTO);
+            if (smartSteppingStepOut) {
+                getStepIntoActionProvider ().doAction(ActionsManager.ACTION_STEP_OUT);
+            } else {
+                getStepIntoActionProvider ().doAction(ActionsManager.ACTION_STEP_INTO);
+            }
             //S ystem.out.println("/nStepAction.exec end - resume");
             return true; // resume
         }

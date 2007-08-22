@@ -78,6 +78,7 @@ import org.netbeans.modules.debugger.jpda.actions.SmartSteppingFilterImpl;
 import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.actions.StepIntoActionProvider;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.DialogDescriptor;
@@ -461,10 +462,17 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             if (vm == null) {
                 return false; // The session has finished
             }
+            int depth;
+            Map properties = (Map) session.lookupFirst (null, Map.class);
+            if (properties != null && properties.containsKey (StepIntoActionProvider.SS_STEP_OUT)) {
+                depth = StepRequest.STEP_OUT;
+            } else {
+                depth = StepRequest.STEP_INTO;
+            }
             StepRequest stepRequest = vm.eventRequestManager ().createStepRequest (
                 tr,
                 StepRequest.STEP_LINE,
-                StepRequest.STEP_INTO
+                depth
             );
             stepRequest.addCountFilter(1);
             debuggerImpl.getOperator ().register (stepRequest, this);
