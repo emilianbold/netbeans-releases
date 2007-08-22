@@ -723,7 +723,7 @@ Microsystems, Inc. All Rights Reserved.
             <target name="-test-browse" if="netbeans.home+have.tests" depends="init"/>
             <target name="test" depends="init,-pre-test-run,-do-test-run,test-report,-post-test-run,-test-browse" description="Run unit tests."/>
             <target name="test-single" depends="init,-pre-test-run,-do-single-test-run,test-report,-post-single-test-run,-test-browse" description="Run unit tests."/>
-            <target name="debug-single" depends="init,-pre-test-run,-pre-debug,-do-single-test-run,test-report,-post-single-test-run,-test-browse,-post-debug" description="Debug unit tests."/>
+            <target name="debug-single" depends="init,-pre-test-run,-pre-debug,-do-single-test-run,-post-debug,test-report,-post-single-test-run,-test-browse" description="Debug unit tests."/>
             
             <target name="-post-unit-test-run" if="have.tests+tests.failed" depends="init,-pre-test-run,-do-test-run">
                 <echo>Some tests failed; see details above.</echo>
