@@ -19,9 +19,11 @@
 
 
 # include "getchar.pro"
+# include "getchar.pro"
 # ifdef FEAT_HANGULIN
 #  include "hangulin.pro"
 int a;
+#  include "hangulin.pro"
 #define A
 
 # endif
