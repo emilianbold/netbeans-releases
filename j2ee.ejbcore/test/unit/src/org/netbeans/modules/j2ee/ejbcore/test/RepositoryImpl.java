@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.ejbcore.test;
 
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
@@ -50,7 +51,8 @@ public class RepositoryImpl extends Repository {
                 FileSystem j2eeserverFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/j2ee/deployment/impl/layer.xml"));
                 FileSystem ejbCoreFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/j2ee/ejbcore/resources/layer.xml"));
                 FileSystem projectUiFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/project/ui/resources/layer.xml"));
-                return new FileSystem[] { j2eeserverFs, ejbCoreFs, projectUiFs };
+                FileSystem writableFileSystem = FileUtil.createMemoryFileSystem();
+                return new FileSystem[] { writableFileSystem, j2eeserverFs, ejbCoreFs, projectUiFs };
             } catch (SAXException e) {
                 AssertionError assertionError = new AssertionError(e.getMessage());
                 assertionError.initCause(e);
