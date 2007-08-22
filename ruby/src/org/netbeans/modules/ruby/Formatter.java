@@ -249,7 +249,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 }
             } else {
                 // No ruby token -- leave the formatting alone!
-                // (Probably an RHTML file)
+                // (Probably in an RHTML file on a line with no Ruby)
                 return true;
             }
         }
@@ -549,9 +549,18 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
                 int hangingIndent = continued ? (hangingIndentSize) : 0;
 
+                if (isRhtmlDocument && balance == 0) {
+                    // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
+                    initialIndent = LexUtilities.getLineIndent(doc, offset);
+                }
+                
                 if (isInLiteral(doc, offset)) {
                     // Skip this line - leave formatting as it is prior to reformatting 
                     indent = LexUtilities.getLineIndent(doc, offset);
+
+                    if (isRhtmlDocument && balance > 0) {
+                        indent += balance * indentSize;
+                    }
                 } else if (isEndIndent(doc, offset)) {
                     indent = (balance-1) * indentSize + hangingIndent + initialIndent;
                 } else {
