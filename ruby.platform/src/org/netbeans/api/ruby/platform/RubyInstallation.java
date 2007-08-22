@@ -413,7 +413,7 @@ public class RubyInstallation {
         File lib = new File(rubyHome, "lib" + File.separator + "ruby" + File.separator + "gems"); // NOI18N
 
         if (!lib.isDirectory()) {
-            String gemHome = System.getenv().get("GEM_HOME"); // NOI18N
+            String gemHome = System.getProperty("GEM_HOME"); // NOI18N
             if (gemHome != null) {
                 lib = new File(gemHome); // NOI18N
                 if (!lib.isDirectory()) {
