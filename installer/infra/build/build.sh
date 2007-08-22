@@ -128,6 +128,7 @@ ant build \
         \"-Dopenesb.builds.host=${OPENESB_BUILDS_HOST}\" \
         \"-Dsjsam.builds.host=${SJSAM_BUILDS_HOST}\" \
         \"-Dportalpack.builds.host=${PORTALPACK_BUILDS_HOST}\" \
+	\"-Dwtk.builds.host=${WTK_BUILDS_HOST}\" \
         \"-Djdk.home=${JDK_HOME}\" \
         \"-Dcvs.root=${CVS_ROOT}\" \
         \"-Dglassfish.home=${GLASSFISH_HOME}\" \

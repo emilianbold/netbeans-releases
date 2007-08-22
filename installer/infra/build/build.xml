@@ -358,6 +358,13 @@ wsrp.build.number=${wsrp.build.number}
 portalpack.build.number=${portalpack.build.number}
         </echo>
         -->
+
+	<!-- WTK component properties -->
+	 <!--
+         <echo file="${environment.properties}" append="true">
+wtk.builds.host=${wtk.builds.host}
+	 </echo>
+	 -->
 	<!-- SJSAS Image properties -->
          <echo file="${environment.properties}" append="true">
 remote.host.windows=${remote.host.windows}
@@ -419,6 +426,10 @@ jarsigner.storepass=${jarsigner.storepass}
                 
                 <!-- tomcat -->
                 <exclude name="**/tomcat*"/>
+
+		<!-- wtk -->
+                <exclude name="**/wtk*"/>
+
 
 		<!-- javaeesdk components -->
 		<!--
@@ -1055,6 +1066,31 @@ jarsigner.storepass=${jarsigner.storepass}
                 value=""/>
         </ant>
 	-->
+	<!--
+	<echo message="BUILDING WTK ======================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/wtk" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/wtk"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+            
+            <property
+                name="release.parent.uid"
+                value="runtimes-group"/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+        -->
         
         <export-registry 
             root="${output.dir}/registry-temp" 

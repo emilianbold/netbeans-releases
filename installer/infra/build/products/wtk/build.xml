@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance
+  with the License.
+  
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+  http://www.netbeans.org/cddl.txt.
+  
+  When distributing Covered Code, include this CDDL Header Notice in each file and
+  include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+  the following below the CDDL Header, with the fields enclosed by brackets []
+  replaced by your own identifying information:
+  
+      "Portions Copyrighted [year] [name of copyright owner]"
+  
+  The Original Software is NetBeans. The Initial Developer of the Original Software
+  is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+  Rights Reserved.
+-->
+
+<!--
+  This is the build script for the NetBeans Mobility Pack nbi product package.
+    
+  It inherits most of the functionality from the base script for building nbi 
+  product packages, while providing this instance-specific values for several
+  core properties. For more details on the values of these properties see
+  the build.properties file.
+-->
+<project name="nb-javame" default="usage" basedir=".">
+    <!-- import the properties that are specific to this environment -->
+    <property file="${environment.properties}"/>
+    
+    <!-- import the properties that are specific to this product package -->
+    <property file="build.properties"/>
+    
+    <!-- import the base script for building product packages -->
+    <import file="${common.dir}/product.xml" optional="false"/>
+    
+    <!--
+      Cleans and builds the project.
+      
+      Overrides the 'build-all' target in common.xml. This target calls the
+      'build-platform' target once for each platform supported by mobility.
+    -->
+    <target name="clean-all">
+        <antcall target="clean-platform">
+            <param name="product.platforms" value="windows"/>
+        </antcall>
+        <antcall target="clean-platform">
+            <param name="product.platforms" value="linux"/>
+        </antcall>
+    </target>
+    
+    <!--
+      Cleans and builds the project.
+      
+      Overrides the 'build-all' target in common.xml. This target calls the
+      'build-platform' target once for each platform supported by mobility.
+    -->
+    <target name="build-all">
+        <antcall target="build-platform">
+            <param name="product.platforms" value="windows"/>
+            <param name="product.data.2.uri" value="${product.data.2.uri.windows}"/>
+        </antcall>
+        <antcall target="build-platform">
+            <param name="product.platforms" value="linux"/>
+            <param name="product.data.2.uri" value="${product.data.2.uri.linux}"/>
+        </antcall>
+    </target>
+    
+    <!--
+      Cleans, builds and releases the project.
+      
+      Overrides the 'release-all' target in common.xml. This target calls the
+      'release-platform' target once for each platform supported by mobility.
+    -->
+    <target name="release-all">
+        <antcall target="release-platform">
+            <param name="product.platforms" value="windows"/>
+            <param name="product.data.2.uri" value="${product.data.2.uri.windows}"/>
+        </antcall>
+        <antcall target="release-platform">
+            <param name="product.platforms" value="linux"/>
+            <param name="product.data.2.uri" value="${product.data.2.uri.linux}"/>
+        </antcall>
+    </target>
+    
+    <!--
+      Cleans the project for a given platform.
+      
+      This is an aggregation target, which does not contain any functionality,
+      but defines a dependency on the 'clean' target.
+      
+      It expects that the caller will supply the 'product.platforms' parameter,
+      which will be used in other operations.
+    -->
+    <target name="clean-platform" depends="clean"/>
+    
+    <!--
+      Cleans and builds the project for a given platform.
+      
+      This is an aggregation target, which does not contain any functionality,
+      but defines dependencies on the 'clean', 'checkout' and 'build' targets.
+      
+      It expects that the caller will supply the 'product.platforms' parameter,
+      which will be used in other operations.
+    -->
+    <target name="build-platform" depends="clean-platform,checkout,build"/>
+    
+    <!--
+      Cleans, builds and releases the project for a given platform.
+      
+      This is an aggregation target, which does not contain any functionality,
+      but defines dependencies on the 'clean', 'checkout', 'build' and 
+      'release' targets. 
+      
+      It expects that the caller will supply the 'product.platforms' parameter,
+      which will be used in other operations.
+    -->
+    <target name="release-platform" depends="build-platform,release"/>
+    
+    <!--
+      Corrects the layout of the incoming installation data files. 
+      
+      Overrides the '-pre-package' target in product.xml.
+    -->
+    <target name="-pre-package">
+        <if property="i" value="1">
+            <mkdir dir="${data.directory}/config/emulator-descriptor-inst"/>            
+            <move todir="${data.directory}/config/emulator-descriptor-inst">
+                <fileset dir="${data.directory}">
+                    <exclude name="config/emulator-descriptor-inst"/>
+		    <exclude name="config"/>
+                </fileset>
+            </move>
+        </if>
+        <if property="i" value="2">
+            <mkdir dir="${data.directory}/WTK2.5.2"/>            
+            <move todir="${data.directory}/WTK2.5.2">
+                <fileset dir="${data.directory}">
+		    <exclude name="WTK2.5.2"/>
+                </fileset>
+            </move>
+        </if>
+    </target>
+    
+    <!-- ============================================================================
+      Default
+    ============================================================================= -->
+    
+    <!--
+      The default target. 
+      
+      Does nothing except printing the usage information.
+    -->
+    <target name="usage">
+        <echo>
+            In order to 'clean', 'checkout' and 'build' the group use the 
+            'build-all' target. To 'clean', 'checkout', 'build' and 
+            'release' - use 'release-all'.
+            
+            For more details, please see the source of this build script.
+        </echo>
+    </target>
+</project>
