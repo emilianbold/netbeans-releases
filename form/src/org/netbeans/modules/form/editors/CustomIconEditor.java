@@ -28,9 +28,13 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -283,10 +287,9 @@ public class CustomIconEditor extends javax.swing.JPanel {
                 type = IconEditor.TYPE_CLASSPATH;
                 name = FileUtil.getRelativePath(packageRoot, selectedCPFile);
                 try {
-                    icon = new ImageIcon(selectedCPFile.getURL());
-                }
-                catch (FileStateInvalidException ex) { // should not happen
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    icon = new ImageIcon(ImageIO.read(selectedCPFile.getURL()));
+                } catch (IOException ex) { // should not happen
+                    Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
                 }
             }
         }
@@ -294,15 +297,20 @@ public class CustomIconEditor extends javax.swing.JPanel {
             if (selectedExternalFile != null) {
                 type = IconEditor.TYPE_FILE;
                 name = selectedExternalFile.getAbsolutePath();
-                icon = new ImageIcon(name);
+                try {
+                    icon = new ImageIcon(ImageIO.read(new File(name)));
+                } catch (IOException ex) {
+                    Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
+                }
             }
             else if (selectedURL != null && !"".equals(selectedURL)) { // NOI18N
                 type = IconEditor.TYPE_URL;
                 name = selectedURL;
                 try {
-                    icon = new ImageIcon(new URL(selectedURL));
+                    icon = new ImageIcon(ImageIO.read(new URL(selectedURL)));
+                } catch (IOException ex) {
+                    Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
                 }
-                catch (Exception ex) {}
             }
         }
 
@@ -404,9 +412,10 @@ public class CustomIconEditor extends javax.swing.JPanel {
         IconFileItem(FileObject file) {
             this.file = file;
             try {
-                icon = file.getSize() < SIZE_LIMIT ? new ImageIcon(file.getURL()) : null;
-            } catch (FileStateInvalidException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                icon = file.getSize() < SIZE_LIMIT
+                        ? new ImageIcon(ImageIO.read(file.getURL())) : null;
+            } catch (IOException ex) {
+                Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
             }
         }
 

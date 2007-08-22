@@ -27,6 +27,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.text.MessageFormat;
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
@@ -35,11 +36,13 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.ArrayIterator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -129,23 +132,33 @@ class ImportImageWizard extends WizardDescriptor {
                 public void run() throws IOException {
                     for (int i=0; i < selectedFiles.length; i++) {
                         File f = selectedFiles[i];
-                        FileInputStream is = new FileInputStream(f);
-                        FileObject fo = targetFolder.createData(f.getName());
-                        FileLock lock = fo.lock();
-                        OutputStream os = fo.getOutputStream(lock);
+                        String fileName = f.getName();
+                        FileObject targetFile = targetFolder.getFileObject(fileName);
+                        if (targetFile != null && targetFile.isFolder()) {
+                            targetFile = null;
+                        }
+                        if (targetFile == null || canRewriteTarget(f, targetFile)) {
+                            if (targetFile != null) {
+                                targetFile.delete();
+                            }
+                            FileInputStream is = new FileInputStream(f);
+                            targetFile = targetFolder.createData(fileName);
+                            FileLock lock = targetFile.lock();
+                            OutputStream os = targetFile.getOutputStream(lock);
 
-                        byte[] buf = new byte[4096];
-                        int count;
-                        try {
-                            while ((count = is.read(buf)) != -1) {
-                                os.write(buf, 0, count);
+                            byte[] buf = new byte[4096];
+                            int count;
+                            try {
+                                while ((count = is.read(buf)) != -1) {
+                                    os.write(buf, 0, count);
+                                }
+                            }
+                            finally {
+                                os.close();
+                                lock.releaseLock();
                             }
                         }
-                        finally {
-                            os.close();
-                            lock.releaseLock();
-                        }
-                        copied[i] = fo;
+                        copied[i] = targetFile;
                     }
                 }
             });
@@ -154,6 +167,19 @@ class ImportImageWizard extends WizardDescriptor {
             ErrorManager.getDefault().notify(ex);
         }
         return copied;
+    }
+
+    private boolean canRewriteTarget(File source, FileObject targetFO) {
+        FileObject sourceFO = FileUtil.toFileObject(source);
+        if (sourceFO != null && sourceFO.equals(targetFO)) {
+            return false;
+        }
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(
+                MessageFormat.format(NbBundle.getMessage(ImportImageWizard.class, "FMT_ReplaceExistingFileQuestion"), // NOI18N
+                                     source.getName()),
+                NbBundle.getMessage(ImportImageWizard.class, "TITLE_FileAlreadyExists"), // NOI18N
+                NotifyDescriptor.YES_NO_OPTION);
+        return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION;
     }
 
     // -----

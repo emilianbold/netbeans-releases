@@ -23,14 +23,17 @@ import java.awt.Component;
 import java.beans.*;
 import java.util.*;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -353,14 +356,12 @@ public class IconEditor extends PropertyEditorSupport
             fo = cp.findResource(resName);
         }
         if (fo != null) {
-            Icon icon = null;
             try {
-                icon = new ImageIcon(fo.getURL());
+                Icon icon = new ImageIcon(ImageIO.read(fo.getURL()));
+                return new NbImageIcon(TYPE_CLASSPATH, resName, icon);
+            } catch (IOException ex) { // should not happen
+                Logger.getLogger(IconEditor.class.getName()).log(Level.WARNING, null, ex);
             }
-            catch (FileStateInvalidException ex) { // should not happen
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-            return new NbImageIcon(TYPE_CLASSPATH, resName, icon);
         }
         return null;
     }
@@ -372,18 +373,23 @@ public class IconEditor extends PropertyEditorSupport
                 File f = new File(url.toURI());
                 if (f.exists() && !forceURL) { // prefer definition as file
                     String fileName = f.getAbsolutePath();
-                    return new NbImageIcon(TYPE_FILE, fileName, new ImageIcon(fileName));
+                    try {
+                        Icon icon = new ImageIcon(ImageIO.read(new File(fileName)));
+                        return new NbImageIcon(TYPE_FILE, fileName, icon);
+                    } catch (IOException ex) { // should not happen
+                        Logger.getLogger(IconEditor.class.getName()).log(Level.WARNING, null, ex);
+                    }
                 }
             }
             catch (URISyntaxException ex) {}
 
             if (url != null) { // treat as url
-                Icon icon = null;
                 try {
-                    icon = new ImageIcon(url);
+                    Icon icon = new ImageIcon(ImageIO.read(url));
+                    return new NbImageIcon(TYPE_URL, urlString, icon);
+                } catch (IOException ex) { // should not happen
+                    Logger.getLogger(IconEditor.class.getName()).log(Level.WARNING, null, ex);
                 }
-                catch (Exception ex) {}
-                return new NbImageIcon(TYPE_URL, urlString, icon);
             }
         }
         catch (MalformedURLException ex) {}
@@ -392,9 +398,14 @@ public class IconEditor extends PropertyEditorSupport
     }
 
     private NbImageIcon iconFromFileName(String fileName) {
-        return new File(fileName).exists() ?
-            new NbImageIcon(TYPE_FILE, fileName, new ImageIcon(fileName)) :
-            null;
+        File file = new File(fileName);
+        try {
+            Icon icon = new ImageIcon(ImageIO.read(file));
+            new NbImageIcon(TYPE_FILE, fileName, icon);
+        } catch (IOException ex) {
+            Logger.getLogger(IconEditor.class.getName()).log(Level.WARNING, null, ex);
+        }
+        return null;
     }
 
     /**
