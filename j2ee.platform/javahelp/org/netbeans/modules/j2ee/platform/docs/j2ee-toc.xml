@@ -47,7 +47,6 @@
                 <tocitem text="Registering a JBoss Application Server" target="registering_app_server_jboss" />
                 <tocitem text="Accessing the JBoss Application Server Utilities" target="management_console_app_server_jboss" />
                 <tocitem text="Setting Up a Connection Pool on the JBoss Application Server" target="datasource_app_server_jboss" />
-              <!--  <tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcat"/>-->
             </tocitem>
             <tocitem text="BEA WebLogic Application Server">
                 <tocitem text="Registering a BEA WebLogic Server" target="registering_app_server_weblogic" />
