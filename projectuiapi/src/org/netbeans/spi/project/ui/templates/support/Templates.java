@@ -129,9 +129,14 @@ public class Templates {
      */    
     public static void setTargetFolder( WizardDescriptor wizardDescriptor, FileObject folder ) {
         
-        if ( wizardDescriptor instanceof TemplateWizard ) {            
-            DataFolder dataFolder = DataFolder.findFolder( folder );            
-            ((TemplateWizard)wizardDescriptor).setTargetFolder( dataFolder );
+        if ( wizardDescriptor instanceof TemplateWizard ) {
+            if (folder == null) {
+                //#103971
+                ((TemplateWizard)wizardDescriptor).setTargetFolder( null );
+            } else {
+                DataFolder dataFolder = DataFolder.findFolder( folder );            
+                ((TemplateWizard)wizardDescriptor).setTargetFolder( dataFolder );
+            }
         }
         else {
             wizardDescriptor.putProperty( ProjectChooserFactory.WIZARD_KEY_TARGET_FOLDER, folder );
