@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.UIManager;
+import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
 import org.openide.nodes.Children;
@@ -97,6 +98,8 @@ public class MethodCheckedTreeBeanView extends BeanTreeView implements ChangeLis
     }
     
     private synchronized Object updateState(final Node fo) {
+        if( fo.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE ) != null &&
+                    !((Boolean)fo.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE )).booleanValue()) return null;
         
         String path ;
         

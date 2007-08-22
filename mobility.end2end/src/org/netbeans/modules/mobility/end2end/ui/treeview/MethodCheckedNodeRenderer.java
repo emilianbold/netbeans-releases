@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.mobility.end2end.ui.treeview;
+import java.awt.CardLayout;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
 
@@ -118,19 +119,25 @@ public class MethodCheckedNodeRenderer implements TreeCellRenderer {
     
     static class RendererComponent extends JPanel{
         MultiStateCheckBox jCheckBox1;
+        final private JPanel jPanel1, jPanel2;
         final private JLabel jLabel1;
-        final private JLabel jLabel2;
+        final private CardLayout layout;
         
         public RendererComponent() {
+            jPanel1 = new JPanel();
+            layout = new CardLayout();
+            jPanel1.setLayout(layout);
             jCheckBox1 = new MultiStateCheckBox();
             jCheckBox1.setBorder(null);
+            jPanel1.add(jCheckBox1, Boolean.TRUE.toString());
+            jPanel2 = new JPanel();
+            jPanel2.setSize(jCheckBox1.getSize());
+            jPanel1.add(jPanel2, Boolean.FALSE.toString());
             jLabel1 = new JLabel();
-            jLabel2 = new JLabel();
             //todo badges around icons !!!
             setLayout(new BorderLayout(5, 0));
-            add(jCheckBox1, BorderLayout.WEST);
+            add(jPanel1, BorderLayout.WEST);
             add(jLabel1, BorderLayout.CENTER);
-            add(jLabel2, BorderLayout.EAST);
         }
         
         public void setForeground(final Color fg){
@@ -142,19 +149,18 @@ public class MethodCheckedNodeRenderer implements TreeCellRenderer {
         }
         
         public void setForeground(final Color selection, final Color text) {
-            if ( jCheckBox1 == null || jLabel1 == null || jLabel2 == null) return;
+            if ( jCheckBox1 == null || jLabel1 == null || jPanel1 == null) return;
             jCheckBox1.setForeground(text);
-            jLabel1.setForeground(text);
-            jLabel2.setForeground(selection);
+            jLabel1.setForeground(selection);
             super.setForeground(selection);
         }
         
         public void setBackground(final Color selection, final Color text) {
-            if ( jCheckBox1 == null || jLabel1 == null || jLabel2 == null) return;
+            if ( jCheckBox1 == null || jLabel1 == null || jPanel1 == null) return;
             //System.err.println(jCheckBox1);
             jCheckBox1.setBackground(text);
-            jLabel1.setBackground(text);
-            jLabel2.setBackground(selection);
+            jPanel2.setBackground(text);
+            jLabel1.setBackground(selection);
             super.setBackground(selection);
         }
         
@@ -163,11 +169,11 @@ public class MethodCheckedNodeRenderer implements TreeCellRenderer {
         }
         
         public void setText(final String text) {
-            jLabel2.setText(text);
+            jLabel1.setText(text);
         }
         
         public String getText(){
-            return jLabel2.getText();
+            return jLabel1.getText();
         }
         
         public void setState(final Object state) {
@@ -179,8 +185,8 @@ public class MethodCheckedNodeRenderer implements TreeCellRenderer {
             jLabel1.setIcon(icon);
         }
         
-        public void setEnabled( final boolean enabled ) {
-            jCheckBox1.setEnabled( enabled );
+        public void setEnabled(final boolean enabled) {
+            layout.show(jPanel1, new Boolean(enabled).toString());
         }
         
         public void addItemListener(final ItemListener itemListener) {
