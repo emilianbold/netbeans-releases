@@ -42,9 +42,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Windows2">
 	<folder name="Modes">
-	    <folder name="navigator">
+	    <folder name="explorer">
 		<file name="classview.wstcref" url="classview.wstcref">
-                    <attr name="position" intvalue="700"/>
+                    <attr name="position" intvalue="350"/>
                 </file>
 	    </folder>
 	</folder>

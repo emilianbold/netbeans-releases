@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.classview.resources.I18n;
  * View as such
  * @author Vladimir Kvasihn
  */
-public class ClassView extends JComponent implements ExplorerManager.Provider, CsmModelListener, CsmModelStateListener, Accessible {
+public class ClassView extends JComponent implements ExplorerManager.Provider, Accessible {
     
     /** composited view */
     protected BeanTreeView view;
@@ -58,8 +58,6 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     private boolean fillingModel = false;
     
     private ExplorerManager manager;
-    
-    private boolean listening = false;
     
     private static final boolean TRACE_MODEL_CHANGE_EVENTS = Boolean.getBoolean("cnd.classview.trace.events"); // NOI18N
     
@@ -199,14 +197,12 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         }
         init();
         model = new ClassViewModel();
-        addRemoveListeners(true);
         addRemoveViewListeners(true);
         startFillingModel();
     }
     
     public void shutdown() {
         if( Diagnostic.DEBUG ) Diagnostic.trace(">>> ClassView is shutting down"); // NOI18N
-        addRemoveListeners(false);
         addRemoveViewListeners(false);
         if( model != null ) {
             model.dispose();
@@ -218,16 +214,6 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         userActivity =null;
         mouseListener = null;
         setupRootContext(createEmptyRoot());
-    }
-    
-    private void addRemoveListeners(boolean add) {
-        if( add ) {
-            if( Diagnostic.DEBUG ) Diagnostic.trace(">>> adding model listeners"); // NOI18N
-            CsmModelAccessor.getModel().addModelListener(this);
-        } else {
-            if( Diagnostic.DEBUG ) Diagnostic.trace(">>> removing model listeners"); // NOI18N
-            CsmModelAccessor.getModel().removeModelListener(this);
-        }
     }
     
     public ExplorerManager getExplorerManager() {
@@ -269,14 +255,6 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         }
     }
     
-    public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
-        if( newState == CsmModelState.OFF ) {
-            shutdown();
-        } else if( newState == CsmModelState.ON ) {
-            startup();
-        }
-    }
-    
     private void startFillingModel() {
         
         if( CsmModelAccessor.getModel().projects().isEmpty() ) {
@@ -313,7 +291,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         
     }
     
-    Node createEmptyRoot() {
+    private Node createEmptyRoot() {
         return Node.EMPTY;
     }
     

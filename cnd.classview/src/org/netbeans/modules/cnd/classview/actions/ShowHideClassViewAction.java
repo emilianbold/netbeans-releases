@@ -20,11 +20,13 @@
 package org.netbeans.modules.cnd.classview.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.prefs.Preferences;
 import org.openide.windows.*;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.cnd.classview.resources.I18n;
 import org.openide.util.actions.CallableSystemAction;
 import org.netbeans.modules.cnd.classview.ClassViewTopComponent;
+import org.openide.util.NbPreferences;
 
 /**
  * Shows/Hides class view pane
@@ -48,7 +50,11 @@ public class ShowHideClassViewAction extends CallableSystemAction {
 
     public void performAction() {
         TopComponent tc = ClassViewTopComponent.findDefault();
-        tc.open();
+        if (!tc.isOpened()) {
+            tc.open();
+            Preferences ps = NbPreferences.forModule(ShowHideClassViewAction.class);
+            ps.putBoolean("ClassViewWasOpened", true);
+        }
         tc.requestActive();
     }
 
