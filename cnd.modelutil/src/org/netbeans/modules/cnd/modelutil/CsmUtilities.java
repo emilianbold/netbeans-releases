@@ -270,10 +270,14 @@ public class CsmUtilities {
 	    if( set == null ) {
 		FileObject fo = dobj.getPrimaryFile();
 		if( fo != null ) {
-		    File file = FileUtil.normalizeFile(FileUtil.toFile(fo));
-		    CsmFile csmFile = CsmModelAccessor.getModel().findFile(file.getAbsolutePath());
-		    if( csmFile != null ) {
-			return new CsmFile[] { csmFile };
+		    File file = FileUtil.toFile(fo);
+		    // the file can null, for example, when we edit templates
+		    if( file != null ) {
+                        file = FileUtil.normalizeFile(file);
+                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(file.getAbsolutePath());
+                        if( csmFile != null ) {
+                            return new CsmFile[] { csmFile };
+                        }
 		    }
 		}
 	    }
