@@ -297,17 +297,9 @@ public class Utils {
         }
     }
     
-    public static class ResourceFileFilter implements FileFilter {
-        public boolean accept(File f) {
-            return f.isDirectory() ||
-                    f.getName().toLowerCase(Locale.getDefault()).endsWith(".sun-resource"); //NOI18N
-        }
-    }
-    
     public static class SunResourceFileFilter implements FileFilter {
         public boolean accept(File f) {
-            return f.isDirectory() ||
-                    f.getName().toLowerCase(Locale.getDefault()).endsWith(".xml"); //NOI18N
+            return ((! f.isDirectory()) && f.getName().equals("sun-resources.xml")); //NOI18N
         }
     }
     

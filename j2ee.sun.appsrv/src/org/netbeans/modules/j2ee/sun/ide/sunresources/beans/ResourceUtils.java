@@ -1560,16 +1560,18 @@ public class ResourceUtils implements WizardConstants{
         if((sunResource == null) || (! sunResource.exists())){
             File resourceDir = FileUtil.toFile(targetFolder);
             File[] resources = resourceDir.listFiles(new ResourceFileFilter());
-            Resources newGraph = DDProvider.getDefault().getResourcesGraph();
-            try {
-                for(int i=0; i<resources.length; i++){
-                    FileInputStream in = new java.io.FileInputStream(resources[i]);
-                    Resources existResource = DDProvider.getDefault().getResourcesGraph(in);
-                    newGraph = getResourceGraphs(newGraph, existResource);
+            if (resources.length > 0) {
+                Resources newGraph = DDProvider.getDefault().getResourcesGraph();
+                try {
+                    for (int i = 0; i < resources.length; i++) {
+                        FileInputStream in = new java.io.FileInputStream(resources[i]);
+                        Resources existResource = DDProvider.getDefault().getResourcesGraph(in);
+                        newGraph = getResourceGraphs(newGraph, existResource);
+                    }
+                    createFile(targetFolder, newGraph);
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
                 }
-                createFile(targetFolder, newGraph);
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
             }
         }
     }
@@ -1617,8 +1619,7 @@ public class ResourceUtils implements WizardConstants{
     
     private static class ResourceFileFilter implements FileFilter {
         public boolean accept(File f) {
-            return f.isDirectory() ||
-                    f.getName().toLowerCase(Locale.getDefault()).endsWith(".sun-resource"); //NOI18N
+            return ((! f.isDirectory()) && f.getName().toLowerCase(Locale.getDefault()).endsWith(".sun-resource")); //NOI18N
         }
     }
     
