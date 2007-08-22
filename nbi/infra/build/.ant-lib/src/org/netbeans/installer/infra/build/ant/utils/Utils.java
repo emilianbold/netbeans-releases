@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -259,7 +259,7 @@ public final class Utils {
      *      otherwise.
      * @throws java.io.IOException if an I/O error occurs.
      */
-    public static boolean verify(final File file) throws IOException {
+    public static boolean verify(final File file) throws IOException {        
         Results results = runClass(VERIFIER_CLASSNAME, file.getAbsolutePath());
         
         if (results.getExitcode() == 0) {
@@ -273,6 +273,43 @@ public final class Utils {
     }
     
     /**
+     * Verifies that the if jar archive is placed next to jad, the jad file 
+     * contains correct jar size
+     *
+     * @param file Jar archive to check.
+     * @return <code>true</code> is the archive is correct, <code>false</code>
+     *      otherwise.
+     * @throws java.io.IOException if an I/O error occurs.
+     */
+    public static boolean verifyJad(final File file) throws IOException {
+        final String name = file.getName();
+        if(name.endsWith(".jar")) {
+            File jad = new File(file.getParent(),
+                    name.substring(1, name.length()-4) + ".jad");
+            if(jad.exists()) {
+                FileInputStream fis = new FileInputStream(jad);
+                String string = read(fis).toString();  
+                fis.close();
+                final Matcher matcher = Pattern.compile(
+                       "MIDlet-Jar-Size: ([0-9]+).*").
+                        matcher(string);
+                if (matcher.find()) {
+                    final long size = new Long(matcher.group(1)).longValue();
+                    final long realSize = file.length();
+                    if(realSize!=size) {
+                        System.out.println("java descriptor file exist : " + jad);
+                        System.out.println("expected jar size : " + size);
+                        System.out.println("real jar size : " + realSize);
+                        return false;
+                    }
+                }
+                
+            }
+        }
+        return true;
+    }
+    
+    /**
      * Fully reads an input stream into a character sequence using the system's
      * default encoding.
      *
@@ -282,14 +319,14 @@ public final class Utils {
      */
     public static CharSequence read(final InputStream in) throws IOException {
         StringBuilder builder = new StringBuilder();
-        
+        final String sep = System.getProperty("line.separator");
         byte[] buffer = new byte[1024];
         while (in.available() > 0) {
             int read = in.read(buffer);
             
             String readString = new String(buffer, 0, read);
             for(String string : readString.split(NEWLINE_REGEXP)) {
-                builder.append(string).append(File.separator);
+                builder.append(string).append(sep);
             }
         }
         

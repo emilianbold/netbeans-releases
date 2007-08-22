@@ -269,6 +269,7 @@ public class Package extends Task {
                     
                     if (Utils.pack(child, packed) &&
                             Utils.unpack(packed, child) &&
+                            Utils.verifyJad(child) &&
                             Utils.verify(child)) {
                         name  = packed.getPath().
                                 substring(offset + 1).replace('\\', '/');   // NOMAGI
