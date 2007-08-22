@@ -158,177 +158,177 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/bsf-2.3.0.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/bsf-2.3.0.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/bsf-2.3.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/avalon-framework-4.1.4.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/avalon-framework-4.1.4.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/avalon-framework-4.1.4.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/batik-awt-util.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/batik-awt-util.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/batik-awt-util.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/bshclient.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/bshclient.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/bshclient.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/commons-codec-1.3.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/commons-codec-1.3.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/commons-codec-1.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/commons-collections.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/commons-collections.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/commons-collections.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/commons-httpclient-3.0.1.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/commons-httpclient-3.0.1.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/commons-httpclient-3.0.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/commons-jexl-1.0.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/commons-jexl-1.0.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/commons-jexl-1.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/commons-logging-1.1.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/commons-logging-1.1.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/commons-logging-1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/excalibur-datasource-1.1.1.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/excalibur-datasource-1.1.1.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/excalibur-datasource-1.1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/excalibur-instrument-1.0.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/excalibur-instrument-1.0.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/excalibur-instrument-1.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/excalibur-logger-1.1.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/excalibur-logger-1.1.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/excalibur-logger-1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/excalibur-pool-1.2.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/excalibur-pool-1.2.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/excalibur-pool-1.2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/htmlparser.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/htmlparser.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/htmlparser.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/htmlparserparser16.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/htmlparserparser16.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/htmlparserparser16.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/htmlparserparser.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/htmlparserparser.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/htmlparserparser.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/jakarta-oro-2.0.8.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/jakarta-oro-2.0.8.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/jakarta-oro-2.0.8.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/jCharts-0.7.5.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/jCharts-0.7.5.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/jCharts-0.7.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/jdom-1.0.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/jdom-1.0.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/jdom-1.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/jorphan.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/jorphan.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/jorphan.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/js.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/js.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/js.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/logkit-1.2.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/logkit-1.2.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/logkit-1.2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/soap.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/soap.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/soap.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/Tidy.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/Tidy.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/Tidy.jar</binary-origin>
             </class-path-extension>
             <!--
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/xalan.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/xalan.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/xalan.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/xercesImpl.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/xercesImpl.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/xercesImpl.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/xml-apis.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/xml-apis.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/xml-apis.jar</binary-origin>
             </class-path-extension>
             -->
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/xpp3_min-1.1.3.4.I.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/xpp3_min-1.1.3.4.I.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/xpp3_min-1.1.3.4.I.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/xstream-1.1.3.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/xstream-1.1.3.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/xstream-1.1.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_core.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_core.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_core.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_components.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_components.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_components.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_ftp.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_ftp.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_ftp.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_functions.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_functions.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_functions.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_http.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_http.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_http.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_java.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_java.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_java.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_jdbc.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_jdbc.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_jdbc.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_jms.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_jms.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_jms.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_junit.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_junit.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_junit.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_ldap.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_ldap.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_ldap.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_mail.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_mail.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_mail.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_monitors.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_monitors.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_monitors.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_report.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_report.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_report.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>jmeter/lib/ext/ApacheJMeter_tcp.jar</runtime-relative-path>
-                <binary-origin>release/modules/jmeter/lib/ext/ApacheJMeter_tcp.jar</binary-origin>
+                <binary-origin>build/jmeter/lib/ext/ApacheJMeter_tcp.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
