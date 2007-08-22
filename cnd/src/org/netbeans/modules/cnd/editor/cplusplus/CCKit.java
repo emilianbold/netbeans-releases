@@ -265,7 +265,7 @@ public class CCKit extends NbEditorKit {
 
 	public CCFormatAction() {
 	    super(BaseKit.formatAction,
-		  ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+		  MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
 	    putValue ("helpID", CCFormatAction.class.getName ()); // NOI18N
 	}
 
@@ -311,7 +311,7 @@ public class CCKit extends NbEditorKit {
 			caret.setDot(pos);
 		    }
 		} catch (BadLocationException e) {
-                    Utilities.annotateLoggable(e);
+                    //failed to format
 		} finally {
 		    doc.atomicUnlock();
                     target.setCursor(origCursor);
