@@ -347,15 +347,27 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 	}
 	
 	public boolean isBatchMode() {
-		return false;
+		boolean isBatchMode = false;
+		
+		isBatchMode = (Boolean) getComponentType().getPropertyType(PROP_BATCHMODE).getDefaultValue();
+        
+		return isBatchMode;
 	}
 
 	public boolean isGlobal() {
-		return false;
+		boolean isGlobal = false;
+		
+		isGlobal = (Boolean) getComponentType().getPropertyType(PROP_ISGLOBAL).getDefaultValue();
+        
+		return isGlobal;
 	}
 	
 	public boolean isSchemaOwner() {
-		return false;
+		boolean isSchemaOwner = false;
+		
+		isSchemaOwner = (Boolean) getComponentType().getPropertyType(PROP_IS_SCHEMAOWNER).getDefaultValue();
+        
+		return isSchemaOwner;
 	}
 	
 	public String getDisplayName() {
