@@ -166,6 +166,8 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
     }
 
     private Anchor getPinAnchor (String pin) {
+        if (pin == null)
+            return null;
         VMDNodeWidget nodeWidget = (VMDNodeWidget) findWidget (getPinNode (pin));
         Widget pinMainWidget = findWidget (pin);
         Anchor anchor;
