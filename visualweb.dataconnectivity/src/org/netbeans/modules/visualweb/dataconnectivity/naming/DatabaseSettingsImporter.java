@@ -25,6 +25,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -80,8 +81,8 @@ public class DatabaseSettingsImporter {
     public static final String  VALUE_ATTR   = "value"; // NOI18N
     public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     private File         userCtxFile;
-    private ArrayList <String[]>    dataSources;            
-    ArrayList <DataSourceInfo> dataSourcesInfo;   
+    private List <String[]>    dataSources;            
+    List <DataSourceInfo> dataSourcesInfo;   
     
     private static ResourceBundle rb = ResourceBundle.getBundle("org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle", // NOI18N
             Locale.getDefault());
@@ -94,7 +95,7 @@ public class DatabaseSettingsImporter {
     
     /** Creates a new instance of DatabaseImporter */
     private DatabaseSettingsImporter() {
-        dataSources = new ArrayList<String[]>();
+        dataSources = Collections.synchronizedList(new ArrayList<String[]>());
         dataSourcesInfo = new ArrayList<DataSourceInfo>();
     }
     
@@ -434,12 +435,15 @@ public class DatabaseSettingsImporter {
         }
         
         // extract data source info from each datasource ArrayList
-        Iterator itDss = dataSources.iterator();
+
         String[] dataSource = new String[5];
         
-        while (itDss.hasNext()) {
-            dataSource = (String[])itDss.next();
-            dsInfo.add(createDataSourceInfo(dataSource));
+        synchronized (dataSources) {
+            Iterator itDss = dataSources.iterator();
+            while (itDss.hasNext()) {
+                dataSource = (String[]) itDss.next();
+                dsInfo.add(createDataSourceInfo(dataSource));
+            }
         }
         
         return dsInfo;
@@ -505,7 +509,7 @@ public class DatabaseSettingsImporter {
         });
     }      
     
-    public ArrayList <DataSourceInfo> getDataSourcesInfo() {
+    public List  <DataSourceInfo> getDataSourcesInfo() {
         return dataSourcesInfo;
     }
     
