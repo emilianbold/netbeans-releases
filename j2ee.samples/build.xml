@@ -15,6 +15,7 @@
         <zip basedir="samples_src/LotteryAnnotation" excludes="${excludes}" destfile="${examples}/LotteryAnnotation.zip"/>
         <zip basedir="samples_src/AnnotationOverrideInterceptor" excludes="${excludes}" destfile="${examples}/AnnotationOverrideInterceptor.zip"/>
         <zip basedir="samples_src/JsfJpa" excludes="${excludes}" destfile="${examples}/JsfJpa.zip"/>
+        <zip basedir="samples_src/JsfJpaCrud" excludes="${excludes}" destfile="${examples}/JsfJpaCrud.zip"/>
         <zip basedir="samples_src/WebJpa" excludes="${excludes}" destfile="${examples}/WebJpa.zip"/>
     </target>
 </project>

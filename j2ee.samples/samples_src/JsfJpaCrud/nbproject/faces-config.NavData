@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scene Scope="Project" version="2">
+    <Scope Scope="Faces Configuration Only"/>
+    <Scope Scope="Project">
+        <Node id="welcomeJSF.jsp" x="1529" y="32"/>
+        <Node id="purchaseOrder/List.jsp" x="7187" y="32"/>
+        <Node id="productCode/Edit.jsp" x="5958" y="32"/>
+        <Node id="purchaseOrder/New.jsp" x="5641" y="32"/>
+        <Node id="productCode/New.jsp" x="1795" y="32"/>
+        <Node id="purchaseOrder/Edit.jsp" x="6566" y="32"/>
+        <Node id="manufacturer/List.jsp" x="6881" y="32"/>
+        <Node id="customer/New.jsp" x="2733" y="32"/>
+        <Node id="product/Edit.jsp" x="8721" y="32"/>
+        <Node id="microMarket/Edit.jsp" x="5339" y="32"/>
+        <Node id="discountCode/New.jsp" x="1217" y="32"/>
+        <Node id="customer/List.jsp" x="8440" y="32"/>
+        <Node id="productCode/Detail.jsp" x="4191" y="32"/>
+        <Node id="discountCode/List.jsp" x="2424" y="32"/>
+        <Node id="microMarket/New.jsp" x="6262" y="32"/>
+        <Node id="customer/Edit.jsp" x="3635" y="32"/>
+        <Node id="manufacturer/New.jsp" x="4735" y="32"/>
+        <Node id="manufacturer/Edit.jsp" x="354" y="32"/>
+        <Node id="customer/Detail.jsp" x="5044" y="32"/>
+        <Node id="product/New.jsp" x="3917" y="32"/>
+        <Node id="microMarket/Detail.jsp" x="3320" y="32"/>
+        <Node id="microMarket/List.jsp" x="8139" y="32"/>
+        <Node id="discountCode/Edit.jsp" x="7501" y="32"/>
+        <Node id="product/Detail.jsp" x="932" y="32"/>
+        <Node id="purchaseOrder/Detail.jsp" x="7811" y="32"/>
+        <Node id="discountCode/Detail.jsp" x="2101" y="32"/>
+        <Node id="index.jsp" x="4508" y="32"/>
+        <Node id="product/List.jsp" x="661" y="32"/>
+        <Node id="manufacturer/Detail.jsp" x="34" y="32"/>
+        <Node id="productCode/List.jsp" x="3017" y="32"/>
+    </Scope>
+</Scene>
