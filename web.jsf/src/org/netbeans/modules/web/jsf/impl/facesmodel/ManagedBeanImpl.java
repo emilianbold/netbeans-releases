@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.web.jsf.impl.facesmodel;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
@@ -31,7 +33,12 @@ import org.w3c.dom.Element;
  */
 public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean {
     
-    protected static final List<String> SORTED_ELEMENTS = new ArrayList();
+    // caching properties
+    private String beanName;
+    private String beanClass;
+    private ManagedBean.Scope beanScope;
+    
+    protected static final List<String> SORTED_ELEMENTS = new ArrayList<String>();
     {
         SORTED_ELEMENTS.addAll(DescriptionGroupImpl.SORTED_ELEMENTS);
         SORTED_ELEMENTS.add(JSFConfigQNames.MANAGED_BEAN_NAME.getLocalName());
@@ -42,6 +49,24 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     /** Creates a new instance of ManagedBeanImpl */
     public ManagedBeanImpl(JSFConfigModelImpl model,Element element) {
         super(model, element);
+        beanName = null;
+        beanClass = null;
+        beanScope = null;
+        
+        this.addPropertyChangeListener(new PropertyChangeListener () {
+            
+            public void propertyChange(PropertyChangeEvent event) {
+                // The managed bean was changed -> reset all cache fields
+                // When user modifies the source file by hand, then the property name
+                // is "textContent", so it's easier to reset all fields, then 
+                // parse the new value.
+                beanName = null;
+                beanClass = null;
+                beanScope = null;
+            }
+            
+        });
+        
     }
     
     public ManagedBeanImpl(JSFConfigModelImpl model) {
@@ -49,7 +74,10 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     }
     
     public String getManagedBeanName() {
-        return getChildElementText(JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getModel().getVersion()));
+        if (beanName == null) {
+            beanName = getChildElementText(JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getModel().getVersion()));
+        }
+        return beanName;
     }
     
     public void setManagedBeanName(String name) {
@@ -57,7 +85,10 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     }
     
     public String getManagedBeanClass() {
-        return getChildElementText(JSFConfigQNames.MANAGED_BEAN_CLASS.getQName(getModel().getVersion()));
+        if (beanClass ==  null) {
+            beanClass = getChildElementText(JSFConfigQNames.MANAGED_BEAN_CLASS.getQName(getModel().getVersion()));
+        }
+        return beanClass;
     }
     
     public void setManagedBeanClass(String beanClass) {
@@ -65,16 +96,17 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     }
     
     public ManagedBean.Scope getManagedBeanScope() {
-        String scopeText = getChildElementText(JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getModel().getVersion()));
-        scopeText = scopeText.trim().toUpperCase();
-        ManagedBean.Scope scope = null;
-        try{
-            scope = ManagedBean.Scope.valueOf(scopeText);
+        if (beanScope == null) {
+            String scopeText = getChildElementText(JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getModel().getVersion()));
+            scopeText = scopeText.trim().toUpperCase();
+            try{
+                beanScope = ManagedBean.Scope.valueOf(scopeText);
+            }
+            catch (IllegalArgumentException exception){
+                // do nothing. The value is wrong and the method should return null. 
+            }
         }
-        catch (IllegalArgumentException exception){
-            // do nothing. The value is wrong and the method should return null. 
-        }
-        return scope;
+        return beanScope;
     }
     
     public void setManagedBeanScope(ManagedBean.Scope scope) {
