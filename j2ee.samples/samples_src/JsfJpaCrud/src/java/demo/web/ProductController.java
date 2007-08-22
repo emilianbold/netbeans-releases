@@ -79,6 +79,7 @@ public class ProductController {
 
     public void setProduct(Product product) {
         this.product = product;
+        System.out.println("\n\n### " + getPurchaseOrderController());
         getPurchaseOrderController().setDetailPurchaseOrders(product.getPurchaseOrderCollection());
     }
 
@@ -102,8 +103,8 @@ public class ProductController {
     }
 
     private ManufacturerController getManufacturerController() {
-        return (ManufacturerController) FacesContext.getCurrentInstance().
-            getExternalContext().getSessionMap().get("manufacturer");
+        FacesContext context = FacesContext.getCurrentInstance();
+        return (ManufacturerController) context.getApplication().getELResolver().getValue(context.getELContext(), null, "manufacturer");
     }
 
     public String createFromManufacturerSetup() {
@@ -134,8 +135,8 @@ public class ProductController {
     }
 
     private ProductCodeController getProductCodeController() {
-        return (ProductCodeController) FacesContext.getCurrentInstance().
-            getExternalContext().getSessionMap().get("productCode");
+        FacesContext context = FacesContext.getCurrentInstance();
+        return (ProductCodeController) context.getApplication().getELResolver().getValue(context.getELContext(), null, "productCode");
     }
 
     public String createFromProductCodeSetup() {
@@ -165,8 +166,8 @@ public class ProductController {
     }
 
     private PurchaseOrderController getPurchaseOrderController() {
-        return (PurchaseOrderController) FacesContext.getCurrentInstance().
-            getExternalContext().getSessionMap().get("purchaseOrder");
+        FacesContext context = FacesContext.getCurrentInstance();
+        return (PurchaseOrderController) context.getApplication().getELResolver().getValue(context.getELContext(), null, "purchaseOrder");
     }
 
     public String createFromPurchaseOrderSetup() {

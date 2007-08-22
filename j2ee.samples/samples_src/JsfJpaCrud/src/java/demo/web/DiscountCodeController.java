@@ -97,8 +97,8 @@ public class DiscountCodeController {
     }
 
     private CustomerController getCustomerController() {
-        return (CustomerController) FacesContext.getCurrentInstance().
-            getExternalContext().getSessionMap().get("customer");
+        FacesContext context = FacesContext.getCurrentInstance();
+        return (CustomerController) context.getApplication().getELResolver().getValue(context.getELContext(), null, "customer");
     }
 
     public String createFromCustomerSetup() {

@@ -100,8 +100,8 @@ public class PurchaseOrderController {
     }
 
     private CustomerController getCustomerController() {
-        return (CustomerController) FacesContext.getCurrentInstance().
-            getExternalContext().getSessionMap().get("customer");
+        FacesContext context = FacesContext.getCurrentInstance();
+        return (CustomerController) context.getApplication().getELResolver().getValue(context.getELContext(), null, "customer");
     }
 
     public String createFromCustomerSetup() {
@@ -132,8 +132,8 @@ public class PurchaseOrderController {
     }
 
     private ProductController getProductController() {
-        return (ProductController) FacesContext.getCurrentInstance().
-            getExternalContext().getSessionMap().get("product");
+        FacesContext context = FacesContext.getCurrentInstance();
+        return (ProductController) context.getApplication().getELResolver().getValue(context.getELContext(), null, "product");
     }
 
     public String createFromProductSetup() {

@@ -97,8 +97,8 @@ public class ManufacturerController {
     }
 
     private ProductController getProductController() {
-        return (ProductController) FacesContext.getCurrentInstance().
-            getExternalContext().getSessionMap().get("product");
+        FacesContext context = FacesContext.getCurrentInstance();
+        return (ProductController) context.getApplication().getELResolver().getValue(context.getELContext(), null, "product");
     }
 
     public String createFromProductSetup() {
