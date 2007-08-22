@@ -36,11 +36,11 @@
                     </h:column>
                     <h:column>
                         <h:commandLink value="Destroy" action="#{discountCode.destroy}">
-                            <f:param name="discountCode" value="#{item.discountCode}"/>
+                            <f:param name="discountCodeId" value="#{item.discountCode}"/>
                         </h:commandLink>
                         <h:outputText value=" "/>
                         <h:commandLink value="Edit" action="#{discountCode.editSetup}">
-                            <f:param name="discountCode" value="#{item.discountCode}"/>
+                            <f:param name="discountCodeId" value="#{item.discountCode}"/>
                         </h:commandLink>
                     </h:column>
                 </h:dataTable>

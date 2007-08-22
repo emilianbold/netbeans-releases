@@ -240,8 +240,7 @@ public class DiscountCodeController {
                 o = em.merge(o);
             } else {
                 String param = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("discountCodeId");
-                Integer id = new Integer(param);
-                o = em.find(DiscountCode.class, id);
+                o = em.find(DiscountCode.class, param);
             }
             return o;
         } finally {

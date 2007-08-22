@@ -93,7 +93,7 @@
                             <h:outputText value="DiscountCode"/>
                         </f:facet>
                         <h:commandLink action="#{discountCode.detailSetup}">
-                            <f:param name="discountCode" value="#{item.discountCode.discountCode}"/>
+                            <f:param name="discountCodeId" value="#{item.discountCode.discountCode}"/>
                             <h:outputText value="#{item.discountCode.discountCode}"/>
                         </h:commandLink>
                     </h:column>
