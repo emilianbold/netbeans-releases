@@ -131,6 +131,7 @@ public final class Library {
 
 
     // delegated identity
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj instanceof Library) {
@@ -141,8 +142,14 @@ public final class Library {
     }
 
     // delegated identity
+    @Override
     public int hashCode() {
         return impl.hashCode();
+    }
+    
+    @Override
+    public String toString () {
+        return this.getName();
     }
 
     /**
