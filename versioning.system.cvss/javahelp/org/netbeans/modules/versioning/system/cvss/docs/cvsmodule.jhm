@@ -67,6 +67,8 @@
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.MergeBranchAction" url="cvsmodule/csh/cvs-lite_mergebranch_dialog.html" />
 	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction" url="cvsmodule/csh/cvs-lite_tag_dialog.html" />
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.ChangeCVSRootAction" url="cvsmodule/csh/cvs-lite_change_root.html" />
+        <mapID target="org.netbeans.modules.versioning.system.cvss.ui.history.ViewRevisionAction" url="cvsmodule/csh/cvs-lite_view_revision_dialog.html" />
+
 
 	<!-- CSH topics for merge conflicts resolver -->
 	<mapID target="org.netbeans.modules.merge.builtin.visualizer.MergeDialogComponent" url="cvsmodule/csh/cvs-lite_merge_resolver.html" />
