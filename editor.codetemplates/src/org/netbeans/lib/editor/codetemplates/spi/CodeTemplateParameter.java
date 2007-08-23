@@ -57,6 +57,8 @@ public final class CodeTemplateParameter {
      */
     public static final String CURSOR_PARAMETER_NAME = "cursor"; // NOI18N
     
+    public static final String COMPLETION_INVOKE_HINT_NAME = "completionInvoke"; // NOI18N
+
     public static final String SELECTION_PARAMETER_NAME = "selection"; // NOI18N
 
     public static final String LINE_HINT_NAME = "line"; // NOI18N

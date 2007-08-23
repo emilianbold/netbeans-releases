@@ -52,6 +52,7 @@ import com.sun.tools.javac.util.Context;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -75,7 +76,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -252,7 +252,7 @@ public class SourceUtils {
             cut = nue != null ? nue : cut;
             ((WorkingCopy)info).rewrite(info.getCompilationUnit(), addImports(cut, Collections.singletonList(fqn), ((WorkingCopy)info).getTreeMaker()));
         } else {
-            RequestProcessor.getDefault().post(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
                         info.getJavaSource().runModificationTask(new Task<WorkingCopy>() {

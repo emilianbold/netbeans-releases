@@ -1404,7 +1404,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (tm != null && tm.getKind() == TypeKind.DECLARED) {
                                 TypeElement te = (TypeElement)((DeclaredType)tm).asElement();
                                 addMembers(env, tm, te, EnumSet.of(CONSTRUCTOR), base, false);
-                                if (!hasAccessibleInnerClassConstructor(te, env.getScope(), controller.getTrees()))
+                                if (!Utilities.hasAccessibleInnerClassConstructor(te, env.getScope(), controller.getTrees()))
                                     toExclude = te;
                             }
                         }
@@ -3173,21 +3173,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (trees.isAccessible(scope, ee, dt) && isOfKindAndType(ee.asType(), ee, kinds, base, scope, trees, types))
                         return true;
             }
-            return false;
-        }
-        
-        private boolean hasAccessibleInnerClassConstructor(Element e, Scope scope, Trees trees) {
-            DeclaredType dt = (DeclaredType)e.asType();
-            for (TypeElement inner : ElementFilter.typesIn(e.getEnclosedElements())) {
-                if (trees.isAccessible(scope, inner, dt)) {
-                    DeclaredType innerType = (DeclaredType)inner.asType();
-                    for (ExecutableElement ctor : ElementFilter.constructorsIn(inner.getEnclosedElements())) {
-                        if (trees.isAccessible(scope, ctor, innerType))
-                            return true;
-                    }
-                }
-            }
-
             return false;
         }
         

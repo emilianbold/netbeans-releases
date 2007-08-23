@@ -30,6 +30,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -37,6 +38,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.DrawLayer;
@@ -97,6 +99,8 @@ implements DocumentListener, KeyListener {
     private boolean released;
     
     private Position caretPosition;
+    
+    private boolean completionInvoke;
     
     private int activeMasterIndex;
     
@@ -302,6 +306,7 @@ implements DocumentListener, KeyListener {
                     caretPosition = doc.createPosition(insertOffset + parameter.getInsertTextOffset());
                     CodeTemplateParameterImpl paramImpl = CodeTemplateParameterImpl.get(parameter);
                     paramImpl.resetPositions(caretPosition, caretPosition);
+                    completionInvoke = parameter.getHints().get(CodeTemplateParameter.COMPLETION_INVOKE_HINT_NAME) != null;
                 } else { // Not a CURSOR parameter
                     List<MutablePositionRegion> parameterRegions = new ArrayList<MutablePositionRegion>(4);
                     addParameterRegion(parameterRegions, parameter, doc, insertOffset);
@@ -371,6 +376,13 @@ implements DocumentListener, KeyListener {
             // just update the caret position and release
             forceCaretPosition();
             release();
+            if (completionInvoke) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        Completion.get().showCompletion();
+                    }
+                });
+            }
         }
     }
     
@@ -401,6 +413,13 @@ implements DocumentListener, KeyListener {
         if (activeMasterIndex == editableMasters.size()) { 
             forceCaretPosition();
             release();
+            if (completionInvoke) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        Completion.get().showCompletion();
+                    }
+                });
+            }
         } else {
             tabUpdate();
         }

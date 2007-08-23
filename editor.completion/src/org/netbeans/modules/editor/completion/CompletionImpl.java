@@ -222,7 +222,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 }
                 layout.showCompletion(Collections.singletonList(waitText),
                         null, -1, CompletionImpl.this, null, 0);
-                pleaseWaitDisplayed = true;
+                pleaseWaitDisplayed = true;                
             }
         });
         pleaseWaitTimer.setRepeats(false);
@@ -312,12 +312,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 hideCompletion(false);
             }
 
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    completionRefresh();
-                    toolTipRefresh();
-                }
-            });
+            completionRefresh();
+            toolTipRefresh();
         }
     }
 
@@ -693,7 +689,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * May be called from any thread but it will be rescheduled into AWT.
      */
     public void showCompletion() {
-        showCompletion(false, false, CompletionProvider.COMPLETION_QUERY_TYPE);
+        showCompletion(true, false, CompletionProvider.COMPLETION_QUERY_TYPE);
     }
 
     private void showCompletion(boolean explicitQuery, boolean delayQuery, int queryType) {

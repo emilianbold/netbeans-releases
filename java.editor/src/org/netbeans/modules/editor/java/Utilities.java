@@ -21,6 +21,7 @@ package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
@@ -116,6 +117,20 @@ public class Utilities {
         return weight;
     }
     
+    public static boolean hasAccessibleInnerClassConstructor(Element e, Scope scope, Trees trees) {
+        DeclaredType dt = (DeclaredType)e.asType();
+        for (TypeElement inner : ElementFilter.typesIn(e.getEnclosedElements())) {
+            if (trees.isAccessible(scope, inner, dt)) {
+                DeclaredType innerType = (DeclaredType)inner.asType();
+                for (ExecutableElement ctor : ElementFilter.constructorsIn(inner.getEnclosedElements())) {
+                    if (trees.isAccessible(scope, ctor, innerType))
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+        
     public static TreePath getPathElementOfKind(Tree.Kind kind, TreePath path) {
         return getPathElementOfKind(EnumSet.of(kind), path);
     }

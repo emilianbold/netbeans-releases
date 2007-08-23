@@ -32,8 +32,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -598,10 +600,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
-            if (enclName == null) {
-                super.substituteText(c, offset, len, toAdd);
-                return;
-            }
             final BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder text = new StringBuilder();
             final int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
@@ -645,6 +643,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.RESOLVED);
+                        TreePath path = controller.getTreeUtilities().pathFor(offset);
+                        boolean insideNew = path.getLeaf().getKind() == Tree.Kind.NEW_CLASS ||
+                                path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT && path.getParentPath().getLeaf().getKind() == Tree.Kind.NEW_CLASS && ((NewClassTree)path.getParentPath().getLeaf()).getIdentifier() == path.getLeaf();
                         DeclaredType type = typeHandle.resolve(controller);
                         TypeElement elem = elementHandle != null ? elementHandle.resolve(controller) : (TypeElement)type.asElement();
                         boolean asTemplate = false;
@@ -709,6 +710,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             asTemplate = true;
                         }
                         if (asTemplate) {
+                            if (insideNew)
+                                sb.append("${cursor completionInvoke}"); //NOI18N
                             if (finalLen > 0) {
                                 doc.atomicLock();
                                 try {
@@ -726,19 +729,42 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             // Update the text
                             doc.atomicLock();
                             try {
-                                Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
+                                Position semiPosition = semiPos > -1 && !insideNew ? doc.createPosition(semiPos) : null;
                                 TreePath tp = controller.getTreeUtilities().pathFor(offset);
-                                text.insert(0, AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
+                                CharSequence cs = AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)); 
+                                if (!insideNew)
+                                    cs = text.insert(0, cs);
                                 String textToReplace = doc.getText(offset, finalLen);
-                                if (textToReplace.contentEquals(text)) return;
+                                if (textToReplace.contentEquals(cs)) return;
                                 doc.remove(offset, finalLen);
-                                doc.insertString(offset, text.toString(), null);
+                                doc.insertString(offset, cs.toString(), null);
                                 if (semiPosition != null)
                                     doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                             } catch (BadLocationException e) {
                                 // Can't update
                             } finally {
                                 doc.atomicUnlock();
+                            }
+                            if (insideNew) {
+                                List<ExecutableElement> ctors = type.getKind() == TypeKind.DECLARED ? ElementFilter.constructorsIn(elem.getEnclosedElements()) : null;
+                                if (ctors != null) {
+                                    final JavaCompletionItem item = ctors.size() > 1 || Utilities.hasAccessibleInnerClassConstructor(elem, controller.getTreeUtilities().scopeFor(offset), controller.getTrees())
+                                            ? null : ctors.size() == 1
+                                            ? createExecutableItem(ctors.get(0), (ExecutableType)controller.getTypes().asMemberOf(type, ctors.get(0)), offset, false, false, false, true)
+                                            : createDefaultConstructorItem(elem, offset, true);
+                                    try {
+                                        final Position offPosition = doc.createPosition(offset);
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            public void run() {
+                                                if (item != null)
+                                                    item.substituteText(c, offPosition.getOffset(), c.getSelectionEnd() - offPosition.getOffset(), text.toString());
+                                                else
+                                                    Completion.get().showCompletion();
+                                            }
+                                        });
+                                    }
+                                    catch (BadLocationException e) {}
+                                }
                             }
                         }
                     }
@@ -1771,18 +1797,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             doc.atomicLock();
+            Position position = null;
             try {
-                Position position = doc.createPosition(offset);
                 Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                 doc.remove(offset, len);
-                doc.insertString(position.getOffset(), text, null);
+                doc.insertString(offset, text, null);
+                position = doc.createPosition(offset);
                 if (semiPosition != null)
                     doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
             } catch (BadLocationException e) {
             } finally {
                 doc.atomicUnlock();
             }
-            Position position = null;
             if (isAbstract && text.length() > 3) {
                 try {
                     JavaSource js = JavaSource.forDocument(doc);
