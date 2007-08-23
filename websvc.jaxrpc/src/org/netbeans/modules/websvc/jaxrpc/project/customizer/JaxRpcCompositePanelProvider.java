@@ -23,9 +23,12 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.jaxrpc.project.customizer.CustomizerWSClientHost;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -46,6 +49,16 @@ public class JaxRpcCompositePanelProvider implements ProjectCustomizer.Composite
     }
 
     public ProjectCustomizer.Category createCategory(Lookup context) {
+        //hide WEBSERVICECLIENTS if project doe not support jaxrpc client bug 112675
+        Project project = context.lookup(Project.class);
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length > 0) {
+            ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+            if (classPath != null) {
+                if(classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class")==null)
+                    return null; //NOI18N
+            }
+        }
         ResourceBundle bundle = NbBundle.getBundle( JaxRpcCompositePanelProvider.class );
         ProjectCustomizer.Category toReturn = null;
         if (WEBSERVICECLIENTS.equals(name)) {
