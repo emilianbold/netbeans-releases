@@ -123,12 +123,20 @@ public class PropertyAction extends AbstractAction {
         Mnemonics.setLocalizedText(cancelButton, bundle.getString("CTL_Cancel")); // NOI18N
         cancelButton.setActionCommand(CANCEL_COMMAND);
         if (property.isDefaultValue()) {
-            return new Object[] {okButton, cancelButton};
+            if ("Aqua".equals(UIManager.getLookAndFeel().getID())) {
+                return new Object[] { cancelButton, okButton };
+            } else {
+                return new Object[] {okButton, cancelButton};
+            }
         } else {
             JButton restoreButton = new JButton();
             Mnemonics.setLocalizedText(restoreButton, bundle.getString("CTL_RestoreDefault")); // NOI18N
             restoreButton.setActionCommand(RESTORE_COMMAND);
-            return new Object[] {okButton, restoreButton, cancelButton};
+            if ("Aqua".equals(UIManager.getLookAndFeel().getID())) {
+                return new Object[] { restoreButton, cancelButton, okButton };
+            } else {
+                return new Object[] {okButton, restoreButton, cancelButton};
+            }
         }
     }
 
