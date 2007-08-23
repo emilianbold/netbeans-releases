@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.uml.ui.addins.diagramcreator;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
@@ -29,8 +30,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IDiagramCallback;
 import org.netbeans.modules.uml.ui.support.helpers.ETSmartWaitCursor;
-
-import javax.swing.SwingUtilities;
+import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 
 /**
  * @author sumitabhk
@@ -45,7 +45,7 @@ public class DiagramHandler implements IDiagramCallback
    private ETList < IElement > m_cpElements = null;
    private IElement m_cpElement = null;
    private IProjectTreeControl m_cpProjectTree = null;
-
+   private IProjectTreeModel projectTreeModel = null;
    private IOperation m_cpOperationToRE = null;
 
    /// When true the GUI functions have been called
@@ -170,16 +170,21 @@ public class DiagramHandler implements IDiagramCallback
             m_rawDiagCreatorAddIn.addElementsToDiagram(pDiagram, m_cpElements, m_cpElement, nBehavior);
          }
          wait.restore();
-
+         
+         //Fixed 110811. 
          // Expand the project tree to the created item
-         if (m_cpProjectTree != null)
+         if (projectTreeModel != null && m_cpElements != null)
          {
-            if (m_cpElement != null)
-            {
-               m_rawDiagCreatorAddIn.expandProjectTree(m_cpElement, m_cpProjectTree);
-            }
-            m_rawDiagCreatorAddIn.expandProjectTree(pDiagram, m_cpProjectTree);
+             m_rawDiagCreatorAddIn.expandProjectTree(m_cpElements, projectTreeModel);
          }
+//         if (m_cpProjectTree != null)
+//         {
+//            if (m_cpElement != null)
+//            {
+//               m_rawDiagCreatorAddIn.expandProjectTree(m_cpElement, m_cpProjectTree);
+//            }
+//            m_rawDiagCreatorAddIn.expandProjectTree(pDiagram, m_cpProjectTree);
+//         }
          wait.restore();
 
          // After this the "this" pointer is invalid.  This object was created via
@@ -228,7 +233,7 @@ public class DiagramHandler implements IDiagramCallback
    public void returnedDiagram(IDiagram pDiagram)
    {
       if (m_rawDiagCreatorAddIn != null)
-      {
+      { 
          this.preProcessDiagramReturned(pDiagram);
 
          SwingUtilities.invokeLater(new DiagramProcessor(pDiagram));
@@ -275,6 +280,11 @@ public class DiagramHandler implements IDiagramCallback
    public void setProjectTree(IProjectTreeControl control)
    {
       m_cpProjectTree = control;
+   }
+   
+   public void setProjectTreeModel(IProjectTreeModel treeModel)
+   {
+      projectTreeModel = treeModel;
    }
 
    /**

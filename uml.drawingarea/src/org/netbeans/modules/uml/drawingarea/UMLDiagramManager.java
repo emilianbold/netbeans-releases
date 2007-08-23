@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.uml.drawingarea;
 
-
 import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogDiagramDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogDiagramDetails;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
@@ -409,7 +408,7 @@ public class UMLDiagramManager
                 }
             }
             
-            String preferredID = topComponent.preferredID();
+            String preferredID = topComponent.preferredID(); 
             m_OpenDiagrams.put(preferredID, topComponent);
             
         }
@@ -567,7 +566,7 @@ public class UMLDiagramManager
             {
                 INewDialogDiagramDetails det = (INewDialogDiagramDetails) obj;
                 try
-                {
+                {  
                     String name = det.getName();
                     INamespace space = det.getNamespace();
                     int kind = det.getDiagramKind();
@@ -580,8 +579,7 @@ public class UMLDiagramManager
                     boolean found = false;
                     if (!found)
                     {
-                        retDia = createDiagram(det.getDiagramKind(), det.getNamespace(),
-                                det.getName(), null);
+                        retDia = createDiagram(kind, space, name, null);
                     }
                 }
                 catch (Exception e)

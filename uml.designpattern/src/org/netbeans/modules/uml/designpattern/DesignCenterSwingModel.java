@@ -35,39 +35,26 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.modules.uml.ui.controls.projecttree.DefaultNodeFactory;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeEngine;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
-import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModelListener;
-import org.netbeans.modules.uml.ui.controls.projecttree.ProductProjectTreeModel;
 import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeItemImpl;
 import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeModelEvent;
 import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeNode;
 import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeNodeFactory;
 import org.netbeans.modules.uml.ui.controls.projecttree.TreeElementNode;
-import org.netbeans.modules.uml.ui.controls.projecttree.TreeWorkspaceNode;
-//import org.netbeans.modules.uml.ui.products.ad.addesigncentergui.designpatternaddin.DesignPatternUtilities;
-//import org.netbeans.modules.uml.ui.products.ad.addesigncentergui.designpatternaddin.IDesignPatternCatalog;
-//import org.netbeans.modules.uml.ui.products.ad.designcenterdefaultengine.ADDesignCenterEngine;
-//import org.netbeans.modules.uml.ui.products.ad.designcenterdefaultengine.IADDesignCenterManager;
-import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeElement;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeComparable;
 import org.netbeans.modules.uml.core.IApplication;
-import org.netbeans.modules.uml.core.coreapplication.CoreProductInitEventsAdapter;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
-import org.netbeans.modules.uml.core.coreapplication.IDesignCenterManager;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
-import org.netbeans.modules.uml.core.metamodel.structure.ProjectEventsAdapter;
-import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlutils.DataFormatter;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
@@ -75,9 +62,8 @@ import org.netbeans.modules.uml.core.support.umlutils.IDataFormatter;
 import org.netbeans.modules.uml.core.support.umlutils.InvalidArguments;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
-import org.netbeans.modules.uml.core.workspacemanagement.WSProjectEventsAdapter;
-import org.netbeans.modules.uml.core.workspacemanagement.WorkspaceEventsAdapter;
 import javax.swing.tree.TreeNode;
+import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeModelAdapter;
 
 /**
  * The Swing implementation of the project tree model.  The
@@ -88,7 +74,8 @@ import javax.swing.tree.TreeNode;
  * @see ProjectTreeSwingModel
  * @author Trey Spiva
  */
-public class DesignCenterSwingModel implements ISwingProjectTreeModel
+public class DesignCenterSwingModel extends ProjectTreeModelAdapter 
+        implements ISwingProjectTreeModel
         
 {
     private final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.uml.designpattern.Bundle");

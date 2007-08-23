@@ -74,14 +74,9 @@ import org.netbeans.modules.uml.ui.controls.drawingarea.IUIDiagram;
 import org.netbeans.modules.uml.ui.controls.drawingarea.TopographyChangeAction;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
+import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 import org.netbeans.modules.uml.ui.products.ad.ADDrawEngines.IADContainerDrawEngine;
-//import org.netbeans.modules.uml.ui.products.ad.addesigncentergui.designpatternaddin.IDesignPatternCatalog;
 import org.netbeans.modules.uml.ui.products.ad.application.ApplicationView;
-//import org.netbeans.modules.uml.ui.products.ad.application.action.IContributionItem;
-//import org.netbeans.modules.uml.ui.products.ad.application.action.IViewActionDelegate;
-//import org.netbeans.modules.uml.ui.products.ad.application.action.PluginAction;
-//import org.netbeans.modules.uml.ui.products.ad.application.selection.ISelection;
-//import org.netbeans.modules.uml.ui.products.ad.designcenterdefaultengine.IADDesignCenterManager;
 import org.netbeans.modules.uml.ui.products.ad.diagramengines.IADRelationshipDiscovery;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
@@ -220,6 +215,28 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
       return 0;
    }
 
+   public long guiCreateDiagramFromElements(ETList < IElement > pElements,                 
+                                            IElement pParentElement, 
+                                            IProjectTreeModel pProjectTreeModel)                                         
+   {
+      IElement firstSelModEle = pParentElement != null ? pParentElement : getFirstElement(pElements);
+      if (firstSelModEle != null)
+      {
+         ETSmartWaitCursor waitCursor = null;
+         try
+         {
+            waitCursor = new ETSmartWaitCursor();
+            DiagramHandler handler = createDiagramCallback(pElements, firstSelModEle, pProjectTreeModel, true);
+            guiCreateDiagram(handler);
+         }
+         finally
+         {
+            waitCursor.stop();
+         }
+      }
+      return 0;
+   }
+   
    /**
     * Creates diagram using the default mechanism
     *
@@ -1314,6 +1331,31 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
          }
       }
    }
+   
+    /**
+    * expands Element nodes
+    */
+   public void expandProjectTree(ETList<IElement> pElements, IProjectTreeModel pProjectTreeModel)
+   {
+      if (pElements != null && pElements.size() > 0)
+      {
+         ETList <ITreeItem> items = null;
+         Iterator<IElement> iter = pElements.iterator();
+          while (iter.hasNext()) 
+          {
+              items = pProjectTreeModel.findNodes(iter.next());
+              if (items != null) 
+              {
+                  int count = items.size();
+                  for (int i = 0; i < count; i++) 
+                  {
+                      ITreeItem item = items.get(i);  
+                      pProjectTreeModel.fireItemExpanding(item);
+                  }
+              }
+          }
+      }
+   }
 
    /**
     * If the selected item is an interaction, a sequence diagram is generated.
@@ -1623,6 +1665,20 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
       handler.setElements(pElements);
       handler.setElement(pParentElement);
       handler.setProjectTree(pProjectTree);
+      handler.setUsingGUI(bUsingGUI);
+
+      // Add this to our list of managed objects
+      m_Callbacks.add(handler);
+      return handler;
+   }
+   
+   private DiagramHandler createDiagramCallback(ETList <IElement> pElements, IElement pParentElement, IProjectTreeModel projectTreeModel, boolean bUsingGUI)
+   {
+      DiagramHandler handler = new DiagramHandler();
+      handler.setDiagCreatorAddIn(this);
+      handler.setElements(pElements);
+      handler.setElement(pParentElement);
+      handler.setProjectTreeModel(projectTreeModel);
       handler.setUsingGUI(bUsingGUI);
 
       // Add this to our list of managed objects

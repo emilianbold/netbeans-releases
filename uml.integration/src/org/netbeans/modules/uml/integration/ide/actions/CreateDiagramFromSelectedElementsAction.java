@@ -34,8 +34,8 @@ import org.netbeans.modules.uml.core.reverseengineering.reintegration.UMLParsing
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.addins.diagramcreator.DiagCreatorAddIn;
-
-
+import org.netbeans.modules.uml.project.ui.nodes.UMLModelRootNode;
+import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -47,11 +47,11 @@ public final class CreateDiagramFromSelectedElementsAction extends CookieAction
     protected void performAction(Node[] activatedNodes)
     {
         final ETArrayList < IElement > elements = new ETArrayList < IElement >();
-        for(Node curNode : activatedNodes)
+        for(Node curNode : activatedNodes) 
         {
-            IElement curElement = (IElement)curNode.getCookie(IElement.class);
+            IElement curElement = curNode.getCookie(IElement.class);
             if(curElement != null)
-            {
+            {  
                 elements.add(curElement);
             }
         }
@@ -60,8 +60,9 @@ public final class CreateDiagramFromSelectedElementsAction extends CookieAction
         {
             public void run()
             {
-                DiagCreatorAddIn creator = new DiagCreatorAddIn();
-                creator.guiCreateDiagramFromElements(elements, null, null);
+                DiagCreatorAddIn creator = new DiagCreatorAddIn(); 
+                IProjectTreeModel treeModel = UMLModelRootNode.getProjectTreeModel();
+                creator.guiCreateDiagramFromElements(elements, null, treeModel);
             }
         });
         creatorThread.run();

@@ -182,7 +182,12 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 		}
 	}
 
-	
+	public void fireItemExpanding(ITreeItem item)
+	{
+            fireItemExpanding(item, null);
+        }
+		
+        
    /* (non-Javadoc)
 	* @see org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel#addItem(org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem, java.lang.String, java.lang.String, long, org.netbeans.modules.uml.core.metamodel.core.foundation.IElement, java.lang.Object, java.lang.String)
 	*/
