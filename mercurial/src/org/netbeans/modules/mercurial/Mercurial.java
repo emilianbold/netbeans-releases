@@ -70,6 +70,7 @@ public class Mercurial {
             FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY;
 
     private static final String MERCURIAL_GOOD_VERSION = "0.9.3";
+    private static final String MERCURIAL_BETTER_VERSION = "0.9.4";
     private static Mercurial instance;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
@@ -92,7 +93,7 @@ public class Mercurial {
     
     
     private void init() {
-        //checkVersion();
+        checkVersion();
         goodVersion = true;
         fileStatusCache = new FileStatusCache();
         fileStatusCache.cleanUp();
@@ -112,12 +113,12 @@ public class Mercurial {
         LOG.log(Level.FINE, "version: {0}", version);
         if (version != null) {
             goodVersion = version.startsWith(MERCURIAL_GOOD_VERSION);
-            if (!goodVersion) {
+            if (!goodVersion && !version.startsWith(MERCURIAL_BETTER_VERSION)) {
                 Preferences prefs = HgModuleConfig.getDefault().getPreferences();
                 String runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
                 if (runVersion == null || !runVersion.equals(version)) {
                     int response = JOptionPane.showOptionDialog(null,
-                                    NbBundle.getMessage(Mercurial.class,"MSG_VERSION_CONFIRM_QUERY", version, MERCURIAL_GOOD_VERSION),
+                                    NbBundle.getMessage(Mercurial.class,"MSG_VERSION_CONFIRM_QUERY", version, MERCURIAL_BETTER_VERSION),
                                     NbBundle.getMessage(Mercurial.class,"MSG_VERSION_CONFIRM"),
                                     JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,null, null, null);
 
