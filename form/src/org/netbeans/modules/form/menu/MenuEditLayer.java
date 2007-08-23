@@ -593,6 +593,9 @@ public class MenuEditLayer extends JPanel {
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             g.setColor(Color.WHITE);
             int offset = 5;
+            if(DropTargetLayer.isAqua()) {
+                offset = 2;
+            }
             g.fillRect(width-ACCEL_PREVIEW_WIDTH+offset,   1,ACCEL_PREVIEW_WIDTH, height);
             g.setColor(EMPTY_ICON_COLOR);
             g.drawRect(width-ACCEL_PREVIEW_WIDTH+offset,   1,ACCEL_PREVIEW_WIDTH-1, height);

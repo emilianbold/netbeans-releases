@@ -32,6 +32,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.menu.DropTargetLayer.DropTargetType;
 import org.netbeans.modules.form.menu.MenuEditLayer.SelectedPortion;
@@ -381,6 +382,16 @@ class DropTargetLayer extends JComponent {
         }
         return false;
     }
+    
+    static boolean isAqua() {
+        String laf = UIManager.getLookAndFeel().getName();
+        if(laf==null) return false;
+        if(laf.startsWith("Mac OS X")) {
+            return true;
+        }
+        return false;
+    }
+    
     private static void p(String s) {
         if(DEBUG) {
             System.out.println(s);
