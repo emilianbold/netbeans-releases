@@ -32,4 +32,5 @@ copy of this file in ide/applemenu. Check whether I need to do something there!
     -->
     <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="ruby-goto-test" key="DS-T"/>
+    <bind actionName="ruby-reflow-paragraph" key="DS-P"/>
 </bindings>

@@ -26,6 +26,7 @@ import org.netbeans.modules.ruby.options.CodeStyle;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.gsf.EditorAction;
 import org.netbeans.api.gsf.EditorOptions;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsf.OffsetRange;
@@ -45,11 +46,23 @@ import org.openide.util.Exceptions;
  * 
  * @author Tor Norbye
  */
-public class ReflowParagraphAction extends AbstractAction {
+public class ReflowParagraphAction extends AbstractAction implements EditorAction {
 
     public ReflowParagraphAction() {
         super(NbBundle.getMessage(ReflowParagraphAction.class, "ruby-reflow-paragraph")); // NOI18N
         putValue("PopupMenuText", NbBundle.getBundle(ReflowParagraphAction.class).getString("editor-popup-ruby-reflow-paragraph")); // NOI18N
+    }
+
+    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        actionPerformed(target);
+    }
+
+    public String getName() {
+        return "ruby-reflow-paragraph";
+    }
+
+    public Class getShortDescriptionBundleClass() {
+        return ReflowParagraphAction.class;
     }
 
     @Override
