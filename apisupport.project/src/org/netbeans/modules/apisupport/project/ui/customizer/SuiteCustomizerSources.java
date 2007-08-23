@@ -21,9 +21,9 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.util.Arrays;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.NbBundle;
 
 /**
@@ -36,8 +36,8 @@ final class SuiteCustomizerSources extends NbPropertyPanel.Suite {
     /**
      * Creates new form SuiteCustomizerSources
      */
-    SuiteCustomizerSources(final SuiteProperties suiteProps) {
-        super(suiteProps, SuiteCustomizerSources.class);
+    SuiteCustomizerSources(final SuiteProperties suiteProps, ProjectCustomizer.Category cat) {
+        super(suiteProps, SuiteCustomizerSources.class, cat);
         initComponents();
         initAccesibility();
         prjFolderValue.setText(suiteProps.getProjectDirectory());

@@ -43,16 +43,14 @@ import org.openide.util.NbBundle;
 final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
     
     private URL iconSource;
-    private ProjectCustomizer.Category cat;
     private BasicCustomizer.SubCategoryProvider prov;
     /**
      * Creates new form SuiteCustomizerLibraries
      */
     public SuiteCustomizerBasicBranding(final SuiteProperties suiteProps, ProjectCustomizer.Category cat, 
             BasicCustomizer.SubCategoryProvider prov) {
-        super(suiteProps, SuiteCustomizerBasicBranding.class);
+        super(suiteProps, SuiteCustomizerBasicBranding.class, cat);
         initComponents();        
-        this.cat = cat;
         this.prov = prov;
         refresh(); 
         checkValidity();
@@ -65,6 +63,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
         titleValue.getDocument().addDocumentListener(textFieldChangeListener);                
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         if (prov != null) {
@@ -79,24 +78,24 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
         boolean panelValid = true;
         
         if (panelValid && nameValue.getText().trim().length() == 0) {
-            cat.setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_EmptyName"));//NOI18N
+            category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_EmptyName"));//NOI18N
             panelValid = false;
         }
 
         if (panelValid && !nameValue.getText().trim().matches("[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*")) {//NOI18N
-            cat.setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_InvalidName"));//NOI18N
+            category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_InvalidName"));//NOI18N
             panelValid = false;
         }
         
         if (panelValid && titleValue.getText().trim().length() == 0) {
-            cat.setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_EmptyTitle"));//NOI18N
+            category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_EmptyTitle"));//NOI18N
             panelValid = false;
         }        
         
         if (panelValid) {        
-            cat.setErrorMessage(null);
+            category.setErrorMessage(null);
         }
-        cat.setValid(panelValid);
+        category.setValid(panelValid);
     }
     
     void refresh() {
@@ -329,6 +328,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
             //setBorder(border);
         }
         
+        @Override
         public void paint(Graphics g) {
             super.paint(g);
             Graphics2D g2d = (Graphics2D)g;

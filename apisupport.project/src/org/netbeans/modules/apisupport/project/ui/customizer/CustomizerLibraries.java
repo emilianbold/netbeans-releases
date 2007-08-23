@@ -40,6 +40,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -55,8 +56,8 @@ import org.openide.util.NbCollections;
 public class CustomizerLibraries extends NbPropertyPanel.Single {
     
     /** Creates new form CustomizerLibraries */
-    public CustomizerLibraries(final SingleModuleProperties props) {
-        super(props, CustomizerLibraries.class);
+    public CustomizerLibraries(final SingleModuleProperties props, ProjectCustomizer.Category category) {
+        super(props, CustomizerLibraries.class, category);
         initComponents();
         initAccessibility();
         if (!getProperties().isSuiteComponent()) {

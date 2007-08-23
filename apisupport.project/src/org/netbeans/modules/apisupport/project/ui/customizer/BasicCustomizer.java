@@ -28,6 +28,8 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Iterator;
+import javax.swing.JDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -46,7 +48,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Martin Krauskopf
  */
-abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeListener {
+abstract class BasicCustomizer implements CustomizerProvider {
     
     static final String LAST_SELECTED_PANEL = "lastSelectedPanel"; // NOI18N
     
@@ -56,7 +58,7 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
     /** Keeps reference to a dialog representing <code>this</code> customizer. */
     private Dialog dialog;
     
-    private Component lastSelectedPanel;
+    private String lastSelectedCategory;
     
     
     private String layerPath;
@@ -109,9 +111,9 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
             return;
         } else {
             Lookup context = prepareData();
-//            if (preselectedCategory == null) {
-//                preselectedCategory = findLastSelectedCategory();
-//            }
+            if (preselectedCategory == null) {
+                preselectedCategory = lastSelectedCategory;
+            }
             context = new ProxyLookup(context, Lookups.fixed(new SubCategoryProvider(preselectedCategory, preselectedSubCategory)));
             OptionListener listener = new OptionListener();
             dialog = ProjectCustomizer.createCustomizerDialog(layerPath, context, 
@@ -122,21 +124,7 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
                     ProjectUtils.getInformation(getProject()).getDisplayName()));
             dialog.setVisible(true);
         }
-        // this is thrash, replace either by checks at panel creation or category creation.
-//        // check panels validity - gives them a chance to set an error message or a warning
-//        for (Iterator it = panels.values().iterator(); it.hasNext();) {
-//            NbPropertyPanel panel = (NbPropertyPanel) it.next();
-//            panel.checkForm();
-//        }
     }
-    
- 
-//TODO this is for selecting last active panel only..    
-//    protected void listenToPanels() {
-//        for (Iterator it = panels.values().iterator(); it.hasNext(); ) {
-//            ((Component) it.next()).addPropertyChangeListener(this);
-//        }
-//    }
     
     
     public final void save() {
@@ -153,26 +141,12 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
         }
     }
     
-    /** Listens to the actions on the Customizer's option buttons */
-    public void propertyChange(PropertyChangeEvent evt) {
-        String propertyName = evt.getPropertyName();
-        if (propertyName == BasicCustomizer.LAST_SELECTED_PANEL) {
-            lastSelectedPanel = (Component) evt.getSource();
+    private String findLastSelectedCategory() {
+        if (dialog != null && dialog instanceof JDialog) {
+            return (String)((JDialog)dialog).getRootPane().getClientProperty(BasicCustomizer.LAST_SELECTED_PANEL);
         }
+        return null;
     }
-    
-//    private String findLastSelectedCategory() {
-//        String preselectedCategory = null;
-//        for (Iterator it = panels.entrySet().iterator(); it.hasNext(); ) {
-//            Map.Entry entry = (Map.Entry) it.next();
-//            Component panel = (Component) entry.getValue();
-//            if (panel == lastSelectedPanel) {
-//                preselectedCategory = ((ProjectCustomizer.Category) entry.getKey()).getName();
-//                break;
-//            }
-//        }
-//        return preselectedCategory;
-//    }
     
     protected class OptionListener extends WindowAdapter implements ActionListener {
         
@@ -182,10 +156,12 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
         }
         
         // remove dialog for this customizer's project
+        @Override
         public void windowClosed(WindowEvent e) {
             doClose();
         }
         
+        @Override
         public void windowClosing(WindowEvent e) {
             // Dispose the dialog otherwise the
             // {@link WindowAdapter#windowClosed} may not be called
@@ -194,6 +170,7 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
         
         public void doClose() {
             if (dialog != null) {
+                lastSelectedCategory = findLastSelectedCategory();
                 dialog.removeWindowListener(this);
                 dialog.setVisible(false);
                 dialog.dispose();

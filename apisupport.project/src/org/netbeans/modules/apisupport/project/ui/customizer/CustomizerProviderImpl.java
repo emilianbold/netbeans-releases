@@ -78,10 +78,9 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
     
     protected Lookup prepareData() {
         Lookup lookup = getProject().getLookup();
-        SuiteProvider sp = (SuiteProvider) lookup.lookup(SuiteProvider.class);
+        SuiteProvider sp = lookup.lookup(SuiteProvider.class);
         NbModuleProvider.NbModuleType type = Util.getModuleType((NbModuleProject) getProject());
-        moduleProps = new SingleModuleProperties(helper, evaluator, sp, type,
-                    (LocalizedBundleInfo.Provider) lookup.lookup(LocalizedBundleInfo.Provider.class));
+        moduleProps = new SingleModuleProperties(helper, evaluator, sp, type,lookup.lookup(LocalizedBundleInfo.Provider.class));
         return Lookups.fixed(moduleProps, getProject());
     }
 }

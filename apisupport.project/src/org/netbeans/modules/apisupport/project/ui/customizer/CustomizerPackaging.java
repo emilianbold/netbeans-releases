@@ -33,11 +33,9 @@ import org.openide.util.NbBundle;
  * @author Martin Krauskopf
  */
 final class CustomizerPackaging extends NbPropertyPanel.Single {
-    private ProjectCustomizer.Category cat;
     /** Creates new form CustomizerPackaging */
     CustomizerPackaging(final SingleModuleProperties props, ProjectCustomizer.Category cat) {
-        super(props, CustomizerPackaging.class);
-        this.cat = cat;
+        super(props, CustomizerPackaging.class, cat);
         initComponents();
         initAccesibility();
         refresh();
@@ -59,11 +57,11 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
     private void checkValidity() {
         File currentLicenceF = getCurrentLicenceFile();
         if (currentLicenceF != null && !currentLicenceF.isFile()) {
-            cat.setErrorMessage(NbBundle.getMessage(CustomizerPackaging.class, "MSG_LicenceFileDoesNotExist"));
-            cat.setValid(false);
+            category.setErrorMessage(NbBundle.getMessage(CustomizerPackaging.class, "MSG_LicenceFileDoesNotExist"));
+            category.setValid(false);
         } else {
-            cat.setErrorMessage(null);
-            cat.setValid(true);
+            category.setErrorMessage(null);
+            category.setValid(true);
         }
     }
     
@@ -77,6 +75,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
         }
     }
     
+    @Override
     public void store() {
         setBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART, needsRestart.isSelected());
         setProperty(SingleModuleProperties.NBM_HOMEPAGE, homePageValue.getText());

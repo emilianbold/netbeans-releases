@@ -44,7 +44,7 @@ public class CustomizerCompilingFactory implements ProjectCustomizer.CompositeCa
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         SingleModuleProperties props = context.lookup(SingleModuleProperties.class);
         assert props != null;
-        return new CustomizerCompiling(props);
+        return new CustomizerCompiling(props, category);
     }
 
 

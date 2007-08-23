@@ -44,7 +44,7 @@ public class CustomizerLibrariesFactory implements ProjectCustomizer.CompositeCa
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         SingleModuleProperties props = context.lookup(SingleModuleProperties.class);
         assert props != null;
-        return new CustomizerLibraries(props);
+        return new CustomizerLibraries(props, category);
     }
 
 

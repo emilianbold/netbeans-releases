@@ -37,16 +37,14 @@ import org.openide.util.NbBundle;
 final class CustomizerDisplay extends NbPropertyPanel.Single {
     
     private boolean noBundle;
-    private ProjectCustomizer.Category cat;
     private boolean showInPluginManagerCheckboxChanged;
     
     /** Creates new form CustomizerDisplay */
     CustomizerDisplay(final SingleModuleProperties props, ProjectCustomizer.Category cat) {
-        super(props, CustomizerDisplay.class);
+        super(props, CustomizerDisplay.class, cat);
         initComponents();
         initAccesibility();
         refresh();
-        this.cat = cat;
         checkValidity();
     }
     
@@ -70,12 +68,13 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     
     private void checkValidity() {
         if (this.noBundle) {
-            cat.setErrorMessage(getMessage("MSG_NoBundleForModule"));
+            category.setErrorMessage(getMessage("MSG_NoBundleForModule"));
         } else {
-            cat.setErrorMessage(null);
+            category.setErrorMessage(null);
         }
     }
     
+    @Override
     public void store() {
         if (!noBundle) {
             getBundle().setDisplayName(nameValue.getText());
@@ -128,10 +127,11 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     
     private String getCategory() {
         LocalizedBundleInfo bundle = getBundle();
-        String category = bundle != null ? bundle.getCategory() : null;
-        return category != null ? category : ""; // NOI18N
+        String cat = bundle != null ? bundle.getCategory() : null;
+        return cat != null ? cat : ""; // NOI18N
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         super.propertyChange(evt);
         if (SingleModuleProperties.NB_PLATFORM_PROPERTY == evt.getPropertyName()) {
@@ -155,7 +155,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
 
         name = new javax.swing.JLabel();
         nameValue = new javax.swing.JTextField();
-        category = new javax.swing.JLabel();
+        categoryLabel = new javax.swing.JLabel();
         categoryValue = new javax.swing.JComboBox();
         shortDesc = new javax.swing.JLabel();
         shortDescValue = new javax.swing.JTextField();
@@ -183,14 +183,14 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(nameValue, gridBagConstraints);
 
-        category.setLabelFor(categoryValue);
-        org.openide.awt.Mnemonics.setLocalizedText(category, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayCategory")); // NOI18N
+        categoryLabel.setLabelFor(categoryValue);
+        org.openide.awt.Mnemonics.setLocalizedText(categoryLabel, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayCategory")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
-        add(category, gridBagConstraints);
+        add(categoryLabel, gridBagConstraints);
 
         categoryValue.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -247,7 +247,6 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         add(hackPanel, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(showInPluginManagerCheckbox, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "CustomizerDisplay.showInPluginManagerCheckbox.text")); // NOI18N
-        showInPluginManagerCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         showInPluginManagerCheckbox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         showInPluginManagerCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -268,7 +267,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel category;
+    private javax.swing.JLabel categoryLabel;
     private javax.swing.JComboBox categoryValue;
     private javax.swing.JPanel hackPanel;
     private javax.swing.JLabel longDesc;

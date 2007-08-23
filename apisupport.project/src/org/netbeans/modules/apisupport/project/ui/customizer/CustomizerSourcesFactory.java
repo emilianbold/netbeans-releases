@@ -44,7 +44,7 @@ public class CustomizerSourcesFactory implements ProjectCustomizer.CompositeCate
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         SingleModuleProperties props = context.lookup(SingleModuleProperties.class);
         assert props != null;
-        return new CustomizerSources(props);
+        return new CustomizerSources(props, category);
     }
 
 

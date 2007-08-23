@@ -78,16 +78,14 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         implements Comparator<Node>, ExplorerManager.Provider, ChangeListener {
     private final ExplorerManager manager;
     private ModuleEntry[] platformModules;
-    private ProjectCustomizer.Category cat;
     static boolean TEST = false;
     
     /**
      * Creates new form SuiteCustomizerLibraries
      */
     public SuiteCustomizerLibraries(final SuiteProperties suiteProps, ProjectCustomizer.Category cat) {
-        super(suiteProps, SuiteCustomizerLibraries.class);
+        super(suiteProps, SuiteCustomizerLibraries.class, cat);
         initComponents();
-        this.cat = cat;
         initAccessibility();
         manager = new ExplorerManager();
         refresh();
@@ -146,6 +144,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         platformValue.requestFocus();
     }
     
+    @Override
     public void store() {
         Set<String> enabledClusters = new TreeSet<String>();
         Set<String> disabledModules = new TreeSet<String>();
@@ -560,6 +559,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
         }
         
+        @Override
         public boolean canWrite() {
             Node parent = node.getParentNode();
             if (parent instanceof Enabled) {
@@ -569,6 +569,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             return true;
         }
         
+        @Override
         public PropertyEditor getPropertyEditor() {
             if (editor == null) {
                 editor = super.getPropertyEditor();
@@ -630,6 +631,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             s.addAll(Arrays.asList(mm.getNeededTokens()));
             return s;
         }
+        @Override
         public String toString() {
             return getCodeNameBase();
         }
@@ -815,9 +817,9 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                     String key = warning[0];
                     String[] args = new String[warning.length - 1];
                     System.arraycopy(warning, 1, args, 0, args.length);
-                    cat.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
+                    category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerLibraries.class, key, args));
                 } else {
-                    cat.setErrorMessage(null);
+                    category.setErrorMessage(null);
                 }
             }
         });

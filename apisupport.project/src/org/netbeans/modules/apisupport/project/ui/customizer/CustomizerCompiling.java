@@ -21,6 +21,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.NbBundle;
 
 /**
@@ -30,8 +31,8 @@ import org.openide.util.NbBundle;
  */
 final class CustomizerCompiling extends NbPropertyPanel.Single {
 
-    CustomizerCompiling(final SingleModuleProperties props) {
-        super(props, CustomizerCompiling.class);
+    CustomizerCompiling(final SingleModuleProperties props, ProjectCustomizer.Category category) {
+        super(props, CustomizerCompiling.class, category);
         initComponents();
         initAccessibility();
         refresh();
@@ -45,6 +46,7 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
         options.setEnabled(platform == null || platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1); // #71631
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         super.propertyChange(evt);
         if (SingleModuleProperties.JAVAC_COMPILERARGS.equals(evt.getPropertyName())) {
@@ -56,6 +58,7 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
         }
     }
     
+    @Override
     public void store() {
         setBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEBUG, debug.isSelected());
         setBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEPRECATION, deprecation.isSelected());

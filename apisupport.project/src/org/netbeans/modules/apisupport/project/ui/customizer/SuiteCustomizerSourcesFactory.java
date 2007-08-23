@@ -44,7 +44,7 @@ public class SuiteCustomizerSourcesFactory implements ProjectCustomizer.Composit
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         SuiteProperties props = context.lookup(SuiteProperties.class);
         assert props != null;
-        return new SuiteCustomizerSources(props);
+        return new SuiteCustomizerSources(props, category);
     }
 
 }

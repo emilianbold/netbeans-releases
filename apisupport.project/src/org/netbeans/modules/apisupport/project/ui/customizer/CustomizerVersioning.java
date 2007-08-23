@@ -53,14 +53,12 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
     private boolean lastAppImplChecked;
     
     private Dimension lastSize;
-    private ProjectCustomizer.Category cat;
     BasicCustomizer.SubCategoryProvider provider;
     
     
     /** Creates new form CustomizerVersioning */
     CustomizerVersioning(SingleModuleProperties props, ProjectCustomizer.Category cat, BasicCustomizer.SubCategoryProvider prov) {
-        super(props, CustomizerVersioning.class);
-        this.cat = cat;
+        super(props, CustomizerVersioning.class, cat);
         initComponents();
         initAccesibility();
         initPublicPackageTable();
@@ -70,6 +68,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         provider = prov;
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         if (provider != null) {
@@ -144,17 +143,17 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         exportOnlyToFriend.setSelected(getFriendModel().getSize() > 0);
         // check major release version
         if (!checkMajorReleaseVersion()) {
-            cat.setErrorMessage(getMessage("MSG_MajorReleaseVersionIsInvalid")); // NOI18N
-            cat.setValid(true);
+            category.setErrorMessage(getMessage("MSG_MajorReleaseVersionIsInvalid")); // NOI18N
+            category.setValid(true);
         } else if (exportOnlyToFriend.isSelected() && getPublicPackagesModel().getSelectedPackages().length < 1) {
-            cat.setErrorMessage(getMessage("MSG_PublicPackageMustBeSelected"));
-            cat.setValid(false);
+            category.setErrorMessage(getMessage("MSG_PublicPackageMustBeSelected"));
+            category.setValid(false);
         } else if (implVerValue.getText().matches(".*[^0-9].*")) { // NOI18N
-            cat.setErrorMessage(getMessage("MSG_integer_impl_version_recommended"));
-            cat.setValid(true);
+            category.setErrorMessage(getMessage("MSG_integer_impl_version_recommended"));
+            category.setValid(true);
         } else {
-            cat.setErrorMessage(null);
-            cat.setValid(true);
+            category.setErrorMessage(null);
+            category.setValid(true);
         }
     }
     
@@ -203,6 +202,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         }
     }
     
+    @Override
     public void store() {
         getProperties().setMajorReleaseVersion(majorRelVerValue.getText().trim());
         String specVer = specificationVerValue.getText().trim();
@@ -219,6 +219,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         setBooleanProperty(SingleModuleProperties.IS_EAGER, eagerMod.isSelected());
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String pName = evt.getPropertyName();
         if (SingleModuleProperties.DEPENDENCIES_PROPERTY == pName) {

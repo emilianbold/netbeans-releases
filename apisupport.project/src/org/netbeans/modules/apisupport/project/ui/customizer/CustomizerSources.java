@@ -23,6 +23,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.NotifyDescriptor;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
@@ -36,8 +37,8 @@ final class CustomizerSources extends NbPropertyPanel.Single {
 
     private boolean srcLevelValueBeingUpdated;
     
-    CustomizerSources(final SingleModuleProperties props) {
-        super(props, CustomizerSources.class);
+    CustomizerSources(final SingleModuleProperties props, ProjectCustomizer.Category category) {
+        super(props, CustomizerSources.class, category);
         initComponents();
         initAccessibility();
         refresh();

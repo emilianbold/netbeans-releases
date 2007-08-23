@@ -43,10 +43,12 @@ abstract class NbPropertyPanel extends JPanel implements
     static final String ERROR_MESSAGE_PROPERTY = "errorMessage"; // NOI18N
     
     protected ModuleProperties props;
+    protected final ProjectCustomizer.Category category;
     
     /** Creates new NbPropertyPanel */
-    NbPropertyPanel(final ModuleProperties props, final Class helpCtxClass) {
+    NbPropertyPanel(final ModuleProperties props, final Class helpCtxClass, ProjectCustomizer.Category cat) {
         this.props = props;
+        category = cat;
         props.addLazyStorage(this);
         initComponents();
         props.addPropertyChangeListener(this);
@@ -90,15 +92,16 @@ abstract class NbPropertyPanel extends JPanel implements
     public void store() { /* empty implementation */ }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        if (ModuleProperties.PROPERTIES_REFRESHED == evt.getPropertyName()) {
+        if (ModuleProperties.PROPERTIES_REFRESHED.equals(evt.getPropertyName())) {
             refresh();
         }
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         //TODO replace with something else..
-        firePropertyChange(CustomizerProviderImpl.LAST_SELECTED_PANEL, null, this);
+        getRootPane().putClientProperty(BasicCustomizer.LAST_SELECTED_PANEL, category.getName());
     }
     
     public HelpCtx getHelpCtx() {
@@ -122,8 +125,8 @@ abstract class NbPropertyPanel extends JPanel implements
     // End of variables declaration//GEN-END:variables
     
     abstract static class Single extends NbPropertyPanel {
-        Single(final SingleModuleProperties props, final Class helpCtxClass) {
-            super(props, helpCtxClass);
+        Single(final SingleModuleProperties props, final Class helpCtxClass, ProjectCustomizer.Category cat) {
+            super(props, helpCtxClass, cat);
         }
         SingleModuleProperties getProperties() {
             return (SingleModuleProperties) props;
@@ -131,8 +134,8 @@ abstract class NbPropertyPanel extends JPanel implements
     }
     
     abstract static class Suite extends NbPropertyPanel {
-        Suite(final SuiteProperties props, final Class helpCtxClass) {
-            super(props, helpCtxClass);
+        Suite(final SuiteProperties props, final Class helpCtxClass, ProjectCustomizer.Category cat) {
+            super(props, helpCtxClass, cat);
         }
         SuiteProperties getProperties() {
             return (SuiteProperties) props;
