@@ -20,18 +20,23 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 
 import java.io.IOException;
+import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
@@ -42,27 +47,46 @@ import org.openide.util.Exceptions;
 public abstract class ComponentMethodModel extends Children.Keys<MethodModel> /*implements MDRChangeListener*/ {
     
     private final JavaSource javaSource;
+    private final String homeInterface;
     private Collection interfaces;
     private String implBean;
     
-    public ComponentMethodModel(JavaSource javaSource, String implBean, Collection interfaces) {
+    public ComponentMethodModel(JavaSource javaSource, String implBean, Collection interfaces, String homeInterface) {
         this.javaSource = javaSource;
+        this.homeInterface = homeInterface;
         this.implBean = implBean;
         this.interfaces = interfaces;
     }
     
     private void updateKeys() {
+        final ComponentMethodViewStrategy viewStrategy = createViewStrategy();
         final List<MethodModel> keys = new ArrayList<MethodModel>();
         try {
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-                public void run(CompilationController controller) throws IOException {
+                public void run(final CompilationController controller) throws IOException {
                     Elements elements = controller.getElements();
+                    final ElementUtilities elementUtilities = controller.getElementUtilities();
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     for (String className : getInterfaces()) {
                         TypeElement intf = elements.getTypeElement(className);
-                        if (intf != null) {
-                            for (ExecutableElement method : ElementFilter.methodsIn(intf.getEnclosedElements())) {
-                                MethodModel methodModel = MethodModelSupport.createMethodModel(controller, method);
+                        
+                        // from home interface we want only direct methods
+                        if (className.equals(homeInterface)) {
+                            for (ExecutableElement executableElement : ElementFilter.methodsIn(intf.getEnclosedElements())) {
+                                MethodModel methodModel = MethodModelSupport.createMethodModel(controller, executableElement);
+                                keys.add(methodModel);
+                            }
+                        } else {
+                            Iterable<? extends Element> methods = elementUtilities.getMembers(intf.asType(), new ElementAcceptor() {
+                                public boolean accept(Element e, TypeMirror type) {
+                                    TypeElement parent = elementUtilities.enclosingTypeElement(e);
+                                    boolean isInInterface = ElementKind.INTERFACE == parent.getKind();
+                                    boolean isFromJavaxEjb = parent.getQualifiedName().toString().startsWith("javax.ejb."); // NOI18N
+                                    return isInInterface && !isFromJavaxEjb && ElementKind.METHOD == e.getKind();
+                                }
+                            });
+                            for (Element method : methods) {
+                                MethodModel methodModel = MethodModelSupport.createMethodModel(controller, (ExecutableElement) method);
                                 keys.add(methodModel);
                             }
                         }

@@ -482,11 +482,11 @@ public abstract class AbstractMethodController extends EjbMethodController {
         return local;
     }
     
-    protected String getLocalHome() {
+    public String getLocalHome() {
         return localHome;
     }
     
-    protected String getHome() {
+    public String getHome() {
         return remoteHome;
     }
     

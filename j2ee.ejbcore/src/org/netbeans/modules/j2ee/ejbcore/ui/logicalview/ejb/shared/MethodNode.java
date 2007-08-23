@@ -28,14 +28,20 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.Utilities;
 import java.util.Collection;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
@@ -140,28 +146,12 @@ public class MethodNode extends AbstractNode implements /*MDRChangeListener,*/ O
         return SystemAction.get(OpenAction.class);
     }
     
-    private void refreshImplBean() {
-        // TODO: need this refresh? if so, how to ensure with JMI?
-//        ClassElement ce = implBeanSrc.getClass(className);
-//        if (ce != null) {
-//            implBean = ce;
-//        }
-    }
-    
     //implementation of OpenCookie
     public void open() {
-        refreshImplBean();
-        OpenCookie cookie = cmvs.getOpenCookie(method, implBean, implBeanFO, interfaces);
-        if(cookie != null){
-            cookie.open();
-//            Method methodInImplBean = JMIUtils.findInClass(method, implBean);
-//            JMIUtils.openInEditor(methodInImplBean == null ? method : methodInImplBean); // try to open in impl bean, otherwise in intf
-        }
+        cmvs.openMethod(method, implBean, implBeanFO, interfaces);
     }
 
     private boolean isEntityBeanMethod() throws IOException {
-        
-        refreshImplBean();
         
         final boolean[] result = new boolean[] { false };
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {

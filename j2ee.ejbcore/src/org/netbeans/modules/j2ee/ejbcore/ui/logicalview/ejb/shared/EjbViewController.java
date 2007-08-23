@@ -163,7 +163,11 @@ public final class EjbViewController {
     }
     
     public DataObject getBeanDo() {
-        FileObject src = findBeanFo();
+        return getDataObject(ejbClass);
+    }
+    
+    public DataObject getDataObject(String className) {
+        FileObject src = findFileObject(className);
         try {
             if (src != null) {
                 return DataObject.find(src);
@@ -173,10 +177,10 @@ public final class EjbViewController {
         }
         return null;
     }
-    
+
     public ElementHandle<TypeElement> getBeanClass() {
         try {
-            JavaSource javaSource = JavaSource.forFileObject(findBeanFo());
+            JavaSource javaSource = JavaSource.forFileObject(findFileObject(ejbClass));
             final List<ElementHandle<TypeElement>> result = new ArrayList<ElementHandle<TypeElement>>(1);
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController compilationController) throws IOException {
@@ -304,12 +308,12 @@ public final class EjbViewController {
         }
     }
     
-    private FileObject findBeanFo() {
+    private FileObject findFileObject(final String className) {
         FileObject beanFO = null;
         try {
-            beanFO =  ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            beanFO = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
                 public FileObject run(EjbJarMetadata metadata) throws IOException {
-                    return metadata.findResource(Utils.toResourceName(ejbClass));
+                    return metadata.findResource(Utils.toResourceName(className));
                 }
             });
         } catch (IOException ioe) {

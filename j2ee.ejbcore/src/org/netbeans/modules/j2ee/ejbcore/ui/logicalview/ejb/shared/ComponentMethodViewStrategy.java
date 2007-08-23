@@ -23,7 +23,6 @@ import java.awt.Image;
 import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -66,7 +65,7 @@ public interface ComponentMethodViewStrategy {
   public void deleteImplMethod(MethodModel me, String implClass, FileObject implClassFO, Collection interfaces) throws IOException;
   
   /**
-   * Get the OpenCookie of the MethodElement in the implementation class
+   * Open MethodElement in the implementation class
    * 
    * @param me method from one of the interfaces in the collection
    * @param implClass Implementation class where the corresponding method will be opened
@@ -74,6 +73,6 @@ public interface ComponentMethodViewStrategy {
    * @param interfaces Collection of interfaces, one of which has me
    * @return The OpenCookie of the corresponding method in the implementation class implClass.
    */
-  public OpenCookie getOpenCookie(MethodModel me, String implClass, FileObject implClassFO, Collection interfaces); 
+  void openMethod(MethodModel me, String implClass, FileObject implClassFO, Collection interfaces); 
   
 }

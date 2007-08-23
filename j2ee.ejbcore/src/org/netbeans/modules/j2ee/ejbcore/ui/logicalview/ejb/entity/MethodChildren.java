@@ -21,10 +21,20 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
 
 import java.awt.Image;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.j2ee.common.DDEditorNavigator;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
@@ -36,6 +46,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -53,7 +64,7 @@ public class MethodChildren extends ComponentMethodModel {
     private final Entity entity;
     
     public MethodChildren(JavaSource javaSource, EntityMethodController smc, Entity model, Collection interfaces, boolean local, FileObject ddFile) {
-        super(javaSource, smc.getBeanClass(), interfaces);
+        super(javaSource, smc.getBeanClass(), interfaces, local ? smc.getLocalHome() : smc.getHome());
         controller = smc;
         this.local = local;
         this.ddFile = ddFile;
@@ -93,46 +104,46 @@ public class MethodChildren extends ComponentMethodModel {
             return Utilities.loadImage(iv.getIconUrl(controller.getMethodTypeFromInterface(me)));
         }
 
-        public OpenCookie getOpenCookie(MethodModel me, String implClass, FileObject implClassFO, Collection interfaces) {
+        public void openMethod(final MethodModel me, final String implClass, FileObject implClassFO, Collection interfaces) {
             if (controller.getMethodTypeFromInterface(me).getKind() == MethodType.Kind.FINDER) {
-                return new FinderOpenCookie(me);
-            }
-            MethodModel impl = controller.getPrimaryImplementation(me);
-            // TODOL RETOUCHE OpenCookie
-//            return (OpenCookie) JMIUtils.getCookie(impl, OpenCookie.class);
-            return null;
-        }
-
-
-
-
-    }
-
-    private class FinderOpenCookie implements OpenCookie {
-        
-        private MethodModel me;
-        
-        public FinderOpenCookie(MethodModel me) {
-            this.me = me;
-        }
-        
-        public void open() {
-            try {
-                DataObject ddFileDO = DataObject.find(ddFile);
-                Object c = ddFileDO.getCookie(DDEditorNavigator.class);
-                if (c != null) {
-                    Query[] queries = entity.getQuery();
-                    for (int i = 0; i < queries.length; i++) {
-                        String methodName = queries[i].getQueryMethod().getMethodName();
-                        if (methodName.equals(me.getName())) {
-                            ((DDEditorNavigator) c).showElement(queries[i]);
+                try {
+                    DataObject ddFileDO = DataObject.find(ddFile);
+                    Object c = ddFileDO.getCookie(DDEditorNavigator.class);
+                    if (c != null) {
+                        Query[] queries = entity.getQuery();
+                        for (int i = 0; i < queries.length; i++) {
+                            String methodName = queries[i].getQueryMethod().getMethodName();
+                            if (methodName.equals(me.getName())) {
+                                ((DDEditorNavigator) c).showElement(queries[i]);
+                            }
                         }
                     }
+                } catch (DataObjectNotFoundException donf) {
+                    Exceptions.printStackTrace(donf);
                 }
-            } catch (DataObjectNotFoundException donf) {
-                // do nothing
+            }
+            final List<ElementHandle<ExecutableElement>> methodHandle = new ArrayList<ElementHandle<ExecutableElement>>();
+            try {
+                JavaSource javaSource = JavaSource.forFileObject(implClassFO);
+                javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                    public void run(CompilationController controller) throws IOException {
+                        controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        TypeElement typeElement = controller.getElements().getTypeElement(implClass);
+                        for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+                            if (MethodModelSupport.isSameMethod(controller, executableElement, me)) {
+                                methodHandle.add(ElementHandle.create(executableElement));
+                            }
+                        }
+                    }
+                }, true);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+            if (methodHandle.size() > 0) {
+                ElementOpen.open(implClassFO, methodHandle.get(0));
             }
         }
+
     }
-    
+
 }
