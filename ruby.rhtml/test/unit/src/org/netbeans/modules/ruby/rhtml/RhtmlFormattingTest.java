@@ -99,11 +99,9 @@ public class RhtmlFormattingTest extends RubyTestBase {
         bdoc.insertString(0, unformatted, null);
         f.reformat(bdoc, startPos, endPos, true);
         
-        Formatter formatter = new Formatter();
-        if (preferences == null) {
-            preferences = new IndentPrefs(2,2);
-        }
         
+        Formatter formatter = getFormatter(preferences);
+
         String htmlFormatted = bdoc.getText(0, bdoc.getLength());
         
         doc.remove(0, doc.getLength());
