@@ -30,9 +30,11 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.UIManager;
 import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.AbstractNode;
 
 /**
  * User: suchys
@@ -54,6 +56,8 @@ public class MethodCheckedTreeBeanView extends BeanTreeView implements ChangeLis
     
     public static final String rootPath = "#root"; // NOI18N
     
+    private final Node waitNode = new AbstractNode(Children.LEAF);
+    
     public MethodCheckedTreeBeanView() {
         super();
         FocusListener[] fl = tree.getFocusListeners();
@@ -74,6 +78,10 @@ public class MethodCheckedTreeBeanView extends BeanTreeView implements ChangeLis
         tree.setEditable(true);
         renderer.setContentStorage(this);
         editor.setContentStorage(this);
+    }
+    
+    public Node getWaitNode() {
+        return waitNode;
     }
     
     public void setEditable(final boolean editable) {
@@ -173,28 +181,6 @@ public class MethodCheckedTreeBeanView extends BeanTreeView implements ChangeLis
         renderer.setContentStorage(this);
         editor.setContentStorage(this);
     }
-        
-//    private void printMap(final Map<String,Object> data){
-//        System.out.println(" **** MAP *****" );
-//        final Set<String> keys = data.keySet();
-//        for ( final String key : keys ) {
-//            printPath(key);
-//            final Object elem = data.get(key);
-//            if (elem !=null)             {
-//                printPath(key);
-//            }
-//        }
-//    }
-//    
-//    public static  void printPath(final String path){
-//        System.out.print("path = ");
-//        if (path == null) {
-//            System.out.println("null");
-//            return;
-//        }
-//        System.out.println(path);
-//    }
-    
     
     private String manipulatePath(final String[] nodesPath){
         StringBuffer returnString = new StringBuffer();
@@ -223,7 +209,6 @@ public class MethodCheckedTreeBeanView extends BeanTreeView implements ChangeLis
         if (root.isLeaf() && getState(root).equals(SELECTED)){
             nodes.add(root);
         }
-        
         for (final Enumeration e = root.getChildren().nodes(); e.hasMoreElements() ;) {
             final Node n = (Node)e.nextElement();
             nodes.addAll(getSelectedMethods(n));

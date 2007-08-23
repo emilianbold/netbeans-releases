@@ -30,21 +30,17 @@ import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.end2end.ui.treeview.MethodCheckedTreeBeanView;
 import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 import org.netbeans.modules.mobility.end2end.util.Util;
-import org.netbeans.modules.mobility.end2end.util.WebServiceNodeManager;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
-import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
 import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.*;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -53,7 +49,6 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,85 +63,38 @@ import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
  */
 public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.Provider, PropertyChangeListener {
     
+    private final javax.swing.JLabel servicesLabel;
+    private final MethodCheckedTreeBeanView checkedTreeView;
+    private final Node waitNode;
+    private final transient E2EDataObject dataObject;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-    
-    protected transient E2EDataObject dataObject;
+    private final RequestProcessor.Task repaintingTask = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            updateTree();
+        }
+    });
+
+    private Configuration configuration;
+    boolean wsdl = false;
+    private FileObject serverProjectFolder;
     
     private transient ExplorerManager manager;
     private transient Node rootNode;
-    
-    private MethodCheckedTreeBeanView checkedTreeView;
-    private RequestProcessor.Task repaintingTask;
-    
-    boolean wsdl = false;
-    
-    private Configuration configuration;
-    
-    private javax.swing.JLabel servicesLabel;
-    private BeanTreeView treeView;
-    private Node waitNode;
-    private TreeUpdater updater;
-    
-    private FileObject serverProjectFolder;
-    
-    private ServicePCL servicePcl;
-    
-    public ServicesPanel() {
-        this( null, null, null );
-    }
-    
-    /** Creates new form ServicesPanel */
-    public ServicesPanel( SectionView sectionView, E2EDataObject dataObject, Configuration configuration ) {
-        super( sectionView );
         
+    /** Creates new form ServicesPanel */
+    public ServicesPanel(SectionView sectionView, E2EDataObject dataObject) {
+        super(sectionView);
         this.dataObject = dataObject;
-        this.configuration = configuration;
         initComponents();
         servicesLabel = new javax.swing.JLabel();
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        if (dataObject != null){
-            gridBagConstraints.insets = new java.awt.Insets(5, 11, 5, 0);
-        } else {
-            gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
-        }
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 5, 0);
         add(servicesLabel, gridBagConstraints);
-        
-        if( dataObject == null ){
-            generateButton.setVisible( false ); //not visible for wizard
-        } else {
-            if( dataObject.isGenerating()) //for case we are generating
-                generateButton.setEnabled( false );
-        }
-        
-        if (configuration != null){
-            create();
-        }
-    }
-    
-    private void initAccessibility() {
-        getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_ServicesPanel" ));
-        
-        if( checkedTreeView != null ) {
-            checkedTreeView.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_Services" ));
-        } else if( treeView != null ) {
-            treeView.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_Services" ));
-        }
-    }
-    
-    private void create() {
-        wsdl = Configuration.WSDLCLASS_TYPE.equals( configuration.getServiceType());
-        Mnemonics.setLocalizedText(servicesLabel,
-                !wsdl ? NbBundle.getMessage( ServicesPanel.class, "LBL_Methods" ) :
-                    NbBundle.getMessage( ServicesPanel.class, "LBL_Operations" ));
-        
-        if( checkedTreeView != null ){
-            remove( checkedTreeView );
-            checkedTreeView = null;
-        }
-        final GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 1;
@@ -154,33 +102,48 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        if( dataObject != null ) { //different borders for wizard and panel
-            gridBagConstraints.insets = new java.awt.Insets( 5, 12, 5, 12 );
+        if (dataObject != null){
+            gridBagConstraints.insets = new java.awt.Insets( 5, 10, 5, 0 );
+        } else {
+            gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         }
         
-        treeView = new BeanTreeView();
-        treeView.setBorder( new LineBorder( Color.BLACK, 1, true ));
-        add( treeView, gridBagConstraints );
+        checkedTreeView = new MethodCheckedTreeBeanView();
+        waitNode = checkedTreeView.getWaitNode();
+        checkedTreeView.setPopupAllowed( false );
+        checkedTreeView.setDefaultActionAllowed( false );
+        checkedTreeView.setBorder( new LineBorder( Color.BLACK, 1, true ));
+        checkedTreeView.setRootVisible(true);
+        getExplorerManager().setRootContext(waitNode);
+        add( checkedTreeView, gridBagConstraints );
         
-        servicesLabel.setLabelFor( treeView );
+        servicesLabel.setLabelFor( checkedTreeView );
+
+        getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_ServicesPanel" ));
+        checkedTreeView.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_Services" ));
         
-        waitNode = new WaitNode();
-        waitNode.setDisplayName( !wsdl ?
-            NbBundle.getMessage( ServicesPanel.class, "MSG_WaitComputingMethods" ) :
-            NbBundle.getMessage( ServicesPanel.class, "MSG_WaitComputingWebServices" ));
-        getExplorerManager().setRootContext( waitNode );
-        
-        updater = new TreeUpdater();
-        repaintingTask = RequestProcessor.getDefault().create( updater );
-        
-        initAccessibility();
+        if( dataObject == null ){
+            generateButton.setVisible(false); //not visible for wizard
+        } else {
+            if( dataObject.isGenerating()) generateButton.setEnabled( false ); //for case we are generating
+            checkedTreeView.addChangeListener( new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                   ServicesPanel.this.dataObject.setModified(true);
+                }
+            });
+            setConfiguration(dataObject.getConfiguration());
+            dataObject.addPropertyChangeListener(this);
+        }
     }
     
     public void setConfiguration( final Configuration configuration ){
         this.configuration = configuration;
-        
         if (configuration != null){
-            create();
+            wsdl = Configuration.WSDLCLASS_TYPE.equals( configuration.getServiceType());
+            Mnemonics.setLocalizedText(servicesLabel, NbBundle.getMessage(ServicesPanel.class, wsdl? "LBL_Operations" : "LBL_Methods")); //NOI18N
+            waitNode.setDisplayName(NbBundle.getMessage( ServicesPanel.class, wsdl ? "MSG_WaitComputingWebServices" : "MSG_WaitComputingMethods")); //NOI18N
+            getExplorerManager().setRootContext( waitNode );
+            repaintingTask.schedule(100);
         }
     }
     
@@ -188,22 +151,10 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         return configuration;
     }
     
-    public void addNotify() {
-        super.addNotify();
-        if ( dataObject != null ){
-            dataObject.addPropertyChangeListener(this);
-        }
-        repaintingTask.schedule( 100 );
-    }
-    
     public void removeNotify(){
-        if (repaintingTask != null){
-            repaintingTask.cancel();
-        }
+        if (repaintingTask != null) repaintingTask.cancel();
         getExplorerManager().removePropertyChangeListener(this);
-        if ( dataObject != null ){
-            dataObject.removePropertyChangeListener(this);
-        }
+        if (dataObject != null) dataObject.removePropertyChangeListener(this);
         super.removeNotify();
     }
     
@@ -211,47 +162,18 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
      * @return the manager
      */
     public ExplorerManager getExplorerManager() {
-        if( manager == null )
-            manager = new ExplorerManager();
+        if (manager == null) manager = new ExplorerManager();
         return manager;
     }
     
-    protected void updateTree() {
-//        if( JavaMetamodel.getManager().isScanInProgress()) {
-//            final Runnable update = new Runnable() {
-//                public void run() {
-//                    JavaMetamodel.getManager().waitScanFinished();
-//                    initTreeView();
-//                }
-//            };
-//            update.run();
-//        } else {
-            initTreeView();
-//        }
-    }
-    
-    protected void initTreeView() {
-        final Project serverProject = Util.getServerProject( configuration );
+    private void updateTree() {
+         final Project serverProject = Util.getServerProject( configuration );
         if( !wsdl ) {
             rootNode = ServiceNodeManager.getRootNode( serverProject );
         } else {
             final List<AbstractService> services = configuration.getServices();
-//            //assert services.length != 1; //there is problem
             final WSDLService service = (WSDLService)services.get( 0 );
-//            final WebServicesRegistryView wsrv = Lookup.getDefault().lookup(WebServicesRegistryView.class);
-//            if (servicePcl != null){
-//                wsrv.removePropertyChangeListener(servicePcl);
-//            }
-//            if (dataObject != null && wsrv != null && !wsrv.isServiceRegistered(service.getName())){
-//                if (servicePcl == null){
-//                    servicePcl = new ServicePCL();
-//                }
-//                wsrv.addPropertyChangeListener(servicePcl);
-//                rootNode = WebServiceNodeManager.getAvailableWSRootNode( serverProject, service.getFile() );
-//                waitNode.setDisplayName(NbBundle.getMessage( ServicesPanel.class, "MSG_WaitComputingWebServices"));
-//                return;
-//            }
-            
+
             final JAXWSClientView a = JAXWSClientView.getJAXWSClientView();
             rootNode = a.createJAXWSClientView( serverProject );
             for( Node nn : rootNode.getChildren().getNodes()) {
@@ -260,26 +182,20 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                     break;
             }
             if (rootNode.getChildren().getNodesCount() == 0){
-                repaintingTask = RequestProcessor.getDefault().create( updater  );
                 repaintingTask.schedule( 500 );
                 return;
             } else {
                 final List<ClassData> ports = service.getData();
-                
-                FileObject generatedClientFO = 
-                        serverProject.getProjectDirectory().getFileObject( "build/generated/wsimport/client/" );
+                FileObject generatedClientFO = serverProject.getProjectDirectory().getFileObject( "build/generated/wsimport/client/" );
                 // Add all paths to the ClasspathInfo structure
                 List<ClasspathInfo> classpaths = Collections.singletonList( ClasspathInfo.create( generatedClientFO ));
                 // Get the registry for all available classes
                 ClassDataRegistry registry = ClassDataRegistry.getRegistry( ClassDataRegistry.DEFAULT_PROFILE, classpaths );
-                
                 PortData port = null;
                 if( ports != null && ports.size() > 0 ) port = (PortData)ports.get( 0 ); // Only one port allowed
-                
                 for( Node serviceNode : rootNode.getChildren().getNodes()) {
                     for( Node portNode : serviceNode.getChildren().getNodes()) {
                         WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
-//                        String serviceFQN = wsdlPort.getJavaName();
                         if( port != null && !portNode.getName().equals( port.getName())) continue;
                         org.netbeans.modules.mobility.e2e.classdata.ClassData cd = registry.getClassData( wsdlPort.getJavaName());
                         for( Node operationNode : portNode.getChildren().getNodes()) {
@@ -291,75 +207,28 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                                     methodData = md;
                                 }
                             }
-                            if( methodData == null ) {
-                                operationNode.setValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, Boolean.FALSE );
-                            } else {
-                                operationNode.setValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, Boolean.TRUE );
-                            }
+                            operationNode.setValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, Boolean.valueOf(methodData != null));
                         }
                     }
                 }                
             }
         }
-        
+
         //remove listeners while selecting
         getExplorerManager().removePropertyChangeListener( this );
-        
-        if( treeView != null && rootNode.getChildren().getNodesCount() != 0 ) {
-            setVisible( false );
-            remove( treeView );
-        }
-        
+
         if( !wsdl && rootNode.getChildren().getNodesCount() == 0 ) {
             waitNode.setDisplayName( NbBundle.getMessage( ServicesPanel.class, "MSG_NoMethodAvailable" ));
             return;
-        }
-        
-        final GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        if( dataObject != null ) //different borders for wizard and panel
-            gridBagConstraints.insets = new java.awt.Insets( 5, 10, 5, 0 );
-        
-        checkedTreeView = new MethodCheckedTreeBeanView();
-        checkedTreeView.setPopupAllowed( false );
-        checkedTreeView.setDefaultActionAllowed( false );
-        checkedTreeView.setBorder( new LineBorder( Color.BLACK, 1, true ));
-        checkedTreeView.setRootVisible( false );
-        checkedTreeView.setRoot( rootNode );
-        getExplorerManager().setRootContext( rootNode );
-        checkedTreeView.initTreeWithAllUnselected();
-        add( checkedTreeView, gridBagConstraints );
-        setVisible( true );
-        if( configuration != null && configuration.getServices() != null ) {
+        } else {
+            checkedTreeView.setRootVisible(false);
+            checkedTreeView.setRoot(rootNode);
+            getExplorerManager().setRootContext(rootNode);
             setSelectedMethods();
         }
-        
-        servicesLabel.setLabelFor( checkedTreeView );
-        
+
         //add back after selection
         getExplorerManager().addPropertyChangeListener( this );
-        
-        checkedTreeView.addChangeListener( new ChangeListener() {
-            public void stateChanged( @SuppressWarnings( "unused" ) ChangeEvent e ) {
-                if( dataObject != null ) {
-                    ServicesPanel.this.dataObject.setModified( true );
-                }
-            }
-        });
-        
-        checkedTreeView.setEnabled( true );
-        if( dataObject != null && !dataObject.isGenerating()){
-            generateButton.setEnabled( true );
-        }
-        treeView = null;
-        
-        initAccessibility();
     }
     
     private void setSelectedMethods() {
@@ -367,8 +236,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
             final AbstractService classService = configuration.getServices().get(0);
             final List<ClassData> classes = classService.getData();
             if (classes == null) return;
-            final Error error = new Error( Error.TYPE_WARNING, Error.MISSING_VALUE_MESSAGE,
-                                    NbBundle.getMessage( ServicesPanel.class, "ERR_ServiceMethodNotFound" ), this );
+            final Error error = new Error( Error.TYPE_WARNING, Error.MISSING_VALUE_MESSAGE, NbBundle.getMessage( ServicesPanel.class, "ERR_ServiceMethodNotFound" ), this );
             for ( final ClassData classData : classes ) {
                 final String className = classData.getClassName();
                 final String pkgName = classData.getPackageName();
@@ -376,10 +244,8 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                 for ( final OperationData methodData : methods ) {
                     final String methodName = methodData.getName();
                     try {
-                        checkedTreeView.setState(
-                                NodeOp.findPath(rootNode, new String[]{pkgName, className, methodName}), true );
-                        checkedTreeView.expandNode(
-                                NodeOp.findPath(rootNode, new String[]{pkgName, className }));
+                        checkedTreeView.setState(NodeOp.findPath(rootNode, new String[]{pkgName, className, methodName}), true);
+                        checkedTreeView.expandNode(NodeOp.findPath(rootNode, new String[]{pkgName, className}));
                     } catch ( NodeNotFoundException ex) {
                         //System.err.println(" SETTING ERROR OUTPUT");
                         final SectionView sectionView = getSectionView();
@@ -391,9 +257,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                 }
             }
         } else {            
-//            //assert dataObject.getConfiguration().getServices().length == 1;
             final WSDLService wsdlService = (WSDLService)configuration.getServices().get(0); //TODO we are assuming only one service
-//            //assert services != null; //fail situation TODO how to solve?
             final String serviceName = wsdlService.getName();
             final List<ClassData> ports = wsdlService.getData();
             final Error error = new Error( Error.TYPE_WARNING, Error.MISSING_VALUE_MESSAGE,
@@ -422,7 +286,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     }
     
     public void getSelectedMethods() {
-//        //todo should distinguish between WS and classes
+//        todo should distinguish between WS and classes
         if (!wsdl) {
             final List<ClassData> classData = new ArrayList<ClassData>();
             final Node packageNodes[] = rootNode.getChildren().getNodes();
@@ -486,7 +350,6 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                             if( serviceClassInfo == null ) {
                                 continue;
                             }
-//                            final OperationData md = getMethodData( serviceClassInfo.getFqPortTypeName(), operationName );
                             WsdlOperation wsdlOp = operationNodes[k].getLookup().lookup( WsdlOperation.class );
                             final OperationData md = new OperationData( operationName );
                             md.setMethodName( wsdlOp.getJavaName());
@@ -509,24 +372,10 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                         classData.add( pd );
                     }
                 }
-//                final DataObject wsdlObj = serviceNodes[i].getLookup().lookup(DataObject.class);
-//                String fileURL = "";
-//                try {
-//                    //TODO store/read it in project relative style
-//                    fileURL = FileUtil.toFile(wsdlObj.getPrimaryFile()).toURL().toString();
-//                } catch (MalformedURLException ex) {
-//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//                }
                 final WSDLService wsdlService = (WSDLService)configuration.getServices().get(0);
-//                if (serviceClassInfo != null)
-//                    wsdlService.setType(serviceClassInfo.getFqServiceClassName());
                 wsdlService.setData( classData );
-//                wsdlService.setUrl( fileURL );
-//                wsdlService.setFile( wsdlObj.getPrimaryFile().getNameExt());
-//                final ServiceInformation si = (ServiceInformation) wsdlObj.getCookie(ServiceInformation.class);
                 wsdlService.setName( rootNode.getName());
                 wsdlService.setType( serviceNodes[i].getName());
-//                wsdlService.setName( serviceNodes[i].getDisplayName());
                 servicesData.add( wsdlService );
             }
             configuration.setServices( servicesData );
@@ -537,82 +386,32 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         try {
             final Node servicePortNode = serviceOperationNode.getParentNode();
             final Node serviceNode = servicePortNode.getParentNode();
-//            
             final Client client = serviceNode.getParentNode().getLookup().lookup( Client.class );
-//            final DataObject wsdlObj = serviceNode.getLookup().lookup(DataObject.class);
-//            
             final String servicePortName = client.getName();
-//            
-//            final ServiceInformation si = (ServiceInformation) wsdlObj.getCookie(ServiceInformation.class);
-//            final String serviceName = normalizeAgainstWsdl(serviceNode.getName(), si.getServiceNames()); //MUST BE STORED FOR LATTER USAGE
             final String serviceName = client.getName();
             final String serviceClassName = client.getName(); //here is the class name //??
-//            
             String servicePackageName = client.getPackageName();
             String servicePortTypeName = servicePortName;
-//          
-//            final ServiceInformation serviceInfo = (ServiceInformation) serviceNode.getCookie(ServiceInformation.class);
-//            if (serviceInfo != null) {
-//                servicePackageName = serviceInfo.getServicePackageName();
-//                final List<PortInformation.PortInfo> portInfoList = serviceInfo.getServicePorts(serviceName);
-//                for ( final PortInformation.PortInfo portInfo : portInfoList ) {
-//                    if(servicePortName.equals(portInfo.getPort())) {
-//                        servicePortTypeName = classFromName(portInfo.getPortType());
-//                        break;
-//                    }
-//                }
-//            }
-//            
             if( servicePackageName == null ) {
                 return null;
             }
             final String fqServiceClassName = servicePackageName + "." + serviceClassName; //NOI18N //MUST BE STORED FOR LATTER USAGE
             final String fqPortTypeName = servicePackageName + "." + servicePortTypeName; //NOI18N //MUST BE STORED FOR LATTER USAGE
-////            
             return new WSI( serviceName, fqServiceClassName, fqPortTypeName );
         } catch (NullPointerException npe) {
             ErrorManager.getDefault().notify(npe);
         }
         return null;
     }
-    
-    private static String classFromName(final String name) {
-        String result = name;
         
-        if(name.length() > 0 && !Character.isUpperCase(name.charAt(0))) {
-            final StringBuffer buf = new StringBuffer(name);
-            buf.setCharAt(0, Character.toUpperCase(name.charAt(0)));
-            result = buf.toString();
-        }
-        
-        return result;
-    }
-    private static String normalizeAgainstWsdl(final String suggestedName, final String [] serviceNames) {
-        String result = suggestedName; // default to what was passed in.
-        
-        for(int i = 0; i < serviceNames.length; i++) {
-            if(suggestedName.equalsIgnoreCase(serviceNames[i])) {
-                result = serviceNames[i];
-                break;
-            }
-        }
-        
-        return result;
-    }
-        
-    public JComponent getErrorComponent( @SuppressWarnings("unused")
-	final String errorId ) {
+    public JComponent getErrorComponent(String errorId) {
         return null;
     }
     
-    public void linkButtonPressed( @SuppressWarnings("unused")
-	final Object ddBean, @SuppressWarnings("unused")
-	final String ddProperty ) {
+    public void linkButtonPressed(Object ddBean, String ddProperty) {
     }
     
-    public void setValue( @SuppressWarnings("unused")
-	final JComponent source, @SuppressWarnings("unused")
-	final Object value ) {
+    public void setValue(JComponent source, Object value) {
     }
     
     /** This method is called from within the constructor to
@@ -717,40 +516,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         }
     }
     
-    private class TreeUpdater implements Runnable {
-        
-        TreeUpdater() {
-            //to avoid creation of accessor class
-        }
-        
-        public void run() {
-            javax.swing.SwingUtilities.invokeLater( new Runnable() {
-                public void run() {
-                    updateTree();
-                }
-            });
-        }
-    }
-    
     public void setServerProjectFolder(final FileObject serverProjectFolder) {
         this.serverProjectFolder = serverProjectFolder;
-    }
-    
-    private class ServicePCL implements PropertyChangeListener {
-        ServicePCL() {
-            //to avoid creation of accessor class
-        }
-        
-        public void propertyChange(@SuppressWarnings("unused")
-		final PropertyChangeEvent evt) {
-            updateTree();
-        }
-    }
-    
-    private static final class WaitNode extends AbstractNode {
-        
-        public WaitNode() {
-            super( Children.LEAF );
-        }
     }
 }

@@ -225,7 +225,7 @@ public class ClassDataRegistry {
             try {
                 // Traverse the tree of classes
                 TraversingTask tt = new TraversingTask( profileProvider, cpi );
-                JavaSource.create( cpi ).runWhenScanFinished( tt, false );
+                JavaSource.create( cpi ).runWhenScanFinished( tt, false ).get();
 
                 for ( ClassData cd : typeMap.values()) {
                     if (cd.getSerializer()!=null)

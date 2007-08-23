@@ -75,7 +75,7 @@ public class MethodCheckedNodeRenderer implements TreeCellRenderer {
         final Node node = Visualizer.findNode(value);
         /* sigal */
         
-        if (node != null){
+        if (node != null && storage != null && !node.equals(storage.getWaitNode())){
             customRenderer.setText(node.getDisplayName());
             // System.out.println("node = " + node.getDisplayName() );
             customRenderer.setEnabled(tree.isEnabled());
@@ -135,7 +135,7 @@ public class MethodCheckedNodeRenderer implements TreeCellRenderer {
             jPanel1.add(jPanel2, Boolean.FALSE.toString());
             jLabel1 = new JLabel();
             //todo badges around icons !!!
-            setLayout(new BorderLayout(5, 0));
+            setLayout(new BorderLayout(5,0));
             add(jPanel1, BorderLayout.WEST);
             add(jLabel1, BorderLayout.CENTER);
         }

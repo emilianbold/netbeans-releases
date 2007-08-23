@@ -53,7 +53,7 @@ public class ServiceSelectionPanel implements TemplateWizard.Panel, ChangeListen
     
     public java.awt.Component getComponent() {
         if( gui == null ) {
-            gui = new ServicesPanel();
+            gui = new ServicesPanel(null, null);
             //gui.setName( NbBundle.getMessage( WebApplicationPanel.class, "TITLE_serviceSelectionStep" ));
             gui.addChangeListener(this);
         }

@@ -55,19 +55,14 @@ public class ClientViewFactory implements InnerPanelFactory {
     
     public SectionInnerPanel createInnerPanel( final Object key ) {
         final String keyName = (String)key;
-        if( PROP_PANEL_SERVICES.equals( keyName )) {
-            if( servicesPanel == null ) {
-                servicesPanel = new ServicesPanel((SectionView)editor.getContentView(),
-                        dataObject, dataObject.getConfiguration());
-            }
+        if (PROP_PANEL_SERVICES.equals(keyName)) {
+            if (servicesPanel == null) servicesPanel = new ServicesPanel((SectionView)editor.getContentView(), dataObject);
             return servicesPanel;
-        } else if( PROP_PANEL_CLIENT_GENERAL.equals( keyName )) {
-            if( clientGeneralInfoPanel == null )
-                clientGeneralInfoPanel = new ClientGeneralInfoPanel((SectionView)editor.getContentView(), dataObject );
+        } else if(PROP_PANEL_CLIENT_GENERAL.equals(keyName)) {
+            if (clientGeneralInfoPanel == null ) clientGeneralInfoPanel = new ClientGeneralInfoPanel((SectionView)editor.getContentView(), dataObject );
             return clientGeneralInfoPanel;
-        } else if( PROP_PANEL_CLIENT_OPTIONS.equals( keyName )) {
-            if( clientOptionsPanel == null )
-                clientOptionsPanel = new ClientOptionsPanel((SectionView)editor.getContentView(), dataObject );
+        } else if( PROP_PANEL_CLIENT_OPTIONS.equals(keyName)) {
+            if (clientOptionsPanel == null) clientOptionsPanel = new ClientOptionsPanel((SectionView)editor.getContentView(), dataObject );
             return clientOptionsPanel;
         }
         return null;
