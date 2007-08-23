@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.netbeans.modules.websvc.wsitconf.util.TestCatalogModel;
 import org.netbeans.modules.xml.retriever.catalog.impl.CatalogFileWrapperDOMImpl;
 import org.netbeans.modules.xml.retriever.catalog.impl.CatalogWriteModelImpl;
 import org.netbeans.modules.xml.schema.model.SchemaModel;

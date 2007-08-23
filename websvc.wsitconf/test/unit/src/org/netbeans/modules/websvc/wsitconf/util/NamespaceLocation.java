@@ -64,10 +64,10 @@ public enum NamespaceLocation {
     public void refreshResourceFile() throws Exception {
         if (getResourceFile().exists()) {
             ModelSource source = TestCatalogModel.getDefault().getModelSource(getLocationURI());
-            DataObject dobj = (DataObject) source.getLookup().lookup(DataObject.class);
-            SaveCookie save = (SaveCookie) dobj.getCookie(SaveCookie.class);
+            DataObject dobj = source.getLookup().lookup(DataObject.class);
+            SaveCookie save = dobj.getCookie(SaveCookie.class);
             if (save != null) save.save();
-            FileObject fo = (FileObject) source.getLookup().lookup(FileObject.class);
+            FileObject fo = source.getLookup().lookup(FileObject.class);
             fo.delete();
         }
         TestUtil.copyResource(getResourcePath(), FileUtil.toFileObject(getSchemaTestTempDir().getCanonicalFile()));
