@@ -3795,7 +3795,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 int blockPos = (int)sourcePositions.getStartPosition(root, tree);
                 String blockText = controller.getText().substring(blockPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
                 final SourcePositions[] sp = new SourcePositions[1];
-                final BlockTree block = (BlockTree)(((BlockTree)tree).isStatic() ? tu.parseStaticBlock(blockText, sp) : tu.parseStatement(blockText, sp));
+                final StatementTree block = (((BlockTree)tree).isStatic() ? tu.parseStaticBlock(blockText, sp) : tu.parseStatement(blockText, sp));
                 if (block == null)
                     return null;
                 sourcePositions = new SourcePositionsImpl(block, sourcePositions, sp[0], blockPos, upToOffset ? offset : -1);
