@@ -43,8 +43,6 @@ import org.openide.windows.TopComponent;
  * @author Tor Norbye
  */
 public class GotoActionView extends AbstractAction {
-    private static final String[] RUBY_VIEW_EXTS = { "mab", "rjs", "haml" }; // NOI18N
-    
     public GotoActionView() {
         super(NbBundle.getMessage(GotoActionView.class, "rails-goto-action-view")); // NOI18N
         putValue("PopupMenuText", // NOI18N
@@ -88,14 +86,16 @@ public class GotoActionView extends AbstractAction {
             } else {
                 String ext = fo.getExt();
                 if (!(ext.equals("rb"))) {
-                    for (String e : RUBY_VIEW_EXTS) {
-                        if (ext.equals(e)) {
+                    for (String e : RubyUtils.RUBY_VIEW_EXTS) {
+                        if (ext.equalsIgnoreCase(e)) {
                             return true;
                         }
                     }
                 }
                 return false;
             }
+        } else if ("haml".equals(fo.getExt())) { // Not recognized as a Ruby file yet
+            return true;
         } else {
             return false;
         }
@@ -119,18 +119,21 @@ public class GotoActionView extends AbstractAction {
             } else if (fo.getName().endsWith("_helper")) { // NOI18N
                 gotoView(target, fo, true, "_helper"); // NOI18N
             } else {
-                String ext = fo.getExt();
-                if (RubyUtils.isRhtmlFile(fo) || ext.equalsIgnoreCase("mab") || // NOI18N
-                        ext.equalsIgnoreCase("rjs") || ext.equalsIgnoreCase("haml")) { // NOI18N
-                    // It's a view
+                if (RubyUtils.isRhtmlFile(fo)) {
                     gotoAction(target, fo);
                 } else {
+                    String ext = fo.getExt();
+                    for (String e : RubyUtils.RUBY_VIEW_EXTS) {
+                        if (ext.equalsIgnoreCase(e)) {
+                            gotoAction(target, fo);
+                            return;
+                        }
+                    }
+
                     Utilities.setStatusBoldText(target,
                             NbBundle.getMessage(GotoActionView.class, "AppliesToControllers"));
                 }
             }
-
-            return;
         }
     }
 
@@ -174,8 +177,15 @@ public class GotoActionView extends AbstractAction {
     private void gotoAction(JTextComponent target, FileObject file) {
         // This should be a view.
         String ext = file.getExt();
-        if (!RubyUtils.isRhtmlFile(file) && !ext.equalsIgnoreCase("mab") && // NOI18N
-                !ext.equalsIgnoreCase("rjs") && !ext.equalsIgnoreCase("haml")) { // NOI18N
+        boolean found = false;
+        for (String e : RubyUtils.RUBY_VIEW_EXTS) {
+            if (ext.equalsIgnoreCase(e)) {
+                found = true;
+                break;
+            }
+        }
+        
+        if (!RubyUtils.isRhtmlFile(file) && !found) {
             Utilities.setStatusBoldText(target, NbBundle.getMessage(GotoActionView.class, "AppliesToViews"));
 
             return;
