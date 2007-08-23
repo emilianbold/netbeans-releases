@@ -21,17 +21,21 @@
 package org.netbeans.modules.compapp.projects.jbi.ui.wizards;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import org.netbeans.modules.compapp.projects.jbi.ui.FoldersListSettings;
 
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
 
@@ -157,16 +161,68 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
-        if (projectNameTextField.getText().length() == 0) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName")); // NOI18N
+        if (projectNameTextField.getText().length() == 0 
+                || projectNameTextField.getText().indexOf('/')  > 0    //NOI18N
+                || projectNameTextField.getText().indexOf('\\') > 0    //NOI18N
+                || projectNameTextField.getText().indexOf(':')  > 0) { //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+                    NbBundle.getMessage(PanelProjectLocationVisual.class,
+                    "MSG_IllegalProjectName")); // NOI18N
             return false; // Display name not specified
         }
         
-        File destFolder = new File(createdFolderTextField.getText());
-        File[] children = destFolder.listFiles();
-        if (destFolder.exists() && children != null && children.length > 0) {
+        File f = new File (projectLocationTextField.getText()).getAbsoluteFile();
+        if (getCanonicalFile(f)==null) {
+            String message = NbBundle.getMessage(
+                    PanelProjectLocationVisual.class,
+                    "MSG_IllegalProjectLocation"); // NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            return false;
+        }
+        // not allow to create project on unix root folder, see #82339
+        File cfl = getCanonicalFile(new File(createdFolderTextField.getText()));
+        if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
+            String message = NbBundle.getMessage(
+                    PanelProjectLocationVisual.class,
+                    "MSG_ProjectInRootNotSupported"); // NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            return false;
+        }
+        
+        final File destFolder = new File(createdFolderTextField.getText() ).getAbsoluteFile();
+        if (getCanonicalFile (destFolder) == null) {
+            String message = NbBundle.getMessage(
+                    PanelProjectLocationVisual.class,
+                    "MSG_IllegalProjectLocation"); // NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            return false;
+        }
+
+        File projLoc = FileUtil.normalizeFile(destFolder);
+        while (projLoc != null && !projLoc.exists()) {
+            projLoc = projLoc.getParentFile();
+        }
+        if (projLoc == null || !projLoc.canWrite()) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+                    NbBundle.getMessage(PanelProjectLocationVisual.class, 
+                    "MSG_ProjectFolderReadOnly")); // NOI18N
+            return false;
+        }
+        
+        if (FileUtil.toFileObject(projLoc) == null) {
+            String message = NbBundle.getMessage(
+                    PanelProjectLocationVisual.class,
+                    "MSG_IllegalProjectLocation"); // NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            return false;
+        }
+        
+        File[] kids = destFolder.listFiles();
+        if (destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectFolderExists")); // NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+                    NbBundle.getMessage(PanelProjectLocationVisual.class,
+                    "MSG_ProjectFolderExists")); // NOI18N
             return false;
         }
                 
@@ -249,9 +305,21 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     /** Handles changes in the project name and project directory
      */
     private void updateTexts(DocumentEvent e) {
-        createdFolderTextField.setText(getCreatedFolderPath());
-
-        panel.fireChangeEvent(); // Notify that the panel changed
+        Document doc = e.getDocument();
+        if (doc == projectNameTextField.getDocument() || 
+                doc == projectLocationTextField.getDocument()) {
+            // Change in the project name
+            String projectName = projectNameTextField.getText();
+            String projectFolder = projectLocationTextField.getText();
+            String projFolderPath = 
+                    FileUtil.normalizeFile(new File(projectFolder)).getAbsolutePath();
+            if (projFolderPath.endsWith(File.separator)) {
+                createdFolderTextField.setText(projFolderPath + projectName);
+            } else {
+                createdFolderTextField.setText(projFolderPath + File.separator + projectName);
+            }
+        }                
+        panel.fireChangeEvent(); // Notify that the panel changed      
     }
     
     private String getCreatedFolderPath() {
@@ -262,6 +330,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
         return folder.toString();
     }
+    
+    static File getCanonicalFile(File file) {
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException e) {
+            return null;
+        }
+    }    
     
 }
 
