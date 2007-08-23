@@ -120,11 +120,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     private static final String CASA_WSDL_RELATIVE_LOCATION = "../jbiasa/";     // NOI18N
     private static final String JBI_SERVICE_UNITS_DIR = "jbiServiceUnits";      // NOI18N
     private static final String DUMMY_PORTTYPE_NAME = "dummyCasaPortType";      // NOI18N
-           
-    private static final String NEWLINE = System.getProperty("line.separator");
-    
-    //private static CatalogWriteModel catalogModel;
-    
+               
     private PropertyChangeSupport mSupport = new PropertyChangeSupport(this);
     
     // 01/24/07, added to support add/del SU projects
@@ -1056,25 +1052,6 @@ public class CasaWrapperModel extends CasaModelImpl {
         } else {
             return port.getBinding().get().getType().get();
         }
-//        String portType = casaPort.getPortType();
-//        if ((portType == null) || (portType.length() < 1)) {
-//            return null;
-//        }
-//        CasaPortTypes casaPortTypes = getRootComponent().getPortTypes();
-//        for (CasaLink link : casaPortTypes.getLinks()) {
-//            String href = link.getHref();
-//            try {
-//                PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
-//                //System.out.println("Got PortType: " + pt.getName());
-//                if (portType.equals(
-//                        "{" + pt.getModel().getDefinitions().getTargetNamespace() + "}" + pt.getName())) { // NOI18N
-//                    return pt;
-//                }
-//            } catch (Exception ex) {
-//                System.out.println("Failed to Fetch: " + href);
-//            }
-//        }
-//        return null;
     }
     
     public static boolean isDummyPortType(PortType portType) {
@@ -1087,8 +1064,8 @@ public class CasaWrapperModel extends CasaModelImpl {
             String href = link.getHref();
             try {
                 PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
-                //System.out.println("Got PortType: " + pt.getName());
-                if (interfaceQName.getNamespaceURI().equals( pt.getModel().getDefinitions().getTargetNamespace()) &&
+                if (interfaceQName.getNamespaceURI().equals(
+                        pt.getModel().getDefinitions().getTargetNamespace()) &&
                         interfaceQName.getLocalPart().equals(pt.getName())) {
                     return pt;
                 }
@@ -1097,36 +1074,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
         return null;
-    }
-    
-    private String getWSDLLocation(final CasaPort casaPort) {
-        CasaLink link = casaPort.getLink();
-        if (link == null) {
-            return null;
-        }
-        String linkHref = link.getHref();
-        return linkHref.substring(0, linkHref.indexOf("#xpointer")); // NOI18N
-        
-//        String portType = casaPort.getPortType();
-//        if ((portType == null) || (portType.length() < 1)) {
-//            return null;
-//        }
-//        CasaPortTypes casaPortTypes = getRootComponent().getPortTypes();
-//        for (CasaLink link : casaPortTypes.getLinks()) {
-//            String href = link.getHref();
-//            try {
-//                PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
-//                System.out.println("Got PortType: " + pt.getName());
-//                if (portType.equals(
-//                        "{" + pt.getModel().getDefinitions().getTargetNamespace() + "}" + pt.getName())) { // NOI18N
-//                    return href.substring(0, href.indexOf("#xpointer")); // NOI18N
-//                }
-//            } catch (Exception ex) {
-//                System.out.println("Failed to Fetch: " + href);
-//            }
-//        }
-//        return null;
-    }
+    }    
     
     private String getWSDLLocation(final QName interfaceQName) {
         CasaPortTypes casaPortTypes = getRootComponent().getPortTypes();
@@ -1134,8 +1082,8 @@ public class CasaWrapperModel extends CasaModelImpl {
             String href = link.getHref();
             try {
                 PortType pt = (PortType) this.getWSDLComponentFromXLinkHref(href);
-//                System.out.println("Got PortType: " + pt.getName());
-                if (interfaceQName.getNamespaceURI().equals( pt.getModel().getDefinitions().getTargetNamespace()) &&
+                if (interfaceQName.getNamespaceURI().equals( 
+                        pt.getModel().getDefinitions().getTargetNamespace()) &&
                         interfaceQName.getLocalPart().equals(pt.getName())) {
                     return href.substring(0, href.indexOf("#xpointer")); // NOI18N
                 }
@@ -2335,7 +2283,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
     } 
     
-    WSDLModel compappWSDLModel = null;
+//    WSDLModel compappWSDLModel = null;
     
     private WSDLModel getCompAppWSDLModel(boolean create) {
         // TODO: use cache?
@@ -2347,7 +2295,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         ModelSource modelSource = getModelSource();
         Lookup lookup = modelSource.getLookup();
         CatalogModel catalogModel = lookup.lookup(CatalogModel.class);
-        FileObject fo = lookup.lookup(FileObject.class);
+        FileObject casaFO = lookup.lookup(FileObject.class);
         URI uri = null;
         try {
             uri = new URI(CASA_WSDL_RELATIVE_LOCATION + compAppWSDLFileName);
@@ -2358,17 +2306,22 @@ public class CasaWrapperModel extends CasaModelImpl {
         ModelSource wsdlModelSource = null;
         
         FileObject compAppWSDLDirFO = 
-                    fo.getParent().getParent().getFileObject("jbiasa"); // NOI18N
-        File file = new File(FileUtil.toFile(compAppWSDLDirFO), compAppWSDLFileName);        
-        if (!file.exists() && create) {  
-            createEmptyCompAppWSDLFile(file);
-        }
-        
+                    casaFO.getParent().getParent().getFileObject("jbiasa"); // NOI18N
+        File compAppWSDLFile = 
+                new File(FileUtil.toFile(compAppWSDLDirFO), compAppWSDLFileName); 
         try {
-            wsdlModelSource = catalogModel.getModelSource(uri, modelSource);
+            if (!compAppWSDLFile.exists()) {
+                if (create) {
+                    createEmptyCompAppWSDLFile(compAppWSDLFile);
+                    wsdlModelSource = catalogModel.getModelSource(uri, modelSource);
+                }
+            } else {
+                wsdlModelSource = catalogModel.getModelSource(uri, modelSource);
+            }
         } catch (CatalogModelException ex) {
             ex.printStackTrace();
         }
+
         
         if (wsdlModelSource != null) {
             WSDLModel wsdlModel = WSDLModelFactory.getDefault().getModel(wsdlModelSource);
@@ -2395,7 +2348,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                 });
 //            }
              */
-            compappWSDLModel = wsdlModel;
+//            compappWSDLModel = wsdlModel;
             return wsdlModel;
         } else {
             return null;
@@ -2417,6 +2370,9 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     private void createEmptyCompAppWSDLFile(File file) {
+        
+        String NEWLINE = System.getProperty("line.separator"); // NOI18N
+        
         BufferedWriter out = null;
                 
         try {
