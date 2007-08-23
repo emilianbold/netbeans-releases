@@ -538,35 +538,7 @@ public class Utilities {
     
     
     public static FileObject getProjectCatalogFileObject(Project prj) throws IOException {
-        if(prj == null)
-            return null;
-        
-        FileObject result = null;
-        FileObject myProjectRootFileObject = prj.getProjectDirectory();
-        
-        //see if this prj has XMLCatalogProvider. If yes use it.
-        XMLCatalogProvider catProv =  (XMLCatalogProvider) prj.getLookup().
-                lookup(XMLCatalogProvider.class);
-        if(catProv != null){
-            URI caturi = catProv.getProjectWideCatalog();
-            if(caturi != null){
-                caturi = FileUtil.toFile(myProjectRootFileObject).toURI().resolve(caturi);
-                File catFile = new File(caturi);
-                if(!catFile.isFile()){
-                    catFile.createNewFile();
-                }
-                result = FileUtil.toFileObject(FileUtil.normalizeFile(catFile));
-            }
-        }
-        
-        if(result == null){
-            String fileName = CatalogWriteModel.PUBLIC_CATALOG_FILE_NAME+CatalogWriteModel.CATALOG_FILE_EXTENSION;
-            result = myProjectRootFileObject.getFileObject(fileName);
-            if(result == null){
-                result = myProjectRootFileObject.createData(fileName);
-            }
-        }
-        return result;
+        return Util.getProjectCatalogFileObject(prj, true);
     }
     
     /**

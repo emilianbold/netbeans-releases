@@ -20,24 +20,16 @@ package org.netbeans.modules.xml.retriever.catalog.impl;
 
 import java.io.IOException;
 import java.util.WeakHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.w3c.dom.ls.LSResourceResolver;
 
 /**
@@ -78,9 +70,9 @@ public class CatalogModelFactoryImpl extends CatalogWriteModelFactory{
     public CatalogModel getCatalogModel(ModelSource modelSource) throws CatalogModelException {
         if(modelSource == null)
             throw new IllegalArgumentException("modelSource arg is null.");
-        CatalogModel catalogModel = (CatalogModel) modelSource.getLookup().lookup(CatalogModel.class);
+        CatalogModel catalogModel = modelSource.getLookup().lookup(CatalogModel.class);
         if(catalogModel == null){
-            FileObject fo = (FileObject) modelSource.getLookup().lookup(FileObject.class);
+            FileObject fo = modelSource.getLookup().lookup(FileObject.class);
             if(fo == null)
                 throw new IllegalArgumentException("ModelSource must have FileObject in its lookup");
             return getCatalogModel(fo);

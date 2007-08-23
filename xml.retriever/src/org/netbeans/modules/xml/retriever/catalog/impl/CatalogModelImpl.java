@@ -84,7 +84,7 @@ public class CatalogModelImpl implements CatalogModel {
     /** Creates a new instance of CatalogModelImpl */
     public CatalogModelImpl(Project myProject) throws IOException{
         assert(myProject != null);
-        this.catalogFileObject = Utilities.getProjectCatalogFileObject(myProject);
+        this.catalogFileObject = Util.getProjectCatalogFileObject(myProject, false);
     }
     
     
