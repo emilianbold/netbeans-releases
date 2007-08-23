@@ -10,6 +10,14 @@
 	    </patternset>
 	</testset>
     </testbag>
+
+    <testbag testattribs="validation,jv" name="jUnit 4.x test bag">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="org/netbeans/test/junit4/CreateProjectTest.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
     
     <testbag testattribs="validation,full" name="Validation test bag">
 	<testset dir="qa-functional/src">
