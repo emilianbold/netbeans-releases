@@ -114,18 +114,18 @@
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="1"/>
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
-                                      <Component id="iconButtonLarge" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <EmptySpace min="85" pref="85" max="85" attributes="0"/>
+                                      <Component id="jLabel5" min="-2" max="-2" attributes="1"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
                                       <Component id="iconButtonSmall" min="-2" max="-2" attributes="1"/>
                                   </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="iconButtonLarge" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
-                              <EmptySpace pref="68" max="32767" attributes="0"/>
+                              <EmptySpace pref="66" max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="setIconButtonSmall" min="-2" max="-2" attributes="0"/>
                                   <Component id="setIconButtonLarge" min="-2" max="-2" attributes="0"/>
@@ -156,15 +156,15 @@
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="iconButtonSmall" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Component id="setIconButtonSmall" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="iconButtonSmall" min="-2" max="-2" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="setIconButtonLarge" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel10" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="iconButtonLarge" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="iconButtonLarge" min="-2" max="-2" attributes="1"/>
                       </Group>
                       <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
                   </Group>
