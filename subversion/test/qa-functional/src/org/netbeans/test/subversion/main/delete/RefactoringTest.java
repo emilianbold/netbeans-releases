@@ -18,18 +18,14 @@ import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.CommitOperator;
-import org.netbeans.test.subversion.operators.RefactoringOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.VersioningOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
@@ -134,26 +130,15 @@ public class RefactoringTest extends JellyTestCase {
             oto.waitText("Refreshing... finished.");
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             node.select();
-            node.performPopupActionNoBlock("Rename...");
+            node.performPopupActionNoBlock("Refactor|Rename...");
             NbDialogOperator dialog = new NbDialogOperator("Rename");
             JTextFieldOperator txt = new JTextFieldOperator(dialog);
             txt.setText("javaapp_ren");
-            JButtonOperator btn = new JButtonOperator(dialog, "OK");
-            btn.push();
-            //temporary changes
-            dialog = new NbDialogOperator("Rename");
-            btn = new JButtonOperator(dialog, "Refactor");
+            JButtonOperator btn = new JButtonOperator(dialog, "Refactor");
             btn.push();
             dialog.waitClosed();
             Thread.sleep(2000);
-            
-        /*RefactoringOperator ro = new RefactoringOperator();
-        ro.doRefactoring();
-        NbDialogOperator ndo = new NbDialogOperator("Refactoring");
-        ndo.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        ndo.waitClosed();
-        Thread.sleep(2000);*/
-            
+          
             vo = VersioningOperator.invoke();
             String[] expected = new String[] {"Main.java", "Main.java", "javaapp_ren"};
             String[] actual = new String[vo.tabFiles().getRowCount()];
