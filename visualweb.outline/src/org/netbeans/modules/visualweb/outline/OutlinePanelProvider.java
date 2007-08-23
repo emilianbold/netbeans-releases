@@ -31,6 +31,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -46,7 +47,7 @@ public class OutlinePanelProvider implements NavigatorPanelWithUndo {
     private Lookup.Result<DesignBean> currentContextResult;
 
     /** Listens on the retrieved <code>Lookup.Result</code>. */
-    private final LookupListener outlineLookupListener = new OutlineLookupListener();
+    private /*final*/ LookupListener outlineLookupListener;// = new OutlineLookupListener();
 
 
     /** Creates a new instance of OutlinePanel */
@@ -81,19 +82,25 @@ public class OutlinePanelProvider implements NavigatorPanelWithUndo {
 
         Collection<? extends DesignBean> designBeans = currentContextResult.allInstances();
         OutlinePanel.getDefault().setActiveBeans(designBeans.toArray(new DesignBean[designBeans.size()]));
-        currentContextResult.addLookupListener(outlineLookupListener);
+
+        // XXX Get new listener (in case there is lingering the old one).
+        outlineLookupListener = new OutlineLookupListener();
+        LookupListener weakLookupListener = WeakListeners.create(LookupListener.class, outlineLookupListener, currentContextResult);
+        currentContextResult.addLookupListener(weakLookupListener);
     }
 
     public void panelDeactivated() {
-        if (currentContextResult == null) {
-            // #105327 There seems to be panelDeactivated called while there was missing panelActivated call before.
-            info(new IllegalStateException(
-                    "Called panelDeactivated method without previous correspondent panelActiavated method call on NavigatorPanel impl, "
-                    + "navigatorPanel=" + this)); // NOI18N
-        } else {
-            currentContextResult.removeLookupListener(outlineLookupListener);
-            currentContextResult = null;
-        }
+//        if (currentContextResult == null) {
+//            // #105327 There seems to be panelDeactivated called while there was missing panelActivated call before.
+//            info(new IllegalStateException(
+//                    "Called panelDeactivated method without previous correspondent panelActiavated method call on NavigatorPanel impl, "
+//                    + "navigatorPanel=" + this)); // NOI18N
+//        } else {
+//            currentContextResult.removeLookupListener(outlineLookupListener);
+//            currentContextResult = null;
+//        }
+        // XXX Removing weak listener.
+        outlineLookupListener = null;
         
         // XXX #99299 Memory leak. Removing the tree when the panel is deactivated.
         OutlinePanel.getDefault().setActiveBeans(new DesignBean[0]);

@@ -93,7 +93,7 @@ class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Pr
     private final ExplorerManager manager = new ExplorerManager();
     private final Lookup lookup;
 
-    private final OutlineTreeView treeView = new OutlineTreeView();
+    private final OutlineTreeView treeView = new OutlineTreeView(this);
 
     private final PropertyChangeListener outlineManagerListener = new OutlineManagerListener();
 
@@ -370,6 +370,21 @@ class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Pr
     }
     
     private static class OutlineTreeView extends BeanTreeView {
+        
+        private final OutlinePanel outlinePanel;
+        public OutlineTreeView(OutlinePanel outlinePanel) {
+            this.outlinePanel = outlinePanel;
+        }
+
+        @Override
+        public String toString() {
+            ExplorerManager manager = outlinePanel.manager;
+            if (manager == null) {
+                return super.toString();
+            }
+            Node[] nodes = manager.getSelectedNodes();
+            return super.toString() + ", manager=" + manager + ", selectedNodes=" + (nodes == null ? null : Arrays.asList(nodes));
+        }
         
         public void expandNodes(Node[] nodes) {
             TreePath[] treePaths = getTreePathsForNodes(nodes);
