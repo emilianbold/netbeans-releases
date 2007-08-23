@@ -161,7 +161,7 @@ public class HgConfigFiles {
     public String getProperty(String section, String name) {
         Ini.Section inisection = getSection(hgrc, section, true);
         String value = inisection.get(name);
-        return value != null ? value : "";        
+        return value != null ? value : "";        // NOI18N 
     }
     
     private void doReload () {
@@ -184,7 +184,7 @@ public class HgConfigFiles {
         try {
             String filePath;
             if (dir != null) {
-                filePath = dir.getAbsolutePath() + File.separator + ".hg" + File.separator + iniFile;
+                filePath = dir.getAbsolutePath() + File.separator + ".hg" + File.separator + iniFile; // NOI18N 
             } else {
                 filePath =  getUserConfigPath() + iniFile;
             }
@@ -207,13 +207,13 @@ public class HgConfigFiles {
             String path = System.getProperty("user.home") ;                     // NOI18N
             return path + "/.";                                // NOI18N
         } else if (Utilities.isWindows()){
-            return WINDOWS_CONFIG_DIR + "/";
+            return WINDOWS_CONFIG_DIR + "/"; // NOI18N 
         } 
         return "";                                                              // NOI18N
     }
 
     private Ini loadFile(File dir, String fileName) {
-        String filePath = dir.getAbsolutePath() + File.separator + ".hg" + File.separator + fileName;
+        String filePath = dir.getAbsolutePath() + File.separator + ".hg" + File.separator + fileName; // NOI18N 
         File file = FileUtil.normalizeFile(new File(filePath));
         Ini system = null;
         try {            
@@ -317,11 +317,11 @@ public class HgConfigFiles {
      *
      */
     private static String getAPPDATA() {
-        String appdata = "";
+        String appdata = ""; // NOI18N
         if(Utilities.isWindows()) {
             appdata = System.getenv("APPDATA");// NOI18N
         }
-        return appdata!= null? appdata: "";
+        return appdata!= null? appdata: ""; // NOI18N
     }
 
     /**
@@ -332,7 +332,7 @@ public class HgConfigFiles {
         if(Utilities.isWindows()) {
             String globalProfile = System.getenv("ALLUSERSPROFILE");                                // NOI18N
             if(globalProfile == null || globalProfile.trim().equals("")) {                          // NOI18N
-                globalProfile = "";
+                globalProfile = "";                                                                 // NOI18N
             }
             String appdataPath = WINDOWS_USER_APPDATA;
             if(appdataPath == null || appdataPath.equals("")) {                                     // NOI18N

@@ -38,9 +38,6 @@ public class ExceptionHandler {
     public final static int EX_CANNOT_READ_COMMIT_MSG = 32;
     public final static int EX_UNABLE_EXECUTE_CMD = 64;
                  
-    public static final String HG_ABORT_READ_COMMIT_MSG = org.openide.util.NbBundle.getMessage(ExceptionHandler.class, "MSG_AbortReadCommitMsg");
-    public static final String HG_CANNOT_EXECUTE_CMD = org.openide.util.NbBundle.getMessage(ExceptionHandler.class, "MSG_UnableExecuteCmd");
-
     static final String ACTION_CANCELED_BY_USER = org.openide.util.NbBundle.getMessage(ExceptionHandler.class, "MSG_ActionCanceledByUser");
     private final HgException exception;
     private final int exceptionMask;
