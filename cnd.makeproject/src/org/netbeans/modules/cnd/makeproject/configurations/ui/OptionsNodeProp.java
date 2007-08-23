@@ -98,18 +98,18 @@ public class OptionsNodeProp extends PropertySupport {
         private PropertyEnv env;
         
         public void setAsText(String text) {
-	    String newText = ""; // NOI18N
+	    StringBuilder newText = new StringBuilder();
 	    if (delimiter.length() > 0) {
 		// Remove delimiter
 		StringTokenizer st = new StringTokenizer(text, delimiter);
 		while (st.hasMoreTokens()) {
-		    newText += st.nextToken();
+		    newText.append(st.nextToken());
 		}
 	    }
 	    else {
-		newText = text;
+		newText.append(text);
 	    }
-	    setValue(newText);
+	    setValue(newText.toString());
         }
         
         public String getAsText() {

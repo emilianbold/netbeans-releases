@@ -49,7 +49,7 @@ public class ShellRunAction extends NodeAction {
 	    enabled = false;
 	}
 	else {
-	    DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+	    DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
 	    if (dataObject instanceof ShellDataObject)
 		enabled = true;
 	    else
@@ -75,8 +75,8 @@ public class ShellRunAction extends NodeAction {
     }
 
     public void performAction(Node node) {
-	ShellExecSupport bes = (ShellExecSupport) node.getCookie(ShellExecSupport.class);
-        DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
+	ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
+        DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         
         File shellFile = FileUtil.toFile(fileObject);
@@ -94,7 +94,7 @@ public class ShellRunAction extends NodeAction {
             buildDir = buildDir.getCanonicalFile();
         }
         catch (IOException ioe) {
-            ;; // FIXUP
+            // FIXUP
         }
         // Tab Name
         String tabName = getString("RUN_LABEL", node.getName());
@@ -114,15 +114,17 @@ public class ShellRunAction extends NodeAction {
             }
         }
         
-        String argsFlat = "";
+        StringBuilder argsFlat = new StringBuilder();
         if (shellCommandAndArgs[0].length() > 0) {
             for (int i = 1; i < shellCommandAndArgs.length; i++) {
-                argsFlat += " " + shellCommandAndArgs[i]; // NOI18N
+                argsFlat.append(" "); // NOI18N
+                argsFlat.append(shellCommandAndArgs[i]);
             }
         }
-        argsFlat += shellFilePath;
+        argsFlat.append(shellFilePath);
         for (int i = 0; i < args.length; i++) {
-            argsFlat += " " + args[i]; // NOI18N
+            argsFlat.append(" "); // NOI18N
+            argsFlat.append(args[i]);
         }
        
         // Execute the makefile
@@ -131,7 +133,7 @@ public class ShellRunAction extends NodeAction {
             new NativeExecutor(
                 buildDir.getPath(),
                 shellCommand,
-                argsFlat,
+                argsFlat.toString(),
                 envp,
                 tabName,
                 "Run", // NOI18N
@@ -148,6 +150,7 @@ public class ShellRunAction extends NodeAction {
         return NbBundle.getMessage(ShellRunAction.class, key, a1);
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

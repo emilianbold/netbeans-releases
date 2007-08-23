@@ -28,7 +28,7 @@ public class ConfigurationSupport {
     }
 
     public static String removeConfName(String oldConfs, Configuration oldConf) {
-	String newConfs = ""; // NOI18N
+	StringBuilder newConfs = new StringBuilder();
 	StringTokenizer st = new StringTokenizer(oldConfs, ","); // NOI18N
 	while (st.hasMoreTokens()) {
 	    // Strip "'s
@@ -37,16 +37,16 @@ public class ConfigurationSupport {
 	    if (displayName.equals(oldConf.getDisplayName()))
 		continue;
 	    if (newConfs.length() > 0)
-		newConfs += ","; // NOI18N
-	    newConfs += displayName;
+		newConfs.append(","); // NOI18N
+	    newConfs.append(displayName);
 	}
-	return newConfs;
+	return newConfs.toString();
     }
 
     public static String renameConfName(String oldConfs, String oldDisplayName, String newDisplayName) {
 	int i = oldConfs.indexOf(oldDisplayName);
 	if (i < 0) {
-	    ;// Error FIXUP; should be there!
+	    // Error FIXUP; should be there!
 	}
 	String newConfs = oldConfs.substring(0, i) + newDisplayName + oldConfs.substring(i + oldDisplayName.length());
 	return newConfs;
@@ -55,7 +55,7 @@ public class ConfigurationSupport {
 
 
     public static String makeNameLegal(String displayName) {
-	StringBuffer tmp = new StringBuffer();
+	StringBuilder tmp = new StringBuilder();
 	for (int i = 0; i < displayName.length(); i++) {
 	    if (i == 0 && (
                 isLetterOrDigit(displayName.charAt(i)) ||
@@ -152,13 +152,13 @@ public class ConfigurationSupport {
 
     // property values
     public static String getConfsPropertyValue(Configuration[] cs) {
-	String configurationProperty = ""; // NOI18N
+	StringBuilder configurationProperty = new StringBuilder();
 	for (int i = 0; i < cs.length; i++) {
 	    if (configurationProperty.length() > 0)
-		configurationProperty += ","; // NOI18N
-	    configurationProperty += cs[i].getDisplayName();
+		configurationProperty.append(","); // NOI18N
+	    configurationProperty.append(cs[i].getDisplayName());
 	}
-	return configurationProperty;
+	return configurationProperty.toString();
     }
 
     public static String getDefaultConfPropertyValue(Configuration conf) {
@@ -166,7 +166,7 @@ public class ConfigurationSupport {
     }
 
     public static ConfigurationDescriptor getProjectDescriptor(Project project) {
-	ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+	ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
 	return pdp.getConfigurationDescriptor();
     }
 }

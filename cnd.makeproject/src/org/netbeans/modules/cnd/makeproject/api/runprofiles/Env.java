@@ -55,7 +55,7 @@ public class Env {
      * Returns the whole entry in the form of <code>name=value</code>.
      */
     public String getenvEntry(String name) {
-	String value = (String) getenv(name);
+	String value = getenv(name);
 	if (value != null)
 	    return name + "=" + value; // NOI18N
 	else
@@ -91,14 +91,14 @@ public class Env {
     public String toString() {
 	String[] envStrings = getenv();
 	boolean addSep = false;
-	String envString = ""; // NOI18N
+	StringBuilder envString = new StringBuilder();
 	for (int i = 0; i < envStrings.length; i++) {
 	    if (addSep)
-	    envString += ";"; // NOI18N
-	    envString += envStrings[i];
+	    envString.append(";"); // NOI18N
+	    envString.append(envStrings[i]);
 	    addSep = true;
 	}
-	return envString;
+	return envString.toString();
     }
     
     public String encode() {
@@ -108,7 +108,7 @@ public class Env {
     public void decode(String envlist) {
         StringTokenizer tokenizer = new StringTokenizer(envlist, " ;"); // NOI18N
         while (tokenizer.hasMoreTokens()) {
-            putenv((String)tokenizer.nextToken());
+            putenv(tokenizer.nextToken());
         }
     }
             

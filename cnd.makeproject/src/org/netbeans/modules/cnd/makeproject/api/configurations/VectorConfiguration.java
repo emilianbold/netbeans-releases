@@ -77,11 +77,11 @@ public class VectorConfiguration {
     }
 
     public String getOption(String prependOption) {
-	String option = ""; // NOI18N
+	StringBuilder option = new StringBuilder();
 	String[] values = getValueAsArray();
 	for (int i = 0; i < values.length; i++)
-	    option += prependOption + IpeUtils.escapeOddCharacters(values[i]) + " "; // NOI18N
-	return option;
+	    option.append(prependOption + IpeUtils.escapeOddCharacters(values[i]) + " "); // NOI18N
+	return option.toString();
     }
     
     // Clone and Assign

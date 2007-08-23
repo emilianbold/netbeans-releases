@@ -249,27 +249,27 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
 	set1.setDisplayName(getString("GeneralTxt"));
 	set1.setShortDescription(getString("GeneralHint"));
         // Include Dirctories
-	String inheritedValues = ""; // NOI18N
+	StringBuilder inheritedValues = new StringBuilder();
         master = (CCCCompilerConfiguration)getMaster();
 	while (master != null) {
-	    inheritedValues += master.getIncludeDirectories().getOption(""); // NOI18N
+	    inheritedValues.append(master.getIncludeDirectories().getOption("")); // NOI18N
 	    if (master.getInheritIncludes().getValue())
                 master = (CCCCompilerConfiguration)master.getMaster();
             else
                 master = null;
 	}
-	set1.put(new VectorNodeProp(getIncludeDirectories(), getInheritIncludes(), getBaseDir(), new String[] {"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
+	set1.put(new VectorNodeProp(getIncludeDirectories(), getInheritIncludes(), getBaseDir(), new String[] {"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
 	// Preprocessor Macros
-	inheritedValues = ""; // NOI18N
+	inheritedValues = new StringBuilder();
         master = (CCCCompilerConfiguration)getMaster();
 	while (master != null) {
-	    inheritedValues += master.getPreprocessorConfiguration().getValue();
+	    inheritedValues.append(master.getPreprocessorConfiguration().getValue());
 	    if (master.getInheritPreprocessor().getValue())
                 master = (CCCCompilerConfiguration)master.getMaster();
             else
                 master = null;
 	}
-	String[] texts = new String[] {getString("PreprocessorDefinitionsTxt1"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsTxt2"), getString("InheritedValuesTxt"), inheritedValues};
+	String[] texts = new String[] {getString("PreprocessorDefinitionsTxt1"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsTxt2"), getString("InheritedValuesTxt"), inheritedValues.toString()};
 	set1.put(new OptionsNodeProp(getPreprocessorConfiguration(), getInheritPreprocessor(), new PreprocessorOptions(), null, null, texts)); // NOI18N
         
         return set1;
@@ -279,15 +279,16 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
 	public String getAllOptions(BasicCompiler compiler) {
 	    CCCCompilerConfiguration master = (CCCCompilerConfiguration)getMaster();
 
-	    String options = ""; // NOI18N
+	    StringBuilder options = new StringBuilder();
 	    while (master != null) {
-		options += master.getPreprocessorConfiguration().getValue() + " "; // NOI18N
+		options.append(master.getPreprocessorConfiguration().getValue());
+                options.append(" "); // NOI18N
                 if (master.getInheritPreprocessor().getValue())
                     master = (CCCCompilerConfiguration)master.getMaster();
                 else
                     master = null;
             }
-	    return CppUtils.reformatWhitespaces(options);
+	    return CppUtils.reformatWhitespaces(options.toString());
 	}
     }
 

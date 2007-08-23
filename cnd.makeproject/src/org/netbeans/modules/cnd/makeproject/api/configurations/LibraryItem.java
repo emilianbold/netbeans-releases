@@ -217,14 +217,14 @@ public class LibraryItem {
 	}
 
 	public String getOption() {
-	    String options = ""; // NOI18N
+	    StringBuilder options = new StringBuilder();
 	    for (int i = 0; i < libs.length; i++) {
 		if (libs[i].charAt(0) != '-')
-		    options += "-l" + libs[i] + " "; // NOI18N
+		    options.append("-l" + libs[i] + " "); // NOI18N
 		else
-		    options += libs[i] + " "; // NOI18N
+		    options.append(libs[i] + " "); // NOI18N
 	    }
-	    return options;
+	    return options.toString();
 	}
 
 	public boolean canEdit() {

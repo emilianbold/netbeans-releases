@@ -53,7 +53,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Wizard to create a new Make project.
@@ -174,7 +173,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                 StringTokenizer tokenizer = new StringTokenizer(includeDirectories, ";"); // NOI18N
                 Vector includeDirectoriesVector = new Vector();
                 while (tokenizer.hasMoreTokens()) {
-                    String includeDirectory = (String)tokenizer.nextToken();
+                    String includeDirectory = tokenizer.nextToken();
                     includeDirectory = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(includeDirectory));
                     includeDirectory = FilePathAdaptor.normalize(includeDirectory);
                     includeDirectoriesVector.add(includeDirectory);
@@ -186,14 +185,14 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             String macros = (String)wiz.getProperty("macroTextField"); // NOI18N
             if (macros != null && macros.length() > 0) {
                 StringTokenizer tokenizer = new StringTokenizer(macros, "; "); // NOI18N
-                String macrosString = ""; // NOI18N
+                StringBuilder macrosString = new StringBuilder();
                 while (tokenizer.hasMoreTokens()) {
-                    macrosString += (String)tokenizer.nextToken();
+                    macrosString.append(tokenizer.nextToken());
                     if (tokenizer.hasMoreTokens())
-                        macrosString += " "; // NOI18N
+                        macrosString.append(" "); // NOI18N
                 }
-                extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macrosString);
-                extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macrosString);
+                extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macrosString.toString());
+                extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macrosString.toString());
             }
             // Add makefile and configure script to important files
             ArrayList importantItems = new ArrayList();
@@ -219,7 +218,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                     // Add arguments to configure script?
                     String configureArguments = (String)wiz.getProperty("configureArguments"); // NOI18N
                     if (configureArguments != null) {
-                        ShellExecSupport ses = (ShellExecSupport)node.getCookie(ShellExecSupport.class);
+                        ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
                         // Keep user arguments as is in args[0]
                         ses.setArguments(new String[] {configureArguments});
                     }
@@ -236,7 +235,6 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
                     }
                 }
                 catch (DataObjectNotFoundException e) {
-                    ;
                 }
             }
             Iterator importantItemsIterator = importantItems.iterator();
@@ -246,7 +244,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             MakeProjectGenerator.createProject(dirF, name, makefileName, new MakeConfiguration[] {extConf}, (Iterator)wiz.getProperty("sourceFolders"), importantItemsIterator); // NOI18N
             FileObject dir = FileUtil.toFileObject(dirF);
             resultSet.add(dir);
-            final IteratorExtension extension = (IteratorExtension)Lookup.getDefault().lookup(IteratorExtension.class);
+            final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
                 final Project p = ProjectManager.getDefault().findProject(dir);
                 if (p instanceof MakeProject) {

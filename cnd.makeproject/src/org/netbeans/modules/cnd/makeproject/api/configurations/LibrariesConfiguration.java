@@ -31,22 +31,25 @@ public class LibrariesConfiguration extends VectorConfiguration {
     }
 
     public String getOptions(MakeConfiguration conf) {
-	String options = ""; // NOI18N
+	StringBuilder options = new StringBuilder();
 	
 	LibraryItem[] items = getLibraryItemsAsArray();
 	for (int i = 0; i < items.length; i++) {
-	    options += items[i].getOption(conf) + " "; // NOI18N
+	    options.append(items[i].getOption(conf));
+            options.append(" "); // NOI18N
 	}
 
-	return options;
+	return options.toString();
     }
     // Clone and Assign
+    @Override
     public void assign(VectorConfiguration conf) {
 	// From VectorConfiguration
 	super.assign(conf);
 	// From LibrariesConfiguration
     }
 
+    @Override
     public Object clone() {
 	LibrariesConfiguration clone = new LibrariesConfiguration();
 	// From VectorConfiguration

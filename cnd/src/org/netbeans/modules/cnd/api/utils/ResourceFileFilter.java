@@ -35,16 +35,17 @@ public class ResourceFileFilter extends SourceFileFilter {
         return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_RESOURCE_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
     
+    @Override
     public String getSuffixesAsString() {
-        String ret = ""; // NOI18N
+        StringBuilder ret = new StringBuilder();
         for (int i = 0; i < getSuffixes().length; i++) {
             if (i > 0)
-                ret += " "; // NOI18N
+                ret.append(" "); // NOI18N
             if (!getSuffixes()[i].equals("Makefile") && !getSuffixes()[i].equals("makefile")) // NOI18N
-                ret += ".";  // NOI18N
-            ret += getSuffixes()[i]; // NOI18N
+                ret.append(".");  // NOI18N
+            ret.append(getSuffixes()[i]); // NOI18N
         }
-        return ret;
+        return ret.toString();
     }
     
     public String[] getSuffixes() {

@@ -22,6 +22,8 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import javax.swing.JFileChooser;
@@ -438,64 +440,64 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     
     private void additionalLibrariesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_additionalLibrariesButtonActionPerformed
         StringTokenizer tokenizer = new StringTokenizer(librariesTextField.getText(), ";"); // NOI18N
-        Vector list = new Vector();
+        List list = new ArrayList();
         while (tokenizer.hasMoreTokens()) {
-            list.add((String)tokenizer.nextToken());
+            list.add(tokenizer.nextToken());
         }
         AdditionalLibrariesListPanel panel = new AdditionalLibrariesListPanel(list.toArray());
         DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), getString("ADDITIONAL_LIBRARIES_TXT"));
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
             Vector newList = panel.getListData();
-            String includes = ""; // NOI18N
+            StringBuilder includes = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0)
-                    includes += ";"; // NOI18N
-                includes += newList.elementAt(i);
+                    includes.append(";"); // NOI18N
+                includes.append(newList.elementAt(i));
             }
-            librariesTextField.setText(includes);
+            librariesTextField.setText(includes.toString());
         }
     }//GEN-LAST:event_additionalLibrariesButtonActionPerformed
     
     private void macroEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_macroEditButtonActionPerformed
         StringTokenizer tokenizer = new StringTokenizer(macroTextField.getText(), "; "); // NOI18N
-        Vector list = new Vector();
+        List list = new ArrayList();
         while (tokenizer.hasMoreTokens()) {
-            list.add((String)tokenizer.nextToken().trim());
+            list.add(tokenizer.nextToken().trim());
         }
         MacrosListPanel panel = new MacrosListPanel(list.toArray());
         DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), "Macro Definitions"); // NOI18N
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
             Vector newList = panel.getListData();
-            String macros = ""; // NOI18N
+            StringBuilder macros = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0)
-                    macros += ";"; // NOI18N
-                macros += newList.elementAt(i);
+                    macros.append(";"); // NOI18N
+                macros.append(newList.elementAt(i));
             }
-            macroTextField.setText(macros);
+            macroTextField.setText(macros.toString());
         }
     }//GEN-LAST:event_macroEditButtonActionPerformed
     
     private void includeEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeEditButtonActionPerformed
         StringTokenizer tokenizer = new StringTokenizer(includeTextField.getText(), ";"); // NOI18N
-        Vector list = new Vector();
+        List list = new ArrayList();
         while (tokenizer.hasMoreTokens()) {
-            list.add((String)tokenizer.nextToken());
+            list.add(tokenizer.nextToken());
         }
         IncludesListPanel panel = new IncludesListPanel(list.toArray());
         DialogDescriptor dialogDescriptor = new DialogDescriptor(addOuterPanel(panel), getString("INCLUDE_DIRIRECTORIES_TXT"));
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
             Vector newList = panel.getListData();
-            String includes = ""; // NOI18N
+            StringBuilder includes = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0)
-                    includes += ";"; // NOI18N
-                includes += newList.elementAt(i);
+                    includes.append(";"); // NOI18N
+                includes.append(newList.elementAt(i));
             }
-            includeTextField.setText(includes);
+            includeTextField.setText(includes.toString());
         }
     }//GEN-LAST:event_includeEditButtonActionPerformed
     

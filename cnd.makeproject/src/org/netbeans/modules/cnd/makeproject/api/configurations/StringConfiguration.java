@@ -60,14 +60,14 @@ public class StringConfiguration {
 	    return value;
     }
     public String getValue(String delim) {
-	String ret = ""; // NOI18N
+	StringBuilder ret = new StringBuilder();
 	StringTokenizer tokenizer = new StringTokenizer(getValue());
 	while (tokenizer.hasMoreTokens()) {
-	    ret += tokenizer.nextToken();
+	    ret.append(tokenizer.nextToken());
 	    if (tokenizer.hasMoreTokens())
-		ret += delim;
+		ret.append(delim);
 	}
-	return ret;
+	return ret.toString();
     }
     public void setModified(boolean b) {
 	this.modified = b;

@@ -100,15 +100,18 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     public String getAllOptions(BasicCompiler compiler) {
         CCCompilerConfiguration master;
         
-        String options = ""; // NOI18N
-        options += getCCFlagsBasic(compiler) + " "; // NOI18N
+        StringBuilder options = new StringBuilder();
+        options.append(getCCFlagsBasic(compiler));
+        options.append(" "); // NOI18N
         master = (CCCompilerConfiguration)getMaster();
         while (master != null) {
-            options += master.getCommandLineConfiguration().getValue() + " "; // NOI18N
+            options.append(master.getCommandLineConfiguration().getValue());
+            options.append(" "); // NOI18N
             master = (CCCompilerConfiguration)master.getMaster();
         }
-        options += getAllOptions2(compiler) + " "; // NOI18N
-        return CppUtils.reformatWhitespaces(options);
+        options.append(getAllOptions2(compiler));
+        options.append(" "); // NOI18N
+        return CppUtils.reformatWhitespaces(options.toString());
     }
     
     public String getAllOptions2(BasicCompiler compiler) {
@@ -125,28 +128,28 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     }
     public String getPreprocessorOptions() {
         CCCompilerConfiguration master = (CCCompilerConfiguration)getMaster();
-        String options = getPreprocessorConfiguration().getOptions("-D") + " " ; // NOI18N
+        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().getOptions("-D") + " "); // NOI18N
         while (master != null && getInheritPreprocessor().getValue()) {
-            options += master.getPreprocessorConfiguration().getOptions("-D") + " "; // NOI18N
+            options.append(master.getPreprocessorConfiguration().getOptions("-D") + " "); // NOI18N
             if (master.getInheritPreprocessor().getValue())
                 master = (CCCompilerConfiguration)master.getMaster();
             else
                 master = null;
         }
-        return options;
+        return options.toString();
     }
     
     public String getIncludeDirectoriesOptions() {
         CCCompilerConfiguration master = (CCCompilerConfiguration)getMaster();
-        String options = getIncludeDirectories().getOption("-I") + " "; // NOI18N
+        StringBuilder options = new StringBuilder(getIncludeDirectories().getOption("-I") + " "); // NOI18N
         while (master != null && getInheritIncludes().getValue()) {
-            options += master.getIncludeDirectories().getOption("-I") + " "; // NOI18N
+            options.append(master.getIncludeDirectories().getOption("-I") + " "); // NOI18N
             if (master.getInheritIncludes().getValue())
                 master = (CCCompilerConfiguration)master.getMaster();
             else
                 master = null;
         }
-        return options;
+        return options.toString();
     } 
     
     // Sheet

@@ -95,14 +95,14 @@ public class LibrariesNodeProp extends PropertySupport {
         
         public String getAsText() {
 	    boolean addSep = false;
-	    String ret = ""; // NOI18N
+	    StringBuilder ret = new StringBuilder();
 	    for (int i = 0; i < value.size(); i++) {
 		if (addSep)
-		    ret += ", "; // NOI18N
-		ret += value.elementAt(i).toString();
+		    ret.append(", "); // NOI18N
+		ret.append(value.elementAt(i).toString());
 		addSep = true;
 	    }
-	    return ret;
+	    return ret.toString();
         }
         
         public java.awt.Component getCustomEditor() {

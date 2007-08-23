@@ -42,12 +42,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
@@ -87,10 +85,10 @@ public class ConfigurationMakefileWriter {
             String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + MakeConfiguration.MAKEFILE_IMPL; // UNIX path // NOI18N
             os = new FileOutputStream(outputFileName);
         } catch (Exception e) {
-            ; // FIXUP
+            // FIXUP
         }
         if (is == null || os == null) {
-            ; // FIXUP: ERROR
+            // FIXUP: ERROR
             return;
         }
         
@@ -101,9 +99,10 @@ public class ConfigurationMakefileWriter {
         String projectName = IpeUtils.getBaseName(projectDescriptor.getBaseDir());
         
         // Configurations
-        String configurations = ""; // NOI18N
+        StringBuilder configurations = new StringBuilder();
         for (int i = 0; i < projectDescriptor.getConfs().getConfs().length; i++) {
-            configurations += projectDescriptor.getConfs().getConfs()[i].getName() + " "; // NOI18N
+            configurations.append(projectDescriptor.getConfs().getConfs()[i].getName());
+            configurations.append(" "); // NOI18N
         }
         
         try {
@@ -114,7 +113,7 @@ public class ConfigurationMakefileWriter {
                 if (line.indexOf("<PN>") >= 0) { // NOI18N
                     line = line.replaceFirst("<PN>", projectName); // NOI18N
                 } else if (line.indexOf("<CNS>") >= 0) { // NOI18N
-                    line = line.replaceFirst("<CNS>", configurations); // NOI18N
+                    line = line.replaceFirst("<CNS>", configurations.toString()); // NOI18N
                 } else if (line.indexOf("<CN>") >= 0) { // NOI18N
                     line = line.replaceFirst("<CN>", projectDescriptor.getConfs().getConf(0).getName()); // NOI18N
                 }
@@ -135,7 +134,7 @@ public class ConfigurationMakefileWriter {
         try {
             os = new FileOutputStream(outputFileName);
         } catch (Exception e) {
-            ; // FIXUP
+            // FIXUP
         }
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
         try {
@@ -146,7 +145,7 @@ public class ConfigurationMakefileWriter {
             bw.flush();
             bw.close();
         } catch (IOException e) {
-            ; // FIXUP
+            // FIXUP
         }
     }
     
@@ -468,20 +467,21 @@ public class ConfigurationMakefileWriter {
     
     private String getObjectFiles(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf) {
         Item[] items = projectDescriptor.getProjectItems();
-        String linkObjects = ""; // NOI18N
+        StringBuilder linkObjects = new StringBuilder();
         if (conf.isCompileConfiguration()) {
             for (int x = 0; x < items.length; x++) {
                 ItemConfiguration itemConfiguration = items[x].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[x].getPath()));
-                String commandLine = ""; // NOI18N
+                //String commandLine = ""; // NOI18N
                 if (itemConfiguration.getExcluded().getValue())
                     continue;
                 if (!itemConfiguration.isCompilerToolConfiguration())
                     continue;
                 BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
-                linkObjects += " \\\n\t" + compilerConfiguration.getOutputFile(items[x].getPath(true), conf, false); // NOI18N
-                }
+                linkObjects.append(" \\\n\t"); // NOI18N
+                linkObjects.append(compilerConfiguration.getOutputFile(items[x].getPath(true), conf, false));
             }
-        return linkObjects;
+        }
+        return linkObjects.toString();
     }
     
     private boolean hasSubprojects(MakeConfiguration conf) {
