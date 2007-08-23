@@ -167,7 +167,7 @@ public final class LibraryManager {
         CsmUID<CsmProject> projectUid = project.getUID();
         LibraryEntry entry = librariesEntries.get(folder);
         if (entry == null) {
-            entry = getOrCreateLibrary((ModelImpl)project.getModel(), folder);
+            entry = getOrCreateLibrary(project.getModel(), folder);
         }
         if (!entry.containsProject(projectUid)){
             entry.addProject(projectUid);
@@ -180,18 +180,16 @@ public final class LibraryManager {
         LibraryEntry entry = librariesEntries.get(includeFolder);
         if (entry == null) {
             boolean needFire = false;
-            LibProjectImpl library = null;
             synchronized (lock) {
                 entry = librariesEntries.get(includeFolder);
                 if( entry == null ) {
-                    library = LibProjectImpl.createInstance(model, includeFolder);
-                    entry = new LibraryEntry(includeFolder, library.getUID());
+                    entry = new LibraryEntry(includeFolder);
                     librariesEntries.put(includeFolder, entry);
                     needFire = true;
                 }
             }
             if (needFire){
-                model.fireProjectOpened(library);
+                model.fireProjectOpened((ProjectBase)entry.getLibrary().getObject());
             }
         }
         return entry;
@@ -256,18 +254,28 @@ public final class LibraryManager {
     
     private static class LibraryEntry {
         private String folder;
-        private CsmUID<CsmProject> library;
+        private CsmUID<CsmProject> libraryUID;
         private Set<CsmUID<CsmProject>> dependentProjects;
-        private LibraryEntry(String folder, CsmUID<CsmProject> library){
+
+        private LibraryEntry(String folder){
             this.folder = folder;
-            this.library = library;
             dependentProjects = Collections.synchronizedSet(new HashSet<CsmUID<CsmProject>>());
         }
         private String getFolder(){
             return folder;
         }
-        private CsmUID<CsmProject>getLibrary(){
-            return library;
+        private CsmUID<CsmProject> getLibrary(){
+            if (libraryUID == null){
+                createUID();
+            }
+            return libraryUID;
+        }
+        private synchronized void createUID(){
+            if (libraryUID == null){
+                ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
+                LibProjectImpl library = LibProjectImpl.createInstance(model, folder);
+                libraryUID = library.getUID();
+            }
         }
         private boolean isEmpty(){
             return dependentProjects.size() == 0;
