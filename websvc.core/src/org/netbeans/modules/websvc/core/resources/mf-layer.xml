@@ -221,7 +221,7 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance">
-                    <attr name="position" intvalue="500"/>
+                    <attr name="position" intvalue="260"/>
                 </file>
             </folder>
         </folder>
@@ -241,7 +241,7 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance">
-                    <attr name="position" intvalue="150"/>
+                    <attr name="position" intvalue="155"/>
                 </file>
             </folder>
         </folder>

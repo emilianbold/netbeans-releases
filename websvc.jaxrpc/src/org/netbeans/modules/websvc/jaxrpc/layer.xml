@@ -19,7 +19,7 @@
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcNodeFactory.instance">
-                    <attr name="position" intvalue="400"/>
+                    <attr name="position" intvalue="230"/>
                 </file>
             </folder>
             <folder name="Customizer">
@@ -32,7 +32,7 @@
         <folder name="org-netbeans-modules-web-project">
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcNodeFactory.instance">
-                    <attr name="position" intvalue="630"/>
+                    <attr name="position" intvalue="430"/>
                 </file>
                 <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance">
                     <attr name="position" intvalue="300"/>
@@ -42,7 +42,7 @@
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance">
-                    <attr name="position" intvalue="155"/>
+                    <attr name="position" intvalue="150"/>
                 </file>
             </folder>
         </folder>
