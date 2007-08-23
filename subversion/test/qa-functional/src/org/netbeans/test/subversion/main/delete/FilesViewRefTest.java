@@ -86,8 +86,6 @@ public class FilesViewRefTest extends JellyTestCase {
     }
 
     public void testFilesViewRefactoring() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
         try {
             TestKit.closeProject(PROJECT_NAME);
             OutputOperator.invoke();
@@ -132,20 +130,49 @@ public class FilesViewRefTest extends JellyTestCase {
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             oto.clear();
             TestKit.createNewPackage(PROJECT_NAME, "a.b.c");
-//            TestKit.createNewElement(PROJECT_NAME, "a.b.c", "NewClass");
+            TestKit.createNewElement(PROJECT_NAME, "a", "AClass");
+            TestKit.createNewElement(PROJECT_NAME, "a.b", "BClass");
+            TestKit.createNewElement(PROJECT_NAME, "a.b.c", "CClass");
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
+            node = new Node(new FilesTabOperator().tree(), PROJECT_NAME);
+            node.performPopupActionNoBlock("Subversion|Show Changes");
             CommitOperator cmo = CommitOperator.invoke(node);
             cmo.commit();
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME + "|src|a");
             node.performPopupActionNoBlock("Cut");
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME + "|src|javaapp");
-            node.performPopupActionNoBlock("Paste");
-//            NbDialogOperator dialog = new NbDialogOperator("Move Classes");
+//            node.performPopupActionNoBlock("Paste");
+            node.performPopupActionNoBlock("Paste|Refactor Move");
 
+            nbdialog = new NbDialogOperator("Move Classes");
+            JButtonOperator refBut = new JButtonOperator(nbdialog, "Refactor");
+            refBut.push();
+            Thread.sleep(1000);
+            node = new Node(new FilesTabOperator().tree(), PROJECT_NAME);
+            node.performPopupActionNoBlock("Subversion|Show Changes");
+            vo = VersioningOperator.invoke();
+            String[] expected = new String[]{"AClass.java", "BClass.java", "CClass.java", "a", "AClass.java", "b", "BClass.java", "c", "CClass.java"};
+            String[] actual = new String[vo.tabFiles().getRowCount()];
+            for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
+                actual[i] = vo.tabFiles().getValueAt(i, 0).toString().trim();
+            }
+//            for (int idx = 0; idx < vo.tabFiles().getRowCount(); idx++) {
+//                System.out.println(actual[idx]);
+//                System.out.println(expected[idx]);
+//            }
+            int result = TestKit.compareThem(expected, actual, false);
+            assertEquals("Wrong files in Versioning View", expected.length, result);
+            expected = new String[]{"Locally Deleted", "Locally Deleted", "Locally Deleted", "Locally New", "Locally Copied", "Locally New", "Locally Copied", "Locally New", "Locally Copied"};
+            actual = new String[vo.tabFiles().getRowCount()];
+            for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
+                actual[i] = vo.tabFiles().getValueAt(i, 1).toString().trim();
+            }
+            result = TestKit.compareThem(expected, actual, false);
+            assertEquals("Wrong status in Versioning View", expected.length, result);
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {
-//            TestKit.closeProject(PROJECT_NAME);
+            TestKit.closeProject(PROJECT_NAME);
         }
     }
 }
