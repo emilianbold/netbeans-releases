@@ -30,3 +30,4 @@ ant -f nbbuild/build.xml -Dtest.dir=`pwd`/core/test commit-validation-junit-form
 ant -f $mydir/build-update-descriptor.xml || exit
 ant -f nbbuild/build.xml -Djnlp.codebase=http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp || exit
 ant -f nbbuild/build.xml index-layer-paths
+ant -f nbbuild/build.xml clean-untracked-files
