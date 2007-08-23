@@ -151,6 +151,7 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
     // FAILS
     
     public static class Failed extends CompletionBaseTestCase {
+        @Override
         protected Class getTestCaseDataClass() {
             return InheritanceTestCase.class;
         }

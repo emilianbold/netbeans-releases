@@ -57,6 +57,7 @@ public class EnumTestCase extends CompletionBaseTestCase {
     // FAILS
     
     public static class Failed extends CompletionBaseTestCase {
+        @Override
         protected Class getTestCaseDataClass() {
             return EnumTestCase.class;
         }
