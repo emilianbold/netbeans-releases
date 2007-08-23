@@ -364,6 +364,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         boundComponentList = new javax.swing.JList();
         viewSourceButton = new javax.swing.JButton();
 
+        newActionButton.setMnemonic('1');
         newActionButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.newActionButton.text")); // NOI18N
         newActionButton.setEnabled(false);
         newActionButton.addActionListener(new java.awt.event.ActionListener() {
@@ -372,6 +373,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             }
         });
 
+        editActionButton.setMnemonic('1');
         editActionButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.editActionButton.text")); // NOI18N
         editActionButton.setEnabled(false);
         editActionButton.addActionListener(new java.awt.event.ActionListener() {
@@ -381,6 +383,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         });
 
         deleteActionButton.setAction(getDeleteAction());
+        deleteActionButton.setMnemonic('1');
         deleteActionButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.deleteActionButton.text")); // NOI18N
         deleteActionButton.setEnabled(false);
 
@@ -402,6 +405,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             }
         });
 
+        jLabel2.setLabelFor(filterTextfield);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.jLabel2.text")); // NOI18N
 
         filterTextfield.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.filterTextfield.text")); // NOI18N
@@ -424,6 +428,8 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             }
         ));
         scrollPane.setViewportView(actionTable);
+        actionTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.actionTable.AccessibleContext.accessibleName")); // NOI18N
+        actionTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.actionTable.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -438,6 +444,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
 
         jSplitPane1.setLeftComponent(jPanel1);
 
+        jLabel3.setLabelFor(boundComponentList);
         jLabel3.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.jLabel3.text")); // NOI18N
 
         boundComponentList.setModel(new javax.swing.AbstractListModel() {
@@ -446,6 +453,8 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             public Object getElementAt(int i) { return strings[i]; }
         });
         jScrollPane1.setViewportView(boundComponentList);
+        boundComponentList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.boundComponentList.AccessibleContext.accessibleName")); // NOI18N
+        boundComponentList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.boundComponentList.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -461,7 +470,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jLabel3)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE))
         );
 
         jSplitPane1.setRightComponent(jPanel2);
@@ -483,6 +492,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        viewSourceButton.setMnemonic('1');
         viewSourceButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.viewSourceButton.text")); // NOI18N
         viewSourceButton.setEnabled(false);
         viewSourceButton.addActionListener(new java.awt.event.ActionListener() {
@@ -503,7 +513,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(classCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 322, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 349, Short.MAX_VALUE)
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(filterTextfield, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -515,7 +525,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 .add(viewSourceButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(deleteActionButton)
-                .addContainerGap(285, Short.MAX_VALUE))
+                .addContainerGap(313, Short.MAX_VALUE))
             .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -537,6 +547,17 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                     .add(viewSourceButton)
                     .add(deleteActionButton)))
         );
+
+        newActionButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.newActionButton.AccessibleContext.accessibleDescription")); // NOI18N
+        editActionButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.editActionButton.AccessibleContext.accessibleDescription")); // NOI18N
+        deleteActionButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.deleteActionButton.AccessibleContext.accessibleDescription")); // NOI18N
+        projectCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.projectCombo.AccessibleContext.accessibleName")); // NOI18N
+        projectCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.projectCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        classCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.classCombo.AccessibleContext.accessibleName")); // NOI18N
+        classCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.classCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        filterTextfield.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.filterTextfield.AccessibleContext.accessibleName")); // NOI18N
+        filterTextfield.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.filterTextfield.AccessibleContext.accessibleDescription")); // NOI18N
+        viewSourceButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.viewSourceButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
 private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewSourceButtonActionPerformed
