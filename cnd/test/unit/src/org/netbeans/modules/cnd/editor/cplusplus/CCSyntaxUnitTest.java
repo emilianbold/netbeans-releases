@@ -33,6 +33,7 @@ public class CCSyntaxUnitTest extends BaseTestSuite {
         
         //this.addTestSuite(SpaceAndLineSeparatorUnitTestCase.class);
         this.addTestSuite(CCTokenizePreprocessorUnitTestCase.class);
+        this.addTestSuite(CCDocumentTokenizeUnitTestCase.class);
     }
 
     public static Test suite() {
