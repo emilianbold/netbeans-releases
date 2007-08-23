@@ -55,6 +55,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -681,6 +682,19 @@ public class JsfProjectUtils {
         return "en";
     }
     
+    public static String getSourceLevel(Project project) {
+        if (!isWebProject(project)) {
+            return null;
+        }
+
+        SourceLevelQueryImplementation slq = (SourceLevelQueryImplementation) project.getLookup().lookup(SourceLevelQueryImplementation.class);
+        if (slq == null) {
+            return null;
+        }
+
+        return slq.getSourceLevel(null);
+    }
+
     public static final String J2EE_1_3 = J2eeModule.J2EE_13;
     public static final String J2EE_1_4 = J2eeModule.J2EE_14;
     public static final String JAVA_EE_5 = J2eeModule.JAVA_EE_5;
