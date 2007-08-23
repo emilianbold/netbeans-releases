@@ -21,10 +21,13 @@ package org.netbeans.modules.visualweb.project.jsf;
 
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.LinkedHashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.SwingUtilities;
@@ -47,6 +50,8 @@ import org.netbeans.api.java.classpath.ClassPath;
  * @author Po-Ting Wu
  */
 public class Install extends ModuleInstall {
+    private static final Logger LOGGER = Logger.getLogger(Install.class.getName());
+
     public void restored() {
         OpenProjects.getDefault().addPropertyChangeListener(new OpenProjectsListener());
     }
@@ -59,42 +64,93 @@ public class Install extends ModuleInstall {
         public void propertyChange(PropertyChangeEvent event) {
             // The list of open projects has changed.
             if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(event.getPropertyName())) {
-                if (LibraryManager.getDefault().getLibrary("jsf-designtime") != null) { // NOI18N
-                    return;
-                }
-
                 List<Project> oldOpenProjectsList = Arrays.asList((Project[]) event.getOldValue());
                 List<Project> newOpenProjectsList = Arrays.asList((Project[]) event.getNewValue());
                 
+                Set<Project> jsfProjectsSet = new LinkedHashSet<Project>();
                 Set<Project> openedProjectsSet = new LinkedHashSet<Project>(newOpenProjectsList);
                 openedProjectsSet.removeAll(oldOpenProjectsList);
-                String projs = ""; // NOI18N
                 for (Project project : openedProjectsSet) {
-                    if (JsfProjectUtils.isJsfProject(project) && !JsfProjectUtils.isJavaEE5Project(project)) {
+                    if (JsfProjectUtils.isJsfProject(project)) {
+                        jsfProjectsSet.add(project);
+                    }
+                }
+                   
+                if (jsfProjectsSet.size() == 0) {
+                    return;
+                }
+
+                // Visual Web project found in the just opened project list
+                Library libJSF = LibraryManager.getDefault().getLibrary("jsf-designtime"); // NOI18N
+                Library libRowset = LibraryManager.getDefault().getLibrary("rowset-ri"); // NOI18N
+                String projs = ""; // NOI18N
+                boolean needJSF = false;
+                boolean needRowset = false;
+
+                for (Project project : jsfProjectsSet) {
+                    boolean badProj = false;
+                    if (libJSF == null && !JsfProjectUtils.isJavaEE5Project(project)) {
                         // It's a VisualWeb/Creator J2EE 1.4 project
                         ClassPath cp = ClassPath.getClassPath(JsfProjectUtils.getDocumentRoot(project), ClassPath.COMPILE);
                         if (cp.findResource("javax/faces/FacesException.class") == null && //NOI18N
                             cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") == null) { //NOI18N
                             // Server doesn't have the JSF RI support
-                            ProjectInformation info = ProjectUtils.getInformation(project);
-                            if (projs.length() > 0) {
-                                projs += ", "; // NOI18N
+                            projs = appendProject(project, projs);
+                            badProj = true;
+                            needJSF = true;
+                        }
+                    }
+
+                    String srcLevel = JsfProjectUtils.getSourceLevel(project);
+                    if ("1.3".equals(srcLevel) || "1.4".equals(srcLevel)) { // NOI18N
+                        // It's a VisualWeb/Creator J2SE 1.3/1.4 project
+                        ClassPath cp = ClassPath.getClassPath(JsfProjectUtils.getDocumentRoot(project), ClassPath.COMPILE);
+                        if (cp.findResource("javax/sql/rowset/BaseRowSet.class") == null) { //NOI18N
+                            // IDE doesn't have the Rowset RI support
+                            if (libRowset != null) {
+                                try {
+                                    JsfProjectUtils.addLibraryReferences(project, new Library[] { libRowset });
+                                } catch (IOException ex) {
+                                    LOGGER.log(Level.WARNING, "Exception during adding Rowset RI library", ex); //NOI18N
+                                }
+                            } else {
+                                if (!badProj) {
+                                    projs = appendProject(project, projs);
+                                }
+                                needRowset = true;
                             }
-                            projs += info.getDisplayName();
                         }
                     }
                 }
 
                 if (projs.length() > 0) {
-                    final String projsList = projs;
+                    String nbms = "";
+                    if (needJSF) {
+                        nbms = NbBundle.getMessage(Install.class, "LBL_MissingJSF");
+                    }
+                    if (needRowset) {
+                        nbms += NbBundle.getMessage(Install.class, "LBL_MissingRowset");
+                    }
+
+                    final String mesg = NbBundle.getMessage(Install.class, "LBL_MissingNBM", projs, nbms);
                     SwingUtilities.invokeLater(new Runnable () {
                         public void run() {
-                            NotifyDescriptor d = new NotifyDescriptor.Message(NbBundle.getMessage(Install.class, "LBL_MissingJSF", projsList), NotifyDescriptor.WARNING_MESSAGE);
+                            NotifyDescriptor d = new NotifyDescriptor.Message(mesg, NotifyDescriptor.WARNING_MESSAGE);
                             DialogDisplayer.getDefault().notify(d);
                         }
                     });
                 }
             }
+        }
+
+        public String appendProject(Project project, String projs) {
+            ProjectInformation info = ProjectUtils.getInformation(project);
+            if (projs.length() > 0) {
+                projs += ", "; // NOI18N
+            }
+            projs += info.getDisplayName();
+
+            return projs;
         }
     }
 }
