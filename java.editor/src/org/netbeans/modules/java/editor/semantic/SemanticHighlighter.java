@@ -223,36 +223,40 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         if (isCancelled())
             return ;
         
-        final List<TreePathHandle> allUnusedImports = new ArrayList<TreePathHandle>();
-        final Fix removeAllUnusedImports = RemoveUnusedImportFix.create(file, allUnusedImports);
+        boolean computeUnusedImports = "text/x-java".equals(FileUtil.getMIMEType(info.getFileObject()));
         
-        OffsetsBag imports = new OffsetsBag(doc);
-        Coloring unused = ColoringAttributes.add(ColoringAttributes.empty(), ColoringAttributes.UNUSED);
+        final List<TreePathHandle> allUnusedImports = computeUnusedImports ? new ArrayList<TreePathHandle>() : null;
+        final Fix removeAllUnusedImports = computeUnusedImports ? RemoveUnusedImportFix.create(file, allUnusedImports) : null;
+        OffsetsBag imports = computeUnusedImports ? new OffsetsBag(doc) : null;
 
-        for (Element el : v.type2Highlight.keySet()) {
-            if (isCancelled())
-                return ;
+        if (computeUnusedImports) {
+            Coloring unused = ColoringAttributes.add(ColoringAttributes.empty(), ColoringAttributes.UNUSED);
 
-            final TreePath tree = v.type2Highlight.get(el);
-            
-            if (el == null || el.getSimpleName() == null)
-                continue;
-    
-            //XXX: finish
-            final int startPos = (int)info.getTrees().getSourcePositions().getStartPosition(cu, tree.getLeaf());
-            final int endPos   = (int)info.getTrees().getSourcePositions().getEndPosition(cu, tree.getLeaf());
-            
-            imports.addHighlight(startPos, endPos, ColoringManager.getColoringImpl(unused));
-            
-            int line     = (int) info.getCompilationUnit().getLineMap().getLineNumber(startPos);
-            
-            TreePathHandle handle = TreePathHandle.create(tree, info);
-            
-            final Fix removeImport = RemoveUnusedImportFix.create(file, handle);
-            
-            allUnusedImports.add(handle);
-            if (RemoveUnusedImportFix.isEnabled()) {
-                errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.VERIFIER, "Unused import", new FixAllImportsFixList(removeImport, removeAllUnusedImports, allUnusedImports), doc, line));
+            for (Element el : v.type2Highlight.keySet()) {
+                if (isCancelled()) {
+                    return;
+                }
+                final TreePath tree = v.type2Highlight.get(el);
+
+                if (el == null || el.getSimpleName() == null) {
+                    continue;
+                }
+                //XXX: finish
+                final int startPos = (int) info.getTrees().getSourcePositions().getStartPosition(cu, tree.getLeaf());
+                final int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(cu, tree.getLeaf());
+
+                imports.addHighlight(startPos, endPos, ColoringManager.getColoringImpl(unused));
+
+                int line = (int) info.getCompilationUnit().getLineMap().getLineNumber(startPos);
+
+                TreePathHandle handle = TreePathHandle.create(tree, info);
+
+                final Fix removeImport = RemoveUnusedImportFix.create(file, handle);
+
+                allUnusedImports.add(handle);
+                if (RemoveUnusedImportFix.isEnabled()) {
+                    errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.VERIFIER, "Unused import", new FixAllImportsFixList(removeImport, removeAllUnusedImports, allUnusedImports), doc, line));
+                }
             }
         }
         
@@ -307,8 +311,11 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         if (isCancelled())
             return ;
         
-        setter.setErrors(doc, errors, allUnusedImports);
-        setter.setHighlights(doc, imports);
+        if (computeUnusedImports) {
+            setter.setErrors(doc, errors, allUnusedImports);
+            setter.setHighlights(doc, imports);
+        }
+        
         setter.setColorings(doc, newColoring, addedTokens, removedTokens);
         
         Logger.getLogger("TIMER").log(Level.FINE, "Semantic",
