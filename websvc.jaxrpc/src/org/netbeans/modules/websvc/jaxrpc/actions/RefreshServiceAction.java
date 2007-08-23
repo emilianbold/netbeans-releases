@@ -154,6 +154,9 @@ public class RefreshServiceAction extends NodeAction {
         FileObject tmpFO = null;
 
         try {
+            if(prefix==null||prefix.length()<3) {
+                prefix = "tmp";// need prefix atleast 3 characters long, fix for bug 113430
+            }
             tmpFO = FileUtil.toFileObject(FileUtil.normalizeFile(File.createTempFile(prefix, "wsdl"))); // NOI18N
             FileLock lock = tmpFO.lock();
             OutputStream out = null;
