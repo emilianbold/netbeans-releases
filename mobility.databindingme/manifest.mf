@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.mobility.databindingme/2
+OpenIDE-Module-Specification-Version: 1.1.0
+OpenIDE-Module-Layer: org/netbeans/modules/mobility/databindingme/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/databindingme/resources/Bundle.properties
