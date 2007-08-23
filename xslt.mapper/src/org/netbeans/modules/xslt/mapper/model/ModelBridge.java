@@ -107,7 +107,7 @@ public abstract class ModelBridge implements ComponentListener, PropertyChangeLi
                     List<Template> templates = stylesheet.getChildren(Template.class);
                     boolean templateFound = false;
                     for (Template t : templates) {
-                        if (t.getMatch().equals("/")) {
+                        if ("/".equals(t.getMatch())) {
                             templateFound = true;
                             break;
                         }
