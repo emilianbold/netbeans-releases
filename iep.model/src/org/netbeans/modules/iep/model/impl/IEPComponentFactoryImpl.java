@@ -25,8 +25,10 @@ import org.netbeans.modules.iep.model.Documentation;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.InputOperatorComponent;
 import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.OutputOperatorComponent;
 import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
@@ -69,6 +71,14 @@ public class IEPComponentFactoryImpl implements IEPComponentFactory {
 
     public OperatorComponent createOperator(IEPModel model) {
     	return new OperatorComponentImpl(model);
+    }
+    
+    public InputOperatorComponent createInputOperator(IEPModel model) {
+    	return new InputOperatorComponentImpl(model);
+    }
+    
+    public OutputOperatorComponent createOutputOperator(IEPModel model) {
+    	return new OutputOperatorComponentImpl(model);
     }
     
     public LinkComponent createLink(IEPModel model) {

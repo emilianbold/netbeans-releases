@@ -370,6 +370,14 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 		return isSchemaOwner;
 	}
 	
+	public boolean isIncludeTimestamp() {
+		boolean isIncludeTimestamp = false;
+		
+		isIncludeTimestamp = (Boolean) getComponentType().getPropertyType(PROP_INCLUDE_TIMESTAMP_KEY).getDefaultValue();
+        
+		return isIncludeTimestamp;
+	}
+	
 	public String getDisplayName() {
 		
 		String displayName = null;

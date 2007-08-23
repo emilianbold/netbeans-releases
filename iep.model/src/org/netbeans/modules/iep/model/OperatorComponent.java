@@ -46,7 +46,8 @@ public interface OperatorComponent extends Component {
 	
 	public static final String PROP_GROUP_BY_COLUMNLIST = "groupByColumnList";
 	
-	
+	public static String PROP_INCLUDE_TIMESTAMP_KEY = "includeTimestamp";
+    
 	
 	
 	int getX();
@@ -94,6 +95,8 @@ public interface OperatorComponent extends Component {
 	public boolean isBatchMode();
 	
 	public boolean isSchemaOwner();
+	
+	public boolean isIncludeTimestamp();
 	
 	public List<OperatorComponent> getFromColumnList();
 	

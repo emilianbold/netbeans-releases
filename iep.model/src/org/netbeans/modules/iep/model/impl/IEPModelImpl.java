@@ -19,24 +19,25 @@
 
 package org.netbeans.modules.iep.model.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.List;
+
+
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
-import org.netbeans.modules.iep.model.LinkComponent;
-import org.netbeans.modules.iep.model.LinkComponentContainer;
-import org.netbeans.modules.iep.model.OperatorComponent;
-import org.netbeans.modules.iep.model.OperatorComponentContainer;
+import org.netbeans.modules.iep.model.NameUtil;
 import org.netbeans.modules.iep.model.PlanComponent;
-import org.netbeans.modules.iep.model.SchemaComponent;
-import org.netbeans.modules.iep.model.SchemaComponentContainer;
-
-
+import org.netbeans.modules.iep.model.lib.GenUtil;
+import org.netbeans.modules.iep.model.lib.IOUtil;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.ChangeInfo;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -137,7 +138,50 @@ public class IEPModelImpl extends IEPModel {
     }
 
 	
-
+    public String getIEPFilePath() {
+    	DataObject dObj = getModelSource().getLookup().lookup(DataObject.class);
+        return FileUtil.toFile(dObj.getPrimaryFile()).getAbsolutePath();
+    }
+   
+    public String getIEPFileName() {
+    	DataObject dObj = getModelSource().getLookup().lookup(DataObject.class);
+        return dObj.getPrimaryFile().getNameExt();
+    }
     
+    public File getWsdlFile() {
+        String wsdlPath = getIEPFilePath();
+        wsdlPath = wsdlPath.substring(0, wsdlPath.length()-4) + ".wsdl"; //4: for '.iep'
+        return new File(wsdlPath);
+    }
+    
+    public void saveWsdl() throws Exception {
+        // auto generate .wsdl
+        // see org.netbeans.modules.iep.editor.jbiadapter.IEPSEDeployer
+        String tns = NameUtil.makeJavaId(getIEPFileName());
+        FileOutputStream fos = null;
+        try {
+            // Generate .wsdl in the same dir as its .iep is
+        	IEPWSDLGenerator gen = new IEPWSDLGenerator(this);
+        	String wsdl = gen.getWSDL(tns);
+            String wsdlPath = getIEPFilePath();
+            wsdlPath = wsdlPath.substring(0, wsdlPath.length()-4) + ".wsdl"; //4: for '.iep'
+            GenUtil.createFile(new File(wsdlPath), false);
+            fos = new FileOutputStream(wsdlPath);
+            IOUtil.copy(wsdl.getBytes("UTF-8"), fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+//            throw new Exception("ModelImpl.FAIL_SAVE_MODEL",
+//                    "org.netbeans.modules.iep.editor.model.Bundle",
+//                    new Object[]{getIEPFilePath()}, e);
+        } finally {
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+    }
 
 }
