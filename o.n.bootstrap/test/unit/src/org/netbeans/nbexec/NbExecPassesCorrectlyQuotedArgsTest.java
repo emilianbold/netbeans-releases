@@ -20,9 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -47,10 +47,34 @@ public class NbExecPassesCorrectlyQuotedArgsTest extends NbTestCase {
     public void testArgsArePassed() throws Exception {
         run(getWorkDir(), "ahoj");
         
-        assertNotNull("args passed in", MainCallback.getArgs(getWorkDir()));
+        String[] args = MainCallback.getArgs(getWorkDir());
+        assertNotNull("args passed in", args);
+        List<String> a = Arrays.asList(args);
+        if (!a.contains("ahoj")) {
+            fail("Ahoj should be there: " + a);
+        }
     }
     
-    
+    public void testStartsArePassedInUnparsed() throws Exception {
+        File wd = new File(getWorkDir(), "currentdir");
+        wd.mkdirs();
+        File f1 = new File(wd, "f1");
+        File f2 = new File(wd, "f2");
+        File f3 = new File(wd, "f3");
+        f1.createNewFile();
+        f2.createNewFile();
+        f3.createNewFile();
+        
+        String str = "1 * * * *";
+        run(wd, str);
+        
+        String[] args = MainCallback.getArgs(getWorkDir());
+        assertNotNull("args passed in", args);
+        List<String> a = Arrays.asList(args);
+        if (!a.contains(str)) {
+            fail(str + " should be there: " + a);
+        }
+    }
     
     
     private void run(File workDir, String... args) throws Exception {
