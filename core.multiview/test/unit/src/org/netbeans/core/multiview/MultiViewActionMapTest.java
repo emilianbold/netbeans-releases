@@ -191,22 +191,22 @@ public class MultiViewActionMapTest extends NbTestCase {
         LookListener list = new LookListener();
         list.resetCount();
         res.addLookupListener(list);
-//        assertEquals(1, res.allInstances().size());
+        assertEquals(1, res.allInstances().size());
         assertEquals(0, list.getCount());
         lookup.refreshLookup();
         assertEquals(1, list.getCount());
-//        assertEquals(1, res.allInstances().size());
+        assertEquals(1, res.allInstances().size());
         
         MultiViewTopComponentLookup lookup2 = new MultiViewTopComponentLookup(new ActionMap());
         res = lookup2.lookup(new Lookup.Template(ActionMap.class));
         list = new LookListener();
         list.resetCount();
         res.addLookupListener(list);
-//        assertEquals(1, res.allInstances().size());
+        assertEquals(1, res.allInstances().size());
         assertEquals(0, list.getCount());
         lookup2.setElementLookup(Lookups.fixed(new Object[] {new Object()} ));
         assertEquals(1, list.getCount());
-//        assertEquals(1, res.allInstances().size());
+        assertEquals(1, res.allInstances().size());
         
     }
     
@@ -226,6 +226,7 @@ public class MultiViewActionMapTest extends NbTestCase {
         Lookup.Result result = tc.getLookup().lookup(new Lookup.Template(ActionMap.class));
         LookListener2 list = new LookListener2();
         result.addLookupListener(list);
+        result.allInstances().size();
         list.setCorrectValues("testAction", act1);
         // WARNING: as anything else the first element's action map is set only after the tc is opened..
         tc.open();
