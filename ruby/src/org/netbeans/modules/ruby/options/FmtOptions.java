@@ -73,6 +73,7 @@ public class FmtOptions {
     public static final String indentSize = "indentSize"; //NOI18N
     public static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
     public static final String reformatComments = "reformatComments"; //NOI18N
+    public static final String indentHtml = "indentHtml"; //NOI18N
     public static final String rightMargin = "rightMargin"; //NOI18N
     
     public static CodeStyleProducer codeStyleProducer;
@@ -151,7 +152,8 @@ public class FmtOptions {
             { tabSize, "8"}, //NOI18N
             { indentSize, "2"}, //NOI18N
             { continuationIndentSize, "2"}, //NOI18N
-            { reformatComments, FALSE}, //NOI18N
+            { reformatComments, FALSE }, //NOI18N
+            { indentHtml, TRUE }, //NOI18N
             { rightMargin, "80"}, //NOI18N
         };
         
@@ -371,6 +373,8 @@ public class FmtOptions {
         private void storeData( JComponent jc, String optionID, Preferences p ) {
             Lookup lookup = MimeLookup.getLookup(MimePath.parse(RubyInstallation.RUBY_MIME_TYPE));
             BaseOptions options = lookup.lookup(BaseOptions.class);
+            lookup = MimeLookup.getLookup(MimePath.parse(RubyInstallation.RHTML_MIME_TYPE));
+            BaseOptions rhtmlOptions = lookup.lookup(BaseOptions.class);
             
             Preferences node = p == null ? getPreferences(getCurrentProfileId()) : p;
             
@@ -397,6 +401,20 @@ public class FmtOptions {
                                 options.setSpacesPerTab(i);
                             }
                         }
+                        if (rhtmlOptions != null && i > 0) {
+                            if (optionID.equals(rightMargin)) { // NOI18N
+                                // HACK! Synchronize with textline property such that users can see
+                                // the wrapping line
+
+                                if (i > 5) {
+                                    rhtmlOptions.setTextLimitWidth(i);
+                                }
+                            } else if (optionID.equals(tabSize)) { // NOI18N
+                                rhtmlOptions.setTabSize(i);
+                            } else if (optionID.equals(indentSize)) {
+                                rhtmlOptions.setSpacesPerTab(i);
+                            }
+                        }
                     } catch (NumberFormatException e) {
                         text = getLastValue(optionID);
                     }
@@ -409,6 +427,9 @@ public class FmtOptions {
                 JCheckBox checkBox = (JCheckBox)jc;
                 if (options != null && optionID.equals(expandTabToSpaces)) { // NOI18N
                     options.setExpandTabs(checkBox.isSelected());
+                }
+                if (rhtmlOptions != null && optionID.equals(expandTabToSpaces)) { // NOI18N
+                    rhtmlOptions.setExpandTabs(checkBox.isSelected());
                 }
                 node.putBoolean(optionID, checkBox.isSelected());
             } 

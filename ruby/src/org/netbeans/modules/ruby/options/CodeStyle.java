@@ -45,6 +45,11 @@ public final class CodeStyle {
     private CodeStyle(Preferences preferences) {
         this.preferences = preferences;
     }
+
+    /** For testing purposes only */
+    public static CodeStyle getTestStyle(Preferences prefs) {
+        return new CodeStyle(prefs);
+    }
     
     public synchronized static CodeStyle getDefault(Project project) {
         
@@ -82,6 +87,10 @@ public final class CodeStyle {
 
     public boolean reformatComments() {
         return preferences.getBoolean(reformatComments, getDefaultAsBoolean(reformatComments));
+    }
+
+    public boolean indentHtml() {
+        return preferences.getBoolean(indentHtml, getDefaultAsBoolean(indentHtml));
     }
     
     public int getRightMargin() {

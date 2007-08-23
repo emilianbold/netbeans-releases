@@ -20,15 +20,20 @@ import java.io.InputStreamReader;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.jruby.ast.Node;
 import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.ParseListener;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.netbeans.modules.ruby.options.CodeStyle;
+import org.netbeans.modules.ruby.options.FmtOptions;
 import org.netbeans.spi.gsf.DefaultParseListener;
 import org.netbeans.spi.gsf.DefaultParserFile;
 import org.netbeans.spi.gsf.DefaultParserFile;
@@ -39,6 +44,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -179,6 +185,7 @@ public abstract class RubyTestBase extends NbTestCase {
         try {
             BaseDocument doc = new BaseDocument(null, false);
             doc.putProperty(org.netbeans.api.lexer.Language.class, RubyTokenId.language());
+            doc.putProperty("mimeType", RubyInstallation.RUBY_MIME_TYPE);
 
             doc.insertString(0, s, null);
 
@@ -373,5 +380,18 @@ public abstract class RubyTestBase extends NbTestCase {
         assertEquals(expected.trim(), description.trim());
     }
 
+    protected Formatter getFormatter(FormattingPreferences preferences) {
+        if (preferences == null) {
+            preferences = new IndentPrefs(2,2);
+        }
 
+        Preferences prefs = NbPreferences.forModule(FormatterTest.class);
+        prefs.put(FmtOptions.indentSize, Integer.toString(preferences.getIndentation()));
+        prefs.put(FmtOptions.continuationIndentSize, Integer.toString(preferences.getHangingIndentation()));
+        CodeStyle codeStyle = CodeStyle.getTestStyle(prefs);
+        
+        Formatter formatter = new Formatter(codeStyle, 80);
+        
+        return formatter;
+    }
 }

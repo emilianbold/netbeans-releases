@@ -29,12 +29,10 @@ import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -57,7 +55,8 @@ import org.openide.util.Exceptions;
  *   and see if they are indentable.
  * @todo If you select a complete line, the endOffset is on a new line; adjust it back
  * @todo If line ends with \ I definitely have a line continuation!
- * @todo Reflow comment text? http://ruby.netbeans.org/issues/show_bug.cgi?id=11553
+ * @todo Use the Context.modifyIndent() method to change line indents instead of
+ *   the current document/formatter method
  *
  * @author Tor Norbye
  */
@@ -380,15 +379,14 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
     private void reindent(Document document, int startOffset, int endOffset, ParserResult result,
         FormattingPreferences preferences, boolean indentOnly) {
         isRhtmlDocument = RubyUtils.isRhtmlDocument(document);
-        
+
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
-            CodeStyle style = codeStyle;
-            if (style == null) {
-                style = CodeStyle.getDefault(null);
+            if (codeStyle == null) {
+                codeStyle = CodeStyle.getDefault(null);
             }
-            syncOptions(doc, style);
+            syncOptions(doc, codeStyle);
 
             if (endOffset > doc.getLength()) {
                 endOffset = doc.getLength();
@@ -466,7 +464,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                     }
                 }
                 
-                if (!indentOnly && style != null && style.reformatComments()) {
+                if (!indentOnly && codeStyle.reformatComments()) {
                     reformatComments(doc, startOffset, endOffset);
                 }
             } finally {
@@ -543,6 +541,10 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             // The bracket balance at the offset ( parens, bracket, brace )
             int bracketBalance = 0;
             boolean continued = false;
+            boolean indentHtml = false;
+            if (isRhtmlDocument) {
+                indentHtml = codeStyle.indentHtml();
+            }
 
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
@@ -558,7 +560,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                     // Skip this line - leave formatting as it is prior to reformatting 
                     indent = LexUtilities.getLineIndent(doc, offset);
 
-                    if (isRhtmlDocument && balance > 0) {
+                    if (isRhtmlDocument && indentHtml && balance > 0) {
                         indent += balance * indentSize;
                     }
                 } else if (isEndIndent(doc, offset)) {

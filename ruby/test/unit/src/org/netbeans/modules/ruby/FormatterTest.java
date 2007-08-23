@@ -33,11 +33,7 @@ public class FormatterTest extends RubyTestBase {
     }
 
     public void format(String source, String reformatted, FormattingPreferences preferences) throws Exception {
-        Formatter formatter = new Formatter();
-        if (preferences == null) {
-            preferences = new IndentPrefs(2,2);
-        }
-        
+        Formatter formatter = getFormatter(preferences);
         String BEGIN = "%<%"; // NOI18N
         int startPos = source.indexOf(BEGIN);
         if (startPos != -1) {
@@ -82,10 +78,7 @@ public class FormatterTest extends RubyTestBase {
     }
     
     public void insertNewline(String source, String reformatted, FormattingPreferences preferences) throws Exception {
-        Formatter formatter = new Formatter();
-        if (preferences == null) {
-            preferences = new IndentPrefs(2,2);
-        }
+        Formatter formatter = getFormatter(preferences);
 
         int sourcePos = source.indexOf('^');     
         assertNotNull(sourcePos);
@@ -126,8 +119,8 @@ public class FormatterTest extends RubyTestBase {
         List<FileObject> files = findJRubyRubyFiles();
         assertTrue(files.size() > 0);
 
-        Formatter formatter = new Formatter();
         FormattingPreferences preferences = new IndentPrefs(2,2);
+        Formatter formatter = getFormatter(preferences);
         
         int fileCount = files.size();
         int count = 0;
