@@ -263,7 +263,7 @@ class DropTargetLayer extends JComponent {
         //g2.drawRect(iconLeft, 0, iconWidth-1, item.getHeight()-1);
         //g2.drawRect(textLeft, 0, textWidth-1, item.getHeight()-1);
         //draw the accelerator areaa
-        g2.drawRect(accelLeft, 0, accelWidth - 1, item.getHeight() - 1);
+        //g2.drawRect(accelLeft, 0, accelWidth - 1, item.getHeight() - 1);
 
         // draw the selection rectangles
         g2.setStroke(SELECTION_STROKE);

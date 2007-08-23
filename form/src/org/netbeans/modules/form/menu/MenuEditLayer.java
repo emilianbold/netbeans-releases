@@ -583,6 +583,7 @@ public class MenuEditLayer extends JPanel {
                 item.setIcon(new WrapperIcon(item.getIcon()));
             }
             installAcceleratorPreview(item);
+            item.setBorderPainted(true);
         }
     }
     
@@ -591,10 +592,11 @@ public class MenuEditLayer extends JPanel {
 
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             g.setColor(Color.WHITE);
-            g.fillRect(width-ACCEL_PREVIEW_WIDTH+2,1,ACCEL_PREVIEW_WIDTH, height);
+            int offset = 5;
+            g.fillRect(width-ACCEL_PREVIEW_WIDTH+offset,   1,ACCEL_PREVIEW_WIDTH, height);
             g.setColor(EMPTY_ICON_COLOR);
-            g.drawRect(width-ACCEL_PREVIEW_WIDTH+2,1,ACCEL_PREVIEW_WIDTH-1, height-1);
-            g.drawRect(width-ACCEL_PREVIEW_WIDTH+3,2,ACCEL_PREVIEW_WIDTH-3, height-3);
+            g.drawRect(width-ACCEL_PREVIEW_WIDTH+offset,   1,ACCEL_PREVIEW_WIDTH-1, height);
+            g.drawRect(width-ACCEL_PREVIEW_WIDTH+offset+1, 2,ACCEL_PREVIEW_WIDTH-3, height-2);
             g.setColor(Color.LIGHT_GRAY);
             g.setFont(new Font("SansSerif",Font.PLAIN,10));
             g.drawString("shortcut", width-ACCEL_PREVIEW_WIDTH+15,height-3);
