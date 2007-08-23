@@ -442,7 +442,7 @@ public class WLDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public void setLocale(Locale locale) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("This method should never be called!");
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
     /**
@@ -451,7 +451,7 @@ public class WLDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public boolean isLocaleSupported(Locale locale) {
-        throw new UnsupportedOperationException("This method should never be called!");
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
     /**
@@ -462,7 +462,7 @@ public class WLDeploymentManager implements DeploymentManager {
     public void setDConfigBeanVersion(
             DConfigBeanVersionType dConfigBeanVersionType)
             throws DConfigBeanVersionUnsupportedException {
-        throw new UnsupportedOperationException("This method should never be called!");
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
     /**
@@ -472,7 +472,7 @@ public class WLDeploymentManager implements DeploymentManager {
      */
     public boolean isDConfigBeanVersionSupported(
             DConfigBeanVersionType dConfigBeanVersionType) {
-        throw new UnsupportedOperationException("This method should never be called!");
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
     /**
@@ -493,7 +493,7 @@ public class WLDeploymentManager implements DeploymentManager {
                         vendorDeploymentManager.release();
                     }
                     catch (Exception e) {
-                        Logger.getLogger("global").log(Level.INFO, null, e);
+                        Logger.getLogger("global").log(Level.INFO, null, e); // NOI18N
                     }
                     finally {
                         vendorDeploymentManager = null;
@@ -515,15 +515,6 @@ public class WLDeploymentManager implements DeploymentManager {
             WLDebug.notify("isRedeploySupported()");                   // NOI18N
 
         return false;
-
-//        modifiedLoader();
-//        try {
-//            return getDeploymentManager().isRedeploySupported();
-//        } catch (DeploymentManagerCreationException ex) {
-//            throw new IllegalStateException(ex);
-//        } finally {
-//            originalLoader();
-//        }
     }
 
     /**
@@ -532,7 +523,7 @@ public class WLDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public Locale getCurrentLocale() {
-        throw new UnsupportedOperationException("This method should never be called!");
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
     /**
@@ -541,7 +532,7 @@ public class WLDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public DConfigBeanVersionType getDConfigBeanVersion() {
-        throw new UnsupportedOperationException("This method should never be called!");
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
     /**
@@ -550,7 +541,7 @@ public class WLDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public Locale getDefaultLocale() {
-        throw new UnsupportedOperationException("This method should never be called!");
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
     /**
@@ -559,7 +550,7 @@ public class WLDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public Locale[] getSupportedLocales() {
-        throw new UnsupportedOperationException("This method should never be called!");
+        throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
     /**
@@ -623,7 +614,7 @@ public class WLDeploymentManager implements DeploymentManager {
         }
 
         public ClientConfiguration getClientConfiguration(TargetModuleID arg0) {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         public DeploymentStatus getDeploymentStatus() {
@@ -643,11 +634,11 @@ public class WLDeploymentManager implements DeploymentManager {
         }
 
         public void cancel() throws OperationUnsupportedException {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         public void stop() throws OperationUnsupportedException {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         public void addProgressListener(ProgressListener arg0) {

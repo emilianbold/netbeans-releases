@@ -70,7 +70,7 @@ public class WLDeployer implements ProgressObject, Runnable {
         //PENDING: distribute to all targets!
         WLTargetModuleID module_id = new WLTargetModuleID(target[0], file.getName() );
 
-        try{
+        try {
             String server_url = "http://" + host+":"+port;
             
             if (file.getName().endsWith(".war")) {
@@ -97,8 +97,7 @@ public class WLDeployer implements ProgressObject, Runnable {
                 }
             }
             
-        }catch(Exception e){
-            //e.printStackTrace();
+        } catch(Exception e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
         }
 

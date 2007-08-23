@@ -141,7 +141,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
             ClassLoader loader = getWLClassLoader(serverRoot);
             Thread.currentThread().setContextClassLoader(loader);
             Class helperClazz = loader.loadClass("weblogic.deploy.api.tools.SessionHelper"); //NOI18N
-            Method m = helperClazz.getDeclaredMethod("getDeploymentManager", new Class [] {String.class,String.class,String.class,String.class});
+            Method m = helperClazz.getDeclaredMethod("getDeploymentManager", new Class [] {String.class,String.class,String.class,String.class}); // NOI18N
             Object o = m.invoke(null, new Object [] {host, port, username, password});
             if (DeploymentManager.class.isAssignableFrom(o.getClass())) {
                 return (DeploymentManager) o;
@@ -175,7 +175,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
             ClassLoader loader = getWLClassLoader(serverRoot);
             Thread.currentThread().setContextClassLoader(loader);
             Class helperClazz = loader.loadClass("weblogic.deploy.api.tools.SessionHelper"); //NOI18N
-            Method m = helperClazz.getDeclaredMethod("getDisconnectedDeploymentManager", new Class [] {});
+            Method m = helperClazz.getDeclaredMethod("getDisconnectedDeploymentManager", new Class [] {}); // NOI18N
             Object o = m.invoke(null, new Object [] {});
             if (DeploymentManager.class.isAssignableFrom(o.getClass())) {
                 return (DeploymentManager) o;
