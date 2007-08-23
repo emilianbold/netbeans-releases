@@ -23,9 +23,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.project.ProjectWebModule;
-import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -105,39 +103,18 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
                     null,
                     null );
         } else if (WEBSERVICES.equals(name) || WEBSERVICECLIENTS.equals(name)) {
-            WebProject project = (WebProject) context.lookup(WebProject.class);
-            ProjectWebModule wm = (ProjectWebModule) project.getLookup().lookup(ProjectWebModule.class);
-            FileObject docBase = wm.getDocumentBase();
             if (WEBSERVICES.equals(name)) {
-                List servicesSettings = null;
-                if (docBase != null) {
-                    WebServicesSupport servicesSupport = WebServicesSupport.getWebServicesSupport(docBase);
-                    if (servicesSupport != null) {
-                        servicesSettings = servicesSupport.getServices();
-                    }
-                }
-                if ((servicesSettings!=null && servicesSettings.size()>0)) {
-                    toReturn = ProjectCustomizer.Category.create(
-                            WEBSERVICES,
-                            bundle.getString( "LBL_Config_WebServices" ), // NOI18N
-                            null,
-                            null );
-                }
+                toReturn = ProjectCustomizer.Category.create(
+                        WEBSERVICES,
+                        bundle.getString( "LBL_Config_WebServices" ), // NOI18N
+                        null,
+                        null );
             } else if (WEBSERVICECLIENTS.equals(name)) {
-                List serviceClientsSettings = null;
-                if (docBase != null) {
-                    WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(docBase);
-                    if (clientSupport != null) {
-                        serviceClientsSettings = clientSupport.getServiceClients();
-                    }
-                }            
-                if(serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
-                    toReturn = ProjectCustomizer.Category.create(
-                            WEBSERVICECLIENTS,
-                            bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
-                            null,
-                            null );
-                }
+                toReturn = ProjectCustomizer.Category.create(
+                        WEBSERVICECLIENTS,
+                        bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
+                        null,
+                        null );
             }
         }
         

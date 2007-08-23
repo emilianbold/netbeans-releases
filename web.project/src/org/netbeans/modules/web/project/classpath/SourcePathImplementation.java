@@ -152,6 +152,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                             result.add(ClassPathSupport.createResource(url));
                             // generated/wsimport/client
                             f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/client"); //NOI18N
+                            System.out.println("getResources() ? wsimport/client exists ? "+f.exists());
                             url = f.toURI().toURL();
                             if (!f.exists()) {  //NOI18N
                                 assert !url.toExternalForm().endsWith("/");  //NOI18N

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProvider;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -95,23 +94,11 @@ public class EjbJarCompositePanelProvider implements ProjectCustomizer.Composite
                     null,
                     null );
         } else if (WEBSERVICES.equals(name)) {
-            EjbJarProject project = (EjbJarProject) context.lookup(EjbJarProject.class);
-            EjbJarProvider ejbJarProvider = (EjbJarProvider) project.getLookup().lookup(EjbJarProvider.class);
-            FileObject metaInf = ejbJarProvider.getMetaInf();
-            List servicesSettings = null;
-            if (metaInf != null) {
-                WebServicesSupport servicesSupport = WebServicesSupport.getWebServicesSupport(metaInf);
-                if (servicesSupport != null) {
-                    servicesSettings = servicesSupport.getServices();
-                }
-            }
-            if ((servicesSettings!=null && servicesSettings.size()>0)) {
-                toReturn = ProjectCustomizer.Category.create(
-                        WEBSERVICES,
-                        bundle.getString( "LBL_Config_WebServices" ), // NOI18N
-                        null,
-                        null );
-            }
+            toReturn = ProjectCustomizer.Category.create(
+                    WEBSERVICES,
+                    bundle.getString( "LBL_Config_WebServices" ), // NOI18N
+                    null,
+                    null );
         }
         
 //        assert toReturn != null : "No category for name:" + name;
