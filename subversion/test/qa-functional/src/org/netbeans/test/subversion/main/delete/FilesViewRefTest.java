@@ -147,6 +147,7 @@ public class FilesViewRefTest extends JellyTestCase {
             nbdialog = new NbDialogOperator("Move Classes");
             JButtonOperator refBut = new JButtonOperator(nbdialog, "Refactor");
             refBut.push();
+            nbdialog.waitClosed();
             Thread.sleep(1000);
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME);
             node.performPopupActionNoBlock("Subversion|Show Changes");
@@ -169,6 +170,20 @@ public class FilesViewRefTest extends JellyTestCase {
             }
             result = TestKit.compareThem(expected, actual, false);
             assertEquals("Wrong status in Versioning View", expected.length, result);
+            Exception e = null;
+            try {
+                node = new Node(new SourcePackagesNode(PROJECT_NAME), "a|b|BClass.java");
+            } catch (Exception ex) {
+                e = ex;
+            }
+            assertNotNull("Unexpected behavior - File shouldn't be in explorer!!!", e);
+            e = null;
+            try {
+                node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp.a.b|BClass.java");
+            } catch (Exception ex) {
+                e = ex;
+            }
+            assertNull("Unexpected behavior - File should be in explorer!!!", e);
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {
