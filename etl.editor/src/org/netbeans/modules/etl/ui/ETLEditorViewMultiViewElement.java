@@ -39,10 +39,8 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.etl.model.ETLDefinition;
-import org.netbeans.modules.etl.ui.component.ETLNavigatorHint;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
 import org.netbeans.modules.etl.ui.palette.PaletteSupport;
-import org.netbeans.modules.etl.ui.property.SourceTableNode;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
 import org.netbeans.modules.etl.ui.view.ETLEditorTopView;
 import org.netbeans.modules.sql.framework.model.SourceTable;
@@ -165,7 +163,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
             Lookups.singleton(this),
             new AbstractLookup(nodesHack),    
             Lookups.fixed(new Object[] {controller}),
-            Lookups.fixed(new Object[]{new ETLNavigatorHint()})
+            
         });
     } 
     
