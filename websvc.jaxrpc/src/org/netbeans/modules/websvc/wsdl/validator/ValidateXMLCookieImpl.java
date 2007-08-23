@@ -48,7 +48,7 @@ public class ValidateXMLCookieImpl implements ValidateXMLCookie{
     
     private Model getModel(){
 	ModelSource modelSource = Utilities.getModelSource(dobj.getPrimaryFile(), 
-			dobj.getPrimaryFile().canWrite());
+			true);
 	return WSDLModelFactory.getDefault().getModel(modelSource);
     }
     

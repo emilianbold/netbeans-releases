@@ -72,7 +72,7 @@ public class ImportSchemaDialog {
         for(int i = 0; i < nodes.length; i++) {
             FileObject fo = getFileObjectFromNode(nodes[i]);
             if (fo!=null) {
-                ModelSource ms = Utilities.getModelSource(fo, false);
+                ModelSource ms = Utilities.getModelSource(fo, true);
                 SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(ms);
                 selectedSchemas.add(schemaModel.getSchema());
             }

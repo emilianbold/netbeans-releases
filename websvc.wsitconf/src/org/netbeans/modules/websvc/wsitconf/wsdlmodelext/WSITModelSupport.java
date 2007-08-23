@@ -169,7 +169,7 @@ public class WSITModelSupport {
         WSDLModel model = null;
         FileObject srcFolder = WSITEditor.getClientConfigFolder(p);
         FileObject catalogfo = Utilities.getProjectCatalogFileObject(p);
-        ModelSource catalogms = Utilities.getModelSource(catalogfo, false);
+        ModelSource catalogms = Utilities.getModelSource(catalogfo, true);
         
         try {
             CatalogModel cm = Utilities.getCatalogModel(catalogms);
@@ -323,7 +323,7 @@ public class WSITModelSupport {
         FileObject originalWsdlFO = originalWsdlFolder.getFileObject(client.getLocalWsdlFile());
         
         if ((originalWsdlFO != null) && (originalWsdlFO.isValid())) {   //NOI18N
-            return getModelFromFO(originalWsdlFO, false);
+            return getModelFromFO(originalWsdlFO, true);
         }
         return null;
     }
