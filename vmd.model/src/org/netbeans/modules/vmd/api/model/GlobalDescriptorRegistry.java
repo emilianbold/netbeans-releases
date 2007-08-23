@@ -415,7 +415,7 @@ final class GlobalDescriptorRegistry {
         return Collections.unmodifiableCollection (descriptors.values ());
     }
 
-    List<ComponentProducer> getComponentCreators () {
+    List<ComponentProducer> getComponentProducers () {
         return Collections.unmodifiableList (producers);
     }
 

@@ -127,7 +127,7 @@ public final class DescriptorRegistry {
         for (ComponentDescriptor descriptor : descriptors)
             tempDescriptors.put (descriptor.getTypeDescriptor ().getThisType (), descriptor);
 
-        tempProducers.addAll (globalDescriptorRegistry.getComponentCreators ());
+        tempProducers.addAll (globalDescriptorRegistry.getComponentProducers ());
 
         this.descriptors = tempDescriptors;
         this.producers = tempProducers;
