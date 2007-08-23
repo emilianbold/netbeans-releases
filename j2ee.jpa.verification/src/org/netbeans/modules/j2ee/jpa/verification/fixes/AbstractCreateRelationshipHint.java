@@ -345,7 +345,7 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         
         String remoteFieldType = classHandle.getQualifiedName();
         
-        if (isMultiValuedAtLocalEntity()){
+        if (!isMultiValuedAtLocalEntity()){
             remoteFieldType = String.format("java.util.List<%s>", remoteFieldType); //NOI18N
         }
         
