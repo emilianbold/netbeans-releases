@@ -19,6 +19,10 @@
 
 package org.netbeans.modules.xml.schema.ui.nodes.categorized;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.netbeans.modules.xml.schema.ui.nodes.RefreshableChildren;
@@ -68,4 +72,27 @@ public class AdvancedImportNode extends ImportNode {
             ((RefreshableChildren) getChildren()).refreshChildren();
         }
     }
+    
+    @Override
+    public void destroy() throws IOException {
+         super.destroy();
+         
+         //after deleting the node, we need to delete the prefix attribute from the xsd element
+         Map<String, String> prefixes = getContext().getModel().getSchema().getPrefixes();
+         Import _import = getReference().get();
+         String ns = _import.getNamespace();
+         Set<String> keys = prefixes.keySet();
+         if(!getContext().getModel().isIntransaction())
+             getContext().getModel().startTransaction();
+             
+         for(String key: keys) {
+             if(prefixes.get(key).equals(ns) ) {
+                 getContext().getModel().getSchema().removePrefix(key);
+             }
+         }
+             
+         if(getContext().getModel().isIntransaction())
+             getContext().getModel().endTransaction();
+         
+     }
 }

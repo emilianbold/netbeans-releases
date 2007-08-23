@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.xml.schema.ui.basic;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -35,6 +37,8 @@ public class NameGenerator {
     private static final String PREFIX_PREFIX = "ns"; // NOI18N
     /** The singleton instance of this class. */
     private static NameGenerator theInstance;
+    /** hashmap containing generated prefixes */
+    private List generatedPrefixes = new ArrayList<String>();
 
     /**
      * Creates a new instance of NameGenerator.
@@ -83,11 +87,23 @@ public class NameGenerator {
     public String generateNamespacePrefix(String prefix,
             SchemaModel model, int counter) {
         String prefixStr = prefix == null ? PREFIX_PREFIX : prefix;
+        //we need to keep track of the generated prefixes because even if we increase
+        //the counter here to get a unique prefix, it doesn update the 
+        // original counter that is passed as an arg
+        //as a result, dup prefixes will be generated
+        //for eg: if a schema already references another schema with ns1 prefix, then 
+        //the following code (without the fix) will generate 2 prefixes with ns02 as follows
+        //for counter = 0, generated = ns1
+        //for counter = 1; generated = ns2 (since model already has prefix ns1)
+        //for counter = 2; generated = ns2 
+        if(counter == 0)
+            generatedPrefixes.clear();
         String generated = prefixStr + counter;
-        while (isPrefixExist(generated, model)) {
+        while (isPrefixExist(generated, model)  || generatedPrefixes.contains(generated)) {
             counter++;
             generated = prefixStr + counter;
         }
+        generatedPrefixes.add(generated);
         return generated;
     }
 
