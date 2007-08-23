@@ -837,7 +837,7 @@ NUMBER
 		|UnsignedSuffix            //{type = UnsignedIntConst;}
 		)*                         {$setType(DECIMALINT);}  
 
-	|	'0' ('x' | 'X') ('a'..'f' | 'A'..'F' | Digit)+
+	|	'0' ('x' | 'X') ('a'..'f' | 'A'..'F' | Digit)*
                                    //{type = IntHexConst;}
 		(LongSuffix                //{type = LongHexConst;}
 		|UnsignedSuffix            //{type = UnsignedHexConst;}
