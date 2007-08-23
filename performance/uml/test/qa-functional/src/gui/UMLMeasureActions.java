@@ -42,8 +42,9 @@ public class UMLMeasureActions  {
         suite.addTest(new CreateEmptyDiagram("measureTime", "Create Empty UML Diagram"));        
         suite.addTest(new GenerateDependencyDiagram("measureTime", "Generate Dependency Diagram"));
 
-/* Stability issues, will be enabled later...
         suite.addTest(new ReverseEngineering("measureTime", "Reverse Engineering"));
+
+/* Stability issues, will be enabled later...
         suite.addTest(new GenerateModelReport("measureTime", "Generate Model Report"));
         suite.addTest(new CodeGenerationFromUMLProject("measureTime", "Code Generation From UML Project"));
         suite.addTest(new ApplyDesignPattern("measureTime", "Apply Design Pattern"));
