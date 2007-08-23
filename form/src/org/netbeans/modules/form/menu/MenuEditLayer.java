@@ -1219,6 +1219,7 @@ public class MenuEditLayer extends JPanel {
     
     private void rebuildOnScreenMenu(RADVisualContainer menuRAD) {
         if(menuRAD == null) return;
+        if(hackedPopupFactory == null) return;
         p("** rebuildOnScreenMenu() called on: " + menuRAD.getName());
         JMenu menu = (JMenu) formDesigner.getComponent(menuRAD);
         if(hackedPopupFactory.containerMap.containsKey(menu)) {
