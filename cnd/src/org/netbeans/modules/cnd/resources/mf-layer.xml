@@ -50,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="x-c" url="cplusplus/CExample"/>
                 <file name="x-fortran" url="fortran/FExample"/>
                 <file name="x-make" url="makefile/MakeExample"/>
-                <!--<file name="x-shell" url="shell/ShellExample"/>-->
+                <file name="x-shell" url="shell/ShellExample"/>
             </folder>
         </folder>
     </folder>
@@ -305,7 +305,7 @@ Microsystems, Inc. All Rights Reserved.
                         </file>
                     </folder>
                 </folder>
-                <!--
+                
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -315,7 +315,7 @@ Microsystems, Inc. All Rights Reserved.
                         </folder>
                     </folder>
                 </folder>                
-                -->
+                
 		<file name="Settings.settings" url="ShellOptions.settings"/>
 		<file name="EditorKit.instance">
 		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.shell.ShellKit"/>

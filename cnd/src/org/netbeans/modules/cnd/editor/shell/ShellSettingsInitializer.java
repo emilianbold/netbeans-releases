@@ -54,19 +54,12 @@ public class ShellSettingsInitializer extends Settings.AbstractInitializer {
     @SuppressWarnings("unchecked")
   public void updateSettingsMap(Class kitClass, Map settingsMap) {
 
-    // Update f colorings
-    if (kitClass == BaseKit.class) {
-      new ShellSettingsDefaults.ShellTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
-    }
-
     if (kitClass == fKitClass) {
       SettingsUtil.updateListSetting(settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
                    new TokenContext[] {
                                        ShellTokenContext.context,
                    }
                   );
-
-      settingsMap.put(SettingsNames.ABBREV_MAP, ShellSettingsDefaults.getAbbrevMap());
 
       settingsMap.put(ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE,
                       ShellSettingsDefaults.defaultCaretSimpleMatchBrace);
@@ -81,7 +74,7 @@ public class ShellSettingsInitializer extends Settings.AbstractInitializer {
                       ShellSettingsDefaults.defaultAbbrevResetAcceptor);
 
       settingsMap.put(SettingsNames.WORD_MATCH_MATCH_CASE,
-                      ShellSettingsDefaults.defaultWordMatchMatchCase);
+                      ShellSettingsDefaults.defaultShellWordMatchMatchCase);
 
       settingsMap.put(SettingsNames.WORD_MATCH_STATIC_WORDS,
                       ShellSettingsDefaults.defaultWordMatchStaticWords);

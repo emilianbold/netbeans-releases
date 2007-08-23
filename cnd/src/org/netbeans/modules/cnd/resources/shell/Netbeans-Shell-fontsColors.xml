@@ -23,15 +23,13 @@ Microsystems, Inc. All Rights Reserved.
 
     <fontcolor name="shell-errors" default="error"/>
     <fontcolor name="shell-identifier" default="identifier"/>
-    <fontcolor name="shell-global-special-characters" default="char">
+    <fontcolor name="shell-global-special-characters" default="field">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="shell-line-comment" default="comment"/>
     <fontcolor name="shell-command" default="keyword"/>
     <fontcolor name="shell-macro-operators" default="operator"/>
-    <fontcolor name="shell-macros" default="field">
-        <font style="bold"/>
-    </fontcolor>        
+    <fontcolor name="shell-macros" default="field"/>
     <fontcolor name="shell-string-literal" default="string"/>
     <fontcolor name="shell-whitespace" default="whitespace"/>
 </fontscolors>

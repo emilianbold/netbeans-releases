@@ -26,11 +26,6 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="makefile-global-special-characters" default="number">
         <font style="bold"/>
     </fontcolor>
-    <!--
-    <fontcolor name="cc-layer-method" default="default">
-        <font style="bold"/>
-    </fontcolor>
-    -->
     <fontcolor name="makefile-line-comment" default="comment"/>
     <fontcolor name="makefile-rules" default="operator"/>
     <fontcolor name="makefile-macro-operators" default="operator"/>
@@ -40,11 +35,6 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="makefile-targets" default="operator">
         <font style="bold"/>
     </fontcolor>
-    <!-- use bold "char" settings as default for preprocessor-->
-<!--    <fontcolor name="cc-preprocessor" default="char">
-        <font style="bold"/>
-    </fontcolor> 
--->
     <fontcolor name="makefile-string-literal" default="string"/>
     <fontcolor name="makefile-whitespace" default="whitespace"/>
 </fontscolors>
