@@ -45,7 +45,7 @@ public class ImportPreviewStep extends AbstractStep {
     }
     
     public HelpCtx getHelp() {    
-        return new HelpCtx(ImportStep.class);
+        return new HelpCtx(ImportPreviewStep.class);
     }    
 
     protected JComponent createComponent() {
