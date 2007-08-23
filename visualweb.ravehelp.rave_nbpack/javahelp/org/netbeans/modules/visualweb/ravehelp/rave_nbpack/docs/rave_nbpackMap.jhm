@@ -213,7 +213,6 @@
 	<mapID target="projrave_multiple_forms_howtomultiforms_rename_connector" url="multiple_forms/howtomultiforms/rename_connector.html"/>
 	<mapID target="projrave_multiple_forms_howtomultiforms_set_form_navigation" url="multiple_forms/howtomultiforms/set_form_navigation.html"/>
 	<mapID target="projrave_multiple_forms_multiform_process" url="multiple_forms/multiform_process.html"/>
-	<mapID target="projrave_no_topic" url="no_topic.html"/>
 	<mapID target="projrave_projects_howtoprojects_add_theme" url="projects/howtoprojects/add_theme.html"/>
 	<mapID target="projrave_projects_howtoprojects_create_sample_app" url="projects/howtoprojects/create_sample_app.html"/>
 	<mapID target="projrave_projects_howtoprojects_import_creator_project" url="projects/howtoprojects/import_creator_project.html"/>
@@ -555,25 +554,12 @@
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_text_field" url="ui_elements/palette/wdstk-jsf1_2/text_field.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_tree" url="ui_elements/palette/wdstk-jsf1_2/tree.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_tree_node" url="ui_elements/palette/wdstk-jsf1_2/tree_node.html"/>
-	<mapID target="projrave_ui_elements_project_nav_buildxml_node" url="ui_elements/project_nav/buildxml_node.html"/>
-	<mapID target="projrave_ui_elements_project_nav_complib_node" url="ui_elements/project_nav/complib_node.html"/>
-	<mapID target="projrave_ui_elements_project_nav_data_source_ref_node" url="ui_elements/project_nav/data_source_ref_node.html"/>
-	<mapID target="projrave_ui_elements_project_nav_dist_node" url="ui_elements/project_nav/dist_node.html"/>
-	<mapID target="projrave_ui_elements_project_nav_java_sources_node" url="ui_elements/project_nav/java_sources_node.html"/>
-	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_build_node_props" url="ui_elements/project_nav/node_prop_sheets/build_node_props.html"/>
-	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_dist_node_props" url="ui_elements/project_nav/node_prop_sheets/dist_node_props.html"/>
-	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_java_sources_node_props" url="ui_elements/project_nav/node_prop_sheets/java_sources_node_props.html"/>
-	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_man_beans_node_props" url="ui_elements/project_nav/node_prop_sheets/man_beans_node_props.html"/>
-	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_web_pages_node_props" url="ui_elements/project_nav/node_prop_sheets/web_pages_node_props.html"/>
 	<mapID target="projrave_ui_elements_project_nav_portfoliofilesystem" url="ui_elements/project_nav/projectfilesystem.html"/>
 	<mapID target="projrave_ui_elements_project_nav_portfoliological" url="ui_elements/project_nav/projectlogical.html"/>
 	<mapID target="projrave_ui_elements_project_nav_project_props_build" url="ui_elements/project_nav/project_props_build.html"/>
 	<mapID target="projrave_ui_elements_project_nav_project_props_libraries" url="ui_elements/project_nav/project_props_libraries.html"/>
 	<mapID target="projrave_ui_elements_project_nav_project_props_run" url="ui_elements/project_nav/project_props_run.html"/>
 	<mapID target="projrave_ui_elements_project_nav_project_props_sources" url="ui_elements/project_nav/project_props_sources.html"/>
-	<mapID target="projrave_ui_elements_project_nav_references_node" url="ui_elements/project_nav/references_node.html"/>
-	<mapID target="projrave_ui_elements_project_nav_webapp_node" url="ui_elements/project_nav/webapp_node.html"/>
-	<mapID target="projrave_ui_elements_project_nav_webforms_node" url="ui_elements/project_nav/webforms_node.html"/>
 	<mapID target="projrave_ui_elements_propeditors_imageurl_prop_ed" url="ui_elements/propeditors/imageurl_prop_ed.html"/>
 	<mapID target="projrave_ui_elements_propeditors_lang_domain_prop_ed" url="ui_elements/propeditors/lang_domain_prop_ed.html"/>
 	<mapID target="projrave_ui_elements_propeditors_style_prop_ed_background" url="ui_elements/propeditors/style_prop_ed_background.html"/>
@@ -611,7 +597,6 @@
 	<mapID target="projrave_ui_elements_propsheets_jsfstd_text_field_props" url="ui_elements/propsheets/jsfstd_text_field_props.html"/>
 	<mapID target="projrave_ui_elements_propsheets_page_props" url="ui_elements/propsheets/page_props.html"/>
 	<mapID target="projrave_ui_elements_server_nav_add_new_data_provider" url="ui_elements/server_nav/add_new_data_provider.html"/>
-	<mapID target="projrave_ui_elements_server_nav_deployment_srvrnode" url="ui_elements/server_nav/srvs_rnode.html"/>
 	<mapID target="projrave_ui_elements_server_nav_run_query" url="ui_elements/server_nav/run_query.html"/>
 	<mapID target="projrave_ui_elements_server_nav_run_query_options_dialog" url="ui_elements/server_nav/run_query_options_dialog.html"/>
 	<mapID target="projrave_ui_elements_server_nav_runtime_nav_driver_node_popup" url="ui_elements/server_nav/runtime_nav_driver_node_popup.html"/>

@@ -34,8 +34,12 @@
       <li>
         <a href="http://www.netbeans.org/kb/60/web/vwp-migration.html">Tips for NetBeans Visual Web
         Pack Applications to NetBeans</a>
-      </li>
-      <li style=" list-style-type: none; list-style-image: none;">
+      </li></ul>
+      <ul class="note"><li><b>Note:</b>When you migrate the Java Studio Creator 2.1 user directory,
+      third party complibs migrate to the NetBeans 6.0 directory and
+      appear in the Component Library Manager.</li></ul>
+	  
+	 
         <p>
            <b>To import a legacy project:</b>
         </p>
@@ -55,16 +59,20 @@
             Click Open Project Folder to open the project in the IDE. 
             <p>
                The IDE scans the project classpath.
-            </p>
+</p>
           </li>
          
+        <li>Expand the project's node. A progress bar appears in the bottom right tray, displaying &quot;Updating Legacy Project&quot;.<br>
+The project is updated. Database drivers and connections from all previous NetBeans and Java Studio Creator<br>
+installations are displayed in the Databases node in the Services window. <ul class="note">
+  <li><b>Note:</b> If the legacy project  requires database connections that are not available in previous releases, then these required connections will not be available in NetBeans 6.0.  The   Resolve Data Sources will open, guiding you through this process.</li>
+</ul></li>
         </ol>
         <p>
            <b>Connecting to a Database</b>
         </p>
         <p>
-           You must connect to a database before the application can access data from it.
-        </p>
+           For Visual Web projects that use databases,  you must connect to a database before  opening pages in the Visual Web Designer and before the application can access data from it. </p>
         <ol>
           <li>
             In the Services Window, expand the Servers node, right-click the server you want to
@@ -83,19 +91,14 @@
            <b>Resolving Data Sources</b>
         </p>
         <p>
-           In NetBeans 6.0, you must resolve all data sources before you attempt to run the application. When
-          you migrate the Java Studio Creator 2.1 user directory, third party complibs migrate to
-          the NetBeans 6.0 directory and appear in the Component Library Manager.
-        </p>
+           For Visual Web projects that use databases  in NetBeans 6.0, you must resolve all data sources before 
+           opening pages in the Visual Web Designer and  you attempt to run the application. </p>
         <ol>
           <li> In the Projects window, the project node is red and displays a badge when there is a
             missing data source.
-            <ol>
-              <li> To resolve a data source, right-click the <em>project-name</em> node and choose
+ To resolve a data source, right-click the <em>project-name</em> node and choose
               Resolve Data Source Problem.
               </li>
-            </ol>
-          </li>
           <li>
             In the Resolve Data Source(s) dialog box, select the database name from the list and
             click Add Data Connection. 
@@ -109,65 +112,19 @@
               <p>
                The <a href="../../ui_elements/dialogs/new_database_connection_db.html">New Database
               Connection</a> dialog box opens.
-            </p>
-            <ul class="note">
-              <li>
-                <b>Note:</b> If the project you are importing uses a Java DB database, the applicable information should appear in the dialog box. Go to step 12.</li>
-            </ul>
+</p>
+          </li>
+          <li>The database information should be filled in automatically. Check to make sure all information is correct.</li>
+          <li>If the JDBC driver for the database used is not set correctly,  click the Driver drop down list and choose Add driver to<br>
+navigate to the location of the required JDBC driver.  
           </li>
           <li>
-            To add a new server type, in the Server Type drop down list, select Add Server Type. 
+            Click OK. 
             <p>
-               The Edit Database Server Types dialog box opens
-            </p>
+               The driver and database connection are registered in the Services window. The  badge should disappear from the <em>project-name</em> node in the Projects window. and the <em>project-name </em>node should return to black.</p>
           </li>
-          <li>
-            Click New and browse for the database driver JAR file. 
-            <p>
-               The driver JAR file then appears in the JDBC Driver Jar File(s) pane.
-            </p>
-          </li>
-          <li>
-            If nothing appears in the Driver Class Name field, click Suggest. 
-            <p>
-               The IDE suggests the best possible driver class name for the driver.
-            </p>
-          </li>
-          <li>
-            If nothing appears in the URL Template field, type the URL template for the database
-            connection. Follow the example that is provided. 
-            <ul class="note">
-              <li>
-                <b>Note:</b> For Java DB databases, the URL should look like this:
-                <code>jdbc:derby://localhost:1527/travel</code>.
-              </li>
-            </ul>
-          </li>
-          <li>
-            Click Close. 
-            <p>
-               The New Data Connection dialog box opens.
-            </p>
-          </li>
-          <li>
-            Select the server type from the drop down list.
-          </li>
-          <li>
-          Enter the Database URL.</li>
-          <li>Enter a User ID and a Password. </li>
-          
-        <li>Click OK to add the database connection. </li>
-        <li>Click Close to exit the Resolve Data Sources dialog box. </li>
+         
         </ol>
-        <ul class="note">
-          <li>
-            <b>Note:</b> For a database other than Java DB, if you plan to run the project on Sun
-            Java<sup><small>TM</small></sup> System Application Server 9.1, you must copy the
-            database driver libraries to the server's <code>lib</code> directory prior to running
-            the project. Also, you must ensure that the port numbers used by the project match the
-            port numbers required by your installation of Sun Application Server 9.1.
-          </li>
-        </ul>
         <dl>
           <dt>
              <a name="seealso">See Also</a>

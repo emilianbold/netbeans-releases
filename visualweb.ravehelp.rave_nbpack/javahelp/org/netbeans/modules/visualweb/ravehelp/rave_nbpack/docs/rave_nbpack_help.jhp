@@ -835,24 +835,6 @@
 						<file title="Root"/>
 						<file title="Template"/>
 					</directory>
-					<directory title="node_prop_sheets">
-						<directory title="CVS">
-							<file title="Entries"/>
-							<file title="Repository"/>
-							<file title="Root"/>
-							<file title="Template"/>
-						</directory>
-						<file title="build_node_props.html"/>
-						<file title="dist_node_props.html"/>
-						<file title="java_sources_node_props.html"/>
-						<file title="man_beans_node_props.html"/>
-						<file title="web_pages_node_props.html"/>
-					</directory>
-					<file title="buildxml_node.html"/>
-					<file title="complib_node.html"/>
-					<file title="data_source_ref_node.html"/>
-					<file title="dist_node.html"/>
-					<file title="java_sources_node.html"/>
 					<file title="project_nav_win.html"/>
 					<file title="project_props_build.html"/>
 					<file title="project_props_libraries.html"/>
@@ -860,9 +842,6 @@
 					<file title="project_props_sources.html"/>
 					<file title="projectfilesystem.html"/>
 					<file title="projectlogical.html"/>
-					<file title="references_node.html"/>
-					<file title="webapp_node.html"/>
-					<file title="webforms_node.html"/>
 				</directory>
 				<directory title="propeditors">
 					<directory title="CVS">
@@ -929,7 +908,6 @@
 					<file title="runtime_nav_driver_node_popup.html"/>
 					<file title="runtime_navigator.html"/>
 					<file title="services_win_popup.html"/>
-					<file title="srvs_rnode.html"/>
 				</directory>
 			</directory>
 			<directory title="web">
