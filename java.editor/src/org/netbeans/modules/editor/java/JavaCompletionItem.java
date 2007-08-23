@@ -656,6 +656,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         if (type.getKind() != TypeKind.ERROR && EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
                             sb.append(" type=\""); //NOI18N
                             sb.append(elem.getQualifiedName());
+                            sb.append("\" default=\""); //NOI18N
+                            sb.append(elem.getSimpleName());
                         } else {
                             sb.append(" default=\""); //NOI18N
                             sb.append(elem.getQualifiedName());
@@ -673,18 +675,23 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     if (elem == tv.asElement().getEnclosingElement()) {
                                         sb.append(" type=\""); //NOI18N
                                         ta = tv.getUpperBound();
+                                        sb.append(Utilities.getTypeName(ta, true));
+                                        sb.append("\" default=\""); //NOI18N
+                                        sb.append(Utilities.getTypeName(ta, false));
                                     } else {
                                         sb.append(" editable=false default=\""); //NOI18N
+                                        sb.append(Utilities.getTypeName(ta, true));
                                         asTemplate = true;
                                     }
-                                    sb.append(Utilities.getTypeName(ta, true));
                                     sb.append("\"}"); //NOI18N
                                 } else if (ta.getKind() == TypeKind.WILDCARD) {
                                     sb.append(" type=\""); //NOI18N
                                     TypeMirror bound = ((WildcardType)ta).getExtendsBound();
                                     if (bound == null)
                                         bound = ((WildcardType)ta).getSuperBound();
-                                    sb.append(bound != null ? Utilities.getTypeName(bound, true) : "java.lang.Object"); //NOI18N
+                                    sb.append(bound != null ? Utilities.getTypeName(bound, true) : "Object"); //NOI18N
+                                    sb.append("\" default=\""); //NOI18N
+                                    sb.append(bound != null ? Utilities.getTypeName(bound, false) : "Object"); //NOI18N
                                     sb.append("\"}"); //NOI18N
                                     asTemplate = true;
                                 } else if (ta.getKind() == TypeKind.ERROR) {
@@ -695,6 +702,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 } else {
                                     sb.append(" type=\""); //NOI18N
                                     sb.append(Utilities.getTypeName(ta, true));
+                                    sb.append("\" default=\""); //NOI18N
+                                    sb.append(Utilities.getTypeName(ta, false));
                                     sb.append("\" editable=false}"); //NOI18N
                                     asTemplate = true;
                                 }
@@ -2383,6 +2392,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         sb.append(cnt++);
                         sb.append(" type=\""); //NOI18N
                         sb.append(((TypeElement)type.asElement()).getQualifiedName());
+                        sb.append("\" default=\""); //NOI18N
+                        sb.append(((TypeElement)type.asElement()).getSimpleName());
                         sb.append("\" editable=false}"); //NOI18N
                         Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
                         if (tas.hasNext()) {
@@ -2395,13 +2406,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     sb.append(" type=\""); //NOI18N
                                     ta = ((TypeVariable)ta).getUpperBound();
                                     sb.append(Utilities.getTypeName(ta, true));
+                                    sb.append("\" default=\""); //NOI18N
+                                    sb.append(Utilities.getTypeName(ta, false));
                                     sb.append("\"}"); //NOI18N
                                 } else if (ta.getKind() == TypeKind.WILDCARD) {
                                     sb.append(" type=\""); //NOI18N
                                     TypeMirror bound = ((WildcardType)ta).getExtendsBound();
                                     if (bound == null)
                                         bound = ((WildcardType)ta).getSuperBound();
-                                    sb.append(bound != null ? Utilities.getTypeName(bound, true) : "java.lang.Object"); //NOI18N
+                                    sb.append(bound != null ? Utilities.getTypeName(bound, true) : "Object"); //NOI18N
+                                    sb.append("\" default=\""); //NOI18N
+                                    sb.append(bound != null ? Utilities.getTypeName(bound, false) : "Object"); //NOI18N
                                     sb.append("\"}"); //NOI18N
                                 } else if (ta.getKind() == TypeKind.ERROR) {
                                     sb.append(" default=\""); //NOI18N
@@ -2410,6 +2425,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 } else {
                                     sb.append(" type=\""); //NOI18N
                                     sb.append(Utilities.getTypeName(ta, true));
+                                    sb.append("\" default=\""); //NOI18N
+                                    sb.append(Utilities.getTypeName(ta, false));
                                     sb.append("\" editable=false}"); //NOI18N
                                 }
                                 if (tas.hasNext())
