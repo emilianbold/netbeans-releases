@@ -247,6 +247,16 @@ function update() {
     document.getElementById("ruby_size").innerHTML = "Free, " + ruby_size + " MB";
     document.getElementById("cnd_size").innerHTML = "Free, " + cnd_size + " MB";
     
+    // no Mobility for Solaris and MacOS
+    if ((platform == "solaris-x86") || (platform == "solaris-sparc") || (platform == "macosx-ppc") || (platform == "macosx-x86")) {
+	var name = document.getElementById("javame_name").innerHTML;
+    	document.getElementById("javame_link").innerHTML = "<a id=\"javame_name\">" + name + "</a>";
+    } else {
+	var name = document.getElementById("javame_name").innerHTML;
+    	document.getElementById("javame_link").innerHTML = "<a href=\"javascript: download('javame')\" id=\"javame_name\">" + name + "</a>";
+    }
+
+
 }
 
 function is_compatible(index, platform) {
