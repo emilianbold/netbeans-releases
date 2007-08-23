@@ -83,6 +83,7 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
     /** Creates a new instance of SQLGraphView */
     public SQLGraphView() {
         super();
+        setDropEnabled(true);
     }
     
     /**

@@ -98,6 +98,8 @@ public abstract class GraphView extends JGoView implements IGraphView {
     private int printScale = STANDARD_SCALE;
 
     protected Point mousePoint = null;
+    
+    private IOperatorXmlInfo opXmlInfo = null;
 
     // current object under mouse
     private static JGoObject currentObj = null;
@@ -114,7 +116,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
 
     /** Creates a new instance of BasicGraphView */
     public GraphView() {
-        super();
+       // super();
         setDropEnabled(true);
         //set default primary and secondary selection colors
         resetSelectionColors();
@@ -164,15 +166,29 @@ public abstract class GraphView extends JGoView implements IGraphView {
             if (e.isDataFlavorSupported(mDataFlavorArray[0])) {
                 Transferable tr = e.getTransferable();
 
-                if (!(tr.getTransferData(mDataFlavorArray[0]) instanceof IOperatorXmlInfo)) {
+                /*if (!(tr.getTransferData(mDataFlavorArray[0]) instanceof IOperatorXmlInfo)) {
                     if (graphController != null) {
                         graphController.handleDrop(e);
                     }
 
                     return;
+                }*/
+                
+                IOperatorXmlInfo xmlInfo = null;
+                try{
+                    xmlInfo = (IOperatorXmlInfo)tr.getTransferData(mDataFlavorArray[0]);
+                }catch(Exception ex){
+                    xmlInfo = getXMLInfo();
                 }
-
-                IOperatorXmlInfo xmlInfo = (IOperatorXmlInfo) tr.getTransferData(mDataFlavorArray[0]);
+                
+                if (!(xmlInfo instanceof IOperatorXmlInfo)) {
+                    if (graphController != null) {
+                        graphController.handleDrop(e);
+                    }
+                    return;
+                }
+                
+           //    IOperatorXmlInfo xmlInfo = (IOperatorXmlInfo) tr.getTransferData(mDataFlavorArray[0]);
 
                 if (graphController != null) {
                     graphController.handleNodeAdded(xmlInfo, docCoord);
@@ -1123,5 +1139,13 @@ public abstract class GraphView extends JGoView implements IGraphView {
     public void clearSelection() {
         JGoSelection sel = this.getSelection();
         sel.clearSelection();
+    }
+    
+    public void setXMLInfo(IOperatorXmlInfo xmlInfo){
+        this.opXmlInfo = xmlInfo;
+    }
+    
+    public IOperatorXmlInfo getXMLInfo(){
+        return opXmlInfo;
     }
 }

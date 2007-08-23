@@ -241,4 +241,6 @@ public interface IGraphView extends ICommand {
     public void highlightInvalidNode(Object dataObj, boolean createSel);
 
     public void clearSelection();
+    
+    public void setXMLInfo(IOperatorXmlInfo xmlInfo);
 }
