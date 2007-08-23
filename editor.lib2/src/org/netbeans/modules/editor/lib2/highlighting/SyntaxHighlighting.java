@@ -20,7 +20,6 @@
 package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -148,7 +147,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         if (format) {
             return String.format("%20s.%-15s", tokenId.getClass().getSimpleName(), tokenId.name()); //NOI18N
         } else {
-            return tokenId.getClass().getSimpleName() + "." + tokenId.name();
+            return tokenId.getClass().getSimpleName() + "." + tokenId.name(); //NOI18N
         }
     }
     
@@ -160,10 +159,10 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             char ch = text.charAt(i);
             if (Character.isISOControl(ch)) {
                 switch (ch) {
-                case '\n' : sb.append("\\n"); //NOI18N
-                case '\t' : sb.append("\\t"); //NOI18N
-                case '\r' : sb.append("\\r"); //NOI18N
-                default : sb.append("\\").append(Integer.toOctalString(ch)); //NOI18N
+                case '\n' : sb.append("\\n"); break; //NOI18N
+                case '\t' : sb.append("\\t"); break; //NOI18N
+                case '\r' : sb.append("\\r"); break; //NOI18N
+                default : sb.append("\\").append(Integer.toOctalString(ch)); break; //NOI18N
                 }
             } else {
                 sb.append(ch);
@@ -218,7 +217,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         private List<TokenSequence<? extends TokenId>> sequences;
         private int startOffset;
         private int endOffset;
-        private int state;
+        private int state = -1;
         
         public HSImpl(long version, TokenHierarchy<? extends Document> scanner, int startOffset, int endOffset) {
             this.version = version;
@@ -230,15 +229,17 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         
         public boolean moveNext() {
             synchronized (SyntaxHighlighting.this) {
-                checkVersion();
-
-                if (sequences == null) {
-                    // initialize
-                    TokenSequence<? extends TokenId> seq = scanner.tokenSequence();
-                    seq.move(startOffset);
-                    sequences = new ArrayList<TokenSequence<? extends TokenId>>();
-                    sequences.add(seq);
-                    state = S_NORMAL;
+                if (checkVersion()) {
+                    if (sequences == null) {
+                        // initialize
+                        TokenSequence<? extends TokenId> seq = scanner.tokenSequence();
+                        seq.move(startOffset);
+                        sequences = new ArrayList<TokenSequence<? extends TokenId>>();
+                        sequences.add(seq);
+                        state = S_NORMAL;
+                    }
+                } else {
+                    state = S_DONE;
                 }
 
                 switch (state) {
@@ -254,7 +255,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                         if (seq.moveNext()) {
                             state = S_NORMAL;
                         } else {
-                            throw new IllegalStateException("Invalid state");
+                            throw new IllegalStateException("Invalid state"); //NOI18N
                         }
                         break;
 
@@ -269,7 +270,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                         break;
 
                     default:
-                        throw new IllegalStateException("Invalid state: " + state);
+                        throw new IllegalStateException("Invalid state: " + state); //NOI18N
                 }
 
                 if (state == S_NORMAL) {
@@ -296,12 +297,6 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
 
         public int getStartOffset() {
             synchronized (SyntaxHighlighting.this) {
-                checkVersion();
-
-                if (sequences == null) {
-                    throw new NoSuchElementException("Call moveNext() first.");
-                }
-
                 switch (state) {
                     case S_NORMAL: {
                         TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
@@ -317,26 +312,20 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                         if (seq.movePrevious()) {
                             return seq.offset() + seq.token().length();
                         } else {
-                            throw new IllegalStateException("Invalid state");
+                            throw new IllegalStateException("Invalid state"); //NOI18N
                         }
                     }
                     case S_DONE:
                         throw new NoSuchElementException();
 
                     default:
-                        throw new IllegalStateException("Invalid state: " + state);
+                        throw new IllegalStateException("Invalid state " + state + ", call moveNext() first."); //NOI18N
                 }
             }
         }
 
         public int getEndOffset() {
             synchronized (SyntaxHighlighting.this) {
-                checkVersion();
-
-                if (sequences == null) {
-                    throw new NoSuchElementException("Call moveNext() first.");
-                }
-
                 switch (state) {
                     case S_NORMAL: {
                         TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
@@ -360,19 +349,13 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                         throw new NoSuchElementException();
 
                     default:
-                        throw new IllegalStateException("Invalid state: " + state);
+                        throw new IllegalStateException("Invalid state " + state + ", call moveNext() first."); //NOI18N
                 }
             }
         }
 
         public AttributeSet getAttributes() {
             synchronized (SyntaxHighlighting.this) {
-                checkVersion();
-
-                if (sequences == null) {
-                    throw new NoSuchElementException("Call moveNext() first.");
-                }
-
                 switch (state) {
                     case S_NORMAL:
                         return findAttribs(sequences.size() - 1);
@@ -385,7 +368,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                         throw new NoSuchElementException();
 
                     default:
-                        throw new IllegalStateException("Invalid state: " + state);
+                        throw new IllegalStateException("Invalid state " + state + ", call moveNext() first."); //NOI18N
                 }
             }
         }
@@ -524,7 +507,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                             return moveTheSequence();
                         }
                     } else {
-                        throw new IllegalStateException("Invalid state");
+                        throw new IllegalStateException("Invalid state"); //NOI18N
                     }
                 } else {
                     sequences.clear();
@@ -533,10 +516,8 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             }
         }
         
-        private void checkVersion() {
-            if (this.version != SyntaxHighlighting.this.version) {
-                throw new ConcurrentModificationException();
-            }
+        private boolean checkVersion() {
+            return this.version == SyntaxHighlighting.this.version;
         }
     } // End of HSImpl class
 }
