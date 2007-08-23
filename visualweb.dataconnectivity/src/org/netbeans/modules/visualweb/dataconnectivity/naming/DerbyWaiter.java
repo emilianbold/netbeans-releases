@@ -59,14 +59,16 @@ public class DerbyWaiter {
             DatabaseSettingsImporter.getInstance().locateAndRegisterDrivers();
             DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(true);
             if (drvsArray.length > 0) {
-                SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);                
+                SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "startup/samples/travel.zip", false, "localhost", 1527);   //NOI18N    
+                SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "startup/samples/vir.zip", false, "localhost", 1527);   //NOI18N              
             }
             return;
         }        
 
         // Register sample database
         if (drvsArray.length > 0) {
-            SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);
+            SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "startup/samples/travel.zip", false, "localhost", 1527);  //NOI18N
+            SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "startup/samples/vir.zip", false, "localhost", 1527);  //NOI18N               
             registered = true;
             JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);
         }                

@@ -25,10 +25,8 @@
 -- CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 -- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 -- THE POSSIBILITY OF SUCH DAMAGE.
-
--- Vehicle Incident Report:  create user and schema
-DROP SCHEMA vir RESTRICT;
+-- Travel:  create user and schema
+drop schema travel restrict ;
 CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY(
-    'derby.user.vir', 'vir');
-CREATE SCHEMA vir;
-
+    'derby.user.travel', 'travel');
+create schema travel authorization travel ;

@@ -70,7 +70,8 @@ Microsystems, Inc. All Rights Reserved.
     -->
 
     <mkdir dir="${cluster}/modules/ext"/>
-    <copy file="external/travel.zip" tofile="${cluster}/modules/ext/travel.zip" /> 
+    <copy file="release/startup/samples/travel.zip" tofile="${cluster}/startup/samples/travel.zip" /> 
+    <copy file="release/startup/samples/vir.zip" tofile="${cluster}/startup/samples/vir.zip" /> 
   </target>
 
   <target name="compile" depends="fake-jdbc-40,projectized-common.compile"/>
