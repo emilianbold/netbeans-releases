@@ -43,16 +43,16 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.util.NbBundle;
 
 /**
- * The main entry point to the plugin. Keeps the required static data for the 
- * plugin and returns the DeploymentManagers required for deployment and 
+ * The main entry point to the plugin. Keeps the required static data for the
+ * plugin and returns the DeploymentManagers required for deployment and
  * configuration. Does not directly perform any interaction with the server.
- * 
+ *
  * @author Kirill Sorokin
  */
 public class WLDeploymentFactory implements DeploymentFactory {
-    
+
     public static final String URI_PREFIX = "deployer:WebLogic:http://"; // NOI18N
-    
+
     /**
      * The singleton instance of the factory
      */
@@ -60,12 +60,12 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
     private DeploymentFactory wlFactory = null;
 
-    private static final WeakHashMap<InstanceProperties, WLDeploymentManager> managerCache = 
+    private static final WeakHashMap<InstanceProperties, WLDeploymentManager> managerCache =
             new WeakHashMap<InstanceProperties, WLDeploymentManager>();
-    
+
     /**
      * The singleton factory method
-     * 
+     *
      * @return the singleton instance of the factory
      */
     public static synchronized DeploymentFactory getInstance() {
@@ -75,14 +75,14 @@ public class WLDeploymentFactory implements DeploymentFactory {
         }
         return instance;
     }
-    
-    public static class WLClassLoader extends URLClassLoader {
 
-        public WLClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException, RuntimeException {
+    private static class WLClassLoader extends URLClassLoader {
+
+        public WLClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException {
             super(urls, parent);
         }
-        
-        public void addURL(File f) throws MalformedURLException, RuntimeException {
+
+        public void addURL(File f) throws MalformedURLException {
             if (f.isFile()) {
                 addURL(f.toURL());
             }
@@ -93,26 +93,26 @@ public class WLDeploymentFactory implements DeploymentFactory {
             p.add(new AllPermission());
             return p;
         }
-        
-       public Enumeration<URL> getResources(String name) throws IOException {
-           // get rid of annoying warnings
-           if (name.indexOf("jndi.properties") != -1 || name.indexOf("i18n_user.properties") != -1) { // NOI18N
-               return Collections.enumeration(Collections.<URL>emptyList());
-           } 
 
-           return super.getResources(name);
-       }         
+        public Enumeration<URL> getResources(String name) throws IOException {
+            // get rid of annoying warnings
+            if (name.indexOf("jndi.properties") != -1 || name.indexOf("i18n_user.properties") != -1) { // NOI18N
+                return Collections.enumeration(Collections.<URL>emptyList());
+            }
+
+            return super.getResources(name);
+        }
     }
-    
+
     private static WLClassLoader loader;
-    
+
     public static ClassLoader getWLClassLoader (String serverRoot) {
         if (loader == null) {
             resetWLClassLoader(serverRoot);
         }
         return loader;
     }
-    
+
     private static void resetWLClassLoader (String serverRoot) {
         loader = null;
         try {
@@ -122,8 +122,8 @@ public class WLDeploymentFactory implements DeploymentFactory {
             Logger.getLogger("global").log(Level.WARNING, null, e);
         }
     }
-    
-    private DeploymentManager getDM(String uri, String username, String password, String host, String port) throws DeploymentManagerCreationException {
+
+    /*package*/ DeploymentManager getVendorDeploymentManager(String uri, String username, String password, String host, String port) throws DeploymentManagerCreationException {
         if (WLDebug.isEnabled()) {
             WLDebug.notify(WLDeploymentFactory.class, "getDM, uri:" + uri+" username:" + username+" password:"+password+" host:"+host+" port:"+port);
         }
@@ -133,11 +133,11 @@ public class WLDeploymentFactory implements DeploymentFactory {
             String serverRoot = InstanceProperties.getInstanceProperties(uri).
                                     getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
             // if serverRoot is null, then we are in a server instance registration process, thus this call
-            // is made from InstanceProperties creation -> WLPluginProperties singleton contains 
+            // is made from InstanceProperties creation -> WLPluginProperties singleton contains
             // install location of the instance being registered
             if (serverRoot == null)
                 serverRoot = WLPluginProperties.getInstance().getInstallLocation();
-            
+
             ClassLoader loader = getWLClassLoader(serverRoot);
             Thread.currentThread().setContextClassLoader(loader);
             Class helperClazz = loader.loadClass("weblogic.deploy.api.tools.SessionHelper"); //NOI18N
@@ -159,19 +159,19 @@ public class WLDeploymentFactory implements DeploymentFactory {
         }
         throw dmce;
     }
-    
-    private DeploymentManager getDiscoDM(String uri) throws DeploymentManagerCreationException {
+
+    /*package*/ DeploymentManager getVendorDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         DeploymentManagerCreationException dmce = null;
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
             String serverRoot = InstanceProperties.getInstanceProperties(uri).
                                     getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
             // if serverRoot is null, then we are in a server instance registration process, thus this call
-            // is made from InstanceProperties creation -> WLPluginProperties singleton contains 
+            // is made from InstanceProperties creation -> WLPluginProperties singleton contains
             // install location of the instance being registered
             if (serverRoot == null)
                 serverRoot = WLPluginProperties.getInstance().getInstallLocation();
-            
+
             ClassLoader loader = getWLClassLoader(serverRoot);
             Thread.currentThread().setContextClassLoader(loader);
             Class helperClazz = loader.loadClass("weblogic.deploy.api.tools.SessionHelper"); //NOI18N
@@ -187,36 +187,36 @@ public class WLDeploymentFactory implements DeploymentFactory {
             dmce.initCause(e);
         } catch (NoClassDefFoundError err) {
             dmce = new DeploymentManagerCreationException("Cannot create weblogic DeploymentManager instance.");
-            dmce.initCause(err);            
+            dmce.initCause(err);
         } finally {
             Thread.currentThread().setContextClassLoader(orig);
         }
         throw dmce;
     }
-    
+
     public boolean handlesURI(String uri) {
         if (uri != null && uri.startsWith(URI_PREFIX)) {
             return true;
         }
-        
+
         return false;
     }
-    
-    public DeploymentManager getDeploymentManager(String uri, String username, 
+
+    public DeploymentManager getDeploymentManager(String uri, String username,
             String password) throws DeploymentManagerCreationException {
         if (WLDebug.isEnabled()) {
             WLDebug.notify(WLDeploymentFactory.class, "getDeploymentManager, uri:" + uri+" username:" + username+" password:"+password);
         }
-        
+
         String[] parts = uri.split(":");                               // NOI18N
         String host = parts[3].substring(2);
         String port = parts[4];
-        WLDeploymentManager dm = new WLDeploymentManager(getDM (uri, username, password, host, port), uri, username, password, host, port);
+        WLDeploymentManager dm = new WLDeploymentManager(this, uri, username, password, host, port);
         updateManagerCache(dm, uri);
         return dm;
     }
-    
-    public DeploymentManager getDisconnectedDeploymentManager(String uri) 
+
+    public DeploymentManager getDisconnectedDeploymentManager(String uri)
             throws DeploymentManagerCreationException {
         if (WLDebug.isEnabled()) {
             WLDebug.notify(WLDeploymentFactory.class, "getDisconnectedDeploymentManager, uri:" + uri);
@@ -224,11 +224,11 @@ public class WLDeploymentFactory implements DeploymentFactory {
         String[] parts = uri.split(":");                               // NOI18N
         String host = parts[3].substring(2);
         String port = parts[4];
-        WLDeploymentManager dm = new WLDeploymentManager(getDiscoDM(uri), uri, host, port);
+        WLDeploymentManager dm = new WLDeploymentManager(this, uri, host, port);
         updateManagerCache(dm, uri);
         return dm;
     }
-    
+
     private void updateManagerCache(WLDeploymentManager dm, String uri) {
         InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
         if (managerCache.get(ip) != null) {
@@ -236,14 +236,14 @@ public class WLDeploymentFactory implements DeploymentFactory {
         }
         managerCache.put(ip, dm);
     }
-    
+
     public String getProductVersion() {
-        return NbBundle.getMessage(WLDeploymentFactory.class, 
+        return NbBundle.getMessage(WLDeploymentFactory.class,
                 "TXT_productVersion");                                  // NOI18N
     }
-    
+
     public String getDisplayName() {
-        return NbBundle.getMessage(WLDeploymentFactory.class, 
+        return NbBundle.getMessage(WLDeploymentFactory.class,
                 "TXT_displayName");                                    // NOI18N
     }
 }

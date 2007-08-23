@@ -98,7 +98,7 @@ public class WLDeployer implements ProgressObject, Runnable {
             }
             
         }catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
             Logger.getLogger("global").log(Level.INFO, null, e);
         }
 

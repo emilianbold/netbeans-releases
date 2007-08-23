@@ -595,7 +595,7 @@ public class WLStartServer extends StartServer {
         /**
          * The amount of time in milliseconds that we should wait between checks
          */
-        private static final int DELAY = 5000;
+        private static final int DELAY = 1000;
         
         /** 
          * Name of the startup script for windows
@@ -699,12 +699,12 @@ public class WLStartServer extends StartServer {
          * The amount of time in milliseconds during which the server should
          * stop
          */
-        private static final int TIMEOUT = 120000;
+        private static final int TIMEOUT = 900000;
         
         /**
          * The amount of time in milliseconds that we should wait between checks
          */
-        private static final int DELAY = 5000;
+        private static final int DELAY = 1000;
         
         /** 
          * Name of the shutdown script for windows
