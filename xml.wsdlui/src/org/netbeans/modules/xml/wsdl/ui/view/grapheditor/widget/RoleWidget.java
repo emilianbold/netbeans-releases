@@ -217,7 +217,6 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     @Override
     public void updateContent() {
         refreshPortTypeColumn();
-        getScene().validate();
     }
 
     @Override
@@ -232,10 +231,12 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
             if (widgetPT != null && portType == null) {
                 if (EventQueue.isDispatchThread()) {
                     updateContent();
+                    getScene().validate();
                 } else {
                     EventQueue.invokeLater(new Runnable(){
                         public void run() {
                             updateContent();
+                            getScene().validate();
                         }
                     });
                 }
@@ -426,6 +427,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
                 getWSDLComponent().getModel().endTransaction();
             }
         }
+        ActionHelper.selectNode(pt);
     }
 
     public void expandForDragAndDrop() {}

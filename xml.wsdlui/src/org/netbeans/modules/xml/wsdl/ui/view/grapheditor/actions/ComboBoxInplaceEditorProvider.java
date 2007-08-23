@@ -108,7 +108,7 @@ public final class ComboBoxInplaceEditorProvider implements InplaceEditorProvide
         if (commit) {
             if (widget != null) {
                 widget.revalidate();
-                widget.repaint();
+                widget.getScene().validate();
             }
         }
         localEditor.setSelectedItem(editor.getSelectedItem());

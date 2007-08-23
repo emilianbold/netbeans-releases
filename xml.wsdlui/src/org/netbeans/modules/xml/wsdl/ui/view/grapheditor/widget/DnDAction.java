@@ -20,6 +20,9 @@
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.Point;
+//import java.util.logging.Level;
+//import java.util.logging.Logger;
+
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -33,7 +36,7 @@ public class DnDAction extends WidgetAction.Adapter {
     private DnDHandler currentHandler = null;
     private long lastId = Long.MIN_VALUE;            
     private long dragEnterTime = -1;
-    
+//    private Logger mLogger = Logger.getLogger(DnDAction.class.getName());
     public DnDAction() {
     
     }
@@ -77,35 +80,49 @@ public class DnDAction extends WidgetAction.Adapter {
                 if (System.currentTimeMillis() - dragEnterTime 
                         >= EXPAND_TIMEOUT) 
                 {
+                	
+//                	mLogger.log(Level.SEVERE, currentHandler.toString() + " : Expanding");
                     currentHandler.expandForDragAndDrop();
+//                    mLogger.log(Level.SEVERE, currentHandler.toString() + " : Expanded");
                     dragEnterTime = -1;
                 }
             }
+//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragOver start");
             isEventHandled = currentHandler.dragOver(scenePoint, event);
+//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragOver end");
         } else if (widget instanceof DnDHandler) {
             if (currentHandler != null) {
+//            	mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragExit start");
                 currentHandler.dragExit();
+//                mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragExit end");
             } 
             
             currentHandler = (DnDHandler) widget;
+//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : New CurrentHandler");
             if (currentHandler.isCollapsed()) {
                 dragEnterTime = System.currentTimeMillis();
             } else {
                 dragEnterTime = -1;
             }
             
+//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragOver start");
             isEventHandled = currentHandler.dragOver(scenePoint, event);
+//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragOver end");
         } else if (currentHandler != null) {
+//        	mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragExit start");
             currentHandler.dragExit();
+//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragExit end");
             currentHandler = null;
             dragEnterTime = -1;
         }
         if (isEventHandled) {
             event.acceptDrag(event.getDropAction());
+//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : EventAccepted");
             return WidgetAction.State.CONSUMED;
         }
         
         event.rejectDrag();
+//        mLogger.log(Level.SEVERE, currentHandler.toString() + " : EventRejected");
         return WidgetAction.State.REJECTED;
     } 
 

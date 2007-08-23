@@ -387,12 +387,12 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
     @Override
     public void userSelectionSuggested(Set<?> suggestedSelectedObjects,
     		boolean invertSelection) {
-    	validate();
     	super.userSelectionSuggested(suggestedSelectedObjects, invertSelection);
     	for (Widget w : getSelectedWidgets()) {
     		w.setState(w.getState().deriveSelected(false));
     	}
     	getSelectedWidgets().clear();
+    	validate();
     }
     
     protected List<Widget> getSelectedWidgets() {

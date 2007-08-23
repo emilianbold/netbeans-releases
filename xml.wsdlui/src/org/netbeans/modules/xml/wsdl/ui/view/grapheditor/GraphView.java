@@ -25,6 +25,8 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.event.HierarchyBoundsAdapter;
+import java.awt.event.HierarchyEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.Collections;
 
@@ -117,26 +119,45 @@ public class GraphView extends JPanel {
         scene.addChild(contentWidget);
         scene.addSceneListener (new Scene.SceneListener() {
             public void sceneRepaint () {
+            	//do nothing
             }
             public void sceneValidating () {
-
+            	//do nothing
             }
             public void sceneValidated () {
                 int width = panel.getViewport().getWidth();
                 if (width <= scene.getBounds().width) {
                     contentWidget.setMinimumSize(new Dimension(width, 0));
+                    contentWidget.getScene().validate();
                 }
             }
         });
         mDragLayer = scene.getDragOverLayer();
 
         scene.addChild(mDragLayer);
+        scene.validate();
         sceneView.setFocusCycleRoot(true);
         panel = new JScrollPane(sceneView);
         panel.getVerticalScrollBar().setUnitIncrement(16);
         panel.getHorizontalScrollBar().setUnitIncrement(16);
         panel.setBorder(null);
         add(panel, BorderLayout.CENTER);
+        
+        addHierarchyBoundsListener(new HierarchyBoundsAdapter() {
+		
+			@Override
+			public void ancestorResized(HierarchyEvent e) {
+				super.ancestorResized(e);
+				if (e.getID() == HierarchyEvent.ANCESTOR_RESIZED) {
+					int width = panel.getViewport().getWidth();
+	                if (width <= scene.getBounds().width) {
+	                    contentWidget.setMinimumSize(new Dimension(width, 0));
+	                    contentWidget.getScene().validate();
+	                }
+				}
+			}
+		
+		});
 
     }
 

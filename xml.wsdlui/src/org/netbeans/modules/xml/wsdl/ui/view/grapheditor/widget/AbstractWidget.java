@@ -236,9 +236,7 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
     public JPopupMenu getPopupMenu(Widget widget, Point point) {
         Node node = getNode();
         if (node != null && wsdlComponent != null) {
-            Set<WSDLComponent> set = new HashSet<WSDLComponent>();
-            set.add(getWSDLComponent());
-            ((PartnerScene)getScene()).userSelectionSuggested(set, false);
+            ((PartnerScene)getScene()).userSelectionSuggested(Collections.singleton(wsdlComponent), false);
             TopComponent tc = findTopComponent();
             Lookup lookup;
             if (tc != null) {
@@ -291,8 +289,10 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
             }
             currentBorder = null;
         }
-        repaint();
         revalidate(true);
+        getScene().validate();
+        repaint();
+        
     }
 
     /**

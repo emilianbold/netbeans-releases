@@ -203,6 +203,7 @@ public class MessagesWidget extends Widget implements
     
     public void dragExit() {
         hideHitPoint();
+        getScene().validate();
     }
     
     
@@ -216,6 +217,7 @@ public class MessagesWidget extends Widget implements
                         Node node = (Node) t.getTransferData(flavor);
                         if ("Message".equals(node.getName())) {  // NOI18N
                             showHitPoint(scenePoint);
+                            getScene().validate();
                             return true;
                         }
                     }
@@ -240,14 +242,15 @@ public class MessagesWidget extends Widget implements
         int index = messageHitPointIndex;
         
         hideHitPoint();
-        
+        getScene().validate();
         if (index >= 0) {
+        	Message newMessage = null;
             try {
                 if (model.startTransaction()) {
                     Message[] messages = model.getDefinitions().getMessages()
                             .toArray(new Message[0]);
 
-                    Message newMessage = model.getFactory().createMessage();
+                    newMessage = model.getFactory().createMessage();
                     newMessage.setName(MessagesUtils.createNewMessageName(model));
                     Part newPart = model.getFactory().createPart();
                     newPart.setName(MessagesUtils.createNewPartName(newMessage));
@@ -265,7 +268,7 @@ public class MessagesWidget extends Widget implements
             } finally {
                 model.endTransaction();
             }
-            
+            ActionHelper.selectNode(newMessage);
             return true; 
         }
         

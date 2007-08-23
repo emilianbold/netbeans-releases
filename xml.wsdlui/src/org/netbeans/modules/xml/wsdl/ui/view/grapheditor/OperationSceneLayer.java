@@ -211,7 +211,6 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
                         OperationWidget operationWidget =
                             (OperationWidget) factory.createWidget(getScene(), (Operation) value);
                         operationWidget.setRightSided(isRight);
-                        revalidate();
                         if (isLeft) {
                             addChild(getChildren().size() - 1, operationWidget);
                         } else {
@@ -237,6 +236,7 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
                             w.getParentWidget().removeChild(w);
                         }
                     }
+                    getScene().validate();
                 }
             }
         } else if (evt.getPropertyName().equals(Role.PORT_TYPE_PROPERTY)) {

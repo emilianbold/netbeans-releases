@@ -64,6 +64,7 @@ public class DragOverSceneLayer extends LayerWidget {
         icon = null;
         setPreferredBounds(new Rectangle());
         setPreferredLocation(new Point());
+        getScene().validate();
     }
 
 
@@ -88,7 +89,7 @@ public class DragOverSceneLayer extends LayerWidget {
                         if (image != null) {
                             icon.setImage(image);
                         }
-                        getScene().revalidate();
+                        getScene().validate();
                     }
                 }
             } catch (Exception e) {
@@ -108,6 +109,7 @@ public class DragOverSceneLayer extends LayerWidget {
                 getScene().getView().scrollRectToVisible(bounds);
             }
             icon.setPreferredLocation(convertSceneToLocal(scenePoint));
+            getScene().validate();
         }
         return false;
     }

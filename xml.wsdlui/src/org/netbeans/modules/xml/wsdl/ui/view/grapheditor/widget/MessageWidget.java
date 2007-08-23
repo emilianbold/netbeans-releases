@@ -405,6 +405,7 @@ public class MessageWidget extends AbstractWidget<Message>
     
     
     private void hideHitPoint() {
+    	if (partHitPointWidget == null) return;
         if (partHitPointWidget.getParentWidget() != null) {
             partHitPointWidget.getParentWidget().removeChild(partHitPointWidget);
         }
@@ -535,6 +536,7 @@ public class MessageWidget extends AbstractWidget<Message>
     
     public void dragExit() {
         hideHitPoint();
+        getScene().validate();
     }
 
 
@@ -553,6 +555,7 @@ public class MessageWidget extends AbstractWidget<Message>
 
                         if (sc != null) {
                             showHitPoint(scenePoint, sc);
+                            getScene().validate();
                             return true;
                         }
                     }
@@ -575,7 +578,7 @@ public class MessageWidget extends AbstractWidget<Message>
         PartHitPointPosition position = partHitPointPosition;
         
         hideHitPoint();
-        
+        getScene().validate();
         if ((sc == null) || (position == null)) {
             return false;
         }
@@ -611,7 +614,7 @@ public class MessageWidget extends AbstractWidget<Message>
                 if (model.isIntransaction()) model.endTransaction();
             }
         }
-
+        ActionHelper.selectNode(part);
         return true;
     }
     

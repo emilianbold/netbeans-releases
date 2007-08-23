@@ -407,14 +407,14 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     private void showComboBoxBtnWidget() {
         if (!showComboBoxBtnWidget.isVisible()) {
             showComboBoxBtnWidget.setVisible(true);
-            getScene().revalidate();
+            getScene().validate();
         }
     }
     
     private void removeComboBoxBtnWidget() {
         if (showComboBoxBtnWidget.isVisible()) {
             showComboBoxBtnWidget.setVisible(false);
-            getScene().revalidate();
+            getScene().validate();
         }
     }
 
@@ -525,6 +525,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     
     public void showHotSpot() {
         if (mHotSpotLayer.getChildren() != null && mHotSpotLayer.getChildren().size() == 0) {
+        	mPLTContentWidget.revalidate();
             mPLTContentWidget.getOperationSceneLayer().showBlankWidget(getEffectiveOperationCount());
             mHotSpotLayer.addChild(mHotspot);
             mHotspot.setPreferredLocation(getHotSpotLocation());
@@ -535,6 +536,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     
     public void clearHotSpot() {
         if(mHotSpotLayer.getChildren().contains(mHotspot)) {
+        	mPLTContentWidget.revalidate();
             mHotSpotLayer.removeChild(mHotspot);
             mHotSpotLayer.setPreferredLocation(null);
             mPLTContentWidget.getOperationSceneLayer().removeBlankWidget();
@@ -676,60 +678,61 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         
         WSDLModel model = getWSDLComponent().getModel();
         WSDLComponentFactory factory = model.getFactory();
-        try {
-            if (model.startTransaction()) {
-                Operation operation = null;
-                if (name.startsWith("RequestReply")) {
-                    operation = factory.createRequestResponseOperation();
-                    operation.setName(NameGenerator.getInstance().
-                            generateUniqueOperationName(pt));
-                    pt.addOperation(operation);
-                    Input in = factory.createInput();
-                    in.setName(NameGenerator.getInstance().
-                            generateUniqueOperationInputName(operation));
-                    operation.setInput(in);
-                    Output out = factory.createOutput();
-                    out.setName(NameGenerator.getInstance().
-                            generateUniqueOperationOutputName(operation));
-                    operation.setOutput(out);
-                } else if (name.startsWith("OneWay")) {
-                    operation = factory.createOneWayOperation();
-                    operation.setName(NameGenerator.getInstance().
-                            generateUniqueOperationName(pt));
-                    pt.addOperation(operation);
-                    Input in = factory.createInput();
-                    in.setName(NameGenerator.getInstance().
-                            generateUniqueOperationInputName(operation));
-                    operation.setInput(in);
-                } else if (name.startsWith("Notification")) {
-                    operation = factory.createNotificationOperation();
-                    operation.setName(NameGenerator.getInstance().
-                            generateUniqueOperationName(pt));
-                    pt.addOperation(operation);
-                    Output out = factory.createOutput();
-                    out.setName(NameGenerator.getInstance().
-                            generateUniqueOperationOutputName(operation));
-                    operation.setOutput(out);
-                } else if (name.startsWith("SolicitResponse")) {
-                    operation = factory.createSolicitResponseOperation();
-                    operation.setName(NameGenerator.getInstance().
-                            generateUniqueOperationName(pt));
-                    pt.addOperation(operation);
-                    Input in = factory.createInput();
-                    in.setName(NameGenerator.getInstance().
-                            generateUniqueOperationInputName(operation));
-                    operation.setInput(in);
-                    Output out = factory.createOutput();
-                    out.setName(NameGenerator.getInstance().
-                            generateUniqueOperationOutputName(operation));
-                    operation.setOutput(out);
-                }
-            }
-        } finally {
-            model.endTransaction();
+        Operation operation = null;
+        if (model.startTransaction()) {
+        	try {
+        		if (name.startsWith("RequestReply")) {
+        			operation = factory.createRequestResponseOperation();
+        			operation.setName(NameGenerator.getInstance().
+        					generateUniqueOperationName(pt));
+        			pt.addOperation(operation);
+        			Input in = factory.createInput();
+        			in.setName(NameGenerator.getInstance().
+        					generateUniqueOperationInputName(operation));
+        			operation.setInput(in);
+        			Output out = factory.createOutput();
+        			out.setName(NameGenerator.getInstance().
+        					generateUniqueOperationOutputName(operation));
+        			operation.setOutput(out);
+        		} else if (name.startsWith("OneWay")) {
+        			operation = factory.createOneWayOperation();
+        			operation.setName(NameGenerator.getInstance().
+        					generateUniqueOperationName(pt));
+        			pt.addOperation(operation);
+        			Input in = factory.createInput();
+        			in.setName(NameGenerator.getInstance().
+        					generateUniqueOperationInputName(operation));
+        			operation.setInput(in);
+        		} else if (name.startsWith("Notification")) {
+        			operation = factory.createNotificationOperation();
+        			operation.setName(NameGenerator.getInstance().
+        					generateUniqueOperationName(pt));
+        			pt.addOperation(operation);
+        			Output out = factory.createOutput();
+        			out.setName(NameGenerator.getInstance().
+        					generateUniqueOperationOutputName(operation));
+        			operation.setOutput(out);
+        		} else if (name.startsWith("SolicitResponse")) {
+        			operation = factory.createSolicitResponseOperation();
+        			operation.setName(NameGenerator.getInstance().
+        					generateUniqueOperationName(pt));
+        			pt.addOperation(operation);
+        			Input in = factory.createInput();
+        			in.setName(NameGenerator.getInstance().
+        					generateUniqueOperationInputName(operation));
+        			operation.setInput(in);
+        			Output out = factory.createOutput();
+        			out.setName(NameGenerator.getInstance().
+        					generateUniqueOperationOutputName(operation));
+        			operation.setOutput(out);
+        		}
+        	} finally {
+        		model.endTransaction();
+        	}
+        	ActionHelper.selectNode(operation);
         }
     }
-  
+
 
 
     @Override
@@ -745,6 +748,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     public void dragExit() {
         clearHotSpot();
         setBorder(BorderFactory.createEmptyBorder());
+        getScene().validate();
     }
 
     
@@ -760,6 +764,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                         if (isAssignable(node)) {
                             if (!isImported()) {
                                 showHotSpot();
+                                getScene().validate();
                                 return true;
                             }
                         } else if (node instanceof PortTypeNode) {
@@ -773,8 +778,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
             //do nothing
         }
         
-        clearHotSpot();
-        setBorder(BorderFactory.createEmptyBorder());
+        dragExit();
         return false;
     }
 

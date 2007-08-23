@@ -187,6 +187,7 @@ public class WSDLNavigatorContent extends JPanel
         } else {
             show(model);
         }
+        repaint();
     }
 
     @Override
@@ -199,7 +200,7 @@ public class WSDLNavigatorContent extends JPanel
         treeView.expandNode(rootNode);
         Utility.expandNodes(treeView, 1, rootNode);
         selectActivatedNodes();
-        revalidate();
+        validate();
         repaint();
     }
 
@@ -225,6 +226,7 @@ public class WSDLNavigatorContent extends JPanel
                 if (filteredNodes != null && filteredNodes.length >= 1) {
                     // Set the active nodes for the parent TopComponent.
                     tc.setActivatedNodes(filteredNodes);
+                    validate();
                     repaint();
                 }
             } else if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(property) &&
@@ -232,12 +234,14 @@ public class WSDLNavigatorContent extends JPanel
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         selectActivatedNodes();
+                        validate();
                         repaint();
                     }
                 });
             } else if (TopComponent.Registry.PROP_ACTIVATED.equals(property) &&
                     isActivatedTC) {
                 tc.setActivatedNodes(getExplorerManager().getSelectedNodes());
+                validate();
                 repaint();
             }
         }
@@ -256,6 +260,7 @@ public class WSDLNavigatorContent extends JPanel
                 }
             }
         }
+        revalidate();
         try {
             getExplorerManager().setSelectedNodes(
                     selNodes.toArray(new Node[0]));
@@ -272,7 +277,7 @@ public class WSDLNavigatorContent extends JPanel
         }
         if (treeView != null && treeView.isShowing()) remove(treeView);
         add(notAvailableLabel, BorderLayout.CENTER);
-        revalidate();
+        validate();
         repaint();
     }
 
@@ -294,7 +299,7 @@ public class WSDLNavigatorContent extends JPanel
     public void release() {
         //cleanup all the elements in the navigator.
         removeAll();
-
+        validate();
         Node dummyNode = new AbstractNode(Children.LEAF);
         getExplorerManager().setRootContext(dummyNode);
         getExplorerManager().setExploredContext(dummyNode);

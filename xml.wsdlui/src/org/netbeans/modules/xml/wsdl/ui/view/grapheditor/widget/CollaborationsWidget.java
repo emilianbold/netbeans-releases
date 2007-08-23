@@ -264,6 +264,7 @@ public class CollaborationsWidget extends Widget
     
     public void dragExit() {
         hideHitPoint();
+        getScene().validate();
     }
 
     public boolean dragOver(Point scenePoint, WidgetDropTargetDragEvent event) {
@@ -276,6 +277,7 @@ public class CollaborationsWidget extends Widget
                         Node node = (Node) t.getTransferData(flavor);
                         if (node.getName().startsWith("PartnerLinkType")) {
                             showHitPoint(scenePoint, node);
+                            getScene().validate();
                             return true;
                         }
                     }
@@ -291,13 +293,15 @@ public class CollaborationsWidget extends Widget
         Node node = (Node) draggedObject;
         int index = partnerLinkTypesHitPointIndex;
         hideHitPoint();
+        getScene().validate();
         if (node != null && index >= 0) {
+        	PartnerLinkType plt = null;
             try {
                 if (mModel.startTransaction()) {
                     PartnerLinkType[] plts = mModel.getDefinitions().
                             getExtensibilityElements(PartnerLinkType.class).
                             toArray(new PartnerLinkType[0]);
-                    PartnerLinkType plt = (PartnerLinkType) mModel.
+                    plt = (PartnerLinkType) mModel.
                             getFactory().create(mModel.getDefinitions(),
                             BPELQName.PARTNER_LINK_TYPE.getQName());
                     String pltName = NameGenerator.generateUniquePartnerLinkType(
@@ -318,6 +322,7 @@ public class CollaborationsWidget extends Widget
             } finally {
                 mModel.endTransaction();
             }
+            ActionHelper.selectNode(plt);
             return true;
         }
         return false;

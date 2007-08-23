@@ -120,8 +120,8 @@ public class ButtonWidget extends Widget implements FocusableWidget {
     
     public void setMargin(Insets margin) {
         this.margin.set(margin.top, margin.left, margin.bottom, margin.right);
-        revalidate();
-        repaint();
+        revalidate(true);
+        getScene().validate();
     }
     
     
@@ -160,6 +160,7 @@ public class ButtonWidget extends Widget implements FocusableWidget {
         }
         
         addButtonChildren();
+        getScene().validate();
     }
     
     
@@ -250,8 +251,8 @@ public class ButtonWidget extends Widget implements FocusableWidget {
                     : DISABLED_TEXT_COLOR);
         }
  
-        revalidate();
-        repaint();
+        revalidate(true);
+        getScene().validate();
     }
     
     /*
@@ -269,12 +270,12 @@ public class ButtonWidget extends Widget implements FocusableWidget {
     	
     	if (!previousState.isFocused() && state.isFocused()) {
     		focused = true;
-            revalidate();
+            revalidate(true);
     	} else if (previousState.isFocused() && !state.isFocused()){
     		focused = false;
-            revalidate();
+            revalidate(true);
         }
-    	repaint();
+    	getScene().validate();
     }
     
     

@@ -34,23 +34,24 @@ import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Vector;
+
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDragEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
-import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
@@ -65,6 +66,7 @@ import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditor;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditorProvider;
@@ -302,15 +304,27 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
     @Override
     public void updateContent() {
         String msg = null;
-        if (mParameter.getMessage() != null && mParameter.getMessage().get() != null) {
-            msg = mParameter.getMessage().get().getName();
-        }
+        
         if (msg != null && !msg.equals(getText())) {
             setText(msg);
         }
-        if (mNameLabel != null && mParameter.getName() != null) {
-            mNameLabel.setLabel(mParameter.getName());
-        }
+
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+    	if (evt.getSource() != getWSDLComponent()) return;
+    	if (evt.getPropertyName().equals(OperationParameter.MESSAGE_PROPERTY)) {
+    		if (mParameter.getMessage() != null && mParameter.getMessage().get() != null) {
+                setText(mParameter.getMessage().get().getName());
+            }
+    		ActionHelper.selectNode(getWSDLComponent());
+    	} else if (evt.getPropertyName().equals(OperationParameter.NAME_PROPERTY)) {
+            if (mNameLabel != null && mParameter.getName() != null) {
+                mNameLabel.setLabel(mParameter.getName());
+            }
+    	}
+    	getScene().validate();
     }
 
     public class OperationParameterLayout implements Layout {
@@ -425,6 +439,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
                 getModel().endTransaction();
             }
         }
+        ActionHelper.selectNode(getWSDLComponent());
         
     }
 

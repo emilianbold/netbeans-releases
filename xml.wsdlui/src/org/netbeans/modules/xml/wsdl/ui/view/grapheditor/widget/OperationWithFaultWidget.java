@@ -99,7 +99,6 @@ public abstract class OperationWithFaultWidget<T extends Operation> extends Oper
                  verticalWidget.addChild(faultWidget); //adjust for dummy widget. add the fault before dummy widget.
             }
             verticalWidget.addChild(dummyWidget);
-            getScene().validate();
         }
         if(deletedFaults.size() > 0){
             List<Widget> children = new ArrayList(verticalWidget.getChildren());
@@ -113,7 +112,6 @@ public abstract class OperationWithFaultWidget<T extends Operation> extends Oper
                     }
                 }
             }
-            getScene().validate();
         }
     }
 }

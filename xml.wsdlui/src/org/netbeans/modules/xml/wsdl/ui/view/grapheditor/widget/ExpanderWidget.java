@@ -198,5 +198,6 @@ public class ExpanderWidget extends ButtonWidget implements ActionListener {
         } else {
             expandable.collapseWidget(this);
         }
+        getScene().validate();
     }
 }
