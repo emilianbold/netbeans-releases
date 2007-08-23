@@ -26,14 +26,11 @@
 package org.netbeans.modules.uml.ui.controls.projecttree;
 
 import java.util.Comparator;
-
-import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
-import javax.swing.Action;
 
 /**
  * 
@@ -311,4 +308,13 @@ public interface IProjectTreeModel
     * Retreives the name of the model.
     */
    public String getModelName();
+   
+   /**
+    * Fires an event when a given tree node is expanded
+    * 
+    * @param item The item to be expanded.
+    * 
+    */
+   public void fireItemExpanding(ITreeItem item);
+   
 }

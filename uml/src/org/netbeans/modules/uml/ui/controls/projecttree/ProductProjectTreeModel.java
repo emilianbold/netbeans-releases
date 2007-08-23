@@ -26,15 +26,10 @@ package org.netbeans.modules.uml.ui.controls.projecttree;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Comparator;
 
 import javax.swing.SwingUtilities;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreePath;
-
 
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.coreapplication.CoreProductInitEventsAdapter;
@@ -42,7 +37,6 @@ import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.metamodel.structure.ProjectEventsAdapter;
-import org.netbeans.modules.uml.core.preferenceframework.PreferenceManagerEventsAdapter;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlutils.InvalidArguments;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
@@ -54,7 +48,6 @@ import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeElement;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeComparable;
 import org.netbeans.modules.uml.core.support.umlutils.DataFormatter;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;

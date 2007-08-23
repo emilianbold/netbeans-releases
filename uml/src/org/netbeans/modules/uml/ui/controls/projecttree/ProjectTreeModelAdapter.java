@@ -280,4 +280,9 @@ public class ProjectTreeModelAdapter implements IProjectTreeModel
    {
       return "ProjectTree";
    }
+   
+   public void fireItemExpanding(ITreeItem item)
+   {
+       
+   }
 }

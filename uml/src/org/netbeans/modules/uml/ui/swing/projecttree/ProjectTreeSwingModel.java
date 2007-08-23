@@ -32,24 +32,18 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
-import org.netbeans.modules.uml.ui.controls.projecttree.DefaultNodeFactory;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
-import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
 import org.netbeans.modules.uml.ui.controls.projecttree.ProductProjectTreeModel;
-import org.netbeans.modules.uml.ui.controls.projecttree.ProjectTreeNodeFactory;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProxyUserInterface;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeElement;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
-import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.IDataFormatter;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
@@ -931,4 +925,8 @@ public class ProjectTreeSwingModel extends ProductProjectTreeModel
          super(path);
       }
    }
+
+    public void fireItemExpanding(ITreeItem item) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
