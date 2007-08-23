@@ -41,14 +41,18 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="antlr" depends="init-antlr" unless="up-to-date">
         <mkdir dir="${antlr.apt.output.dir}"/>
-        <antlr  target="${antlr.apt.grammar.dir}/aptlexer.g"
-                outputdirectory="${antlr.apt.output.dir}">
-                <classpath path="${antlr.jar}"/>
-        </antlr>  
-        <antlr  target="${antlr.apt.grammar.dir}/aptexpr.g"
-                outputdirectory="${antlr.apt.output.dir}">
-                <classpath path="${antlr.jar}"/>
-        </antlr> 	
+        <java classname="antlr.Tool">
+            <arg value="-o"/>
+            <arg value="${antlr.apt.output.dir}"/>
+            <arg value="${antlr.apt.grammar.dir}/aptlexer.g"/>
+            <classpath path="${antlr.jar}"/>
+        </java>        
+        <java classname="antlr.Tool">
+            <arg value="-o"/>
+            <arg value="${antlr.apt.output.dir}"/>
+            <arg value="${antlr.apt.grammar.dir}/aptexpr.g"/>
+            <classpath path="${antlr.jar}"/>
+        </java>        
         <copy file="${antlr.apt.output.dir}/APTGeneratedTokenTypes.txt" 
                 tofile="${antlr.apt.output.dir}/APTTokenTypes.txt"
                 overwrite="true"/>

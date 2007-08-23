@@ -53,43 +53,23 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="antlr" depends="init-antlr" unless="up-to-date">
-		<!--
-		<antlr target="${antlr.folding.dir}/cppjx.g"
-            outputdirectory="${antlr.folding.dir}">
-                <classpath path="${antlr.jar}"/>
-        </antlr>
-		-->
-		<!-- APT staff -->
-                <!--
-        <mkdir dir="${antlr.apt.output.dir}"/>
-        <antlr  target="${antlr.apt.grammar.dir}/aptlexer.g"
-                outputdirectory="${antlr.apt.output.dir}">
-                <classpath path="${antlr.jar}"/>
-        </antlr>  
-        <antlr  target="${antlr.apt.grammar.dir}/aptexpr.g"
-                outputdirectory="${antlr.apt.output.dir}">
-                <classpath path="${antlr.jar}"/>
-        </antlr> 
-        -->
-		<!-- CPP grammar -->
+        <!-- CPP grammar -->
         <mkdir dir="${antlr.output.dir}"/>
         <copy file="${antlr.apt.output.dir}/APTTokenTypes.txt"
                     todir="${antlr.output.dir}" 
                     overwrite="true"/>        
-		<!--
-        <antlr target="${antlr.grammar.dir}/cpplexer.g"
-            outputdirectory="${antlr.output.dir}">
-                <classpath path="${antlr.jar}"/>
-        </antlr>  
-        <antlr target="${antlr.grammar.dir}/ppeparser.g"
-            outputdirectory="${antlr.output.dir}">
-                <classpath path="${antlr.jar}"/>
-        </antlr>      
-		-->
+        <!--
         <antlr target="${antlr.grammar.dir}/cppparser.g"
             outputdirectory="${antlr.output.dir}" traceParser="no">
                 <classpath path="${antlr.jar}"/>
-        </antlr>         
+        </antlr>   
+        -->
+        <java classname="antlr.Tool">
+            <arg value="-o"/>
+            <arg value="${antlr.output.dir}"/>
+            <arg value="${antlr.grammar.dir}/cppparser.g"/>
+            <classpath path="${antlr.jar}"/>
+        </java>        
     </target>
     
     <target name="do-test-build" depends="-build-cnd-tests,projectized-common.do-test-build">
