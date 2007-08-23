@@ -332,37 +332,6 @@ public class PositionStyleEditor extends StyleEditor {
         java.awt.GridBagConstraints gridBagConstraints;
 
         mainPositionPanel = new javax.swing.JPanel();
-        positionPanel = new javax.swing.JPanel();
-        positionModePanel = new javax.swing.JPanel();
-        containerPanel = new javax.swing.JPanel();
-        positionModeLabel = new javax.swing.JLabel();
-        positionModeCombo = new javax.swing.JComboBox();
-        fillPanel = new javax.swing.JPanel();
-        positionContainerPanel = new javax.swing.JPanel();
-        posTopLabel = new javax.swing.JLabel();
-        posTopComboBox = new javax.swing.JComboBox();
-        posTopUnitComboBox = new javax.swing.JComboBox();
-        posBottomLabel1 = new javax.swing.JLabel();
-        posBottomComboBox = new javax.swing.JComboBox();
-        posBottomUnitComboBox = new javax.swing.JComboBox();
-        posRightLabel = new javax.swing.JLabel();
-        posRightComboBox = new javax.swing.JComboBox();
-        posRightUnitComboBox = new javax.swing.JComboBox();
-        posLeftLabel1 = new javax.swing.JLabel();
-        posLeftComboBox = new javax.swing.JComboBox();
-        posLeftUnitComboBox = new javax.swing.JComboBox();
-        sizePanel = new javax.swing.JPanel();
-        sizeContainerPanel = new javax.swing.JPanel();
-        heightLabel = new javax.swing.JLabel();
-        heightComboBox = new javax.swing.JComboBox();
-        heightUnitComboBox = new javax.swing.JComboBox();
-        widthLabel = new javax.swing.JLabel();
-        widthComboBox = new javax.swing.JComboBox();
-        widthUnitComboBox = new javax.swing.JComboBox();
-        visibleLabel1 = new javax.swing.JLabel();
-        visibleComboBox = new javax.swing.JComboBox();
-        zIndexLabel1 = new javax.swing.JLabel();
-        zindexComboBox = new javax.swing.JComboBox();
         clipPanel = new javax.swing.JPanel();
         clipLeftLabel1 = new javax.swing.JLabel();
         clipBottomUnitComboBox = new javax.swing.JComboBox();
@@ -376,53 +345,236 @@ public class PositionStyleEditor extends StyleEditor {
         clipBottomLabel = new javax.swing.JLabel();
         clipTopComboBox = new javax.swing.JComboBox();
         clipRightComboBox = new javax.swing.JComboBox();
-        clipErrorPanel = new javax.swing.JPanel();
-        clipErrorLabel = new javax.swing.JLabel();
+        positionContainerPanel = new javax.swing.JPanel();
+        posTopLabel = new javax.swing.JLabel();
+        posTopComboBox = new javax.swing.JComboBox();
+        posTopUnitComboBox = new javax.swing.JComboBox();
+        posBottomLabel1 = new javax.swing.JLabel();
+        posBottomComboBox = new javax.swing.JComboBox();
+        posBottomUnitComboBox = new javax.swing.JComboBox();
+        posRightLabel = new javax.swing.JLabel();
+        posRightComboBox = new javax.swing.JComboBox();
+        posRightUnitComboBox = new javax.swing.JComboBox();
+        posLeftLabel1 = new javax.swing.JLabel();
+        posLeftComboBox = new javax.swing.JComboBox();
+        posLeftUnitComboBox = new javax.swing.JComboBox();
+        positionModeCombo = new javax.swing.JComboBox();
+        positionModeLabel = new javax.swing.JLabel();
+        sizeContainerPanel = new javax.swing.JPanel();
+        heightLabel = new javax.swing.JLabel();
+        heightComboBox = new javax.swing.JComboBox();
+        heightUnitComboBox = new javax.swing.JComboBox();
+        widthLabel = new javax.swing.JLabel();
+        widthComboBox = new javax.swing.JComboBox();
+        widthUnitComboBox = new javax.swing.JComboBox();
+        visibleLabel1 = new javax.swing.JLabel();
+        visibleComboBox = new javax.swing.JComboBox();
+        zIndexLabel1 = new javax.swing.JLabel();
+        zindexComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.BorderLayout());
 
         mainPositionPanel.setLayout(new java.awt.GridBagLayout());
 
-        positionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "POSITION_EDITOR_DISPNAME"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.ABOVE_TOP, new java.awt.Font("Dialog", 1, 14))); // NOI18N
-        positionPanel.setLayout(new java.awt.BorderLayout());
+        clipPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "CLIP_TITLE"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.ABOVE_TOP, new java.awt.Font("Dialog", 1, 14))); // NOI18N
+        clipPanel.setMinimumSize(null);
+        clipPanel.setLayout(new java.awt.GridBagLayout());
 
-        positionModePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        positionModePanel.setLayout(new java.awt.BorderLayout());
+        clipLeftLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_CLIP_LEFT").charAt(0));
+        clipLeftLabel1.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "CLIP_LEFT")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        clipPanel.add(clipLeftLabel1, gridBagConstraints);
 
-        containerPanel.setLayout(new java.awt.BorderLayout(5, 5));
-
-        positionModeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_POSITION_MODE").charAt(0));
-        positionModeLabel.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "POSITION_MODE")); // NOI18N
-        containerPanel.add(positionModeLabel, java.awt.BorderLayout.WEST);
-
-        positionModeCombo.addItemListener(new java.awt.event.ItemListener() {
+        clipBottomUnitComboBox.setEnabled(false);
+        clipBottomUnitComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                positionModeComboItemStateChanged(evt);
+                clipBottomUnitComboBoxItemStateChanged(evt);
             }
         });
-        containerPanel.add(positionModeCombo, java.awt.BorderLayout.CENTER);
-        positionModeCombo.getAccessibleContext().setAccessibleName(null);
-        positionModeCombo.getAccessibleContext().setAccessibleDescription(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        clipPanel.add(clipBottomUnitComboBox, gridBagConstraints);
+        clipBottomUnitComboBox.getAccessibleContext().setAccessibleName(null);
+        clipBottomUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
 
-        positionModePanel.add(containerPanel, java.awt.BorderLayout.WEST);
-        positionModePanel.add(fillPanel, java.awt.BorderLayout.CENTER);
+        clipLeftUnitComboBox.setEnabled(false);
+        clipLeftUnitComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                clipLeftUnitComboBoxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        clipPanel.add(clipLeftUnitComboBox, gridBagConstraints);
+        clipLeftUnitComboBox.getAccessibleContext().setAccessibleName(null);
+        clipLeftUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
 
-        positionPanel.add(positionModePanel, java.awt.BorderLayout.NORTH);
+        clipTopLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_CLIP_TOP").charAt(0));
+        clipTopLabel1.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "CLIP_TOP")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        clipPanel.add(clipTopLabel1, gridBagConstraints);
 
-        positionContainerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 5, 5, 5));
+        clipLeftComboBox.setEditable(true);
+        clipLeftComboBox.setMinimumSize(new java.awt.Dimension(60, 24));
+        clipLeftComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
+        clipLeftComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                clipLeftComboBoxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        clipPanel.add(clipLeftComboBox, gridBagConstraints);
+        clipLeftComboBox.getAccessibleContext().setAccessibleName(null);
+        clipLeftComboBox.getAccessibleContext().setAccessibleDescription(null);
+
+        clipTopUnitComboBox.setEnabled(false);
+        clipTopUnitComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                clipTopUnitComboBoxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        clipPanel.add(clipTopUnitComboBox, gridBagConstraints);
+        clipTopUnitComboBox.getAccessibleContext().setAccessibleName(null);
+        clipTopUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
+
+        clipRightLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_CLIP_RIGHT").charAt(0));
+        clipRightLabel1.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "CLIP_RIGHT")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        clipPanel.add(clipRightLabel1, gridBagConstraints);
+
+        clipBottomComboBox.setEditable(true);
+        clipBottomComboBox.setMinimumSize(new java.awt.Dimension(60, 24));
+        clipBottomComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
+        clipBottomComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                clipBottomComboBoxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        clipPanel.add(clipBottomComboBox, gridBagConstraints);
+        clipBottomComboBox.getAccessibleContext().setAccessibleName(null);
+        clipBottomComboBox.getAccessibleContext().setAccessibleDescription(null);
+
+        clipRightUnitComboBox.setEnabled(false);
+        clipRightUnitComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                clipRightUnitComboBoxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        clipPanel.add(clipRightUnitComboBox, gridBagConstraints);
+        clipRightUnitComboBox.getAccessibleContext().setAccessibleName(null);
+        clipRightUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
+
+        clipBottomLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_CLIP_BOTTOM").charAt(0));
+        clipBottomLabel.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "CLIP_BOTTOM")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        clipPanel.add(clipBottomLabel, gridBagConstraints);
+
+        clipTopComboBox.setEditable(true);
+        clipTopComboBox.setMinimumSize(new java.awt.Dimension(60, 24));
+        clipTopComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
+        clipTopComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                clipTopComboBoxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        clipPanel.add(clipTopComboBox, gridBagConstraints);
+        clipTopComboBox.getAccessibleContext().setAccessibleName(null);
+        clipTopComboBox.getAccessibleContext().setAccessibleDescription(null);
+
+        clipRightComboBox.setEditable(true);
+        clipRightComboBox.setMinimumSize(new java.awt.Dimension(60, 24));
+        clipRightComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
+        clipRightComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                clipRightComboBoxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        clipPanel.add(clipRightComboBox, gridBagConstraints);
+        clipRightComboBox.getAccessibleContext().setAccessibleName(null);
+        clipRightComboBox.getAccessibleContext().setAccessibleDescription(null);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        mainPositionPanel.add(clipPanel, gridBagConstraints);
+
+        positionContainerPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "POISTION_TITLE"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 14))); // NOI18N
+        positionContainerPanel.setMinimumSize(null);
+        positionContainerPanel.setPreferredSize(null);
         positionContainerPanel.setLayout(new java.awt.GridBagLayout());
 
         posTopLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_POSITION_TOP").charAt(0));
         posTopLabel.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "POSITION_TOP")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         positionContainerPanel.add(posTopLabel, gridBagConstraints);
 
         posTopComboBox.setEditable(true);
+        posTopComboBox.setMinimumSize(new java.awt.Dimension(60, 24));
+        posTopComboBox.setPreferredSize(new java.awt.Dimension(60, 24));
         posTopComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 posTopComboBoxItemStateChanged(evt);
@@ -435,8 +587,8 @@ public class PositionStyleEditor extends StyleEditor {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         positionContainerPanel.add(posTopComboBox, gridBagConstraints);
@@ -451,7 +603,7 @@ public class PositionStyleEditor extends StyleEditor {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
@@ -462,13 +614,16 @@ public class PositionStyleEditor extends StyleEditor {
         posBottomLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_POSITION_BOTTOM").charAt(0));
         posBottomLabel1.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "POSITION_BOTTOM")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         positionContainerPanel.add(posBottomLabel1, gridBagConstraints);
 
         posBottomComboBox.setEditable(true);
+        posBottomComboBox.setMinimumSize(new java.awt.Dimension(60, 24));
+        posBottomComboBox.setPreferredSize(new java.awt.Dimension(60, 24));
         posBottomComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 posBottomComboBoxItemStateChanged(evt);
@@ -480,8 +635,8 @@ public class PositionStyleEditor extends StyleEditor {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
@@ -496,8 +651,8 @@ public class PositionStyleEditor extends StyleEditor {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
@@ -509,12 +664,15 @@ public class PositionStyleEditor extends StyleEditor {
         posRightLabel.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "POSITION_RIGHT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         positionContainerPanel.add(posRightLabel, gridBagConstraints);
 
         posRightComboBox.setEditable(true);
+        posRightComboBox.setMinimumSize(new java.awt.Dimension(60, 24));
+        posRightComboBox.setPreferredSize(new java.awt.Dimension(60, 24));
         posRightComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 posRightComboBoxItemStateChanged(evt);
@@ -527,10 +685,10 @@ public class PositionStyleEditor extends StyleEditor {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         positionContainerPanel.add(posRightComboBox, gridBagConstraints);
         posRightComboBox.getAccessibleContext().setAccessibleName(null);
         posRightComboBox.getAccessibleContext().setAccessibleDescription(null);
@@ -543,10 +701,10 @@ public class PositionStyleEditor extends StyleEditor {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         positionContainerPanel.add(posRightUnitComboBox, gridBagConstraints);
         posRightUnitComboBox.getAccessibleContext().setAccessibleName(null);
         posRightUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
@@ -554,14 +712,16 @@ public class PositionStyleEditor extends StyleEditor {
         posLeftLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_POSITION_LEFT").charAt(0));
         posLeftLabel1.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "POSITION_LEFT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         positionContainerPanel.add(posLeftLabel1, gridBagConstraints);
 
         posLeftComboBox.setEditable(true);
+        posLeftComboBox.setMinimumSize(new java.awt.Dimension(60, 24));
+        posLeftComboBox.setPreferredSize(new java.awt.Dimension(60, 24));
         posLeftComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 posLeftComboBoxItemStateChanged(evt);
@@ -573,11 +733,11 @@ public class PositionStyleEditor extends StyleEditor {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         positionContainerPanel.add(posLeftComboBox, gridBagConstraints);
         posLeftComboBox.getAccessibleContext().setAccessibleName(null);
         posLeftComboBox.getAccessibleContext().setAccessibleDescription(null);
@@ -589,23 +749,48 @@ public class PositionStyleEditor extends StyleEditor {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         positionContainerPanel.add(posLeftUnitComboBox, gridBagConstraints);
         posLeftUnitComboBox.getAccessibleContext().setAccessibleName(null);
         posLeftUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
 
-        positionPanel.add(positionContainerPanel, java.awt.BorderLayout.WEST);
+        positionModeCombo.setMinimumSize(null);
+        positionModeCombo.setPreferredSize(null);
+        positionModeCombo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                positionModeComboItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        positionContainerPanel.add(positionModeCombo, gridBagConstraints);
+        positionModeCombo.getAccessibleContext().setAccessibleName(null);
+        positionModeCombo.getAccessibleContext().setAccessibleDescription(null);
 
-        mainPositionPanel.add(positionPanel, new java.awt.GridBagConstraints());
+        positionModeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_POSITION_MODE").charAt(0));
+        positionModeLabel.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "POSITION_MODE")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        positionContainerPanel.add(positionModeLabel, gridBagConstraints);
 
-        sizePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "SIZE_TITLE"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.ABOVE_TOP, new java.awt.Font("Dialog", 1, 14))); // NOI18N
-        sizePanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        mainPositionPanel.add(positionContainerPanel, gridBagConstraints);
 
-        sizeContainerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        sizeContainerPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "SIZE_TITLE"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 14))); // NOI18N
         sizeContainerPanel.setLayout(new java.awt.GridBagLayout());
 
         heightLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_POSITION_HEIGHT").charAt(0));
@@ -615,9 +800,12 @@ public class PositionStyleEditor extends StyleEditor {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         sizeContainerPanel.add(heightLabel, gridBagConstraints);
 
         heightComboBox.setEditable(true);
+        heightComboBox.setMinimumSize(new java.awt.Dimension(60, 24));
+        heightComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
         heightComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 heightComboBoxItemStateChanged(evt);
@@ -633,7 +821,7 @@ public class PositionStyleEditor extends StyleEditor {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         sizeContainerPanel.add(heightComboBox, gridBagConstraints);
         heightComboBox.getAccessibleContext().setAccessibleName(null);
         heightComboBox.getAccessibleContext().setAccessibleDescription(null);
@@ -649,7 +837,7 @@ public class PositionStyleEditor extends StyleEditor {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         sizeContainerPanel.add(heightUnitComboBox, gridBagConstraints);
         heightUnitComboBox.getAccessibleContext().setAccessibleName(null);
         heightUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
@@ -665,6 +853,8 @@ public class PositionStyleEditor extends StyleEditor {
         sizeContainerPanel.add(widthLabel, gridBagConstraints);
 
         widthComboBox.setEditable(true);
+        widthComboBox.setMinimumSize(new java.awt.Dimension(60, 24));
+        widthComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
         widthComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 widthComboBoxItemStateChanged(evt);
@@ -704,21 +894,23 @@ public class PositionStyleEditor extends StyleEditor {
         visibleLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_VISIBILITY").charAt(0));
         visibleLabel1.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "VISIBILITY")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         sizeContainerPanel.add(visibleLabel1, gridBagConstraints);
 
+        visibleComboBox.setMinimumSize(new java.awt.Dimension(60, 24));
+        visibleComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
         visibleComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 visibleComboBoxItemStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
@@ -729,222 +921,38 @@ public class PositionStyleEditor extends StyleEditor {
         zIndexLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_Z_INDEX").charAt(0));
         zIndexLabel1.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "Z_INDEX")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         sizeContainerPanel.add(zIndexLabel1, gridBagConstraints);
 
         zindexComboBox.setEditable(true);
+        zindexComboBox.setMinimumSize(new java.awt.Dimension(60, 24));
+        zindexComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
         zindexComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 zindexComboBoxItemStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         sizeContainerPanel.add(zindexComboBox, gridBagConstraints);
         zindexComboBox.getAccessibleContext().setAccessibleName(null);
         zindexComboBox.getAccessibleContext().setAccessibleDescription(null);
 
-        sizePanel.add(sizeContainerPanel, java.awt.BorderLayout.WEST);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(15, 0, 0, 0);
-        mainPositionPanel.add(sizePanel, gridBagConstraints);
-
-        clipPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "CLIP_TITLE"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.ABOVE_TOP, new java.awt.Font("Dialog", 1, 14))); // NOI18N
-        clipPanel.setLayout(new java.awt.GridBagLayout());
-
-        clipLeftLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_CLIP_LEFT").charAt(0));
-        clipLeftLabel1.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "CLIP_LEFT")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
-        clipPanel.add(clipLeftLabel1, gridBagConstraints);
-
-        clipBottomUnitComboBox.setEnabled(false);
-        clipBottomUnitComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                clipBottomUnitComboBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
-        clipPanel.add(clipBottomUnitComboBox, gridBagConstraints);
-        clipBottomUnitComboBox.getAccessibleContext().setAccessibleName(null);
-        clipBottomUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
-
-        clipLeftUnitComboBox.setEnabled(false);
-        clipLeftUnitComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                clipLeftUnitComboBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        clipPanel.add(clipLeftUnitComboBox, gridBagConstraints);
-        clipLeftUnitComboBox.getAccessibleContext().setAccessibleName(null);
-        clipLeftUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
-
-        clipTopLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_CLIP_TOP").charAt(0));
-        clipTopLabel1.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "CLIP_TOP")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        clipPanel.add(clipTopLabel1, gridBagConstraints);
-
-        clipLeftComboBox.setEditable(true);
-        clipLeftComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                clipLeftComboBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        clipPanel.add(clipLeftComboBox, gridBagConstraints);
-        clipLeftComboBox.getAccessibleContext().setAccessibleName(null);
-        clipLeftComboBox.getAccessibleContext().setAccessibleDescription(null);
-
-        clipTopUnitComboBox.setEnabled(false);
-        clipTopUnitComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                clipTopUnitComboBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
-        clipPanel.add(clipTopUnitComboBox, gridBagConstraints);
-        clipTopUnitComboBox.getAccessibleContext().setAccessibleName(null);
-        clipTopUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
-
-        clipRightLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_CLIP_RIGHT").charAt(0));
-        clipRightLabel1.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "CLIP_RIGHT")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        clipPanel.add(clipRightLabel1, gridBagConstraints);
-
-        clipBottomComboBox.setEditable(true);
-        clipBottomComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                clipBottomComboBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
-        clipPanel.add(clipBottomComboBox, gridBagConstraints);
-        clipBottomComboBox.getAccessibleContext().setAccessibleName(null);
-        clipBottomComboBox.getAccessibleContext().setAccessibleDescription(null);
-
-        clipRightUnitComboBox.setEnabled(false);
-        clipRightUnitComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                clipRightUnitComboBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        clipPanel.add(clipRightUnitComboBox, gridBagConstraints);
-        clipRightUnitComboBox.getAccessibleContext().setAccessibleName(null);
-        clipRightUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
-
-        clipBottomLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_CLIP_BOTTOM").charAt(0));
-        clipBottomLabel.setText(org.openide.util.NbBundle.getMessage(PositionStyleEditor.class, "CLIP_BOTTOM")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
-        clipPanel.add(clipBottomLabel, gridBagConstraints);
-
-        clipTopComboBox.setEditable(true);
-        clipTopComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                clipTopComboBoxItemStateChanged(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
-        clipPanel.add(clipTopComboBox, gridBagConstraints);
-        clipTopComboBox.getAccessibleContext().setAccessibleName(null);
-        clipTopComboBox.getAccessibleContext().setAccessibleDescription(null);
-
-        clipRightComboBox.setEditable(true);
-        clipRightComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                clipRightComboBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        clipPanel.add(clipRightComboBox, gridBagConstraints);
-        clipRightComboBox.getAccessibleContext().setAccessibleName(null);
-        clipRightComboBox.getAccessibleContext().setAccessibleDescription(null);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(15, 0, 0, 0);
-        mainPositionPanel.add(clipPanel, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        mainPositionPanel.add(sizeContainerPanel, gridBagConstraints);
 
         add(mainPositionPanel, java.awt.BorderLayout.NORTH);
-
-        clipErrorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
-        clipErrorPanel.setLayout(new java.awt.BorderLayout());
-
-        clipErrorLabel.setForeground(new java.awt.Color(0, 0, 153));
-        clipErrorPanel.add(clipErrorLabel, java.awt.BorderLayout.CENTER);
-
-        add(clipErrorPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -1187,8 +1195,6 @@ public class PositionStyleEditor extends StyleEditor {
     private javax.swing.JComboBox clipBottomComboBox;
     private javax.swing.JLabel clipBottomLabel;
     private javax.swing.JComboBox clipBottomUnitComboBox;
-    private javax.swing.JLabel clipErrorLabel;
-    private javax.swing.JPanel clipErrorPanel;
     private javax.swing.JComboBox clipLeftComboBox;
     private javax.swing.JLabel clipLeftLabel1;
     private javax.swing.JComboBox clipLeftUnitComboBox;
@@ -1199,8 +1205,6 @@ public class PositionStyleEditor extends StyleEditor {
     private javax.swing.JComboBox clipTopComboBox;
     private javax.swing.JLabel clipTopLabel1;
     private javax.swing.JComboBox clipTopUnitComboBox;
-    private javax.swing.JPanel containerPanel;
-    private javax.swing.JPanel fillPanel;
     private javax.swing.JComboBox heightComboBox;
     private javax.swing.JLabel heightLabel;
     private javax.swing.JComboBox heightUnitComboBox;
@@ -1220,10 +1224,7 @@ public class PositionStyleEditor extends StyleEditor {
     private javax.swing.JPanel positionContainerPanel;
     private javax.swing.JComboBox positionModeCombo;
     private javax.swing.JLabel positionModeLabel;
-    private javax.swing.JPanel positionModePanel;
-    private javax.swing.JPanel positionPanel;
     private javax.swing.JPanel sizeContainerPanel;
-    private javax.swing.JPanel sizePanel;
     private javax.swing.JComboBox visibleComboBox;
     private javax.swing.JLabel visibleLabel1;
     private javax.swing.JComboBox widthComboBox;
