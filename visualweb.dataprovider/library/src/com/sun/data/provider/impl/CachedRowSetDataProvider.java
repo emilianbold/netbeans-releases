@@ -225,10 +225,12 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
      * Close is guaranteed  not to throw an exception.
      */
     public void close() {
-        try {
-            setCachedRowSet(null);
-        } catch (Exception e) {
-            // attempted to cleanup, contract is close() will silently fail
+        if (!Beans.isDesignTime()) {
+            try {
+                setCachedRowSet(null);
+            } catch (Exception e) {
+                // attempted to cleanup, contract is close() will silently fail
+            }
         }
     }
 
