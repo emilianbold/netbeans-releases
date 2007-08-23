@@ -1,87 +1,68 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
     <head>
         <title>Comparing File Revisions in CVS</title>
-        <link rel="StyleSheet"
-        href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
     </head>
+    
     <body>
         <h2>Comparing File Revisions in CVS</h2>
+        
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>The Diff command compares different revisions of a file and displays
-        the differences found graphically.</p>
+        
+        <p>The Diff command compares different revisions of a file and displays the
+            differences found graphically.</p>
+            
         <h3>Comparing File Revisions Graphically</h3>
-        <p>The IDE's Graphical Diff Viewer enables you to compare different
-            versions of a file side by side using color coding to emphasize the
-            differences between the files being compared.</p>
-        <p>The previous (<img src="images/diff-prev.png"
-        alt="Last difference button" height="16" width="16">) and next (<img
-        src="images/diff-next.png" alt="Next difference button" height="16"
-        width="16">) difference
-        buttons in the toolbar enable you to navigate among the differences in
-        the file. You can also refresh the status and update files from within
-        the Diff Viewer using the Refresh Diff (<img src="images/refresh.png"
-        alt="Last difference button" height="16" width="16">) and Update (<img
-        src="images/update.png" alt="Last difference button" height="16"
-        width="16">) buttons. When you are finished comparing the files, you
-        can commit your changes using the Graphical Diff Viewer's Commit button
-        (<img src="images/commit.png" alt="Last difference button" height="16"
-        width="16">). </p>
-        <p>The Graphical Diff Viewer's highlights changes in the files using
-        the following colors: </p>
+        
+        <p>The IDE's graphical Diff Viewer enables you to compare different versions 
+            of a file side by side using color coding to emphasize the differences 
+            between the files being compared.</p>
+            
+        <p>The previous (<img src="images/diff-prev.png" alt="last difference button">) 
+            and next (<img src="images/diff-next.png" alt="next difference button">) 
+            difference buttons in the toolbar enable you to navigate among the differences 
+            in the file. You can also refresh the status and update files from within
+            the Diff Viewer using the Refresh Diff (<img src="images/refresh.png"
+            alt="Last difference button">) and Update (<img src="images/update.png" 
+            alt="Last difference button">) buttons. When you are finished comparing 
+            the files, you can commit your changes using the Diff Viewer's Commit button
+            (<img src="images/commit.png" alt="Last difference button">).</p>
+        
+        <p>The Diff Viewer's highlights changes in the files using the following colors:</p>
+        
         <ul>
-            <li><strong>Blue</strong>. Indicates lines that have been changed
-            since the earlier revision.</li>
-            <li> <strong>Green</strong>. Indicates lines that have been added
-            since the earlier revision. </li>
-            <li><strong>Red</strong>. Indicates lines that have been removed
-            since the earlier revision.</li>
+            <li><span style="color:#b8cfe5;font-weight:bold">Blue</span>. Indicates 
+                lines that have been changed since the earlier revision.</li>
+            <li><span style="color:#b4ffb4;font-weight:bold">Green</span>. Indicates 
+                lines that have been added since the earlier revision.</li>
+            <li><span style="color:#ffa0b4;font-weight:bold">Red</span>. Indicates 
+                lines that have been removed since the earlier revision.</li>
         </ul>
-        <p><b>To generate a graphical diff comparing a revision to your working
-            copy:</b></p>
-        <ol>
-            <li>Right-click the appropriate file node in the Projects, Files,
-            or Versioning window. </li>
-            <li>Choose Diff from the pop-up menu. </li>
-        </ol>
-        <!--<p><b>To generate a graphical diff comparing two revisions:</b>
-        </li>
-        <ol>
-        <li>Control-click to select the revision nodes you want to compare
-        in the Projects, Files, or Versioning
-        window.
-        <li>Right-click either of their nodes and choose Diff.
-        </ol>-->
-        <p>The IDE displays the results in the Graphical Diff Viewer in a new
-           tab of the main window.
-           <!--mention the search window diffs here also--></p>
-        <!--<h3>Comparing File Revisions as Text<a name="textually"></a></h3>
-        <p>You can also use the Diff Textual command to view file revision differences.
-        To view the differences between your working copy with the repository's current
-        version, right-click the node of the file you want to compare and choose CVS > Diff
-        Textual. The results are displayed in the IDE's Output window.</p>
-        <ul class="note">
-        <li>To enter specific revisions, tags, or dates to
-        for the versions compared, press the Control key while choosing Diff commands.</li></ul>-->
 
-		  <dl>
-            <dt> <a name="seealso">See Also</a></dt>
-            <dd> <a href="cvs-lite_merge.html">Merging File Revisions</a></dd>
-            <dd> <a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
-				<dd> <a href="cvs-lite_patch.html">Creating and Applying a Patch</a> </dd>
+        <h4>To generate a graphical diff comparing a revision to your working copy:</h4>
+
+        <ol>
+            <li>Select the appropriate file node in the Projects, Files,
+                or Versioning window.</li>
+            <li>Choose Diff (or CVS &gt; Diff) from the right-click menu. The IDE 
+                displays the results in the Diff Viewer in a new tab of the main 
+                window.</li>
+        </ol>
+
+	<dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="cvs-lite_merge.html">Merging File Revisions</a></dd>
+            <dd><a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
+            <dd><a href="cvs-lite_patch.html">Creating and Applying a Patch</a></dd>
         </dl>
 
-        <hr> <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
     </body>
 </html>

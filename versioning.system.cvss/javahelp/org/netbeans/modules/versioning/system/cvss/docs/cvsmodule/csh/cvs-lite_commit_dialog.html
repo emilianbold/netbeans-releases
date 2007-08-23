@@ -9,30 +9,54 @@
         <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
             rel="StyleSheet" type="text/css">
     </head>
+    
     <body>
 	<h2>CVS: Commit Dialog Box</h2>
-	<p><small><a href="#seealso">See Also</a></small></p>
-	<p>The CVS Commit dialog box enables you to commit local changes in version-controlled
-	 files to the repository.</p>
-	<p>You access this dialog box by right-clicking a version-controlled file or folder and choosing CVS &gt; Commit.</p>
-	<p>The dialog box enables you to do the following:</p>
-	<ul>
-	    <li><b>Add a message to your commit.</b> Use the Commit Message text area to add text describing the commit.</li>
-	    <li><b>View files in commit.</b> The files included in the commit are listed in the bottom pane of the dialog box.
-	    You can choose to exclude any of the listed files from the commit by selecting the file and then choosing Exclude from Commit from the drop-down list in the Commit Action column.</li>
-	</ul>
-
-	<dl>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The CVS Commit dialog box enables you to commit local changes in version-controlled
+            files to the repository.</p>
+            
+        <p>You access this dialog box by:</p> 
+        
+            <ul>
+                <li>right-clicking a version-controlled file or folder that contains local 
+                    changes and choosing CVS &gt; Commit.</li>                
+                <li>selecting a versioned file or folder that contains local changes and 
+                    choosing Versioning &gt; Commit from the main menu.</li>
+                <li>selecting the commit button (<img src="../images/commit.png" 
+                    alt="commit button">) in the <a href="../cvs-lite_diff.html">Diff 
+                    Viewer</a> or the <a href="cvs-lite_versioning_window.html">Versioning 
+                    window</a>.</li>
+            </ul>
+                
+        <p>The dialog box enables you to do the following:</p>
+        
+        <ul>
+	    <li><strong>Add a message to your commit</strong>. Use the Commit Message 
+                text area to add text describing the commit.</li>
+            <li><strong>View files in the commit</strong>. The files included in the 
+                commit are listed in the bottom pane of the dialog box.</li>
+            <li><strong>Exclude individual files from the commit</strong>. You can 
+                choose to exclude any of the listed files from the commit by selecting 
+                the file and then choosing Exclude from Commit from the drop-down list 
+                in the Commit Action column.</li>
+            <li><strong>Set the MIME type for new files</strong>. You can set new files 
+                (displayed in green text) to be committed as either textual or binary 
+                data. To do so, select the file and choose Add as Text or Add as Binary 
+                from the drop-down list in the Commit Action column.</li>                
+        </ul>   
+        
+        <dl>
 	    <dt>
 	    <a name="seealso">See Also</a></dt>
-	    <dd> <a href="../cvs-lite_commit.html">Checking Out Files from a VCS Repository</a></dd> 
-	</dl>
-	<hr>
+	    <dd><a href="../cvs-lite_commit.html">Committing Local Changes to a Remote 
+                Repository</a></dd> 
+        </dl>
+        
+        <hr>
 	<small><a href="../../credits.html">Legal Notices</a></small>
-	<table cellpadding="50" border="0">
-	    <tr>
-		<td>&nbsp;</td>
-	    </tr>
-	</table> 
+        <br><br><br>
     </body>
 </html>
