@@ -268,6 +268,10 @@ public class CreateLicenseSummary extends Task {
     private void findBinaries(File d, Map<String,Map<String,String>> binaries2LicenseHeaders, Map<Long,Map<String,String>> crc2LicenseHeaders,
             Map<Long,String> crc2Binary, String prefix, StringBuilder testBinariesAreUnique) throws IOException {
         for (String n : d.list()) {
+            if (n.equals("profiler2")) {
+                // XXX these are really home-built; delete after sources moved to CVS!
+                continue;
+            }
             File f = new File(d, n);
             if (f.isDirectory()) {
                 findBinaries(f, binaries2LicenseHeaders, crc2LicenseHeaders, crc2Binary, prefix + n + "/", testBinariesAreUnique);
