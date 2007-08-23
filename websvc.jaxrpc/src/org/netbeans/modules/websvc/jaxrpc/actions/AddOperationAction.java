@@ -24,15 +24,8 @@ import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileObject;
 
-import org.netbeans.modules.j2ee.dd.api.webservices.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
-import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
-import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
-import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
-import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.core.AddOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
-import org.openide.ErrorManager;
 
 public class AddOperationAction extends CookieAction {
     //private Service service;
@@ -66,13 +59,7 @@ public class AddOperationAction extends CookieAction {
     private boolean isWsImplBeanOrInterface(Node node) {
         FileObject implClassFo = node.getLookup().lookup(FileObject.class);
         if(implClassFo==null) return false;
-        WebserviceDescription wsDesc = findWSDescriptionFromClass(implClassFo);
-        if (wsDesc != null) {
-            WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(implClassFo);
-            assert wsSupport != null;
-            return !wsSupport.isFromWSDL(wsDesc.getWebserviceDescriptionName());
-        }
-        return false;
+        return JaxRpcAddOperation.isWsImplBeanOrInterface(implClassFo);
     }
     
     protected void performAction(Node[] activatedNodes) {
@@ -85,41 +72,6 @@ public class AddOperationAction extends CookieAction {
             AddOperationCookie addOperationCookie = WebServiceActionProvider.getAddOperationAction(implClassFo);
             if (addOperationCookie!=null) addOperationCookie.addOperation(implClassFo);
         }
-    }
-    
-    public static WebserviceDescription findWSDescriptionFromClass(FileObject implClassFO) {
-        WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(implClassFO);
-        String implClassPath = implClassFO.getPath();
-        int dotIndex = implClassPath.lastIndexOf('.');
-        if(dotIndex>0)implClassPath = implClassPath.substring(0,dotIndex);
-        implClassPath = implClassPath.replaceAll("/", ".");
-        if (wsSupport != null) {
-            DDProvider wsDDProvider = DDProvider.getDefault();
-            Webservices webServices = null;
-            try {
-                webServices = wsDDProvider.getDDRoot(wsSupport.getWebservicesDD());
-            } catch(java.io.IOException e) {
-                ErrorManager.getDefault().notify(e);
-            }
-            
-            if(webServices != null) {
-                WebserviceDescription[] wsDescriptions = webServices.getWebserviceDescription();
-                for (int i = 0; i < wsDescriptions.length; i++) {
-                    WebserviceDescription wsDescription = wsDescriptions[i];
-                    PortComponent portComponent = wsDescription.getPortComponent(0);
-                    ServiceImplBean serviceImplBean = portComponent.getServiceImplBean();
-                    String link = serviceImplBean.getServletLink();
-                    if (link == null) {
-                        link = serviceImplBean.getEjbLink();
-                    }
-                    String implBean = wsSupport.getImplementationBean(link);
-                    if (implBean!=null && implClassPath.endsWith(implBean)) {
-                        return wsDescription;
-                    }
-                }
-            }
-        }
-        return null;
     }
     
 }
