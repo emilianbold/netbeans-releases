@@ -453,10 +453,7 @@
 				</directory>
 				<directory title="navigator_win">
 					<file title="about_navigator_win.html"/>
-					<file title="application_bean_node.html"/>
 					<file title="navigator_win_popup.html"/>
-					<file title="request_bean_node.html"/>
-					<file title="session_bean_node.html"/>
 				</directory>
 				<directory title="options">
 					<directory title="CVS">

@@ -245,10 +245,7 @@
 	<mapID target="projrave_ui_elements_editors_qe_results_pane" url="ui_elements/editors/qe_results_pane.html"/>
 	<mapID target="projrave_ui_elements_editors_qe_sql_pane" url="ui_elements/editors/qe_sql_pane.html"/>
 	<mapID target="projrave_ui_elements_navigator_win_about_navigator_win" url="ui_elements/navigator_win/about_navigator_win.html"/>
-	<mapID target="projrave_ui_elements_navigator_win_application_bean_node" url="ui_elements/navigator_win/application_bean_node.html"/>
 	<mapID target="projrave_ui_elements_navigator_win_navigator_win_popup" url="ui_elements/navigator_win/navigator_win_popup.html"/>
-	<mapID target="projrave_ui_elements_navigator_win_request_bean_node" url="ui_elements/navigator_win/request_bean_node.html"/>
-	<mapID target="projrave_ui_elements_navigator_win_session_bean_node" url="ui_elements/navigator_win/session_bean_node.html"/>
 	<mapID target="projrave_ui_elements_options_visual_editor" url="ui_elements/options/visual_editor.html"/>
 	<mapID target="projrave_ui_elements_palette_bh_add_remove_list" url="ui_elements/palette/bh/add_remove_list.html"/>
 	<mapID target="projrave_ui_elements_palette_bh_alert" url="ui_elements/palette/bh/alert.html"/>
