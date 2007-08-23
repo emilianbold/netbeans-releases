@@ -90,9 +90,8 @@
     <!-- Subversion Import wizard, step 2 -->
     <mapID target="org.netbeans.modules.subversion.ui.wizards.importstep.ImportStep" url="svnmodule/csh/svn_import_wizard_p2.html" />
 
-    <!-- Subversion Import wizard, step 3 currently shares target with step 2  -->
-    <!-- TODO: request unique target -->
-    <!-- <mapID target="" url="svnmodule/csh/svn_import_wizard_p3.html" /> -->
+    <!-- Subversion Import wizard, step 3 -->
+    <mapID target="org.netbeans.modules.subversion.ui.wizards.importstep.ImportPreviewStep" url="svnmodule/csh/svn_import_wizard_p3.html" />
 
     <!-- Subversion Property Editor -->
     <mapID target="org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction" url="svnmodule/csh/svn_prop_editor.html" />
