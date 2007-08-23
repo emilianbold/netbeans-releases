@@ -129,6 +129,10 @@ public class FileModelTest extends TraceModelTestBase {
 	performTest("error_directive.cc"); // NOI18N
     }
     
+    public void testEmptyLongHex() throws Exception {
+	performTest("empty_long_hex.c"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
