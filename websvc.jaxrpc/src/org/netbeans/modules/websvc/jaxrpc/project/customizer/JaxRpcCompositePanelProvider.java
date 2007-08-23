@@ -65,7 +65,6 @@ public class JaxRpcCompositePanelProvider implements ProjectCustomizer.Composite
             toReturn = ProjectCustomizer.Category.create(
                     WEBSERVICECLIENTS,
                     bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
-                    null,
                     null);
         }
         assert toReturn != null : "No category for name:" + name; // NOI18N
