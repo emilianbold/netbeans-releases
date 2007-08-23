@@ -371,6 +371,11 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
         
         entityClosure = EntityClosure.create(entityClassScope, project);
+        entityClosure.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                updateAddAllButton();
+            }
+        });
         entityClosure.setClosureEnabled(cbAddRelated.isSelected());
         listAvailable.setModel(new EntityListModel(entityClosure, true));
         listSelected.setModel(new EntityListModel(entityClosure, false));
@@ -394,11 +399,15 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
 
     private void updateButtons() {
         buttonAdd.setEnabled(listAvailable.getSelectedValues().length > 0);
-        buttonAddAll.setEnabled(entityClosure.getAvailableEntities().size() > 0);
+        updateAddAllButton();
         buttonRemove.setEnabled(listSelected.getSelectedValues().length > 0);
         buttonRemoveAll.setEnabled(entityClosure.getSelectedEntities().size() > 0);
     }
 
+    private void updateAddAllButton(){
+        buttonAddAll.setEnabled(entityClosure.getAvailableEntities().size() > 0);
+    }
+    
     public void updatePersistenceUnitButton() {
         boolean visible = getPersistenceUnit() == null;
         if (ProviderUtil.isValidServerInstanceOrNone(project) && visible) {

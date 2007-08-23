@@ -101,6 +101,7 @@ public class EntityClosure {
                         public void run() {
                             try {
                                 addAvaliableEntities(new HashSet<String>(readHelper.getResult()));
+                                changeSupport.fireChange();
                             } catch (ExecutionException e) {
                                 Exceptions.printStackTrace(e);
                             }
