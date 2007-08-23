@@ -56,6 +56,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversati
 import org.netbeans.modules.xml.wsdl.model.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -614,6 +615,8 @@ public class ProfilesModelHelper {
                     udc.setTransportGuarantee("CONFIDENTIAL");
                     sc.setUserDataConstraint(udc);
 
+                    String serviceName = null;
+                    
                     String urlPattern = "/";
                     boolean exit = false;
                     if (c instanceof Binding) {
@@ -624,14 +627,16 @@ public class ProfilesModelHelper {
                                 QName qname = port.getBinding().getQName();
                                 String bName = ((Binding)c).getName();
                                 if (bName.equals(qname.getLocalPart())) {
-                                    urlPattern = urlPattern.concat(s.getName() + "/*");
+                                    serviceName = s.getName();
+                                    urlPattern = urlPattern.concat(serviceName + "/*");
                                     exit = true;
                                     break;
                                 }
                             }
                             if (exit) break;
                         }
-                    }   
+                    }
+                    sc.setDisplayName(NbBundle.getMessage(ProfilesModelHelper.class, "LBL_SECCONSTRAINT_DNAME", serviceName));
                     WebResourceCollection wrc = (WebResourceCollection) 
                         webXmlDD.createBean("WebResourceCollection");
                     wrc.setHttpMethod(new String[] {"POST"});
