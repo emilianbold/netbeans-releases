@@ -132,14 +132,17 @@ public class ConverterDisplayables {
             DesignComponent selectCommand = Converter.convertConverterItemComponent (id2item, item.getPropertyValue ("selectCommand"), list.getDocument ()); // NOI18N
             if (selectCommand != null) {
                 List<DesignComponent> commandEventSources = DocumentSupport.gatherSubComponentsOfType (list, CommandEventSourceCD.TYPEID);
+                boolean found = false;
                 for (DesignComponent commandEventSource : commandEventSources) {
                     DesignComponent foundCommand = commandEventSource.readProperty (CommandEventSourceCD.PROP_COMMAND).getComponent ();
                     if (selectCommand == foundCommand) {
+                        found = true;
                         list.writeProperty (ListCD.PROP_SELECT_COMMAND, PropertyValue.createComponentReference (selectCommand));
                         break;
                     }
                 }
-                Debug.warning ("selectCommand not found for", item); // NOI18N
+                if (! found)
+                    Debug.warning ("selectCommand not found for", item); // NOI18N
             } else
                 list.writeProperty (ListCD.PROP_SELECT_COMMAND, PropertyValue.createNull ());
         }
