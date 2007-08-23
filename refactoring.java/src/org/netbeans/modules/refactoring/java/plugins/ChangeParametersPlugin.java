@@ -245,6 +245,11 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
             preCheckProblem =new Problem(true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ProjectNotOpened"));
             return preCheckProblem;
         }
+        
+        if (SourceUtils.getEnclosingTypeElement(el).getKind() == ElementKind.ANNOTATION_TYPE) {
+            preCheckProblem =new Problem(true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_MethodsInAnnotationsNotSupported"));
+            return preCheckProblem;
+        }
                     
 //                    Collection overridesMethod = null;
 //                    Collection overridenMethod = null;
