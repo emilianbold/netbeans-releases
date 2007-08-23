@@ -39,7 +39,9 @@ function write_components() {
         if (i != 0) {
             document.write('<tr class="bottom_border_thick top_border_thick">');
             document.write('    <th class="left">' + group_display_names[i] + '</th>');
-            document.write('    <th class="beige left_border_thin"></th>');
+	    document.write('    <th class="beige left_border_thin"></th>');
+	    document.write('    <th class="left_border_thin"></th>');            
+	    document.write('    <th class="beige left_border_thin"></th>');
             document.write('    <th class="left_border_thin"></th>');
             document.write('    <th class="beige left_border_thin"></th>');
             document.write('</tr>');
@@ -62,12 +64,12 @@ function write_components() {
                 }
             document.write('</td>');
 
-            document.write('    <td class="left_border_thin" id="product_' + index + '_full"></td>');
-            document.write('    <td class="beige left_border_thin" id="product_' + index + '_java"></td>');
-            document.write('    <td class="left_border_thin" id="product_' + index + '_javaee"></td>');
-	    document.write('    <td class="beige left_border_thin" id="product_' + index + '_javame"></td>');
-	    document.write('    <td class="left_border_thin" id="product_' + index + '_ruby"></td>');
-	    document.write('    <td class="beige left_border_thin" id="product_' + index + '_cnd"></td>');
+            document.write('    <td class="beige left_border_thin" id="product_' + index + '_full"></td>');
+            document.write('    <td class="left_border_thin" id="product_' + index + '_java"></td>');
+            document.write('    <td class="beige left_border_thin" id="product_' + index + '_javaee"></td>');
+	    document.write('    <td class="left_border_thin" id="product_' + index + '_javame"></td>');
+	    document.write('    <td class="beige left_border_thin" id="product_' + index + '_ruby"></td>');
+	    document.write('    <td class="left_border_thin" id="product_' + index + '_cnd"></td>');
             
             
             document.write('</tr>');
