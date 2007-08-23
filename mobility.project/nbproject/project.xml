@@ -144,15 +144,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.junit</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>2.1.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.mobility.antext</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -166,14 +157,6 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.1.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.mobility.j2meunit</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -352,6 +335,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.mobility.plugins.javase</friend>
                 <friend>org.netbeans.modules.mobility.osgi</friend>
                 <friend>org.netbeans.modules.mobility.svgcore</friend>
+                <friend>org.netbeans.modules.mobility.j2meunit</friend>
                 <friend>org.netbeans.modules.vmd.io.javame</friend>
                 <friend>org.netbeans.modules.vmd.midp</friend>
                 <friend>org.netbeans.modules.vmd.midp.converter</friend>

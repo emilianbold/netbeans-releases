@@ -54,8 +54,6 @@ import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.mobility.project.classpath.J2MEProjectClassPathExtender;
-import org.netbeans.modules.mobility.project.queries.UnitTestForSourceQueryImpl;
-import org.netbeans.modules.mobility.j2meunit.J2MEUnitPlugin;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -78,6 +76,7 @@ import org.netbeans.modules.mobility.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.mobility.project.queries.FileBuiltQueryImpl;
 import org.netbeans.modules.mobility.project.queries.FileEncodingQueryImpl;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.mobility.project.ProjectLookupProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.*;
@@ -89,7 +88,6 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.Node;
@@ -225,7 +223,8 @@ public final class J2MEProject implements Project, AntProjectListener {
         sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(J2MEProject.class, "LBL_J2MEProject_Source_Packages"), /*XXX*/null, null); //NOI18N
         
         final SubprojectProvider spp = refHelper.createSubprojectProvider();
-        return Lookups.fixed(new Object[] {
+        
+        Object stdLookups[]=new Object[] {
             new Info(),
             aux,
             spp,
@@ -249,11 +248,17 @@ public final class J2MEProject implements Project, AntProjectListener {
             refHelper,
             new J2MEProjectClassPathExtender(this, helper, refHelper, configHelper),
             new J2MEProjectOperations(this, helper, refHelper),
-            new J2MEUnitPlugin(this,helper),
-            new UnitTestForSourceQueryImpl(this.helper),
             new PreprocessorFileFilterImplementation(configHelper, helper),
             new FileEncodingQueryImpl(helper)
-        });
+        };
+        ArrayList<Object> list=new ArrayList<Object>();
+        list.addAll(Arrays.asList(stdLookups));
+        for (ProjectLookupProvider provider : Lookup.getDefault().lookupAll(ProjectLookupProvider.class))
+        {
+            list.addAll(provider.createLookupElements(this,helper,refHelper,configHelper));
+        }
+        return Lookups.fixed(list.toArray());
+        
     }
     
     /** Store configured project name. */

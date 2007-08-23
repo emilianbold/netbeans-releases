@@ -475,6 +475,9 @@ public class TestCreator {
             List<? extends Tree> tstMembersOrig = tstClass.getMembers();
             List<Tree> tstMembers = new ArrayList<Tree>(tstMembersOrig.size() + 4);
             tstMembers.addAll(tstMembersOrig);
+            
+            MethodTree tMethod=getTestMethod(tstClass);
+            tstMembers.remove(tMethod);
 
             if (generateMissingInitMembers) {
                 tstClass=generateMissingInitMembers(tstClass, tstClassTreePath, workingCopy);
@@ -496,6 +499,7 @@ public class TestCreator {
                     continue;       //corresponding test method already exists
                 }
 
+                //Adding list of methods associated to a class
                 List<ExecutableElement> mList=mMap.get(testMethodName);
                 if (mList==null)
                 {
@@ -504,6 +508,7 @@ public class TestCreator {
                 }
                 mList.add(srcMethod);
             }
+            
             
             for (String name : mMap.keySet())
             {
@@ -516,10 +521,8 @@ public class TestCreator {
 
                 tstMembers.add(newTestMethod);
             }
-
-
-
-            if (tstMembers.size() == tstMembersOrig.size()) {  //no test method added
+            
+            if (tstMembersOrig.containsAll(tstMembers)) {  //no test method added
                 return tstClass;
             } else {
                 List<MethodTree> testMethods = new LinkedList<MethodTree>();
@@ -529,11 +532,11 @@ public class TestCreator {
                         if (TestUtils.isTestMethod(testMethod))
                             testMethods.add(testMethod);
                     }
-                }
-                tstMembers.add(generateOverrideTestMethod(workingCopy, testMethods));
+                }                
+                tstMembers.add(1,generateOverrideTestMethod(workingCopy, testMethods));
             }
-
-            tstMembers.addAll(tstClass.getMembers());
+            
+            
             ClassTree newClass = workingCopy.getTreeMaker().Class(
                     tstClass.getModifiers(),
                     tstClass.getSimpleName(),
@@ -543,6 +546,22 @@ public class TestCreator {
                     tstMembers);
             return newClass;
         }
+        
+        private MethodTree getTestMethod(ClassTree clsTree)
+        {
+            MethodTree mMethod = null;
+            for (Tree member : clsTree.getMembers()) {
+                if (member.getKind() == Tree.Kind.METHOD) {
+                    mMethod = (MethodTree) member;
+                    if (mMethod.getName().toString().equals(NbBundle.getMessage(TestCreator.class, "PROP_generator_override_test_method")))//NOI18N
+                        break;
+                    else
+                        mMethod = null;
+                }
+            }
+            return mMethod;
+        }
+
 
         private List<MethodTree> generateTestMethods(WorkingCopy workingCopy, TypeElement srcClass, List<ExecutableElement> srcMethods) {
 
@@ -564,9 +583,7 @@ public class TestCreator {
             }
             return testMethods;
         }
-
-
-
+        
         private MethodTree generateOverrideTestMethod(WorkingCopy workingCopy, List<MethodTree> testMethods) {
 
             final TreeMaker maker = workingCopy.getTreeMaker();
@@ -581,17 +598,6 @@ public class TestCreator {
             }
             methodBody.append("default: break;\n}\n}\n");//NOI18N
 
-            MethodTree mMethod = null;
-            for (Tree member : clsTree.getMembers()) {
-                if (member.getKind() == Tree.Kind.METHOD) {
-                    mMethod = (MethodTree) member;
-                    if (mMethod.getName().toString().equals(NbBundle.getMessage(TestCreator.class, "PROP_generator_override_test_method")))//NOI18N
-                        break;
-                    else
-                        mMethod = null;
-                }
-            }
-
             List<ExpressionTree> throwsList = Collections.<ExpressionTree>singletonList(
                     maker.Identifier(NbBundle.getMessage(TestCreator.class, "PROP_generator_throwable")));//NOI18N
             ModifiersTree parameterModifiers = maker.Modifiers(Collections.<Modifier>emptySet(),
@@ -602,8 +608,7 @@ public class TestCreator {
                     maker.PrimitiveType(TypeKind.INT),
                     null);
 
-            if (mMethod == null) {
-                mMethod = maker.Method(
+            MethodTree m1 = maker.Method(
                         maker.Modifiers(TestUtils.createModifierSet(PUBLIC)),
                         NbBundle.getMessage(TestCreator.class, "PROP_generator_override_test_method"),
                         maker.PrimitiveType(TypeKind.VOID),
@@ -612,14 +617,11 @@ public class TestCreator {
                         throwsList,
                         methodBody.toString(),
                         null);
-                workingCopy.rewrite(clsTree, maker.addClassMember(clsTree, mMethod));
-            } else {
-                BlockTree mBlockTree = maker.createMethodBody(mMethod, methodBody.toString());
-                workingCopy.rewrite(mMethod.getBody(), mBlockTree);
-            }
+                
+
             updateTestClassConctructor(workingCopy,i);
 
-            return mMethod;
+            return m1;
         }
 
         private void updateTestClassConctructor(WorkingCopy workingCopy, int nTests) {
@@ -677,13 +679,13 @@ public class TestCreator {
 
 
             if (generateMethodJavadoc) {
-                Comment javadoc = Comment.create(
+                Comment javadoc = Comment.create("\n\t/*"+
                         NbBundle.getMessage(
                                 TestCreator.class,
                                 "PROP_src_code_javadoc",   //NOI18N
                                 testMethodName,
-                                srcClass.getSimpleName().toString()));
-                maker.addComment(method, javadoc, false);
+                                srcClass.getSimpleName().toString())+"*/");
+                maker.addComment(method, javadoc, true);
             }
 
             return method;

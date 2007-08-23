@@ -26,6 +26,7 @@ import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -44,7 +45,15 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
+import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
+import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileUtil;
@@ -90,27 +99,6 @@ public class TestUtils {
                 : fullName.substring(lastDotIndex + 1);
     }
 
-    /*public static ExpressionTree getReturnTypeTree(TypeMirror returnType, WorkingCopy workingCopy) {
-        TreeMaker maker = workingCopy.getTreeMaker();
-        if (returnType.getKind().isPrimitive())
-            return maker.Identifier(returnType.toString());
-        else if (returnType.getKind().equals(TypeKind.ARRAY)) {
-            return null;
-        } else {
-            return maker.QualIdent(workingCopy.getTypes().asElement(returnType));
-        }
-
-    }
-
-    private static ExpressionTree getArrayReturnType(TypeMirror returnType, WorkingCopy workingCopy) {
-        TreeMaker maker = workingCopy.getTreeMaker();
-        if (returnType.getKind().equals(TypeKind.ARRAY)) {
-            ArrayType arrayReturnType=(ArrayType) returnType;
-
-        }
-
-    }*/
-
     public static String getPackageName(String fullName) {
         if (fullName != null) {
             int i = fullName.lastIndexOf('.');
@@ -132,36 +120,33 @@ public class TestUtils {
     }
 
     static void addTestClassProperty(Project p, AntProjectHelper aph, String clazz) throws IOException {
-        /*
         ProjectConfigurationsHelper pch=(ProjectConfigurationsHelper) p.getLookup().lookup(ProjectConfigurationsHelper.class);
-        ProjectConfiguration[] confs=pch.getConfigurations();
+        Collection<ProjectConfiguration> confs=pch.getConfigurations();
         EditableProperties ep=aph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-
-        String defaultValue=ep.getProperty(J2MEProjectProperties.MANIFEST_JAD);
-        HashMap map = defaultValue != null ? J2MEProjectProperties.ManifestPropertyParser.decode(defaultValue) : new HashMap();
+        ReferenceHelper refHelper=p.getLookup().lookup(ReferenceHelper.class);
+        String defaultValue=ep.getProperty(DefaultPropertiesDescriptor.MANIFEST_JAD);
+        HashMap map = defaultValue != null ? (HashMap) DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.decode(defaultValue,aph,refHelper)  : new HashMap();
         addTestClassProperty(map,clazz);
-        ep.put(J2MEProjectProperties.MANIFEST_JAD, J2MEProjectProperties.ManifestPropertyParser.encode(map));
+        ep.put(DefaultPropertiesDescriptor.MANIFEST_JAD, DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.encode(map,aph,refHelper));
 
-        for (int i = 0; i < confs.length; i++) {
-            ProjectConfiguration conf = confs[i];
-            String confName = conf.getName();
-            String propertyName = VisualPropertySupport.translatePropertyName(confName, J2MEProjectProperties.MANIFEST_JAD, false);
+        for (ProjectConfiguration conf : confs) {
+            String confName = conf.getDisplayName();
+            String propertyName = VisualPropertySupport.translatePropertyName(confName, DefaultPropertiesDescriptor.MANIFEST_JAD, false);
             if (propertyName == null)
                 continue;
             String propertyValue = ep.getProperty(propertyName);
             if (propertyValue == null)
                 continue;
-            map = J2MEProjectProperties.ManifestPropertyParser.decode(defaultValue);
+            map = (HashMap) DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.decode(defaultValue,aph,refHelper);
             addTestClassProperty(map, clazz);
-            ep.put(propertyName, J2MEProjectProperties.ManifestPropertyParser.encode(map));
+            ep.put(propertyName, DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.encode(map,aph,refHelper));
         }
 
         aph.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
 
-        ProjectManager.getDefault().saveProject(p);
-        */
-    }
-
+        ProjectManager.getDefault().saveProject(p);        
+    } 
+    
     private static void addTestClassProperty(Map map, String clazz) {
         String key = NbBundle.getMessage(TestUtils.class, "PROP_config_TestClasses_key");//NOI18N
         if (map.containsKey(key)) {
@@ -176,41 +161,39 @@ public class TestUtils {
         } else
             map.put(key, clazz);
     }
+    
 
     static void addTestRunnerMIDletProperty(Project project, AntProjectHelper h) throws IOException {
-        /*
         String name=NbBundle.getMessage(TestUtils.class,"PROP_config_TestRunner_name");//NOI18N
         String clazz=NbBundle.getMessage(TestUtils.class,"PROP_config_TestRunner_clazz");//NOI18N
         String icon=NbBundle.getMessage(TestUtils.class,"PROP_config_TestRunner_icon");//NOI18N
 
-        ProjectConfigurationsHelper confHelper = (ProjectConfigurationsHelper) project.getLookup().lookup(ProjectConfigurationsHelper.class);
-        ProjectConfiguration[] confs = confHelper.getConfigurations();
+        ProjectConfigurationsHelper confHelper = project.getLookup().lookup(ProjectConfigurationsHelper.class);
+        Collection<ProjectConfiguration> confs=confHelper.getConfigurations();
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String defaultValue = ep.getProperty(DefaultPropertiesDescriptor.MANIFEST_MIDLETS);        
 
-        String defaultValue = ep.getProperty(J2MEProjectProperties.MANIFEST_MIDLETS);
-        HashMap map = defaultValue != null ? J2MEProjectProperties.ManifestPropertyParser.decode(defaultValue) : new HashMap();
+        HashMap map = defaultValue != null ? (HashMap)DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.decode(defaultValue,null,null) : new HashMap();
         addTestRunnerMIDletProperty(map, name, clazz, icon);
-        ep.put(J2MEProjectProperties.MANIFEST_MIDLETS, J2MEProjectProperties.ManifestPropertyParser.encode(map));
+        ep.put(DefaultPropertiesDescriptor.MANIFEST_MIDLETS, DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.encode(map,null,null));
 
-        for (int i = 0; i < confs.length; i++) {
-            ProjectConfiguration conf = confs[i];
-            String confName = conf.getName();
-            String propertyName = VisualPropertySupport.translatePropertyName(confName, J2MEProjectProperties.MANIFEST_MIDLETS, false);
+        for (ProjectConfiguration conf : confs) {
+            String confName = conf.getDisplayName();
+            String propertyName = VisualPropertySupport.translatePropertyName(confName, DefaultPropertiesDescriptor.MANIFEST_MIDLETS, false);
             if (propertyName == null)
                 continue;
             String propertyValue = ep.getProperty(propertyName);
             if (propertyValue == null)
                 continue;
-            map = J2MEProjectProperties.ManifestPropertyParser.decode(defaultValue);
+            map = (HashMap)DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.decode(defaultValue,null,null);
             addTestRunnerMIDletProperty(map, name, clazz, icon);
-            ep.put(propertyName, J2MEProjectProperties.ManifestPropertyParser.encode(map));
+            ep.put(propertyName, DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.encode(map,null,null));
         }
 
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-
         ProjectManager.getDefault().saveProject(project);
-         */
     }
+    
 
     private static void addTestRunnerMIDletProperty(Map map, String name, String clazz, String icon) {
         int a = 1;
@@ -274,6 +257,7 @@ public class TestUtils {
     static boolean isTestMethod(MethodTree testMethod) {
         String testMethodName = testMethod.getName().toString();
         if (testMethodName.startsWith(NbBundle.getMessage(TestUtils.class, "PROP_test_method_prefix")) && //NOI18N
+                !testMethodName.equals(NbBundle.getMessage(TestUtils.class, "PROP_test_method_prefix")) &&
                 testMethodName.endsWith(NbBundle.getMessage(TestUtils.class, "PROP_test_method_suffix"))) //NOI18N
             return true;
         else return false;
