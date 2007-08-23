@@ -20,9 +20,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="Subversion functional test config">
-
+    
     <testbag testattribs="validation" executor="ide" name="versioning">
-	<testset dir="qa-functional/src">
+        <testset dir="qa-functional/src">
             <patternset>
                 <!-- checkout -->
                 <include name="org/netbeans/test/subversion/main/checkout/CheckoutUITest.class"/>
@@ -34,6 +34,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- delete -->
                 <include name="org/netbeans/test/subversion/main/delete/DeleteTest.class"/>
                 <include name="org/netbeans/test/subversion/main/delete/RefactoringTest.class"/>
+                <include name="org/netbeans/test/subversion/main/delete/FilesViewRefTest.class"/>
                 <!-- SvnProperties -->
                 <include name="org/netbeans/test/subversion/main/properties/SvnPropertiesTest.class"/>
                 <!-- archeology -->
