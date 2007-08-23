@@ -49,6 +49,8 @@ public class DataProviderWriter extends java.io.PrintWriter {
     }
     
     public void writeClass(){
+        boolean isPrimitiveReturnType = isPrimitiveType(dataProviderInfo.getMethod().getMethodReturnType());
+        
         // package
         println( "package " + dataProviderInfo.getPackageName() + ";" );
         
@@ -114,16 +116,15 @@ public class DataProviderWriter extends java.io.PrintWriter {
         
         println( "    public void set" + clientWrapperClassName + "( " + clientWrapperClassName + " " + clientWrapperClassVar + " ) { ");
         println( "        this." + clientWrapperClassVar + " = " + clientWrapperClassVar + ";" );
-        println( "        super.setDataClassInstance( " + clientWrapperClassVar + ");" );
+        
         // Call super.setDataMethod() - need to the method name and parameter class types
         println( "        try { " );
-        println( "            java.lang.reflect.Method dataMethod = " + clientWrapperClassName + ".class.getMethod(" );
-        println( "                \"" + dataProviderInfo.getMethod().getMethodName() + "\", new Class[] {" + getMethodParamTypes() + "} );" );
-        println( "            super.setDataMethod( dataMethod );" );
+        println( "            setDataProviderProperties(); ");
         
         
         // Call super.setCollectionElementType(Class) - needed to generate correct FieldKeys for List<T> return types (only for JAX-WS)
         if (isJ2EE_15) {
+            println( "            Method dataMethod = super.getDataMethod(); " );
             println( "            Class returnClass = dataMethod.getReturnType();");
             println( "            if (java.util.Collection.class.isAssignableFrom(returnClass)) {" );
             println( "                Type returnType = dataMethod.getGenericReturnType();" );
@@ -162,7 +163,12 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println();
         
         // Implement abstract method from super class - getDataMethodArguments()
-        println( "    public Object[] getDataMethodArguments() {" );
+        if (!isPrimitiveReturnType) {
+            println( "    public Object[] getDataMethodArguments() {" );
+        }else {
+            println( "    private Object[] getOriginalDataMethodArguments() {" );
+        }
+        
         if( dataProviderInfo.getMethod().getParameters().isEmpty() )
             println( "        return new Object[0];" );
         else {
@@ -227,8 +233,66 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println( "        return (FieldKey[])finalKeys.toArray( new FieldKey[0] ); " );
         println( "    } " );
         
-        // End of client bean clas
+        if (!isPrimitiveReturnType) {
+            println( "    private void setDataProviderProperties() throws NoSuchMethodException { " );
+            println( "        super.setDataClassInstance( " + clientWrapperClassVar + ");" );
+            println( "        java.lang.reflect.Method dataMethod = " + clientWrapperClassName + ".class.getMethod(" );
+            println( "            \"" + dataProviderInfo.getMethod().getMethodName() + "\", new Class[] {" + getMethodParamTypes() + "} );" );
+            println( "        super.setDataMethod( dataMethod );" );
+            println( "    }" );
+        }else {
+            println( "    private void setDataProviderProperties() throws NoSuchMethodException { " );
+            println( "        super.setDataClassInstance( this );" );
+            println( "        originalDataMethod = " + clientWrapperClassName + ".class.getMethod(" );
+            println( "            \"" + dataProviderInfo.getMethod().getMethodName() + "\", new Class[] {" + getMethodParamTypes() + "} );" );
+            println( "        super.setDataMethod( getWrapperMethod() ); ");
+            println( "    }" );
+            writePrimitiveMethodWrapper(clientWrapperClassVar);
+        }
+        
+        // End of client bean class
         println( "}" );
+    }
+    
+    private void writePrimitiveMethodWrapper(String clientVar) {
+        String mrt = dataProviderInfo.getMethod().getMethodReturnType();
+        if (isJavaPrimitive(mrt)) {
+            mrt = getWrapperForPrimitive(mrt);
+        }
+        
+        println( "" );
+        println( "    private Method originalDataMethod; " );
+        println( "" );
+        println( "    public ResultBean invokeMethod() {" );
+        println( "        try { ");
+        println( "            " + mrt + " result = (" + mrt + ")originalDataMethod.invoke(" + clientVar + ", getOriginalDataMethodArguments()); ");
+        println( "            ResultBean methodResult = new ResultBean(); " );
+        println( "            methodResult.setMethodResult(result); " );
+        println( "            return methodResult; ");
+        println( "        }catch (Exception ex) { ");
+        println( "            ex.printStackTrace(); ");
+        println( "            return null; ");
+        println( "        }");
+        println( "    } ");
+        println( "" );
+        println( "    private Method getWrapperMethod() throws NoSuchMethodException {");
+        println( "        return this.getClass().getMethod(\"invokeMethod\", new Class[0]); ");
+        println( "    } ");
+        println( "" );
+        println( "    public static final class ResultBean { ");
+        println( "        private " + mrt + " methodResult; ");
+        println( "" );
+        println( "        public ResultBean() { ");
+        println( "        } " );
+        println( "" );
+        println( "        public " + mrt + " getMethodResult() { ");
+        println( "            return this.methodResult; " );
+        println( "        }" );
+        println( "" );
+        println( "        public void setMethodResult(" + mrt + " result) { " );
+        println( "            this.methodResult = result; " );
+        println( "        } " );
+        println( "    } " );
     }
     
     private String getMethodParamTypes()
@@ -249,4 +313,56 @@ public class DataProviderWriter extends java.io.PrintWriter {
         }
         return buf.toString();
     }
+    
+    private static final String[] PRIMITIVE_WRAPPER_CLASSES = 
+    { "java.lang.Boolean", 
+      "java.lang.Byte", 
+      "java.lang.Double", 
+      "java.lang.Float", 
+      "java.lang.Integer", 
+      "java.lang.Long", 
+      "java.lang.Short", 
+      "java.lang.Character", 
+      "java.lang.String" };
+    
+    private static final String[] PRIMITIVE_TYPES = 
+    { "boolean",
+      "byte",
+      "double",
+      "float",
+      "int",
+      "long",
+      "short",
+      "char" };
+    
+    private boolean isPrimitiveType(String typeName) {
+        for (int i = 0; i < PRIMITIVE_WRAPPER_CLASSES.length; i++) {
+            if (PRIMITIVE_WRAPPER_CLASSES[i].equals(typeName)) {
+                return true;
+            }
+        }
+        
+        return isJavaPrimitive(typeName);
+    }
+    
+    private boolean isJavaPrimitive(String typeName) {
+        for (int i = 0; i < PRIMITIVE_TYPES.length; i++) {
+            if (PRIMITIVE_TYPES[i].equals(typeName)) {
+                return true;
+            }
+        }
+        
+        return false;        
+    }
+    
+    private String getWrapperForPrimitive(String javaPrimitive) {
+        for (int i = 0; i < PRIMITIVE_TYPES.length; i++) {
+            if (PRIMITIVE_TYPES[i].equals(javaPrimitive)) {
+                return PRIMITIVE_WRAPPER_CLASSES[i];
+            }     
+        }
+        
+        return null;
+    }
+    
 }
