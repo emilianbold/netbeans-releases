@@ -2,6 +2,8 @@ jDeafult char
 jNonCompound char
 jOuter int
 A
+B
+C
 globInt int
 globFoo() void
 main(int argc, char** argv) int

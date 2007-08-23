@@ -1,6 +1,8 @@
 f() void
 f2() void
 A
+B
+C
 globInt int
 globFoo() void
 main(int argc, char** argv) int
