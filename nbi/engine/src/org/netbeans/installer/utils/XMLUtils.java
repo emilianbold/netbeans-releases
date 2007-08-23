@@ -54,7 +54,6 @@ import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.Feature;
 import org.netbeans.installer.utils.helper.NbiProperties;
@@ -135,10 +134,12 @@ public abstract class XMLUtils {
             final Source xslt = new StreamSource(
                     FileProxy.getInstance().getFile(XSLT_REFORMAT_URI));
 	    LogManager.log("... XSLT loaded");
-            final Transformer transformer = TransformerFactory.
-                    newInstance().
+            TransformerFactory tf = TransformerFactory.
+                    newInstance();
+            LogManager.log("... transformer factory created");
+            final Transformer transformer = tf.
                     newTransformer(xslt);
-            LogManager.log("... transformer created");
+            LogManager.log("... transformer created from xslt");
             transformer.transform(source, result);
 	    LogManager.log("... transformation done");
         } catch (DownloadException e) {

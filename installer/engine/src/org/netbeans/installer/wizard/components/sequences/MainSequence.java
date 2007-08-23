@@ -23,7 +23,6 @@ package org.netbeans.installer.wizard.components.sequences;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.installer.wizard.components.actions.CacheEngineAction;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbPostInstallSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSummaryPanel;
 import org.netbeans.installer.product.components.Product;
@@ -42,7 +41,6 @@ import org.netbeans.installer.wizard.components.actions.UninstallAction;
 import org.netbeans.installer.wizard.components.panels.PostCreateBundleSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.PreCreateBundleSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.LicensesPanel;
-import org.netbeans.installer.wizard.components.sequences.ProductWizardSequence;
 
 /**
  *
@@ -59,7 +57,6 @@ public class MainSequence extends WizardSequence {
     private InstallAction installAction;
     private NbPostInstallSummaryPanel nbPostInstallSummaryPanel;
     private PreCreateBundleSummaryPanel preCreateBundleSummaryPanel;
-    private CacheEngineAction cacheEngineAction;    
     private CreateBundleAction createBundleAction;
     private CreateNativeLauncherAction createNativeLauncherAction;
     private PostCreateBundleSummaryPanel postCreateBundleSummaryPanel;
@@ -75,7 +72,6 @@ public class MainSequence extends WizardSequence {
         installAction = new InstallAction();
         nbPostInstallSummaryPanel = new NbPostInstallSummaryPanel();
         preCreateBundleSummaryPanel = new PreCreateBundleSummaryPanel();
-        cacheEngineAction = new CacheEngineAction();      
         createBundleAction = new CreateBundleAction();
         createNativeLauncherAction = new CreateNativeLauncherAction();
         postCreateBundleSummaryPanel = new PostCreateBundleSummaryPanel();
@@ -124,8 +120,7 @@ public class MainSequence extends WizardSequence {
                 addChild(uninstallAction);
             }
             
-            if (toInstall.size() > 0) {
-                addChild(cacheEngineAction);
+            if (toInstall.size() > 0) {                
                 addChild(downloadInstallationDataAction);
                 addChild(installAction);
             }
@@ -163,7 +158,6 @@ public class MainSequence extends WizardSequence {
             addChild(preCreateBundleSummaryPanel);
             addChild(downloadConfigurationLogicAction);
             addChild(downloadInstallationDataAction);
-            addChild(cacheEngineAction);
             addChild(createBundleAction);
             addChild(createNativeLauncherAction);
             addChild(postCreateBundleSummaryPanel);

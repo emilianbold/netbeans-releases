@@ -103,8 +103,8 @@ public abstract class NativeUtils {
     
     public abstract boolean isUNCPath(String path);
     
-    public File getRoot(final File file) {             
-        File parent = file;        
+    public File getRoot(final File file) {
+        File parent = file;
         while (parent.getParentFile() != null) {
             parent = parent.getParentFile();
         }
@@ -121,30 +121,35 @@ public abstract class NativeUtils {
     protected Launcher createUninstaller(ApplicationDescriptor descriptor, boolean uninstall, Progress progress) throws IOException {
         LogManager.log("creating uninstaller...");
         
-        final File engine = new File(System.getProperty(
-                EngineResources.LOCAL_ENGINE_PATH_PROPERTY));
-        final LauncherProperties props = new LauncherProperties();
-        
-        props.addJVM(new LauncherResource(false, SystemUtils.getCurrentJavaHome()));
-        props.addJar(new LauncherResource(false, engine));
-        props.setJvmArguments(new String[]{
-            "-Xmx256m",
-            "-Xms64m"});
-        props.setMainClass(Installer.class.getName());
-        
-        if (uninstall) {
-            props.setAppArguments(descriptor.getUninstallCommand());
-            props.setOutput(
-                    new File(descriptor.getInstallPath(), "uninstall"),
-                    true);
-        } else {
-            props.setAppArguments(descriptor.getModifyCommand());
-            props.setOutput(
-                    new File(descriptor.getInstallPath(), "modify-install"),
-                    true);
+        final File engine = new File(descriptor.getInstallPath(),
+                "uninstall.jar");
+        try {
+            Installer.cacheInstallerEngine(engine, new Progress());
+            
+            final LauncherProperties props = new LauncherProperties();
+            
+            props.addJVM(new LauncherResource(false, SystemUtils.getCurrentJavaHome()));
+            props.addJar(new LauncherResource(true, engine));
+            props.setJvmArguments(new String[]{
+                "-Xmx256m",
+                "-Xms64m"});
+            props.setMainClass(Installer.class.getName());
+            
+            if (uninstall) {
+                props.setAppArguments(descriptor.getUninstallCommand());
+                props.setOutput(
+                        new File(descriptor.getInstallPath(), "uninstall"),
+                        true);
+            } else {
+                props.setAppArguments(descriptor.getModifyCommand());
+                props.setOutput(
+                        new File(descriptor.getInstallPath(), "modify-install"),
+                        true);
+            }
+            return SystemUtils.createLauncher(props, progress);
+        } finally {
+            FileUtils.deleteFile(engine);
         }
-        
-        return SystemUtils.createLauncher(props, progress);
     }
     
     public abstract FilesList addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException;
@@ -162,8 +167,8 @@ public abstract class NativeUtils {
     public abstract void correctFilesPermissions(File parent) throws IOException;
     
     public abstract void setPermissions(
-            final File file, 
-            final int mode, 
+            final File file,
+            final int mode,
             final int change) throws IOException;
     
     public abstract int getPermissions(
@@ -256,5 +261,5 @@ public abstract class NativeUtils {
     
     public final  static int FA_MODE_SET = 1;
     public final  static int FA_MODE_ADD = 2;
-    public final  static int FA_MODE_REMOVE = 4;        
+    public final  static int FA_MODE_REMOVE = 4;
 }

@@ -63,13 +63,10 @@ public class CacheEngineAction extends WizardAction {
             final Progress progress = new Progress();
             
             getWizardUi().setProgress(progress);
-            
-            cacheEngineLocally(progress);
+            Installer.cacheInstallerEngine(progress);            
         } catch (IOException e) {
             ErrorManager.notifyCritical("Cannot cache engine", e);
-        }  catch (XMLException e) {
-            ErrorManager.notifyCritical("Cannot cache engine", e);
-        }
+        } 
     }
     
     @Override
@@ -77,142 +74,6 @@ public class CacheEngineAction extends WizardAction {
         return false;
     }
 
-    private void cacheEngineJar(Progress progress) throws IOException, XMLException {
-        LogManager.log("... starting copying engine content to the new jar file");
-        String [] entries = StreamUtils.readStream(
-                ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST)).
-                toString().split(StringUtils.NEW_LINE_PATTERN);
-        
-        File dest = getCacheExpectedFile();
-        
-        JarOutputStream jos = null;
-        
-        try {
-            Manifest mf = new Manifest();
-            mf.getMainAttributes().put(Attributes.Name.MAIN_CLASS, Installer.class.getName());
-            mf.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-            mf.getMainAttributes().put(Attributes.Name.CLASS_PATH, "");
-            
-            dest.getParentFile().mkdirs();
-            jos = new JarOutputStream(new FileOutputStream(dest),mf);
-            LogManager.log("... total entries : " + entries.length);
-            for(int i=0;i<entries.length;i++) {
-                progress.setPercentage((i * 100) /entries.length);
-                String name = entries[i];
-                if(name.length() > 0) {
-                    String dataDir = EngineResources.DATA_DIRECTORY +
-                            StringUtils.FORWARD_SLASH;
-                    if(!name.startsWith(dataDir) || // all except "data/""
-                            name.equals(dataDir) || // "data/"
-                            name.equals(EngineResources.ENGINE_PROPERTIES)) { // "data/engine.properties"
-                        jos.putNextEntry(new JarEntry(name));
-                        if(!name.endsWith(StringUtils.FORWARD_SLASH)) {
-                            StreamUtils.transferData(ResourceUtils.getResource(name), jos);
-                        }
-                    }
-                }
-            }
-            LogManager.log("... adding content list and some other stuff");
-            
-            jos.putNextEntry(new JarEntry(
-                    EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH +
-                    "registry.xml"));
-            
-            XMLUtils.saveXMLDocument(
-                    Registry.getInstance().getEmptyRegistryDocument(),
-                    jos);
-            
-            jos.putNextEntry(new JarEntry(EngineResources.ENGINE_CONTENTS_LIST));
-            jos.write(StringUtils.asString(entries, SystemUtils.getLineSeparator()).getBytes());
-        } finally {
-            if(jos!=null) {
-                try {
-                    jos.close();
-                } catch (IOException ex) {
-                    LogManager.log(ex);
-                }
-                
-            }
-        }
-        
-        cachedEngine = (!dest.exists()) ? null : dest;
-        
-        LogManager.log("NBI Engine jar file = [" +
-                cachedEngine + "], exist = " +
-                ((cachedEngine==null) ? false : cachedEngine.exists()));
-    }
-    
-    private File getCacheExpectedFile() {
-        File localDirectory = new File(System.getProperty(
-                Installer.LOCAL_DIRECTORY_PATH_PROPERTY));
-        return new File(localDirectory, "nbi-engine.jar");
-    }
-    
-    private void cacheEngineLocally(Progress progress) 
-            throws IOException, XMLException {
-        LogManager.logIndent("cache engine data locally to run uninstall in the future");
-        
-        String filePrefix = "file:";
-        String httpPrefix = "http://";
-        String jarSep     = "!/";
-        
-        String installerResource = Installer.class.getName().replace(".","/") + ".class";
-        URL url = this.getClass().getClassLoader().getResource(installerResource);
-        if(url == null) {
-            throw new IOException("No main Installer class in the engine");
-        }
-        
-        LogManager.log(ErrorLevel.DEBUG, "NBI Engine URL for Installer.Class = " + url);
-        LogManager.log(ErrorLevel.DEBUG, "URL Path = " + url.getPath());
-        
-        boolean needCache = true;
-        
-        if("jar".equals(url.getProtocol())) {
-            LogManager.log("... running engine as a .jar file");
-            // we run engine from jar, not from .class
-            String path = url.getPath();
-            String jarLocation;
-            
-            if (path.startsWith(filePrefix)) {
-                LogManager.log("... classloader says that jar file is on the disk");
-                if (path.indexOf(jarSep) != -1) {
-                    jarLocation = path.substring(filePrefix.length(),
-                            path.indexOf(jarSep + installerResource));
-                    jarLocation = URLDecoder.decode(jarLocation, StringUtils.ENCODING_UTF8);
-                    File jarfile = new File(jarLocation);
-                    LogManager.log("... checking if it runs from cached engine");
-                    if(jarfile.getAbsolutePath().equals(
-                            getCacheExpectedFile().getAbsolutePath())) {
-                        needCache = false; // we already run cached version
-                        cachedEngine = jarfile;
-                    }
-                    LogManager.log("... " + !needCache);
-                } else {
-                    throw new IOException("JAR path " + path +
-                            " doesn`t contaion jar-separator " + jarSep);
-                }
-            } else if (path.startsWith(httpPrefix)) {
-                LogManager.log("... classloader says that jar file is on remote server");
-            }
-        } else {
-            // a quick hack to allow caching engine when run from the IDE (i.e.
-            // as a .class) - probably to be removed later. Or maybe not...
-            LogManager.log("... running engine as a .class file");
-        }
-        
-        if (needCache) {
-                cacheEngineJar(progress);
-        }
-        
-        System.setProperty(
-                EngineResources.LOCAL_ENGINE_PATH_PROPERTY,
-                cachedEngine.getAbsolutePath());
-        
-        LogManager.logUnindent("... finished caching engine data");
-    }
- 
-    
-    private File cachedEngine ;
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants

@@ -24,26 +24,39 @@ import com.apple.eawt.Application;
 import com.apple.eawt.ApplicationAdapter;
 import com.apple.eawt.ApplicationEvent;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.TreeSet;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.DateUtils;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.UiUtils;
+import org.netbeans.installer.utils.XMLUtils;
+import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.EngineResources;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.FinishHandler;
 import org.netbeans.installer.utils.helper.UiMode;
+import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
 
@@ -370,30 +383,30 @@ public class Installer implements FinishHandler {
                     
                     final Locale targetLocale;
                     switch (valueParts.length) {
-                    case 1:
-                        targetLocale = new Locale(
-                                valueParts[0]);
-                        break;
-                    case 2:
-                        targetLocale = new Locale(
-                                valueParts[0],
-                                valueParts[1]);
-                        break;
-                    case 3:
-                        targetLocale = new Locale(
-                                valueParts[0],
-                                valueParts[1],
-                                valueParts[2]);
-                        break;
-                    default:
-                        targetLocale = null;
-                        
-                        final String message = ResourceUtils.getString(
-                                Installer.class,
-                                WARNING_BAD_LOCALE_ARG_PARAM_KEY,
-                                LOCALE_ARG,
-                                value);
-                        ErrorManager.notifyWarning(message);
+                        case 1:
+                            targetLocale = new Locale(
+                                    valueParts[0]);
+                            break;
+                        case 2:
+                            targetLocale = new Locale(
+                                    valueParts[0],
+                                    valueParts[1]);
+                            break;
+                        case 3:
+                            targetLocale = new Locale(
+                                    valueParts[0],
+                                    valueParts[1],
+                                    valueParts[2]);
+                            break;
+                        default:
+                            targetLocale = null;
+                            
+                            final String message = ResourceUtils.getString(
+                                    Installer.class,
+                                    WARNING_BAD_LOCALE_ARG_PARAM_KEY,
+                                    LOCALE_ARG,
+                                    value);
+                            ErrorManager.notifyWarning(message);
                     }
                     
                     if (targetLocale != null) {
@@ -429,21 +442,21 @@ public class Installer implements FinishHandler {
                     File stateFile = new File(value).getAbsoluteFile();
                     if (!stateFile.exists()) {
                         ErrorManager.notifyWarning(ResourceUtils.getString(
-                                Installer.class, 
-                                WARNING_MISSING_STATE_FILE_KEY, 
-                                STATE_ARG, 
+                                Installer.class,
+                                WARNING_MISSING_STATE_FILE_KEY,
+                                STATE_ARG,
                                 stateFile));
                     } else {
                         System.setProperty(
-                                Registry.SOURCE_STATE_FILE_PATH_PROPERTY, 
+                                Registry.SOURCE_STATE_FILE_PATH_PROPERTY,
                                 stateFile.getAbsolutePath());
                     }
                     
                     i = i + 1;
                 } else {
                     ErrorManager.notifyWarning(ResourceUtils.getString(
-                            Installer.class, 
-                            WARNING_BAD_STATE_FILE_ARG_KEY, 
+                            Installer.class,
+                            WARNING_BAD_STATE_FILE_ARG_KEY,
                             STATE_ARG));
                 }
                 
@@ -454,28 +467,28 @@ public class Installer implements FinishHandler {
             if (arguments[i].equalsIgnoreCase(RECORD_ARG)) {
                 LogManager.logIndent("parsing command line parameter \"" + // NOI18N
                         RECORD_ARG + "\""); // NOI18N
-                                
+                
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
                     
                     File stateFile = new File(value).getAbsoluteFile();
                     if (stateFile.exists()) {
                         ErrorManager.notifyWarning(ResourceUtils.getString(
-                                Installer.class, 
-                                WARNING_TARGET_STATE_FILE_EXISTS_KEY, 
-                                RECORD_ARG, 
+                                Installer.class,
+                                WARNING_TARGET_STATE_FILE_EXISTS_KEY,
+                                RECORD_ARG,
                                 stateFile));
                     } else {
                         System.setProperty(
-                                Registry.TARGET_STATE_FILE_PATH_PROPERTY, 
+                                Registry.TARGET_STATE_FILE_PATH_PROPERTY,
                                 stateFile.getAbsolutePath());
                     }
                     
                     i = i + 1;
                 } else {
                     ErrorManager.notifyWarning(ResourceUtils.getString(
-                            Installer.class, 
-                            WARNING_BAD_TARGET_STATE_FILE_ARG_KEY, 
+                            Installer.class,
+                            WARNING_BAD_TARGET_STATE_FILE_ARG_KEY,
                             RECORD_ARG));
                 }
                 
@@ -484,7 +497,7 @@ public class Installer implements FinishHandler {
             }
             
             if (arguments[i].equalsIgnoreCase(SILENT_ARG)) {
-                LogManager.logIndent("parsing command line parameter \"" + 
+                LogManager.logIndent("parsing command line parameter \"" +
                         SILENT_ARG + "\"");
                 
                 UiMode.setCurrentUiMode(UiMode.SILENT);
@@ -503,9 +516,9 @@ public class Installer implements FinishHandler {
                     File targetFile = new File(value).getAbsoluteFile();
                     if (targetFile.exists()) {
                         ErrorManager.notifyWarning(ResourceUtils.getString(
-                                Installer.class, 
-                                WARNING_BUNDLE_FILE_EXISTS_KEY, 
-                                CREATE_BUNDLE_ARG, 
+                                Installer.class,
+                                WARNING_BUNDLE_FILE_EXISTS_KEY,
+                                CREATE_BUNDLE_ARG,
                                 targetFile));
                     } else {
                         ExecutionMode.setCurrentExecutionMode(
@@ -518,8 +531,8 @@ public class Installer implements FinishHandler {
                     i = i + 1;
                 } else {
                     ErrorManager.notifyWarning(ResourceUtils.getString(
-                            Installer.class, 
-                            WARNING_BAD_CREATE_BUNDLE_ARG_KEY, 
+                            Installer.class,
+                            WARNING_BAD_CREATE_BUNDLE_ARG_KEY,
                             CREATE_BUNDLE_ARG));
                 }
                 
@@ -531,7 +544,7 @@ public class Installer implements FinishHandler {
                 LogManager.logIndent("parsing command line parameter \"" + // NOI18N
                         IGNORE_LOCK_ARG + "\""); // NOI18N
                 
-                System.setProperty(IGNORE_LOCK_FILE_PROPERTY, 
+                System.setProperty(IGNORE_LOCK_FILE_PROPERTY,
                         UNARY_ARG_VALUE);
                 
                 LogManager.unindent();
@@ -546,14 +559,14 @@ public class Installer implements FinishHandler {
                     String value = arguments[i + 1];
                     File   file  = new File(value);
                     
-                    System.setProperty(LOCAL_DIRECTORY_PATH_PROPERTY, 
+                    System.setProperty(LOCAL_DIRECTORY_PATH_PROPERTY,
                             file.getAbsolutePath());
                     
                     i = i + 1;
                 } else {
                     ErrorManager.notifyWarning(ResourceUtils.getString(
-                            Installer.class, 
-                            WARNING_BAD_USERDIR_ARG_KEY, 
+                            Installer.class,
+                            WARNING_BAD_USERDIR_ARG_KEY,
                             USERDIR_ARG));
                 }
                 
@@ -568,14 +581,14 @@ public class Installer implements FinishHandler {
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
                     
-                    System.setProperty(Registry.TARGET_PLATFORM_PROPERTY, 
+                    System.setProperty(Registry.TARGET_PLATFORM_PROPERTY,
                             value);
                     
                     i = i + 1;
                 } else {
                     ErrorManager.notifyWarning(ResourceUtils.getString(
-                            Installer.class, 
-                            WARNING_BAD_PLATFORM_ARG_KEY, 
+                            Installer.class,
+                            WARNING_BAD_PLATFORM_ARG_KEY,
                             PLATFORM_ARG));
                 }
                 
@@ -588,7 +601,7 @@ public class Installer implements FinishHandler {
                         SUGGEST_INSTALL_ARG + "\""); // NOI18N
                 
                 System.setProperty(
-                        Registry.SUGGEST_INSTALL_PROPERTY, 
+                        Registry.SUGGEST_INSTALL_PROPERTY,
                         UNARY_ARG_VALUE);
                 
                 LogManager.unindent();
@@ -600,7 +613,7 @@ public class Installer implements FinishHandler {
                         SUGGEST_UNINSTALL_ARG + "\""); // NOI18N
                 
                 System.setProperty(
-                        Registry.SUGGEST_UNINSTALL_PROPERTY, 
+                        Registry.SUGGEST_UNINSTALL_PROPERTY,
                         UNARY_ARG_VALUE);
                 
                 LogManager.unindent();
@@ -612,7 +625,7 @@ public class Installer implements FinishHandler {
                         FORCE_INSTALL_ARG + "\""); // NOI18N
                 
                 System.setProperty(
-                        Registry.FORCE_INSTALL_PROPERTY, 
+                        Registry.FORCE_INSTALL_PROPERTY,
                         UNARY_ARG_VALUE);
                 
                 LogManager.unindent();
@@ -624,7 +637,7 @@ public class Installer implements FinishHandler {
                         FORCE_UNINSTALL_ARG + "\""); // NOI18N
                 
                 System.setProperty(
-                        Registry.FORCE_UNINSTALL_PROPERTY, 
+                        Registry.FORCE_UNINSTALL_PROPERTY,
                         UNARY_ARG_VALUE);
                 
                 LogManager.unindent();
@@ -657,8 +670,8 @@ public class Installer implements FinishHandler {
                     i = i + 1;
                 } else {
                     ErrorManager.notifyWarning(ResourceUtils.getString(
-                            Installer.class, 
-                            WARNING_BAD_REGISTRY_ARG_KEY, 
+                            Installer.class,
+                            WARNING_BAD_REGISTRY_ARG_KEY,
                             REGISTRY_ARG));
                 }
                 
@@ -678,9 +691,9 @@ public class Installer implements FinishHandler {
                     Registry.SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
                 UiMode.setCurrentUiMode(UiMode.DEFAULT_MODE);
                 ErrorManager.notifyWarning(ResourceUtils.getString(
-                        Installer.class, 
-                        WARNING_SILENT_WITHOUT_STATE_KEY, 
-                        SILENT_ARG, 
+                        Installer.class,
+                        WARNING_SILENT_WITHOUT_STATE_KEY,
+                        SILENT_ARG,
                         STATE_ARG));
             }
         }
@@ -699,10 +712,10 @@ public class Installer implements FinishHandler {
             LogManager.log("... custom local directory was " + // NOI18N
                     "not specified, using the default"); // NOI18N
             
-            localDirectory = 
+            localDirectory =
                     new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
             System.setProperty(
-                    LOCAL_DIRECTORY_PATH_PROPERTY, 
+                    LOCAL_DIRECTORY_PATH_PROPERTY,
                     localDirectory.getAbsolutePath());
         }
         
@@ -711,25 +724,25 @@ public class Installer implements FinishHandler {
         if (!localDirectory.exists()) {
             if (!localDirectory.mkdirs()) {
                 ErrorManager.notifyCritical(ResourceUtils.getString(
-                        Installer.class, 
-                        ERROR_CANNOT_CREATE_LOCAL_DIR_KEY, 
+                        Installer.class,
+                        ERROR_CANNOT_CREATE_LOCAL_DIR_KEY,
                         localDirectory));
             }
         } else if (localDirectory.isFile()) {
-                ErrorManager.notifyCritical(ResourceUtils.getString(
-                        Installer.class, 
-                        ERROR_LOCAL_DIR_IS_FILE_KEY, 
-                        localDirectory));
+            ErrorManager.notifyCritical(ResourceUtils.getString(
+                    Installer.class,
+                    ERROR_LOCAL_DIR_IS_FILE_KEY,
+                    localDirectory));
         } else if (!localDirectory.canRead()) {
-                ErrorManager.notifyCritical(ResourceUtils.getString(
-                        Installer.class, 
-                        ERROR_NO_READ_PERMISSIONS_FOR_LOCAL_DIR_KEY, 
-                        localDirectory));
+            ErrorManager.notifyCritical(ResourceUtils.getString(
+                    Installer.class,
+                    ERROR_NO_READ_PERMISSIONS_FOR_LOCAL_DIR_KEY,
+                    localDirectory));
         } else if (!localDirectory.canWrite()) {
-                ErrorManager.notifyCritical(ResourceUtils.getString(
-                        Installer.class, 
-                        ERROR_NO_WRITE_PERMISSIONS_FOR_LOCAL_DIR_KEY, 
-                        localDirectory));
+            ErrorManager.notifyCritical(ResourceUtils.getString(
+                    Installer.class,
+                    ERROR_NO_WRITE_PERMISSIONS_FOR_LOCAL_DIR_KEY,
+                    localDirectory));
         }
         
         LogManager.logUnindent(
@@ -746,10 +759,10 @@ public class Installer implements FinishHandler {
                 LogManager.log("... lock file already exists"); // NOI18N
                 
                 final String dialogTitle = ResourceUtils.getString(
-                        Installer.class, 
+                        Installer.class,
                         LOCK_FILE_EXISTS_DIALOG_TITLE_KEY);
                 final String dialogText = ResourceUtils.getString(
-                        Installer.class, 
+                        Installer.class,
                         LOCK_FILE_EXISTS_DIALOG_TEXT_KEY);
                 if(!UiUtils.showYesNoDialog(dialogTitle, dialogText)) {
                     cancel();
@@ -759,7 +772,7 @@ public class Installer implements FinishHandler {
                     lock.createNewFile();
                 } catch (IOException e) {
                     ErrorManager.notifyCritical(ResourceUtils.getString(
-                            Installer.class, 
+                            Installer.class,
                             ERROR_CANNOT_CREATE_LOCK_FILE_KEY), e);
                 }
                 
@@ -790,8 +803,9 @@ public class Installer implements FinishHandler {
                             WizardComponent.RESOURCE_CANCEL_DIALOG_TITLE);
                     final String dialogText = ResourceUtils.getString(
                             WizardComponent.class,
+                            
                             WizardComponent.RESOURCE_CANCEL_DIALOG_TEXT);
-
+                    
                     if (UiUtils.showYesNoDialog(dialogTitle, dialogText)) {
                         cancel();
                     }
@@ -800,73 +814,218 @@ public class Installer implements FinishHandler {
         }
     }
     
+    /**
+     * Cache installer at NBI`s home directory.
+     */
+    public static File cacheInstallerEngine(Progress progress) throws IOException {
+        final String propName = EngineResources.LOCAL_ENGINE_PATH_PROPERTY;
+        File cachedEngine = null;
+        
+        if ( System.getProperty(propName) == null ) {
+            cachedEngine = new File(System.getProperty(
+                    LOCAL_DIRECTORY_PATH_PROPERTY),
+                    "nbi-engine.jar");
+            System.setProperty(propName, cachedEngine.getAbsolutePath());
+        }  else {
+            cachedEngine = new File(System.getProperty(propName));
+        }
+        
+        if(!FileUtils.exists(cachedEngine)) {
+            cacheInstallerEngine(cachedEngine, progress);
+        }
+        
+        return new File(System.getProperty(propName));
+    }
+    
+    private static void cacheInstallerEngineJar(File dest, Progress progress) throws IOException {
+        LogManager.log("... starting copying engine content to the new jar file");
+        String [] entries = StreamUtils.readStream(
+                ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST)).
+                toString().split(StringUtils.NEW_LINE_PATTERN);
+        
+        JarOutputStream jos = null;
+        
+        try {
+            Manifest mf = new Manifest();
+            mf.getMainAttributes().put(Attributes.Name.MAIN_CLASS, Installer.class.getName());
+            mf.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+            mf.getMainAttributes().put(Attributes.Name.CLASS_PATH, "");
+            
+            dest.getParentFile().mkdirs();
+            jos = new JarOutputStream(new FileOutputStream(dest),mf);
+            LogManager.log("... total entries : " + entries.length);
+            for(int i=0;i<entries.length;i++) {
+                progress.setPercentage((i * 100) /entries.length);
+                String name = entries[i];
+                if(name.length() > 0) {
+                    String dataDir = EngineResources.DATA_DIRECTORY +
+                            StringUtils.FORWARD_SLASH;
+                    if(!name.startsWith(dataDir) || // all except "data/""
+                            name.equals(dataDir) || // "data/"
+                            name.equals(EngineResources.ENGINE_PROPERTIES)) { // "data/engine.properties"
+                        jos.putNextEntry(new JarEntry(name));
+                        if(!name.endsWith(StringUtils.FORWARD_SLASH)) {
+                            StreamUtils.transferData(ResourceUtils.getResource(name), jos);
+                        }
+                    }
+                }
+            }
+            LogManager.log("... adding content list and some other stuff");
+            
+            jos.putNextEntry(new JarEntry(
+                    EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH +
+                    "registry.xml"));
+            
+            XMLUtils.saveXMLDocument(
+                    Registry.getInstance().getEmptyRegistryDocument(),
+                    jos);
+            
+            jos.putNextEntry(new JarEntry(EngineResources.ENGINE_CONTENTS_LIST));
+            jos.write(StringUtils.asString(entries, SystemUtils.getLineSeparator()).getBytes());
+        }  catch (XMLException e){
+            IOException ex = new IOException();
+            ex.initCause(e);
+            throw ex;
+        } finally {
+            if(jos!=null) {
+                try {
+                    jos.close();
+                } catch (IOException ex) {
+                    LogManager.log(ex);
+                }
+                
+            }
+        }
+        
+        LogManager.log("Installer Engine has been cached to " + dest);
+    }
+    
+    
+    
+    public static void cacheInstallerEngine(File dest, Progress progress) throws IOException {
+        LogManager.logIndent("cache engine data locally to run uninstall in the future");
+        
+        String filePrefix = "file:";
+        String httpPrefix = "http://";
+        String jarSep     = "!/";
+        
+        String installerResource = Installer.class.getName().replace(".","/") + ".class";
+        URL url = Installer.class.getClassLoader().getResource(installerResource);
+        if(url == null) {
+            throw new IOException("No main Installer class in the engine");
+        }
+        
+        LogManager.log(ErrorLevel.DEBUG, "NBI Engine URL for Installer.Class = " + url);
+        LogManager.log(ErrorLevel.DEBUG, "URL Path = " + url.getPath());
+        
+        boolean needCache = true;
+        
+        if("jar".equals(url.getProtocol())) {
+            LogManager.log("... running engine as a .jar file");
+            // we run engine from jar, not from .class
+            String path = url.getPath();
+            String jarLocation;
+            
+            if (path.startsWith(filePrefix)) {
+                LogManager.log("... classloader says that jar file is on the disk");
+                if (path.indexOf(jarSep) != -1) {
+                    jarLocation = path.substring(filePrefix.length(),
+                            path.indexOf(jarSep + installerResource));
+                    jarLocation = URLDecoder.decode(jarLocation, StringUtils.ENCODING_UTF8);
+                    File jarfile = new File(jarLocation);
+                    LogManager.log("... checking if it runs from cached engine");
+                    if(jarfile.getAbsolutePath().equals(
+                            dest.getAbsolutePath())) {
+                        needCache = false; // we already run cached version
+                    }
+                    LogManager.log("... " + !needCache);
+                } else {
+                    throw new IOException("JAR path " + path +
+                            " doesn`t contaion jar-separator " + jarSep);
+                }
+            } else if (path.startsWith(httpPrefix)) {
+                LogManager.log("... classloader says that jar file is on remote server");
+            }
+        } else {
+            // a quick hack to allow caching engine when run from the IDE (i.e.
+            // as a .class) - probably to be removed later. Or maybe not...
+            LogManager.log("... running engine as a .class file");
+        }
+        
+        if (needCache) {
+            cacheInstallerEngineJar(dest, progress);
+        }
+        
+        LogManager.logUnindent("... finished caching engine data");
+    }
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     
     // errorcodes ///////////////////////////////////////////////////////////////////
     /** Errorcode to be used at normal exit */
-    public static final int NORMAL_ERRORCODE = 
+    public static final int NORMAL_ERRORCODE =
             0;
     
     /** Errorcode to be used when the installer is canceled */
-    public static final int CANCEL_ERRORCODE = 
+    public static final int CANCEL_ERRORCODE =
             1;
     
     /** Errorcode to be used when the installer exits because of a critical error */
-    public static final int CRITICAL_ERRORCODE = 
+    public static final int CRITICAL_ERRORCODE =
             255;
     
     // command line arguments ///////////////////////////////////////////////////////
-    public static final String TARGET_ARG = 
+    public static final String TARGET_ARG =
             "--target"; // NOI18N
     
-    public static final String LOOK_AND_FEEL_ARG = 
+    public static final String LOOK_AND_FEEL_ARG =
             "--look-and-feel"; // NOI18N
     
-    public static final String LOCALE_ARG = 
+    public static final String LOCALE_ARG =
             "--locale"; // NOI18N
     
-    public static final String STATE_ARG = 
+    public static final String STATE_ARG =
             "--state"; // NOI18N
     
-    public static final String RECORD_ARG = 
+    public static final String RECORD_ARG =
             "--record"; // NOI18N
     
-    public static final String SILENT_ARG = 
+    public static final String SILENT_ARG =
             "--silent"; // NOI18N
     
-    public static final String CREATE_BUNDLE_ARG = 
+    public static final String CREATE_BUNDLE_ARG =
             "--create-bundle"; // NOI18N
     
-    public static final String IGNORE_LOCK_ARG = 
+    public static final String IGNORE_LOCK_ARG =
             "--ignore-lock"; // NOI18N
     
-    public static final String USERDIR_ARG = 
+    public static final String USERDIR_ARG =
             "--userdir"; // NOI18N
     
-    public static final String PLATFORM_ARG = 
+    public static final String PLATFORM_ARG =
             "--platform"; // NOI18N
     
-    public static final String SUGGEST_INSTALL_ARG = 
+    public static final String SUGGEST_INSTALL_ARG =
             "--suggest-install"; // NOI18N
     
-    public static final String SUGGEST_UNINSTALL_ARG = 
+    public static final String SUGGEST_UNINSTALL_ARG =
             "--suggest-uninstall"; // NOI18N
     
-    public static final String FORCE_INSTALL_ARG = 
+    public static final String FORCE_INSTALL_ARG =
             "--force-install"; // NOI18N
     
-    public static final String FORCE_UNINSTALL_ARG = 
+    public static final String FORCE_UNINSTALL_ARG =
             "--force-uninstall"; // NOI18N
     
-    public static final String REGISTRY_ARG = 
+    public static final String REGISTRY_ARG =
             "--registry"; // NOI18N
     
     public static final String UNARY_ARG_VALUE =
             "true"; // NOI18N
     
     // lock file ////////////////////////////////////////////////////////////////////
-    public static final String LOCK_FILE_NAME = 
+    public static final String LOCK_FILE_NAME =
             ".nbilock"; // NOI18N
     
     public static final String IGNORE_LOCK_FILE_PROPERTY =
@@ -890,73 +1049,73 @@ public class Installer implements FinishHandler {
             "log/" + DateUtils.getTimestamp() + ".log";
     
     // resource bundle keys /////////////////////////////////////////////////////////
-    private static final String ERROR_UNSUPPORTED_PLATFORM_KEY = 
+    private static final String ERROR_UNSUPPORTED_PLATFORM_KEY =
             "I.error.unsupported.platform"; // NOI18N
     
-    private static final String ERROR_LOAD_ENGINE_PROPERTIES_KEY = 
+    private static final String ERROR_LOAD_ENGINE_PROPERTIES_KEY =
             "I.error.load.engine.properties"; // NOI18N
     
-    private static final String WARNING_BAD_LOOK_AND_FEEL_ARG_KEY = 
+    private static final String WARNING_BAD_LOOK_AND_FEEL_ARG_KEY =
             "I.warning.bad.look.and.feel.arg"; // NOI18N
     
-    private static final String WARNING_BAD_TARGET_ARG_KEY = 
+    private static final String WARNING_BAD_TARGET_ARG_KEY =
             "I.warning.bad.target.arg"; // NOI18N
     
-    private static final String WARNING_BAD_LOCALE_ARG_PARAM_KEY = 
+    private static final String WARNING_BAD_LOCALE_ARG_PARAM_KEY =
             "I.warning.bad.locale.arg.param"; // NOI18N
     
-    private static final String WARNING_BAD_LOCALE_ARG_KEY = 
+    private static final String WARNING_BAD_LOCALE_ARG_KEY =
             "I.warning.bad.locale.arg"; // NOI18N
     
-    private static final String WARNING_MISSING_STATE_FILE_KEY = 
+    private static final String WARNING_MISSING_STATE_FILE_KEY =
             "I.warning.missing.state.file"; // NOI18N
     
-    private static final String WARNING_BAD_STATE_FILE_ARG_KEY = 
+    private static final String WARNING_BAD_STATE_FILE_ARG_KEY =
             "I.warning.bag.state.file.arg"; // NOI18N
     
-    private static final String WARNING_TARGET_STATE_FILE_EXISTS_KEY = 
+    private static final String WARNING_TARGET_STATE_FILE_EXISTS_KEY =
             "I.warning.target.state.file.exists"; // NOI18N
     
-    private static final String WARNING_BAD_TARGET_STATE_FILE_ARG_KEY = 
+    private static final String WARNING_BAD_TARGET_STATE_FILE_ARG_KEY =
             "I.warning.bad.target.state.file.arg"; // NOI18N
     
-    private static final String WARNING_BUNDLE_FILE_EXISTS_KEY = 
+    private static final String WARNING_BUNDLE_FILE_EXISTS_KEY =
             "I.warning.bundle.file.exists"; // NOI18N
     
-    private static final String WARNING_BAD_CREATE_BUNDLE_ARG_KEY = 
+    private static final String WARNING_BAD_CREATE_BUNDLE_ARG_KEY =
             "I.warning.bad.create.bundle.arg"; // NOI18N
     
-    private static final String WARNING_BAD_USERDIR_ARG_KEY = 
+    private static final String WARNING_BAD_USERDIR_ARG_KEY =
             "I.warning.bad.userdir.arg"; // NOI18N
     
-    private static final String WARNING_BAD_PLATFORM_ARG_KEY = 
+    private static final String WARNING_BAD_PLATFORM_ARG_KEY =
             "I.warning.bad.platform.arg"; // NOI18N
     
-    private static final String WARNING_BAD_REGISTRY_ARG_KEY = 
+    private static final String WARNING_BAD_REGISTRY_ARG_KEY =
             "I.warning.bad.registry.arg"; // NOI18N
     
-    private static final String WARNING_SILENT_WITHOUT_STATE_KEY = 
+    private static final String WARNING_SILENT_WITHOUT_STATE_KEY =
             "I.warning.silent.without.state"; // NOI18N
     
-    private static final String ERROR_CANNOT_CREATE_LOCAL_DIR_KEY = 
+    private static final String ERROR_CANNOT_CREATE_LOCAL_DIR_KEY =
             "I.error.cannot.create.local.dir"; // NOI18N
     
-    private static final String ERROR_LOCAL_DIR_IS_FILE_KEY = 
+    private static final String ERROR_LOCAL_DIR_IS_FILE_KEY =
             "I.error.local.dir.is.file"; // NOI18N
     
-    private static final String ERROR_NO_READ_PERMISSIONS_FOR_LOCAL_DIR_KEY = 
+    private static final String ERROR_NO_READ_PERMISSIONS_FOR_LOCAL_DIR_KEY =
             "I.error.no.read.permissions.for.local.dir"; // NOI18N
     
-    private static final String ERROR_NO_WRITE_PERMISSIONS_FOR_LOCAL_DIR_KEY = 
+    private static final String ERROR_NO_WRITE_PERMISSIONS_FOR_LOCAL_DIR_KEY =
             "I.error.no.write.permissions.for.local.dir"; // NOI18N
     
-    private static final String LOCK_FILE_EXISTS_DIALOG_TITLE_KEY = 
+    private static final String LOCK_FILE_EXISTS_DIALOG_TITLE_KEY =
             "I.lock.file.exists.dialog.title"; // NOI18N
     
     private static final String LOCK_FILE_EXISTS_DIALOG_TEXT_KEY =
             "I.lock.file.exists.dialog.text"; // NOI18N
     
-    private static final String ERROR_CANNOT_CREATE_LOCK_FILE_KEY = 
-            "I.error.cannot.create.lock.file"; // NOI18N    
-
+    private static final String ERROR_CANNOT_CREATE_LOCK_FILE_KEY =
+            "I.error.cannot.create.lock.file"; // NOI18N
+    
 }

@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
@@ -118,8 +119,7 @@ public class CreateBundleAction extends WizardAction {
             progress.setTitle("Creating a redistributable bundle at " + targetFile);
             progress.setDetail("Adding installer engine...");
             
-            engine = new JarFile(
-                    System.getProperty(EngineResources.LOCAL_ENGINE_PATH_PROPERTY));
+            engine = new JarFile(Installer.cacheInstallerEngine(new Progress()));
             output = new JarOutputStream(new FileOutputStream(targetFile));
             
             // transfer the engine, skipping existing bundled components
