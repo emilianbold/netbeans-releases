@@ -91,7 +91,7 @@ public final class JavadocGenerator {
         
         for (TypeMirror exceptionType : method.getThrownTypes()) {
             CharSequence name;
-            if (TypeKind.DECLARED == exceptionType.getKind()) {
+            if (TypeKind.DECLARED == exceptionType.getKind() || TypeKind.ERROR == exceptionType.getKind()) {
                 TypeElement exception = (TypeElement) ((DeclaredType) exceptionType).asElement();
                 name = exception.getQualifiedName();
             } else if (TypeKind.TYPEVAR == exceptionType.getKind()) {

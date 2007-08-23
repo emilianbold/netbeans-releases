@@ -31,6 +31,7 @@ import com.sun.javadoc.ThrowsTag;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -263,6 +264,8 @@ public final class JavadocHintProvider extends AbstractHint {
     
     private final class Analyzer {
         
+        private static final String ERROR_IDENT = "<error>"; // NOI18N
+        
         private final CompilationInfo javac;
         private final SourceVersion spec;
         private final FixAll fixAll = new FixAll();
@@ -325,11 +328,12 @@ public final class JavadocHintProvider extends AbstractHint {
             String jdText = javac.getElements().getDocComment(elm);
             // create hint descriptor + prepare javadoc
             if (jdText == null) {
-                if (JavadocUtilities.hasInheritedDoc(javac, elm)) {
-                    return errors;
-                }
                 if (!createJavadocKind)
                     return errors;
+                
+                if (hasErrors(node) || JavadocUtilities.hasInheritedDoc(javac, elm)) {
+                    return errors;
+                }
                 
                 try {
                     Position[] positions = createSignaturePositions(node);
@@ -343,7 +347,7 @@ public final class JavadocHintProvider extends AbstractHint {
                     Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             } else {
-                if (createJavadocKind)
+                if (createJavadocKind || hasErrors(node))
                     return errors;
                 
                 errors = new ArrayList<ErrorDescription>();
@@ -374,6 +378,50 @@ public final class JavadocHintProvider extends AbstractHint {
                 processDeprecatedAnnotation(elm, jDoc, errors);
             }
             return errors;
+        }
+        
+        /**
+         * has syntax errors preventing to generate javadoc?
+         */
+        private boolean hasErrors(Tree leaf) {
+            switch (leaf.getKind()) {
+                case METHOD:
+                    MethodTree mt = (MethodTree) leaf;
+                    if (mt.getReturnType().getKind() == Kind.ERRONEOUS) {
+                        return true;
+                    }
+                    for (VariableTree vt : mt.getParameters()) {
+                        if (ERROR_IDENT.contentEquals(vt.getName())) {
+                            return true;
+                        }
+                    }
+                    for (Tree t : mt.getThrows()) {
+                        if (t.getKind() == Kind.ERRONEOUS ||
+                                (t.getKind() == Kind.IDENTIFIER && ERROR_IDENT.contentEquals(((IdentifierTree) t).getName()))) {
+                            return true;
+                        }
+                    }
+                    break;
+                    
+                case VARIABLE:
+                    VariableTree vt = (VariableTree) leaf;
+                    return vt.getType().getKind() == Kind.ERRONEOUS
+                            || ERROR_IDENT.contentEquals(vt.getName());
+                    
+                case CLASS:
+                    ClassTree ct = (ClassTree) leaf;
+                    if (ERROR_IDENT.contentEquals(ct.getSimpleName())) {
+                        return true;
+                    }
+                    for (TypeParameterTree tpt : ct.getTypeParameters()) {
+                        if (ERROR_IDENT.contentEquals(tpt.getName())) {
+                            return true;
+                        }
+                    }
+                    break;
+                    
+            }
+            return false;
         }
         
         private boolean isValid(TreePath path) {
