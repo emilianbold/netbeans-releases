@@ -52,14 +52,12 @@ public class JsfProjectLibrary {
     public static final String[] DESIGNTIME_LIBS_JSF11 = {
         "jsfsupport-designtime",
         "webui-designtime",
-        "jdbcsupport-designtime",
     };
 
     // JSF 1.1 support libraries for Deploy only
     public static final String[] RUNTIME_LIBS_JSF11 = {
         "jsfsupport-runtime",
         "webui-runtime",
-        "jdbcsupport-runtime",
         "exceptionhandler-runtime",
     };
 
@@ -71,12 +69,10 @@ public class JsfProjectLibrary {
 
     // JSF 1.2 support libraries for Compile only
     public static final String[] DESIGNTIME_LIBS_JSF12 = {
-        "jdbcsupport-designtime",
     };
 
     // JSF 1.2 support libraries for Deploy only
     public static final String[] RUNTIME_LIBS_JSF12 = {
-         "jdbcsupport-runtime",
          "exceptionhandler-runtime",
     };
 

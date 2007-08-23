@@ -26,7 +26,8 @@ Microsystems, Inc. All Rights Reserved.
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/jsfcl.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/dataprovider.jar!/</resource>        
         <resource>jar:nbinst:///modules/ext/appbase.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/dataprovider.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/sqlx.jar!/</resource>
     </volume>
 </library>
