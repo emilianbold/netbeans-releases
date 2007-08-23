@@ -345,7 +345,7 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         
         String remoteFieldType = classHandle.getQualifiedName();
         
-        if (!isMultiValuedAtLocalEntity()){
+        if (isMultiValuedAtTargetEntity()){
             remoteFieldType = String.format("java.util.List<%s>", remoteFieldType); //NOI18N
         }
         
@@ -355,11 +355,18 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         if (targetFieldElem != null){
             targetField = (VariableTree) workingCopy.getTrees().getTree(targetFieldElem);
         } else{
-            ModifiersTree modifiersTree = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PRIVATE));
+            ModifiersTree fieldModifiers = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PRIVATE));
             
-            targetField = genUtils.createField(modifiersTree, mappedBy, remoteFieldType);
+            targetField = genUtils.createField(fieldModifiers, mappedBy, remoteFieldType);
             
             ClassTree modifiedClass = genUtils.addClassFields(targetClassTree, Collections.singletonList(targetField));
+            
+            ModifiersTree accessorMutatorModifiers = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PUBLIC));
+            MethodTree accessor = genUtils.createPropertyGetterMethod(accessorMutatorModifiers, mappedBy, remoteFieldType);
+            MethodTree mutator = genUtils.createPropertySetterMethod(accessorMutatorModifiers, mappedBy, remoteFieldType);
+            modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, accessor);
+            modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, mutator);
+            
             workingCopy.rewrite(targetClassTree, modifiedClass);
             targetClassTree = modifiedClass;
         }
