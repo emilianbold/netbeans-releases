@@ -219,7 +219,8 @@ public final class TestKit {
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText(name);
-        nfnlso.selectPackage(packageName);
+//        nfnlso.selectPackage(packageName);
+        nfnlso.setPackage(packageName);
         nfnlso.finish();
     }
     
