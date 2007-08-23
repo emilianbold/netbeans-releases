@@ -71,6 +71,9 @@ import org.openide.util.Utilities;
  */
 public class RubyInstallation {
     
+    /** Used by tests. */
+    static String TEST_GEM_HOME;
+    
     private static final Logger LOGGER = Logger.getLogger(RubyInstallation.class.getName());
     
     private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
@@ -430,7 +433,7 @@ public class RubyInstallation {
         File lib = new File(rubyHome, "lib" + File.separator + "ruby" + File.separator + "gems"); // NOI18N
 
         if (!lib.isDirectory()) {
-            String gemHome = System.getProperty("GEM_HOME"); // NOI18N
+            String gemHome = TEST_GEM_HOME; // test hook
             if (gemHome == null) {
                 gemHome = System.getenv().get("GEM_HOME");
             }

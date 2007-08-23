@@ -114,7 +114,7 @@ public class RubyInstallationTest extends NbTestCase {
         File gemRepo = new File(getWorkDir(), "gemrepo");
         File gemRepoBinF = new File(gemRepo, "bin");
         gemRepoBinF.mkdirs();
-        System.setProperty("GEM_HOME", gemRepo.getAbsolutePath());
+        RubyInstallation.TEST_GEM_HOME = gemRepo.getAbsolutePath();
         RubyInstallation ri = setUpRubyWithGems(false);
         touch("rdebug-ide", gemRepoBinF.getAbsolutePath());
         assertNotNull(ri.findGemExecutable("rdebug-ide"));
