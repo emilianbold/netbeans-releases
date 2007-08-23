@@ -48,14 +48,31 @@ Microsystems, Inc. All Rights Reserved.
                     <li><b>Register Remote Domain.</b> Select this type to register a remote domain. 
                     If you select this type, you need to supply the host and communication port for the remote domain.
                     <ul class="note"><li>You cannot stop or start a remote server from within the IDE.</li></ul></li>
-                    <li><b>Create Personal Domain.</b> Select this type to create a new domain.
+                    <li><b>Create Personal Domain.</b>
+                    Select this type to create a new domain.
+                    This option is only available if you are registering an instance of the Sun Java System Application Server/GlassFish.
                     If you select this type, you need to specify where to create the new domain. 
                     Choosing this type enables you to specify port settings for the new domain.
-                Use the Profile drop-down list to specify the type of domain to create.</li>
+                    You can also choose a profile type from the drop-down list.</li>
+                    <li><b>Profile.</b>
+                    <p>If you are registering an instance of the Sun Java System Application Server 9.1/GlassFish V2,
+                    when you create a personal domain you can choose a Profile type from the drop-down list.
+                    If you are registering an earlier version of the application server, only the Default profile is available. 
+                    <p>You choose a profile type according to how you intend to use the application server software.
+                    The personal domain is created and configured based on the profile that you choose. </p>
+                    <ul>
+                        <li><b>Default</b> This domain is essentially the same as the Developer profile.</li>
+                        <li><b>Developer.</b> This domain is configured to be run in a development environment. 
+                        This configuration offers the advantage of faster server startup.</li>
+                        <li><b>Cluster.</b> The domain is configured so that it can be used as part of a cluster of application server instances. </li>
+                        <li><b>Enterprise.</b> The domain is configured to be used in a production environment for large-scale deployments. 
+                        This profile offers greater security. This option requires that you have HADB installed.</li>
+                        </ul>
+                    </li>
                 </ul>
             </li>
         </ul>
-        <ul class="note"></li>When you register an existing domain, the IDE uses the port numbers and other properties specified in the domain configuration.</li></ul>
+        <ul class="note"><li>When you register an existing domain, the IDE uses the port numbers and other properties specified in the domain configuration.</li></ul>
         
         <!--
         <p>When registering an instance of the Sun Java System Application Server, you need to supply the following information:</p>
