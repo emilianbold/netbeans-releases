@@ -363,7 +363,12 @@ public class RubyUtils {
         return path;
     }
     
-    /**  
+    // This does not include the various RHTML extensions: .rhtml, .erb, .html.erb, ... See isRhtmlFile
+    public static final String[] RUBY_VIEW_EXTS = { 
+        "rhtml", "erb", "dryml", "mab", "rjs", // NOI18N
+        "haml", "rxml", "dryml", "html.erb" }; // NOI18N
+
+    /**
      * Move from something like app/controllers/credit_card_controller.rb#debit()
      * to app/views/credit_card/debit.rhtml
      * 
@@ -409,8 +414,7 @@ public class RubyUtils {
             }
 
             if (methodName != null) {
-                String[] exts = { "rhtml", "html.erb", "erb", "rjs", "mab", "haml" }; // NOI18N
-                for (String ext : exts) {
+                for (String ext : RUBY_VIEW_EXTS) {
                     viewFile = viewsFolder.getFileObject(methodName, ext);
                     if (viewFile != null) {
                         break;
@@ -430,11 +434,12 @@ public class RubyUtils {
                 if (viewFile == null) {
                     for (FileObject child : viewsFolder.getChildren()) {
                         String ext = child.getExt();
-                        if (RubyUtils.isRhtmlFile(child) || ext.equalsIgnoreCase("mab") || // NOI18N
-                                ext.equalsIgnoreCase("rjs") || ext.equalsIgnoreCase("haml")) { // NOI18N
-                            viewFile = child;
-
-                            break;
+                        for (String e : RUBY_VIEW_EXTS) {
+                            if (ext.equalsIgnoreCase(e)) {
+                                viewFile = child;
+                                
+                                break;
+                            }
                         }
                     }
                 }
