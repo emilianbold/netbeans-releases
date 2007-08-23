@@ -318,7 +318,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         selectionContainer.setLayout(new BorderLayout());
         
         selectionContainer.setBorder(new EmptyBorder(new Insets(5, 5, 5, 5)));
-        jLabel1.setText(NbBundle.getMessage(this.getClass(), "SELECT_SOURCE"));
+        jLabel1.setText(NbBundle.getMessage(AddWebServiceDlg.class, "SELECT_SOURCE"));
         selectionContainer.add(jLabel1, BorderLayout.NORTH);
         
         selectionPanel.setLayout(new GridBagLayout());
@@ -582,7 +582,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
              */
             if(null != urlStr && urlStr.equalsIgnoreCase(this.URL_WSDL_MSG)) {
                 displayInfo("<FONT COLOR=\"RED\">" + NbBundle.getMessage(AddWebServiceDlg.class, "PROCESSING_ERROR") + "</FONT>");
-                displayError(NbBundle.getMessage(this.getClass(), "ERROR_MUST_SPECIFY_URL"));
+                displayError(NbBundle.getMessage(AddWebServiceDlg.class, "ERROR_MUST_SPECIFY_URL"));
                 
             } else {
                 
@@ -605,7 +605,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
             
             if(chosenFile != null && chosenFile.equalsIgnoreCase(this.LOCAL_WSDL_MSG)) {
                 displayInfo("<FONT COLOR=\"RED\">" + NbBundle.getMessage(AddWebServiceDlg.class, "PROCESSING_ERROR") + "</FONT>");
-                displayError(NbBundle.getMessage(this.getClass(), "ERROR_MUST_LOCAL_FILE"));
+                displayError(NbBundle.getMessage(AddWebServiceDlg.class, "ERROR_MUST_LOCAL_FILE"));
             } else {
                 /**
                  * If the selection isn't already in the pulldown list, add it.
@@ -644,7 +644,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
             wsdlUrl = new URL(inWSDLURL);
         } catch(MalformedURLException mue) {
             displayInfo("<FONT COLOR=\"RED\">" + NbBundle.getMessage(AddWebServiceDlg.class, "PROCESSING_ERROR") + "</FONT>");
-            displayError(NbBundle.getMessage(this.getClass(), "INVALID_URL"));
+            displayError(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_URL"));
             dialog.setCursor(normalCursor);
             return;
         }
@@ -938,13 +938,13 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
             
             if(null == wsData.getDisplayName() || wsData.getDisplayName().equals(" ") ||
             wsData.getDisplayName().length() == 0) {
-                displayError(wsData.getName() + ":" + NbBundle.getMessage(this.getClass(), "ERROR_BLANK_WS_DISPLAYNAME"));
+                displayError(wsData.getName() + ":" + NbBundle.getMessage(AddWebServiceDlg.class, "ERROR_BLANK_WS_DISPLAYNAME"));
             } else if(!Util.isValidIdentifier(wsData.getDisplayName())) {
-                displayError(wsData.getDisplayName() + ":" + NbBundle.getMessage(this.getClass(), "ERROR_INVALID_DISPLAYNAME"));
+                displayError(wsData.getDisplayName() + ":" + NbBundle.getMessage(AddWebServiceDlg.class, "ERROR_INVALID_DISPLAYNAME"));
             }else if(null == wsData.getPackageName() || wsData.getPackageName().length() == 0) {
-                displayError(wsData.getDisplayName() + ":" + NbBundle.getMessage(this.getClass(), "ERROR_BLANK_WS_PACKAGENAME"));
+                displayError(wsData.getDisplayName() + ":" + NbBundle.getMessage(AddWebServiceDlg.class, "ERROR_BLANK_WS_PACKAGENAME"));
             } else if(!Util.isValidPackageName(wsData.getPackageName())) {
-                displayError(wsData.getPackageName() + ":" + NbBundle.getMessage(this.getClass(), "ERROR_INVALID_PACKAGENAME"));
+                displayError(wsData.getPackageName() + ":" + NbBundle.getMessage(AddWebServiceDlg.class, "ERROR_INVALID_PACKAGENAME"));
                 
             } else
                 
@@ -1000,7 +1000,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
                         wsData.setGroupId(wsGroup.getId());
                     }
 					
-                    this.displayMessage(wsData.getDisplayName() + " " + NbBundle.getMessage(this.getClass(), "WS_SUCCESSFULLY_ADDED"));
+                    this.displayMessage(wsData.getDisplayName() + " " + NbBundle.getMessage(AddWebServiceDlg.class, "WS_SUCCESSFULLY_ADDED"));
                     
                     //Node node = new WebServicesNode(wsData);
                     //invokingNode.getChildren().add(new Node[]{node});
@@ -1044,22 +1044,22 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
                  * to avoid a deadlock with the Piped streams.
                  */
                 PipedReaderTask readerTask = new PipedReaderTask(in,this.messageTextArea);
-                this.displayMessage(NbBundle.getMessage(this.getClass(), "WSCOMPILE_START"));
+                this.displayMessage(NbBundle.getMessage(AddWebServiceDlg.class, "WSCOMPILE_START"));
                 Thread pipeThread = new Thread(readerTask);
                 pipeThread.start();
                 
                 if (!Util.createWSJar(inWSData,pos,inJarFileName)) {
-                    ErrorManager.getDefault().log(this.getClass().getName() + ": " + NbBundle.getMessage(this.getClass(), "PROXY_GEN_ERROR"));
+                    ErrorManager.getDefault().log(AddWebServiceDlg.class.getName() + ": " + NbBundle.getMessage(AddWebServiceDlg.class, "PROXY_GEN_ERROR"));
                     displayInfo("<FONT COLOR=\"RED\">" + NbBundle.getMessage(AddWebServiceDlg.class, "PROCESSING_ERROR") + "</FONT>");
-                    displayError(NbBundle.getMessage(this.getClass(), "PROXY_GEN_ERROR"));
+                    displayError(NbBundle.getMessage(AddWebServiceDlg.class, "PROXY_GEN_ERROR"));
                     return false;
                 }
                 inWSData.setProxyJarFileName(inJarFileName);
-                this.displayMessage(NbBundle.getMessage(this.getClass(), "WSCOMPILE_END"));
+                this.displayMessage(NbBundle.getMessage(AddWebServiceDlg.class, "WSCOMPILE_END"));
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
                 displayInfo("<FONT COLOR=\"RED\">" + NbBundle.getMessage(AddWebServiceDlg.class, "PROCESSING_ERROR") + "</FONT>");
-                this.displayError(NbBundle.getMessage(this.getClass(), "PROXY_GEN_ERROR"));
+                this.displayError(NbBundle.getMessage(AddWebServiceDlg.class, "PROXY_GEN_ERROR"));
                 return false;
             } finally {
                 if (pos != null) {

@@ -45,7 +45,7 @@ public class WSListCellRenderer extends JLabel implements ListCellRenderer {
         if (s.equals("<choose>")) {
             // nothing
         } else {
-            java.net.URL url = getClass().getResource("/org/netbeans/modules/websvc/registry/resources/UDDIRegistry.gif");
+            java.net.URL url = WSListCellRenderer.class.getResource("/org/netbeans/modules/websvc/registry/resources/UDDIRegistry.gif");
             if (url != null) {
                 longIcon = new javax.swing.ImageIcon(url);
 			} else {

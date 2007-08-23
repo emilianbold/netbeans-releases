@@ -206,15 +206,15 @@ public class Wsdl2Java {
             if(ret) {
                 createWrapperClients(inWSData);
             } else {
-                ErrorManager.getDefault().log(this.getClass().getName() + NbBundle.getMessage(this.getClass(), "ERROR_WSCOMPILE_INTERNAL"));
-//                StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "ERROR_WSCOMPILE_EXTERNAL"),2);
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "ERROR_WSCOMPILE_EXTERNAL"));
+                ErrorManager.getDefault().log(Wsdl2Java.class.getName() + NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_INTERNAL"));
+//                StatusDisplayer.getDefault().displayError(NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_EXTERNAL"),2);
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_EXTERNAL"));
             }
         }catch(Exception exc){
             ErrorManager.getDefault().notify(exc);
-            ErrorManager.getDefault().log(this.getClass().getName() + NbBundle.getMessage(this.getClass(), "ERROR_WSCOMPILE_INTERNAL"));
-//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "ERROR_WSCOMPILE_EXTERNAL"),2);
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "ERROR_WSCOMPILE_EXTERNAL"));
+            ErrorManager.getDefault().log(Wsdl2Java.class.getName() + NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_INTERNAL"));
+//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_EXTERNAL"),2);
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_EXTERNAL"));
         }
         return ret;
     }
@@ -230,15 +230,15 @@ public class Wsdl2Java {
             sourceDir = new File(sourceDir,strTokenizer.nextToken());
         }
         if(!sourceDir.exists()) {
-            ErrorManager.getDefault().log(this.getClass().getName() + NbBundle.getMessage(this.getClass(), "ERROR_CREATING_SOURCEDIR"));
-//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "ERROR_CREATING_SOURCEDIR"),2);
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "ERROR_CREATING_SOURCEDIR"));
+            ErrorManager.getDefault().log(Wsdl2Java.class.getName() + NbBundle.getMessage(Wsdl2Java.class, "ERROR_CREATING_SOURCEDIR"));
+//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(Wsdl2Java.class, "ERROR_CREATING_SOURCEDIR"),2);
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Wsdl2Java.class, "ERROR_CREATING_SOURCEDIR"));
         }
         Model model = compTool.getProcessor().getModel();
         if(model == null) {
-            ErrorManager.getDefault().log(this.getClass().getName() + NbBundle.getMessage(this.getClass(), "ERROR_WSCOMPILE_INTERNAL"));
-//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "ERROR_WSCOMPILE_EXTERNAL"),2);
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "ERROR_WSCOMPILE_EXTERNAL"));
+            ErrorManager.getDefault().log(Wsdl2Java.class.getName() + NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_INTERNAL"));
+//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_EXTERNAL"),2);
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_EXTERNAL"));
             return;
         }
         for (Iterator services = model.getServices(); services.hasNext(); ) {
@@ -265,8 +265,8 @@ public class Wsdl2Java {
                 beanInfoWriter = new WrapperClientBeanInfoWriter(new FileWriter(webserviceClientBeanInfo));
             } catch(IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
-//                StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "ERROR_WSCOMPILE_EXTERNAL"),2);
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "ERROR_WSCOMPILE_EXTERNAL"));
+//                StatusDisplayer.getDefault().displayError(NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_EXTERNAL"),2);
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Wsdl2Java.class, "ERROR_WSCOMPILE_EXTERNAL"));
                 return;
             }
             

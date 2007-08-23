@@ -40,7 +40,7 @@ import java.awt.Dialog;
 public class MethodExceptionDialog extends javax.swing.JPanel {
     
     private String currentMessage = "";
-    private JButton okButton = new JButton(NbBundle.getMessage(this.getClass(), "OPTION_OK"));
+    private JButton okButton = new JButton(NbBundle.getMessage(MethodExceptionDialog.class, "OPTION_OK"));
     private DialogDescriptor dlg;
     private Dialog dialog;
     
@@ -52,7 +52,7 @@ public class MethodExceptionDialog extends javax.swing.JPanel {
     }
     public void show(){
         
-        dlg = new DialogDescriptor(this, NbBundle.getMessage(this.getClass(), "CLIENT_EXCEPTION"),
+        dlg = new DialogDescriptor(this, NbBundle.getMessage(MethodExceptionDialog.class, "CLIENT_EXCEPTION"),
         false, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
         DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), null);
         dlg.setOptions(new Object[] { okButton });

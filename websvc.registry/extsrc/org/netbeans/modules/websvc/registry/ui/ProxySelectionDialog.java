@@ -58,15 +58,15 @@ public class ProxySelectionDialog extends javax.swing.JPanel implements ActionLi
     private JButton okButton;
     private JButton cancelButton;
     
-    private String okString = NbBundle.getMessage(this.getClass(), "OPTION_OK");
-    private String cancelString = NbBundle.getMessage(this.getClass(), "OPTION_CANCEL");
+    private String okString = NbBundle.getMessage(ProxySelectionDialog.class, "OPTION_OK");
+    private String cancelString = NbBundle.getMessage(ProxySelectionDialog.class, "OPTION_CANCEL");
     
     public ProxySelectionDialog() {
         initComponents();
     }
     
     public void show(){
-        dlg = new DialogDescriptor(this, NbBundle.getMessage(this.getClass(), "SET_PROXY"),
+        dlg = new DialogDescriptor(this, NbBundle.getMessage(ProxySelectionDialog.class, "SET_PROXY"),
         true, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.CANCEL_OPTION,this);
         dlg.setOptions(new Object[] {okButton, cancelButton});
         dialog = DialogDisplayer.getDefault().createDialog(dlg);
@@ -119,7 +119,7 @@ public class ProxySelectionDialog extends javax.swing.JPanel implements ActionLi
         setLayout(new java.awt.GridBagLayout());
         
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(10, 10, 10, 10)));
-        serverlabel.setText(NbBundle.getMessage(this.getClass(), "LBL_HTTP_PROXY_SERVER"));
+        serverlabel.setText(NbBundle.getMessage(ProxySelectionDialog.class, "LBL_HTTP_PROXY_SERVER"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -139,7 +139,7 @@ public class ProxySelectionDialog extends javax.swing.JPanel implements ActionLi
         gridBagConstraints.weightx = 1.0;
         add(serverText, gridBagConstraints);
         
-        portlabel.setText(NbBundle.getMessage(this.getClass(), "LBL_HTTP_PROXY_PORT"));
+        portlabel.setText(NbBundle.getMessage(ProxySelectionDialog.class, "LBL_HTTP_PROXY_PORT"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -158,7 +158,7 @@ public class ProxySelectionDialog extends javax.swing.JPanel implements ActionLi
         gridBagConstraints.weightx = 1.0;
         add(portText, gridBagConstraints);
         
-        headerLabel.setText(NbBundle.getMessage(this.getClass(), "LBL_MANUAL_PROXY_SETTING"));
+        headerLabel.setText(NbBundle.getMessage(ProxySelectionDialog.class, "LBL_MANUAL_PROXY_SETTING"));
         Font currentFont = headerLabel.getFont();
         Font boldFont = currentFont.deriveFont(Font.BOLD);
         headerLabel.setFont(boldFont);

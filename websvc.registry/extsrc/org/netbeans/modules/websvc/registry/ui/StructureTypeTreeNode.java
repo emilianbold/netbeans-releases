@@ -53,7 +53,7 @@ public class StructureTypeTreeNode extends DefaultMutableTreeNode {
         } catch(WebServiceReflectionException wsfe) {
             Throwable cause = wsfe.getCause();
             ErrorManager.getDefault().notify(cause);
-            ErrorManager.getDefault().log(this.getClass().getName() +
+            ErrorManager.getDefault().log(StructureTypeTreeNode.class.getName() +
             ": Error trying to update Children of a Structure on: " + data.getParameterType().getFormalName() + "WebServiceReflectionException=" + cause);
             
         }

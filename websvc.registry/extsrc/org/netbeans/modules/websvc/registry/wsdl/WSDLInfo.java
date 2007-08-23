@@ -121,7 +121,7 @@ public class WSDLInfo {
     public String getErrorMessage(){
         StringWriter errorWriter = new StringWriter();
         StringBuffer strBuffer = new StringBuffer();
-        errorWriter.write("<B>" + NbBundle.getMessage(this.getClass(), "WSDLINFO_ERROR_PARSING") + " </B>");
+        errorWriter.write("<B>" + NbBundle.getMessage(WSDLInfo.class, "WSDLINFO_ERROR_PARSING") + " </B>");
         errorWriter.write("<BR><B><I>" + errorMessage + "</I></B>");
         return errorWriter.toString();
     }
@@ -271,18 +271,18 @@ public class WSDLInfo {
 // !HIE                   strWriter.write("<FORM NAME=\"service_form." + serviceName + "\" BGCOLOR=\"#e6e6ff\"><P>");
                     strWriter.write("<FORM NAME=\"service_form." + serviceName + "\">");
                     strWriter.write("<TABLE><TR>");
-                    strWriter.write("<TD  VALIGN=TOP><B>" + NbBundle.getMessage(this.getClass(), "SERVICE_WSDL_NAME") + "</B></TD>");
+                    strWriter.write("<TD  VALIGN=TOP><B>" + NbBundle.getMessage(WSDLInfo.class, "SERVICE_WSDL_NAME") + "</B></TD>");
                     strWriter.write("<TD  VALIGN=TOP>" + serviceName + "</TD>");
                     strWriter.write("</TR><TR>");
                     strWriter.write("<TD  VALIGN=TOP><LABEL FOR=\"service_name." + serviceName +"\" ><B>"
-                    + NbBundle.getMessage(this.getClass(), "SERVICE_DISPLAY_NAME") + "</B></LABEL></TD>");
+                    + NbBundle.getMessage(WSDLInfo.class, "SERVICE_DISPLAY_NAME") + "</B></LABEL></TD>");
                     strWriter.write("<TD  VALIGN=TOP><INPUT TYPE=TEXT ID=\"service_name." + serviceName + "\" NAME=\"service_name."
                     + serviceName + "\" VALUE=\"" +
                     this.SERVICE_DISPLAYNAME_TOKEN +
                     "\" STYLE=\"background: #ade7ff\"></TD>");
                     strWriter.write("</TR><TR>");
                     strWriter.write("<TD  VALIGN=TOP><LABEL FOR=\"package_name." + serviceName +"\" ><B>"
-                    + NbBundle.getMessage(this.getClass(), "CLIENT_PACKAGE_NAME") + "</B></LABEL></TD>");
+                    + NbBundle.getMessage(WSDLInfo.class, "CLIENT_PACKAGE_NAME") + "</B></LABEL></TD>");
                     strWriter.write("<TD  VALIGN=TOP><INPUT TYPE=TEXT SIZE=30 ID=\"package_name." + serviceName
                     + "\" NAME=\"package_name." + serviceName + "\" VALUE=\"" +
                     Wsdl2Java.DEFAULT_TARGET_PACKAGE + "." + serviceName.toLowerCase() +
@@ -292,7 +292,7 @@ public class WSDLInfo {
                     
                     if(null != serviceDocumentationContent) {
                         strWriter.write("<TR>");
-                        strWriter.write("<TD  VALIGN=TOP><LABEL><B>" + NbBundle.getMessage(this.getClass(), "SERVICE_DOCUMENTATION") + "</B></LABEL></TD>");
+                        strWriter.write("<TD  VALIGN=TOP><LABEL><B>" + NbBundle.getMessage(WSDLInfo.class, "SERVICE_DOCUMENTATION") + "</B></LABEL></TD>");
                         strWriter.write("<TD  VALIGN=TOP>" + serviceDocumentationContent + "</TD>");
                         strWriter.write("</TR>");
                     }
@@ -308,16 +308,16 @@ public class WSDLInfo {
                         proxy = proxy.substring(proxy.lastIndexOf('.') + 1, proxy.length());
                         //strWriter.write("Proxy: " + proxy + "_Stub" + "\n");
                         strWriter.write("<TR>");
-                        strWriter.write("<TD  VALIGN=TOP><B>" + NbBundle.getMessage(this.getClass(), "WEB_SERVICE_PORTNNAME") + "</B></TD>");
+                        strWriter.write("<TD  VALIGN=TOP><B>" + NbBundle.getMessage(WSDLInfo.class, "WEB_SERVICE_PORTNNAME") + "</B></TD>");
                         strWriter.write("<TD  VALIGN=TOP>"  +port.getName().toString() +"</TD>");
                         strWriter.write("</TR>");
                         strWriter.write("<TR>");
-                        strWriter.write("<TD  VALIGN=TOP><B>" + NbBundle.getMessage(this.getClass(), "WEB_SERVICE_ADDRESS") + "</B></TD>");
+                        strWriter.write("<TD  VALIGN=TOP><B>" + NbBundle.getMessage(WSDLInfo.class, "WEB_SERVICE_ADDRESS") + "</B></TD>");
                         strWriter.write("<TD  VALIGN=TOP>"  +port.getAddress() +"</TD>");
                         strWriter.write("</TR>");
                         Iterator operations = port.getOperations();
                         strWriter.write("<TR>");
-                        strWriter.write("<TD  VALIGN=TOP><B>" + NbBundle.getMessage(this.getClass(), "METHODS") + "</B></TD>");
+                        strWriter.write("<TD  VALIGN=TOP><B>" + NbBundle.getMessage(WSDLInfo.class, "METHODS") + "</B></TD>");
                         strWriter.write("</TR>");
                         int methodCount=0;
                         while (operations.hasNext()) {
@@ -347,7 +347,7 @@ public class WSDLInfo {
                             method.getName() + TOKEN_SEPARATOR +
                             SIG_SEPARATOR +
                             signatureString +
-                            "\">" + NbBundle.getMessage(this.getClass(), "TEST_METHOD")+ "</A>");
+                            "\">" + NbBundle.getMessage(WSDLInfo.class, "TEST_METHOD")+ "</A>");
                             strWriter.write("</TD>");
                             //                            strWriter.write("<TD COLSPAN=2  VALIGN=TOP>");
                             strWriter.write("<TD VALIGN=TOP>");
@@ -392,7 +392,7 @@ public class WSDLInfo {
                             String operationDocumentationContent = (String)operation.getProperty(this.WSDL_DOCUMENTATION);
                             
                             if(null != operationDocumentationContent) {
-// !HIE                                strWriter.write("<BR><B>" + NbBundle.getMessage(this.getClass(), "METHOD_DOCUMENTATION") + "</B>");
+// !HIE                                strWriter.write("<BR><B>" + NbBundle.getMessage(WSDLInfo.class, "METHOD_DOCUMENTATION") + "</B>");
                                 strWriter.write("<BR>" + operationDocumentationContent);
                             }
 // !HIE                            strWriter.write("</LI></UL>");
@@ -414,7 +414,7 @@ public class WSDLInfo {
                 
             }
         } else {
-            strWriter.write("<BR><B>" +  NbBundle.getMessage(this.getClass(), "WSDLINFO_ERROR_PARSING") +"</B><BR> ");
+            strWriter.write("<BR><B>" +  NbBundle.getMessage(WSDLInfo.class, "WSDLINFO_ERROR_PARSING") +"</B><BR> ");
             
         }
         

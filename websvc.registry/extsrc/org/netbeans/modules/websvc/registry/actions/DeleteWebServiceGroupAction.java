@@ -109,7 +109,7 @@ public class DeleteWebServiceGroupAction extends NodeAction {
 				if(null != wsGroup) {
 					groupName = wsGroup.getName();
 				}
-				String msg = NbBundle.getMessage(this.getClass(), "WS_DELETE_GROUP") + " " + groupName;
+				String msg = NbBundle.getMessage(DeleteWebServiceGroupAction.class, "WS_DELETE_GROUP") + " " + groupName;
 				NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
 				Object response = DialogDisplayer.getDefault().notify(d);
 

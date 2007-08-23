@@ -30,7 +30,7 @@ import org.openide.util.NbBundle;
  * @author  david
  */
 public class ResultViewerDialog extends javax.swing.JPanel {
-    private JButton okButton = new JButton(NbBundle.getMessage(this.getClass(), "OPTION_OK"));
+    private JButton okButton = new JButton(NbBundle.getMessage(ResultViewerDialog.class, "OPTION_OK"));
     /** Creates new form ResultViewerDialog */
     public ResultViewerDialog() {
         super();

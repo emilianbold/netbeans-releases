@@ -63,9 +63,9 @@ public class TypeRowModel implements RowModel {
     
     public String getColumnName(int column) {
         switch(column) {
-           // case 0: return NbBundle.getMessage(this.getClass(), "PARAM_CLASS");
-            case 0: return NbBundle.getMessage(this.getClass(), "PARAM_NAME");
-            case 1: return NbBundle.getMessage(this.getClass(), "PARAM_VALUE");
+           // case 0: return NbBundle.getMessage(TypeRowModel.class, "PARAM_CLASS");
+            case 0: return NbBundle.getMessage(TypeRowModel.class, "PARAM_NAME");
+            case 1: return NbBundle.getMessage(TypeRowModel.class, "PARAM_VALUE");
             default: return "";
         }
         
@@ -127,7 +127,7 @@ public class TypeRowModel implements RowModel {
             } catch(WebServiceReflectionException wsfe) {
                 Throwable cause = wsfe.getCause();
                 ErrorManager.getDefault().notify(cause);
-                ErrorManager.getDefault().log(this.getClass().getName() +
+                ErrorManager.getDefault().log(TypeRowModel.class.getName() +
                 ": Error trying to create an Enumeration Type: " +
                 type.getFormalName() + "ClassNWebServiceReflectionExceptionotFoundException=" + cause);
                 return;

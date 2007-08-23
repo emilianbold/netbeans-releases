@@ -56,8 +56,8 @@ public class ResultRowModel implements RowModel {
     
     public String getColumnName(int column) {
         switch(column) {
-        //    case 0: return NbBundle.getMessage(this.getClass(), "PARAM_CLASS");
-            case 0: return NbBundle.getMessage(this.getClass(), "PARAM_VALUE");
+        //    case 0: return NbBundle.getMessage(ResultRowModel.class, "PARAM_CLASS");
+            case 0: return NbBundle.getMessage(ResultRowModel.class, "PARAM_VALUE");
             default: return "";
         }
         

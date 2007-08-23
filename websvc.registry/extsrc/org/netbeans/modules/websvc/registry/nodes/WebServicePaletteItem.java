@@ -172,8 +172,8 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //
 //        String displayName = data.getDisplayName();
 //        if(null == displayName) {
-//            ErrorManager.getDefault().log(this.getClass().getName() + NbBundle.getMessage(this.getClass(), "WS_NO_WSNAME"));
-//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "WS_DROP_ERROR"),2);
+//            ErrorManager.getDefault().log(WebServicePaletteItem.class.getName() + NbBundle.getMessage(WebServicePaletteItem.class, "WS_NO_WSNAME"));
+//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(WebServicePaletteItem.class, "WS_DROP_ERROR"),2);
 //            return null;
 //        }
 //        String webServiceClientPkgName = data.getPackageName();
@@ -187,7 +187,7 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //         */
 //        if (isWebServiceInPage(displayName)) {
 //
-//            String msg = data.getDisplayName() + " " + NbBundle.getMessage(this.getClass(), "WS_EXISTS_ERROR");
+//            String msg = data.getDisplayName() + " " + NbBundle.getMessage(WebServicePaletteItem.class, "WS_EXISTS_ERROR");
 //            NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
 //            DialogDisplayer.getDefault().notify(d);
 //
@@ -238,7 +238,7 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //                /**
 //                 * One likely cause is that the HTTP Proxy setting so show a dialog with this hint.
 //                 */
-//                String msg = data.getDisplayName() + " " + NbBundle.getMessage(this.getClass(), "WS_WSDL2JAVA_ERROR");
+//                String msg = data.getDisplayName() + " " + NbBundle.getMessage(WebServicePaletteItem.class, "WS_WSDL2JAVA_ERROR");
 //                NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
 //                DialogDisplayer.getDefault().notify(d);
 //
@@ -274,10 +274,10 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //
 //        URL [] urls = classLoader.getURLs();
 //
-//        System.out.println(this.getClass().getName() + "classloader=" + classLoader);
+//        System.out.println(WebServicePaletteItem.class.getName() + "classloader=" + classLoader);
 //
 //        for(int ii=0; ii < urls.length; ii++) {
-//            System.out.println(this.getClass().getName() + "url[" + ii + "]=" + urls[ii]);
+//            System.out.println(WebServicePaletteItem.class.getName() + "url[" + ii + "]=" + urls[ii]);
 //        }
 //         */
 //        /*
@@ -369,8 +369,8 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //         * Make sure we got a valid DataObject
 //         */
 //        if(projectFolderDataObject == null) {
-//            ErrorManager.getDefault().log(this.getClass().getName() + NbBundle.getMessage(this.getClass(), "WS_NO_DATAOBJ"));
-//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "WS_NO_DATAOBJ"),2);
+//            ErrorManager.getDefault().log(WebServicePaletteItem.class.getName() + NbBundle.getMessage(WebServicePaletteItem.class, "WS_NO_DATAOBJ"));
+//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(WebServicePaletteItem.class, "WS_NO_DATAOBJ"),2);
 //            return null;
 //        }
 //
@@ -379,8 +379,8 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //         * Make sure we have a valid FileObject
 //         */
 //        if (returnFileObject == null) {
-//            ErrorManager.getDefault().log(this.getClass().getName() + NbBundle.getMessage(this.getClass(), "WS_MISSING_PROJECT_FILE"));
-//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "WS_MISSING_PROJECT_FILE"),2);
+//            ErrorManager.getDefault().log(WebServicePaletteItem.class.getName() + NbBundle.getMessage(WebServicePaletteItem.class, "WS_MISSING_PROJECT_FILE"));
+//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(WebServicePaletteItem.class, "WS_MISSING_PROJECT_FILE"),2);
 //            return null;
 //        }
 //
@@ -413,8 +413,8 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //         * Make sure we got a valid DataObject
 //         */
 //        if(dObj == null) {
-//            ErrorManager.getDefault().log(this.getClass().getName() + NbBundle.getMessage(this.getClass(), "WS_NO_DATAOBJ"));
-//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "WS_NO_DATAOBJ"));
+//            ErrorManager.getDefault().log(WebServicePaletteItem.class.getName() + NbBundle.getMessage(WebServicePaletteItem.class, "WS_NO_DATAOBJ"));
+//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(WebServicePaletteItem.class, "WS_NO_DATAOBJ"));
 //            return null;
 //        }
 //
@@ -424,8 +424,8 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //         * Make sure we have a valid FileObject
 //         */
 //        if (returnFileObject == null) {
-//            ErrorManager.getDefault().log(this.getClass().getName() + NbBundle.getMessage(this.getClass(), "WS_MISSING_PROJECT_FILE"));
-//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "WS_MISSING_PROJECT_FILE"));
+//            ErrorManager.getDefault().log(WebServicePaletteItem.class.getName() + NbBundle.getMessage(WebServicePaletteItem.class, "WS_MISSING_PROJECT_FILE"));
+//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(WebServicePaletteItem.class, "WS_MISSING_PROJECT_FILE"));
 //            return null;
 //        }
 //
@@ -569,7 +569,7 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //            newClientJavaObject = toPackage.createData(webServiceClientName,"java");
 //        }catch(IOException ioe){
 //            ErrorManager.getDefault().notify(ioe);
-//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "WS_DROP_ERROR"));
+//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(WebServicePaletteItem.class, "WS_DROP_ERROR"));
 //        }
 //
 //        try{
@@ -598,7 +598,7 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //
 //        }catch(IOException ioe){
 //            ErrorManager.getDefault().notify(ioe);
-//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "WS_DROP_ERROR"));
+//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(WebServicePaletteItem.class, "WS_DROP_ERROR"));
 //        }
 //
 //        /**
@@ -608,7 +608,7 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //            newClientBeanInfoJavaObject = toPackage.createData(webServiceClientName + "BeanInfo","java");
 //        }catch(IOException ioe){
 //            ErrorManager.getDefault().notify(ioe);
-//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "WS_DROP_ERROR"));
+//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(WebServicePaletteItem.class, "WS_DROP_ERROR"));
 //        }
 //
 //        try{
@@ -638,7 +638,7 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //
 //        }catch(IOException ioe){
 //            ErrorManager.getDefault().notify(ioe);
-//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "WS_DROP_ERROR"));
+//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(WebServicePaletteItem.class, "WS_DROP_ERROR"));
 //        }
 //
 //
@@ -732,7 +732,7 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //            tempFile = File.createTempFile("wstemp","ws",outputDirFile);
 //        }catch (IOException ioe){
 //            ErrorManager.getDefault().notify(ioe);
-//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "WS_DROP_ERROR"),2);
+//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(WebServicePaletteItem.class, "WS_DROP_ERROR"),2);
 //            return;
 //        }
 //
@@ -743,20 +743,20 @@ public class WebServicePaletteItem implements Transferable { // FIXME COPY-PASTE
 //        } catch(FileNotFoundException fnfe) {
 //
 //            ErrorManager.getDefault().notify(fnfe);
-//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "WS_DROP_ERROR"),2);
+//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(WebServicePaletteItem.class, "WS_DROP_ERROR"),2);
 //            return;
 //        }
 //
 //        JavaCompilerHelper compilerHelper = new JavaCompilerHelper(out);
 //
-//        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "WS_CLIENTWRAPPER_COMPILING"));
+//        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(WebServicePaletteItem.class, "WS_CLIENTWRAPPER_COMPILING"));
 //
 //        boolean result = compilerHelper.compile(args);
 //        if (!result) {
-//            ErrorManager.getDefault().log(this.getClass().getName() + NbBundle.getMessage(this.getClass(), "WS_CLIENTWRAPPER_COMPILE_ERROR") + tempFile == null ? "" : tempFile.getAbsolutePath());
-//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "WS_DROP_ERROR"),2);
+//            ErrorManager.getDefault().log(WebServicePaletteItem.class.getName() + NbBundle.getMessage(WebServicePaletteItem.class, "WS_CLIENTWRAPPER_COMPILE_ERROR") + tempFile == null ? "" : tempFile.getAbsolutePath());
+//            StatusDisplayer.getDefault().displayError(NbBundle.getMessage(WebServicePaletteItem.class, "WS_DROP_ERROR"),2);
 //        } else {
-//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "WS_CLIENTWRAPPER_COMPILE_OK"));
+//            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(WebServicePaletteItem.class, "WS_CLIENTWRAPPER_COMPILE_OK"));
 //            /**
 //             * clean up the output file since the compile was successful
 //             */

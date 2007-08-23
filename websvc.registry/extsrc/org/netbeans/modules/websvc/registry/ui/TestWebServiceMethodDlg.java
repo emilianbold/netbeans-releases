@@ -98,7 +98,7 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
         initComponents();
         myInitComponents();
 
-        this.lblTitle.setText(NbBundle.getMessage(this.getClass(), "TEST_WEBSVC_LABEL") + " " + modifiedMethodName);
+        this.lblTitle.setText(NbBundle.getMessage(TestWebServiceMethodDlg.class, "TEST_WEBSVC_LABEL") + " " + modifiedMethodName);
     }
 
 
@@ -161,9 +161,9 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
                 urlList.add(new URL("file:" + this.getWebServiceData().getProxyJarFileName()));
             } catch(MalformedURLException mfu) {
                 ErrorManager.getDefault().notify(mfu);
-                ErrorManager.getDefault().log(this.getClass().getName() + ":IOException=" + mfu);
-//                StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "ERROR_READING_RUNTIMEJARS"),2);
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "ERROR_READING_RUNTIMEJARS"));
+                ErrorManager.getDefault().log(TestWebServiceMethodDlg.class.getName() + ":IOException=" + mfu);
+//                StatusDisplayer.getDefault().displayError(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ERROR_READING_RUNTIMEJARS"),2);
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ERROR_READING_RUNTIMEJARS"));
                 return null;
             }
 
@@ -194,9 +194,9 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
                     jarString = fileNode.getNodeValue();
                 } catch(DOMException de) {
                     ErrorManager.getDefault().notify(de);
-                    ErrorManager.getDefault().log(this.getClass().getName() + ":IOException=" + de);
-//                    StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "ERROR_READING_RUNTIMEJARS"),2);
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "ERROR_READING_RUNTIMEJARS"));
+                    ErrorManager.getDefault().log(TestWebServiceMethodDlg.class.getName() + ":IOException=" + de);
+//                    StatusDisplayer.getDefault().displayError(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ERROR_READING_RUNTIMEJARS"),2);
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ERROR_READING_RUNTIMEJARS"));
                     return null;
                 }
 
@@ -227,9 +227,9 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
                     newURL = new URL(jarString);
                 } catch(MalformedURLException mfu) {
                     ErrorManager.getDefault().notify(mfu);
-                    ErrorManager.getDefault().log(this.getClass().getName() + ":IOException=" + mfu);
-//                    StatusDisplayer.getDefault().displayError(NbBundle.getMessage(this.getClass(), "ERROR_READING_RUNTIMEJARS"),2);
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(this.getClass(), "ERROR_READING_RUNTIMEJARS"));
+                    ErrorManager.getDefault().log(TestWebServiceMethodDlg.class.getName() + ":IOException=" + mfu);
+//                    StatusDisplayer.getDefault().displayError(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ERROR_READING_RUNTIMEJARS"),2);
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ERROR_READING_RUNTIMEJARS"));
                     return null;
 
                 }
@@ -269,7 +269,7 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
 
     public void displayDialog(){
 
-        dlg = new DialogDescriptor(this, NbBundle.getMessage(this.getClass(), "TEST_WEB_SERVICE_METHOD"),
+        dlg = new DialogDescriptor(this, NbBundle.getMessage(TestWebServiceMethodDlg.class, "TEST_WEB_SERVICE_METHOD"),
             false, new Object[]{NotifyDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
             DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), null);
         dialog = DialogDisplayer.getDefault().createDialog(dlg);
@@ -422,7 +422,7 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
                 } catch(WebServiceReflectionException wsre) {
                     Throwable cause = wsre.getCause();
                     ErrorManager.getDefault().notify(cause);
-                    ErrorManager.getDefault().log(this.getClass().getName() +
+                    ErrorManager.getDefault().log(TestWebServiceMethodDlg.class.getName() +
                     ": Error trying to create a typed parameter array for type:" + nodeData.getParameterType()  +
                     "WebServiceReflectionException=" + cause);
                     return;
@@ -546,7 +546,7 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
         DefaultTreeModel treeModel = new DefaultTreeModel(this.getResultRootNode());
         ResultRowModel rowModel = new ResultRowModel();
         OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(treeModel,rowModel, false);
-        outlineModel.setNodeColumnName(NbBundle.getMessage(this.getClass(), "TYPE_COLUMN_NAME"));
+        outlineModel.setNodeColumnName(NbBundle.getMessage(TestWebServiceMethodDlg.class, "TYPE_COLUMN_NAME"));
         Outline returnOutline = new Outline(outlineModel);
         ResultCellEditor cellEditor = new ResultCellEditor();
         returnOutline.setDefaultEditor(Object.class,cellEditor);
@@ -608,7 +608,7 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
         DefaultTreeModel treeModel = new DefaultTreeModel(this.getParamterRootNode());
         TypeRowModel rowModel = new TypeRowModel(this.getRuntimeClassLoader(),this.getPackageName());
         OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(treeModel,rowModel, false);
-        outlineModel.setNodeColumnName(NbBundle.getMessage(this.getClass(), "TYPE_COLUMN_NAME"));
+        outlineModel.setNodeColumnName(NbBundle.getMessage(TestWebServiceMethodDlg.class, "TYPE_COLUMN_NAME"));
         Outline returnOutline = new Outline(outlineModel);
         TypeCellEditor cellEditor = new TypeCellEditor();
         returnOutline.setDefaultEditor(Object.class,cellEditor);
@@ -813,7 +813,7 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
             } catch(WebServiceReflectionException wsre) {
                 Throwable cause = wsre.getCause();
                 ErrorManager.getDefault().notify(cause);
-                ErrorManager.getDefault().log(this.getClass().getName() +
+                ErrorManager.getDefault().log(TestWebServiceMethodDlg.class.getName() +
                 ": Error trying to do Class.forName on: " + packageName + "." + type.getFormalName() + "WebServiceReflectionException=" + cause);
                 return null;
             }
@@ -831,7 +831,7 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
             } catch(WebServiceReflectionException wsre) {
                 Throwable cause = wsre.getCause();
                 ErrorManager.getDefault().notify(cause);
-                ErrorManager.getDefault().log(this.getClass().getName() +
+                ErrorManager.getDefault().log(TestWebServiceMethodDlg.class.getName() +
                 ": Error trying to create an Enumeration Type: " + packageName + "." + type.getFormalName() + "ClassNWebServiceReflectionExceptionotFoundException=" + cause);
                 return null;
             }
