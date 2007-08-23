@@ -244,9 +244,8 @@ public class ClientBuilder {
             List wsdlLocationsList = handler.getImportedSchemas();
             if (wsdlLocationsList.size()>0 && handler.getServices().size()>0 && handler.getEntirePortList().size()>0) {
                 handler = new PortInformationHandler(handler.getTargetNamespace(),handler.getServices(),handler.getEntirePortList(),handler.getBindings(), wsdlLocationsList);
-                Iterator it = wsdlLocationsList.iterator();
-                while (it.hasNext()) {
-                    String wsdlLocation = (String)it.next();
+                for(int i =0;i<wsdlLocationsList.size();i++) {
+                    String wsdlLocation = (String)wsdlLocationsList.get(i);
                     try {
                         if (wsdlLocation.indexOf("/")<0) { //local
                             FileObject wsdlFo = wsdlFolder.getFileObject(wsdlLocation);
