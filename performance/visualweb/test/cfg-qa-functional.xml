@@ -87,7 +87,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- 3rd round -->    
-    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="8"
+<!--    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="8"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="gui/VWPMeasureActions.class/testCreateCSSTable" expectedFail="103971"/>                
             </patternset>
         </testset>
-    </testbag>
+    </testbag>-->
     <testbag testattribs="(all or ui_responsiveness or dialogs) and NOT once" prio="9"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
