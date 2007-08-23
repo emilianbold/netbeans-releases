@@ -62,6 +62,7 @@
 <mapID target="proj_creating" url="project/proj_creating.html" />
 <mapID target="proj_main" url="project/proj_main.html" />
 <mapID target="proj_process" url="project/proj_process.html" />
+<mapID target="proj_process_top" url="project/proj_process.html#top" /> <!--ID added to provide better TOC tracking when the topic is selected in the Getting Started bucket-->
 <mapID target="proj_quickref" url="project/proj_quickref.html" />
 <mapID target="proj_sources_multi" url="project/proj_sources_multi.html" />
 <mapID target="proj_templates" url="project/proj_templates.html" />

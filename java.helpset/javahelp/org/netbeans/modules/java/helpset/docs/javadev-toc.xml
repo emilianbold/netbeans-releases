@@ -7,7 +7,7 @@
 <toc version="2.0">
     <tocitem text="IDE Basics">
         <tocitem text="Getting Started">
-                <tocitem text="Java Applications" target="proj_process" />
+                <tocitem text="Java Applications" target="proj_process_top" />
         </tocitem>
     </tocitem>
     <tocitem text="Java Applications"  expand="false">
