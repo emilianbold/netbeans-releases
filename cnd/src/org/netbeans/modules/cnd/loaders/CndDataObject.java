@@ -46,21 +46,9 @@ public abstract class CndDataObject extends MultiDataObject {
     /** Serial version number */
     static final long serialVersionUID = -6788084224129713370L;
 
-    /** the object file extension */
-    public final static String OBJ_EXTENSION = "o";			// NOI18N
-
-    /** Store some information for ElfTaster metrics */
-    private static CircularQueue cq;
-
-
     public CndDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
 	super(pf, loader);
 	init();
-
-	if (cq == null) {
-	    cq = new CircularQueue(10, 0L);
-	}
-	cq.add(System.currentTimeMillis());
     }
 
     /**
@@ -165,100 +153,5 @@ public abstract class CndDataObject extends MultiDataObject {
 	    }
 	}
 	return true;
-    }
-
-
-    public long sum(int num) {
-	return cq.sum(num);
-    }
-
-    public long mostRecent() {
-	return cq.mostRecent();
-    }
-
-
-    /**
-     *  This CircularQueue is used to store historical information used in
-     *  computing some usage metrics. Currently, the only user is the Elf
-     *  recognition code in ElfTaster. The most recent times a CndDataObject
-     *  was created are stored in the queue. This information is used by the
-     *  ElfTaster in computing its Dynamic tasting policy.
-     */
-    public static class CircularQueue {
-
-	/** Store times last n DataObjects were created */
-	private Long[] queue;
-
-	/** Index of the add spot */
-	private int head;
-
-	/** Count of items which have been added to the queue */
-	private int count;
-
-	/** The size of the queue */
-	private int size;
-
-	/** The time (in millis) the queue was created */
-	private long created;
-
-	/**
-	 *  Create and initialize the queue.
-	 *
-	 *  @param size	The size of the queue
-	 */
-	public CircularQueue(int size) {
-	    this.size = size;
-	    queue = new Long[size];
-	    created = System.currentTimeMillis();
-	    head = 0;
-	    count = 0;
-	}
-
-	public CircularQueue(int size, long created) {
-	    this(size);
-	    this.created = created;
-	}
-
-	/**
-	 *  Add another time value to the queue, possibly removing the oldest.
-	 *
-	 *  @param val	The value to store
-	 */
-	public void add(long val) {
-	    count++;
-	    queue[head++] = new Long(val - created); 
-	    if (head >= size) {
-		head = 0;
-	    }
-	}
-
-	/**
-	 *  Calculate the sum of the last <I>num</I> items added.
-	 *
-	 *  @param num	The number of items to sum
-	 *  @return	The summation of the last num items
-	 */
-	public long sum(int num) {
-	    long sum = 0;
-
-	    if (num > count) {
-		return -1;
-	    }
-
-	    int i = head - 1;
-	    while (num-- > 0) {
-		if (i < 0) {
-		    i = size - 1;
-		}
-		sum += queue[i--].longValue();
-	    }
-
-	    return sum;
-	}
-
-	/** The time of the most recent item added */
-	public long mostRecent() {
-	    return sum(1);
-	}
     }
 }
