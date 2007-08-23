@@ -49,3 +49,7 @@ serverplugins/businessone/
 
 # Seems harmless:
 serverplugins/sun/appsrv81/src/org/netbeans/modules/j2ee/sun/ide/j2ee/db/pointbasescripts.zip
+
+# Sample database schema, tables and data for Samples #111438
+visualweb/dataconnectivity/release/startup/samples/travel.zip 
+visualweb/dataconnectivity/release/startup/samples/vir.zip 
