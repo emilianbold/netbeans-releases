@@ -26,6 +26,11 @@ import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import java.util.*;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JTextAreaOperator;
 import org.netbeans.qa.form.BindDialogOperator;
 
 /**
@@ -54,8 +59,9 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         suite.addTest(new AdvancedBeansBinding("testUpdateMode")); // NOI18N
         suite.addTest(new AdvancedBeansBinding("testAlternateValues")); // NOI18N
         
-//        suite.addTest(new AdvancedBeansBinding("testConversion")); // NOI18N
-//        suite.addTest(new AdvancedBeansBinding("testValidation")); // NOI18N
+        //TODO: convertors and validators test
+        //suite.addTest(new AdvancedBeansBinding("testConversion")); // NOI18N
+        //suite.addTest(new AdvancedBeansBinding("testValidation")); // NOI18N
         return suite;
     }
     
@@ -73,8 +79,8 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         selectUpdateModeForJLabel(inspector, "jLabel6", BindDialogOperator.READ_WRITE_UPDATE_MODE); // NOI18N
         
         // find generated code
-        findInCode("setUpdateStrategy(javax.beans.binding.Binding.UpdateStrategy.READ_ONCE)",designer); // NOI18N
-        findInCode("setUpdateStrategy(javax.beans.binding.Binding.UpdateStrategy.READ_FROM_SOURCE)", designer); // NOI18N
+        //findInCode("setUpdateStrategy(javax.beans.binding.Binding.UpdateStrategy.READ_ONCE)",designer); // NOI18N
+        //findInCode("setUpdateStrategy(javax.beans.binding.Binding.UpdateStrategy.READ_FROM_SOURCE)", designer); // NOI18N
         
         // test values in bind dialog
         assertTrue(getSelectedUpdateModeForJLabel(inspector, "jLabel2")
@@ -104,62 +110,64 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         Action act = new ActionNoBlock(null, ACTION_PATH);
         act.perform(actNode);
         
-        // set null value text
-        BindDialogOperator bindOp = new BindDialogOperator();
-        bindOp.selectAdvancedTab();
-        bindOp.unselectIncompletePathValue();
-        bindOp.selectNullValue();
-        waitAMoment();
-        waitAMoment();        
-        bindOp.setNullValueText(nullMsg);
-        bindOp.ok();
+        JDialogOperator bindOp = new JDialogOperator("Bind");
+        JTabbedPaneOperator tabOp = new JTabbedPaneOperator(bindOp);
+        tabOp.selectPage("Advanced");
 
-        // invoke bind dialog
-        actNode = new Node(inspector.treeComponents(), incompleteLabelPath);
-        act = new ActionNoBlock(null, ACTION_PATH);
-        act.perform(actNode);
+        // null checkbox
+        JCheckBoxOperator checkBoxOp = new JCheckBoxOperator(tabOp, 0);
+        checkBoxOp.changeSelection(true);
         
-        // set incomplete path value text
-        bindOp = new BindDialogOperator();
-        bindOp.selectAdvancedTab();
-        bindOp.unselectNullValue();
-        bindOp.selectIncompletePathValue();
-        waitAMoment();
-        waitAMoment();        
-        bindOp.setIncompletePathValueText(incompleteMsg);
-        bindOp.ok();
+        // incomplet path checkbox
+        checkBoxOp = new JCheckBoxOperator(tabOp, 1);
+        checkBoxOp.changeSelection(true);
         
+        // incomplete value settings
+        new JButtonOperator(tabOp,6).pushNoBlock();
+        NbDialogOperator valueOp = new NbDialogOperator("Incomplete Path Value");
+        new JTextAreaOperator(valueOp,0).setText(incompleteMsg);
+        new JButtonOperator(valueOp, "OK").push();
+        
+        // null value settings
+        new JButtonOperator(tabOp,7).pushNoBlock();
+        valueOp = new NbDialogOperator("Null Value");
+        new JTextAreaOperator(valueOp,0).setText(nullMsg);
+        new JButtonOperator(valueOp, "OK").push();
+
+        // closing bind dialog
+        new JButtonOperator(bindOp,"OK").push();
+
         // test generated code
-        findInCode("binding.setNullSourceValue(\"" + nullMsg + "\"); // NOI18N", designer); // NOI18N
+        findInCode("binding.setNullSourceValue(\"" + nullMsg + "\");", designer); // NOI18N
         findInCode("binding.setValueForIncompleteSourcePath(\"" + incompleteMsg + "\");", designer); // NOI18N
-        
-        // invoke bind dialog again
-        actNode = new Node(inspector.treeComponents(), incompleteLabelPath);
-        act = new ActionNoBlock(null, ACTION_PATH);
-        act.perform(actNode);
-        
-        // get incomplete path value from ui
-        bindOp = new BindDialogOperator();
-        bindOp.selectAdvancedTab();
-        String result = bindOp.getIncompletePathValueText();
-        bindOp.ok();
-        
-        // compare values
-        assertEquals(result, incompleteMsg);
-        
-        // invoke bind dialog again
+       
+        // invoke bind dialog again and check values
         actNode = new Node(inspector.treeComponents(), nullLabelPath);
         act = new ActionNoBlock(null, ACTION_PATH);
         act.perform(actNode);
         
-        // get null value text from ui
-        bindOp = new BindDialogOperator();
-        bindOp.selectAdvancedTab();
-        result = bindOp.getNullValueText();
-        bindOp.ok();
+        bindOp = new JDialogOperator("Bind");
+        tabOp = new JTabbedPaneOperator(bindOp);
+        tabOp.selectPage("Advanced");
+
+        // get incomplete path value
+        new JButtonOperator(tabOp,6).pushNoBlock();
+        valueOp = new NbDialogOperator("Incomplete Path Value");
+        String incomleteValue =  new JTextAreaOperator(valueOp,0).getText();
+        new JButtonOperator(valueOp, "OK").push();
         
+        // get null value
+        new JButtonOperator(tabOp,7).pushNoBlock();
+        valueOp = new NbDialogOperator("Null Value");
+        String nullValue =  new JTextAreaOperator(valueOp,0).getText();
+        new JButtonOperator(valueOp, "OK").push();
+
+        // closing bind dialog
+        new JButtonOperator(bindOp,"OK").push();
+
         // compare values
-        assertEquals(result, nullMsg);
+        assertEquals(incomleteValue, incompleteMsg);
+        assertEquals(nullValue, nullMsg);
     }
     
     /** Tests validation */

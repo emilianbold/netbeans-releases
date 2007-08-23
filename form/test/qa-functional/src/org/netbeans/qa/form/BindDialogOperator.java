@@ -205,7 +205,7 @@ public class BindDialogOperator extends JDialogOperator {
     /** get Incomplete Path Value text */
     public String getIncompletePathValueText() {
         // TODO: remove this ID and get button better way        
-        new JButtonOperator(tbdPane(), 4).pushNoBlock();
+        new JButtonOperator(tbdPane(), 5).pushNoBlock();
         return getTextIntoValueDialog();
     }
     
