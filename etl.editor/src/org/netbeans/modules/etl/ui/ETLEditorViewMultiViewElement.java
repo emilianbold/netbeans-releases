@@ -240,30 +240,10 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     
     @Override
     public void componentShowing() {
-        Node[] curNodes = getActivatedNodes();
-        
+       
         super.componentShowing();        
         ETLEditorSupport editor = mObj.getETLEditorSupport();
         UndoRedo.Manager undoRedo = editor.getUndoManager();
-        initActiveNodeChangeListener();
-        Node node = null;
-           if (myMultiViewObserver != null) {
-            TopComponent thisTc = myMultiViewObserver.getTopComponent();
-            if ( thisTc != null ) {
-                // data node is the node associated with dataobject(BPELDataObject)
-                if (curNodes == null || curNodes.length == 0 || curNodes[0] instanceof DataNode) {
-                    
-                       node = (Node) ((org.netbeans.modules.etl.ui.property.SourceTableNode) node).getSourceTable();
-                    if (node != null) {
-                        curNodes = new Node[] {node};
-                    }
-                }
-                if (curNodes != null && curNodes.length > 0) {
-                    thisTc.setActivatedNodes(curNodes);
-                    setActivatedNodes(curNodes);
-                }
-            }
-        }
         Document document = editor.getDocument();
         if(document != null) {
             document.removeUndoableEditListener(undoRedo);
