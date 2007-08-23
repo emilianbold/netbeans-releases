@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Window"/>
     </folder>
+    <!--
     <folder name="Editors">
         <folder name="text">
             <folder name="x-c">
@@ -34,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.instance"/>
                             <attr name="position" intvalue="300"/>
                         </file>
-                        </folder>
+                    </folder>
                 </folder>
             </folder>
             <folder name="x-c++">
@@ -49,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    -->
     <folder name="Menu">
         <folder name="GoTo">
             <file name="org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow">

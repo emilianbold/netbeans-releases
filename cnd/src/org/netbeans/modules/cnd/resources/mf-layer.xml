@@ -110,9 +110,6 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                        <file name="goto">
-                            <attr name="position" intvalue="200"/>
-                        </file> <!-- action Go To Line... -->
                     </folder>
 
                     <file name="SeparatorBeforeFormat.instance">
@@ -185,9 +182,6 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                        <file name="goto">
-                            <attr name="position" intvalue="200"/>
-                        </file> <!-- action Go To Line... -->
                     </folder>
 
                     <file name="SeparatorBeforeFormat.instance">
