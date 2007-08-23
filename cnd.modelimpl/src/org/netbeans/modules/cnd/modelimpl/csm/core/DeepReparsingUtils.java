@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,8 +28,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.apt.utils.APTHandlersSupport;
-import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -164,7 +161,7 @@ public final class DeepReparsingUtils {
             Set<CsmFile> top = new HashSet<CsmFile>();
             Set<CsmFile> coherence = new HashSet<CsmFile>();
             for(CsmFile file : resolved) {
-                top.addAll(project.getGraph().getIncludedFiles(file));
+                top.addAll(project.getGraph().getTopParentFiles(file));
                 coherence.addAll(project.getGraph().getIncludedFiles(file));
             }
             for(CsmFile parent : coherence){
@@ -195,7 +192,7 @@ public final class DeepReparsingUtils {
             Set<CsmFile> top = new HashSet<CsmFile>();
             Set<CsmFile> coherence = new HashSet<CsmFile>();
             for(CsmFile file : resolved) {
-                top.addAll(project.getGraph().getIncludedFiles(file));
+                top.addAll(project.getGraph().getTopParentFiles(file));
                 coherence.addAll(project.getGraph().getIncludedFiles(file));
             }
             for(CsmFile parent : coherence){
