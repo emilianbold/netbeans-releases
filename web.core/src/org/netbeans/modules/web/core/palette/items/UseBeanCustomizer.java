@@ -22,14 +22,14 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
+import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-
-
-
-
 
 /**
  *
@@ -40,6 +40,7 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
     private Dialog dialog = null;
     private DialogDescriptor descriptor = null;
     private boolean dialogOK = false;
+    PageInfo.BeanData[] beanData = null;
 
     UseBean useBean;
     JTextComponent target;
@@ -50,18 +51,41 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
         this.target = target;
         
         initComponents();
-
-        jComboBox1.setModel(new DefaultComboBoxModel(useBean.getBeans()));
-        if (useBean.getBeanIndex() > -1)
-            jComboBox1.setSelectedIndex(useBean.getBeanIndex());
-        
         jComboBox2.setModel(new DefaultComboBoxModel(UseBean.scopes));
         jComboBox2.setSelectedIndex(useBean.getScopeIndex());
+        jTextField2.getDocument().addDocumentListener(new DocumentListener(){
+
+            public void insertUpdate(DocumentEvent arg0) {
+                validateInput();
+            }
+
+            public void removeUpdate(DocumentEvent arg0) {
+                validateInput();
+            }
+
+            public void changedUpdate(DocumentEvent arg0) {
+                validateInput();
+            }
+        });
+        jTextField1.getDocument().addDocumentListener(new DocumentListener(){
+
+            public void insertUpdate(DocumentEvent arg0) {
+                validateInput();
+            }
+
+            public void removeUpdate(DocumentEvent arg0) {
+                validateInput();
+            }
+
+            public void changedUpdate(DocumentEvent arg0) {
+                validateInput();
+            }
+        });
         
     }
     
-    public boolean showDialog() {
-        
+    public boolean showDialog(PageInfo.BeanData[] beanData) {
+        this.beanData = beanData;
         dialogOK = false;
         
         String displayName = "";
@@ -76,14 +100,14 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
                         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
-                            evaluateInput();
+                            collectInput();
                             dialogOK = true;
                         }
                         dialog.dispose();
 		     }
 		 } 
                 );
-        
+        validateInput();
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
         repaint();
@@ -91,19 +115,44 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
         return dialogOK;
     }
     
-    private void evaluateInput() {
-        
-        int beanIndex = jComboBox1.getSelectedIndex();
-        useBean.setBeanIndex(beanIndex);
-        if (beanIndex == -1 && jComboBox1.getSelectedItem() != null) // new or no value selected
-            useBean.setBean(jComboBox1.getSelectedItem().toString());
+    private void collectInput() {
+
+        useBean.setBean(jTextField2.getText());
         
         String clazz = jTextField1.getText();
         useBean.setClazz(clazz);
         
         int scopeIndex = jComboBox2.getSelectedIndex();
         useBean.setScopeIndex(scopeIndex);
-        
+    }
+    
+    private void validateInput()
+    {
+        if(jTextField2.getText().equals(""))
+        {
+            String msg = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.Bundle").getString("Error_Empty_ID"); // NOI18N
+            descriptor.setValid(false);
+            errorMessage.setText(msg);
+            return;
+        }
+        if(JSPPaletteUtilities.idExists(jTextField2.getText(), beanData))
+        {   
+            String msg = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.Bundle").getString("Error_not_uniq_ID"); // NOI18N
+            descriptor.setValid(false);
+            errorMessage.setText(msg);
+            return;
+        }
+        if(jTextField1.getText().equals(""))
+        {
+            String msg = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.Bundle").getString("Error_Empty_class"); // NOI18N
+            descriptor.setValid(false);
+            errorMessage.setText(msg);
+            return;
+        }
+ 
+        descriptor.setValid(true);
+        errorMessage.setText("");
+       
     }
     
     /** This method is called from within the constructor to
@@ -120,25 +169,27 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
         jTextField1 = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
         jComboBox2 = new javax.swing.JComboBox();
+        jTextField2 = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        errorMessage = new javax.swing.JLabel();
 
         jFileChooser1.setCurrentDirectory(null);
 
         setLayout(new java.awt.GridBagLayout());
 
         jLabel4.setLabelFor(jComboBox2);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "LBL_UseBean_Scope"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "LBL_UseBean_Scope")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jLabel4, gridBagConstraints);
-        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSN_UseBean_Scope"));
-        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSD_UseBean_Scope"));
+        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSN_UseBean_Scope")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSD_UseBean_Scope")); // NOI18N
 
         jTextField1.setColumns(35);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -149,8 +200,8 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jTextField1, gridBagConstraints);
 
-        jLabel1.setLabelFor(jComboBox1);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "LBL_UseBean_ID"));
+        jLabel1.setLabelFor(jTextField2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "LBL_UseBean_ID")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -158,26 +209,20 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSN_UseBean_ID"));
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSD_UseBean_ID"));
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSN_UseBean_ID")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSD_UseBean_ID")); // NOI18N
 
         jLabel2.setLabelFor(jTextField1);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "LBL_UseBean_Class"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "LBL_UseBean_Class")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSN_UseBean_Class"));
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSD_UseBean_Class"));
-
-        jComboBox1.setEditable(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
-        add(jComboBox1, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSN_UseBean_Class")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSD_UseBean_Class")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -186,20 +231,43 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jComboBox2, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
+        add(jTextField2, gridBagConstraints);
 
+        jLabel3.setForeground(new java.awt.Color(255, 0, 0));
+        add(jLabel3, new java.awt.GridBagConstraints());
+
+        errorMessage.setForeground(new java.awt.Color(255, 0, 0));
+        errorMessage.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        errorMessage.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(24, 12, 12, 12);
+        add(errorMessage, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox jComboBox1;
+    private javax.swing.JLabel errorMessage;
     private javax.swing.JComboBox jComboBox2;
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField jTextField2;
     // End of variables declaration//GEN-END:variables
     
 }

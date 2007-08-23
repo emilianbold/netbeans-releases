@@ -31,6 +31,12 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.netbeans.modules.web.jsps.parserapi.PageInfo;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -39,46 +45,46 @@ import org.netbeans.editor.Formatter;
 public final class JSPPaletteUtilities {
     
     //marekf: who calls this???? It seems the method is not used and was the only reason of having impl. dep. on web/jspsyntax, grrrr.
-    public static int wrapTags(int start, int end, BaseDocument doc) {
-        try {
-            TokenHierarchy th = TokenHierarchy.get(doc);
-            TokenSequence jspTs = th.tokenSequence();
-            if(jspTs.move(start) == Integer.MAX_VALUE) {
-                return end; //no token in sequence
-            }
-            Token token = jspTs.token();
-            //wrap JSP tags
-            while (token.offset(th) < end && jspTs.moveNext()) { // interested only in the tokens inside the body
-                token = jspTs.token();
-                if (token.text().toString().startsWith("<") && token.id() == JspTokenId.SYMBOL) {
-                    // it's '<' token
-                    int offset = token.offset(th);
-                    doc.insertString(offset, "\n", null);   // insert a new-line before '<'
-                    end++;  // remember new body end
-                }
-            }
-            //wrap HTML tags
-            TokenSequence htmlTs = th.tokenSequence(HTMLTokenId.language());
-            if(htmlTs == null || htmlTs.move(start) == Integer.MAX_VALUE) {
-                return end; //no token in sequence
-            }
-            while (token.offset(th) < end && htmlTs.moveNext()) { // interested only in the tokens inside the body
-                token = htmlTs.token();
-                if (token.text().toString().startsWith("<") && token.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
-                    // it's '<' token
-                    int offset = token.offset(th);
-                    doc.insertString(offset, "\n", null);   // insert a new-line before '<'
-                    end++;  // remember new body end
-                }
-            }
-        } catch (IllegalStateException ise) {
-            //ignore
-        } catch (BadLocationException ble) {
-            //ignore
-        }
-        
-        return end;
-    }
+//    public static int wrapTags(int start, int end, BaseDocument doc) {
+//        try {
+//            TokenHierarchy th = TokenHierarchy.get(doc);
+//            TokenSequence jspTs = th.tokenSequence();
+//            if(jspTs.move(start) == Integer.MAX_VALUE) {
+//                return end; //no token in sequence
+//            }
+//            Token token = jspTs.token();
+//            //wrap JSP tags
+//            while (token.offset(th) < end && jspTs.moveNext()) { // interested only in the tokens inside the body
+//                token = jspTs.token();
+//                if (token.text().toString().startsWith("<") && token.id() == JspTokenId.SYMBOL) {
+//                    // it's '<' token
+//                    int offset = token.offset(th);
+//                    doc.insertString(offset, "\n", null);   // insert a new-line before '<'
+//                    end++;  // remember new body end
+//                }
+//            }
+//            //wrap HTML tags
+//            TokenSequence htmlTs = th.tokenSequence(HTMLTokenId.language());
+//            if(htmlTs == null || htmlTs.move(start) == Integer.MAX_VALUE) {
+//                return end; //no token in sequence
+//            }
+//            while (token.offset(th) < end && htmlTs.moveNext()) { // interested only in the tokens inside the body
+//                token = htmlTs.token();
+//                if (token.text().toString().startsWith("<") && token.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
+//                    // it's '<' token
+//                    int offset = token.offset(th);
+//                    doc.insertString(offset, "\n", null);   // insert a new-line before '<'
+//                    end++;  // remember new body end
+//                }
+//            }
+//        } catch (IllegalStateException ise) {
+//            //ignore
+//        } catch (BadLocationException ble) {
+//            //ignore
+//        }
+//        
+//        return end;
+//    }
 
     public static void insert(String s, JTextComponent target) 
     throws BadLocationException 
@@ -144,6 +150,31 @@ public final class JSPPaletteUtilities {
         catch (BadLocationException ble) {}
         
         return start;
+    }
+    
+    public static PageInfo.BeanData[] getAllBeans(JTextComponent target)
+    {
+        if(target!=null && target.getDocument() instanceof BaseDocument){
+           BaseDocument doc =  (BaseDocument) target.getDocument();
+           DataObject dobj = NbEditorUtilities.getDataObject(doc);
+           FileObject fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile() : null;
+           if(fobj==null) return null;
+           JspParserAPI.ParseResult result = JspContextInfo.getContextInfo (fobj).getCachedParseResult (doc, fobj, false, true);
+           if(result==null) return null;
+           return result.getPageInfo().getBeans();
+        }
+        return null;
+       
+    }
+    public static boolean idExists(String id, PageInfo.BeanData[] beanData)
+    {
+        if(id!=null && beanData!=null)
+        for (int i = 0; i < beanData.length; i++) {
+            PageInfo.BeanData beanData1 = beanData[i];
+            if(beanData1.getId().equals(id)) return true;
+        }
+
+        return false;
     }
 
 }
