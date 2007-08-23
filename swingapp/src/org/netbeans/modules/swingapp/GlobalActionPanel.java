@@ -724,6 +724,9 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         actionTable.getColumnModel().moveColumn(ActionTableModel.ICON_COLUMN,3);
         actionTable.getColumnModel().moveColumn(ActionTableModel.TASK_COLUMN,4);
         actionTable.getColumnModel().moveColumn(6,5);
+        
+        //clear the bound components list
+        boundComponentList.setModel(new DefaultListModel());
     }
     
     // rescan for actions, reload the class combo, and call reloadTable();
