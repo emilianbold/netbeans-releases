@@ -44,12 +44,9 @@ public class RubyUtils {
     }
     
     public static boolean isRhtmlDocument(Document doc) {
-        DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-        if (dobj != null) {
-            return isRhtmlFile(dobj.getPrimaryFile());
-        }
-        
-        return false;
+        String mimeType = (String)doc.getProperty("mimeType");
+
+        return RubyInstallation.RHTML_MIME_TYPE.equals(mimeType);
     }
     
     public static boolean isRubyOrRhtmlFile(FileObject f) {
