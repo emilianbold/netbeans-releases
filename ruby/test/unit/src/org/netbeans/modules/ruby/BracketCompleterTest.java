@@ -41,16 +41,6 @@ public class BracketCompleterTest extends RubyTestBase {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     private void match(String original) throws BadLocationException {
         BracketCompleter bc = new BracketCompleter();
         
@@ -217,7 +207,7 @@ public class BracketCompleterTest extends RubyTestBase {
             doc.atomicUnlock();
         }
     }
-
+    
     private void deleteWord(String original, String expected) throws BadLocationException {
         // Try deleting the word not just using the testcase but also surrounded by strings
         // to make sure there's no problem with lexer token directions

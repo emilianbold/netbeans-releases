@@ -22,7 +22,7 @@ import org.netbeans.modules.ruby.lexer.RubyTokenId;
  *
  * @author Tor Norbye
  */
-public class RubyLexerTest extends TestCase {
+public class RubyLexerTest extends RubyTestBase {
     public RubyLexerTest(String testName) {
         super(testName);
     }

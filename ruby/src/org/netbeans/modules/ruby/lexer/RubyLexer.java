@@ -464,7 +464,7 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
         case Tokens.kSELF:
             return RubyTokenId.SELF;
             
-        case Tokens.tAREF:
+        case Tokens.tAREF: // If you change this to a specific token, update BracketCompleter code which checks for [] and []=
         case Tokens.tASET:
             // XXX Change some of these into [, or ] ?
             return RubyTokenId.ANY_OPERATOR;
@@ -763,7 +763,7 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
                 }
 
                 buf[i + off] = (char)c;
-            }
+    }
 
             return len;
         }
