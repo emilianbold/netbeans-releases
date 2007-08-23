@@ -107,6 +107,9 @@ public class WSDLParser extends DefaultHandler {
             } catch (SchemaException ex) {
                 throw new WSDLException( ex );
             }
+        } catch( WSDLException e ) {
+            validationResults.add( new WSDL2Java.ValidationResult(
+                    WSDL2Java.ValidationResult.ErrorLevel.FATAL, e.getMessage()));
         } catch( SAXException e ) {
             validationResults.add( new WSDL2Java.ValidationResult(
                 WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Error during parsing : " + e.getMessage()));
@@ -189,6 +192,9 @@ public class WSDLParser extends DefaultHandler {
                     soapOperation = new SOAPOperationImpl();
                     // TODO: validation
                     soapOperation.setSoapActionURI( attributes.getValue( "soapAction" ));
+                    if( attributes.getValue( "style" ) == null && soapBinding == null ) {
+                        throw new SAXException( new WSDLException( "Missing mandatory SOAP style definition." ));
+                    }
                     String style = attributes.getValue( "style" ) != null ? attributes.getValue( "style" ) : soapBinding.getStyle();
                     soapOperation.setStyle( style );
                     
@@ -519,6 +525,13 @@ public class WSDLParser extends DefaultHandler {
         public void characters(char[] ch, int start, int length) throws SAXException {
             tagString += new String( ch, start, length );
         }
+
+//        private class WSDLException extends Exception {
+//            
+//            public WSDLException( String message ) {
+//                super( message );
+//            }
+//        }
         
 //    }
 }
