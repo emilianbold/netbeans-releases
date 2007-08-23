@@ -354,13 +354,27 @@ class DropTargetLayer extends JComponent {
                 return 20;
             }
         }
-        if(item instanceof JRadioButtonMenuItem) {
-            return 11;
+        
+        if(isAqua()) {
+            if(item instanceof JRadioButtonMenuItem) {
+                return 11;
+            }
+            return 14;
         }
-        return 14;
+        
+        //metal or other (hopefully) basic derived L&Fs
+        if(isRadioOrCheck(item)) {
+            return 20;
+        }
+        return 10;
     }
     
     
+    private static boolean isRadioOrCheck(JMenuItem item) {
+        if(item instanceof JRadioButtonMenuItem) return true;
+        if(item instanceof JCheckBoxMenuItem) return true;
+        return false;
+    }
     private static boolean hasRadioOrCheckSibling(JMenuItem item) {
         if(item.getParent() == null) return false;
         for(Component c : item.getParent().getComponents()) {
