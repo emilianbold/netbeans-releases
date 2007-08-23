@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="unzip_jwsdp16">
-        <mkdir dir="build/xternal/jaxrpc16"/>
+        <mkdir dir="build/external/jaxrpc16"/>
 	<unzip src="external/jwsdp16_jars.zip" dest="build/external/jaxrpc16"/>
     </target>
    
