@@ -653,9 +653,16 @@ public class CCSyntax extends Syntax {
                     offset++;
                     return CCTokenContext.MUL_EQ;
                 case '/':
-                    offset++;
-                    state = INIT;
-                    return CCTokenContext.INVALID_COMMENT_END; // '*/' outside comment
+                    // either '*/' outside comment
+                    // or pointer like
+                    // int*/* commnet*/var;
+                    if ((offset+1 < stopOffset) && (buffer[offset+1] != '*')) {
+                        offset++;
+                        state = INIT;
+                        return CCTokenContext.INVALID_COMMENT_END; // '*/' outside comment
+                    } else {
+                        //nobreak;
+                    }
                 default:
                     state = INIT;
                     return CCTokenContext.MUL;
