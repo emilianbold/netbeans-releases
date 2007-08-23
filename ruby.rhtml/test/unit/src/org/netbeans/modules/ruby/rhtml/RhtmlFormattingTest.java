@@ -27,6 +27,8 @@ import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.ext.html.HTMLFormatter;
+import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.ruby.Formatter;
 import org.netbeans.modules.ruby.IndentPrefs;
 import org.netbeans.modules.ruby.RubyTestBase;
@@ -56,7 +58,70 @@ public class RhtmlFormattingTest extends RubyTestBase {
         return doc;
     }
     
-    public String format(String source, FormattingPreferences preferences) throws Exception {
+    @Override
+    protected BaseDocument getDocument(FileObject fo) {
+        BaseDocument doc = super.getDocument(fo);
+        doc.putProperty(org.netbeans.api.lexer.Language.class, RhtmlTokenId.language());
+        doc.putProperty("mimeType", RubyInstallation.RHTML_MIME_TYPE);
+        
+        return doc;
+    }
+    
+    public String format(BaseDocument doc, int startPos, int endPos, FormattingPreferences preferences) throws Exception {
+        //ParserResult result = parse(fo);
+        ParserResult result = null;
+
+        // First format HTML, since the Ruby formatter relies on that
+        //new FormattingContext()
+        //HtmlIndentTask htmlTask = new HtmlIndentTask();
+        JTextArea ta = new JTextArea(doc);
+        Caret caret = ta.getCaret();
+        caret.setDot(startPos);
+
+        // Use the HtmlIndentTask to format
+//        JEditorPane pane = new JEditorPane();
+//        pane.setDocument(doc);
+//        RhtmlKit kit = new RhtmlKit();
+//        pane.setEditorKit(kit); 
+//        assertEquals(RubyInstallation.RHTML_MIME_TYPE, pane.getDocument().getProperty("mimeType"));
+//        Action a = kit.getActionByName(BaseKit.formatAction);
+//        assertNotNull(a);
+//        a.actionPerformed(new ActionEvent(pane, 0, ""));
+
+        // ... that doesn't work, so do what the indent task currently does anyway:
+        HTMLFormatter f = new HTMLFormatter(HTMLKit.class);
+        String unformatted = doc.getText(0, doc.getLength());
+        JEditorPane pane = new JEditorPane();
+        pane.setContentType(HTMLKit.HTML_MIME_TYPE);
+        HTMLKit kit = new HTMLKit();
+        pane.setEditorKit(kit);
+        BaseDocument bdoc = (BaseDocument)pane.getDocument();
+        bdoc.insertString(0, unformatted, null);
+        f.reformat(bdoc, startPos, endPos, true);
+        
+        Formatter formatter = new Formatter();
+        if (preferences == null) {
+            preferences = new IndentPrefs(2,2);
+        }
+        
+        String htmlFormatted = bdoc.getText(0, bdoc.getLength());
+        
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, htmlFormatted, null);
+        
+        formatter.reindent(doc, startPos, endPos, result, preferences);
+
+        String formatted = doc.getText(0, doc.getLength());
+        
+        return formatted;
+    }
+    
+    protected boolean runInEQ() {
+        // Must run in AWT thread (BaseKit.install() checks for that)
+        return true;
+    }
+
+    public void format(String source, String reformatted, FormattingPreferences preferences) throws Exception {
         // Must run in AWT thread (BaseKit.install() checks for that)
         String BEGIN = "%<%"; // NOI18N
         int startPos = source.indexOf(BEGIN);
@@ -78,46 +143,7 @@ public class RhtmlFormattingTest extends RubyTestBase {
             endPos = doc.getLength();
         }
         
-        //ParserResult result = parse(fo);
-        ParserResult result = null;
-
-        // First format HTML, since the Ruby formatter relies on that
-        //new FormattingContext()
-        //HtmlIndentTask htmlTask = new HtmlIndentTask();
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(startPos);
-        
-        JEditorPane pane = new JEditorPane();
-        pane.setDocument(doc);
-        RhtmlKit kit = new RhtmlKit();
-        pane.setEditorKit(kit); 
-        assertEquals(RubyInstallation.RHTML_MIME_TYPE, pane.getDocument().getProperty("mimeType"));
-        Action a = kit.getActionByName(BaseKit.formatAction);
-        assertNotNull(a);
-        a.actionPerformed(new ActionEvent(pane, 0, ""));
-
-        String htmlFormatted = doc.getText(0, doc.getLength());
-        
-        Formatter formatter = new Formatter();
-        if (preferences == null) {
-            preferences = new IndentPrefs(2,2);
-        }
-        
-        formatter.reindent(doc, startPos, endPos, result, preferences);
-
-        String formatted = doc.getText(0, doc.getLength());
-        
-        return formatted;
-    }
-    
-    protected boolean runInEQ() {
-        // Must run in AWT thread (BaseKit.install() checks for that)
-        return true;
-    }
-
-    public void format(String source, String reformatted, FormattingPreferences preferences) throws Exception {
-        String formatted = format(source, preferences);
+        String formatted = format(doc, startPos, endPos, preferences);
         assertEquals(reformatted, formatted);
     }
     
@@ -126,10 +152,9 @@ public class RhtmlFormattingTest extends RubyTestBase {
         assertNotNull(fo);
         BaseDocument doc = getDocument(fo);
         assertNotNull(doc);
-        String before = doc.getText(0, doc.getLength());
 
         FormattingPreferences preferences = new IndentPrefs(2,2);
-        String formatted = format(before, preferences);
+        String formatted = format(doc, 0, doc.getLength(), preferences);
         assertDescriptionMatches(file, formatted, false, ".formatted");
     }
     

@@ -1,11 +1,11 @@
 <div>
-<% if true %>
-  hello
-  <% end %>
-  <div></div>
-<% world %>
-<% if false%>
-  bye
-  <% end %>
+    <% if true %>
+      hello
+    <% end %>
+    <div></div>
+    <% world %>
+    <% if false%>
+      bye
+    <% end %>
 </div>
 
