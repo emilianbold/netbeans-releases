@@ -27,6 +27,7 @@ import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 import org.netbeans.modules.compapp.projects.base.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -331,9 +332,19 @@ public class PanelProjectLocationVisual
     /** Handles changes in the project name and project directory
      */
     private void updateTexts(DocumentEvent e) {
-        createdFolderTextField.setText(getCreatedFolderPath());
-
-        panel.fireChangeEvent(); // Notify that the panel changed
+        Document doc = e.getDocument();
+        if (doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument()) {
+            // Change in the project name
+            String projectName = projectNameTextField.getText();
+            String projectFolder = projectLocationTextField.getText();
+            String projFolderPath = FileUtil.normalizeFile(new File(projectFolder)).getAbsolutePath();
+            if (projFolderPath.endsWith(File.separator)) {
+                createdFolderTextField.setText(projFolderPath + projectName);
+            } else {
+                createdFolderTextField.setText(projFolderPath + File.separator + projectName);
+            }
+        }                
+        panel.fireChangeEvent(); // Notify that the panel changed      
     }
     
     private String getCreatedFolderPath() {
