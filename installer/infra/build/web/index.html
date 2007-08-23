@@ -67,46 +67,52 @@
                                 }
                             </style>
                         </noscript>
-                        
-                        
-                        <table class="components_table" align="center">
-                            <tr>
-                                <th class="left no_border bottom_border_thick wide bottom">NetBeans IDE 6.0 Build {build.number}</th>
-                                <th class="no_border bottom_border_thick wide bottom">Java</th>
-                                <th class="no_border bottom_border_thick wide bottom">Java EE</th>
-				<th class="no_border bottom_border_thick wide bottom">Java ME</th>
-				<th class="no_border bottom_border_thick wide bottom">Ruby</th>
-				<th class="no_border bottom_border_thick wide bottom">C/C++</th>
-                                <th class="no_border bottom_border_thick wide bottom">Full</th>
-                            </tr>
-                            <script type="text/javascript">write_components()</script>
-                            <tr>
-                                <td class="top_border_thick"></td>
-                                <td class="beige left_border_thin bold top_border_thick" id="java_size"></td>
-                                <td class="left_border_thin bold top_border_thick" id="javaee_size"></td>
-			        <td class="beige left_border_thin bold top_border_thick" id="javame_size"></td>
-                                <td class="left_border_thin bold top_border_thick" id="ruby_size"></td>
-				<td class="beige left_border_thin bold top_border_thick" id="cnd_size"></td>
-                                <td class="left_border_thin bold top_border_thick" id="full_size"></td>
-                            </tr>
-                            <tr>
-                                <td class="left wide no_border">
-                                    <select id="platform_select" class="wide" onchange="update()">
+                        <div class="align-right">
+				<br><br>
+				<td class="bold">Platform: &nbsp;</td>
+				<select id="platform_select" class="wide" onchange="update()">
                                         <option value="windows">Windows 2000/XP/Vista</option>
                                         <option value="linux">Linux (x86/x64)</option>
                                         <option value="solaris-x86">Solaris 10 (x86/x64)</option>
                                         <option value="solaris-sparc">Solaris 10 (sparc)</option>
                                         <option value="macosx-x86">MacOS X (intel)</option>
-                                        <option value="macosx-ppc">MacOS X (powerpc)</option>
-                                    </select>
-                                </td>
+                                        <option value="macosx-ppc">MacOS X (powerpc)</option>				
+                        	</select>
+				<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			</div>
+                        
+                        <table class="components_table" align="center">
+                            <tr>
+                                <th class="left no_border bottom_border_thick wide bottom">NetBeans IDE 6.0 Build {build.number}</th>
+				<th class="no_border bottom_border_thick wide bottom"><a href="javascript: download('full')">NetBeans IDE</a></th>
+                                <th class="no_border bottom_border_thick wide bottom"><a href="javascript: download('java')">NetBeans Java SE</a></th>
+                                <th class="no_border bottom_border_thick wide bottom"><a href="javascript: download('javaee')">NetBeans Java EE</a></th>
+				<th class="no_border bottom_border_thick wide bottom"><a href="javascript: download('javame')">NetBeans Mobility</a></th>
+				<th class="no_border bottom_border_thick wide bottom"><a href="javascript: download('ruby')">NetBeans Ruby</a></th>
+				<th class="no_border bottom_border_thick wide bottom"><a href="javascript: download('cnd')">NetBeans C/C++</a></th>                                
+                            </tr>
+                            <script type="text/javascript">write_components()</script>
+                            <tr>
+                                <td class="top_border_thick"></td>
+                                <td class="left_border_thin bold top_border_thick" id="full_size"></td>
+                                <td class="beige left_border_thin bold top_border_thick" id="java_size"></td>
+                                <td class="left_border_thin bold top_border_thick" id="javaee_size"></td>
+			        <td class="beige left_border_thin bold top_border_thick" id="javame_size"></td>
+                                <td class="left_border_thin bold top_border_thick" id="ruby_size"></td>
+				<td class="beige left_border_thin bold top_border_thick" id="cnd_size"></td>
+                            </tr>
+			    <!--
+                            <tr>
+                                <td class="left wide no_border">
+                                <td class="small_pad no_border"><a href="javascript: download('full')"><img src="img/download_h.gif" style="cursor: pointer; border: 0;"/></a></td>
                                 <td class="small_pad no_border"><a href="javascript: download('java')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/></a></td>
                                 <td class="small_pad no_border"><a href="javascript: download('javaee')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/></a></td>
 				<td class="small_pad no_border"><a href="javascript: download('javame')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/></a></td>
 				<td class="small_pad no_border"><a href="javascript: download('ruby')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/></a></td>
 				<td class="small_pad no_border"><a href="javascript: download('cnd')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/></a></td>
-                                <td class="small_pad no_border"><a href="javascript: download('full')"><img src="img/download_h.gif" style="cursor: pointer; border: 0;"/></a></td>
+
                             </tr>
+			    -->
                             <tr>
                                 <td class="left no_border" colspan="4" id="error_message"></td>
                             </tr>
