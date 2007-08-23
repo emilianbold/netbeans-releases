@@ -74,7 +74,7 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
     public void readSettings(Object settings) {}
     public void storeSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
-            ((WizardDescriptor) settings).putProperty("directory", ((CloneDestinationDirectoryPanel) component).getDirectory());
+            ((WizardDescriptor) settings).putProperty("directory", ((CloneDestinationDirectoryPanel) component).getDirectory()); // NOI18N
         }
     }
 }

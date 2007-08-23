@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -72,12 +72,12 @@ public class UpdateAction extends AbstractAction {
                         //HgUtils.clearOutputMercurialTab();
                         HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(UpdateAction.class,
-                                "MSG_UPDATE_TITLE"));
+                                "MSG_UPDATE_TITLE")); // NOI18N
                         HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(UpdateAction.class,
-                                "MSG_UPDATE_TITLE_SEP"));
+                                "MSG_UPDATE_TITLE_SEP")); // NOI18N
                         HgUtils.outputMercurialTab(list);
-                        HgUtils.outputMercurialTab("");
+                        HgUtils.outputMercurialTab(""); // NOI18N
                     }  
                     // refresh filesystem to take account of changes
                     FileObject rootObj = FileUtil.toFileObject(root);
@@ -97,7 +97,7 @@ public class UpdateAction extends AbstractAction {
 
                 HgUtils.outputMercurialTabInRed(
                         NbBundle.getMessage(UpdateAction.class,
-                        "MSG_UPDATE_DONE"));
+                        "MSG_UPDATE_DONE")); // NOI18N
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N

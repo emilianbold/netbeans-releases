@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -96,7 +96,7 @@ public class ConflictResolvedAction extends AbstractAction {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         
         HgCommand.deleteConflictFile(file.getAbsolutePath());
-        Mercurial.LOG.log(Level.FINE, "ConflictResolvedAction.perform(): DELETE CONFLICT File: {0}",
+        Mercurial.LOG.log(Level.FINE, "ConflictResolvedAction.perform(): DELETE CONFLICT File: {0}", // NOI18N
                 new Object[] {file.getAbsolutePath() + HgCommand.HG_STR_CONFLICT_EXT} );
         cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
     }

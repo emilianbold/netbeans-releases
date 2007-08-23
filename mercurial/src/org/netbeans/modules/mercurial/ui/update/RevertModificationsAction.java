@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -97,17 +97,17 @@ public class RevertModificationsAction extends AbstractAction {
             }
             HgUtils.outputMercurialTabInRed(
                     NbBundle.getMessage(RevertModificationsAction.class,
-                    "MSG_REVERT_TITLE"));
+                    "MSG_REVERT_TITLE")); // NOI18N
             HgUtils.outputMercurialTabInRed(
                     NbBundle.getMessage(RevertModificationsAction.class,
-                    "MSG_REVERT_TITLE_SEP"));
+                    "MSG_REVERT_TITLE_SEP")); // NOI18N
             HgUtils.outputMercurialTab(
                     NbBundle.getMessage(RevertModificationsAction.class,
-                    "MSG_REVERT_REVISION_STR", revStr));
+                    "MSG_REVERT_REVISION_STR", revStr)); // NOI18N
             for (File file : files) {
                 HgUtils.outputMercurialTab(file.getAbsolutePath());
             }
-            HgUtils.outputMercurialTab("");
+            HgUtils.outputMercurialTab(""); // NOI18N
  
             HgCommand.doRevert(repository, revertFiles, revStr);
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
@@ -135,7 +135,7 @@ public class RevertModificationsAction extends AbstractAction {
         }
         HgUtils.outputMercurialTabInRed(
                 NbBundle.getMessage(RevertModificationsAction.class,
-                "MSG_REVERT_DONE"));
+                "MSG_REVERT_DONE")); // NOI18N
  
     }
 

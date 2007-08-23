@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -45,67 +45,67 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
  * @author jrice
  */
 public class HgCommand {
-    private static final String HG_COMMAND = "hg"; 
-    private static final String HG_STATUS_CMD = "status"; // need -A to see ignored files, specified in .hgignore, see man hgignore for details
-    private static final String HG_OPT_REPOSITORY = "--repository";
-    private static final String HG_OPT_BUNDLE = "--bundle";
-    private static final String HG_OPT_CWD_CMD = "--cwd";
-    private static final String HG_STATUS_FLAG_ALL_CMD = "-marduicC";
-    private static final String HG_FLAG_REV_CMD = "--rev";
-    private static final String HG_STATUS_FLAG_TIP_CMD = "tip";
-    private static final String HG_STATUS_FLAG_REM_DEL_CMD = "-rd";
-    private static final String HG_STATUS_FLAG_INCLUDE_CMD = "-I";
-    private static final String HG_STATUS_FLAG_INCLUDE_GLOB_CMD = "glob:";
-    private static final String HG_STATUS_FLAG_INCLUDE_END_CMD = "*";
-    private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-mardui";
-    private static final String HG_STATUS_FLAG_UNKNOWN_CMD = "-u";
+    private static final String HG_COMMAND = "hg";  // NOI18N
+    private static final String HG_STATUS_CMD = "status";  // NOI18N // need -A to see ignored files, specified in .hgignore, see man hgignore for details
+    private static final String HG_OPT_REPOSITORY = "--repository"; // NOI18N
+    private static final String HG_OPT_BUNDLE = "--bundle"; // NOI18N
+    private static final String HG_OPT_CWD_CMD = "--cwd"; // NOI18N
+    private static final String HG_STATUS_FLAG_ALL_CMD = "-marduicC"; // NOI18N
+    private static final String HG_FLAG_REV_CMD = "--rev"; // NOI18N
+    private static final String HG_STATUS_FLAG_TIP_CMD = "tip"; // NOI18N
+    private static final String HG_STATUS_FLAG_REM_DEL_CMD = "-rd"; // NOI18N
+    private static final String HG_STATUS_FLAG_INCLUDE_CMD = "-I"; // NOI18N
+    private static final String HG_STATUS_FLAG_INCLUDE_GLOB_CMD = "glob:"; // NOI18N
+    private static final String HG_STATUS_FLAG_INCLUDE_END_CMD = "*"; // NOI18N
+    private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-mardui"; // NOI18N
+    private static final String HG_STATUS_FLAG_UNKNOWN_CMD = "-u"; // NOI18N
     
-    private static final String HG_COMMIT_CMD = "commit";
-    private static final String HG_COMMIT_OPT_LOGFILE_CMD = "--logfile";
-    private static final String HG_COMMIT_TEMPNAME = "hgcommit";
-    private static final String HG_COMMIT_TEMPNAME_SUFFIX = ".hgm";
-    private static final String HG_COMMIT_DEFAULT_MESSAGE = "[no commit message]";
+    private static final String HG_COMMIT_CMD = "commit"; // NOI18N
+    private static final String HG_COMMIT_OPT_LOGFILE_CMD = "--logfile"; // NOI18N
+    private static final String HG_COMMIT_TEMPNAME = "hgcommit"; // NOI18N
+    private static final String HG_COMMIT_TEMPNAME_SUFFIX = ".hgm"; // NOI18N
+    private static final String HG_COMMIT_DEFAULT_MESSAGE = "[no commit message]"; // NOI18N
     
-    private static final String HG_REVERT_CMD = "revert";
-    private static final String HG_ADD_CMD = "add";
+    private static final String HG_REVERT_CMD = "revert"; // NOI18N
+    private static final String HG_ADD_CMD = "add"; // NOI18N
     
-    private static final String HG_BRANCH_CMD = "branch";
-    private static final String HG_BRANCH_REV_CMD = "tip";
-    private static final String HG_BRANCH_REV_TEMPLATE_CMD = "--template={rev}\\n";
-    private static final String HG_BRANCH_SHORT_CS_TEMPLATE_CMD = "--template={node|short}\\n";
+    private static final String HG_BRANCH_CMD = "branch"; // NOI18N
+    private static final String HG_BRANCH_REV_CMD = "tip"; // NOI18N
+    private static final String HG_BRANCH_REV_TEMPLATE_CMD = "--template={rev}\\n"; // NOI18N
+    private static final String HG_BRANCH_SHORT_CS_TEMPLATE_CMD = "--template={node|short}\\n"; // NOI18N
     
-    private static final String HG_CREATE_CMD = "init";
-    private static final String HG_CLONE_CMD = "clone";
+    private static final String HG_CREATE_CMD = "init"; // NOI18N
+    private static final String HG_CLONE_CMD = "clone"; // NOI18N
     
-    private static final String HG_UPDATE_ALL_CMD = "update";
-    private static final String HG_UPDATE_FORCE_ALL_CMD = "-C";
-    private static final String HG_UPDATE_REVISION_CMD = "-R";
+    private static final String HG_UPDATE_ALL_CMD = "update"; // NOI18N
+    private static final String HG_UPDATE_FORCE_ALL_CMD = "-C"; // NOI18N
+    private static final String HG_UPDATE_REVISION_CMD = "-R"; // NOI18N
     
-    private static final String HG_REMOVE_CMD = "remove";
-    private static final String HG_REMOVE_FLAG_FORCE_CMD = "--force";
+    private static final String HG_REMOVE_CMD = "remove"; // NOI18N
+    private static final String HG_REMOVE_FLAG_FORCE_CMD = "--force"; // NOI18N
     
-    private static final String HG_LOG_CMD = "log";
-    private static final String HG_LOG_LIMIT_CMD = "-l 1";
-    private static final String HG_LOG_TEMPLATE_CMD = "--template={rev}\\n{desc}\\n{date|hgdate}\\n{node|short}\\n";
-    private static final String HG_CSET_TEMPLATE_CMD = "--template={rev}:{node|short}\\n";
-    private static final String HG_REV_TEMPLATE_CMD = "--template={rev}\\n";
-    private static final String HG_CSET_TARGET_TEMPLATE_CMD = "--template={rev} ({node|short})\\n";
+    private static final String HG_LOG_CMD = "log"; // NOI18N
+    private static final String HG_LOG_LIMIT_CMD = "-l 1"; // NOI18N
+    private static final String HG_LOG_TEMPLATE_CMD = "--template={rev}\\n{desc}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
+    private static final String HG_CSET_TEMPLATE_CMD = "--template={rev}:{node|short}\\n"; // NOI18N
+    private static final String HG_REV_TEMPLATE_CMD = "--template={rev}\\n"; // NOI18N
+    private static final String HG_CSET_TARGET_TEMPLATE_CMD = "--template={rev} ({node|short})\\n"; // NOI18N
     
-    private static final String HG_CAT_CMD = "cat";
-    private static final String HG_FLAG_OUTPUT_CMD = "--output";
+    private static final String HG_CAT_CMD = "cat"; // NOI18N
+    private static final String HG_FLAG_OUTPUT_CMD = "--output"; // NOI18N
     
-    private static final String HG_ANNOTATE_CMD = "annotate";
-    private static final String HG_ANNOTATE_FLAGN_CMD = "--number";
-    private static final String HG_ANNOTATE_FLAGU_CMD = "--user";
+    private static final String HG_ANNOTATE_CMD = "annotate"; // NOI18N
+    private static final String HG_ANNOTATE_FLAGN_CMD = "--number"; // NOI18N
+    private static final String HG_ANNOTATE_FLAGU_CMD = "--user"; // NOI18N
     
-    private static final String HG_EXPORT_CMD = "export";
-    private static final String HG_IMPORT_CMD = "import";
+    private static final String HG_EXPORT_CMD = "export"; // NOI18N
+    private static final String HG_IMPORT_CMD = "import"; // NOI18N
 
-    private static final String HG_RENAME_CMD = "rename";
-    private static final String HG_RENAME_AFTER_CMD = "-A";
-    private static final String HG_PATH_DEFAULT_CMD = "paths";
-    private static final String HG_PATH_DEFAULT_OPT = "default";
-    private static final String HG_PATH_DEFAULT_PUSH_OPT = "default-push";
+    private static final String HG_RENAME_CMD = "rename"; // NOI18N
+    private static final String HG_RENAME_AFTER_CMD = "-A"; // NOI18N
+    private static final String HG_PATH_DEFAULT_CMD = "paths"; // NOI18N
+    private static final String HG_PATH_DEFAULT_OPT = "default"; // NOI18N
+    private static final String HG_PATH_DEFAULT_PUSH_OPT = "default-push"; // NOI18N
  
     
     // TODO: replace this hack 
@@ -118,57 +118,57 @@ public class HgCommand {
     //
     // Really need Hg to give us back merge status information, 
     // which it currently does not
-    private static final String HG_MERGE_CMD = "merge";
-    private static final String HG_MERGE_FORCE_CMD = "-f";
-    private static final String HG_MERGE_ENV = "EDITOR=success || $TEST -s";
+    private static final String HG_MERGE_CMD = "merge"; // NOI18N
+    private static final String HG_MERGE_FORCE_CMD = "-f"; // NOI18N
+    private static final String HG_MERGE_ENV = "EDITOR=success || $TEST -s"; // NOI18N
 
-    private static final String HG_PULL_CMD = "pull";
-    private static final String HG_UPDATE_CMD = "-u";
-    private static final String HG_PUSH_CMD = "push";
-    private static final String HG_PUSH_FORCE_CMD = "-f";
-    private static final String HG_UNBUNDLE_CMD = "unbundle";
-    private static final String HG_ROLLBACK_CMD = "rollback";
-    private static final String HG_VERSION_CMD = "version";
-    private static final String HG_INCOMING_CMD = "incoming";
-    private static final String HG_OUTGOING_CMD = "outgoing";
-    private static final String HG_VERBOSE_CMD = "-v";
+    private static final String HG_PULL_CMD = "pull"; // NOI18N
+    private static final String HG_UPDATE_CMD = "-u"; // NOI18N
+    private static final String HG_PUSH_CMD = "push"; // NOI18N
+    private static final String HG_PUSH_FORCE_CMD = "-f"; // NOI18N
+    private static final String HG_UNBUNDLE_CMD = "unbundle"; // NOI18N
+    private static final String HG_ROLLBACK_CMD = "rollback"; // NOI18N
+    private static final String HG_VERSION_CMD = "version"; // NOI18N
+    private static final String HG_INCOMING_CMD = "incoming"; // NOI18N
+    private static final String HG_OUTGOING_CMD = "outgoing"; // NOI18N
+    private static final String HG_VERBOSE_CMD = "-v"; // NOI18N
     
-    private static final String HG_MERGE_NEEDED_ERR = "(run 'hg heads' to see heads, 'hg merge' to merge)";
-    public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in ";
-    private static final String HG_MERGE_MULTIPLE_HEADS_ERR = "abort: repo has ";
-    private static final String HG_MERGE_UNCOMMITTED_ERR = "abort: outstanding uncommitted merges";
+    private static final String HG_MERGE_NEEDED_ERR = "(run 'hg heads' to see heads, 'hg merge' to merge)"; // NOI18N
+    public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in "; // NOI18N
+    private static final String HG_MERGE_MULTIPLE_HEADS_ERR = "abort: repo has "; // NOI18N
+    private static final String HG_MERGE_UNCOMMITTED_ERR = "abort: outstanding uncommitted merges"; // NOI18N
 
 
-    private static final String HG_NO_CHANGES_ERR = "no changes found";
-    private final static String HG_CREATE_NEW_BRANCH_ERR = "abort: push creates new remote branches!";
-    private final static String HG_HEADS_CREATED_ERR = "(+1 heads)";
+    private static final String HG_NO_CHANGES_ERR = "no changes found"; // NOI18N
+    private final static String HG_CREATE_NEW_BRANCH_ERR = "abort: push creates new remote branches!"; // NOI18N
+    private final static String HG_HEADS_CREATED_ERR = "(+1 heads)"; // NOI18N
     
-    private final static String HG_HEADS_CMD = "heads";
+    private final static String HG_HEADS_CMD = "heads"; // NOI18N
     
-    private static final String HG_NO_REPOSITORY_ERR = "abort: There is no Mercurial repository here";
-    private static final String HG_UPDATE_SPAN_BRANCHES_ERR = "abort: update spans branches";
-    private static final String HG_ALREADY_TRACKED_ERR = " already tracked!";
-    private static final String HG_NOT_TRACKED_ERR = " no tracked!";
-    private static final String HG_NOT_FOUND_ERR = "not found!";
-    private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message";
-    private static final String HG_UNABLE_EXECUTE_COMMAND_ERR = "unable to execute hg command";
-    private static final String HG_UNABLE_CLONE_ERR = "abort: destination ";
-    private static final String HG_NODE_NAME_ERR = "abort: node name or service name not known";
-    private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed";
-    private static final String HG_NO_ROLLBACK_ERR = "no rollback information available";
-    private static final String HG_NO_UPDATES_ERR = "0 files updated, 0 files merged, 0 files removed, 0 files unresolved";
+    private static final String HG_NO_REPOSITORY_ERR = "abort: There is no Mercurial repository here"; // NOI18N
+    private static final String HG_UPDATE_SPAN_BRANCHES_ERR = "abort: update spans branches"; // NOI18N
+    private static final String HG_ALREADY_TRACKED_ERR = " already tracked!"; // NOI18N
+    private static final String HG_NOT_TRACKED_ERR = " no tracked!"; // NOI18N
+    private static final String HG_NOT_FOUND_ERR = "not found!"; // NOI18N
+    private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message"; // NOI18N
+    private static final String HG_UNABLE_EXECUTE_COMMAND_ERR = "unable to execute hg command"; // NOI18N
+    private static final String HG_UNABLE_CLONE_ERR = "abort: destination "; // NOI18N
+    private static final String HG_NODE_NAME_ERR = "abort: node name or service name not known"; // NOI18N
+    private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
+    private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
+    private static final String HG_NO_UPDATES_ERR = "0 files updated, 0 files merged, 0 files removed, 0 files unresolved"; // NOI18N
     
-    private static final char HG_STATUS_CODE_MODIFIED = 'M' + ' ';   // STATUS_VERSIONED_MODIFIEDLOCALLY
-    private static final char HG_STATUS_CODE_ADDED = 'A' + ' ';      // STATUS_VERSIONED_ADDEDLOCALLY
-    private static final char HG_STATUS_CODE_REMOVED = 'R' + ' ';    // STATUS_VERSIONED_REMOVEDLOCALLY - still tracked, hg update will recover, hg commit
-    private static final char HG_STATUS_CODE_CLEAN = 'C' + ' ';      // STATUS_VERSIONED_UPTODATE
-    private static final char HG_STATUS_CODE_DELETED = '!' + ' ';    // STATUS_VERSIONED_DELETEDLOCALLY - still tracked, hg update will recover, hg commit no effect
-    private static final char HG_STATUS_CODE_NOTTRACKED = '?' + ' '; // STATUS_NOTVERSIONED_NEWLOCALLY - not tracked
-    private static final char HG_STATUS_CODE_IGNORED = 'I' + ' ';    // STATUS_NOTVERSIONED_EXCLUDE - not shown by default
-    private static final char HG_STATUS_CODE_CONFLICT = 'X' + ' ';    // STATUS_VERSIONED_CONFLICT - TODO when Hg status supports conflict markers
+    private static final char HG_STATUS_CODE_MODIFIED = 'M' + ' ';    // NOI18N // STATUS_VERSIONED_MODIFIEDLOCALLY
+    private static final char HG_STATUS_CODE_ADDED = 'A' + ' ';      // NOI18N // STATUS_VERSIONED_ADDEDLOCALLY
+    private static final char HG_STATUS_CODE_REMOVED = 'R' + ' ';   // NOI18N  // STATUS_VERSIONED_REMOVEDLOCALLY - still tracked, hg update will recover, hg commit
+    private static final char HG_STATUS_CODE_CLEAN = 'C' + ' ';     // NOI18N  // STATUS_VERSIONED_UPTODATE
+    private static final char HG_STATUS_CODE_DELETED = '!' + ' ';    // NOI18N // STATUS_VERSIONED_DELETEDLOCALLY - still tracked, hg update will recover, hg commit no effect
+    private static final char HG_STATUS_CODE_NOTTRACKED = '?' + ' '; // NOI18N // STATUS_NOTVERSIONED_NEWLOCALLY - not tracked
+    private static final char HG_STATUS_CODE_IGNORED = 'I' + ' ';     // NOI18N // STATUS_NOTVERSIONED_EXCLUDE - not shown by default
+    private static final char HG_STATUS_CODE_CONFLICT = 'X' + ' ';    // NOI18N // STATUS_VERSIONED_CONFLICT - TODO when Hg status supports conflict markers
     
-    private static final char HG_STATUS_CODE_ABORT = 'a' + 'b';   
-    public static final String HG_STR_CONFLICT_EXT = ".conflict~";
+    private static final char HG_STATUS_CODE_ABORT = 'a' + 'b';    // NOI18N
+    public static final String HG_STR_CONFLICT_EXT = ".conflict~"; // NOI18N
 
     /**
      * Merge working directory with the head revision
@@ -261,7 +261,7 @@ public class HgCommand {
     }
     
     /**
-     * Return the version of hg, e.g. "0.9.3".
+     * Return the version of hg, e.g. "0.9.3". // NOI18N
      *
      * @return String
      */
@@ -456,10 +456,10 @@ public class HgCommand {
             List<String> list = getHeadRevisions(repository);
 
             if (!list.isEmpty() && list.size() > 1){
-                Mercurial.LOG.log(Level.FINE, "isMergeRequired(): TRUE " + list);
+                Mercurial.LOG.log(Level.FINE, "isMergeRequired(): TRUE " + list); // NOI18N
                 return true;
             }else{
-                Mercurial.LOG.log(Level.FINE, "isMergeRequired(): FALSE " + list);
+                Mercurial.LOG.log(Level.FINE, "isMergeRequired(): FALSE " + list); // NOI18N
                 return false;
             }
         } catch (HgException e) {
@@ -793,7 +793,7 @@ public class HgCommand {
             if(f.isDirectory())
                 continue;
             if(HgUtils.isIgnored(f) || SharabilityQuery.getSharability(f) == SharabilityQuery.NOT_SHARABLE){
-                Mercurial.LOG.log(Level.FINE, "doAdd(addFiles): Ignored File not added: {0}", new Object[] {f.getAbsolutePath()});
+                Mercurial.LOG.log(Level.FINE, "doAdd(addFiles): Ignored File not added: {0}", new Object[] {f.getAbsolutePath()}); // NOI18N
                 continue;
             }
             command.add(f.getAbsolutePath());
@@ -850,7 +850,7 @@ public class HgCommand {
         if (file == null) return;
         if (file.isDirectory()) return;
         if(HgUtils.isIgnored(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE){
-            Mercurial.LOG.log(Level.FINE, "doAdd(): Ignored File not added: {0}",
+            Mercurial.LOG.log(Level.FINE, "doAdd(): Ignored File not added: {0}", // NOI18N
                     new Object[] {file.getAbsolutePath()});
             return;
         }
@@ -1165,7 +1165,7 @@ public class HgCommand {
             return new FileInformation(FileInformation.STATUS_UNKNOWN,null, false);
         
         if(SharabilityQuery.getSharability(new File(cwd)) == SharabilityQuery.NOT_SHARABLE){
-            Mercurial.LOG.log(Level.FINE, "getSingleStatus(): Excluded File - StatusLine: {0} Status: EXCLUDED  RepoPath:{2} cwd:{3}",
+            Mercurial.LOG.log(Level.FINE, "getSingleStatus(): Excluded File - StatusLine: {0} Status: EXCLUDED  RepoPath:{2} cwd:{3}", // NOI18N
                     new Object[] {list.get(0), filename, repository.getAbsolutePath(), cwd} );
             return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED,null, false);
         }
@@ -1181,11 +1181,11 @@ public class HgCommand {
                 
                     info =  new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY,
                             new FileStatus(new File(new File(cwd), filename), true), false);
-                    Mercurial.LOG.log(Level.FINE, "getSingleStatus() - Copied: Locally Added {0}, Copy Source {1}",
+                    Mercurial.LOG.log(Level.FINE, "getSingleStatus() - Copied: Locally Added {0}, Copy Source {1}", // NOI18N
                             new Object[] {list.get(0), list.get(1)} );
                 }
             } else {
-                Mercurial.LOG.log(Level.FINE, "getSingleStatus() - Second line empty: first line: {0}", list.get(0));
+                Mercurial.LOG.log(Level.FINE, "getSingleStatus() - Second line empty: first line: {0}", list.get(0)); // NOI18N
             }
         }
         
@@ -1193,12 +1193,12 @@ public class HgCommand {
         // TODO: remove this if Hg status supports Conflict marker
         if(existsConflictFile(cwd + File.separator + filename)){
             info =  new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, null, false);
-            Mercurial.LOG.log(Level.FINE, "getSingleStatus(): CONFLICT StatusLine: {0} Status: {1}  {2} RepoPath:{3} cwd:{4} CONFLICT {5}",
+            Mercurial.LOG.log(Level.FINE, "getSingleStatus(): CONFLICT StatusLine: {0} Status: {1}  {2} RepoPath:{3} cwd:{4} CONFLICT {5}", // NOI18N
                 new Object[] {list.get(0), info.getStatus(), filename, repository.getAbsolutePath(), cwd,
                 cwd + File.separator + filename + HgCommand.HG_STR_CONFLICT_EXT} );
         }
         
-        Mercurial.LOG.log(Level.FINE, "getSingleStatus(): StatusLine: {0} Status: {1}  {2} RepoPath:{3} cwd:{4}",
+        Mercurial.LOG.log(Level.FINE, "getSingleStatus(): StatusLine: {0} Status: {1}  {2} RepoPath:{3} cwd:{4}", // NOI18N
                 new Object[] {list.get(0), info.getStatus(), filename, repository.getAbsolutePath(), cwd} );
         return info;
     }
@@ -1348,7 +1348,7 @@ public class HgCommand {
         command.add(patchFile.getAbsolutePath());
 
         List<String> list = exec(command);
-        // The first line of output is "applying <filename>"
+        // The first line of output is "applying <filename>" // NOI18N
         if (!list.isEmpty() && list.size() > 1) {
             throw new HgException( list.get(1));
         }
@@ -1387,12 +1387,12 @@ public class HgCommand {
             // TODO: remove this if Hg status supports Conflict marker
             if (existsConflictFile(filePath.toString())) {
                 info = new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, null, false);
-                Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): CONFLICT repository path: {0} status flags: {1} status list {2} CONFLICT {3}", new Object[]{repository.getAbsolutePath(), statusFlags, list, filePath.toString() + HgCommand.HG_STR_CONFLICT_EXT});
+                Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): CONFLICT repository path: {0} status flags: {1} status list {2} CONFLICT {3}", new Object[]{repository.getAbsolutePath(), statusFlags, list, filePath.toString() + HgCommand.HG_STR_CONFLICT_EXT}); // NOI18N
             }
             repositoryFiles.put(new File(filePath.toString()), info);
         }
         
-        Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status list {2}",
+        Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status list {2}", // NOI18N
                 new Object[] {repository.getAbsolutePath(), statusFlags, list} );
         return repositoryFiles;
     }
@@ -1504,7 +1504,7 @@ public class HgCommand {
         List<String> list = new ArrayList<String>();
         BufferedReader input = null;
         try{
-            Mercurial.LOG.log(Level.FINE, "execEnv(): " + command);
+            Mercurial.LOG.log(Level.FINE, "execEnv(): " + command); // NOI18N
             Process proc;
             if(env != null && env.size() > 0){
                 proc = Runtime.getRuntime().exec(
@@ -1635,8 +1635,8 @@ public class HgCommand {
             File file = new File(path + HG_STR_CONFLICT_EXT);
 
             boolean success = file.createNewFile();
-            Mercurial.LOG.log(Level.FINE, "createConflictFile(): File: {0} {1}",
-                new Object[] {path + HG_STR_CONFLICT_EXT, success? "Created": "Not Created"} );
+            Mercurial.LOG.log(Level.FINE, "createConflictFile(): File: {0} {1}", // NOI18N
+                new Object[] {path + HG_STR_CONFLICT_EXT, success? "Created": "Not Created"} ); // NOI18N
         } catch (IOException e) {
         }
     }
@@ -1644,16 +1644,16 @@ public class HgCommand {
     public static void deleteConflictFile(String path) {
         boolean success = (new File(path + HG_STR_CONFLICT_EXT)).delete();
 
-        Mercurial.LOG.log(Level.FINE, "deleteConflictFile(): File: {0} {1}",
-                new Object[] {path + HG_STR_CONFLICT_EXT, success? "Deleted": "Not Deleted"} );
+        Mercurial.LOG.log(Level.FINE, "deleteConflictFile(): File: {0} {1}", // NOI18N
+                new Object[] {path + HG_STR_CONFLICT_EXT, success? "Deleted": "Not Deleted"} ); // NOI18N
     }
 
     public static boolean existsConflictFile(String path) {        
         File file = new File(path + HG_STR_CONFLICT_EXT);
         boolean bExists = file.canWrite();
         
-        Mercurial.LOG.log(Level.FINE, "existsConflictFile(): File: {0} {1}",
-                new Object[] {path + HG_STR_CONFLICT_EXT, bExists? "Exists": "Does Not Exist"} );
+        Mercurial.LOG.log(Level.FINE, "existsConflictFile(): File: {0} {1}", // NOI18N
+                new Object[] {path + HG_STR_CONFLICT_EXT, bExists? "Exists": "Does Not Exist"} ); // NOI18N
         return bExists;
     }
 

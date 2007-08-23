@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -84,17 +84,17 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     {
         ResourceBundle loc = NbBundle.getBundle(SyncTable.class);
         columnLabels.put(SyncFileNode.COLUMN_NAME_BRANCH, new String [] {
-                                          loc.getString("CTL_VersioningView_Column_Branch_Title"), 
-                                          loc.getString("CTL_VersioningView_Column_Branch_Desc")});
+                                          loc.getString("CTL_VersioningView_Column_Branch_Title"),  // NOI18N
+                                          loc.getString("CTL_VersioningView_Column_Branch_Desc")}); // NOI18N
         columnLabels.put(SyncFileNode.COLUMN_NAME_NAME, new String [] { 
-                                          loc.getString("CTL_VersioningView_Column_File_Title"), 
-                                          loc.getString("CTL_VersioningView_Column_File_Desc")});
+                                          loc.getString("CTL_VersioningView_Column_File_Title"),  // NOI18N
+                                          loc.getString("CTL_VersioningView_Column_File_Desc")}); // NOI18N
         columnLabels.put(SyncFileNode.COLUMN_NAME_STATUS, new String [] { 
-                                          loc.getString("CTL_VersioningView_Column_Status_Title"), 
-                                          loc.getString("CTL_VersioningView_Column_Status_Desc")});
+                                          loc.getString("CTL_VersioningView_Column_Status_Title"),  // NOI18N
+                                          loc.getString("CTL_VersioningView_Column_Status_Desc")}); // NOI18N
         columnLabels.put(SyncFileNode.COLUMN_NAME_PATH, new String [] { 
-                                          loc.getString("CTL_VersioningView_Column_Path_Title"), 
-                                          loc.getString("CTL_VersioningView_Column_Path_Desc")});
+                                          loc.getString("CTL_VersioningView_Column_Path_Title"),  // NOI18N
+                                          loc.getString("CTL_VersioningView_Column_Path_Desc")}); // NOI18N
     }
 
     private static final Comparator NodeComparator = new Comparator() {
@@ -142,8 +142,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             SyncFileNode.COLUMN_NAME_PATH}
         );
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction");
-        table.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
+                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
+        table.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { // NOI18N
             public void actionPerformed(ActionEvent e) {
                 showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(table));
             }
@@ -321,9 +321,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 
         menu.add(new JSeparator());
 
-        AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context);
+        AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context); // NOI18N
         if (tempA.visible(null)) {
-            tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_HideAnnotations"), context);
+            tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_HideAnnotations"), context); // NOI18N
         }
         item = menu.add(tempA);
         Mnemonics.setLocalizedText(item, item.getText());
@@ -346,9 +346,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         }
         Mnemonics.setLocalizedText(item, item.getText());
 
-        ExcludeFromCommitAction exclude = new ExcludeFromCommitAction(loc.getString("CTL_PopupMenuItem_IncludeInCommit"), context);
+        ExcludeFromCommitAction exclude = new ExcludeFromCommitAction(loc.getString("CTL_PopupMenuItem_IncludeInCommit"), context); // NOI18N
         if (exclude.getActionStatus(null) != exclude.INCLUDING)
-            exclude = new ExcludeFromCommitAction(loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context);
+            exclude = new ExcludeFromCommitAction(loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context); // NOI18N
         item = menu.add(exclude);
         Mnemonics.setLocalizedText(item, item.getText());
 /*

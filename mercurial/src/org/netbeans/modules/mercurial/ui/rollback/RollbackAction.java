@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -74,27 +74,27 @@ public class RollbackAction extends AbstractAction {
                         //HgUtils.clearOutputMercurialTab();
                         HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(RollbackAction.class,
-                                    "MSG_ROLLBACK_TITLE"));
+                                    "MSG_ROLLBACK_TITLE")); // NOI18N
                         HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(RollbackAction.class,
-                                    "MSG_ROLLBACK_TITLE_SEP"));
+                                    "MSG_ROLLBACK_TITLE_SEP")); // NOI18N
                         
                         if(HgCommand.isNoRollbackPossible(list.get(0))){
                             HgUtils.outputMercurialTab(
                                     NbBundle.getMessage(RollbackAction.class,
-                                    "MSG_NO_ROLLBACK"));                           
+                                    "MSG_NO_ROLLBACK"));     // NOI18N                       
                         }else{
                             HgUtils.outputMercurialTab(list.get(0));
                             if (HgCommand.hasHistory(root)) {
                                 int response = JOptionPane.showOptionDialog(null,
-                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_CONFIRM_QUERY") , 
-                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_CONFIRM"),
+                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_CONFIRM_QUERY") ,  // NOI18N
+                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_CONFIRM"), // NOI18N
                                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,null, null, null);
                             
                                 if( response == JOptionPane.YES_OPTION){
                                     HgUtils.outputMercurialTab(
                                             NbBundle.getMessage(RollbackAction.class,
-                                            "MSG_ROLLBACK_FORCE_UPDATE", root.getAbsolutePath()));
+                                            "MSG_ROLLBACK_FORCE_UPDATE", root.getAbsolutePath())); // NOI18N
                                     list = HgCommand.doUpdateAll(root, true, null);
                                     
                                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();        
@@ -110,16 +110,16 @@ public class RollbackAction extends AbstractAction {
                                 }
                             } else {
                                 JOptionPane.showMessageDialog(null,
-                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_MESSAGE_NOHISTORY") , 
-                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_MESSAGE"),
+                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_MESSAGE_NOHISTORY") ,  // NOI18N
+                                        NbBundle.getMessage(RollbackAction.class,"MSG_ROLLBACK_MESSAGE"), // NOI18N
                                         JOptionPane.INFORMATION_MESSAGE,null);
                             
                             }
                         }
                         HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(RollbackAction.class,
-                                    "MSG_ROLLBACK_INFO"));
-                        HgUtils.outputMercurialTab("");
+                                    "MSG_ROLLBACK_INFO")); // NOI18N
+                        HgUtils.outputMercurialTab(""); // NOI18N
                     }
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);

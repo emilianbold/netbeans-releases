@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -61,7 +61,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
     public String getSelectedRevision() {
         int index = revisionsComboBox.getSelectedIndex();
         String revStr = (String) revisionsComboBox.getSelectedItem();
-        revStr = revStr.substring(0, revStr.indexOf(" "));
+        revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
         return revStr;
     }
 
@@ -131,7 +131,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         int size;
         if( targetRevsList == null){
             size = 0;
-            targetRevsSet.add(NbBundle.getMessage(RevertModificationsPanel.class, "MSG_Revision_Default"));
+            targetRevsSet.add(NbBundle.getMessage(RevertModificationsPanel.class, "MSG_Revision_Default")); // NOI18N
         }else{
             size = targetRevsList.size();
             int i = 0 ;

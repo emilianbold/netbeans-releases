@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -123,7 +123,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         int size;
         if( targetRevsList == null){
             size = 0;
-            targetRevsSet.add(NbBundle.getMessage(VersioningPanel.class, "MSG_Update_Target_Default"));
+            targetRevsSet.add(NbBundle.getMessage(VersioningPanel.class, "MSG_Update_Target_Default")); // NOI18N
         }else{
             size = targetRevsList.size();
             int i = 0 ;
@@ -136,7 +136,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         // TODO: need to add action handle so when Otehr is selected a 
         // dialog is brought up to select revision
         //if(size > HG_UPDATE_TARGET_LIMIT){
-        //    targetRevsSet.add(NbBundle.getMessage(VersioningPanel.class, "MSG_Target_Other"));
+        //    targetRevsSet.add(NbBundle.getMessage(VersioningPanel.class, "MSG_Target_Other")); // NOI18N
         //}
         
         ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(targetRevsSet));                        
@@ -151,9 +151,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         if (evt.getPropertyName() == FileStatusCache.PROP_FILE_STATUS_CHANGED) {
             FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) evt.getNewValue();
-            Mercurial.LOG.log(Level.FINE, "Status.propertyChange(): {0} file:  {1}", new Object [] { parentTopComponent.getContentTitle(), changedEvent.getFile()} );
-            //Diagnostics.println("Status.propertyChange(): " +
-            //    parentTopComponent.getContentTitle() + " file: " + changedEvent.getFile());
+            Mercurial.LOG.log(Level.FINE, "Status.propertyChange(): {0} file:  {1}", new Object [] { parentTopComponent.getContentTitle(), changedEvent.getFile()} ); // NOI18N
+            //Diagnostics.println("Status.propertyChange(): " + // NOI18N
+            //    parentTopComponent.getContentTitle() + " file: " + changedEvent.getFile()); // NOI18N
             if (!affectsView(evt)) return;
             reScheduleRefresh(1000);
         } 
@@ -319,17 +319,17 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             
             if (rev > -1) {
                 branchInfo = org.openide.util.NbBundle.getMessage(VersioningPanel.class,
-                        "CTL_VersioningView_BranchInfo",
+                        "CTL_VersioningView_BranchInfo", // NOI18N
                         rev,
                         HgCommand.getBranchShortChangesetHash(root));
             } else {
                 branchInfo = org.openide.util.NbBundle.getMessage(VersioningPanel.class,
-                        "CTL_VersioningView_BranchInfoNotCommitted");
+                        "CTL_VersioningView_BranchInfoNotCommitted"); // NOI18N
             }
         } catch (HgException ex) {
             Exceptions.printStackTrace(ex);
         }
-        String repositoryStatus = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_StatusTitle", branchInfo);
+        String repositoryStatus = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_StatusTitle", branchInfo); // NOI18N
         if( !repositoryStatus.equals(statusLabel.getText())){
             statusLabel.setText(repositoryStatus);
         }
@@ -355,7 +355,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
     
     /**
-     * Performs the "cvs commit" command on all diplayed roots plus "cvs add" for files that are not yet added.
+     * Performs the "cvs commit" command on all diplayed roots plus "cvs add" for files that are not yet added. // NOI18N
      */
     private void onCommitAction() {
         //TODO: Status Commit Action
@@ -364,7 +364,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
     
     /**
-     * Performs the "cvs update" command on all diplayed roots.
+     * Performs the "cvs update" command on all diplayed roots. // NOI18N
      */
     private void onUpdateAction() {
         int index = updateTargetComboBox.getSelectedIndex();
@@ -372,7 +372,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             UpdateAction.update(context, null);
         }else{
             String revStr = (String) updateTargetComboBox.getSelectedItem();
-            revStr = revStr.substring(0, revStr.indexOf(" "));
+            revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
             UpdateAction.update(context, revStr);
         }
         parentTopComponent.contentRefreshed();
@@ -380,7 +380,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     
     /**
      * Refreshes statuses of all files in the view. It does
-     * that by issuing the "hg status -mardui" command, updating the cache
+     * that by issuing the "hg status -mardui" command, updating the cache // NOI18N
      * and refreshing file nodes.
      */
     private void onRefreshAction() {
@@ -511,7 +511,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * (e.g. strange layouting panel borders on GTK+).
      *
      * <p>It sets authoritatively component height and takes
-     * "prefered" width from components itself.
+     * "prefered" width from components itself. // NOI18N
      *
      */
     private class ToolbarLayout implements LayoutManager {

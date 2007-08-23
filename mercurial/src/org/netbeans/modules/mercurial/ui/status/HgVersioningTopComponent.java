@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -47,7 +47,7 @@ public class HgVersioningTopComponent extends TopComponent {
     private String                  contentTitle;
     private String                  branchTitle;
     private long                    lastUpdateTimestamp;
-    private static final String PREFERRED_ID = "hgversioning";
+    private static final String PREFERRED_ID = "hgversioning"; // NOI18N
     
     private static HgVersioningTopComponent instance;
 
@@ -57,7 +57,7 @@ public class HgVersioningTopComponent extends TopComponent {
         setName(NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
         setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/mercurial/resources/icons/versioning-view.png"));  // NOI18N
         setLayout(new BorderLayout());
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
         syncPanel = new VersioningPanel(this);
         add(syncPanel);
     }
@@ -90,7 +90,7 @@ public class HgVersioningTopComponent extends TopComponent {
      * Sets the 'content' portion of Versioning component title.
      * Title pattern: Versioning[ - contentTitle[ - branchTitle]] (10 minutes ago)
      * 
-     * @param contentTitle a new content title, e.g. "2 projects"
+     * @param contentTitle a new content title, e.g. "2 projects" // NOI18N
      */ 
     public void setContentTitle(String contentTitle) {
         this.contentTitle = contentTitle;
@@ -101,7 +101,7 @@ public class HgVersioningTopComponent extends TopComponent {
      * Sets the 'branch' portion of Versioning component title.
      * Title pattern: Versioning[ - contentTitle[ - branchTitle]] (10 minutes ago)
      * 
-     * @param branchTitle a new content title, e.g. "release40" branch
+     * @param branchTitle a new content title, e.g. "release40" branch // NOI18N
      */ 
     void setBranchTitle(String branchTitle) {
         this.branchTitle = branchTitle;
@@ -151,15 +151,15 @@ public class HgVersioningTopComponent extends TopComponent {
     public static synchronized HgVersioningTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-            Mercurial.LOG.log(Level.FINE, "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+            Mercurial.LOG.log(Level.FINE, "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); // NOI18N
             return getDefault();
         }
         if (win instanceof HgVersioningTopComponent) {
             return (HgVersioningTopComponent)win;
         }
         Mercurial.LOG.log(Level.FINE, 
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID + // NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior."); // NOI18N
         return getDefault();
     }
 
@@ -208,7 +208,7 @@ public class HgVersioningTopComponent extends TopComponent {
             setCursor(Cursor.getDefaultCursor());
             context = ctx;
             //syncPanel.setContext(ctx);
-            setBranchTitle("current"); // TODO: setContext() get Branch title - hg branch
+            setBranchTitle("current"); // TODO: setContext() get Branch title - hg branch  // NOI18N
             refreshContent();
         }
         setToolTipText(getContextFilesList(ctx, NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title"))); // NOI18N            

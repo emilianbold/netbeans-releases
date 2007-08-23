@@ -136,7 +136,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Panel, Prope
     public void readSettings(Object settings) {}
     public void storeSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
-            ((WizardDescriptor) settings).putProperty("repository", repository.getSelectedRC().getUrl());
+            ((WizardDescriptor) settings).putProperty("repository", repository.getSelectedRC().getUrl()); // NOI18N
         }
     }
 }

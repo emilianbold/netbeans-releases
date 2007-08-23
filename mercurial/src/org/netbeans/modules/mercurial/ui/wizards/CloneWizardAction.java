@@ -50,8 +50,8 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-            final String repository = (String) wizardDescriptor.getProperty("repository");
-            final String directory = (String) wizardDescriptor.getProperty("directory");
+            final String repository = (String) wizardDescriptor.getProperty("repository"); // NOI18N
+            final String directory = (String) wizardDescriptor.getProperty("directory"); // NOI18N
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor();
             HgProgressSupport support = new HgProgressSupport() {
                 public void perform() {
@@ -61,19 +61,19 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
                             //HgUtils.createIgnored(directory);
                             HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(CloneAction.class,
-                                    "MSG_CLONE_TITLE"));
+                                    "MSG_CLONE_TITLE")); // NOI18N
                             HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(CloneAction.class,
-                                    "MSG_CLONE_TITLE_SEP"));
+                                    "MSG_CLONE_TITLE_SEP")); // NOI18N
                             HgUtils.outputMercurialTab(list);
 
                             HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(CloneAction.class,
-                                    "MSG_EXTERNAL_CLONE_FROM", repository));
+                                    "MSG_EXTERNAL_CLONE_FROM", repository)); // NOI18N
                             HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(CloneAction.class,
-                                    "MSG_EXTERNAL_CLONE_TO", directory));
-                            HgUtils.outputMercurialTab("");
+                                    "MSG_EXTERNAL_CLONE_TO", directory)); // NOI18N
+                            HgUtils.outputMercurialTab(""); // NOI18N
                         }
                     } catch (HgException ex) {
                         NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -117,15 +117,15 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
+                    jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
                 }
             }
         }
@@ -133,7 +133,7 @@ public final class CloneWizardAction extends CallableSystemAction implements Cha
     }
     
     public String getName() {
-        return "Start Sample Wizard";
+        return "Start Sample Wizard"; // NOI18N
     }
     
     public String iconResource() {

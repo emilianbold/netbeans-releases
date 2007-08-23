@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -67,14 +67,14 @@ import org.netbeans.api.project.ProjectManager;
  * @author jrice
  */
 public class HgUtils {    
-    private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.)hg(\\" + File.separatorChar + ".*|$)");
+    private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.)hg(\\" + File.separatorChar + ".*|$)"); // NOI18N
     
     // IGNORE SUPPORT HG: following file patterns are added to {Hg repos}/.hgignore and Hg will ignore any files
-    // that match these patterns, reporting "I"status for them
-    private static final String [] HG_IGNORE_FILES = { ".hgignore", "*.orig"};
+    // that match these patterns, reporting "I"status for them // NOI18N
+    private static final String [] HG_IGNORE_FILES = { ".hgignore", "*.orig"}; // NOI18N
     
-    private static final String HG_IGNORE_FILE = ".hgignore";
-    private static final String HG_IGNORE_PATTERN = "syntax: glob\n";
+    private static final String HG_IGNORE_FILE = ".hgignore"; // NOI18N
+    private static final String HG_IGNORE_PATTERN = "syntax: glob\n"; // NOI18N
 
 
     /**
@@ -162,16 +162,16 @@ public class HgUtils {
                     new OutputStreamWriter(new FileOutputStream(ignore)));
             fileWriter.write(HG_IGNORE_PATTERN);
             for (String name : HG_IGNORE_FILES) {
-                fileWriter.write(name + "\n");
+                fileWriter.write(name + "\n"); // NOI18N
             }
         } catch (IOException ex) {
-            Mercurial.LOG.log(Level.FINE, "createIgnored(): File {0} - {1}", 
+            Mercurial.LOG.log(Level.FINE, "createIgnored(): File {0} - {1}",  // NOI18N
                     new Object[] {ignore.getAbsolutePath(), ex.toString()});
         }finally {
             try {
                 fileWriter.close();
             } catch (IOException ex) {
-                Mercurial.LOG.log(Level.FINE, "createIgnored(): File {0} - {1}", 
+                Mercurial.LOG.log(Level.FINE, "createIgnored(): File {0} - {1}",  // NOI18N
                         new Object[] {ignore.getAbsolutePath(), ex.toString()});
             }
         }
@@ -188,7 +188,7 @@ public class HgUtils {
         try {
             r = new BufferedReader(new FileReader(hgIgnore));
             while ((s = r.readLine()) != null) {
-                System.err.println("readIgnoreEntries: " + s);
+                System.err.println("readIgnoreEntries: " + s); // NOI18N
                 entries.add(s.trim());
             }
         } finally {
