@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -311,7 +311,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
     
     /**
-     * Registers "close" popup menu, tooltip manager
+     * Registers "close" popup menu, tooltip manager // NOI18N
      * and repaint on documet change manager.
      */
     public void addNotify() {
@@ -346,7 +346,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         final File file = getCurrentFile();
         
-        final JMenuItem diffMenu = new JMenuItem(loc.getString("CTL_MenuItem_DiffToRevision"));
+        final JMenuItem diffMenu = new JMenuItem(loc.getString("CTL_MenuItem_DiffToRevision")); // NOI18N
         diffMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (recentRevision != null) {
@@ -358,7 +358,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         });
         popupMenu.add(diffMenu);
 
-        JMenuItem rollbackMenu = new JMenuItem(loc.getString("CTL_MenuItem_Revert"));
+        JMenuItem rollbackMenu = new JMenuItem(loc.getString("CTL_MenuItem_Revert")); // NOI18N
         rollbackMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 revert(file, recentRevision);
@@ -368,7 +368,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         rollbackMenu.setEnabled(recentRevisionCanBeRolledBack);
 
         JMenuItem menu;
-        menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations"));
+        menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations")); // NOI18N
         menu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 hideBar();
@@ -381,7 +381,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         rollbackMenu.setVisible(false);
         if (recentRevision != null) {
             if (getPreviousRevision(recentRevision) != null) {
-                String format = loc.getString("CTL_MenuItem_DiffToRevision");
+                String format = loc.getString("CTL_MenuItem_DiffToRevision"); // NOI18N
                 diffMenu.setText(MessageFormat.format(format, new Object [] { recentRevision, getPreviousRevision(recentRevision) }));
                 diffMenu.setVisible(true);
                 rollbackMenu.setVisible(true);
@@ -456,9 +456,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     public void run() {
         // get resource bundle
         ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
-        // give status bar "wait" indication
+        // give status bar "wait" indication // NOI18N
         StatusBar statusBar = editorUI.getStatusBar();
-        recentStatusMessage = loc.getString("CTL_StatusBar_WaitFetchAnnotation");
+        recentStatusMessage = loc.getString("CTL_StatusBar_WaitFetchAnnotation"); // NOI18N
         statusBar.setText(StatusBar.CELL_MAIN, recentStatusMessage);
         
         recentRevisionCanBeRolledBack = false;

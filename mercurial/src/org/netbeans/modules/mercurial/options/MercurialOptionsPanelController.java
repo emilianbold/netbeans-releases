@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -62,7 +62,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         panel.execPathBrowseButton.addActionListener(this);
         panel.exportFilenameBrowseButton.addActionListener(this);
 
-        String tooltip = NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.annotationTextField.toolTipText", MercurialAnnotator.LABELS);
+        String tooltip = NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.annotationTextField.toolTipText", MercurialAnnotator.LABELS); // NOI18N
 
         panel.annotationTextField.setToolTipText(tooltip);
         panel.addButton.addActionListener(this);
@@ -98,7 +98,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
     }
     
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return null; // new HelpCtx("...ID") if you have a help set  // NOI18N
     }
     
     public JComponent getComponent(Lookup masterLookup) {
@@ -139,16 +139,16 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         String username = panel.userNameTextField.getText();
         if (!HgModuleConfig.getDefault().isUserNameValid(username)) {
             JOptionPane.showMessageDialog(null,
-                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_USER_NAME_TEXT"),
-                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_FIELD_TITLE"),
+                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_USER_NAME_TEXT"), // NOI18N
+                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
                                           JOptionPane.WARNING_MESSAGE);
             return false;
         }
         String execpath = panel.executablePathTextField.getText();
         if (!HgModuleConfig.getDefault().isExecPathValid(execpath)) {
             JOptionPane.showMessageDialog(null,
-                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_EXEC_PATH_TEXT"),
-                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_FIELD_TITLE"),
+                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_EXEC_PATH_TEXT"), // NOI18N
+                                          NbBundle.getMessage(MercurialPanel.class, "MSG_WARN_FIELD_TITLE"), // NOI18N
                                           JOptionPane.WARNING_MESSAGE);
             return false;
         }
@@ -241,14 +241,14 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         for (int i = 0; i < MercurialAnnotator.LABELS.length; i++) {   
             LabelVariable variable = new LabelVariable(
                     MercurialAnnotator.LABELS[i], 
-                    "{" + MercurialAnnotator.LABELS[i] + "} - " + NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.label." + MercurialAnnotator.LABELS[i])
+                    "{" + MercurialAnnotator.LABELS[i] + "} - " + NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.label." + MercurialAnnotator.LABELS[i]) // NOI18N
             );
             variables.add(variable);   
         }       
         labelsPanel.labelsList.setListData(variables.toArray(new LabelVariable[variables.size()]));                
                 
-        String title = NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.labelVariables.title");
-        String acsd = NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.labelVariables.acsd");
+        String title = NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.labelVariables.title"); // NOI18N
+        String acsd = NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.labelVariables.acsd"); // NOI18N
 
         DialogDescriptor dialogDescriptor = new DialogDescriptor(labelsPanel, title);
         dialogDescriptor.setModal(true);
@@ -271,9 +271,9 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
             
             Object[] selection = (Object[])labelsPanel.labelsList.getSelectedValues();
             
-            String variable = "";
+            String variable = ""; // NOI18N
             for (int i = 0; i < selection.length; i++) {
-                variable += "{" + ((LabelVariable)selection[i]).getVariable() + "}";
+                variable += "{" + ((LabelVariable)selection[i]).getVariable() + "}"; // NOI18N
             }
 
             String annotation = panel.annotationTextField.getText();

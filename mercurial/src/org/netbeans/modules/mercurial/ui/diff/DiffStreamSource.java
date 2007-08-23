@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -102,12 +102,12 @@ public class DiffStreamSource extends StreamSource {
         if (baseFile.isDirectory()) {
             // XXX return directory listing?
             // could be nice te return sorted directory content
-            // such as vim if user "edits" directory
+            // such as vim if user "edits" directory // NOI18N
             return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "LBL_Diff_NoFolderDiff")); // NOI18N
         }
         init();
         if (revision == null || remoteFile == null) return null;
-        if (!mimeType.startsWith("text/")) {
+        if (!mimeType.startsWith("text/")) { // NOI18N
             return null;
         } else {
             return Utils.createReader(remoteFile);  

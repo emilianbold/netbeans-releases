@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -84,10 +84,10 @@ public class PushAction extends AbstractAction {
                     if(list != null && !list.isEmpty()){                      
                         HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(PushAction.class,
-                                    "MSG_PUSH_TITLE"));
+                                    "MSG_PUSH_TITLE")); // NOI18N
                         HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(PushAction.class,
-                                    "MSG_PUSH_TITLE_SEP"));
+                                    "MSG_PUSH_TITLE_SEP")); // NOI18N
                         boolean bNoChanges = HgCommand.isNoChanges(list.get(list.size()-1));
                         bMergeNeeded = HgCommand.isHeadsCreated(list.get(list.size()-1));
                         
@@ -97,15 +97,15 @@ public class PushAction extends AbstractAction {
                             io.select();
                             OutputWriter out = io.getOut();
                             OutputWriter outRed = io.getErr();
-                            outRed.println(NbBundle.getMessage(PushAction.class,"MSG_CHANGESETS_TO_PUSH"));
+                            outRed.println(NbBundle.getMessage(PushAction.class,"MSG_CHANGESETS_TO_PUSH")); // NOI18N
                             for( String s : listOutgoing){
                                 if (s.indexOf(Mercurial.CHANGESET_STR) == 0){
                                     outRed.println(s);
-                                }else if( !s.equals("")){
+                                }else if( !s.equals("")){ // NOI18N
                                     out.println(s);
                                 }
                             }
-                            out.println("");
+                            out.println(""); // NOI18N
                             out.close();
                             outRed.close();
                         }
@@ -114,30 +114,30 @@ public class PushAction extends AbstractAction {
                         
                         HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(PushAction.class,
-                                    "MSG_PUSH_TO", toPrjName, pushPath));
+                                    "MSG_PUSH_TO", toPrjName, pushPath)); // NOI18N
                         HgUtils.outputMercurialTabInRed(
                                     NbBundle.getMessage(PushAction.class,
-                                    "MSG_PUSH_FROM", fromPrjName, root));
+                                    "MSG_PUSH_FROM", fromPrjName, root)); // NOI18N
                                                 
                         // Push does not do an Update of the target Working Dir
                         if(!bMergeNeeded && !bNoChanges){
-                            HgUtils.outputMercurialTab("");
+                            HgUtils.outputMercurialTab(""); // NOI18N
                             HgUtils.outputMercurialTabInRed(
                                         NbBundle.getMessage(PushAction.class,
-                                        "MSG_PUSH_UPDATE_NEEDED", toPrjName, pushPath));
+                                        "MSG_PUSH_UPDATE_NEEDED", toPrjName, pushPath)); // NOI18N
                             list = HgCommand.doUpdateAll(pushPath, false, null);                    
                             HgUtils.outputMercurialTab(list);
                         }     
                         
                         if (bMergeNeeded){
                             // TODO: Handle Merge
-                            HgUtils.outputMercurialTab("");
+                            HgUtils.outputMercurialTab(""); // NOI18N
                             List<String> headRevList = HgCommand.getHeadRevisions(root);
                             if (headRevList != null && headRevList.size() > 1) {
                                 MergeAction.printMergeWarning(headRevList);
                             }
                         }
-                        HgUtils.outputMercurialTab("");
+                        HgUtils.outputMercurialTab(""); // NOI18N
                      }
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);

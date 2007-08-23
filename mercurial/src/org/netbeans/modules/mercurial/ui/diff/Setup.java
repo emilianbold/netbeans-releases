@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -113,7 +113,7 @@ public final class Setup {
             File repository = HgUtils.getRootFile(HgUtils.getCurrentContext(null));
             changeSetId = HgCommand.getLastChangeSetId(repository, baseFile);
             if (changeSetId == null) {
-                changeSetId = org.openide.util.NbBundle.getMessage(org.netbeans.modules.mercurial.ui.diff.Setup.class, "CTL_Setup_NotCommitted");
+                changeSetId = org.openide.util.NbBundle.getMessage(org.netbeans.modules.mercurial.ui.diff.Setup.class, "CTL_Setup_NotCommitted"); // NOI18N
             }
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -131,17 +131,17 @@ public final class Setup {
                 | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
                     firstRevision = REVISION_BASE;
 
-                    firstTitle = loc.getString("MSG_DiffPanel_LocalNew");
+                    firstTitle = loc.getString("MSG_DiffPanel_LocalNew"); // NOI18N
                 } else if (match (status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
                     firstRevision = null;
                     firstTitle = NbBundle.getMessage(Setup.class, "LBL_Diff_NoLocalFile"); // NOI18N
                 } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY
                 | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
                     firstRevision = REVISION_BASE;
-                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { changeSetId });
+                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { changeSetId }); // NOI18N
                 } else {
                     firstRevision = REVISION_BASE;
-                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { changeSetId });
+                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { changeSetId }); // NOI18N
                 }
 
                 break;
@@ -160,21 +160,21 @@ public final class Setup {
 
                 if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
                     secondRevision = REVISION_CURRENT;
-                    secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalConflict"), new Object [] { changeSetId });
+                    secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalConflict"), new Object [] { changeSetId }); // NOI18N
                 } else if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY
                 | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
                     secondRevision = REVISION_CURRENT;
-                    secondTitle = loc.getString("MSG_DiffPanel_LocalNew");
+                    secondTitle = loc.getString("MSG_DiffPanel_LocalNew"); // NOI18N
                 } else if (match (status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
                     secondRevision = null;
                     secondTitle = NbBundle.getMessage(Setup.class, "LBL_Diff_NoLocalFile"); // NOI18N
                 } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY
                 | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
                     secondRevision = null;
-                    secondTitle = loc.getString("MSG_DiffPanel_LocalDeleted");
+                    secondTitle = loc.getString("MSG_DiffPanel_LocalDeleted"); // NOI18N
                 } else {
                     secondRevision = REVISION_CURRENT;
-                    secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalModified"), new Object [] { changeSetId });
+                    secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalModified"), new Object [] { changeSetId }); // NOI18N
                 }
                 break;
 

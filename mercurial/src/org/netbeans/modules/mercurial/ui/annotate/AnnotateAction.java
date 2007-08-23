@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -115,15 +115,15 @@ public class AnnotateAction extends AbstractAction {
                 public void perform() {
                     HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(AnnotateAction.class,
-                            "MSG_ANNOTATE_TITLE"));
+                            "MSG_ANNOTATE_TITLE")); // NOI18N
                     HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(AnnotateAction.class,
-                            "MSG_ANNOTATE_TITLE_SEP"));
+                            "MSG_ANNOTATE_TITLE_SEP")); // NOI18N
                     computeAnnotations(repository, file, this, ab);
-                    HgUtils.outputMercurialTab("\t" + file.getAbsolutePath());
+                    HgUtils.outputMercurialTab("\t" + file.getAbsolutePath()); // NOI18N
                     HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(AnnotateAction.class,
-                            "MSG_ANNOTATE_DONE"));
+                            "MSG_ANNOTATE_DONE")); // NOI18N
                 }
             };
             support.start(rp, repository.getAbsolutePath(), NbBundle.getMessage(AnnotateAction.class, "MSG_Annotation_Progress")); // NOI18N
@@ -195,17 +195,17 @@ public class AnnotateAction extends AbstractAction {
                 try {
                     log.setRevision(Long.parseLong(line));
                 } catch (java.lang.Exception e) {
-                    Mercurial.LOG.log(Level.SEVERE, "Caught Exception while parsing revision", e);
+                    Mercurial.LOG.log(Level.SEVERE, "Caught Exception while parsing revision", e); // NOI18N
                 }
             } else if (i % 4 == 1) {
                 log.setCommitMessage(line);
             } else if (i % 4 == 2) {
-                String splits[] = line.split(" ", 2);
+                String splits[] = line.split(" ", 2); // NOI18N
                 try {
                     Date date = new Date(Long.parseLong(splits[0]) * 1000);
                     log.setDate(new Date(Long.parseLong(splits[0].trim()) * 1000));
                 } catch (java.lang.Exception e) {
-                    Mercurial.LOG.log(Level.SEVERE, "Caught Exception while parsing date", e);
+                    Mercurial.LOG.log(Level.SEVERE, "Caught Exception while parsing date", e); // NOI18N
                 }
                 log.setTimeZoneOffset(splits[1]);
             } else if (i % 4 == 3) {
@@ -223,8 +223,8 @@ public class AnnotateAction extends AbstractAction {
         int n = annotations.size();
         int i = 0;
         for (String line : annotations) {
-            int endAuthor = line.indexOf(" ");
-            int endRevision = line.indexOf(":", endAuthor + 1);
+            int endAuthor = line.indexOf(" "); // NOI18N
+            int endRevision = line.indexOf(":", endAuthor + 1); // NOI18N
             lines[i] = new AnnotateLine();
             lines[i].setAuthor(line.substring(0, endAuthor));
             lines[i].setContent(line.substring(endRevision + 2));

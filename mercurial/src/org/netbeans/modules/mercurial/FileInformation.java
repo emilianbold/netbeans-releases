@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -250,41 +250,41 @@ public class FileInformation implements Serializable {
      * @param displayStatuses statuses bitmask
      *
      * @return status name, for multistatuses prefers local
-     * status name, for masked <tt>""</tt>.
+     * status name, for masked <tt>""</tt>. // NOI18N
      */
     public String getStatusText(int displayStatuses) {
         int status = this.status & displayStatuses;
         ResourceBundle loc = NbBundle.getBundle(FileInformation.class);
         if (status == FileInformation.STATUS_UNKNOWN) {
-            return loc.getString("CTL_FileInfoStatus_Unknown");            
+            return loc.getString("CTL_FileInfoStatus_Unknown");    // NOI18N         
         } else if (FileInformation.match(status, FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
-            return loc.getString("CTL_FileInfoStatus_Excluded");
+            return loc.getString("CTL_FileInfoStatus_Excluded"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
-            return loc.getString("CTL_FileInfoStatus_NewLocally");
+            return loc.getString("CTL_FileInfoStatus_NewLocally"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             if (entry != null && entry.isCopied()) {
-                return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied");
+                return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied"); // NOI18N
             }
-            return loc.getString("CTL_FileInfoStatus_AddedLocally");
+            return loc.getString("CTL_FileInfoStatus_AddedLocally"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_UPTODATE)) {
-            return loc.getString("CTL_FileInfoStatus_UpToDate");
+            return loc.getString("CTL_FileInfoStatus_UpToDate"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
-            return loc.getString("CTL_FileInfoStatus_Conflict");
+            return loc.getString("CTL_FileInfoStatus_Conflict"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_MERGE)) {
-            return loc.getString("CTL_FileInfoStatus_Merge");            
+            return loc.getString("CTL_FileInfoStatus_Merge");          // NOI18N   
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
-            return loc.getString("CTL_FileInfoStatus_DeletedLocally");
+            return loc.getString("CTL_FileInfoStatus_DeletedLocally"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
-            return loc.getString("CTL_FileInfoStatus_RemovedLocally");
+            return loc.getString("CTL_FileInfoStatus_RemovedLocally"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
-            return loc.getString("CTL_FileInfoStatus_ModifiedLocally");
+            return loc.getString("CTL_FileInfoStatus_ModifiedLocally"); // NOI18N
 
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
-            return loc.getString("CTL_FileInfoStatus_NewInRepository");
+            return loc.getString("CTL_FileInfoStatus_NewInRepository"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY)) {
-            return loc.getString("CTL_FileInfoStatus_ModifiedInRepository");
+            return loc.getString("CTL_FileInfoStatus_ModifiedInRepository"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY)) {
-            return loc.getString("CTL_FileInfoStatus_RemovedInRepository");
+            return loc.getString("CTL_FileInfoStatus_RemovedInRepository"); // NOI18N
         } else {
             return "";   // NOI18N                     
         }
@@ -292,27 +292,27 @@ public class FileInformation implements Serializable {
 
     /**
      * @return short status name for local changes, for remote
-     * changes returns <tt>""</tt>
+     * changes returns <tt>""</tt> // NOI18N
      */
     public String getShortStatusText() {
         ResourceBundle loc = NbBundle.getBundle(FileInformation.class);
         if (FileInformation.match(status, FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
-            return loc.getString("CTL_FileInfoStatus_Excluded_Short");
+            return loc.getString("CTL_FileInfoStatus_Excluded_Short"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
-            return loc.getString("CTL_FileInfoStatus_NewLocally_Short");
+            return loc.getString("CTL_FileInfoStatus_NewLocally_Short"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             if (entry != null && entry.isCopied()) {
-                return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied_Short");
+                return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied_Short"); // NOI18N
             }
-            return loc.getString("CTL_FileInfoStatus_AddedLocally_Short");
+            return loc.getString("CTL_FileInfoStatus_AddedLocally_Short"); // NOI18N
         } else if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
-            return loc.getString("CTL_FileInfoStatus_RemovedLocally_Short");
+            return loc.getString("CTL_FileInfoStatus_RemovedLocally_Short"); // NOI18N
         } else if (status == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) {
-            return loc.getString("CTL_FileInfoStatus_DeletedLocally_Short");
+            return loc.getString("CTL_FileInfoStatus_DeletedLocally_Short"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
-            return loc.getString("CTL_FileInfoStatus_ModifiedLocally_Short");
+            return loc.getString("CTL_FileInfoStatus_ModifiedLocally_Short"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
-            return loc.getString("CTL_FileInfoStatus_Conflict_Short");
+            return loc.getString("CTL_FileInfoStatus_Conflict_Short"); // NOI18N
         } else {
             return "";  // NOI18N                  
         }

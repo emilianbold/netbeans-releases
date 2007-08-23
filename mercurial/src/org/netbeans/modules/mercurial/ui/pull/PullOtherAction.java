@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -106,7 +106,7 @@ public class PullOtherAction extends AbstractAction implements PropertyChangeLis
     public static void pull(final VCSContext ctx, final File root, final String pullPath) {
         if (root == null || pullPath == null) return;
         String repository = root.getAbsolutePath();
-        final String fromPrjName = NbBundle.getMessage(PullAction.class, "MSG_EXTERNAL_REPOSITORY");
+        final String fromPrjName = NbBundle.getMessage(PullAction.class, "MSG_EXTERNAL_REPOSITORY"); // NOI18N
         final String toPrjName = HgProjectUtils.getProjectName(root);
          
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);

@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -120,38 +120,38 @@ public class LogAction extends AbstractAction {
                         OutputWriter out = io.getOut();
                         OutputWriter outRed = io.getErr();
 
-                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Title"));
-                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Title_Sep"));
+                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Title")); // NOI18N
+                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Title_Sep")); // NOI18N
                         
                         for( String s : list){
                             if (s.indexOf(Mercurial.CHANGESET_STR) == 0){
                                 outRed.println(s);
-                            }else if( !s.equals("")){
+                            }else if( !s.equals("")){ // NOI18N
                                 out.println(s);
                             }
                         }
                         if (!bLogAll)
-                            outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Files",
+                            outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Files", // NOI18N
                                 logFiles));
                         
-                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_PrjName",
+                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_PrjName", // NOI18N
                                 prjName));
-                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_PrjPath",
+                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_PrjPath", // NOI18N
                                 prjFile.getAbsolutePath()));
                         File pullPath = HgCommand.getPullDefault(root);
                         if(pullPath != null){
-                            outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Pull_Path",pullPath.getAbsolutePath()));
+                            outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Pull_Path",pullPath.getAbsolutePath())); // NOI18N
                         }
                         File pushPath = HgCommand.getPushDefault(root);
                         if(pushPath != null){
-                            outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Push_Path",pushPath.getAbsolutePath()));
+                            outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Push_Path",pushPath.getAbsolutePath())); // NOI18N
                         }
                         
                         if(bMergeNeeded){
-                            outRed.println("");
+                            outRed.println(""); // NOI18N
                             MergeAction.printMergeWarning(outRed, headRevList);
                         }
-                        out.println("");
+                        out.println(""); // NOI18N
                         out.close();
                         outRed.close();
                     }
@@ -165,7 +165,7 @@ public class LogAction extends AbstractAction {
 
         //COMMENT: think this is redundent with Merge menu support added
         //if(bMergeNeeded){
-        //    HgUtils.warningDialog(MergeAction.class,"MSG_MERGE_WARN_TITLE","MSG_MERGE_WARN_TEXT");  
+        //    HgUtils.warningDialog(MergeAction.class,"MSG_MERGE_WARN_TITLE","MSG_MERGE_WARN_TEXT");   // NOI18N
         //}
 
     }

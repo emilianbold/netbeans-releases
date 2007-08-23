@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -39,7 +39,7 @@ public class HgURL {
     
     public HgURL(String hgUrl)  throws MalformedURLException {
         if (hgUrl == null) 
-            throw new MalformedURLException(NbBundle.getMessage(HgURL.class, "MSG_URL_NULL"));
+            throw new MalformedURLException(NbBundle.getMessage(HgURL.class, "MSG_URL_NULL")); // NOI18N
         parseUrl(hgUrl);
     }
 
@@ -52,19 +52,19 @@ public class HgURL {
 
         int hostIdx = parsed.indexOf("://");                         // NOI18N
         if (hostIdx == -1)
-            throw new MalformedURLException(NbBundle.getMessage(HgURL.class, "MSG_INVALID_URL", hgUrl));
+            throw new MalformedURLException(NbBundle.getMessage(HgURL.class, "MSG_INVALID_URL", hgUrl)); // NOI18N
         protocol = parsed.substring(0, hostIdx).toLowerCase();
 
-        if ((!protocol.equalsIgnoreCase("http")) &&
-            (!protocol.equalsIgnoreCase("https")) &&
-            (!protocol.equalsIgnoreCase("file")) &&
-            (!protocol.equalsIgnoreCase("static-http")) &&
-            (!protocol.equalsIgnoreCase("ssh")) ) {
-                throw new MalformedURLException(NbBundle.getMessage(HgURL.class, "MSG_INVALID_URL", hgUrl));
+        if ((!protocol.equalsIgnoreCase("http")) && // NOI18N
+            (!protocol.equalsIgnoreCase("https")) && // NOI18N
+            (!protocol.equalsIgnoreCase("file")) && // NOI18N
+            (!protocol.equalsIgnoreCase("static-http")) && // NOI18N
+            (!protocol.equalsIgnoreCase("ssh")) ) { // NOI18N
+                throw new MalformedURLException(NbBundle.getMessage(HgURL.class, "MSG_INVALID_URL", hgUrl)); // NOI18N
         }
         parsed = parsed.substring(hostIdx + 3);
         if (parsed.length() == 0) {
-            throw new MalformedURLException(NbBundle.getMessage(HgURL.class, "MSG_INVALID_URL", hgUrl));
+            throw new MalformedURLException(NbBundle.getMessage(HgURL.class, "MSG_INVALID_URL", hgUrl)); // NOI18N
         }
     }
 

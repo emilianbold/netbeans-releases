@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -60,20 +60,20 @@ public class CommitTableModel extends AbstractTableModel {
     {
         ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
         columnLabels.put(COLUMN_NAME_NAME, new String [] {
-                                          loc.getString("CTL_CommitTable_Column_File"), 
-                                          loc.getString("CTL_CommitTable_Column_File")});
+                                          loc.getString("CTL_CommitTable_Column_File"),  // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_File")}); // NOI18N
         columnLabels.put(COLUMN_NAME_BRANCH, new String [] { 
-                                          loc.getString("CTL_CommitTable_Column_Branch"), 
-                                          loc.getString("CTL_CommitTable_Column_Branch")});
+                                          loc.getString("CTL_CommitTable_Column_Branch"),  // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_Branch")}); // NOI18N
         columnLabels.put(COLUMN_NAME_STATUS, new String [] {
-                                          loc.getString("CTL_CommitTable_Column_Status"), 
-                                          loc.getString("CTL_CommitTable_Column_Status")});
+                                          loc.getString("CTL_CommitTable_Column_Status"),  // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_Status")}); // NOI18N
         columnLabels.put(COLUMN_NAME_ACTION, new String [] {
-                                          loc.getString("CTL_CommitTable_Column_Action"), 
-                                          loc.getString("CTL_CommitTable_Column_Action")});
+                                          loc.getString("CTL_CommitTable_Column_Action"),  // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_Action")}); // NOI18N
         columnLabels.put(COLUMN_NAME_PATH, new String [] {
-                                          loc.getString("CTL_CommitTable_Column_Folder"), 
-                                          loc.getString("CTL_CommitTable_Column_Folder")});
+                                          loc.getString("CTL_CommitTable_Column_Folder"),  // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_Folder")}); // NOI18N
     }
     
     private CommitOptions []    commitOptions;

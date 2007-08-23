@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -71,8 +71,8 @@ public class CloneAction extends AbstractAction {
             projFile = HgUtils.getProjectFile(context);
         }
         for(int i = 0; i < 10000; i++){
-            if (!new File(tmp,folderName+"_clone"+i).exists()){
-                tmp = new File(tmp, folderName +"_clone"+i);
+            if (!new File(tmp,folderName+"_clone"+i).exists()){ // NOI18N
+                tmp = new File(tmp, folderName +"_clone"+i); // NOI18N
                 break;
             }
         }
@@ -123,19 +123,19 @@ public class CloneAction extends AbstractAction {
                         HgUtils.createIgnored(cloneFolder);
                         HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(CloneAction.class,
-                                "MSG_CLONE_TITLE"));
+                                "MSG_CLONE_TITLE")); // NOI18N
                         HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(CloneAction.class,
-                                "MSG_CLONE_TITLE_SEP"));
+                                "MSG_CLONE_TITLE_SEP")); // NOI18N
                         HgUtils.outputMercurialTab(list);
                
                         HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(CloneAction.class,
-                                "MSG_CLONE_FROM", prjName, root));
+                                "MSG_CLONE_FROM", prjName, root)); // NOI18N
                         HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(CloneAction.class,
-                                "MSG_CLONE_TO", prjName, cloneFolder));
-                        HgUtils.outputMercurialTab("");
+                                "MSG_CLONE_TO", prjName, cloneFolder)); // NOI18N
+                        HgUtils.outputMercurialTab(""); // NOI18N
 
                         SwingUtilities.invokeLater(doOpenProject);
                     }

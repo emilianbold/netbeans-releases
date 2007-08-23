@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -35,8 +35,9 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 public class MercurialVCS extends VersioningSystem implements PropertyChangeListener {
 
     public MercurialVCS() {
-        putProperty(PROP_DISPLAY_NAME, "Mercurial");
-        putProperty(PROP_MENU_LABEL, "&Mercurial");
+        putProperty(PROP_DISPLAY_NAME, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_DisplayName")); // NOI18N
+        putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_MainMenu")); // NOI18N
+
         Mercurial.getInstance().addPropertyChangeListener(this);
         Mercurial.getInstance().getFileStatusCache().addPropertyChangeListener(this);
     }

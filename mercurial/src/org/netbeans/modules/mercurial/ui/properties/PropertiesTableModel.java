@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -32,8 +32,8 @@ import org.openide.util.NbBundle;
  */
 public class PropertiesTableModel extends AbstractTableModel {
     
-    public static final String COLUMN_NAME_NAME = "name";
-    public static final String COLUMN_NAME_VALUE = "value";
+    public static final String COLUMN_NAME_NAME = "name"; // NOI18N
+    public static final String COLUMN_NAME_VALUE = "value"; // NOI18N
     
     private HgPropertiesNode[] nodes;
     private String[] columns;
@@ -42,8 +42,8 @@ public class PropertiesTableModel extends AbstractTableModel {
     
     {
         ResourceBundle loc = NbBundle.getBundle(PropertiesTableModel.class);    
-        columnLabels.put(COLUMN_NAME_NAME, new String[] {loc.getString("CTL_PropertiesTable_Column_Name"), loc.getString("CTL_PropertiesTable_Column_Name")});
-        columnLabels.put(COLUMN_NAME_VALUE, new String[] {loc.getString("CTL_PropertiesTable_Column_Value"), loc.getString("CTL_PropertiesTable_Column_Value")});
+        columnLabels.put(COLUMN_NAME_NAME, new String[] {loc.getString("CTL_PropertiesTable_Column_Name"), loc.getString("CTL_PropertiesTable_Column_Name")}); // NOI18N
+        columnLabels.put(COLUMN_NAME_VALUE, new String[] {loc.getString("CTL_PropertiesTable_Column_Value"), loc.getString("CTL_PropertiesTable_Column_Value")}); // NOI18N
     }
     
     /** Creates a new instance of PropertiesTableModel */
@@ -91,7 +91,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         } else if (clm.equals(COLUMN_NAME_VALUE)) {
             return nodes[rowIndex].getValue();
         }
-        throw new IllegalArgumentException("The column index is out of index: " + columnIndex);
+        throw new IllegalArgumentException("The column index is out of index: " + columnIndex); // NOI18N
     }
 
     

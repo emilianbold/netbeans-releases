@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -79,10 +79,10 @@ public class CreateAction extends AbstractAction {
         if (hg.getTopmostManagedParent(root) != null) return;
         HgUtils.outputMercurialTabInRed(
                 NbBundle.getMessage(CreateAction.class,
-                "MSG_CREATE_TITLE"));
+                "MSG_CREATE_TITLE")); // NOI18N
         HgUtils.outputMercurialTabInRed(
                 NbBundle.getMessage(CreateAction.class,
-                "MSG_CREATE_TITLE_SEP"));
+                "MSG_CREATE_TITLE_SEP")); // NOI18N
         while (HgProjectUtils.getProjectName(root) == null) {
             root = root.getParentFile();
         }
@@ -97,7 +97,7 @@ public class CreateAction extends AbstractAction {
                 try {
                     HgUtils.outputMercurialTab(
                             NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_INIT", prjName, rootToManage));
+                            "MSG_CREATE_INIT", prjName, rootToManage)); // NOI18N
                     HgCommand.doCreate(rootToManage);
                     hg.versionedFilesChanged();
                     hg.refreshAllAnnotations();      
@@ -121,9 +121,9 @@ public class CreateAction extends AbstractAction {
                     addFiles.addAll(repositoryFiles.keySet());
                     HgUtils.outputMercurialTab(
                             NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_ADD", addFiles.size()));
+                            "MSG_CREATE_ADD", addFiles.size())); // NOI18N
                     for(File f: addFiles){
-                        HgUtils.outputMercurialTab("\t" + f.getAbsolutePath());
+                        HgUtils.outputMercurialTab("\t" + f.getAbsolutePath()); // NOI18N
                     }
                  } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -134,8 +134,8 @@ public class CreateAction extends AbstractAction {
                     cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 } 
                 HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CreateAction.class,
-                            "MSG_CREATE_DONE"));
-                HgUtils.outputMercurialTab("");
+                            "MSG_CREATE_DONE")); // NOI18N
+                HgUtils.outputMercurialTab(""); // NOI18N
             }
         };
         supportAdd.start(rp, rootToManage.getAbsolutePath(), 
@@ -147,7 +147,7 @@ public class CreateAction extends AbstractAction {
             public void perform() {
                 // Commit newly added files
                 String contentTitle = Utils.getContextDisplayName(context);
-                CommitAction.commit(contentTitle + " - Create", VCSContext.forFiles(repositoryFiles.keySet()));
+                CommitAction.commit(contentTitle + " - Create", VCSContext.forFiles(repositoryFiles.keySet())); // NOI18N
             }
         };
         supportCommit.start(rp, rootToManage.getAbsolutePath(),

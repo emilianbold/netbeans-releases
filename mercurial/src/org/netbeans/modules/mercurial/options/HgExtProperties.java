@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]"  // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -121,7 +121,7 @@ public class HgExtProperties implements ActionListener, DocumentListener {
 
         ComboBoxModel comboModel = new DefaultComboBoxModel(new Vector(lstName));
         panel.getComboName().setModel(comboModel);
-        panel.getComboName().getEditor().setItem("");
+        panel.getComboName().getEditor().setItem(""); // NOI18N
     }
     
     protected String getPropertyValue() {
@@ -149,14 +149,14 @@ public class HgExtProperties implements ActionListener, DocumentListener {
                     for (Enumeration e = props.propertyNames(); e.hasMoreElements() ; ) {
                         String name = (String) e.nextElement();
                         String tmp = props.getProperty(name);
-                        String value = tmp != null ? tmp : "";
+                        String value = tmp != null ? tmp : ""; // NOI18N
                         hgProps[i] = new HgPropertiesNode(name, value);
                         i++;
                      }
                      propTable.setNodes(hgProps);
                 }
             };
-            support.start(rp, null, org.openide.util.NbBundle.getMessage(HgExtProperties.class, "LBL_Properties_Progress"));
+            support.start(rp, null, org.openide.util.NbBundle.getMessage(HgExtProperties.class, "LBL_Properties_Progress")); // NOI18N
         } finally {
             support = null;
         }
@@ -183,8 +183,8 @@ public class HgExtProperties implements ActionListener, DocumentListener {
 
     public void addProperty() {
         if (addProperty(getPropertyName(), getPropertyValue())) {
-            panel.getComboName().getEditor().setItem("");
-            panel.getTxtAreaValue().setText("");
+            panel.getComboName().getEditor().setItem(""); // NOI18N
+            panel.getTxtAreaValue().setText(""); // NOI18N
         }
     }
     
@@ -202,7 +202,7 @@ public class HgExtProperties implements ActionListener, DocumentListener {
                     }
                 }
             };
-            support.start(rp, null, org.openide.util.NbBundle.getMessage(HgExtProperties.class, "LBL_Properties_Progress"));
+            support.start(rp, null, org.openide.util.NbBundle.getMessage(HgExtProperties.class, "LBL_Properties_Progress")); // NOI18N
         } finally {
             support = null;
         }
@@ -242,7 +242,7 @@ public class HgExtProperties implements ActionListener, DocumentListener {
         String name = panel.getComboName().getEditor().getItem().toString().trim();
         String value = panel.getTxtAreaValue().getText().trim();
         
-        if (name.length() == 0 || name.indexOf(" ") > 0) {
+        if (name.length() == 0 || name.indexOf(" ") > 0) { // NOI18N
             panel.getBtnAdd().setEnabled(false);
         } else {
             panel.getBtnAdd().setEnabled(true);

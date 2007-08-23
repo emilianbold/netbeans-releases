@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -121,56 +121,56 @@ public class IgnoreAction extends AbstractAction {
                         HgUtils.addIgnored(repository, files);
                         HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(IgnoreAction.class,
-                                "MSG_IGNORE_TITLE"));
+                                "MSG_IGNORE_TITLE")); // NOI18N
                         HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(IgnoreAction.class,
-                                "MSG_IGNORE_TITLE_SEP"));
+                                "MSG_IGNORE_TITLE_SEP")); // NOI18N
                         if (files.length == 1) {
                             HgUtils.outputMercurialTab(
                                     NbBundle.getMessage(IgnoreAction.class,
-                                    "MSG_IGNORE_INIT_SEP_ONE", files.length, prjName));
+                                    "MSG_IGNORE_INIT_SEP_ONE", files.length, prjName)); // NOI18N
                          } else {
                             HgUtils.outputMercurialTab(
                                     NbBundle.getMessage(IgnoreAction.class,
-                                    "MSG_IGNORE_INIT_SEP", files.length, prjName));
+                                    "MSG_IGNORE_INIT_SEP", files.length, prjName)); // NOI18N
                           }
                     } else {
                         HgUtils.removeIgnored(repository, files);
                         HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(IgnoreAction.class,
-                                "MSG_UNIGNORE_TITLE"));
+                                "MSG_UNIGNORE_TITLE")); // NOI18N
                         HgUtils.outputMercurialTabInRed(
                                 NbBundle.getMessage(IgnoreAction.class,
-                                "MSG_UNIGNORE_TITLE_SEP"));
+                                "MSG_UNIGNORE_TITLE_SEP")); // NOI18N
                         if (files.length == 1) {
                             HgUtils.outputMercurialTab(
                                     NbBundle.getMessage(IgnoreAction.class,
-                                    "MSG_UNIGNORE_INIT_SEP_ONE", files.length, prjName));
+                                    "MSG_UNIGNORE_INIT_SEP_ONE", files.length, prjName)); // NOI18N
                          } else {
                             HgUtils.outputMercurialTab(
                                     NbBundle.getMessage(IgnoreAction.class,
-                                    "MSG_UNIGNORE_INIT_SEP", files.length, prjName));
+                                    "MSG_UNIGNORE_INIT_SEP", files.length, prjName)); // NOI18N
                           }
                     }
                 } catch (IOException ex) {
-                   Mercurial.LOG.log(Level.FINE, "IgnoreAction(): File {0} - {1}",
+                   Mercurial.LOG.log(Level.FINE, "IgnoreAction(): File {0} - {1}", // NOI18N
                         new Object[] {repository.getAbsolutePath(), ex.toString()});
                 }
                 // refresh files manually
                 for (File file : files) {
                     Mercurial.getInstance().getFileStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                    HgUtils.outputMercurialTab("\t" + file.getAbsolutePath());
+                    HgUtils.outputMercurialTab("\t" + file.getAbsolutePath()); // NOI18N
                 }
                 if (actionStatus == IGNORING) {
                     HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(IgnoreAction.class,
-                            "MSG_IGNORE_DONE"));
+                            "MSG_IGNORE_DONE")); // NOI18N
                 } else {
                     HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(IgnoreAction.class,
-                            "MSG_UNIGNORE_DONE"));
+                            "MSG_UNIGNORE_DONE")); // NOI18N
                 }
-                // HgUtils.outputMercurialTab("");
+                // HgUtils.outputMercurialTab(""); // NOI18N
             }
         };
         support.start(rp, repository.getAbsolutePath(), org.openide.util.NbBundle.getMessage(IgnoreAction.class, "LBL_Ignore_Progress")); // NOI18N

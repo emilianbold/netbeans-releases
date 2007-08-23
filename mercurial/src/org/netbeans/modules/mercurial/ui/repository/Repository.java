@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -222,7 +222,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         
         //try {
             //SVNUrl repositoryUrl = rc.getSvnUrl();
-            //if(repositoryUrl.getProtocol().startsWith("svn+")) {
+            //if(repositoryUrl.getProtocol().startsWith("svn+")) { // NOI18N
             //    SvnConfigFiles.getInstance().setExternalCommand(getTunnelName(repositoryUrl.getProtocol()), repositoryPanel.tunnelCommandTextField.getText());
             //}    
         //} catch (MalformedURLException mue) {
@@ -278,7 +278,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             rc.getURL();                             
             //if(!isSet(FLAG_ACCEPT_REVISION) && !rc.getSvnRevision().equals(SVNRevision.HEAD)) 
             //{
-            //    message = NbBundle.getMessage(Repository.class, "MSG_Repository_OnlyHEADRevision");
+            //    message = NbBundle.getMessage(Repository.class, "MSG_Repository_OnlyHEADRevision"); // NOI18N
             //    valid = false;
             //} else {
             //      // check for a valid svnrevision
@@ -290,8 +290,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         }        
         
         if(valid) {            
-            valid = rc != null && !rc.getUrl().equals("");
-            //if(rc.getUrl().startsWith("svn+") && repositoryPanel.tunnelCommandTextField.getText().trim().equals("")) {
+            valid = rc != null && !rc.getUrl().equals(""); // NOI18N
+            //if(rc.getUrl().startsWith("svn+") && repositoryPanel.tunnelCommandTextField.getText().trim().equals("")) { // NOI18N
             //    valid = false;
             //}
         }
@@ -327,11 +327,11 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                 //dcbm.setSelectedItem(urlString);                                                
                 refresh((RepositoryConnection)dcbm.getElementAt(idx));                
             } 
-            if(urlString.startsWith("svn+")) {
+            if(urlString.startsWith("svn+")) { // NOI18N
                 String tunnelName = getTunnelName(urlString).trim();
-                if( repositoryPanel.tunnelCommandTextField.getText().trim().equals("") && 
+                if( repositoryPanel.tunnelCommandTextField.getText().trim().equals("") &&  // NOI18N
                     tunnelName != null && 
-                    !tunnelName.equals("") ) 
+                    !tunnelName.equals("") )  // NOI18N
                 {
                     //repositoryPanel.tunnelCommandTextField.setText(SvnConfigFiles.getInstance().getExternalCommand(tunnelName));
                 } 
@@ -347,7 +347,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
 
     private RepositoryConnection getEditedRC() {
         if(editedRC == null) {
-            editedRC = new RepositoryConnection("");
+            editedRC = new RepositoryConnection(""); // NOI18N
         }
         return editedRC;
     }
@@ -419,7 +419,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     }
             
     private String getTunnelName(String urlString) {
-        int idx = urlString.indexOf(":", 4);
+        int idx = urlString.indexOf(":", 4); // NOI18N
         if(idx < 0) {
             idx = urlString.length();
         }
@@ -436,7 +436,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             if(selection != null) {
                 return selection.toString().trim();    
             }
-            return "";    
+            return "";     // NOI18N
         } else {
             final String[] hgUrl = new String[1];
             try {
@@ -484,7 +484,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if (rc != null) {
             rc.setUsername(repositoryPanel.userTextField.getText());
         }
-        setValid(true, "");        
+        setValid(true, "");         // NOI18N
     }
     
     private void onPasswordChange() {        
@@ -492,7 +492,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if (rc != null) {
             rc.setPassword(new String(repositoryPanel.userPasswordField.getPassword()));
         }        
-        setValid(true, "");
+        setValid(true, ""); // NOI18N
     }
 
     private void onTunnelCommandChange() {

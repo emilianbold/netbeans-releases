@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -95,9 +95,9 @@ public class MercurialAnnotator extends VCSAnnotator {
             FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY |
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
 
-    public static String ANNOTATION_REVISION    = "revision";
-    public static String ANNOTATION_STATUS      = "status";
-    public static String ANNOTATION_FOLDER      = "folder";
+    public static String ANNOTATION_REVISION    = "revision"; // NOI18N
+    public static String ANNOTATION_STATUS      = "status"; // NOI18N
+    public static String ANNOTATION_FOLDER      = "folder"; // NOI18N
 
     public static String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_FOLDER};
 
@@ -124,8 +124,8 @@ public class MercurialAnnotator extends VCSAnnotator {
 
     public void refresh() {
         String string = HgModuleConfig.getDefault().getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
-        if (string != null && !string.trim().equals("")) {
-            if (string.indexOf("\\{revision\\}") != -1 ) {
+        if (string != null && !string.trim().equals("")) { // NOI18N
+            if (string.indexOf("\\{revision\\}") != -1 ) { // NOI18N
                 needRevisionForFormat = true;
             } else {
                 needRevisionForFormat = false;
@@ -134,7 +134,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             string = string.replaceAll("\\{status\\}",    "\\{1\\}");           // NOI18N
             string = string.replaceAll("\\{folder\\}",    "\\{2\\}");           // NOI18N
             format = new MessageFormat(string);
-            emptyFormat = format.format(new String[] {"", "", ""} , new StringBuffer(), null).toString().trim();
+            emptyFormat = format.format(new String[] {"", "", ""} , new StringBuffer(), null).toString().trim(); // NOI18N
         }
     }
 
@@ -294,95 +294,95 @@ public class MercurialAnnotator extends VCSAnnotator {
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (goodVersion && destination == VCSAnnotator.ActionDestination.MainMenu) {
-            actions.add(new CreateAction(loc.getString("CTL_PopupMenuItem_Create"), ctx));
+            actions.add(new CreateAction(loc.getString("CTL_PopupMenuItem_Create"), ctx)); // NOI18N
             actions.add(null);
-            actions.add(new StatusAction(loc.getString("CTL_PopupMenuItem_Status"), ctx));
-            actions.add(new DiffAction(loc.getString("CTL_PopupMenuItem_Diff"), ctx));
-            actions.add(new UpdateAction(loc.getString("CTL_PopupMenuItem_Update"), ctx));
-            actions.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), ctx));
+            actions.add(new StatusAction(loc.getString("CTL_PopupMenuItem_Status"), ctx)); // NOI18N
+            actions.add(new DiffAction(loc.getString("CTL_PopupMenuItem_Diff"), ctx)); // NOI18N
+            actions.add(new UpdateAction(loc.getString("CTL_PopupMenuItem_Update"), ctx)); // NOI18N
+            actions.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), ctx)); // NOI18N
             actions.add(null);
-            actions.add(new ExportDiffAction(loc.getString("CTL_PopupMenuItem_ExportDiff"), ctx));
-            actions.add(new ImportDiffAction(loc.getString("CTL_PopupMenuItem_ImportDiff"), ctx));
+            actions.add(new ExportDiffAction(loc.getString("CTL_PopupMenuItem_ExportDiff"), ctx)); // NOI18N
+            actions.add(new ImportDiffAction(loc.getString("CTL_PopupMenuItem_ImportDiff"), ctx)); // NOI18N
 
             actions.add(null);
             if (root != null) {
-                actions.add(new CloneAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneLocal", 
+                actions.add(new CloneAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneLocal",  // NOI18N
                         root.getName()), ctx));
             }
-            actions.add(new CloneExternalAction(loc.getString("CTL_PopupMenuItem_CloneOther"), ctx));            
-            actions.add(new PushAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PushLocal"), ctx));
-            actions.add(new PullAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PullLocal"), ctx));
-            actions.add(new PullOtherAction(loc.getString("CTL_PopupMenuItem_PullOther"), ctx));
-            actions.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Merge"), ctx));
+            actions.add(new CloneExternalAction(loc.getString("CTL_PopupMenuItem_CloneOther"), ctx));     // NOI18N        
+            actions.add(new PushAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PushLocal"), ctx)); // NOI18N
+            actions.add(new PullAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PullLocal"), ctx)); // NOI18N
+            actions.add(new PullOtherAction(loc.getString("CTL_PopupMenuItem_PullOther"), ctx)); // NOI18N
+            actions.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Merge"), ctx)); // NOI18N
             actions.add(null);
-            AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), ctx);
+            AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), ctx); // NOI18N
             if (tempA.visible(nodes)) {
-                tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_HideAnnotations"), ctx);
+                tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_HideAnnotations"), ctx); // NOI18N
             }
             actions.add(tempA);
-            actions.add(new LogAction(loc.getString("CTL_PopupMenuItem_Log"), ctx));
-            // TODO: actions.add(new ViewAction(loc.getString("CTL_PopupMenuItem_View"), ctx));
+            actions.add(new LogAction(loc.getString("CTL_PopupMenuItem_Log"), ctx)); // NOI18N
+            // TODO: actions.add(new ViewAction(loc.getString("CTL_PopupMenuItem_View"), ctx)); // NOI18N
             actions.add(null);
-            actions.add(new RollbackAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Rollback"), ctx));
-            actions.add(new RevertModificationsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Revert"), ctx));
-            actions.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Resolve"), ctx));
-            IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx);
+            actions.add(new RollbackAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Rollback"), ctx)); // NOI18N
+            actions.add(new RevertModificationsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Revert"), ctx)); // NOI18N
+            actions.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
+            IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx); // NOI18N
             if (files.length > 0 && tempIA.getActionStatus(files) == IgnoreAction.UNIGNORING) {
-                tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Unignore"), ctx);
+                tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Unignore"), ctx); // NOI18N
             }
             actions.add(tempIA);
             actions.add(null);
-            actions.add(new PropertiesAction(loc.getString("CTL_PopupMenuItem_Properties"), ctx));
+            actions.add(new PropertiesAction(loc.getString("CTL_PopupMenuItem_Properties"), ctx)); // NOI18N
         } else if (goodVersion) {
             if (noneVersioned){
-                actions.add(new CreateAction(loc.getString("CTL_PopupMenuItem_Create"), ctx));
+                actions.add(new CreateAction(loc.getString("CTL_PopupMenuItem_Create"), ctx)); // NOI18N
             }else{
-                actions.add(new StatusAction(loc.getString("CTL_PopupMenuItem_Status"), ctx));
-                actions.add(new DiffAction(loc.getString("CTL_PopupMenuItem_Diff"), ctx));
-                actions.add(new UpdateAction(loc.getString("CTL_PopupMenuItem_Update"), ctx));
-                actions.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), ctx));
+                actions.add(new StatusAction(loc.getString("CTL_PopupMenuItem_Status"), ctx)); // NOI18N
+                actions.add(new DiffAction(loc.getString("CTL_PopupMenuItem_Diff"), ctx)); // NOI18N
+                actions.add(new UpdateAction(loc.getString("CTL_PopupMenuItem_Update"), ctx)); // NOI18N
+                actions.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), ctx)); // NOI18N
                 actions.add(null);
                 if (root != null) {
-                    actions.add(new CloneAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneLocal", 
+                    actions.add(new CloneAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneLocal",  // NOI18N
                             root.getName()), ctx));
                 }
 
                 actions.add(new PushAction(NbBundle.getMessage(MercurialAnnotator.class, 
-                        "CTL_PopupMenuItem_PushLocal"), ctx));
+                        "CTL_PopupMenuItem_PushLocal"), ctx)); // NOI18N
                 actions.add(new PullAction(NbBundle.getMessage(MercurialAnnotator.class, 
-                        "CTL_PopupMenuItem_PullLocal"), ctx));
+                        "CTL_PopupMenuItem_PullLocal"), ctx)); // NOI18N
                 actions.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, 
-                        "CTL_PopupMenuItem_Merge"), ctx));
+                        "CTL_PopupMenuItem_Merge"), ctx)); // NOI18N
                 actions.add(null);                
 
                 if (!onlyFolders) {
-                    AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), ctx); 
+                    AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), ctx);  // NOI18N
                     if (tempA.visible(nodes)) {
-                        tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_HideAnnotations"), ctx); 
+                        tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_HideAnnotations"), ctx);  // NOI18N
                     }
                     actions.add(tempA);
                 }
-                actions.add(new LogAction(loc.getString("CTL_PopupMenuItem_Log"), ctx));
-                // TODO: actions.add(new ViewAction(loc.getString("CTL_PopupMenuItem_View"), ctx));
+                actions.add(new LogAction(loc.getString("CTL_PopupMenuItem_Log"), ctx)); // NOI18N
+                // TODO: actions.add(new ViewAction(loc.getString("CTL_PopupMenuItem_View"), ctx)); // NOI18N
                 actions.add(null);
                 actions.add(new RollbackAction(NbBundle.getMessage(MercurialAnnotator.class,
-                        "CTL_PopupMenuItem_Rollback"), ctx));
+                        "CTL_PopupMenuItem_Rollback"), ctx)); // NOI18N
                 actions.add(new RevertModificationsAction(NbBundle.getMessage(MercurialAnnotator.class,
-                        "CTL_PopupMenuItem_Revert"), ctx));
+                        "CTL_PopupMenuItem_Revert"), ctx)); // NOI18N
                 actions.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class,
-                        "CTL_PopupMenuItem_Resolve"), ctx));
+                        "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
                 if (!onlyProjects) {
                     actions.add(new ConflictResolvedAction(NbBundle.getMessage(MercurialAnnotator.class,
-                        "CTL_PopupMenuItem_MarkResolved"), ctx));
+                        "CTL_PopupMenuItem_MarkResolved"), ctx)); // NOI18N
                     
-                    IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx); 
+                    IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx);  // NOI18N
                     if (files.length > 0 && tempIA.getActionStatus(files) == IgnoreAction.UNIGNORING) {
-                        tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Unignore"), ctx); 
+                        tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Unignore"), ctx);  // NOI18N
                     }
                     actions.add(tempIA);
                 }
                 actions.add(null);
-                actions.add(new PropertiesAction(loc.getString("CTL_PopupMenuItem_Properties"), ctx));
+                actions.add(new PropertiesAction(loc.getString("CTL_PopupMenuItem_Properties"), ctx)); // NOI18N
             }
         }
         return actions.toArray(new Action[actions.size()]);
@@ -429,9 +429,9 @@ public class MercurialAnnotator extends VCSAnnotator {
 
         String annotation = format.format(arguments, new StringBuffer(), null).toString().trim();
         if(annotation.equals(emptyFormat)) {
-            return "";
+            return ""; // NOI18N
         } else {
-            return " " + annotation;
+            return " " + annotation; // NOI18N
         }
     }
 
@@ -467,7 +467,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                     textAnnotation = " [" + sticky + "]"; // NOI18N
                 } else if (sticky == null) {
                     String statusText = mostImportantInfo.getShortStatusText();
-                    if(!statusText.equals("")) {
+                    if(!statusText.equals("")) { // NOI18N
                         textAnnotation = " [" + mostImportantInfo.getShortStatusText() + "]"; // NOI18N
                     } else {
                         textAnnotation = ""; // NOI18N
@@ -481,7 +481,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
 
         if (textAnnotation.length() > 0) {
-            textAnnotation = NbBundle.getMessage(MercurialAnnotator.class, "textAnnotation", textAnnotation);
+            textAnnotation = NbBundle.getMessage(MercurialAnnotator.class, "textAnnotation", textAnnotation); // NOI18N
         }
 
         if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
@@ -517,9 +517,9 @@ public class MercurialAnnotator extends VCSAnnotator {
     private String annotateFolderNameHtml(String name, FileInformation mostImportantInfo, File mostImportantFile) {
         name = htmlEncode(name);
         if (mostImportantInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED){
-            return excludedFormat.format(new Object [] { name, ""});
+            return excludedFormat.format(new Object [] { name, ""}); // NOI18N
         }
-        return uptodateFormat.format(new Object [] { name, "" });
+        return uptodateFormat.format(new Object [] { name, "" }); // NOI18N
     }
     
     private boolean isMoreImportant(FileInformation a, FileInformation b) {

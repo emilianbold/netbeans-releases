@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -109,7 +109,7 @@ public class HgModuleConfig {
     }
 
     public String getExecutableBinaryPath() {
-        return (String) getPreferences().get(KEY_EXECUTABLE_BINARY, "");
+        return (String) getPreferences().get(KEY_EXECUTABLE_BINARY, ""); // NOI18N
     }
     
     public void setExecutableBinaryPath(String path) {
@@ -117,7 +117,7 @@ public class HgModuleConfig {
     }
 
     public String getExportFilename() {
-        String str = (String) getPreferences().get(KEY_EXPORT_FILENAME, "");
+        String str = (String) getPreferences().get(KEY_EXPORT_FILENAME, ""); // NOI18N
         if (str.trim().length() == 0) str = DEFAULT_EXPORT_FILENAME;
         return str;
     }
@@ -134,14 +134,14 @@ public class HgModuleConfig {
     public String getUserName() {
         String userName = HgConfigFiles.getInstance().getUserName();
         if (userName.length() == 0) {
-            String userId = System.getProperty("user.name");
+            String userId = System.getProperty("user.name"); // NOI18N
             String hostName;
             try {
                 hostName = InetAddress.getLocalHost().getHostName();
             } catch (Exception ex) {
                 return userName;
             }
-            userName = userId + " <" + userId + "@" + hostName + ">";
+            userName = userId + " <" + userId + "@" + hostName + ">"; // NOI18N
         }
         return userName;
     }
@@ -215,7 +215,7 @@ public class HgModuleConfig {
     }
     
     public String getDefaultAnnotationFormat() {
-        return "[{" + MercurialAnnotator.ANNOTATION_STATUS + "} {" + MercurialAnnotator.ANNOTATION_FOLDER + "}]";
+        return "[{" + MercurialAnnotator.ANNOTATION_STATUS + "} {" + MercurialAnnotator.ANNOTATION_FOLDER + "}]"; // NOI18N
     }
 
     public void setAnnotationFormat(String annotationFormat) {
@@ -309,7 +309,7 @@ public class HgModuleConfig {
 
     //public List<AnnotationExpression> getDefaultAnnotationExpresions() {
     //    List<AnnotationExpression> ret = new ArrayList<AnnotationExpression>(1);
-    //    ret.add(new AnnotationExpression(".*/(branches|tags)/(.+?)/.*", "\\2"));     
+    //    ret.add(new AnnotationExpression(".*/(branches|tags)/(.+?)/.*", "\\2"));     // NOI18N 
     //    return ret;
     //}
     

@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -95,7 +95,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                         HgCommand.doRemove(root, file);
                         cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                     } catch (HgException ex) {
-                        Mercurial.LOG.log(Level.FINE, "fileDeletedImpl(): File: {0} {1}", new Object[] {file.getAbsolutePath(), ex.toString()});
+                        Mercurial.LOG.log(Level.FINE, "fileDeletedImpl(): File: {0} {1}", new Object[] {file.getAbsolutePath(), ex.toString()}); // NOI18N
                     }             
                 }
             };
@@ -146,7 +146,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                     cache.refresh(from, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                     cache.refresh(to, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 } catch (HgException ex) {
-                    Mercurial.LOG.log(Level.FINE, "fileMovedImpl(): From: {0} To: {1} {2}", new Object[] {from.getAbsolutePath(), to.getAbsolutePath(), ex.toString()});
+                    Mercurial.LOG.log(Level.FINE, "fileMovedImpl(): From: {0} To: {1} {2}", new Object[] {from.getAbsolutePath(), to.getAbsolutePath(), ex.toString()}); // NOI18N
                 }             
             }
         };
@@ -174,7 +174,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private void fileCreatedImpl(final File file) {
         if (file.isDirectory()) return;
         if(HgUtils.isIgnored(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE){
-            Mercurial.LOG.log(Level.FINE, "fileCreatedImpl(): Ignored File: {0}", new Object[] {file.getAbsolutePath()});
+            Mercurial.LOG.log(Level.FINE, "fileCreatedImpl(): Ignored File: {0}", new Object[] {file.getAbsolutePath()}); // NOI18N
             return;
         }
         cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
@@ -191,7 +191,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private void fileChangedImpl(File file) {
         if (file.isDirectory()) return;
         if(HgUtils.isIgnored(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE){
-            Mercurial.LOG.log(Level.FINE, "fileChangedImpl(): Ignored File: {0}", new Object[] {file.getAbsolutePath()});
+            Mercurial.LOG.log(Level.FINE, "fileChangedImpl(): Ignored File: {0}", new Object[] {file.getAbsolutePath()}); // NOI18N
             return;
         }
         cache.refreshForce(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);

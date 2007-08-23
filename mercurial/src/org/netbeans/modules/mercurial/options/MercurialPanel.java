@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -202,9 +202,9 @@ final class MercurialPanel extends javax.swing.JPanel {
     void load() {
         // TODO read settings and initialize GUI
         // Example:
-        // someCheckBox.setSelected(Preferences.userNodeForPackage(MercurialPanel.class).getBoolean("someFlag", false));
+        // someCheckBox.setSelected(Preferences.userNodeForPackage(MercurialPanel.class).getBoolean("someFlag", false)); // NOI18N
         // or for org.openide.util with API spec. version >= 7.4:
-        // someCheckBox.setSelected(NbPreferences.forModule(MercurialPanel.class).getBoolean("someFlag", false));
+        // someCheckBox.setSelected(NbPreferences.forModule(MercurialPanel.class).getBoolean("someFlag", false)); // NOI18N
         // or:
         // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
         userNameTextField.setText(HgModuleConfig.getDefault().getUserName());
@@ -216,9 +216,9 @@ final class MercurialPanel extends javax.swing.JPanel {
     void store() {
         // TODO store modified settings
         // Example:
-        // Preferences.userNodeForPackage(MercurialPanel.class).putBoolean("someFlag", someCheckBox.isSelected());
+        // Preferences.userNodeForPackage(MercurialPanel.class).putBoolean("someFlag", someCheckBox.isSelected()); // NOI18N
         // or for org.openide.util with API spec. version >= 7.4:
-        // NbPreferences.forModule(MercurialPanel.class).putBoolean("someFlag", someCheckBox.isSelected());
+        // NbPreferences.forModule(MercurialPanel.class).putBoolean("someFlag", someCheckBox.isSelected()); // NOI18N
         // or:
         // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
         HgModuleConfig.getDefault().setUserName(userNameTextField.getText());

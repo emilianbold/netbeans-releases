@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -43,13 +43,13 @@ import java.util.prefs.Preferences;
  * @author Maros Sandor
  */
 public class Mercurial {
-    public static final String MERCURIAL_OUTPUT_TAB_TITLE = org.openide.util.NbBundle.getMessage(Mercurial.class, "CTL_Mercurial_MainMenu");
-    public static final String CHANGESET_STR = "changeset:";
+    public static final String MERCURIAL_OUTPUT_TAB_TITLE = org.openide.util.NbBundle.getMessage(Mercurial.class, "CTL_Mercurial_MainMenu"); // NOI18N
+    public static final String CHANGESET_STR = "changeset:"; // NOI18N
 
-    static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged";
-    static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged";
+    static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
+    static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; // NOI18N
 
-    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial");
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial"); // NOI18N
 
     /* 
      * Cache the name of the file currently being deleted and whether it is
@@ -69,8 +69,8 @@ public class Mercurial {
             FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY |
             FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY;
 
-    private static final String MERCURIAL_GOOD_VERSION = "0.9.3";
-    private static final String MERCURIAL_BETTER_VERSION = "0.9.4";
+    private static final String MERCURIAL_GOOD_VERSION = "0.9.3"; // NOI18N
+    private static final String MERCURIAL_BETTER_VERSION = "0.9.4"; // NOI18N
     private static Mercurial instance;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
@@ -110,7 +110,7 @@ public class Mercurial {
             }
         }
         String version = HgCommand.getHgVersion();
-        LOG.log(Level.FINE, "version: {0}", version);
+        LOG.log(Level.FINE, "version: {0}", version); // NOI18N
         if (version != null) {
             goodVersion = version.startsWith(MERCURIAL_GOOD_VERSION);
             if (!goodVersion && !version.startsWith(MERCURIAL_BETTER_VERSION)) {
@@ -118,8 +118,8 @@ public class Mercurial {
                 String runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
                 if (runVersion == null || !runVersion.equals(version)) {
                     int response = JOptionPane.showOptionDialog(null,
-                                    NbBundle.getMessage(Mercurial.class,"MSG_VERSION_CONFIRM_QUERY", version, MERCURIAL_BETTER_VERSION),
-                                    NbBundle.getMessage(Mercurial.class,"MSG_VERSION_CONFIRM"),
+                                    NbBundle.getMessage(Mercurial.class,"MSG_VERSION_CONFIRM_QUERY", version, MERCURIAL_BETTER_VERSION), // NOI18N
+                                    NbBundle.getMessage(Mercurial.class,"MSG_VERSION_CONFIRM"), // NOI18N
                                     JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,null, null, null);
 
                      if (response == JOptionPane.YES_OPTION) {
@@ -215,15 +215,15 @@ public class Mercurial {
         FileObject fo = FileUtil.toFileObject(file);
         String foMime;
         if (fo == null) {
-            foMime = "content/unknown";
+            foMime = "content/unknown"; // NOI18N
         } else {
             foMime = fo.getMIMEType();
-            if ("content/unknown".equals(foMime)) {
-                foMime = "text/plain";
+            if ("content/unknown".equals(foMime)) { // NOI18N
+                foMime = "text/plain"; // NOI18N
             }
         }
         if ((fileStatusCache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
-            return HgUtils.isFileContentBinary(file) ? "application/octet-stream" : foMime;
+            return HgUtils.isFileContentBinary(file) ? "application/octet-stream" : foMime; // NOI18N
         } else {
             return foMime;
         }
@@ -255,12 +255,12 @@ public class Mercurial {
         try {
             File original = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
             if (original == null) {
-                Logger.getLogger(Mercurial.class.getName()).log(Level.INFO, "Unable to get original file {0}", workingCopy);
+                Logger.getLogger(Mercurial.class.getName()).log(Level.INFO, "Unable to get original file {0}", workingCopy); // NOI18N
                  return;
             }
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
         } catch (IOException e) {
-            Logger.getLogger(Mercurial.class.getName()).log(Level.INFO, "Unable to get original file", e);
+            Logger.getLogger(Mercurial.class.getName()).log(Level.INFO, "Unable to get original file", e); // NOI18N
         }
     }
 

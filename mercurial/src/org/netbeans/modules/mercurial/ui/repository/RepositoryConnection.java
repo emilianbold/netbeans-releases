@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -30,7 +30,7 @@ import org.openide.util.NbBundle;
  */
 public class RepositoryConnection {
     
-    private static final String RC_DELIMITER = "~=~";
+    private static final String RC_DELIMITER = "~=~"; // NOI18N
     
     private String url;   
     private String username;
@@ -59,15 +59,15 @@ public class RepositoryConnection {
     }
 
     public String getUsername() {
-        return username == null ? "" : username;
+        return username == null ? "" : username; // NOI18N
     }
 
     public String getPassword() {
-        return password == null ? "" : password ;
+        return password == null ? "" : password ; // NOI18N
     }
 
     public String getExternalCommand() {
-        return externalCommand == null ? "" : externalCommand;
+        return externalCommand == null ? "" : externalCommand; // NOI18N
     }
     
     public HgURL getURL() throws MalformedURLException {
@@ -198,10 +198,10 @@ public class RepositoryConnection {
         String[] fields = str.split(RC_DELIMITER);
         int l = fields.length;
         String url          =           fields[0];
-        String username     = l > 1 && !fields[1].equals("") ? fields[1] : null;
-        //String password     = l > 2 && !fields[2].equals("") ? Scrambler.getInstance().descramble(fields[2]) : null;
+        String username     = l > 1 && !fields[1].equals("") ? fields[1] : null; // NOI18N
+        //String password     = l > 2 && !fields[2].equals("") ? Scrambler.getInstance().descramble(fields[2]) : null; // NOI18N
         String password     = null;
-        String extCmd       = l > 3 && !fields[3].equals("") ? fields[3] : null;
+        String extCmd       = l > 3 && !fields[3].equals("") ? fields[3] : null; // NOI18N
         return new RepositoryConnection(url, username, password, extCmd);        
     }
 }

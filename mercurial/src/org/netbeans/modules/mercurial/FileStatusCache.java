@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -49,7 +49,7 @@ public class FileStatusCache {
      * values if they are interested in this file.
      * The New value is a ChangedEvent object (old FileInformation object may be null)
      */
-    public static final String PROP_FILE_STATUS_CHANGED = "status.changed";
+    public static final String PROP_FILE_STATUS_CHANGED = "status.changed"; // NOI18N
     
     /**
      * A special map saying that no file inside the folder is managed.
@@ -281,7 +281,7 @@ public class FileStatusCache {
     }
     
     private FileInformation createFileInformation(File file) {        
-        Mercurial.LOG.log(Level.FINE, "createFileInformation(): {0}", file);
+        Mercurial.LOG.log(Level.FINE, "createFileInformation(): {0}", file); // NOI18N
         if (file == null)
             return FILE_INFORMATION_UNKNOWN;
         if (hg.isAdministrative(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE)
@@ -298,7 +298,7 @@ public class FileStatusCache {
         try {
             fi = HgCommand.getSingleStatus(rootManagedFolder, file.getParent(), file.getName());
         } catch (HgException ex) {
-            Mercurial.LOG.log(Level.FINE, "createFileInformation() file: {0} {1}", new Object[] {file.getAbsolutePath(), ex.toString()});
+            Mercurial.LOG.log(Level.FINE, "createFileInformation() file: {0} {1}", new Object[] {file.getAbsolutePath(), ex.toString()}); // NOI18N
             return FILE_INFORMATION_UNKNOWN;
         }
         return fi;
@@ -496,7 +496,7 @@ public class FileStatusCache {
         if (files == null) files = new File[0];
         Map<File, FileInformation> folderFiles = new HashMap<File, FileInformation>(files.length);
         
-        Mercurial.LOG.log(Level.FINE, "scanFolder(): {0}", dir);
+        Mercurial.LOG.log(Level.FINE, "scanFolder(): {0}", dir); // NOI18N
         if (hg.isAdministrative(dir)) {
             folderFiles.put(dir, FILE_INFORMATION_EXCLUDED_DIRECTORY); // Excluded dir
             return folderFiles;
@@ -526,7 +526,7 @@ public class FileStatusCache {
             //interestingFiles = HgCommand.getAllInterestingStatus(rootManagedFolder);
             //removedOrDeletedFiles = HgCommand.getAllRemovedDeletedStatus(rootManagedFolder);
         } catch (HgException ex) {
-            Mercurial.LOG.log(Level.FINE, "scanFolder() dir: {0} {1}", new Object[] {dir.getAbsolutePath(), ex.toString()});
+            Mercurial.LOG.log(Level.FINE, "scanFolder() dir: {0} {1}", new Object[] {dir.getAbsolutePath(), ex.toString()}); // NOI18N
             return folderFiles;
         }
                 

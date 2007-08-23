@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]"  // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -38,7 +38,7 @@ public class ExceptionHandler {
     public final static int EX_CANNOT_READ_COMMIT_MSG = 32;
     public final static int EX_UNABLE_EXECUTE_CMD = 64;
                  
-    static final String ACTION_CANCELED_BY_USER = org.openide.util.NbBundle.getMessage(ExceptionHandler.class, "MSG_ActionCanceledByUser");
+    static final String ACTION_CANCELED_BY_USER = org.openide.util.NbBundle.getMessage(ExceptionHandler.class, "MSG_ActionCanceledByUser"); // NOI18N
     private final HgException exception;
     private final int exceptionMask;
 
@@ -58,7 +58,7 @@ public class ExceptionHandler {
     }
 
     private static int getMask(String msg) {
-        if(msg == null || msg.trim().equals("")) {
+        if(msg == null || msg.trim().equals("")) { // NOI18N
             return EX_UNKNOWN;
         }
         msg = msg.toLowerCase();        

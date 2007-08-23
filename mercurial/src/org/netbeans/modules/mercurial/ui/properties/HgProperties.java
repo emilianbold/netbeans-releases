@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -62,9 +62,9 @@ import org.openide.NotifyDescriptor;
  */
 public class HgProperties implements ActionListener, DocumentListener {
     
-    private static final String HGPROPNAME_USERNAME = "username";
-    private static final String HGPROPNAME_DEFAULT_PULL = "default-pull";
-    private static final String HGPROPNAME_DEFAULT_PUSH = "default-push";
+    private static final String HGPROPNAME_USERNAME = "username"; // NOI18N
+    private static final String HGPROPNAME_DEFAULT_PULL = "default-pull"; // NOI18N
+    private static final String HGPROPNAME_DEFAULT_PUSH = "default-push"; // NOI18N
 
     private PropertiesPanel panel;
     private File root;
@@ -155,14 +155,14 @@ public class HgProperties implements ActionListener, DocumentListener {
                     for (Enumeration e = props.propertyNames(); e.hasMoreElements() ; ) {
                         String name = (String) e.nextElement();
                         String tmp = props.getProperty(name);
-                        String value = tmp != null ? tmp : "";
+                        String value = tmp != null ? tmp : ""; // NOI18N
                         hgProps[i] = new HgPropertiesNode(name, value);
                         i++;
                      }
                      propTable.setNodes(hgProps);
                 }
             };
-            support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(HgProperties.class, "LBL_Properties_Progress"));
+            support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(HgProperties.class, "LBL_Properties_Progress")); // NOI18N
         } finally {
             support = null;
         }
@@ -173,8 +173,8 @@ public class HgProperties implements ActionListener, DocumentListener {
             if (!HgModuleConfig.getDefault().isUserNameValid(value)) {
                 try {
                     JOptionPane.showMessageDialog(null, 
-                        NbBundle.getMessage(HgProperties.class, "MSG_PROPERTIES_INVALID_MESSAGE", value, name), 
-                        NbBundle.getMessage(HgProperties.class, "MSG_PROPERTIES_INVALID_TITLE"), JOptionPane.ERROR_MESSAGE);
+                        NbBundle.getMessage(HgProperties.class, "MSG_PROPERTIES_INVALID_MESSAGE", value, name),  // NOI18N
+                        NbBundle.getMessage(HgProperties.class, "MSG_PROPERTIES_INVALID_TITLE"), JOptionPane.ERROR_MESSAGE); // NOI18N
                 } catch (Exception ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
@@ -203,8 +203,8 @@ public class HgProperties implements ActionListener, DocumentListener {
 
     public void addProperty() {
         if (addProperty(getPropertyName(), getPropertyValue())) {
-            panel.comboName.getEditor().setItem("");
-            panel.txtAreaValue.setText("");
+            panel.comboName.getEditor().setItem(""); // NOI18N
+            panel.txtAreaValue.setText(""); // NOI18N
         }
     }
     
@@ -225,7 +225,7 @@ public class HgProperties implements ActionListener, DocumentListener {
                     HgRepositoryContextCache.resetPushDefault();
                 }
             };
-            support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(HgProperties.class, "LBL_Properties_Progress"));
+            support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(HgProperties.class, "LBL_Properties_Progress")); // NOI18N
         } finally {
             support = null;
         }
@@ -265,7 +265,7 @@ public class HgProperties implements ActionListener, DocumentListener {
         String name = panel.comboName.getEditor().getItem().toString().trim();
         String value = panel.txtAreaValue.getText().trim();
         
-        if (name.length() == 0 || value.length() == 0 || name.indexOf(" ") > 0) {
+        if (name.length() == 0 || value.length() == 0 || name.indexOf(" ") > 0) { // NOI18N
             panel.btnAdd.setEnabled(false);
         } else {
             panel.btnAdd.setEnabled(true);

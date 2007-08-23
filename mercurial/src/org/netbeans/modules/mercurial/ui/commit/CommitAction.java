@@ -10,7 +10,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -64,7 +64,7 @@ import org.openide.NotifyDescriptor;
  */
 public class CommitAction extends AbstractAction {
     
-    static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
+    static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage"; // NOI18N
 
     private final VCSContext context;
 
@@ -226,8 +226,8 @@ public class CommitAction extends AbstractAction {
             if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                 enabled = false;
                 String msg = (status == FileInformation.STATUS_VERSIONED_CONFLICT) ?
-                        loc.getString("MSG_CommitForm_ErrorConflicts") :
-                        loc.getString("MSG_CommitForm_ErrorRemoteChanges");
+                        loc.getString("MSG_CommitForm_ErrorConflicts") : // NOI18N
+                        loc.getString("MSG_CommitForm_ErrorRemoteChanges"); // NOI18N
                 panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
                 conflicts = true;
             }
@@ -243,23 +243,23 @@ public class CommitAction extends AbstractAction {
                                                 CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
         }
 
-        String contentTitle = (String) panel.getClientProperty("contentTitle");
+        String contentTitle = (String) panel.getClientProperty("contentTitle"); // NOI18N
 // NOI18N
         DialogDescriptor dd = (DialogDescriptor) panel.getClientProperty("DialogDescriptor"); // NOI18N
         String errorLabel;
         if (stickyTags.size() <= 1) {
             String stickyTag = stickyTags.size() == 0 ? null : (String) stickyTags.iterator().next();
             if (stickyTag == null) {
-                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle }));
+                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle })); // NOI18N
                 errorLabel = ""; // NOI18N
             } else {
-                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branch"), new Object [] { contentTitle, stickyTag }));
-                String msg = MessageFormat.format(loc.getString("MSG_CommitForm_InfoBranch"), new Object [] { stickyTag });
+                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branch"), new Object [] { contentTitle, stickyTag })); // NOI18N
+                String msg = MessageFormat.format(loc.getString("MSG_CommitForm_InfoBranch"), new Object [] { stickyTag }); // NOI18N
                 errorLabel = "<html><font color=\"#002080\">" + msg + "</font></html>"; // NOI18N
             }
         } else {
-            dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branches"), new Object [] { contentTitle }));
-            String msg = loc.getString("MSG_CommitForm_ErrorMultipleBranches");
+            dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branches"), new Object [] { contentTitle })); // NOI18N
+            String msg = loc.getString("MSG_CommitForm_ErrorMultipleBranches"); // NOI18N
             errorLabel = "<html><font color=\"#CC0000\">" + msg + "</font></html>"; // NOI18N
         }
         if (!conflicts) {
@@ -295,10 +295,10 @@ public class CommitAction extends AbstractAction {
         try {
             HgUtils.outputMercurialTabInRed(
                     NbBundle.getMessage(CommitAction.class,
-                    "MSG_COMMIT_TITLE"));
+                    "MSG_COMMIT_TITLE")); // NOI18N
             HgUtils.outputMercurialTabInRed(
                     NbBundle.getMessage(CommitAction.class,
-                    "MSG_COMMIT_TITLE_SEP"));
+                    "MSG_COMMIT_TITLE_SEP")); // NOI18N
             if (addCandidates.size() > 0 ) {
                 HgCommand.doAdd(repository, addCandidates);
                 for (File f : addCandidates) {
@@ -310,22 +310,22 @@ public class CommitAction extends AbstractAction {
             if (commitCandidates.size() == 1) {
                 HgUtils.outputMercurialTab(
                         NbBundle.getMessage(CommitAction.class,
-                        "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size(), prjName));
+                        "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size(), prjName)); // NOI18N
             } else {
                 HgUtils.outputMercurialTab(
                         NbBundle.getMessage(CommitAction.class,
-                        "MSG_COMMIT_INIT_SEP", commitCandidates.size(), prjName));
+                        "MSG_COMMIT_INIT_SEP", commitCandidates.size(), prjName)); // NOI18N
             }
             for (File f : commitCandidates) {
-                HgUtils.outputMercurialTab("\t" + f.getAbsolutePath());
+                HgUtils.outputMercurialTab("\t" + f.getAbsolutePath()); // NOI18N
             }
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
         }
         cache.refreshCached(ctx);
-        HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE"));
-        HgUtils.outputMercurialTab("");
+        HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
+        HgUtils.outputMercurialTab(""); // NOI18N
    }
 }
 

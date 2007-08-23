@@ -9,7 +9,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -50,7 +50,7 @@ public class MergeAction extends AbstractAction {
         this.context = context;
         putValue(Action.NAME, name);
         
-        System.out.println("Merge: " + context);
+        System.out.println("Merge: " + context); // NOI18N
     }
 
     public boolean isEnabled() {        
@@ -83,12 +83,12 @@ public class MergeAction extends AbstractAction {
             public void perform() {
                 try {
                     HgUtils.outputMercurialTabInRed(
-                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE"));
+                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE")); // NOI18N
                     HgUtils.outputMercurialTabInRed(
-                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE_SEP"));
+                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE_SEP")); // NOI18N
                     doMergeAction(root, revStr);
                     HgUtils.forceStatusRefresh(root);
-                    HgUtils.outputMercurialTab("");
+                    HgUtils.outputMercurialTab(""); // NOI18N
                 } catch (HgException ex) {
                     NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
                     DialogDisplayer.getDefault().notifyLater(e);
@@ -110,24 +110,24 @@ public class MergeAction extends AbstractAction {
                         HgCommand.isMergeAbortUncommittedMsg(line)){ 
                         bMergeFailed = true;
                         HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
-                        "MSG_MERGE_FAILED"));
+                        "MSG_MERGE_FAILED")); // NOI18N
                         break;
                 }
                 if (HgCommand.isMergeConflictMsg(line)) {
                     bConflicts = true;
                     String filepath = line.substring(HgCommand.HG_MERGE_CONFLICT_ERR.length());
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_CONFLICT", filepath));
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_CONFLICT", filepath)); // NOI18N
                     HgCommand.createConflictFile(filepath);
                 }
             }
          
             if (bConflicts) {
                 HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
-                        "MSG_MERGE_DONE_CONFLICTS"));
+                        "MSG_MERGE_DONE_CONFLICTS")); // NOI18N
             }
             if (!bMergeFailed && !bConflicts) {
                 HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
-                        "MSG_MERGE_DONE"));
+                        "MSG_MERGE_DONE")); // NOI18N
             }
         }
         return true;
@@ -138,14 +138,14 @@ public class MergeAction extends AbstractAction {
         
         if (list.size() == 2) {
             outRed.println(NbBundle.getMessage(MergeAction.class, 
-                    "MSG_MERGE_WARN_NEEDED", list));
+                    "MSG_MERGE_WARN_NEEDED", list)); // NOI18N
             outRed.println(NbBundle.getMessage(MergeAction.class, 
-                    "MSG_MERGE_DO_NEEDED"));
+                    "MSG_MERGE_DO_NEEDED")); // NOI18N
         } else {
             outRed.println(NbBundle.getMessage(MergeAction.class, 
-                    "MSG_MERGE_WARN_MULTIPLE_HEADS", list.size(), list));
+                    "MSG_MERGE_WARN_MULTIPLE_HEADS", list.size(), list)); // NOI18N
             outRed.println(NbBundle.getMessage(MergeAction.class, 
-                    "MSG_MERGE_DONE_MULTIPLE_HEADS"));
+                    "MSG_MERGE_DONE_MULTIPLE_HEADS")); // NOI18N
         }
     }
     
@@ -154,14 +154,14 @@ public class MergeAction extends AbstractAction {
         
         if (list.size() == 2) {
             HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
-                    "MSG_MERGE_WARN_NEEDED", list));
+                    "MSG_MERGE_WARN_NEEDED", list)); // NOI18N
             HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
-                    "MSG_MERGE_DO_NEEDED"));
+                    "MSG_MERGE_DO_NEEDED")); // NOI18N
         } else {
             HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
-                    "MSG_MERGE_WARN_MULTIPLE_HEADS", list.size(), list));
+                    "MSG_MERGE_WARN_MULTIPLE_HEADS", list.size(), list)); // NOI18N
             HgUtils.outputMercurialTabInRed(NbBundle.getMessage(MergeAction.class, 
-                    "MSG_MERGE_DONE_MULTIPLE_HEADS"));
+                    "MSG_MERGE_DONE_MULTIPLE_HEADS")); // NOI18N
         }
     }
 

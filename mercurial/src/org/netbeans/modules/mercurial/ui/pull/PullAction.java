@@ -9,7 +9,7 @@
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]" // NOI18N
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
@@ -130,8 +130,8 @@ public class PullAction extends AbstractAction {
                 listIncoming = HgCommand.doIncoming(root);
             }else{
                 for (int i = 0; i < 10000; i++) {
-                    if (!new File(root.getParentFile(), root.getName() + "_bundle" + i).exists()) {
-                        bundleFile = new File(root.getParentFile(), root.getName() + "_bundle" + i);
+                    if (!new File(root.getParentFile(), root.getName() + "_bundle" + i).exists()) { // NOI18N
+                        bundleFile = new File(root.getParentFile(), root.getName() + "_bundle" + i); // NOI18N
                         break;
                     }
                 }
@@ -142,11 +142,11 @@ public class PullAction extends AbstractAction {
             boolean bNoChanges = HgCommand.isNoChanges(listIncoming.get(listIncoming.size() - 1));
 
             // Warn User when there are Local Changes are present that Pull could overwrite
-            if (!bNoChanges && !confirmWithLocalChanges(ctx, PullAction.class, "MSG_PULL_LOCALMODS_CONFIRM_TITLE", "MSG_PULL_LOCALMODS_CONFIRM_QUERY")) {
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE"));
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE_SEP"));
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_LOCALMODS_CANCEL"));
-                HgUtils.outputMercurialTab("");
+            if (!bNoChanges && !confirmWithLocalChanges(ctx, PullAction.class, "MSG_PULL_LOCALMODS_CONFIRM_TITLE", "MSG_PULL_LOCALMODS_CONFIRM_QUERY")) { // NOI18N
+                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE")); // NOI18N
+                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE_SEP")); // NOI18N
+                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_LOCALMODS_CANCEL")); // NOI18N
+                HgUtils.outputMercurialTab(""); // NOI18N
                 return;
             }
 
@@ -163,29 +163,29 @@ public class PullAction extends AbstractAction {
             }            
                        
             if (list != null && !list.isEmpty()) {
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE"));
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE_SEP"));
+                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE")); // NOI18N
+                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE_SEP")); // NOI18N
 
                 if (!bNoChanges) {
-                    annotateChangeSets(listIncoming, PullAction.class, "MSG_CHANGESETS_TO_PULL");
+                    annotateChangeSets(listIncoming, PullAction.class, "MSG_CHANGESETS_TO_PULL"); // NOI18N
                 }
 
                 HgUtils.outputMercurialTab(list);
                 HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                        PullAction.class, "MSG_PULL_FROM", fromPrjName, pullPath));
+                        PullAction.class, "MSG_PULL_FROM", fromPrjName, pullPath)); // NOI18N
                 HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                        PullAction.class, "MSG_PULL_TO", toPrjName, root));
+                        PullAction.class, "MSG_PULL_TO", toPrjName, root)); // NOI18N
 
                 // Handle Merge - both automatic and merge with conflicts
                 boolean bMergeNeededDueToPull = HgCommand.isMergeNeededMsg(list.get(list.size() - 1));
                 boolean bComfirmMerge = false;
                 if(bMergeNeededDueToPull){
                     bComfirmMerge = HgUtils.confirmDialog(
-                        PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY");
+                        PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY"); // NOI18N
                 }
                 if (bComfirmMerge) {
-                    HgUtils.outputMercurialTab("");
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_MERGE_DO"));
+                    HgUtils.outputMercurialTab(""); // NOI18N
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_MERGE_DO")); // NOI18N
                     MergeAction.doMergeAction(root, null);
                 }
                 
@@ -204,7 +204,7 @@ public class PullAction extends AbstractAction {
                 } catch (java.lang.Exception ex) {
                 }
             }
-            HgUtils.outputMercurialTab("");
+            HgUtils.outputMercurialTab(""); // NOI18N
             
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);

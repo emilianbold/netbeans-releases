@@ -32,21 +32,21 @@ public class HgMail {
     /* Validation of email address from www.leshazlewood.com */
 
     //RFC 2822 token definitions for valid email - only used together to form a java Pattern object:
-    private static final String sp = "\\!\\#\\$\\%\\&\\'\\*\\+\\-\\/\\=\\?\\^\\_\\`\\{\\|\\}\\~";
-    private static final String atext = "[a-zA-Z0-9" + sp + "]";
-    private static final String atom = atext + "+"; //one or more atext chars
-    private static final String dotAtom = "\\." + atom;
-    private static final String localPart = atom + "(" + dotAtom + ")*"; //one atom followed by 0 or more dotAtoms.
+    private static final String sp = "\\!\\#\\$\\%\\&\\'\\*\\+\\-\\/\\=\\?\\^\\_\\`\\{\\|\\}\\~"; // NOI18N
+    private static final String atext = "[a-zA-Z0-9" + sp + "]"; // NOI18N
+    private static final String atom = atext + "+";  // NOI18N //one or more atext chars
+    private static final String dotAtom = "\\." + atom; // NOI18N
+    private static final String localPart = atom + "(" + dotAtom + ")*";  // NOI18N //one atom followed by 0 or more dotAtoms.
 
     //RFC 1035 tokens for domain names:
-    private static final String letter = "[a-zA-Z]";
-    private static final String letDig = "[a-zA-Z0-9]";
-    private static final String letDigHyp = "[a-zA-Z0-9-]";
-    public static final String rfcLabel = letDig + letDigHyp + "{0,61}" + letDig;
-    private static final String domain = rfcLabel + "(\\." + rfcLabel + ")*\\." + letter + "{2,6}";
+    private static final String letter = "[a-zA-Z]"; // NOI18N
+    private static final String letDig = "[a-zA-Z0-9]"; // NOI18N
+    private static final String letDigHyp = "[a-zA-Z0-9-]"; // NOI18N
+    public static final String rfcLabel = letDig + letDigHyp + "{0,61}" + letDig; // NOI18N
+    private static final String domain = rfcLabel + "(\\." + rfcLabel + ")*\\." + letter + "{2,6}"; // NOI18N
 
     //Combined together, these form the allowed email regexp allowed by RFC 2822:
-    private static final String addrSpec = "^" + localPart + "@" + domain + "$";
+    private static final String addrSpec = "^" + localPart + "@" + domain + "$"; // NOI18N
 
 
     //now compile it:
@@ -58,8 +58,8 @@ public class HgMail {
          * and text <username@domain> are allowed
          */
         name = name.trim();
-        if (name.endsWith(">")) {
-            int startbr = name.lastIndexOf("<");
+        if (name.endsWith(">")) { // NOI18N
+            int startbr = name.lastIndexOf("<"); // NOI18N
             if (startbr != -1) {
                 String newName = name.substring(startbr + 1, name.length() -1); 
                 return VALID_PATTERN.matcher(newName).matches();
