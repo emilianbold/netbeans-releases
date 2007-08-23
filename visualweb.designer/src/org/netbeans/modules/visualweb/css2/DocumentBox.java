@@ -909,13 +909,26 @@ public abstract class DocumentBox extends ContainerBox {
         // XXX Missing text.
         cc.metrics = CssUtilities.getDesignerFontMetricsForElement(body, null, webform.getDefaultFontSize());
 
+        // XXX #109306 Remove also sibling boxes representing the same element.
+        // XXX Why they don't have common parent?
+        CssBox[] boxesToRemove = parentBox.getBoxesToRemove(target);
+        
         // Add the new box right behind the old box        
         parentBox.addNode(cc, node, null, target, null);
 
         // Remove the old box
         CssBox deleted = target;
 
-        if (!parentBox.removeBox(target)) {
+        // XXX Removing the old box (and its connected siblings).
+        boolean removed = false;
+        for (CssBox boxToRemove : boxesToRemove) {
+            if (parentBox.removeBox(boxToRemove)) {
+                removed = true;
+            }
+        }
+//        if (!parentBox.removeBox(target)) {
+        if (removed) {
+            // XXX Suspicious (presumably not working attemt) to the recovery.
             // Internal error, but try to gracefully recover
             redoLayout(true);
 

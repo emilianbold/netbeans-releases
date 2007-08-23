@@ -141,6 +141,7 @@ public class LineBoxGroup extends ContainerBox {
      * Remove a box from the "master" box list, not the actual
      * children list (which contains line boxes)
      */
+    @Override
     protected boolean removeBox(CssBox box) {
         if (allBoxes == null) {
             ErrorManager.getDefault().log("Unexpected removeBox " + box + ": lbg already empty");
@@ -149,25 +150,25 @@ public class LineBoxGroup extends ContainerBox {
         } else {
             boolean ret = allBoxes.remove(box);
             
-            // XXX #109306 Remove also sibling boxes representing the same element.
-            // XXX Why they don't have common parent?
-            Element element = box.getElement();
-            if (element != null) {
-                int size = allBoxes.size();
-                List<CssBox> toRemove = new ArrayList<CssBox>();
-                for (int i = 0; i < size; i++) {
-                    CssBox siblingBox = allBoxes.get(i);
-                    if (siblingBox == null) {
-                        continue;
-                    }
-                    if (element == siblingBox.getElement()) {
-                        toRemove.add(siblingBox);
-                    }
-                }
-                for (CssBox siblingBoxToRemove : toRemove) {
-                    allBoxes.remove(siblingBoxToRemove);
-                }
-            }
+//            // XXX #109306 Remove also sibling boxes representing the same element.
+//            // XXX Why they don't have common parent?
+//            Element element = box.getElement();
+//            if (element != null) {
+//                int size = allBoxes.size();
+//                List<CssBox> toRemove = new ArrayList<CssBox>();
+//                for (int i = 0; i < size; i++) {
+//                    CssBox siblingBox = allBoxes.get(i);
+//                    if (siblingBox == null) {
+//                        continue;
+//                    }
+//                    if (element == siblingBox.getElement()) {
+//                        toRemove.add(siblingBox);
+//                    }
+//                }
+//                for (CssBox siblingBoxToRemove : toRemove) {
+//                    allBoxes.remove(siblingBoxToRemove);
+//                }
+//            }
 
             if (allBoxes.size() == 0) {
                 ContainerBox parent = getParent();
@@ -180,6 +181,30 @@ public class LineBoxGroup extends ContainerBox {
             return ret;
         }
     }
+    
+    /** XXX #112576. */
+    @Override
+    protected CssBox[] getBoxesToRemove(CssBox toRemove) {
+        // XXX #109306 Remove also sibling boxes representing the same element.
+        // XXX Why they don't have common parent?
+        Element element = toRemove.getElement();
+        if (element != null) {
+            int size = allBoxes.size();
+            List<CssBox> boxesToRemove = new ArrayList<CssBox>();
+            for (int i = 0; i < size; i++) {
+                CssBox siblingBox = allBoxes.get(i);
+                if (siblingBox == null) {
+                    continue;
+                }
+                if (element == siblingBox.getElement()) {
+                    boxesToRemove.add(siblingBox);
+                }
+            }
+            return boxesToRemove.toArray(new CssBox[boxesToRemove.size()]);
+        }
+        return new CssBox[] {toRemove};
+    }
+    
 
     protected CssBox notifyChildResize(CssBox child, FormatContext context) {
         int oldHeight = contentHeight;

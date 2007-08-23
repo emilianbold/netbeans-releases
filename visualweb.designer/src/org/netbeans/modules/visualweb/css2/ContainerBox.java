@@ -272,6 +272,12 @@ public class ContainerBox extends CssBox {
 
         return boxes.remove(box);
     }
+    
+    /** XXX #112576.
+     * @see LineBoxGroup#getBoxesToRemove */
+    protected CssBox[] getBoxesToRemove(CssBox toRemove) {
+        return new CssBox[] {toRemove};
+    }
 
     /** This method can be called to make a hint as to how many
      * children will be added to this box. If the box already has
