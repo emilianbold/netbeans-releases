@@ -421,9 +421,7 @@ public class SearchForJavaAction extends WizardAction {
     
     public static final String[] JAVA_FILESYSTEM_LOCATIONS_COMMON = new String[] {
         "$S{java.home}", // NOI18N
-        "$S{java.home}/..", // NOI18N
-        "$N{install}", // NOI18N
-        "$N{install}/Java" // NOI18N
+        "$S{java.home}/.." // NOI18N        
     };
     
     public static final String[] JAVA_FILESYSTEM_LOCATIONS_UNIX = new String[] {
@@ -431,6 +429,9 @@ public class SearchForJavaAction extends WizardAction {
         "$N{home}/java", // NOI18N
         "$N{home}/jdk", // NOI18N
         "$N{home}/Java", // NOI18N
+        
+        "$N{install}", // NOI18N
+        "$N{install}/Java", // NOI18N
         
         "/usr", // NOI18N
         "/usr/jdk", // NOI18N
@@ -476,6 +477,7 @@ public class SearchForJavaAction extends WizardAction {
     };
     
     public static final String[] JAVA_FILESYSTEM_LOCATIONS_WINDOWS = new String[] {
-        
+        "$N{install}", // NOI18N
+        "$N{install}/Java" // NOI18N
     };
 }
