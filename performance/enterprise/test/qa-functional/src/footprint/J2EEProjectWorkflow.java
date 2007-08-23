@@ -88,14 +88,12 @@ public class J2EEProjectWorkflow extends org.netbeans.performance.test.utilities
         
         new EditAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode(j2eeproject_war), "Configuration Files|sun-web.xml")); // NOI18N
         TopComponentOperator xmlEditor = new TopComponentOperator("sun-web.xml");
-        new JButtonOperator(xmlEditor, "New...", 0).push(); //NOI18N
-        
-        NbDialogOperator dialog = new NbDialogOperator("JSP Configuration Property"); // NOI18N
-        JComboBoxOperator combo = new JComboBoxOperator(dialog, 0);
-        combo.selectItem("javaEncoding");
-        combo.waitItemSelected("javaEncoding");
-        dialog.ok();
-        
+
+        EPFootprintUtilities.insertToFile("sun-web.xml", 10, "    <property name=\"javaEncoding\" value=\"UTF8\">", true);
+        EPFootprintUtilities.insertToFile("sun-web.xml", 10, "      <description>Encoding for generated Java servlet.</description>", true);
+        EPFootprintUtilities.insertToFile("sun-web.xml", 10, "    </property>", true);
+
+       
         if (xmlEditor.isModified() )
             xmlEditor.saveDocument();
         
