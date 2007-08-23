@@ -105,11 +105,10 @@ heap_size () {
         mem=`/usr/sbin/prtconf | grep Memory | tr -dc '[0-9]'`
         mem=`expr $mem / 4`
         ;;
-# Disable the heuristics on Mac until we resolve #106965
-#    Darwin*)
-#        mem=`sysctl hw.physmem | tr -d [:alpha:][:space:].:`
-#        mem=`expr $mem / 4194304`
-#        ;;
+    Darwin*)
+        mem=`sysctl hw.physmem | tr -d [:alpha:][:space:].:`
+        mem=`expr $mem / 4194304`
+        ;;
         *) 
         ;;
     esac
@@ -128,11 +127,6 @@ ${netbeans_default_options}
 EOF
         heap_size
 	netbeans_default_options="-J-Xmx${max_heap_size}m ${netbeans_default_options}"
-fi
-
-# filter CMS options on Mac, see #106965
-if uname | grep 'Darwin' > /dev/null; then
-        netbeans_default_options=`echo $netbeans_default_options |tr " " "\n" |grep -v -E CMS\|[+]UseConcMarkSweep |tr "\n" " "`
 fi
 
 # add or update service tag record to allow discovery
