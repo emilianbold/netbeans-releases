@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
                 <classpath path="${antlr.jar}"/>
         </antlr>   
         -->
-        <java classname="antlr.Tool">
+        <java classname="antlr.Tool"  fork="true">
             <arg value="-o"/>
             <arg value="${antlr.output.dir}"/>
             <arg value="${antlr.grammar.dir}/cppparser.g"/>
