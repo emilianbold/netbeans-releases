@@ -476,6 +476,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
 
         acceleratorText.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "acceleratorText.text")); // NOI18N
 
+        clearAccelButton.setMnemonic('1');
         clearAccelButton.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.clearAccelButton.text")); // NOI18N
         clearAccelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -535,6 +536,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                     .add(clearAccelButton))
                 .add(12, 12, 12))
         );
+
+        clearAccelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.clearAccelButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         jLabel10.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "jLabel10.text")); // NOI18N
 
@@ -704,6 +707,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
 
         jLabel14.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel14.text")); // NOI18N
 
+        jLabel17.setLabelFor(jTabbedPane1);
         jLabel17.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jLabel17.text")); // NOI18N
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -812,6 +816,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel6.add(actionsCombo, gridBagConstraints);
+        actionsCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.actionsCombo.AccessibleContext.accessibleName")); // NOI18N
+        actionsCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.actionsCombo.AccessibleContext.accessibleDescription")); // NOI18N
 
         actionsLabel.setText(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "actionsLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -872,6 +878,9 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
                         .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)))
                 .addContainerGap())
         );
+
+        jTabbedPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jTabbedPane1.AccessibleContext.accessibleName")); // NOI18N
+        jTabbedPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.jTabbedPane1.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetClassButtonActionPerformed
