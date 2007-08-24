@@ -68,6 +68,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -322,13 +323,18 @@ public class EditorContextImpl extends EditorContext {
         Object annotation,
         Object timeStamp
     ) {
-        if (annotation instanceof Object[]) {
+        if (annotation instanceof LineBreakpoint) {
+            // A sort of hack to be able to retrieve the original line.
+            LineBreakpoint lb = (LineBreakpoint) annotation;
+            return LineTranslations.getTranslations().getOriginalLineNumber(lb, timeStamp);
+        }
+        /*if (annotation instanceof Object[]) {
             // A sort of hack to be able to retrieve the original line.
             Object[] urlLine = (Object[]) annotation;
             String url = (String) urlLine[0];
             int line = ((Integer) urlLine[1]).intValue();
             return LineTranslations.getTranslations().getOriginalLineNumber(url, line, timeStamp);
-        }
+        }*/
         DebuggerAnnotation a = (DebuggerAnnotation) annotation;
         if (timeStamp == null) 
             return a.getLine ().getLineNumber () + 1;

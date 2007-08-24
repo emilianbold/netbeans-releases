@@ -90,7 +90,8 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         // We need to retrieve the original line number which is associated
         // with the start of this session.
         line = EditorContextBridge.getContext().getLineNumber(
-                new Object[] { url, new Integer(line) }, getDebugger());
+                getBreakpoint(),
+                getDebugger());
         lineNumber = line;
     }
 

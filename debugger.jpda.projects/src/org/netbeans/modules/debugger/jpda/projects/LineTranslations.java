@@ -53,9 +53,8 @@ class LineTranslations {
 
     private ChangeListener          changedFilesListener;
     private Map<Object, Registry>   timeStampToRegistry = new WeakHashMap<Object, Registry>();
-    //private Set<DataObject>         modifiedDataObjects;
-    //private Set<LineBreakpoint>     translatedBreakpoints = new HashSet<LineBreakpoint>();
     private Map<LineBreakpoint, BreakpointLineUpdater> lineUpdaters = new HashMap<LineBreakpoint, BreakpointLineUpdater>();
+    private Map<Object, Map<LineBreakpoint, Integer>> originalBreakpointLines = new WeakHashMap<Object, Map<LineBreakpoint, Integer>>();
     
     private LineTranslations() {
     }
@@ -100,6 +99,35 @@ class LineTranslations {
     }
     
     /**
+     * Returns the original line number of a breakpoint.
+     *
+     * @param url The URL
+     * @param currentLineNumber The current line number
+     * @param timeStamp a time stamp to be used
+     *
+     * @return The original line number
+     */
+    synchronized int getOriginalLineNumber (
+        LineBreakpoint lb,
+        Object timeStamp
+    ) {
+        Map<LineBreakpoint, Integer> bpLines = originalBreakpointLines.get(timeStamp);
+        if (bpLines != null) {
+            Integer line = bpLines.get(lb);
+            if (line != null) {
+                //System.err.println("Original line of "+lb+" IS "+line);
+                return line.intValue();
+            }
+        } else {
+            bpLines = new WeakHashMap<LineBreakpoint, Integer>();
+            originalBreakpointLines.put(timeStamp, bpLines);
+        }
+        int line = getOriginalLineNumber(lb.getURL(), lb.getLineNumber(), timeStamp);
+        bpLines.put(lb, line);
+        return line;
+    }
+    
+    /**
      * Returns the original line number.
      *
      * @param url The URL
@@ -124,6 +152,7 @@ class LineTranslations {
                 //System.err.println("  current line = "+line);
                 //System.err.println("  original line = "+lineSet.getOriginalLineNumber(line));
                 //System.err.println("  original line2 = "+lineSet.getOriginal(currentLineNumber));
+                //System.err.println("Original line of "+currentLineNumber+" IS "+lineSet.getOriginalLineNumber(lineSet.getCurrent(currentLineNumber)));
                 return lineSet.getOriginalLineNumber(lineSet.getCurrent(currentLineNumber));
             } catch (IndexOutOfBoundsException ioobex) {
                 //ioobex.printStackTrace();
@@ -143,6 +172,15 @@ class LineTranslations {
         //System.err.println("LineTranslations.updateTimeStamp("+timeStamp+", "+url+")");
         Registry registry = timeStampToRegistry.get (timeStamp);
         registry.register (getDataObject (url));
+        Map<LineBreakpoint, Integer> bpLines = originalBreakpointLines.get(timeStamp);
+        if (bpLines != null) {
+            Set<LineBreakpoint> bpts = new HashSet<LineBreakpoint>(bpLines.keySet());
+            for (LineBreakpoint bp : bpts) {
+                if (url.equals(bp.getURL())) {
+                    bpLines.remove(bp);
+                }
+            }
+        }
     }
 
     Line.Set getLineSet (String url, Object timeStamp) {
