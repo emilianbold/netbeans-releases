@@ -93,9 +93,9 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super.performTest("file.cc", 19, 1, "::");
     }  
     
-//    public void testCompletionInConstructor() throws Exception {
-//        super.performTest("file.h", 20, 9);
-//    }
+    public void testCompletionInConstructor() throws Exception {
+        super.performTest("file.h", 20, 9);
+    }
     
     public void testProtectedMethodByClassPrefix() throws Exception {
         super.performTest("file.h", 23, 9, "B::");
