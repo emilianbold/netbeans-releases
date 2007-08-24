@@ -86,7 +86,6 @@
   
    <!-- Start of CSH -->
     <!-- Client: -->
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode" url="webservice/nodes/wsitconf-AdvancedConfigurationClientNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.BindingContainerClientNode" url="webservice/nodes/wsitconf-BindingContainerClientNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode" url="webservice/nodes/wsitconf-UserAuthenticationNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.KeystoreClientNode" url="webservice/nodes/wsitconf-CertificatesNode.html"/>
@@ -95,7 +94,6 @@
    
    <!-- Service: -->
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingContainerServiceNode" url="webservice/nodes/wsitconf-BindingContainerServiceNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingFaultNode" url="webservice/nodes/wsitconf-BindingFaultNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingInputNode" url="webservice/nodes/wsitconf-BindingInputNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingOutputNode" url="webservice/nodes/wsitconf-BindingOutputNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationContainerServiceNode" url="webservice/nodes/wsitconf-OperationContainerServiceNode.html"/>
@@ -105,7 +103,6 @@
    <!-- Old and unused: -->
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.security.nodes.KeystoreClientNode" url="webservice/nodes/wsitconf-KeystoreNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.security.nodes.SecurityBindingTokensNode" url="webservice/nodes/wsitconf-SecurityBindingTokensNode.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.security.nodes.SignEncryptNode" url="webservice/nodes/wsitconf-SignEncryptNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.security.nodes.WssNode" url="webservice/nodes/wsitconf-WssNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.security.nodes.TrustNode" url="webservice/nodes/wsitconf-TrustNode.html"/>
    <!-- End of CSH -->
