@@ -45,5 +45,6 @@ Microsystems, Inc. All Rights Reserved.
         <zip basedir="SVGDemo" excludes="CVS" destfile="${examples}/SVGDemo.zip"/>
         <zip basedir="UIDemo" excludes="CVS" destfile="${examples}/UIDemo.zip"/>
         <zip basedir="WMADemo" excludes="CVS" destfile="${examples}/WMADemo.zip"/>
+        <zip basedir="VDCustomComponents" excludes="CVS" destfile="${examples}/VDCustomComponents.zip"/>        
     </target>
 </project>

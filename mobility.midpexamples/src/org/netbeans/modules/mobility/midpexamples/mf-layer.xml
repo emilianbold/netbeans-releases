@@ -30,48 +30,18 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/midp.html"/>
                         <attr name="position" intvalue="100"/>
-                        <file name="AdvancedMultimediaSupplements.zip" url="AdvancedMultimediaSupplements.zip">
+                        <file name="VDCustomComponents.zip" url="VDCustomComponents.zip">
                             <attr name="position" intvalue="100"/>
                             <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/AdvancedMultimediaSupplements.html"/>
+                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/VisualDesignerCustomComponents.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
                             <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>
-                        <file name="AudioSamples.zip" url="AudioSamples.zip">
-                            <attr name="position" intvalue="200"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/AudioSamples.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>
-                        <file name="BluetoothDemo.zip" url="BluetoothDemo.zip">
-                            <attr name="position" intvalue="300"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/BluetoothDemo.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>
-                        <file name="CityGuide.zip" url="CityGuide.zip">
-                            <attr name="position" intvalue="400"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/CityGuide.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.1"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>
+                        </file>                        
                         <file name="converter.zip" url="converter.zip">
-                            <attr name="position" intvalue="500"/>
+                            <attr name="position" intvalue="200"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/converter.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -81,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-1.0"/>
                         </file>
                         <file name="GameBuilderDemo.zip" url="GameBuilderDemo.zip">
-                            <attr name="position" intvalue="600"/>
+                            <attr name="position" intvalue="300"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/GameBuilderDemo.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -90,8 +60,68 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
-                        <file name="I18nDemo.zip" url="I18nDemo.zip">
+                        <file name="LocalizationDemo.zip" url="LocalizationDemo.zip">
+                            <attr name="position" intvalue="400"/>
+                            <attr name="template" boolvalue="true"/>
+                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/LocalizationDemo.html"/>
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
+                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
+                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
+                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
+                            <attr name="MicroEdition-Profile" stringvalue="MIDP-1.0"/>
+                        </file>
+                        <file name="SunSamples-Demos.zip" url="SunSamples-Demos.zip">
+                            <attr name="position" intvalue="500"/>
+                            <attr name="template" boolvalue="true"/>
+                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/SunSamples-Demos.html"/>
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
+                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
+                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
+                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
+                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
+                        </file>
+                        <file name="AdvancedMultimediaSupplements.zip" url="AdvancedMultimediaSupplements.zip">
+                            <attr name="position" intvalue="600"/>
+                            <attr name="template" boolvalue="true"/>
+                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/AdvancedMultimediaSupplements.html"/>
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
+                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
+                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
+                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
+                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
+                        </file>
+                        <file name="AudioSamples.zip" url="AudioSamples.zip">
                             <attr name="position" intvalue="700"/>
+                            <attr name="template" boolvalue="true"/>
+                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/AudioSamples.html"/>
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
+                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
+                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
+                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
+                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
+                        </file>
+                        <file name="BluetoothDemo.zip" url="BluetoothDemo.zip">
+                            <attr name="position" intvalue="800"/>
+                            <attr name="template" boolvalue="true"/>
+                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/BluetoothDemo.html"/>
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
+                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
+                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
+                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
+                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
+                        </file>
+                        <file name="CityGuide.zip" url="CityGuide.zip">
+                            <attr name="position" intvalue="900"/>
+                            <attr name="template" boolvalue="true"/>
+                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/CityGuide.html"/>
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
+                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
+                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
+                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.1"/>
+                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
+                        </file>
+                        <file name="I18nDemo.zip" url="I18nDemo.zip">
+                            <attr name="position" intvalue="1000"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/I18nDemo.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -101,7 +131,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
                         <file name="JSR172Demo.zip" url="JSR172Demo.zip">
-                            <attr name="position" intvalue="800"/>
+                            <attr name="position" intvalue="1100"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/JSR172Demo.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -110,18 +140,8 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
-                        <file name="LocalizationDemo.zip" url="LocalizationDemo.zip">
-                            <attr name="position" intvalue="900"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/LocalizationDemo.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-1.0"/>
-                        </file>
                         <file name="MMAPIDemos.zip" url="MMAPIDemos.zip">
-                            <attr name="position" intvalue="1000"/>
+                            <attr name="position" intvalue="1200"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/MMAPIDemos.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -131,7 +151,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
                         <file name="NetworkDemo.zip" url="NetworkDemo.zip">
-                            <attr name="position" intvalue="1100"/>
+                            <attr name="position" intvalue="1300"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/NetworkDemo.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -141,7 +161,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
                         <file name="ObexDemo.zip" url="ObexDemo.zip">
-                            <attr name="position" intvalue="1200"/>
+                            <attr name="position" intvalue="1400"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/ObexDemo.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -151,7 +171,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
                         <file name="OpenGLESDemo.zip" url="OpenGLESDemo.zip">
-                            <attr name="position" intvalue="1300"/>
+                            <attr name="position" intvalue="1500"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/OpenGLESDemo.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -161,7 +181,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
                         <file name="PDAPDemo.zip" url="PDAPDemo.zip">
-                            <attr name="position" intvalue="1400"/>
+                            <attr name="position" intvalue="1600"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/PDAPDemo.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -171,7 +191,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
                         <file name="PhotoAlbum.zip" url="PhotoAlbum.zip">
-                            <attr name="position" intvalue="1500"/>
+                            <attr name="position" intvalue="1700"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/PhotoAlbum.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -181,7 +201,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
                         <file name="SIPDemo.zip" url="SIPDemo.zip">
-                            <attr name="position" intvalue="1600"/>
+                            <attr name="position" intvalue="1800"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/SIPDemo.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -190,18 +210,8 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
-                        <file name="SunSamples-Demos.zip" url="SunSamples-Demos.zip">
-                            <attr name="position" intvalue="1700"/>
-                            <attr name="template" boolvalue="true"/>
-                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/SunSamples-Demos.html"/>
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                            <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                            <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                        </file>
                         <file name="SVGContactList.zip" url="SVGContactList.zip">
-                            <attr name="position" intvalue="1800"/>
+                            <attr name="position" intvalue="1900"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/SVGContactList.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -211,7 +221,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
                         <file name="SVGDemo.zip" url="SVGDemo.zip">
-                            <attr name="position" intvalue="1900"/>
+                            <attr name="position" intvalue="2000"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/SVGDemo.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -221,7 +231,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
                         <file name="UIDemo.zip" url="UIDemo.zip">
-                            <attr name="position" intvalue="2000"/>
+                            <attr name="position" intvalue="2100"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/UIDemo.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
@@ -231,7 +241,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
                         </file>
                         <file name="WMADemo.zip" url="WMADemo.zip">
-                            <attr name="position" intvalue="2100"/>
+                            <attr name="position" intvalue="2200"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/WMADemo.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>

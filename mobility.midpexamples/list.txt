@@ -19,3 +19,4 @@ Templates/Project/Samples/J2ME/MIDP/SVGContactList.zip=SVGContactList
 Templates/Project/Samples/J2ME/MIDP/SVGDemo.zip=SVGDemo
 Templates/Project/Samples/J2ME/MIDP/UIDemo.zip=UIDemo
 Templates/Project/Samples/J2ME/MIDP/WMADemo.zip=WMADemo
+Templates/Project/Samples/J2ME/MIDP/VDCustomComponents.zip=Visual Designer Custom Components

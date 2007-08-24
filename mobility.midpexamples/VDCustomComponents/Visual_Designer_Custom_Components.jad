@@ -1,0 +1,10 @@
+MIDlet-1: Login Screen Example,/org/netbeans/microedition/resources/file.png,loginscreenexample.LoginScreenExample
+MIDlet-2: SMS Composer Example,/org/netbeans/microedition/resources/dir.png,smscomposerexample.SMSComposerExample
+MIDlet-3: File Browser Example,/org/netbeans/microedition/resources/file.png,filebrowserexample.FileBrowserExample
+MIDlet-Jar-Size: 65884
+MIDlet-Jar-URL: Visual_Designer_Custom_Components.jar
+MIDlet-Name: Visual Designer Custom Components
+MIDlet-Vendor: Vendor
+MIDlet-Version: 1.0
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0
