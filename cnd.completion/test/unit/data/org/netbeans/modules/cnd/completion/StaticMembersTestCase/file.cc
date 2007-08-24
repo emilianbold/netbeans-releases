@@ -29,7 +29,7 @@ void ClassC::cPrivFun() {
 }
 
 void ClassD::dPubFun() {
-    // ClassA a; // ClassA is inaccessible whithin this context... (?)
+    ::ClassA a; // ClassA is inaccessible whithin this context... (?)
     ClassB b;
     ClassC c;
     ClassD d;

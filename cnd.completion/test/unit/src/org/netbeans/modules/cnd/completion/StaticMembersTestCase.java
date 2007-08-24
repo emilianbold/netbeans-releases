@@ -64,6 +64,22 @@ public class StaticMembersTestCase extends CompletionBaseTestCase {
     public void testStaticClassAaPubFunVarD() throws Exception {
         performTest("file.cc", 10, 5, "d.");
     }      
+    
+    public void testStaticClassDaPubFunClassA() throws Exception {
+        performTest("file.cc", 37, 5, "::ClassA::");
+    }      
+    public void testStaticClassDaPubFunClassB() throws Exception {
+        performTest("file.cc", 37, 5, "::ClassB::");
+    }      
+    public void testStaticClassDaPubFunClassC() throws Exception {
+        performTest("file.cc", 37, 5, "::ClassC::");
+    }      
+    public void testStaticClassDaPubFunClassD() throws Exception {
+        performTest("file.cc", 37, 5, "::ClassD::");
+    }      
+    public void testStaticClassDaPubFunClassE() throws Exception {
+        performTest("file.cc", 37, 5, "::ClassE::");
+    }      
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

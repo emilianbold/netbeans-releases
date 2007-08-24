@@ -140,7 +140,7 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
     }
     
     public void testClassDdPubFunClassA() throws Exception {
-        performTest("file.cc", 37, 5, "ClassA::");
+        performTest("file.cc", 37, 5, "::ClassA::");
     }    
     
     public void testClassDdPubFunClassB() throws Exception {

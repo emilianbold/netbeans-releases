@@ -1,0 +1,8 @@
+cProt int
+cProtSt int
+cPub int
+cPubSt int
+cProtFun() void
+cProtFunSt() void
+cPubFun() void
+cPubFunSt() void
