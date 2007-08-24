@@ -71,29 +71,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="netbeans-extra" depends="jar-bridge,release"/>
 
-    <target name="nbm" depends="init,netbeans,-nbm-prompt-for-storepass,-create-dest-dir-nbm" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <property name="nbm.target.cluster" value=""/> <!-- fallback -->
-        <makenbm file="build/${nbm}"
-                 productdir="${cluster}"
-                 module="${module.jar}"
-                 homepage="${nbm.homepage}"
-                 distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}"
-                 releasedate="${nbm.release.date}"
-                 moduleauthor="${nbm.module.author}"
-                 targetcluster="${nbm.target.cluster}"
-                 global="${nbm.is.global}">
-            <license>
-                <text>For the Ant module itself:</text>
-                <file location="${license.file}"/>
-                <text>For the Ant runtime:</text>
-                <file location="${nb_all}/ant/external/ant-1.7.0-license.txt"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
-
     <target name="jnlp" depends="netbeans">
         <property name="dir" location="${jnlp.dest.dir}/org-apache-tools-ant-module"/>
         <mkdir dir="${dir}"/>
@@ -159,13 +136,6 @@ Microsystems, Inc. All Rights Reserved.
             release.version: version of Ant being bundled, e.g. "1.6"
             release.path: full path to the Ant binary distribution, e.g. "/tmp/apache-ant-1.6.0"
         </fail>
-        <property name="ant-api.zip" location="external/ant-api-${release.version}.zip"/>
-        <echo>1.  Will store Javadoc to ${ant-api.zip}...</echo>
-        <delete file="${ant-api.zip}"/>
-        <property name="orig.manual" location="${release.path}/docs/manual"/>
-        <zip zipfile="${ant-api.zip}">
-            <fileset dir="${orig.manual}/api"/>
-        </zip>
         <echo>2.  Creating the Ant manual from ${orig.manual}...</echo>
         <property name="online.manual" location="build/release-work/online-manual"/>
         <delete dir="${online.manual}"/>
@@ -176,7 +146,7 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="api/"/>
             </fileset>
         </copy>
-        <property name="ant-docs.zip" location="external/ant-docs-${release.version}.zip"/>
+        <property name="ant-docs.zip" location="docs/external/ant-docs-${release.version}.zip"/>
         <zip zipfile="${ant-docs.zip}" compress="true">
             <fileset dir="${online.manual}"/>
         </zip>

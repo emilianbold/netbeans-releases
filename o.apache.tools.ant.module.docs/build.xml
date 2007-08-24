@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="javahelp" depends="init" if="has.javahelp">
         <mkdir dir="${build.javahelp.dir}/${javahelp.base}/ant-docs"/>
         <unzip dest="${build.javahelp.dir}/${javahelp.base}/ant-docs">
-            <fileset dir="../external">
+            <fileset dir="external">
                 <include name="ant-docs-*.zip"/>
             </fileset>
         </unzip>
@@ -48,29 +48,6 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </pathconvert>
         <nbbrowse url="jar:file:${docs.zip}!/index.html"/>
-    </target>
-
-    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <property name="nbm.target.cluster" value=""/> <!-- fallback -->
-        <makenbm file="build/${nbm}"
-                 productdir="${cluster}"
-                 module="${module.jar}"
-                 homepage="${nbm.homepage}"
-                 distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}"
-                 releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}"
-                 targetcluster="${nbm.target.cluster}"
-                 global="${nbm.is.global}">
-            <license>
-                <text>For the Ant documentation module itself:</text>
-                <file location="${license.file}"/>
-                <text>For the Ant manual:</text>
-                <file location="${nb_all}/ant/external/ant-1.7.0-license.txt"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
     </target>
 
 </project>
