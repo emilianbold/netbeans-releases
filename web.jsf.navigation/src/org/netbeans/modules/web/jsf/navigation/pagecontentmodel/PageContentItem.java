@@ -15,7 +15,9 @@ import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Utilities;
 
@@ -144,6 +146,9 @@ public class PageContentItem {
         }
         return bufferedIcon;
     }
+     private static final Image UNKONWN_ICON = org.openide.util.Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/question.png"); // NOI18N
+     private static final Logger LOG = Logger.getLogger(PageContentItem.class.toString());
+     // private final Image backupImage = new ImageIcon
     
     /** The method creates a BufferedImage which represents the same Image as the
      * original but buffered to avoid repeated loading of the icon while repainting.
@@ -151,8 +156,10 @@ public class PageContentItem {
     private Image toBufferedImage(Image img) {
         // load the image
         if( img == null ){
+            
             System.out.println("Image is null for Bean: " + toString());
-            return null;
+            LOG.fine("Page Content Item does not have Image: " + toString());
+            img = UNKONWN_ICON;
         }
         new javax.swing.ImageIcon(img);
         BufferedImage rep = createBufferedImage(img.getWidth(null), img.getHeight(null));
