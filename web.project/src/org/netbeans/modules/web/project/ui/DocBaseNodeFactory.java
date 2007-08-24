@@ -36,8 +36,12 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.SourceNodeFactory.PreselectPropertiesAction;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.FindAction;
+import org.openide.actions.PasteAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
@@ -49,6 +53,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -206,8 +211,6 @@ public final class DocBaseNodeFactory implements NodeFactory {
     
     private static final class DocBaseNode extends BaseNode {
         
-        private Action actions[];
-        
         DocBaseNode (DataFolder folder, Project project) {
             super(folder, project);
         }
@@ -215,23 +218,6 @@ public final class DocBaseNodeFactory implements NodeFactory {
         @Override
         public String getDisplayName () {
             return NbBundle.getMessage(DocBaseNodeFactory.class, "LBL_Node_DocBase"); //NOI18N
-        }
-
-        @Override
-        public Action[] getActions( boolean context ) {
-            if ( actions == null ) {
-                actions = new Action[9];
-                actions[0] = org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction();
-                actions[1] = null;
-                actions[2] = org.openide.util.actions.SystemAction.get( org.openide.actions.FileSystemAction.class );
-                actions[3] = null;
-                actions[4] = org.openide.util.actions.SystemAction.get( org.openide.actions.FindAction.class );
-                actions[5] = null;
-                actions[6] = org.openide.util.actions.SystemAction.get( org.openide.actions.PasteAction.class );
-                actions[7] = null;
-                actions[8] = new PreselectPropertiesAction(project, "Sources"); //NOI18N
-            }
-            return actions;            
         }
     }
 
@@ -250,6 +236,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
     private static class BaseNode extends FilterNode {
         private static Image WEB_PAGES_BADGE = Utilities.loadImage( "org/netbeans/modules/web/project/ui/resources/webPagesBadge.gif" ); //NOI18N
         
+        private Action actions[];
         protected final Project project;
         
         BaseNode(DataFolder folder, Project project) {
@@ -283,6 +270,23 @@ public final class DocBaseNodeFactory implements NodeFactory {
         @Override
         public boolean canRename() {
             return false;
+        }
+        
+        @Override
+        public Action[] getActions(boolean context) {
+            if (actions == null) {
+                actions = new Action[9];
+                actions[0] = CommonProjectActions.newFileAction();
+                actions[1] = null;
+                actions[2] = SystemAction.get(FileSystemAction.class);
+                actions[3] = null;
+                actions[4] = SystemAction.get(FindAction.class);
+                actions[5] = null;
+                actions[6] = SystemAction.get(PasteAction.class);
+                actions[7] = null;
+                actions[8] = new PreselectPropertiesAction(project, "Sources"); //NOI18N
+            }
+            return actions;
         }
     }
 
