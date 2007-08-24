@@ -281,7 +281,7 @@ public class FacesModel extends Model {
                 //There is already logic in ModelCreateVisitor to check for the
                 //existence of Model for a given .jsp file but not for a .java file
                 jspFile = FacesModel.getJspForJava(file);
-                if(jspFile != null && FacesModel.getFacesModel(jspFile) == null) {
+                if(jspFile != null && set.getModel(jspFile) == null) {
                     create = true;
                 }
             }
