@@ -9,10 +9,12 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 
 	public SchemaAttributeImpl(IEPModel model) {
 		super(model);
+		setType("/IEP/Metadata/ColumnMetadata"); //NOI18N
 	}
 	
 	public SchemaAttributeImpl(IEPModel model, Element element) {
 		super(model, element);
+		setType("/IEP/Metadata/ColumnMetadata"); //NOI18N
 	}
 
 	public String getAttributeName() {
@@ -29,6 +31,7 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		if(p == null) {
 			p = getModel().getFactory().createProperty(getModel());
 			p.setName(PROP_NAME);
+			this.addProperty(p);
 		}
 		
 		p.setValue(attributeName);
@@ -48,6 +51,7 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		if(p == null) {
 			p = getModel().getFactory().createProperty(getModel());
 			p.setName(PROP_SCALE);
+			this.addProperty(p);
 		}
 		
 		p.setValue(attributeScale);
@@ -68,6 +72,7 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		if(p == null) {
 			p = getModel().getFactory().createProperty(getModel());
 			p.setName(PROP_SIZE);
+			this.addProperty(p);
 		}
 		
 		p.setValue(attributeSize);
@@ -88,6 +93,7 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		if(p == null) {
 			p = getModel().getFactory().createProperty(getModel());
 			p.setName(PROP_TYPE);
+			this.addProperty(p);
 		}
 		
 		p.setValue(attributeType);
@@ -108,10 +114,27 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		if(p == null) {
 			p = getModel().getFactory().createProperty(getModel());
 			p.setName(PROP_COMMENT);
+			this.addProperty(p);
 		}
 		
 		p.setValue(attributeComment);
 		
 	}
 	
+	public String toString() {
+		StringBuffer resultStrBuffer = new StringBuffer();
+		
+		resultStrBuffer.append("name: ");
+		resultStrBuffer.append(getAttributeName());
+		resultStrBuffer.append("type: ");
+		resultStrBuffer.append(getAttributeType());
+		resultStrBuffer.append("scale: ");
+		resultStrBuffer.append(getAttributeScale());
+		resultStrBuffer.append("size: ");
+		resultStrBuffer.append(getAttributeSize());
+		resultStrBuffer.append("comment: ");
+		resultStrBuffer.append(getAttributeComment());
+		
+		return resultStrBuffer.toString();
+	}
 }

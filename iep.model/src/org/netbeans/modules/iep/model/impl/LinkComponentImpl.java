@@ -11,10 +11,12 @@ public class LinkComponentImpl extends ComponentImpl implements LinkComponent {
 
 	public LinkComponentImpl(IEPModel model,  Element e) {
     	super(model, e);
+    	setType("/IEP/Model/Link"); //NOTI18N
     }
 	
 	public LinkComponentImpl(IEPModel model) {
     	super(model);
+    	setType("/IEP/Model/Link"); //NOTI18N
     }
 	
 	

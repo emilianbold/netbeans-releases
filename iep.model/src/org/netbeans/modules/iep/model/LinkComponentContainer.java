@@ -9,4 +9,8 @@ public interface LinkComponentContainer extends Component {
 	void addLinkComponent(LinkComponent link);
 	
 	void removeLinkComponent(LinkComponent link);
+	
+	LinkComponent findLink(String linkName);
+	
+	LinkComponent findLink(OperatorComponent from, OperatorComponent to);
 }

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.iep.model;
 
+import java.io.File;
 import java.util.List;
 
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -71,4 +72,8 @@ public abstract class IEPModel extends AbstractDocumentModel<IEPComponent> imple
    
      public abstract PlanComponent getPlanComponent();
      
+     public abstract File getWsdlFile(); 
+     
+	 public abstract void saveWsdl() throws Exception;
+    		   
 }

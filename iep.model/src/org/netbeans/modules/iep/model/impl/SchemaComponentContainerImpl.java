@@ -13,10 +13,12 @@ public class SchemaComponentContainerImpl extends ComponentImpl implements Schem
 
 	public SchemaComponentContainerImpl(IEPModel model) {
 		super(model);
+		setType("/IEP/Model/Plan|Schemas"); //NOI18N
 	}
 
 	public SchemaComponentContainerImpl(IEPModel model, Element element) {
 		super(model, element);
+		setType("/IEP/Model/Plan|Schemas"); //NOI18N
 	}
 	
 	public IEPComponent createChild (Element childEl) {

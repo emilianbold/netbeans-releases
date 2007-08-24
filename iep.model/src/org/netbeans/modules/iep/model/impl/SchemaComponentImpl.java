@@ -13,10 +13,12 @@ public class SchemaComponentImpl extends ComponentImpl implements SchemaComponen
 
 	public SchemaComponentImpl(IEPModel model) {
 		super(model);
+		setType("/IEP/Metadata/Schema"); //NOI18N
 	}
 
 	public SchemaComponentImpl(IEPModel model, Element element) {
 		super(model, element);
+		setType("/IEP/Metadata/Schema"); //NOI18N
 	}
 	
 	public IEPComponent createChild (Element childEl) {
@@ -105,8 +107,9 @@ public class SchemaComponentImpl extends ComponentImpl implements SchemaComponen
 				SchemaAttribute existingSA = findSchemaAttribute(attrName);
 				if(existingSA != null) {
 					removeSchemaAttribute(existingSA);
-					addChildComponent(sa);
 				}
+				
+				addChildComponent(sa);
 			}
 		}
 		
@@ -117,5 +120,14 @@ public class SchemaComponentImpl extends ComponentImpl implements SchemaComponen
 			removeChildComponent(sa);
 		}
 		
+	}
+	
+	public String toString() {
+		StringBuffer resultStrBuffer = new StringBuffer();
+		
+		resultStrBuffer.append("schema name: ");
+		resultStrBuffer.append(getName());
+		
+		return resultStrBuffer.toString();
 	}
 }
