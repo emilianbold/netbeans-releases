@@ -50,7 +50,7 @@
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationNode" 	url="configeditors/WebAppMessages.html"  />
 
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode"		url="configeditors/WebAppGeneral.html"  />
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode"         url="configeditors/WebAppClassloader.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode"         url="configeditors/WebAppGeneral.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView"                   url="configeditors/Servlet.html"  />
    
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceView" 	url="configeditors/WebserviceDescriptor.html"  />
@@ -79,15 +79,16 @@
 
 
     <!-- older targets we can probably remove -->
-    <mapID target="AS_CFG_ServiceRefPortInfoStubProperty"               url="configeditors/ServiceRefPortInfoStubProperty.html"  />
-    <mapID target="AS_CFG_SessionConfigurationManager" 			url="configeditors/SessionConfigurationManager.html"  />
+    <mapID target="AS_CFG_ServiceRefPortInfoStubProperty"               url="configeditors/Servlet.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletNode"               url="configeditors/ServiceRefPortInfoStubProperty.html"  />
+    <!--<mapID target="AS_CFG_SessionConfigurationManager" 			url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationManagerProperty" 		url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationStoreProperty" 		url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationCookie" 			url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationCookieProperty" 		url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_WebAppLocale"                                 url="configeditors/WebAppLocale.html"  />
     <mapID target="AS_CFG_WebAppLocaleCharsetMapping"                   url="configeditors/WebAppLocaleCharsetMapping.html"  />
-
+-->
    <!-- Sun Resource New File wizard and property sheet CSH pages: -->
    <mapID target="AS_Wiz_ConnPool_chooseDB" 		url="resourcewizards/ConnPool_chooseDB.html"  />
    <mapID target="AS_Wiz_ConnPool_props" 		url="resourcewizards/ConnPool_props.html"  />

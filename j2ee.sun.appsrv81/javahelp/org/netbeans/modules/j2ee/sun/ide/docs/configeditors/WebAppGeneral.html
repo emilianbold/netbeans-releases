@@ -4,7 +4,7 @@
 <head>
 <!--
 
- * Copyright 2006 Sun Microsystems, Inc.
+ * Copyright 2007 Sun Microsystems, Inc.
 
  * All rights reserved. Use is subject to license terms.
 
@@ -32,18 +32,44 @@
   a <tt>sun-web.xml</tt> deployment descriptor if its target server is the Sun 
   Java System Application Server/GlassFish. </p>
 <p>In the General tab of the wizard, you can set the context root, additional 
-  classpath, and JSP configuration properties for the Web application.</p>
-<h3>Context Root</h3>
-<p>The context root is the base directory of the WAR file. The Servlet Context 
-  uses the context root to resolve the path to the WAR file. The URL to a JSP page 
-  or servlet takes this form: </p>
+  classpath, the servlet security provider and configure the class loader for the web application.</p>
+  
+  <h3>Module Details</h3>
+  <p>In the Module Details section of the General tab you can specify the following properties:</p>
+  <ul>
+      <li><b>Context Root.</b>
+      The context root is the base directory of the WAR file. The Servlet Context 
+      uses the context root to resolve the path to the WAR file. The URL to a JSP page 
+      or servlet takes this form:<br>
 <pre><i> hostname:port/contextRoot/relative_URLs_in_WAR_file</i></pre>
-
-<h3>Error URL</h3>
-<p>Optionally specifies a redirect URL in case of an error. </p>
+     </li>
+     <li><b>Error URL.</b> Optionally specifies a redirect URL in case of an error. </li>
+     <li><b>HTTP Servlet Security Provider.</b> <!-- TODO --></li>
+ </ul>
+     <h3>Class Loader</h3>
+     <p>In the Class Loader section you set the properties for a class loader configuration.
+      Use the class loader settings to specify additional classes that are to be loaded by the Web module.</p>
+      <ul>
+          <li><b>Enable Class Loader Configuration.</b> When selected, the Web 
+          module loads the additional classes in the Extra Class Path field.</li>
+          <li><b>Extra Class Path.</b> Enter the classpath for the additional classes to be loaded by the Web module.</li>
+          <li><b>Dynamic Reload Interval.</b></li>
+          <li><b>Delegate Class Loader.</b> When selected, the Web module follows 
+          the standard classloader delegation model and delegates to its parent classloader 
+          first before looking in the local classloader. If this checkbox is not selected, 
+          the Web module follows the delegation model specified in the Servlet specification 
+          and looks in its classloader before looking in the parent classloader. </li>
+      </ul>
+     
+     
+     
+     
+     
+     <!-- TODO -->
+     <!--
 <h3>JSP Configuration Properties</h3>
 <p>In JSP Configuration Properties, you can add or delete the predefined properties 
-  for the Web module's JSP pages. <summary>The following table lists the JSP configuration 
+  for the Web module's JSP pages. The following table lists the JSP configuration 
   properties. The first column lists the name of the property and the second column 
   provides a description of the property and the default value for the property 
   wherever applicable. </p>
@@ -58,7 +84,8 @@
       enabled. checkInterval is the time in seconds between checks to see if a 
       JSP page needs to be recompiled. The default value in seconds in 300. </td>
   </tr>
-    <td valign="top"><tt>compiler</tt></td>
+  <tr>
+  <td valign="top"><tt>compiler</tt></td>
   <td>The compiler Ant should use to compile the JSP page. See Ant documentation for 
     more information. The default compiler is <tt>javac</tt>.</td>
   </tr>
@@ -89,6 +116,7 @@
       for JSP page compilation from the one that is running the application server. 
       The default value is true. </td>
   </tr>
+  <tr>
     <td valign="top"><tt>ieClassId</tt></td>
     <td>The Java plugin COM class ID for Internet Explorer. Its value is used by 
       the <tt>&lt;jsp:plugin&gt;</tt> tags. </td>
@@ -151,14 +179,15 @@
     <td valign="top"><tt>tagPoolMaxSize</tt></td>
     <td>Specify the tag handler pool size. </td>
   </tr>
-    <td valign="top"><tt>xpoweredBy</tt></td>
+  <tr>
+  <td valign="top"><tt>xpoweredBy</tt></td>
   <td>Determines whether the X-Powered-By response header is added by generated 
     servlet. </td>
   </tr>
 </table>
 <h3>Properties</h3>
 <p> In Properties, you can add or delete the predefined properties for the Web 
-  module's JSP pages. <summary>The following table lists the available JSP properties. 
+  module's JSP pages. The following table lists the available JSP properties. 
   The first column lists the name of the property and the second column provides 
   a description of the property and the default value for the property wherever 
   applicable: 
@@ -183,6 +212,7 @@
     <td>The number of threads in the thread pool for single threaded servlets.</td>
   </tr>
 </table>
+-->
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>
@@ -190,10 +220,7 @@
     <dd><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/deploy/deploy_changeserver.html">Changing 
     the Target Server</a></dd>
     <dd><tt>sun-web.xml</tt> Visual Editor:</dd>
-    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="SessionConfigurationManager.html">Session</a></dd> 
     <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppMessages.html">Messages</a></dd> 
-    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppLocale.html">Locale</a></dd> 
-    <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebAppCacheGeneral.html">Cache</a></dd>
     <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebserviceDescriptor.html">Web Service Descriptor</a></dd>
 </dl>
     
