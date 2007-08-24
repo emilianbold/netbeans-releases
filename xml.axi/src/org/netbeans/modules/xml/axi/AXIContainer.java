@@ -19,7 +19,9 @@
 package org.netbeans.modules.xml.axi;
 
 import java.util.List;
+import org.netbeans.modules.xml.axi.ContentModel.ContentModelType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.openide.util.NbBundle;
 
 /**
  * Represents a named component that can contain attributes,
@@ -54,7 +56,25 @@ public abstract class AXIContainer extends AXIComponent {
      * Returns the name.
      */
     public String getName() {
-        return name;
+        if(name != null)
+            return name;
+        
+        if(this instanceof Element)
+            return NbBundle.getMessage(AXIContainer.class, "Unnamed-Element");
+        
+        if(this instanceof ContentModel) {
+            ContentModelType type = ((ContentModel)this).getType();            
+            switch (type) {
+                case COMPLEX_TYPE:
+                    return NbBundle.getMessage(AXIContainer.class, "Unnamed-ComplexType");
+                case GROUP:
+                    return NbBundle.getMessage(AXIContainer.class, "Unnamed-Group");
+                case ATTRIBUTE_GROUP:
+                    return NbBundle.getMessage(AXIContainer.class, "Unnamed-AttributeGroup");
+            }
+        }
+        
+        return NbBundle.getMessage(AXIContainer.class, "Unnamed-Component");
     }
     
     /**
