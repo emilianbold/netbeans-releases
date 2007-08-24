@@ -265,35 +265,38 @@ public class CsmUtilities {
     }
     
     public static CsmFile[] getCsmFiles(DataObject dobj) {
-	if( dobj != null ) {
-	    NativeFileItemSet set = dobj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
-	    if( set == null ) {
-		FileObject fo = dobj.getPrimaryFile();
-		if( fo != null ) {
-		    File file = FileUtil.toFile(fo);
-		    // the file can null, for example, when we edit templates
-		    if( file != null ) {
-                        file = FileUtil.normalizeFile(file);
-                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(file.getAbsolutePath());
-                        if( csmFile != null ) {
-                            return new CsmFile[] { csmFile };
+	if( dobj != null && dobj.isValid()) {
+            try {
+                NativeFileItemSet set = dobj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+                if (set == null) {
+                    FileObject fo = dobj.getPrimaryFile();
+                    if (fo != null) {
+                        File file = FileUtil.toFile(fo);
+                        // the file can null, for example, when we edit templates
+                        if (file != null) {
+                            file = FileUtil.normalizeFile(file);
+                            CsmFile csmFile = CsmModelAccessor.getModel().findFile(file.getAbsolutePath());
+                            if (csmFile != null) {
+                                return new CsmFile[]{csmFile};
+                            }
                         }
-		    }
-		}
-	    }
-	    else {
-		List<CsmFile> l = new ArrayList<CsmFile>(set.size());
-		for( NativeFileItem item : set ) {
-		    CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
-		    if( csmProject != null ) {
-			CsmFile file = csmProject.findFile(item.getFile().getAbsolutePath());
-			if( file != null ) {
-			    l.add(file);
-			}
-		    }
-		}
-		return l.toArray(new CsmFile[l.size()]);
-	    }
+                    }
+                } else {
+                    List<CsmFile> l = new ArrayList<CsmFile>(set.size());
+                    for (NativeFileItem item : set) {
+                        CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
+                        if (csmProject != null) {
+                            CsmFile file = csmProject.findFile(item.getFile().getAbsolutePath());
+                            if (file != null) {
+                                l.add(file);
+                            }
+                        }
+                    }
+                    return l.toArray(new CsmFile[l.size()]);
+                }
+            } catch (IllegalStateException ex){
+                // dobj can be invalid
+            }
 	}
 	return new CsmFile[0];
     }
