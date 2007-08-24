@@ -2801,8 +2801,12 @@ public final class ModelViewMapper {
         for (; box != null; box = box.getParent()) {
             // #107084 Find the element, don't check for the root.
 //            Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
-            Element element = box.getComponentRootElement();
-            if (element != null) {
+//            Element element = box.getComponentRootElement();
+//            if (element != null) {
+            // XXX #113773 Fixing selecting of some element whose parent box 
+            // is excluded from the hierarchy (suspicous architecture).
+            Element element = box.getElement();
+            if (WebForm.getDomProviderService().isPrincipalElement(element, null)) {
                 if (WebForm.getDomProviderService().isSpecialComponent(element)) {
                     continue;
                 }

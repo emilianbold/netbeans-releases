@@ -1486,7 +1486,9 @@ public class InteractionManager {
 ////                                !FacesSupport.isSpecialBean(/*webform, */curr.getDesignBean())) {
 //                                !Util.isSpecialBean(curr.getDesignBean())) {
 //                    MarkupDesignBean currMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(curr);
-                    Element currComponentRootElement = CssBox.getElementForComponentRootCssBox(curr);
+//                    Element currComponentRootElement = CssBox.getElementForComponentRootCssBox(curr);
+                    // XXX #113773
+                    Element currComponentRootElement = CssBox.getComponentRootElementForCssBox(curr);
 //                    if (currMarkupDesignBean != null) {
 ////                        FacesBean fb = FacesSupport.getFacesBean(currMarkupDesignBean);
 //                        FacesBean fb = Util.getFacesBean(currMarkupDesignBean);
@@ -1513,7 +1515,9 @@ public class InteractionManager {
                     // cycling!
 //                    if ((inlineEditor == null) && sm.isSelected(curr.getDesignBean())) {
 //                        if (startInlineEditing(curr.getDesignBean(), null, box, true, true, null,
-                    Element componentRootElement = CssBox.getElementForComponentRootCssBox(curr);
+//                    Element componentRootElement = CssBox.getElementForComponentRootCssBox(curr);
+                    // XXX #113773.
+                    Element componentRootElement = CssBox.getComponentRootElementForCssBox(curr);
                     if ((inlineEditor == null) && sm.isSelected(componentRootElement)) {
 //                        if (startInlineEditing(currMarkupDesignBean, null, box, true, true, null,
                         if (startInlineEditing(componentRootElement, null, box, true, true, null,
@@ -1561,7 +1565,9 @@ public class InteractionManager {
             while (bx != null) {
 //                if (bx.getDesignBean() != null) {
 //                if (CssBox.getMarkupDesignBeanForCssBox(bx) != null) {
-                if (CssBox.getElementForComponentRootCssBox(bx) != null) {
+//                if (CssBox.getElementForComponentRootCssBox(bx) != null) {
+                // XXX #113773.
+                if (CssBox.getComponentRootElementForCssBox(bx) != null) {
                     break;
                 }
 
@@ -1574,7 +1580,9 @@ public class InteractionManager {
             if (bx != null) {
 //                MarkupDesignBean boxMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(bx);
 //                if ((bx.getDesignBean() != null) && sm.isSelected(bx.getDesignBean())) {
-                Element componentRootElement = CssBox.getElementForComponentRootCssBox(bx);
+//                Element componentRootElement = CssBox.getElementForComponentRootCssBox(bx);
+                // XXX #113773.
+                Element componentRootElement = CssBox.getComponentRootElementForCssBox(bx);
                 if ((componentRootElement != null) && sm.isSelected(componentRootElement)) {
                     ancestor = bx;
                 } else {
@@ -1593,7 +1601,9 @@ public class InteractionManager {
 //                if (SelectionManager.canSelectParent(ancestor.getDesignBean())) {
 //                    parent = ancestor.getDesignBean().getBeanParent();
 //                if (SelectionManager.canSelectParent(ancestorMarkupDesignBean)) {
-                Element ancestorComponentRootElement = CssBox.getElementForComponentRootCssBox(ancestor);
+//                Element ancestorComponentRootElement = CssBox.getElementForComponentRootCssBox(ancestor);
+                // XXX #113773.
+                Element ancestorComponentRootElement = CssBox.getComponentRootElementForCssBox(ancestor);
 //                if (SelectionManager.canSelectParent(ancestorComponentRootElement)) {
 //                if (canSelectParent(ancestorComponentRootElement)) {
 //                    parent = ancestorMarkupDesignBean.getBeanParent();
@@ -1634,7 +1644,9 @@ public class InteractionManager {
                 if (!found && (bx != ancestor)) {
                     // Select the box itself, if different from ancestor
 //                    sm.selectComponents(new DesignBean[] { bx.getDesignBean() }, true);
-                    sm.selectComponents(new Element[] { CssBox.getElementForComponentRootCssBox(bx) }, true);
+//                    sm.selectComponents(new Element[] { CssBox.getElementForComponentRootCssBox(bx) }, true);
+                    // XXX #113773.
+                    sm.selectComponents(new Element[] { CssBox.getComponentRootElementForCssBox(bx) }, true);
                 }
             }
         }

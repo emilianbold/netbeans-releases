@@ -1381,6 +1381,19 @@ public class CssBox implements Box {
 //        return WebForm.getDomProviderService().getMarkupDesignBeanForComponentRootElement(element, parentBoxElement);
 //    }
 
+    /** XXX #113773 Find component root element for specified box. */
+    public static Element getComponentRootElementForCssBox(CssBox cssBox) {
+        while (cssBox != null) {
+            Element element = cssBox.getElement();
+            if (WebForm.getDomProviderService().isPrincipalElement(element, null)) {
+                return element;
+            }
+            cssBox = cssBox.getParent();
+        }
+
+        return null;
+    }
+    
     /** XXX This will replace the JSF specific above methods.
      * Gets associated element for the css box. It returns the element only if the specified box
      * represents component top level element except lines, texts and spaces. */
