@@ -255,7 +255,7 @@
     <mapID target="org.netbeans.modules.web.project.ui.customizer.LibrariesChooser" url="ejb/csh/stand-ejb-add-library.html" />
 
     <!-- EJB Module with Existing Ant Script Project Wizard dialog box csh: -->
-    <mapID target="org.netbeans.modules.j2ee.ejbfreeform.ui.EJBLocationsWizardPanel" url="ejb/csh/freeform_ejb_wizard.html" />
+    <!--<mapID target="org.netbeans.modules.j2ee.ejbfreeform.ui.EJBLocationsWizardPanel" url="ejb/csh/freeform_ejb_wizard.html" />-->
 
     <!-- ejb-jar.xml editor csh: -->
     <mapID target="org.netbeans.modules.j2ee.ddloaders.multiview.SessionNode" url="ejb/csh/graphic_editor/dd_multiview_Session.html" />
