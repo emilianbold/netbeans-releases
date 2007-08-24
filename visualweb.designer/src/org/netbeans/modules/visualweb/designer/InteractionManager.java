@@ -1659,8 +1659,12 @@ public class InteractionManager {
              the handlers for these operations
          */
         public void mouseDragged(MouseEvent e) {
-            currentPos.x = e.getX();
-            currentPos.y = e.getY();
+            // XXX #107532 There was interpreted also drag over popup menu (while right click pressed).
+            // Accept only left click one.
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                currentPos.x = e.getX();
+                currentPos.y = e.getY();
+            }
 
             if (interaction != null) {
                 setInsertBox(null, null);
