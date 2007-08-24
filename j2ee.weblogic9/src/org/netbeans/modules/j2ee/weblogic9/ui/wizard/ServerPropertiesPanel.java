@@ -172,6 +172,7 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
 
         // save the data to the parent instantiating iterator
         instantiatingIterator.setUrl(getUrl());
+        instantiatingIterator.setDomainRoot(domainPathField.getText());
         instantiatingIterator.setUsername(usernameField.getText());
         instantiatingIterator.setPassword(new String(passwordField.getPassword()));
         instantiatingIterator.setIsLocal(serverTypeCombo.getSelectedItem().equals(NbBundle.getMessage(ServerPropertiesPanel.class, "SERVER_TYPE_LOCAL")) ? "true" : "false"); // NOI18N
