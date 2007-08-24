@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
+import java.beans.PropertyVetoException;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
-import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
@@ -30,7 +30,6 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
@@ -42,10 +41,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.JPopupMenu;
 
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -57,14 +58,11 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.spi.palette.PaletteController;
 
-import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
-import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
-import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Element;
 
@@ -80,19 +78,10 @@ import org.netbeans.modules.visualweb.css2.SpaceBox;
 import org.netbeans.modules.visualweb.css2.TextBox;
 
 import org.netbeans.modules.visualweb.designer.WebForm.DefaultDesignerEvent;
+import org.openide.explorer.ExplorerManager;
 
 
-// For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
 import org.w3c.dom.Text;
-
-
-// For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
-
-
-// For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
-
-
-// For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
 
 
 // For CVS archaeology: Most of the code in this file used to be in SelectionManager.java
@@ -2114,7 +2103,8 @@ public class InteractionManager {
 
                         if (box == null) {
 //                            ErrorManager.getDefault().log("No box found for element " + bean);
-                            ErrorManager.getDefault().log("No box found for element=" + componentRootElement);
+//                            ErrorManager.getDefault().log("No box found for element=" + componentRootElement);
+                            info("No box found for element=" + componentRootElement);
 
                             continue;
                         }
@@ -2261,7 +2251,8 @@ public class InteractionManager {
 
                 if (box == null) {
                     // This item not draggable for some reason
-                    ErrorManager.getDefault().log("Didn't find box for " + pComponentRootElement); // NOI18N
+//                    ErrorManager.getDefault().log("Didn't find box for " + pComponentRootElement); // NOI18N
+                    info("Didn't find box for " + pComponentRootElement); // NOI18N
                     return;
                 }
 
@@ -2478,8 +2469,10 @@ public class InteractionManager {
                     Transferable transferable = null;
 
                     if (item == null) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                                new IllegalStateException("Invalid item=" + item)); // NOI18N
+//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+//                                new IllegalStateException("Invalid item=" + item)); // NOI18N
+                        info(new IllegalStateException("Invalid item=" + item)); // NOI18N
+
                     } else {
                         transferable = item;
                     }
@@ -2875,6 +2868,9 @@ public class InteractionManager {
 //            cncTransferable = null;
 //        }
 
+        // XXX #104464 To be albe to keep track to the origin of the cnc (in order to deselect it).
+        private WeakReference<TopComponent> cncOriginWRef = new WeakReference<TopComponent>(null);
+
         /** Tries to start the CnC (Click and Click) operation.
          * Currently it simulates the operation from common palette or runtime window. */
         private void tryStartCnC() {
@@ -2886,6 +2882,7 @@ public class InteractionManager {
             }
             
             TopComponent activated = TopComponent.getRegistry().getActivated();
+            cncOriginWRef = new WeakReference(activated);
             if (activated == null) {
                 cncTransferable = null;
                 return;
@@ -2907,8 +2904,25 @@ public class InteractionManager {
         /** Stops CnC (Click and Click) operation. */
         private void stopCnC() {
             cncTransferable = null;
-            // XXX #6476367 They want to also deselect the palette item, like it was before.
-            clearPaletteSelection();
+            
+            TopComponent cncOrigin = cncOriginWRef.get();
+            if (cncOrigin instanceof ExplorerManager.Provider) {
+                clearExplorerManager(((ExplorerManager.Provider)cncOrigin).getExplorerManager());
+            } else {
+                // XXX #6476367 They want to also deselect the palette item, like it was before.
+                clearPaletteSelection();
+            }
+        }
+
+        private void clearExplorerManager(ExplorerManager explorerManager) {
+            try {
+                if (explorerManager == null) {
+                    return;
+                }
+                explorerManager.setSelectedNodes(new Node[0]);
+            } catch (PropertyVetoException ex) {
+                fine(ex);
+            }
         }
         
         private void clearPaletteSelection() {
@@ -2973,7 +2987,8 @@ public class InteractionManager {
                 try {
                     interaction.mouseDragged(e);
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
+//                    ErrorManager.getDefault().notify(ex);
+                    info(ex);
                     escape();
                 }
 
@@ -3423,8 +3438,10 @@ public class InteractionManager {
     private static TopComponent findTopComponentOfId(String id) {
         TopComponent tc = WindowManager.getDefault().findTopComponent(id);
         if (tc == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new NullPointerException("TopComponent of id=" + id + " not found!")); // NOI18N
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                    new NullPointerException("TopComponent of id=" + id + " not found!")); // NOI18N
+            info(new NullPointerException("TopComponent of id=" + id + " not found!")); // NOI18N
+
             return null;
         }
         return tc;
@@ -3443,7 +3460,8 @@ public class InteractionManager {
         try {
             return node.clipboardCopy();
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            info(ex);
         }
         return null;
     }
@@ -3459,7 +3477,8 @@ public class InteractionManager {
                     try {
                         return node.clipboardCopy();
                     } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        info(ex);
                     }
                 }
             }
@@ -3548,4 +3567,19 @@ public class InteractionManager {
     }
     
 
+    private static Logger getLogger() {
+        return Logger.getLogger(InteractionManager.class.getName());
+    }
+    
+    private static void fine(Exception ex) {
+        getLogger().log(Level.FINE, null, ex);
+    }
+
+    private static void info(Exception ex) {
+        getLogger().log(Level.INFO, null, ex);
+    }
+    
+    private static void info(String message) {
+        getLogger().info(message);
+    }
 }
