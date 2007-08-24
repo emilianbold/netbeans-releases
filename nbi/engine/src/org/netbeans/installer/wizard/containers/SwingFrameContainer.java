@@ -31,6 +31,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.URL;
 import javax.swing.AbstractAction;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
@@ -585,6 +586,12 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             titlePanel.setLayout(new GridBagLayout());
             titlePanel.setOpaque(true);
             
+            String imageUri = System.getProperty(WIZARD_FRAME_HEAD_IMAGE_URI_PROPERTY);
+            if(imageUri!=null) {
+                titlePanel.setBackgroundImage(imageUri, titlePanel.ANCHOR_BOTTON_RIGHT);
+                
+            }
+            
             // topSeparator /////////////////////////////////////////////////////////
             topSeparator = new NbiSeparator();
             
@@ -764,6 +771,14 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      */
     public static final String WIZARD_FRAME_TITLE_PREFIX_PROPERTY =
             "nbi.wizard.ui.swing.frame.title.prefix"; // NOI18N
+    
+    /**
+     * Name of the system property which is expected to contain the desired value
+     * for the URI of the wizard frame head background image.
+     */
+    public static final String WIZARD_FRAME_HEAD_IMAGE_URI_PROPERTY =
+            "nbi.wizard.ui.swing.frame.head.image"; // NOI18N
+    
     
     /**
      * Name of the system property which is expected to contain the desired value

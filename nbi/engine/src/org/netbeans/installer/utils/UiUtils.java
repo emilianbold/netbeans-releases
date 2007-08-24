@@ -20,6 +20,7 @@
 
 package org.netbeans.installer.utils;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.security.cert.Certificate;
@@ -251,10 +252,11 @@ public final class UiUtils {
                     try {
                         try {
                             // this helps to avoid some GTK L&F bugs for some locales
+                            LogManager.log("... get installed L&Fs");
                             UIManager.getInstalledLookAndFeels();
-                            
+                            LogManager.log("... set specified L&F");
                             UIManager.setLookAndFeel(className);
-                            
+                            LogManager.log("... check headless");
                             if (SystemUtils.isWindows()) {
                                 // workaround for the issue with further using JFileChooser
                                 // in case of missing system icons
@@ -275,19 +277,26 @@ public final class UiUtils {
                                 new JProgressBar().getMaximumSize();
                                 
                                 LogManager.log("... all UI checks done");
-                            }                            
+                            }
+                            if (GraphicsEnvironment.isHeadless()) {
+                                HeadlessException e = new HeadlessException();
+                                System.err.println(e.getMessage());
+                                throw new InitializationException("Can`t initialize UI", e);
+                            }
+                            LogManager.log("... L&F is set");
                         } catch (Throwable e) {
                             // we're catching Throwable here as pretty much anything can happen
                             // while setting the look and feel and we have no control over it
                             // if something wrong happens we should fall back to the default
                             // cross-platform look and feel which is assumed to be working
                             // correctly
+                            LogManager.log("... Throwable caught", e);
                             if (e instanceof InternalError) {
                                 System.err.println(e.getMessage());
                             } else if (e instanceof ExceptionInInitializerError) {
                                 final Throwable cause = e.getCause();
                                 
-                                if ((cause != null) && 
+                                if ((cause != null) &&
                                         (cause instanceof HeadlessException)) {
                                     System.err.println(cause.getMessage());
                                 }
@@ -329,16 +338,16 @@ public final class UiUtils {
                 String className = UIManager.getSystemLookAndFeelClassName();
                 
                 // if the default look and feel is the cross-platform one, we might
-                // need to correct this choice. E.g. - KDE, where GTK look and feel 
+                // need to correct this choice. E.g. - KDE, where GTK look and feel
                 // would be much more appropriate
                 if (className.equals(UIManager.getCrossPlatformLookAndFeelClassName())) {
                     
                     // if the current platform is Linux and the desktop manager is
                     // KDE, then we should try to use the GTK look and feel
                     try {
-                        if (getCurrentPlatform().isCompatibleWith(Platform.LINUX) && 
+                        if (getCurrentPlatform().isCompatibleWith(Platform.LINUX) &&
                                 (getEnvironmentVariable("KDE_FULL_SESSION") != null)) {
-                            // check whether the GTK look and feel class is 
+                            // check whether the GTK look and feel class is
                             // available -- we'll get CNFE if it is not and it will
                             // not be set
                             Class.forName("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
@@ -433,6 +442,6 @@ public final class UiUtils {
      * windows should be decorated by the current look and feel or the system
      * window manager.
      */
-    public static final String LAF_DECORATED_WINDOWS_PROPERTY = 
+    public static final String LAF_DECORATED_WINDOWS_PROPERTY =
             "nbi.look.and.feel.decorate.windows"; // NOI18N
 }
