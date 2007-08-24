@@ -111,12 +111,13 @@ public class SaveNotifierYesNo
                 dialogTitle, // title
                 true, // modal?
                 buttonOptions,
-                DialogDescriptor.YES_OPTION, // default option
+                saveButton, // default option
                 DialogDescriptor.DEFAULT_ALIGN,
                 null, // help context
                 this, // button action listener
                 false); // leaf?
             
+            dialogDesc.setMessageType(DialogDescriptor.QUESTION_MESSAGE);
             dialogDesc.setClosingOptions(closeOptions);
             dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
         }
