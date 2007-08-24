@@ -127,7 +127,8 @@ public class CodeClipsParametersDialog extends JPanel {
     private void addComponents( int n, JPanel panel, GridBagConstraints gbc) {
         for (int i =0; i < n ; i++) {
             JLabel label = new JLabel(paramArr.elementAt(i).replace("_"," "));
-            JTextField tf = new JTextField(paramArr.elementAt(i), 16);
+           // JTextField tf = new JTextField(paramArr.elementAt(i), 16);
+            JTextField tf = new JTextField("", 16);
             tf.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeClipsParametersDialog.class, "ACSD_ParameterName") + paramArr.elementAt(i));
             tf.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeClipsParametersDialog.class, "ACSD_ParameterDesc") + paramArr.elementAt(i));
             gbc.gridwidth = gbc.RELATIVE;
