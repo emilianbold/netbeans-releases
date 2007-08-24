@@ -247,7 +247,7 @@ public abstract class TestBase extends NbTestCase {
                 File cd = new File(rubydebugDir, "classic-debug.rb");
                 assertTrue("classic-debug found in " + rubydebugDir, cd.isFile());
                 return cd;
-            } else if (relativePath.equals("jruby-1.0")) {
+            } else if (relativePath.equals("jruby-1.0.1")) {
                 return getDirectory("jrubyhome.dir", true);
             } else {
                 return null;

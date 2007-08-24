@@ -79,7 +79,7 @@ public class RubyInstallation {
     private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
 
     /** NOTE: Keep this in sync with ruby/jruby/nbproject/project.properties */
-    private static final String JRUBY_RELEASE = "1.0"; // NOI18N
+    private static final String JRUBY_RELEASE = "1.0.1"; // NOI18N
 
     /** NOTE: Keep this in sync with ruby/jruby/nbproject/project.properties */
     public static final String DEFAULT_RUBY_RELEASE = "1.8"; // NOI18N

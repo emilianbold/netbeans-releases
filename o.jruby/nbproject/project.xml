@@ -14,19 +14,19 @@
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/asm-2.2.3.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.0/lib/asm-2.2.3.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.0.1/lib/asm-2.2.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/asm-commons-2.2.3.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.0/lib/asm-commons-2.2.3.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.0.1/lib/asm-commons-2.2.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jline-0.9.91.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.0/lib/jline-0.9.91.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.0.1/lib/jline-0.9.91.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/backport-util-concurrent.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.0/lib/backport-util-concurrent.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.0.1/lib/backport-util-concurrent.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

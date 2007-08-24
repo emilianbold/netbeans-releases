@@ -24,8 +24,6 @@ import java.io.Reader;
 import org.jruby.common.NullWarnings;
 import org.jruby.lexer.yacc.LexState;
 import org.jruby.lexer.yacc.LexerSource;
-import org.jruby.lexer.yacc.LexerSource;
-import org.jruby.lexer.yacc.RubyYaccLexer;
 import org.jruby.lexer.yacc.RubyYaccLexer;
 import org.jruby.lexer.yacc.StrTerm;
 import org.jruby.lexer.yacc.StringTerm;
@@ -101,7 +99,10 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
 
         String fileName = "unknown";
         Reader lexerReader = new LexerInputReader(input);
-        lexerSource = new LexerSource(fileName, lexerReader, 0);
+
+        // We don't need IDE positions during pure syntax lexing; that's only needed during
+        // parsing for AST nodes
+        lexerSource = new LexerSource(fileName, lexerReader, 0, false);
         lexer.setSource(lexerSource);
 
         Object state = info.state();

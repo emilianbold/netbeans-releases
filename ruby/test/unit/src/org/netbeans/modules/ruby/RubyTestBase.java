@@ -108,7 +108,8 @@ public abstract class RubyTestBase extends NbTestCase {
         }
         assertNotNull(nbtree);
         assertTrue(nbtree.exists());
-        File jruby = new File(nbtree, "nbbuild" + File.separator + "netbeans" + File.separator + "ruby1" + File.separator + "jruby-1.0");
+        // TODO - use constants in RubyInstallation
+        File jruby = new File(nbtree, "nbbuild" + File.separator + "netbeans" + File.separator + "ruby1" + File.separator + "jruby-1.0.1");
         assertTrue(jruby.exists());
         try {
             jruby = jruby.getCanonicalFile();

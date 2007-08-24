@@ -345,7 +345,7 @@ public class RubyParser implements Parser {
                 fileName = file.getFileObject().getNameExt();
             }
 
-            LexerSource lexerSource = new LexerSource(fileName, content, 0);
+            LexerSource lexerSource = new LexerSource(fileName, content, 0, true);
             RubyParserConfiguration configuration = new RubyParserConfiguration();
             result = parser.parse(configuration, lexerSource);
         } catch (SyntaxException e) {

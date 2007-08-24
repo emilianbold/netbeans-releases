@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.ruby.platform/1
-OpenIDE-Module-Specification-Version: 0.41.0
+OpenIDE-Module-Specification-Version: 0.42.0
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/ruby/platform/Bundle.properties
 AutoUpdate-Show-In-Client: false
