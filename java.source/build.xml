@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
             <classpath refid="cp"/>
         </depend>
-        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false" includejavaruntime="true" bootclasspath="../external/javac-api.jar:../external/javac-impl.jar">
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false" includejavaruntime="true" bootclasspath="javacapi/external/javac-api.jar:javacimpl/external/javac-impl.jar">
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
         </javac>
@@ -90,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
             <classpath refid="cp"/>
         </depend>
-        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false" bootclasspath="../external/javac-api.jar:../external/javac-impl.jar:${nbjdk.bootclasspath}">
+        <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false" bootclasspath="javacapi/external/javac-api.jar:javacimpl/external/javac-impl.jar:${nbjdk.bootclasspath}">
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
         </javac>
