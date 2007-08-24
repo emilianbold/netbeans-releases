@@ -1,4 +1,5 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -18,14 +19,17 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="versioncontrol/test" basedir="." default="all">
-    <!-- Name of tested module -->
-    <property name="xtest.module" value="versioncontrol"/>
-
-    <!-- Imports buildtests, cleantests, runtest, cleanresults, realclean, printconfig targets. -->
-    <import file="../../nbbuild/templates/xtest.xml"/>
-
-    <!-- default testtypes, attributes used when no value is supplied from command line -->
-    <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="validation"/>
-</project>
+<mconfig name="Versioning SPI functional test config">
+    
+    <testbag testattribs="validation" executor="ide" name="versioncontrol">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/versioning/VersioningSystemTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>	
+    
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <compiler name="functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
+    
+</mconfig>

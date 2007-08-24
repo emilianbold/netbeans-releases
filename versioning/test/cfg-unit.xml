@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <mconfig name="Versioning SPI Test config">
 
-    <testbag testattribs="stable-versioncontrol" executor="code" name="All Versioning SPI unit tests">
+    <testbag testattribs="validation" executor="code" name="All Versioning SPI unit tests">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/modules/versioning/**/*Test.class"/>
