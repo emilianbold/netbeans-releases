@@ -135,6 +135,11 @@ public final class UncaughtException implements ErrorRule<Void> {
                     }
                 case NEW_CLASS:
                     el = info.getTrees().getElement(path);
+		    
+		    if(isThisParameter(path)) {
+			disableSurroundWithTryCatch = el != null && el.getKind() == ElementKind.CONSTRUCTOR;
+		    }
+		    
                     if (el != null && EXECUTABLE_ELEMENTS.contains(el.getKind())) {
                         uncauched = ((ExecutableElement) el).getThrownTypes();
                     }
@@ -183,6 +188,25 @@ public final class UncaughtException implements ErrorRule<Void> {
         }
         
         return result;
+    }
+    
+    /**
+     * Detects if we are parameter of this() or super() call
+     * @return true if yes
+     */ 
+    private boolean isThisParameter(TreePath path) {
+	//anonymous class must not be on the path to top
+	while(path.getLeaf().getKind() != Kind.CLASS && path.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
+	    if (path.getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION) {
+		MethodInvocationTree mi = (MethodInvocationTree) path.getParentPath().getLeaf();
+		String id = ((IdentifierTree) mi.getMethodSelect()).getName().toString();
+		if ("super".equals(id) || "this".equals(id)) {
+		    return true;
+		}
+	    }
+	    path = path.getParentPath();
+	}
+	return false;
     }
     
     public void cancel() {
