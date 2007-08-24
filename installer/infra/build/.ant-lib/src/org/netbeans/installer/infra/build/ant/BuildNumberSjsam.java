@@ -96,9 +96,9 @@ public class BuildNumberSjsam extends Task {
                         
             if (matcher.find()) {
                 final String milestoneNumber = 
-                        matcher.group(1);                                   // NOMAGI
+                        matcher.group(2);                                   // NOMAGI
                 final String buildNumber = FORMAT_OUT.format(FORMAT_IN.parse(
-                        matcher.group(2)));                                 // NOMAGI
+                        matcher.group(3)));                                 // NOMAGI
                 
                 getProject().setProperty(
                         prefix + MILESTONE_NUMBER_SUFFIX, 
@@ -123,7 +123,7 @@ public class BuildNumberSjsam extends Task {
      * Pattern for which to look in the input file.
      */
     private static final Pattern PATTERN = Pattern.compile(
-            "access_manager-7_1-bin-b([0-9]+)-([A-Za-z0-9_]+).zip", 
+            "access_manager-7_1-p([0-9]+)-ea-bin-b([0-9]+)-([A-Za-z0-9_]+).zip", 
             Pattern.MULTILINE); // NOI18N
     
     /**
