@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
-import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
-
 /**
  * The display-name type contains a short name that is intended
  * to be displayed by tools. It is used by display-name
@@ -28,8 +26,7 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * 
  * @author Petr Pisl
  */
-public interface DisplayName extends LangAttribute{
-    public static String DISPLAY_NAME = JSFConfigQNames.DISPLAY_NAME.getLocalName();
+public interface DisplayName extends LangAttribute {
         
     /**
      * Gets the content of the display-name element.

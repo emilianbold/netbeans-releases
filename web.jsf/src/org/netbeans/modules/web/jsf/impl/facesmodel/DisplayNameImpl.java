@@ -45,7 +45,7 @@ public class DisplayNameImpl extends JSFConfigComponentImpl implements DisplayNa
     }
 
     public void setValue(String displayName) {
-        setText(DISPLAY_NAME, displayName);
+        setText(DescriptionGroup.DISPLAY_NAME, displayName);
     }
 
     public String getLang() {

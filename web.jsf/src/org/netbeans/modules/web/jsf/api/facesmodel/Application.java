@@ -33,13 +33,22 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  */
 public interface Application extends JSFConfigComponent {
     /**
-     * Property of &lt;view-handler&gt; element.
+     * Property name of &lt;view-handler&gt; element.
      */ 
     public static final String VIEW_HANDLER = JSFConfigQNames.VIEW_HANDLER.getLocalName();
     
+    /**
+     * Property name of &lt;locale-config&gt; element.
+     */ 
+    public static final String LOCALE_CONFIG = JSFConfigQNames.LOCALE_CONFIG.getLocalName();
+
     List<ViewHandler> getViewHandlers();
     void addViewHandler(ViewHandler handler);
     void addViewHandler(int index, ViewHandler handler);
     void removeViewHandler(ViewHandler handler);
     
+    List<LocaleConfig> getLocaleConfig();
+    void addLocaleConfig(LocaleConfig locale);
+    void addLocaleConfig(int index, LocaleConfig locale);
+    void removeLocaleConfig(LocaleConfig locale);
 }

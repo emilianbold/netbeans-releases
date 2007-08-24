@@ -93,6 +93,18 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
         return new ViewHandlerImpl(model);
     }
     
+    public LocaleConfig createLocaleConfig() {
+        return new LocaleConfigImpl(model);
+    }
+
+    public DefaultLocaleImpl createDefatultLocale() {
+        return new DefaultLocaleImpl(model);
+    }
+
+    public SupportedLocaleImpl createSupportedLocale() {
+        return new SupportedLocaleImpl(model);
+    }
+
     public static boolean areSameQName(JSFConfigQNames jsfqname,Element element) {
         QName qname = AbstractDocumentComponent.getQName(element);
         boolean aresame = false;
@@ -121,6 +133,7 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
             return areSameQName(jsfqname, element);
         }
         
+        @Override
         public void visit(FacesConfig context) {
             
             if (isElementQName(JSFConfigQNames.MANAGED_BEAN)) {
@@ -134,6 +147,7 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
             }
         }
         
+        @Override
         public void visit(ManagedBean context) {
             if (isElementQName(JSFConfigQNames.MANAGED_BEAN)) {
                 created = new ManagedBeanImpl((JSFConfigModelImpl)context.getModel(), element);
@@ -142,6 +156,7 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
             }
         }
         
+        @Override
         public void visit(NavigationRule context) {
             if (isElementQName(JSFConfigQNames.NAVIGATION_CASE)) {
                 created = new NavigationCaseImpl((JSFConfigModelImpl)context.getModel(), element);
@@ -150,6 +165,7 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
             }
         }
         
+        @Override
         public void visit(Converter context) {
             if (isElementQName(JSFConfigQNames.NAVIGATION_CASE)) {
                 created = new ConverterImpl((JSFConfigModelImpl)context.getModel(), element);
@@ -158,12 +174,24 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
             }
         }
         
+        @Override
         public void visit(Application context) {
             if (isElementQName(JSFConfigQNames.VIEW_HANDLER)) {
                 created = new ViewHandlerImpl((JSFConfigModelImpl)context.getModel(), element);
+            } else if (isElementQName(JSFConfigQNames.LOCALE_CONFIG)) {
+                created = new LocaleConfigImpl((JSFConfigModelImpl)context.getModel(), element);
             }
         }
         
+        @Override
+        public void visit(LocaleConfig context) {
+            if (isElementQName(JSFConfigQNames.DEFAULT_LOCALE)) {
+                created = new DefaultLocaleImpl((JSFConfigModelImpl)context.getModel(), element);
+            } else if (isElementQName(JSFConfigQNames.SUPPORTED_LOCALE)) {
+                created = new SupportedLocaleImpl((JSFConfigModelImpl)context.getModel(), element);
+            }
+        }
+
         public void checkDescriptionGroup(JSFConfigComponent context){
             if (isElementQName(JSFConfigQNames.DESCRIPTION)){
                 created = new DescriptionImpl((JSFConfigModelImpl)context.getModel(), element);

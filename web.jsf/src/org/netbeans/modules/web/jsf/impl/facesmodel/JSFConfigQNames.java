@@ -60,7 +60,10 @@ public enum JSFConfigQNames {
     CONVERTER_CLASS("converter-class"),             //NOI18N
     //application
     APPLICATION("application"),                     //NOI18N
-    VIEW_HANDLER("view-handler");                   //NOI18N
+    VIEW_HANDLER("view-handler"),                   //NOI18N
+    LOCALE_CONFIG("locale-config"),                 //NOI18N
+    DEFAULT_LOCALE("default-locale"),               //NOI18N
+    SUPPORTED_LOCALE("supported-locale");           //NOI18N
     
     private QName qname_1_1;
     private QName qname_1_2;

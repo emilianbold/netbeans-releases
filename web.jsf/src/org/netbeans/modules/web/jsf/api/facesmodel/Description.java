@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
-import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
-
 /**
  * The description type is used by a description element to
  * provide text describing the parent element.  The elements
@@ -34,8 +32,7 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
  * 
  * @author Petr Pisl
  */
-public interface Description extends LangAttribute{
-    public static String DESCRIPTION = JSFConfigQNames.DESCRIPTION.getLocalName();
+public interface Description extends LangAttribute {
     
     /**
      * Gets the content of the description element.

@@ -21,6 +21,7 @@ package org.netbeans.modules.web.jsf.impl.facesmodel;
 
 import java.util.List;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
+import org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
 import org.w3c.dom.Element;
@@ -57,8 +58,23 @@ public class ApplicationImpl extends JSFConfigComponentImpl implements Applicati
         removeChild(VIEW_HANDLER, handler);
     }
 
+    public List<LocaleConfig> getLocaleConfig() {
+        return getChildren(LocaleConfig.class);
+    }
+
+    public void addLocaleConfig(LocaleConfig locale) {
+        appendChild(LOCALE_CONFIG, locale);
+    }
+
+    public void addLocaleConfig(int index, LocaleConfig locale) {
+        insertAtIndex(LOCALE_CONFIG, locale, index, LocaleConfig.class);
+    }
+
+    public void removeLocaleConfig(LocaleConfig locale) {
+        removeChild(LOCALE_CONFIG, locale);
+    }
+
     public void accept(JSFConfigVisitor visitor) {
         visitor.visit(this);
     }
-
 }

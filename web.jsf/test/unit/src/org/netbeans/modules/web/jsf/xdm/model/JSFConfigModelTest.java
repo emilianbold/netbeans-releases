@@ -11,6 +11,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -55,6 +57,16 @@ public class JSFConfigModelTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite(JSFConfigModelTest.class);
         return suite;
+    }
+    
+    // for collecting and testing events
+    Hashtable <String, PropertyChangeEvent> events = new Hashtable<String, PropertyChangeEvent>();
+    
+    private void checkEvent (String name, String oldValue, String newValue) {
+        PropertyChangeEvent event = events.get(name);
+        assertNotNull(event);
+        assertEquals(oldValue, ((String)event.getOldValue()).trim());
+        assertEquals(newValue, ((String)event.getNewValue()).trim());
     }
     
     public void testReadJSFVersion1_1() throws Exception {
@@ -373,7 +385,7 @@ public class JSFConfigModelTest extends NbTestCase {
         assertTrue(ManagedBean.Scope.APPLICATION.compareTo(ManagedBean.Scope.NONE) < 0);
     }
     
-    boolean viewHandlerChanged = false;
+    
     public void testApplication() throws Exception {
         
         JSFConfigModel model = Util.loadRegistryModel("faces-config-application.xml");
@@ -381,9 +393,7 @@ public class JSFConfigModelTest extends NbTestCase {
         model.addPropertyChangeListener(new PropertyChangeListener(){
             public void propertyChange(PropertyChangeEvent event) {
                 System.out.println("property: " +  event.getPropertyName());
-                if(event.getPropertyName().equals(ViewHandler.VIEW_HANDLER)) {
-                    viewHandlerChanged = true;
-                }
+                events.put(event.getPropertyName(), event);
             } 
         });
         
@@ -393,11 +403,28 @@ public class JSFConfigModelTest extends NbTestCase {
         List<ViewHandler> viewHandlers = applications.get(0).getViewHandlers();
         assertEquals("Number of view hadlers ", 1, viewHandlers.size());
         assertEquals("Name of handler ", "org.test.ViewHandler", viewHandlers.get(0).getFullyQualifiedClassType());
+     
+        List<LocaleConfig> localeConfigs = applications.get(0).getLocaleConfig();
+        assertEquals("Number of locale-config ", 1, localeConfigs.size());
+        LocaleConfig locale = localeConfigs.get(0);
+        assertEquals("Defautl locale ", "en", locale.getDefaultLocale().getLocale());
+        List<SupportedLocale> supportedLocales = locale.getSupportedLocales();
+        assertEquals("Number of supported-locale ", 2, supportedLocales.size());
+        assertEquals("Suported locale ", "cz", supportedLocales.get(0).getLocale());
+        assertEquals("Suported locale ", "jn", supportedLocales.get(1).getLocale());
+        
+        events.clear();
         
         model.startTransaction();
         viewHandlers.get(0).setFullyQualifiedClassType("a.b.c.Handler");
+        locale.getDefaultLocale().setLocale("cz");
+        supportedLocales.get(0).setLocale("en");
         model.endTransaction();
         model.sync();
+        
+        checkEvent(ViewHandler.VIEW_HANDLER, "org.test.ViewHandler", "a.b.c.Handler");
+        checkEvent(LocaleConfig.DEFAULT_LOCALE, "en", "cz");
+        checkEvent(LocaleConfig.SUPPORTED_LOCALE, "cz", "en");
         
         assertEquals("Name of handler ", "a.b.c.Handler", viewHandlers.get(0).getFullyQualifiedClassType());
         
@@ -413,12 +440,21 @@ public class JSFConfigModelTest extends NbTestCase {
         viewHandler = model.getFactory().createViewHandler();
         viewHandler.setFullyQualifiedClassType("a.b.c.Handler1");
         newApplication.addViewHandler(0, viewHandler);
+        
+        LocaleConfig newLocale = model.getFactory().createLocaleConfig();
+        newLocale.setDefaultLocale(model.getFactory().createDefatultLocale());
+        newLocale.getDefaultLocale().setLocale("cz");
+        newLocale.addSupportedLocales(model.getFactory().createSupportedLocale());
+        newLocale.getSupportedLocales().get(0).setLocale("en");
+        newLocale.addSupportedLocales(0,model.getFactory().createSupportedLocale());
+        newLocale.getSupportedLocales().get(0).setLocale("hr");
+        newApplication.addLocaleConfig(newLocale);
+        
         model.endTransaction();
         model.sync();
         
-        assertTrue(viewHandlerChanged);
-        
-        //assertFile(dumpModelToFile(model, "test-application.xml"), getGoldenFile("gold-application.xml"));
+        assertFile(dumpModelToFile(model, "test-application.xml"), getGoldenFile("gold-application.xml"));
     }
+    
     
 }

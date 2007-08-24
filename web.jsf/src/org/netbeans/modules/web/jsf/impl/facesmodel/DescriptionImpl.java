@@ -41,7 +41,7 @@ public class DescriptionImpl extends JSFConfigComponentImpl implements Descripti
     }
 
     public void setValue(String description) {
-        setText(DESCRIPTION, description);
+        setText(DescriptionGroup.DESCRIPTION, description);
     }
 
     public String getLang() {

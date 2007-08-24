@@ -19,27 +19,26 @@
 
 package org.netbeans.modules.web.jsf.api.facesmodel;
 
-import org.w3c.dom.Element;
-
 /**
- *
+ * The "supported-locale" element allows authors to declare
+ * which locales are supported in this application instance.
  * @author Petr Pisl
  */
-public interface JSFConfigComponentFactory {
-    
-    JSFConfigComponent create(Element element, JSFConfigComponent context);
-    
-    FacesConfig createFacesConfig();
-    ManagedBean createManagedBean();
-    NavigationRule createNavigationRule();
-    NavigationCase createNavigationCase();
-    Converter createConverter();
-    Description createDescription();
-    DisplayName createDisplayName();
-    Icon createIcon();
-    Application createApplication();
-    ViewHandler createViewHandler();
-    LocaleConfig createLocaleConfig();
-    DefaultLocale createDefatultLocale();
-    SupportedLocale createSupportedLocale();
+public interface SupportedLocale extends JSFConfigComponent {
+
+    /**
+     * It must be specified as :language:[_:country:[_:variant:]]
+     * without the colons, for example "ja_JP_SJIS".  The
+     * separators between the segments may be '-' or '_'.
+     * @return value of the supported locale
+     */
+    String getLocale();
+
+    /**
+     * It must be specified as :language:[_:country:[_:variant:]]
+     * without the colons, for example "ja_JP_SJIS".  The
+     * separators between the segments may be '-' or '_'.
+     * @param locale new value for the supported locale
+     */
+    void setLocale(String locale);
 }

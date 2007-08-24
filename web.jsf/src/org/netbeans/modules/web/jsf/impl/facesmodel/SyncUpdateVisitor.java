@@ -59,6 +59,7 @@ public class SyncUpdateVisitor extends JSFConfigVisitor.Default implements Compo
         ((JSFConfigComponentImpl)target).removeChild(propertyName, component);
     }
     
+    @Override
     public void visit(ManagedBean component){
         if (target instanceof FacesConfig) {
             if (operation == Operation.ADD) {
@@ -69,6 +70,7 @@ public class SyncUpdateVisitor extends JSFConfigVisitor.Default implements Compo
         }
     }
     
+    @Override
     public void visit(NavigationRule component){
         if (target instanceof FacesConfig) {
             if (operation == Operation.ADD) {
@@ -79,6 +81,7 @@ public class SyncUpdateVisitor extends JSFConfigVisitor.Default implements Compo
         }
     }
     
+    @Override
     public void visit(NavigationCase component){
         if (target instanceof NavigationRule) {
             if (operation == Operation.ADD) {
@@ -89,12 +92,68 @@ public class SyncUpdateVisitor extends JSFConfigVisitor.Default implements Compo
         }
     }
     
+    @Override
     public void visit(Converter component){
         if (target instanceof FacesConfig) {
             if (operation == Operation.ADD) {
                 insert(FacesConfig.CONVERTER, component);
             } else {
                 remove(FacesConfig.CONVERTER, component);
+            }
+        }
+    }
+
+    @Override
+    public void visit(Application component) {
+        if (target instanceof FacesConfig) {
+            if (operation == Operation.ADD) {
+                insert(FacesConfig.APPLICATION, component);
+            } else {
+                remove(FacesConfig.APPLICATION, component);
+            }
+        }
+    }
+
+    @Override
+    public void visit(ViewHandler component) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.VIEW_HANDLER, component);
+            } else {
+                remove(Application.VIEW_HANDLER, component);
+            }
+        }
+    }
+
+    @Override
+    public void visit(LocaleConfig component) {
+        if (target instanceof Application) {
+            if (operation == Operation.ADD) {
+                insert(Application.LOCALE_CONFIG, component);
+            } else {
+                remove(Application.LOCALE_CONFIG, component);
+            }
+        }
+    }
+
+    @Override
+    public void visit(DefaultLocale component) {
+        if (target instanceof LocaleConfig) {
+            if (operation == Operation.ADD) {
+                insert(LocaleConfig.DEFAULT_LOCALE, component);
+            } else {
+                remove(LocaleConfig.DEFAULT_LOCALE, component);
+            }
+        }
+    }
+    
+    @Override
+    public void visit(SupportedLocale component) {
+        if (target instanceof LocaleConfig) {
+            if (operation == Operation.ADD) {
+                insert(LocaleConfig.SUPPORTED_LOCALE, component);
+            } else {
+                remove(LocaleConfig.SUPPORTED_LOCALE, component);
             }
         }
     }

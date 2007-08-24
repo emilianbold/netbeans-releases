@@ -1,4 +1,4 @@
-/*
+ /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
@@ -17,29 +17,38 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.web.jsf.api.facesmodel;
+package org.netbeans.modules.web.jsf.impl.facesmodel;
 
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
+import org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.SupportedLocale;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JSFConfigComponentFactory {
+
+public class SupportedLocaleImpl extends JSFConfigComponentImpl implements SupportedLocale {
     
-    JSFConfigComponent create(Element element, JSFConfigComponent context);
+    public SupportedLocaleImpl(JSFConfigModelImpl model, Element element) {
+        super(model, element);
+    }
     
-    FacesConfig createFacesConfig();
-    ManagedBean createManagedBean();
-    NavigationRule createNavigationRule();
-    NavigationCase createNavigationCase();
-    Converter createConverter();
-    Description createDescription();
-    DisplayName createDisplayName();
-    Icon createIcon();
-    Application createApplication();
-    ViewHandler createViewHandler();
-    LocaleConfig createLocaleConfig();
-    DefaultLocale createDefatultLocale();
-    SupportedLocale createSupportedLocale();
+    public SupportedLocaleImpl(JSFConfigModelImpl model) {
+        super(model, createElementNS(model, JSFConfigQNames.SUPPORTED_LOCALE));
+    }
+    
+    public void accept(JSFConfigVisitor visitor) {
+    }
+
+    public String getLocale() {
+        return getText().trim();    
+    }
+
+    public void setLocale(String locale) {
+        setText(LocaleConfig.SUPPORTED_LOCALE, locale);
+    }
+
+    
 }

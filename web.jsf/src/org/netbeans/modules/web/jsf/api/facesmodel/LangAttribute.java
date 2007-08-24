@@ -27,7 +27,8 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.FacesAttributes;
  * by default
  * @author Petr Pisl
  */
-public interface LangAttribute extends JSFConfigComponent{
+public interface LangAttribute extends JSFConfigComponent {
+
     public static String LANG_ATTRIBUTE  = FacesAttributes.LANG.getName();
     
     /**
