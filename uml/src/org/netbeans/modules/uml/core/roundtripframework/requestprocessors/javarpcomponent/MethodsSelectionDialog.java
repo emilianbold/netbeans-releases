@@ -39,6 +39,7 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.swing.SelectableLabel;
 import org.netbeans.modules.uml.ui.swing.commondialogs.JCenterDialog;
@@ -118,26 +119,25 @@ public class MethodsSelectionDialog extends JCenterDialog
             topLabel.setText(strLabel);
             topLabel.setLabelFor(tree);
                         
-			JPanel topPanelRight = new JPanel();
-			selectAllBtn = new JToggleButton(new ImageIcon(
-					this.getClass().getResource("resources/selectall.gif")));
+            ImageUtil iUtil = ImageUtil.instance() ;
+        
+            JPanel topPanelRight = new JPanel();
+            selectAllBtn = new JToggleButton(iUtil.getIcon("selectall.gif"));
                         
             // fix a11y issue: CR#6394777. 
             // Need to set the button border for it to be hilighted when it gains the focus
             selectAllBtn.setBorder(emptyBorder);
                         
-			JToggleButton unSelectAllBtn = new JToggleButton(new ImageIcon(
-            this.getClass().getResource("resources/clearall.gif")));
+            JToggleButton unSelectAllBtn = new JToggleButton(iUtil.getIcon("clearall.gif"));
             unSelectAllBtn.setBorder(emptyBorder);
                     
-			JToggleButton showAbstractMethodsBtn = new JToggleButton(new ImageIcon
-            (this.getClass().getResource("resources/abstractonly.gif")));
+            JToggleButton showAbstractMethodsBtn = new JToggleButton(iUtil.getIcon("abstractonly.gif"));
             showAbstractMethodsBtn.setBorder(emptyBorder);
 
-			topPanelRight.setLayout(new FlowLayout());
-			topPanelRight.add(selectAllBtn);
-			topPanelRight.add(unSelectAllBtn);
-			topPanelRight.add(showAbstractMethodsBtn);
+            topPanelRight.setLayout(new FlowLayout());
+            topPanelRight.add(selectAllBtn);
+            topPanelRight.add(unSelectAllBtn);
+            topPanelRight.add(showAbstractMethodsBtn);
 
             strLabel = RPMessages.getString("IDS_JRT_MS_SELECTALL_TOOLTIP");
             selectAllBtn.setName("SelectAll");
@@ -287,6 +287,7 @@ public class MethodsSelectionDialog extends JCenterDialog
 		}
 		catch (Exception e)
 		{
+                    e.printStackTrace() ;
 			Log.stackTrace(e);
 		}
 		return selectedOperationList;
@@ -689,13 +690,16 @@ class CheckRenderer extends JPanel implements TreeCellRenderer
 		// use new icons Class and operation (method) icons
         // URL classURL = getClass().getResource("resources/class.gif");
         // URL methodURL = getClass().getResource("resources/method.gif");
-		URL classURL = getClass().getResource(
-			"resources/images/class.png"); // NOI18N
-        URL methodURL = getClass().getResource(
-			"resources/images/operation.gif"); // NOI18N
+//		URL classURL = getClass().getResource(
+//			"resources/images/class.png"); // NOI18N
+//        URL methodURL = getClass().getResource(
+//			"resources/images/operation.gif"); // NOI18N
 
-        ImageIcon classIcon = new ImageIcon(classURL);
-        ImageIcon methodIcon = new ImageIcon(methodURL);
+        ImageUtil iUtil = ImageUtil.instance() ;
+        
+        
+        Icon classIcon = iUtil.getIcon("class.png") ; //new ImageIcon(classURL);
+        Icon methodIcon = iUtil.getIcon("operation.gif") ;//new ImageIcon(methodURL);
 
 
         if (leaf)
