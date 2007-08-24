@@ -304,8 +304,8 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
     //Need a better way to get the package, maybe pass it(???)
     private String getPackageName() {
         String implClassName = FileUtil.getRelativePath(srcRoot,implClass);
-        int index = implClassName.lastIndexOf(".");
-        return implClassName.substring(0, index).replace('.', '/');
+        int index = implClassName.lastIndexOf("/");
+        return implClassName.substring(0, index);
     }
         
     private String getDefaultWSDLUrl(){

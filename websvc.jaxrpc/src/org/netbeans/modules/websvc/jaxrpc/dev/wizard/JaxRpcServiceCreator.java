@@ -264,7 +264,7 @@ public class JaxRpcServiceCreator implements ServiceCreator {
         DataObject dobj = DataObject.find(clz);
         //commented due to Retouche Bug
         //addHeaderComments(wsName, dobj);
-        wsSupport.addInfrastructure(servantClassName, pkg);
+        wsSupport.addInfrastructure(implClassName, pkg);
         
         //Add web service entries to the module's DD
         wsSupport.addServiceEntriesToDD(wsName, seiClassName, servantClassName);

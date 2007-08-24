@@ -19,12 +19,25 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.io.IOException;
+import javax.lang.model.element.Modifier;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -53,6 +66,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
@@ -60,6 +79,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import static org.netbeans.modules.websvc.spi.webservices.WebServicesConstants.*;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -83,8 +103,8 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
     //implementation of WebServicesSupportImpl
     public String generateImplementationBean(String wsName, FileObject pkg, Project project, String delegateData)throws java.io.IOException {
         //TODO: RETOUCHE waiting for ejbcore
-//        SessionGenerator sessionGenerator = new SessionGenerator();
-//        return sessionGenerator.generateWebServiceImplBean(wsName, pkg, project, delegateData);
+        //        SessionGenerator sessionGenerator = new SessionGenerator();
+        //        return sessionGenerator.generateWebServiceImplBean(wsName, pkg, project, delegateData);
         return null;
     }
     
@@ -98,61 +118,60 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String packageName = getPackageName(configFile);
         ep.put(serviceName + CONFIG_PROP_SUFFIX, packageName +
-        (packageName.equals("") ? "" : "/") + configFile.getNameExt()); //NOI18N
+                (packageName.equals("") ? "" : "/") + configFile.getNameExt()); //NOI18N
         ep.put(serviceName + MAPPING_PROP_SUFFIX, serviceName + MAPPING_FILE_SUFFIX); //NOI18N
         // Add property for wscompile
         String featurePropertyName = "wscompile.service." + serviceName + ".features"; // NOI18N
         JAXRPCStubDescriptor stubDesc = null;
         if (fromWSDL) {
-            if (wscompileFeatures!=null) 
+            if (wscompileFeatures!=null)
                 stubDesc = new JAXRPCStubDescriptor(StubDescriptor.WSDL_SERVICE_STUB,
-                                NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_WSDLServiceStub"),
-                                wscompileFeatures);
+                        NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_WSDLServiceStub"),
+                        wscompileFeatures);
             else stubDesc = wsdlServiceStub;
         } else {
             stubDesc = seiServiceStub;
         }
         String defaultFeatures = stubDesc.getDefaultFeaturesAsArgument();
-            ep.put(featurePropertyName, defaultFeatures);
-            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-            
-            //Add web-services information in project.xml
-            Element data = helper.getPrimaryConfigurationData(true);
-            Document doc = data.getOwnerDocument();
-            NodeList nodes = data.getElementsByTagName(WEB_SERVICES); //NOI18N
-            Element webservices = null;
-            if(nodes.getLength() == 0){
-                webservices = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICES); //NOI18N
-                NodeList insertBefore = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENTS);
-                if (insertBefore.getLength() <= 0) {
-                    insertBefore = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots"); // NOI18N
-                    assert insertBefore.getLength() == 1 : "Invalid project.xml file."; // NOI18N
-                }
-                data.insertBefore(webservices, insertBefore.item(0));
+        ep.put(featurePropertyName, defaultFeatures);
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        
+        //Add web-services information in project.xml
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        NodeList nodes = data.getElementsByTagName(WEB_SERVICES); //NOI18N
+        Element webservices = null;
+        if(nodes.getLength() == 0){
+            webservices = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICES); //NOI18N
+            NodeList insertBefore = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesClientConstants.WEB_SERVICE_CLIENTS);
+            if (insertBefore.getLength() <= 0) {
+                insertBefore = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots"); // NOI18N
+                assert insertBefore.getLength() == 1 : "Invalid project.xml file."; // NOI18N
             }
-            else{
-                webservices = (Element)nodes.item(0);
-            }
-            Element webservice = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE); //NOI18N
-            webservices.appendChild(webservice);
-            Element webserviceName = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_NAME); //NOI18N
-            webservice.appendChild(webserviceName);
-            webserviceName.appendChild(doc.createTextNode(serviceName));
-            if(fromWSDL) {
-                Element fromWSDLElem = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "from-wsdl");
-                webservice.appendChild(fromWSDLElem);
-            }
-            helper.putPrimaryConfigurationData(data, true);
-            
-            // Update wscompile related properties.  boolean return indicates whether
-            // any changes were made.
-            updateWsCompileProperties(serviceName);
-            
-            try {
-                ProjectManager.getDefault().saveProject(project);
-            }catch(java.io.IOException ioe){
-                throw new RuntimeException(ioe.getMessage());
-            }
+            data.insertBefore(webservices, insertBefore.item(0));
+        } else{
+            webservices = (Element)nodes.item(0);
+        }
+        Element webservice = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE); //NOI18N
+        webservices.appendChild(webservice);
+        Element webserviceName = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_NAME); //NOI18N
+        webservice.appendChild(webserviceName);
+        webserviceName.appendChild(doc.createTextNode(serviceName));
+        if(fromWSDL) {
+            Element fromWSDLElem = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "from-wsdl");
+            webservice.appendChild(fromWSDLElem);
+        }
+        helper.putPrimaryConfigurationData(data, true);
+        
+        // Update wscompile related properties.  boolean return indicates whether
+        // any changes were made.
+        updateWsCompileProperties(serviceName);
+        
+        try {
+            ProjectManager.getDefault().saveProject(project);
+        }catch(java.io.IOException ioe){
+            ErrorManager.getDefault().notify(ioe);
+        }
     }
     
     public  void addServiceEntriesToDD(String serviceName, String serviceEndpointInterface, String servantClassName) {
@@ -162,10 +181,8 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = null;
         try {
             ejbJar = provider.getDDRoot(ejbJarModule.getDeploymentDescriptor());
-        }
-        catch(java.io.IOException e) {
-            //FIX-ME: handle this
-            throw new RuntimeException(e.getMessage());
+        } catch(java.io.IOException e) {
+            ErrorManager.getDefault().notify(e);
         }
         
         if (ejbJar == null) {
@@ -187,10 +204,8 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         s.setEjbClass(servantClassName);
         try {
             s.setServiceEndpoint(serviceEndpointInterface);
-        }
-        catch(org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException e) {
-            //FIX-ME: handle this
-            throw new RuntimeException(e.getMessage());
+        } catch(org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException e) {
+            ErrorManager.getDefault().notify(e);
         }
         s.setSessionType("Stateless"); // NOI18N
         s.setTransactionType("Container"); // NOI18N
@@ -198,10 +213,8 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         try {
             // This also saves server specific configuration, if necessary.
             ejbJar.write(ejbJarModule.getDeploymentDescriptor());
-        }
-        catch(java.io.IOException e) {
-            //FIX-ME: handle this
-            throw new RuntimeException(e.getMessage());
+        } catch(java.io.IOException e) {
+            ErrorManager.getDefault().notify(e);
         }
     }
     
@@ -256,17 +269,17 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
     public boolean isFromWSDL(String serviceName) {
         Element data = helper.getPrimaryConfigurationData(true);
         NodeList nodes = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-        WEB_SERVICES); //NOI18N
+                WEB_SERVICES); //NOI18N
         Element webservices = null;
         Element wsNameNode = null;
         if(nodes.getLength() == 1){
             webservices = (Element)nodes.item(0);
             NodeList wsNodes = webservices.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-            WEB_SERVICE); //NOI18N
+                    WEB_SERVICE); //NOI18N
             for(int j = 0; j < wsNodes.getLength(); j++) {
                 Element wsNode = (Element)wsNodes.item(j);
                 NodeList wsNameNodes = wsNode.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                WEB_SERVICE_NAME); //NOI18N
+                        WEB_SERVICE_NAME); //NOI18N
                 if(wsNameNodes.getLength() == 1) {
                     wsNameNode = (Element)wsNameNodes.item(0);
                     NodeList nl = wsNameNode.getChildNodes();
@@ -275,7 +288,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
                         if(n.getNodeType() == Node.TEXT_NODE) {
                             if(serviceName.equals(n.getNodeValue())) {
                                 NodeList fromWSDLNodes = wsNode.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                                WebServicesConstants.WEB_SERVICE_FROM_WSDL); //NOI18N
+                                        WebServicesConstants.WEB_SERVICE_FROM_WSDL); //NOI18N
                                 if(fromWSDLNodes.getLength() == 1) {
                                     return true;
                                 }
@@ -315,17 +328,17 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         //Remove entry in the project.xml file (we should move this to websvc)
         Element data = helper.getPrimaryConfigurationData(true);
         NodeList nodes = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-        WEB_SERVICES); //NOI18N
+                WEB_SERVICES); //NOI18N
         Element webservices = null;
         Element wsNameNode = null;
         if(nodes.getLength() == 1){
             webservices = (Element)nodes.item(0);
             NodeList wsNodes = webservices.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-            WEB_SERVICE); //NOI18N
+                    WEB_SERVICE); //NOI18N
             for(int j = 0; j < wsNodes.getLength(); j++) {
                 Element wsNode = (Element)wsNodes.item(j);
                 NodeList wsNameNodes = wsNode.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                WEB_SERVICE_NAME); //NOI18N
+                        WEB_SERVICE_NAME); //NOI18N
                 if(wsNameNodes.getLength() == 1) {
                     wsNameNode = (Element)wsNameNodes.item(0);
                     NodeList nl = wsNameNode.getChildNodes();
@@ -353,9 +366,9 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
                 ProjectManager.getDefault().saveProject(project);
             } catch(java.io.IOException ex) {
                 String mes = NbBundle.getMessage(this.getClass(), "MSG_ErrorSavingOnWSRemove") + serviceName // NOI18N
-                + "'\r\n" + ex.getMessage(); // NOI18N
+                        + "'\r\n" + ex.getMessage(); // NOI18N
                 NotifyDescriptor desc = new NotifyDescriptor.
-                Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                        Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);			}
         }
     }
@@ -377,11 +390,10 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         }
         try {
             ejbJar.write(ejbJarModule.getDeploymentDescriptor());
-        }
-        catch(java.io.IOException e) {
+        } catch(java.io.IOException e) {
             NotifyDescriptor ndd =
-            new NotifyDescriptor.Message(NbBundle.getMessage(this.getClass(), "MSG_Unable_WRITE_EJB_DD"), // NOI18N
-            NotifyDescriptor.ERROR_MESSAGE);
+                    new NotifyDescriptor.Message(NbBundle.getMessage(this.getClass(), "MSG_Unable_WRITE_EJB_DD"), // NOI18N
+                    NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(ndd);
         }
     }
@@ -488,7 +500,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         if(nodes.getLength() != 0) {
             Element serviceElements = (Element) nodes.item(0);
             NodeList serviceNameList = serviceElements.getElementsByTagNameNS(
-            EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_NAME);
+                    EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_NAME);
             for(int i = 0; i < serviceNameList.getLength(); i++ ) {
                 Element serviceNameElement = (Element) serviceNameList.item(i);
                 NodeList nl = serviceNameElement.getChildNodes();
@@ -507,14 +519,14 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
                                 currentFeatures = seiServiceStub.getDefaultFeaturesAsArgument();
                             }
                             settings = new WsCompileEditorSupport.ServiceSettings(
-                            serviceName, stubType, currentFeatures, allSeiServiceFeatures, importantSeiServiceFeatures);
+                                    serviceName, stubType, currentFeatures, allSeiServiceFeatures, importantSeiServiceFeatures);
                         } else {
                             if(currentFeatures == null) {
                                 // default for WSDL generation
                                 currentFeatures = wsdlServiceStub.getDefaultFeaturesAsArgument();
                             }
                             settings = new WsCompileEditorSupport.ServiceSettings(
-                            serviceName, stubType, currentFeatures, allWsdlServiceFeatures, importantWsdlServiceFeatures);
+                                    serviceName, stubType, currentFeatures, allWsdlServiceFeatures, importantWsdlServiceFeatures);
                         }
                         serviceList.add(settings);
                     } else {
@@ -535,7 +547,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         if(parentNode instanceof Element) {
             Element parentElement = (Element) parentNode;
             NodeList fromWsdlList = parentElement.getElementsByTagNameNS(
-            EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_FROM_WSDL);
+                    EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_FROM_WSDL);
             if(fromWsdlList.getLength() == 1) {
                 result = wsdlServiceStub;
             } else {
@@ -623,95 +635,196 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
     }
     
     public void addInfrastructure(String implBeanClass, FileObject pkg){
+        FileObject implClassFo = pkg.getFileObject(implBeanClass, "java");
+        if(implClassFo == null) return;
+        JavaSource targetSource = JavaSource.forFileObject(implClassFo);
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                ClassTree javaClass = genUtils.getClassTree();
+                IdentifierTree id = make.Identifier("javax.ejb.SessionBean");
+                ClassTree modifiedClass = make.addClassImplementsClause(javaClass, id);
+                
+                List<? extends Tree> implClauses = javaClass.getImplementsClause();
+                for(Tree implClause: implClauses){
+                    if(implClause.getKind() == Kind.MEMBER_SELECT){
+                        if (((MemberSelectTree)implClause).getIdentifier().contentEquals("Remote") ){
+                            modifiedClass = make.removeClassImplementsClause(modifiedClass, implClause);
+                            break;
+                        }
+                    }
+                }
+                
+                VariableTree var = make.Variable(make.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE),
+                        Collections.<AnnotationTree>emptyList()), "context", make.Identifier("javax.ejb.SessionContext"), null);
+                modifiedClass = make.insertClassMember(modifiedClass, 0, var);
+                
+                ModifiersTree modifiersTree = make.Modifiers(
+                        Collections.<Modifier>singleton(Modifier.PUBLIC),
+                        Collections.<AnnotationTree>emptyList()
+                        );
+                List<VariableTree> params = new ArrayList<VariableTree>();
+                params.add(make.Variable(
+                        make.Modifiers(
+                        Collections.<Modifier>emptySet(),
+                        Collections.<AnnotationTree>emptyList()
+                        ),
+                        "aContext",
+                        make.Identifier("javax.ejb.SessionContext"), // parameter type
+                        null // initializer - does not make sense in parameters.
+                        ));
+                MethodTree infMethod = make.Method(modifiersTree,
+                        "setSessionContext",
+                        make.Identifier("void"),
+                        Collections.<TypeParameterTree>emptyList(),
+                        params,
+                        Collections.<ExpressionTree>emptyList(),
+                        "{context = aContext;}",
+                        null
+                        );
+                modifiedClass = make.addClassMember(modifiedClass, infMethod);
+                
+                params.clear();
+                infMethod = make.Method(modifiersTree,
+                        "ejbActivate",
+                        make.Identifier("void"),
+                        Collections.<TypeParameterTree>emptyList(),
+                        params,
+                        Collections.<ExpressionTree>emptyList(),
+                        "{}",
+                        null);
+                modifiedClass = make.addClassMember(modifiedClass, infMethod);
+                
+                infMethod = make.Method(modifiersTree,
+                        "ejbPassivate",
+                        make.Identifier("void"),
+                        Collections.<TypeParameterTree>emptyList(),
+                        params,
+                        Collections.<ExpressionTree>emptyList(),
+                        "{}",
+                        null);
+                modifiedClass = make.addClassMember(modifiedClass, infMethod);
+                
+                infMethod = make.Method(modifiersTree,
+                        "ejbRemove",
+                        make.Identifier("void"),
+                        Collections.<TypeParameterTree>emptyList(),
+                        params,
+                        Collections.<ExpressionTree>emptyList(),
+                        "{}",
+                        null);
+                modifiedClass = make.addClassMember(modifiedClass, infMethod);
+                
+                infMethod = make.Method(modifiersTree,
+                        "ejbCreate",
+                        make.Identifier("void"),
+                        Collections.<TypeParameterTree>emptyList(),
+                        params,
+                        Collections.<ExpressionTree>emptyList(),
+                        "{}",
+                        null);
+                modifiedClass = make.addClassMember(modifiedClass, infMethod);
+                workingCopy.rewrite(javaClass, modifiedClass);
+            }
+            public void cancel() {}
+        };
+        
+        try{
+            targetSource.runModificationTask(modificationTask).commit();
+        }catch(IOException e){
+            ErrorManager.getDefault().notify(e);
+        }
         //TODO: RETOUCHE webservices
-//        boolean rollbackFlag = true; // rollback the transaction by default
-//        JavaModel.getJavaRepository().beginTrans(true);
-//        try {
-//            JavaModel.setClassPath(pkg);
-//            JavaMetamodel.getManager().waitScanFinished();
-//            JavaClass clazz = Utils.findClass(implBeanClass);
-//            
-//            if (clazz == null) {
-//                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
-//                        "EjbJarWSSupport.addInfrastructure: Class not found: " + implBeanClass + " for package: " + pkg); //NOI18N
-//                return;
-//            }
-//            
-//            //remove java.rmi.Remote interface
-//            List interfaces = clazz.getInterfaceNames();
-//            for (Iterator it = interfaces.iterator(); it.hasNext();) {
-//               MultipartId interfaceId = (MultipartId) it.next();
-//               if (interfaceId.getElement().getName().equals("java.rmi.Remote")) {
-//                   interfaces.remove(interfaceId);
-//                   break;
-//               }
-//            }
-//            
-//            MultipartId id = JavaModelUtil.resolveImportsForClass(clazz, Utils.findClass("javax.ejb.SessionBean"));
-//            if (id!=null) interfaces.add(id);
-//
-//            JavaModelPackage jmp = (JavaModelPackage) clazz.refImmediatePackage();
-//            
-//            //add javax.ejb.SessionContext field
-//            JavaClass sessionCtx = Utils.findClass("javax.ejb.SessionContext");
-//            Field field = jmp.getField().createField();
-//            field.setType(sessionCtx);
-//            field.setName("context");
-//            clazz.getContents().add(0,field);
-//            
-//            //add setSessionContext(javax.ejb.SessionContext aContext) method
-//            Method sessionCtxMethod = jmp.getMethod().createMethod();
-//            sessionCtxMethod.setName("setSessionContext");
-//            Parameter ctxParam = jmp.getParameter().createParameter(
-//                    "aContext", 
-//                    Collections.EMPTY_LIST,
-//                    false, 
-//                    jmp.getMultipartId().createMultipartId(sessionCtx.getName(), null, null), // type name
-//                    0,
-//                    false);
-//            sessionCtxMethod.getParameters().add(ctxParam);
-//            sessionCtxMethod.setType(Utils.resolveType("void"));
-//            sessionCtxMethod.setModifiers(Modifier.PUBLIC);
-//            sessionCtxMethod.setBodyText("context = aContext;");
-//            sessionCtxMethod.setJavadocText("@see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)");
-//            clazz.getContents().add(sessionCtxMethod);
-//            
-//            //add ejbActivate method
-//            Method ejbActivateMethod = jmp.getMethod().createMethod();
-//            ejbActivateMethod.setName("ejbActivate");
-//            ejbActivateMethod.setType(Utils.resolveType("void"));
-//            ejbActivateMethod.setModifiers(Modifier.PUBLIC);
-//            ejbActivateMethod.setJavadocText("@see javax.ejb.SessionBean#ejbActivate()");
-//            clazz.getContents().add(ejbActivateMethod);
-//            
-//            //add ejbPassivate method
-//            Method ejbPassivateMethod = jmp.getMethod().createMethod();
-//            ejbPassivateMethod.setName("ejbPassivate");
-//            ejbPassivateMethod.setType(Utils.resolveType("void"));
-//            ejbPassivateMethod.setModifiers(Modifier.PUBLIC);
-//            ejbPassivateMethod.setJavadocText("@see javax.ejb.SessionBean#ejbPassivate()");
-//            clazz.getContents().add(ejbPassivateMethod);
-//            
-//            //add ejbRemove method
-//            Method ejbRemoveMethod = jmp.getMethod().createMethod();
-//            ejbRemoveMethod.setName("ejbRemove");
-//            ejbRemoveMethod.setType(Utils.resolveType("void"));
-//            ejbRemoveMethod.setModifiers(Modifier.PUBLIC);
-//            ejbRemoveMethod.setJavadocText("@see javax.ejb.SessionBean#ejbRemove()");
-//            clazz.getContents().add(ejbRemoveMethod);
-//            
-//            //add ejbCreate method
-//            Method ejbCreateMethod = jmp.getMethod().createMethod();
-//            ejbCreateMethod.setName("ejbCreate");
-//            ejbCreateMethod.setType(Utils.resolveType("void"));
-//            ejbCreateMethod.setModifiers(Modifier.PUBLIC);
-//            ejbCreateMethod.setJavadocText("See section 7.10.3 of the EJB 2.0 specification\nSee section 7.11.3 of the EJB 2.1 specification");
-//            clazz.getContents().add(ejbCreateMethod);
-//            
-//            rollbackFlag=false;
-//        } finally {
-//            JavaModel.getJavaRepository().endTrans(rollbackFlag);
-//        }
+        //        boolean rollbackFlag = true; // rollback the transaction by default
+        //        JavaModel.getJavaRepository().beginTrans(true);
+        //        try {
+        //            JavaModel.setClassPath(pkg);
+        //            JavaMetamodel.getManager().waitScanFinished();
+        //            JavaClass clazz = Utils.findClass(implBeanClass);
+        //
+        //            if (clazz == null) {
+        //                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
+        //                        "EjbJarWSSupport.addInfrastructure: Class not found: " + implBeanClass + " for package: " + pkg); //NOI18N
+        //                return;
+        //            }
+        //
+        //            //remove java.rmi.Remote interface
+        //            List interfaces = clazz.getInterfaceNames();
+        //            for (Iterator it = interfaces.iterator(); it.hasNext();) {
+        //               MultipartId interfaceId = (MultipartId) it.next();
+        //               if (interfaceId.getElement().getName().equals("java.rmi.Remote")) {
+        //                   interfaces.remove(interfaceId);
+        //                   break;
+        //               }
+        //            }
+        //
+        //            MultipartId id = JavaModelUtil.resolveImportsForClass(clazz, Utils.findClass("javax.ejb.SessionBean"));
+        //            if (id!=null) interfaces.add(id);
+        //
+        //            JavaModelPackage jmp = (JavaModelPackage) clazz.refImmediatePackage();
+        //
+        //            //add javax.ejb.SessionContext field
+        //            JavaClass sessionCtx = Utils.findClass("javax.ejb.SessionContext");
+        //            Field field = jmp.getField().createField();
+        //            field.setType(sessionCtx);
+        //            field.setName("context");
+        //            clazz.getContents().add(0,field);
+        //
+        //            //add setSessionContext(javax.ejb.SessionContext aContext) method
+        //            Method sessionCtxMethod = jmp.getMethod().createMethod();
+        //            sessionCtxMethod.setName("setSessionContext");
+        //            Parameter ctxParam = jmp.getParameter().createParameter(
+        //                    "aContext",
+        //                    Collections.EMPTY_LIST,
+        //                    false,
+        //                    jmp.getMultipartId().createMultipartId(sessionCtx.getName(), null, null), // type name
+        //                    0,
+        //                    false);
+        //            sessionCtxMethod.getParameters().add(ctxParam);
+        //            sessionCtxMethod.setType(Utils.resolveType("void"));
+        //            sessionCtxMethod.setModifiers(Modifier.PUBLIC);
+        //            sessionCtxMethod.setBodyText("context = aContext;");
+        //            sessionCtxMethod.setJavadocText("@see javax.ejb.SessionBean#setSessionContext(javax.ejb.SessionContext)");
+        //            clazz.getContents().add(sessionCtxMethod);
+        //
+        //            //add ejbActivate method
+        //            Method ejbActivateMethod = jmp.getMethod().createMethod();
+        //            ejbActivateMethod.setName("ejbActivate");
+        //            ejbActivateMethod.setType(Utils.resolveType("void"));
+        //            ejbActivateMethod.setModifiers(Modifier.PUBLIC);
+        //            ejbActivateMethod.setJavadocText("@see javax.ejb.SessionBean#ejbActivate()");
+        //            clazz.getContents().add(ejbActivateMethod);
+        //
+        //            //add ejbPassivate method
+        //            Method ejbPassivateMethod = jmp.getMethod().createMethod();
+        //            ejbPassivateMethod.setName("ejbPassivate");
+        //            ejbPassivateMethod.setType(Utils.resolveType("void"));
+        //            ejbPassivateMethod.setModifiers(Modifier.PUBLIC);
+        //            ejbPassivateMethod.setJavadocText("@see javax.ejb.SessionBean#ejbPassivate()");
+        //            clazz.getContents().add(ejbPassivateMethod);
+        //
+        //            //add ejbRemove method
+        //            Method ejbRemoveMethod = jmp.getMethod().createMethod();
+        //            ejbRemoveMethod.setName("ejbRemove");
+        //            ejbRemoveMethod.setType(Utils.resolveType("void"));
+        //            ejbRemoveMethod.setModifiers(Modifier.PUBLIC);
+        //            ejbRemoveMethod.setJavadocText("@see javax.ejb.SessionBean#ejbRemove()");
+        //            clazz.getContents().add(ejbRemoveMethod);
+        //
+        //            //add ejbCreate method
+        //            Method ejbCreateMethod = jmp.getMethod().createMethod();
+        //            ejbCreateMethod.setName("ejbCreate");
+        //            ejbCreateMethod.setType(Utils.resolveType("void"));
+        //            ejbCreateMethod.setModifiers(Modifier.PUBLIC);
+        //            ejbCreateMethod.setJavadocText("See section 7.10.3 of the EJB 2.0 specification\nSee section 7.11.3 of the EJB 2.1 specification");
+        //            clazz.getContents().add(ejbCreateMethod);
+        //
+        //            rollbackFlag=false;
+        //        } finally {
+        //            JavaModel.getJavaRepository().endTrans(rollbackFlag);
+        //        }
     }
     
     private EjbJar getEjbJar() {
@@ -759,7 +872,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         
         return null;
     }
- 
+    
     public FileObject getWsdlFolder(boolean create) throws IOException {
         FileObject wsdlFolder = null;
         FileObject metaInf = getMetaInf();
@@ -777,7 +890,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         
         return wsdlFolder;
     }
-
+    
     public ClassPath getClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
@@ -793,15 +906,15 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
     
     // Service stub descriptors
     private static final JAXRPCStubDescriptor seiServiceStub = new JAXRPCStubDescriptor(
-    StubDescriptor.SEI_SERVICE_STUB,
-    NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_SEIServiceStub"), // NOI18N
-    new String [] {"documentliteral", "strict", "useonewayoperations"});
+            StubDescriptor.SEI_SERVICE_STUB,
+            NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_SEIServiceStub"), // NOI18N
+            new String [] {"documentliteral", "strict", "useonewayoperations"});
     
     private static final JAXRPCStubDescriptor wsdlServiceStub = new JAXRPCStubDescriptor(
-    StubDescriptor.WSDL_SERVICE_STUB,
-    NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_WSDLServiceStub"), // NOI18N
-    new String [] { "wsi", "strict" }); // NOI18N
-
+            StubDescriptor.WSDL_SERVICE_STUB,
+            NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_WSDLServiceStub"), // NOI18N
+            new String [] { "wsi", "strict" }); // NOI18N
+    
     /** Stub descriptor for services supported by this project type.
      */
     private static class JAXRPCStubDescriptor extends StubDescriptor {
@@ -829,5 +942,5 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
             }
             return buf.toString();
         }
-}
     }
+}
