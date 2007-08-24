@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -26,10 +27,11 @@ import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.items.StringItemCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
+
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.awt.*;
 
 /**
  *
@@ -54,6 +56,9 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
         label.setBorder(appearanceMode == ItemCD.VALUE_BUTTON ? BorderFactory.createRaisedBevelBorder() : null);
         label.setForeground(appearanceMode == ItemCD.VALUE_HYPERLINK ? Color.BLUE : UIManager.getDefaults().getColor("Label.foreground")); // NOI18N
         label.setText(text);
+
+        DesignComponent font = getComponent().readProperty(StringItemCD.PROP_FONT).getComponent();
+        label.setFont(ScreenSupport.getFont(deviceInfo, font));
     }
 
 
