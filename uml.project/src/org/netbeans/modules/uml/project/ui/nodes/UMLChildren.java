@@ -20,6 +20,8 @@
 
 package org.netbeans.modules.uml.project.ui.nodes;
 
+import java.util.ArrayList;
+
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -52,13 +54,43 @@ public class UMLChildren extends Children.SortedArray
       //setComparator(new ProjectTreeComparable());
    }
     
+
    public boolean add(Node[] arr)
    {
+       if (batchAddRequests) 
+       {
+	   if (batchedNodes == null) 
+	   { 
+	       batchedNodes = new ArrayList<Node>();
+	   }
+	   if (arr != null) 
+	   {
+	       for(Node n : arr) 
+	       {
+		   batchedNodes.add(n);
+	       }
+	   }
+	   return true;
+       } 
+
        boolean retVal = super.add(arr);
 //       refresh();
        
        return retVal;
    }
+
+   public boolean flushBatchedAddRequests()
+   {
+       if (batchAddRequests && batchedNodes != null) 
+       { 
+	   boolean retVal = super.add(batchedNodes.toArray(new Node[]{}));
+	   batchedNodes = null;
+	   batchAddRequests = false;
+	   return retVal;
+       } 
+       return false;
+   }
+
 
    /* (non-Javadoc)
     * @see org.openide.nodes.Children#addNotify()
@@ -131,6 +163,7 @@ public class UMLChildren extends Children.SortedArray
       }      
    }
    
+
   /**
     * Test to see if we can redraw the children list on demand, would
    * help with the filter action impl if it works
@@ -153,7 +186,12 @@ public class UMLChildren extends Children.SortedArray
 	 {
 	     public void run() 
 	     {
-		 remove(getNodes());
+		 if (nodes != null) 
+		 {
+		     remove(nodes.toArray(new Node[]{}));
+		     nodes = null;
+		     refresh();
+		 }
 	     }
 	 });  
           
@@ -161,13 +199,18 @@ public class UMLChildren extends Children.SortedArray
 	 {
 	     public void run() 
 	     {
+		 batchAddRequests = true;
 		 model.fireItemExpanding(item, new ChildrenNodeContext());  
+		 flushBatchedAddRequests();
 	     }
 	 });  
          
          item.setIsInitalized(true);
       }      
    }
+
+   private ArrayList<Node> batchedNodes;
+   private boolean batchAddRequests = false;
       
  
    /** 
