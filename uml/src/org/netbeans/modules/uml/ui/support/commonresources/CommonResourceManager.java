@@ -653,12 +653,9 @@ public class CommonResourceManager implements ICommonResourceManager
                 }
             }
 
-            else if (pDisp instanceof IPartFacade)
-            {
-                searchStr = "RoleClass"; // NOI18N
-            }
-
-            else if (pDisp instanceof IClass)
+            // IPartFacade ISA IClass, and part facade's already have the right
+            // searchStr, so don't let those into this else-if
+            else if (pDisp instanceof IClass && !(pDisp instanceof IPartFacade))
             {
                 searchStr = "Class"; // NOI18N
                 ETList stereotypes = ((IClassifier)pDisp).getAppliedStereotypesAsString();
