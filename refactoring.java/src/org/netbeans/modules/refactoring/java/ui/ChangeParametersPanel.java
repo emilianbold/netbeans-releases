@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.Set;
 import java.util.Set;
 import javax.lang.model.element.*;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -473,7 +474,12 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             int originalIndex = 0;
             for (VariableElement par:currentMethod.getParameters()) {
                 TypeMirror desc = par.asType();
-                String typeRepresentation = getTypeStringRepresentation(desc);
+                String typeRepresentation;
+                if (method.isVarArgs() && originalIndex == pars.size()-1) {
+                    typeRepresentation = getTypeStringRepresentation(((ArrayType)desc).getComponentType()) + " ...";
+                } else {
+                    typeRepresentation = getTypeStringRepresentation(desc);
+                }
                 LocalVarScanner scan = new LocalVarScanner(info, null);
                 scan.scan(info.getTrees().getPath(method), par);
                 Boolean removable = !scan.hasRefernces();

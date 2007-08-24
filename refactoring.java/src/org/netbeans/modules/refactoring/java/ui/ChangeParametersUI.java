@@ -90,14 +90,9 @@ public class ChangeParametersUI implements RefactoringUI {
         for (Iterator rowIt = data.iterator(); rowIt.hasNext(); ++counter) {
             List row = (List) rowIt.next();
             int origIndex = ((Integer) row.get(3)).intValue();
-            String name = null;
-            String defaultVal = null;
-            String type = null;
-            if (origIndex == -1) {
-                name = (String) row.get(0);
-                type = (String) row.get(1);
-                defaultVal = (String) row.get(2);
-            }
+            String name = (String) row.get(0);
+            String type = (String) row.get(1);
+            String defaultVal = (String) row.get(2);
             paramList[counter] = new ChangeParametersRefactoring.ParameterInfo(origIndex, name, type, defaultVal);
         }
         Set<Modifier> modifier = panel.getModifier();

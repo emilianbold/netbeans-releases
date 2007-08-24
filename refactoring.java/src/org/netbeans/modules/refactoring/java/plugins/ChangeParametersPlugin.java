@@ -28,6 +28,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
+import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
@@ -62,8 +63,17 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
     }
 
     @Override
-    public Problem fastCheckParameters() {
-        //TODO:
+    public Problem fastCheckParameters(CompilationController javac) throws IOException {
+        javac.toPhase(JavaSource.Phase.RESOLVED);
+        if (((ExecutableElement) treePathHandle.resolveElement(javac)).isVarArgs()) {
+            int i=refactoring.getParameterInfo().length;
+            for (ParameterInfo in: refactoring.getParameterInfo()) {
+                i--;
+                if (in.getType() != null && in.getType().endsWith("...") && i!=0) {//NOI18N
+                    return new Problem(true, org.openide.util.NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_VarargsFinalPosition", new Object[] {}));
+                }
+            }
+        }
         return null;    
     }
 
@@ -208,6 +218,8 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
 
     protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {
         switch(p) {
+            case CHECKPARAMETERS:
+            case FASTCHECKPARAMETERS:    
             case PRECHECK:
                 ClasspathInfo cpInfo = getClasspathInfo(refactoring);
                 return JavaSource.create(cpInfo, treePathHandle.getFileObject());
