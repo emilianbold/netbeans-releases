@@ -37,6 +37,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.rubyproject.gems.GemAction;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -386,19 +387,23 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
     
     private void setOptions(String name, String firstParameter, String secondParameter) {
         nameLabel.setText(name);
+        nameLabel.setLabelFor(nameText);
+        Mnemonics.setLocalizedText(nameLabel, name);
 
         boolean visible = firstParameter != null;
         parameter1Label.setVisible(visible);
         parameter1Text.setVisible(visible);
         if (visible) {
-            parameter1Label.setText(firstParameter);
+            Mnemonics.setLocalizedText(parameter1Label, firstParameter);
+            parameter1Label.setLabelFor(parameter1Text);
         }
 
         visible = secondParameter != null;
         parameter2Label.setVisible(visible);
         parameter2Text.setVisible(visible);
         if (visible) {
-            parameter2Label.setText(secondParameter);
+            Mnemonics.setLocalizedText(parameter2Label, secondParameter);
+            parameter2Label.setLabelFor(parameter2Text);
         }
         
         invalidate();
@@ -496,10 +501,10 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
 
         FormListener formListener = new FormListener();
 
-        generateLabel.setText(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.generateLabel.text")); // NOI18N
+        generateLabel.setLabelFor(typeCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(generateLabel, org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.generateLabel.text")); // NOI18N
 
-        pretendCB.setText(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.pretendCB.text")); // NOI18N
-        pretendCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(pretendCB, org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.pretendCB.text")); // NOI18N
         pretendCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         typeCombo.setMaximumRowCount(14);
@@ -507,51 +512,39 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
 
         forceGroup.add(skipRadio);
         skipRadio.setSelected(true);
-        skipRadio.setText(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.skipRadio.text")); // NOI18N
-        skipRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(skipRadio, org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.skipRadio.text")); // NOI18N
         skipRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         forceGroup.add(overwriteRadio);
-        overwriteRadio.setText(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.overwriteRadio.text")); // NOI18N
-        overwriteRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(overwriteRadio, org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.overwriteRadio.text")); // NOI18N
         overwriteRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         optionsPanel.setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText(NbBundle.getMessage(GeneratorPanel.class, "Name")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, NbBundle.getMessage(GeneratorPanel.class, "Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 11);
         optionsPanel.add(nameLabel, gridBagConstraints);
-
-        nameText.setText(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.nameText.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         optionsPanel.add(nameText, gridBagConstraints);
-
-        parameter1Label.setText("jLabel2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         optionsPanel.add(parameter1Label, gridBagConstraints);
-
-        parameter1Text.setText(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.parameter1Text.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         optionsPanel.add(parameter1Text, gridBagConstraints);
-
-        parameter2Label.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         optionsPanel.add(parameter2Label, gridBagConstraints);
-
-        parameter2Text.setText(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.parameter2Text.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -559,14 +552,14 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         optionsPanel.add(parameter2Text, gridBagConstraints);
 
-        forceLabel.setText(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.forceLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(forceLabel, org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.forceLabel.text")); // NOI18N
 
         usageText.setColumns(20);
         usageText.setEditable(false);
         usageText.setRows(5);
         jScrollPane1.setViewportView(usageText);
 
-        installGeneratorsButton.setText(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.installGeneratorsButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(installGeneratorsButton, org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.installGeneratorsButton.text")); // NOI18N
         installGeneratorsButton.addActionListener(formListener);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -576,23 +569,23 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(forceLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(skipRadio)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(overwriteRadio))
-                    .add(optionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
+                    .add(optionsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, pretendCB)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(generateLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(typeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 305, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 383, Short.MAX_VALUE)
                         .add(installGeneratorsButton))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
