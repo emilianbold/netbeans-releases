@@ -26,11 +26,9 @@
 
     
     <!-- CMP pages -->
-    <mapID target="fields_mult_cols" url="cmp/fields_mult_cols.html" />
     <mapID target="gen_tables" url="cmp/gen_tables.html" />
     <mapID target="map_bean_to_db" url="cmp/map_bean_to_db.html" />
     <mapID target="map_rel_fields" url="cmp/map_rel_fields.html" />
-    <mapID target="prim_sec_tables" url="cmp/prim_sec_tables.html" />
     
     <!-- sun-???.xml dataobject mappings -->
     <mapID target="sun-web_help"				url="configeditors/WebAppGeneral.html"  />
@@ -113,28 +111,3 @@
   <!-- sun-application.xml DD editor CSH: -->
   <mapID target="AS_CFG_Application"                    			url="appconfigeditors/sunapplication.html" />
 </map>
-
-  
-
-
-
-
-
-
-
-
-
-   
-
-
-
-
-
-
-
-
-
-
-
-
-

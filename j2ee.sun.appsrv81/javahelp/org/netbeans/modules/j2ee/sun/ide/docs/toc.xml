@@ -31,8 +31,6 @@
         <tocitem text="Developing EJB 2.1 Entity Beans" >
             <tocitem text="Configuring CMP Mappings" target="map_bean_to_db" />
             <tocitem text="Generating Database Tables at Deployment" target="gen_tables" />
-            <tocitem text="Specifying Primary and Secondary Tables" target="prim_sec_tables" />
-            <tocitem text="Mapping CMP Fields to Multiple Columns" target="fields_mult_cols" />
             <tocitem text="Mapping Relationship Fields" target="map_rel_fields" />
         </tocitem>
     </tocitem>

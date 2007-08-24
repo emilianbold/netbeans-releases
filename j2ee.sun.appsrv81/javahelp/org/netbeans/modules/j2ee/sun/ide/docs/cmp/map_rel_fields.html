@@ -2,7 +2,7 @@
 <html>
 
 <!--
-  *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+  *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
   *     Use is subject to license terms.
 -->
 <head>
@@ -16,53 +16,75 @@
 <body>
 <h2>Mapping Relationship Fields</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<div class="indent">
   <p>When you have foreign-key relationships between database tables, you usually 
     want to preserve those relationships in the CMP beans mapped to those tables. 
     Container-managed relationships (CMR) determine how relationships between 
     mapped CMP beans are stored in the database. CMRs enable navigation from one 
     bean to another, in the same way that a foreign key enables navigation from 
     one table to another. </p>
-  <p>If you are deploying to the Sun Java System Application Server, you can configure 
-    CMRs in the Sun Configuration editor. If you are deploying to a different 
-    application server, you have to configure CMRs yourself in the server-specific 
+    
+    <p>When mapping relationship fields, you typically use a foreign key to connect your tables.
+    If there is no foreign key, then you must create key column pairs to act as the key between tables.
+    The columns in each pair are expected to have the same value.</p>
+    
+    <p>If you generate CMP entity beans from a database schema, the IDE generates the necessary relationships in the deployment
+    descriptor for you based on the database schema. 
+    If you are you are generating CMP entity beans from scratch and need to configure CMRs for 
+    your application, you need to edit the deployment descriptor file in the XML editor.</p>
+    
+    <p>If you are deploying to the Sun Java System Application Server/GlassFish, you configure 
+    CMR fields in the <tt>sun-cmp-mappings.xml</tt>. If you are deploying to a different 
+    application server, you have to configure CMR fields yourself in the server-specific 
     deployment descriptors. </p>
-  <p><b>To edit your relationship field mappings:</b></p>
+    
+    <p><b>To edit CMR field mappings:</b></p>
   <ol>
-    <li>Make sure you have <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/ejb_relationship.html">configured 
-      the CMRs in the general deployment descriptors</a>.</li>
+    <li>Make sure you have configured <tt>ejb-jar.xml</tt> to specify your data source, and
+    <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/ejb_relationship.html">
+    the CMP relationships</a> and that you have
+    <a href="map_bean_to_db.html">specified the primary and any secondary tables</a>.</li>
     <li>In the Projects window, expand the Configuration Files node for your EJB 
-      module and double-click <tt>sun-cmp-mappings.xml</tt> or <tt>sun-ejb-jar.xml</tt>. 
-      <ul class="note">
-        <li>If either <tt>sun-cmp-mappings</tt> or <tt>sun-ejb-jar.xml</tt> are 
-          open in the text mode, you cannot open the visual editor. You first 
-          have to close the text mode tabs in the Source Editor.</li>
-      </ul>
-    </li>
-    <li>In Sun Configuration editor, expand the Sun Configuration node and select 
-      the entity bean you want to map.</li>
-    <li>Select <tt>&lt;map relationship field&gt;</tt> in the Mapped Column column 
-      for the CMR field. The Map Relationship Field wizard opens.</li>
-    <li>Follow the <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/com/sun/jdo/modules/persistence/docs/mapping/ejb/RelationshipMappingWizard.html">steps 
-      in the wizard</a>.</li>
-  </ol>
-  <p>In the Field Mappings table in the IDE, persistent fields with mapped relationships 
-    are indicated by <tt>&lt;mapped relationship&gt;</tt> in the Mapped Column 
-    column. When you create or modify field mappings in the Sun Configuration 
-    editor, the IDE makes these changes in the <tt>sun-cmp-mappings.xml</tt> file. 
-    The modified <tt>sun-cmp-mappings.xml</tt> file is copied to the Sun Java 
-    System Application Server when the application is deployed.</p>
-</div>
+      module and double-click <tt>sun-cmp-mappings.xml</tt>.</li>
+    <li>Edit the XML to create the necessary fields. You can use the IDE's code completion to 
+    help you edit the deployment descriptor properties.</li>
+    <li>Validate the XML file.</li>
+    <li>Update your source code where necessary.</li>
+</ol>
+
+<ul class="note">
+    <li>You should exercise caution when editing deployment descriptors in XML and always validate your XML file to avoid errors.</li>
+</ul>
+
+
+<p>For a complete list of configurable properties for
+    all J2EE module types, see "Appendix A
+    Deployment Descriptor Files" in
+    the Sun Java System Application Server Developer's
+    Guide. </p>
+    <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://docs.sun.com/source/819-0079/dgdesc.html">
+        <param name="text" value="<html><u>http://docs.sun.com/source/819-0079/dgdesc.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object></p>
+    
+    <p>For a detailed description of CMP entity bean specifications, see the Enterprise JavaBeans Specification, v2.1.</p>
+    <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://java.sun.com/products/ejb/docs.html">
+        <param name="text" value="<html><u>http://java.sun.com/products/ejb/docs.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object></p>
+    
+
 <dl> 
   <dt><a name="seealso">See Also</a></dt>
-  <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_cmp.html">About EJB 2.1 CMP Mappings</a></dd>
-  <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/editing/generate_cmp_beans.html">Generating CMP Entity Beans from a Database</a></dd>
-  <dd><a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema.html">Obtaining a Database Schema</a></dd>
   <dd><a href="map_bean_to_db.html">Configuring CMP Mappings</a></dd>
-  <dd><a href="fields_mult_cols.html">Mapping CMP Fields to Multiple Columns</a> 
-  </dd>
+  <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/about_ejb_relationship.html">Managing Container-Managed Relationships</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/editing/generate_cmp_beans.html">Generating CMP Entity Beans from a Database</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_cmp.html">About EJB 2.1 CMP Mappings</a></dd>
 </dl>
- 
+
 <hr>
 <small> <a href="../credits.html">Legal Notices</a></small> 
 <table cellpadding="50" border="0"> 
