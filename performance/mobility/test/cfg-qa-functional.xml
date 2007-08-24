@@ -177,7 +177,7 @@
              executor="ide_footprint" name="Footprint - Mobility project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
-		<include name="footprint/MobilityrojectWorkflow.class"/>
+		<include name="footprint/MobilityProjectWorkflow.class"/>
 	    </patternset>
 	</testset>
     </testbag>
