@@ -1,0 +1,4 @@
+bProt int
+bPub int
+bProtFun() void
+bPubFun() void

@@ -1,0 +1,10 @@
+aProt int
+aPub int
+bPriv int
+bProt int
+bPub int
+aProtFun() void
+aPubFun() void
+bPrivFun() void
+bProtFun() void
+bPubFun() void

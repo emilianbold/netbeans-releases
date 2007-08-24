@@ -55,7 +55,11 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
     
     public void testClassAaPubFunVarE() throws Exception {
         performTest("file.cc", 10, 5, "e.");
-    }    
+    }  
+    
+    public void testClassAaPubFunClassA() throws Exception {
+        performTest("file.cc", 10, 5, "ClassA::");
+    }     
     ///////////////////////////////////////////////////////////////////
     // void ClassB::bProtFun() {
     
@@ -79,6 +83,13 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
         performTest("file.cc", 19, 5, "e.");
     }
     
+    public void testClassBbProtFunClassA() throws Exception {
+        performTest("file.cc", 19, 5, "ClassA::");
+    }
+    
+    public void testClassBbProtFunClassB() throws Exception {
+        performTest("file.cc", 19, 5, "ClassB::");
+    }    
     ////////////////////////////////////////////////////////////////////
     // void ClassC::cPrivFun() {
     
@@ -100,7 +111,11 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
         
     public void testClassCcPrivFunVarE() throws Exception {
         performTest("file.cc", 28, 5, "e.");
-    }    
+    }  
+    
+    public void testClassCcPrivFunClassC() throws Exception {
+        performTest("file.cc", 28, 5, "ClassC::");
+    }     
     ////////////////////////////////////////////////////////////////////
     // void ClassD::dPubFun() {
     
@@ -124,6 +139,21 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
         performTest("file.cc", 37, 5, "e.");
     }
     
+    public void testClassDdPubFunClassA() throws Exception {
+        performTest("file.cc", 37, 5, "ClassA::");
+    }    
+    
+    public void testClassDdPubFunClassB() throws Exception {
+        performTest("file.cc", 37, 5, "ClassB::");
+    }    
+
+    public void testClassDdPubFunClassC() throws Exception {
+        performTest("file.cc", 37, 5, "ClassC::");
+    }    
+    
+    public void testClassDdPubFunClassD() throws Exception {
+        performTest("file.cc", 37, 5, "ClassD::");
+    }     
     ////////////////////////////////////////////////////////////////////
     // void ClassE::ePubFun() {
     
@@ -147,6 +177,13 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
         performTest("file.cc", 46, 5, "e.");
     }
         
+    public void testClassEePubFunClassC() throws Exception {
+        performTest("file.cc", 46, 5, "ClassC::");
+    }    
+    
+    public void testClassEePubFunClassE() throws Exception {
+        performTest("file.cc", 46, 5, "ClassE::");
+    }     
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

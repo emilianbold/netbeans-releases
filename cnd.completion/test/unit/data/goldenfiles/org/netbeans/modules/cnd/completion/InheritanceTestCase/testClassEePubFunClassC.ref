@@ -1,0 +1,4 @@
+cProt int
+cPub int
+cProtFun() void
+cPubFun() void
