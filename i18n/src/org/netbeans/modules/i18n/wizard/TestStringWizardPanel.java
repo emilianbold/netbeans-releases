@@ -256,6 +256,8 @@ final class TestStringWizardPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(sourceCombo, gridBagConstraints);
+        sourceCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestStringWizardPanel.class, "LBL_Source_Accessible_Name")); // NOI18N
+        sourceCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestStringWizardPanel.class, "LBL_Source_Accessible_Description")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(testStringLabel, NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_missing_keys")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -269,6 +271,8 @@ final class TestStringWizardPanel extends JPanel {
 
         testStringTable.setModel(tableModel);
         scrollPane.setViewportView(testStringTable);
+        testStringTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestStringWizardPanel.class, "LBL_FoundStrings_Accessible_Name")); // NOI18N
+        testStringTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestStringWizardPanel.class, "LBL_FoundStrings_Accessible_Description")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -278,6 +282,8 @@ final class TestStringWizardPanel extends JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(scrollPane, gridBagConstraints);
+        scrollPane.getAccessibleContext().setAccessibleName("Found Strings with Missing Keys");
+        scrollPane.getAccessibleContext().setAccessibleDescription("Found Strings with Missing Keys");
     }// </editor-fold>//GEN-END:initComponents
 
     private void sourceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourceComboActionPerformed
