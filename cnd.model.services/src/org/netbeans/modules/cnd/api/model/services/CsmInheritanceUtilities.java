@@ -250,7 +250,6 @@ public final class CsmInheritanceUtilities {
     public static CsmVisibility getContextVisibility(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmVisibility defVisibilityValue, boolean checkInheritance) {
         assert (clazz != null);
         CsmClass contextClass = CsmBaseUtilities.getContextClass(contextDeclaration);
-        CsmFunction contextFunction = CsmBaseUtilities.getContextFunction(contextDeclaration);
         // if we are in the same class => we see everything
         if (contextClass == clazz) {
             return MAX_VISIBILITY;
@@ -281,8 +280,7 @@ public final class CsmInheritanceUtilities {
                     mergedVisibility = CsmInheritanceUtilities.mergeChildInheritanceVisibility(mergedVisibility, inherit.getVisibility());
                 }
             }          
-            // return not less than default visibility
-            return getMaxVisibility(defVisibilityValue, mergedVisibility);
+            return mergedVisibility;
         } else {
             // not inherited class see only public, friend was checked above
             // return passed default public visibility
