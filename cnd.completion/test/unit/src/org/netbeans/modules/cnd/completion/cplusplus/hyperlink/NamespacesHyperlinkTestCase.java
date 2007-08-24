@@ -166,6 +166,21 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.cc", 70, 6, "file.cc", 63, 5); //myCout;
     }   
     
+    public void testUsingNS2() throws Exception {
+        // IZ#106772: incorrect resolving of using directive
+        performTest("main.cc", 51, 6, "file.cc", 21, 9); //var2 = 10;
+        performTest("main.cc", 52, 6, "file.cc", 23, 9); //boo();
+        performTest("main.cc", 53, 6, "file.h", 12, 9); //clsS2 in clsS2 c2;
+    } 
+
+    public void testUsingDirectivesS2() throws Exception {
+        // IZ#106772: incorrect resolving of using directive
+        performTest("main.cc", 60, 6, "file.h", 12, 9); //clsS2 in clsS2 c2;
+        performTest("main.cc", 62, 6, "file.cc", 21, 9); //var2 = 10;
+        performTest("main.cc", 64, 6, "file.cc", 23, 9); //boo();
+    }        
+
+    
     public static class Failed extends HyperlinkBaseTestCase {
         
         protected Class getTestCaseDataClass() {
@@ -181,18 +196,7 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         }
         
         public void testUsingNS2() throws Exception {
-            // IZ#106772: incorrect resolving of using directive
-            performTest("main.cc", 51, 6, "file.cc", 21, 9); //var2 = 10;
-            performTest("main.cc", 52, 6, "file.cc", 23, 9); //boo();
-            performTest("main.cc", 53, 6, "file.h", 12, 9); //clsS2 in clsS2 c2;
             performTest("main.cc", 54, 10, "file.cc", 46, 9); //clsS2pubFun in c2.clsS2pubFun();        
         } 
-
-        public void testUsingDirectivesS2() throws Exception {
-            // IZ#106772: incorrect resolving of using directive
-            performTest("main.cc", 60, 6, "file.h", 12, 9); //clsS2 in clsS2 c2;
-            performTest("main.cc", 62, 6, "file.cc", 21, 9); //var2 = 10;
-            performTest("main.cc", 64, 6, "file.cc", 23, 9); //boo();
-        }        
     }
 }

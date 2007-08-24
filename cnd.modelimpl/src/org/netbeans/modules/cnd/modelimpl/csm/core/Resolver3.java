@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import javax.naming.spi.ResolveResult;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
@@ -442,6 +441,17 @@ public class Resolver3 implements Resolver {
                         result = (CsmNamespace) o;
                     }
                 }
+
+                if( result == null && needNamespaces()) {
+                    for (Iterator iter = usedNamespaces.iterator(); iter.hasNext();) {
+                        String nsp = (String) iter.next();
+                        String fqn = nsp + "::" + nameTokens[0]; // NOI18N
+                        result = findNamespace(fqn);
+                        if( result != null ) {
+                            break;
+                        }
+                    }
+                }
             }
         } else if( nameTokens.length > 1 ) {
             StringBuilder sb = new StringBuilder(nameTokens[0]);
@@ -520,7 +530,7 @@ public class Resolver3 implements Resolver {
     
     private CsmObject _resolveInBaseClasses(CsmClass cls, String name, Set<CsmClass> antiLoop) {
         if( cls != null && cls.isValid()) {
-            for( CsmInheritance inh : (List<CsmInheritance>) cls.getBaseClasses() ) {
+            for( CsmInheritance inh : cls.getBaseClasses() ) {
                 CsmClass base = getInheritanceClass(inh);
                 if (base != null && !antiLoop.contains(base)) {
                     antiLoop.add(base);
