@@ -636,6 +636,25 @@ public class GoToSupportTest extends NbTestCase {
         }
     }
     
+    public void test113474() throws Exception {
+        String code = "package test; public class Test {}whatever";
+        final boolean[] wasCalled = new boolean[1];
+        
+        performTest(code, 63 - 24, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called, position= " + pos + ".");
+            }
+            public void beep() {
+                wasCalled[0] = true;
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called, element= " + el + ".");
+            }
+        }, false);
+        
+        wasCalled[0] = false;
+    }
+    
     private void writeIntoFile(FileObject file, String what) throws Exception {
         FileLock lock = file.lock();
         OutputStream out = file.getOutputStream(lock);

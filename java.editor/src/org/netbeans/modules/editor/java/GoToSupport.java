@@ -117,20 +117,29 @@ public class GoToSupport {
                     
                     TreePath path = controller.getTreeUtilities().pathFor(exactOffset);
                     TreePath parent = path.getParentPath();
-                    Tree parentLeaf = parent.getLeaf();
                     
-                    if (parentLeaf.getKind() == Kind.NEW_CLASS && ((NewClassTree) parentLeaf).getIdentifier() == path.getLeaf()) {
-                        if (!isError(controller.getTrees().getElement(path.getParentPath()))) {
-                            path = path.getParentPath();
-                        }
-                    } else {
-                        if (   parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE
-                            && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS
-                            && ((ParameterizedTypeTree) parentLeaf).getType() == path.getLeaf()) {
-                            if (!isError(controller.getTrees().getElement(parent.getParentPath()))) {
-                                path = parent.getParentPath();
+                    if (parent != null) {
+                        Tree parentLeaf = parent.getLeaf();
+
+                        if (parentLeaf.getKind() == Kind.NEW_CLASS && ((NewClassTree) parentLeaf).getIdentifier() == path.getLeaf()) {
+                            if (!isError(controller.getTrees().getElement(path.getParentPath()))) {
+                                path = path.getParentPath();
+                            }
+                        } else {
+                            if (   parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE
+                                && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS
+                                && ((ParameterizedTypeTree) parentLeaf).getType() == path.getLeaf()) {
+                                if (!isError(controller.getTrees().getElement(parent.getParentPath()))) {
+                                    path = parent.getParentPath();
+                                }
                             }
                         }
+                    } else {
+                        if (!tooltip)
+                            CALLER.beep();
+                        else
+                            result[0] = null;
+                        return;
                     }
                     
                     Element el = controller.getTrees().getElement(path);
