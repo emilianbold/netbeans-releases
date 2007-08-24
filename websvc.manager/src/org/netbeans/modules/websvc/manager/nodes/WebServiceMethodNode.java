@@ -125,7 +125,7 @@ public class WebServiceMethodNode extends AbstractNode {
         if ("void".equals(javaMethod.getReturnType().getRealName())) { // NOI18N
             transferable = ExTransferable.create(new WebServicesPortNode.PortTransferable(new WebServiceMetaDataTransfer.Port(inWsData, inPort.getName())));
         }else {
-            transferable = ExTransferable.create(new MethodTransferable(new WebServiceMetaDataTransfer.Method(wsData, javaMethod, port.getName())));
+            transferable = ExTransferable.create(new MethodTransferable(new WebServiceMetaDataTransfer.Method(wsData, javaMethod, port.getName(), inOperation)));
         }
         transferable = addFlavors(transferable);
         content.add(transferable);

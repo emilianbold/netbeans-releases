@@ -705,32 +705,36 @@ public class JaxWsCodeGenerator {
     }
     
     public static void insertMethod(final Document document, final int pos, OperationNode operationNode) {
+        Node portNode = operationNode.getParentNode();
+        Node serviceNode = portNode.getParentNode();
+        Node wsdlNode = serviceNode.getParentNode();
+        WsdlOperation operation = operationNode.getLookup().lookup(WsdlOperation.class);
+        WsdlPort port = portNode.getLookup().lookup(WsdlPort.class);
+        WsdlService service = serviceNode.getLookup().lookup(WsdlService.class);
+        Client client = wsdlNode.getLookup().lookup(Client.class);
+        
+        String wsdlUrl = client.getWsdlUrl();
+        if (wsdlUrl.startsWith("file:")) //NOI18N
+            wsdlUrl = findWsdlLocation(client, NbEditorUtilities.getFileObject(document));
+
+        insertMethod(document, pos, service, port, operation, wsdlUrl);
+    }
+    
+    public static void insertMethod(final Document document, final int pos, 
+            WsdlService service, WsdlPort port, WsdlOperation operation, String wsdlUrl) {
         
         boolean inJsp = "text/x-jsp".equals(document.getProperty("mimeType")); //NOI18N
         // First, collect name of method, port, and service:
         
-        Node serviceNode, portNode, wsdlNode;
-        String wsdlUrl;
         final String serviceJavaName;
         String serviceFieldName;
         String portJavaName, portGetterMethod, operationJavaName, returnTypeName;
         String responseType="Object"; //NOI18N
         String callbackHandlerName = "javax.xml.ws.AsyncHandler"; //NOI18N
         String argumentInitializationPart, argumentDeclarationPart;
-        WsdlOperation operation;
-        Client client;
         
         try {
             serviceFieldName="service"; //NOI18N
-            portNode = operationNode.getParentNode();
-            serviceNode = portNode.getParentNode();
-            wsdlNode = serviceNode.getParentNode();
-            operation = (WsdlOperation)operationNode.getLookup().lookup(WsdlOperation.class);
-            WsdlPort port = (WsdlPort)portNode.getLookup().lookup(WsdlPort.class);
-            WsdlService service = (WsdlService)serviceNode.getLookup().lookup(WsdlService.class);
-            
-            client = (Client)wsdlNode.getLookup().lookup(Client.class);
-            wsdlUrl = client.getWsdlUrl();
             operationJavaName = operation.getJavaName();
             portJavaName = port.getJavaName();
             portGetterMethod = port.getPortGetter();
@@ -925,9 +929,6 @@ public class JaxWsCodeGenerator {
             
             // @insert WebServiceRef injection
             if (generateWsRefInjection[0]) {
-                if (wsdlUrl.startsWith("file:")) { //NOI18N
-                    wsdlUrl = findWsdlLocation(client, targetFo);
-                }
                 final String localWsdlUrl = wsdlUrl;
                 CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
                     public void run(WorkingCopy workingCopy) throws IOException {

@@ -423,6 +423,8 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.websvc.core.wseditor.spi</package>
                 <package>org.netbeans.modules.websvc.core.wseditor.support</package>
                 <package>org.netbeans.modules.websvc.customization.model</package>
+                <package>org.netbeans.modules.websvc.core.jaxws.actions</package>
+                <package>org.netbeans.modules.websvc.core.jaxws.nodes</package>
                 <package>org.netbeans.modules.websvc.wsdl</package>
             </public-packages>
         </data>

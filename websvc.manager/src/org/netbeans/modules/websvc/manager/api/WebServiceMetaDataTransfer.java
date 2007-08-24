@@ -20,6 +20,7 @@ package org.netbeans.modules.websvc.manager.api;
 
 import com.sun.tools.ws.processor.model.java.JavaMethod;
 import java.awt.datatransfer.DataFlavor;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 
 /**
@@ -74,11 +75,13 @@ public class WebServiceMetaDataTransfer {
         private final WebServiceData wsData;
         private final JavaMethod method;
         private final String portName;
+        private final WsdlOperation operation;
         
-        public Method(WebServiceData wsData, JavaMethod method, String portName) {
+        public Method(WebServiceData wsData, JavaMethod method, String portName, WsdlOperation operation) {
             this.wsData = wsData;
             this.method = method;
             this.portName = portName;
+            this.operation = operation;
         }
         
         public WebServiceData getWebServiceData() {
@@ -91,6 +94,10 @@ public class WebServiceMetaDataTransfer {
         
         public String getPortName() {
             return portName;
+        } 
+        
+        public WsdlOperation getOperation() {
+            return operation;
         }        
     }
     
