@@ -333,7 +333,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     public void modelChanged(CsmChangeEvent e) {
         if (e.getRemovedFiles().size()>0) {
             CsmFile file = getCsmFile();
-            if (file == null){
+            if (file == null || e.getRemovedFiles().contains(file)){
                 stopTimers();
                 update(null);
                 ui.newContentReady();
