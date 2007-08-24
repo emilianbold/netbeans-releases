@@ -120,9 +120,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         for (Resource r : resourceList) {
             reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
-                    "MSG_GeneratingClass", r.getFileName()));
-            
-            files.add(new ResourceJavaScript(r, jsDir).generate());
+                    "MSG_GeneratingClass", r.getFileName()));            
+            FileObject fo = new ResourceJavaScript(r, jsDir).generate();
+            if(fo != null)
+                files.add(fo);
         }
         updateRestStub(getRootDir().getFileObject(RESTSTUB, HTML), resourceList);
         return files;
@@ -241,6 +242,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
         
         public FileObject generate() throws IOException {
+            if(this.r == null || r.getRepresentation().getRoot() == null)
+                return null;
+            
             FileObject fo = jsFolder.getFileObject(r.getFileNameExt());
             if (fo != null) {
                 if(isOverwrite())
