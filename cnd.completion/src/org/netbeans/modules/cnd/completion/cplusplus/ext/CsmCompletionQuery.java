@@ -980,7 +980,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                  isProjectBeeingParsed());
                                 }
                             } else { // currently package
-                                String searchName = (lastNamespace.isGlobal() ? "" : lastNamespace.getName()) + CsmCompletion.SCOPE + var;
+                                String searchName = (lastNamespace.isGlobal() ? "" : (lastNamespace.getName() + CsmCompletion.SCOPE)) + var;
                                 if (findType || !last) {
                                     lastNamespace = finder.getExactNamespace(searchName);
                                     if (lastNamespace == null) { // package doesn't exist

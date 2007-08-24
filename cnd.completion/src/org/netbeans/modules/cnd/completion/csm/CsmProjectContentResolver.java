@@ -575,6 +575,10 @@ public final class CsmProjectContentResolver {
             minVisibility = CsmInheritanceUtilities.MAX_VISIBILITY;
         } else if (scopeAccessedClassifier) {
             minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, CsmVisibility.PUBLIC, inspectParentClasses);
+            if (minVisibility == CsmVisibility.NONE) {
+                staticOnly = true;
+                minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration);
+            }
         } else {
             minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration);
         }
