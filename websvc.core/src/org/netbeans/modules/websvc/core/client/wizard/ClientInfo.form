@@ -361,6 +361,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JComboBox" name="jComboBoxJaxVersion">
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jaxwsVersionHandler"/>
+      </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="1" gridY="8" gridWidth="0" gridHeight="0" fill="2" ipadX="0" ipadY="0" insetsTop="24" insetsLeft="6" insetsBottom="0" insetsRight="0" anchor="11" weightX="0.0" weightY="0.0"/>

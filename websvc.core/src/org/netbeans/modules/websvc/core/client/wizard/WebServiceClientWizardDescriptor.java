@@ -114,9 +114,9 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
 
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
         project = Templates.getProject(wizardDescriptor);
         projectPath = project.getProjectDirectory().getPath();
+        component.read(wizardDescriptor);
 
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewFileWizard to modify the title
