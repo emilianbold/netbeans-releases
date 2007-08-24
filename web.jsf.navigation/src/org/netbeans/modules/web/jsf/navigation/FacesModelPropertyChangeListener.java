@@ -224,21 +224,6 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         }
         if (myOldCase != null) {
             oldCaseEdge = pfc.removeNavCase2NavCaseEdge(myOldCase);
-            //            if( oldCaseEdge != null ) {
-            //                view.removeEdge(oldCaseEdge);
-            //
-            //                String toPage = oldCaseEdge.getToViewId();
-            //                if( toPage != null ) {
-            //                    Page pageNode = pfc.getPageName2Node(toPage);
-            //                    if( pageNode != null && !pfc.isPageInFacesConfig(toPage)){
-            //                        if( !pageNode.isDataNode() || pfc.isFacesConfigCurrentScope()){
-            //                            view.removeNodeWithEdges(pageNode);
-            //                            pfc.removePageName2Node(pageNode,true);
-            //                            view.validateGraph();
-            //                        }
-            //                    }
-            //                }
-            //            }
         }
         navigationCaseEdgeEventHandler(newCaseEdge, oldCaseEdge);
         //        view.validateGraph();
@@ -293,7 +278,14 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         //Because it does not consistantly work, I can't account for reactions.
         if (myOldRule != null) {
             final String fromPage = pfc.removeNavRule2String(myOldRule);
+            
+            List<NavigationCase> cases = myOldRule.getNavigationCases();
+            for( NavigationCase navCase : cases ){
+                navigationCaseEventHandler(null, navCase);
+            }
             removePageIfNoReference(fromPage);
+                    
+            //Must account for cases being removed with in the rule.
         }
         if (myNewRule != null) {
             pfc.putNavRule2String(myNewRule, FacesModelUtility.getFromViewIdFiltered(myNewRule));
