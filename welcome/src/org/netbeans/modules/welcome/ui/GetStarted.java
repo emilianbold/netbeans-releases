@@ -21,18 +21,18 @@ package org.netbeans.modules.welcome.ui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.lang.reflect.Method;
+import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
 import org.netbeans.modules.welcome.content.BundleSupport;
-import org.netbeans.modules.welcome.content.ContentPanel;
 import org.netbeans.modules.welcome.content.ActionButton;
+import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.Utils;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.OpenCookie;
@@ -40,26 +40,25 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author S. Aubrecht
  */
-public class GetStarted extends ContentPanel {
+class GetStarted extends JPanel implements Constants {
 
     private int row;
 
     /** Creates a new instance of RecentProjects */
     public GetStarted() {
-        super( BundleSupport.getLabel( "GettingStarted" ) ); // NOI18N
-
-        setContent( buildContent() );
+        super( new GridBagLayout() );
+        setOpaque( false );
+        buildContent();
     }
-
-    private JComponent buildContent() {
-        int row = 0;
-        JPanel panel = new JPanel( new GridBagLayout() );
-        panel.setOpaque( false );
+    
+    private void buildContent() {
         FileObject root = Repository.getDefault().getDefaultFileSystem().findResource( "WelcomePage/GettingStartedLinks" ); // NOI18N
         DataFolder folder = DataFolder.findFolder( root );
         DataObject[] children = folder.getChildren();
@@ -67,70 +66,73 @@ public class GetStarted extends ContentPanel {
             if( children[i].getPrimaryFile().isFolder() ) {
                 String headerText = children[i].getNodeDelegate().getDisplayName();
                 JLabel lblTitle = new JLabel( headerText );
-                lblTitle.setFont( HEADER_FONT );
-                lblTitle.setForeground( Utils.getColor(SECTION_TEXT_COLOR) );
-                lblTitle.setBackground( Utils.getColor(SECTION_BACKGROUND_COLOR) );
+                lblTitle.setFont( BUTTON_FONT );
                 lblTitle.setHorizontalAlignment( JLabel.LEFT );
                 lblTitle.setOpaque( true );
                 lblTitle.setBorder( HEADER_TEXT_BORDER );
-                panel.add( lblTitle, new GridBagConstraints( 0,row++,1,1,1.0,0.0,
+                add( lblTitle, new GridBagConstraints( 0,row++,1,1,1.0,0.0,
                     GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
-                    new Insets(row==1 ? UNDER_HEADER_MARGIN : SECTION_MARGIN,0,
-                        UNDER_SECTION_MARGIN,1), 0, 0 ) );
+                    new Insets(0,0,0,0), 0, 0 ) );
 
                 DataFolder subFolder = DataFolder.findFolder( children[i].getPrimaryFile() );
                 DataObject[] subFolderChildren = subFolder.getChildren();
                 for( int j=0; j<subFolderChildren.length; j++ ) {
-                    row = addLink( panel, row, subFolderChildren[j] );
+                    row = addLink( row, subFolderChildren[j] );
                 }
                     
             } else {
-                row = addLink( panel, row, children[i] );
+                row = addLink( row, children[i] );
             }
         }
 
-        panel.add( new JLabel(), new GridBagConstraints(0, row++, 1, 1, 0.0, 1.0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,15,0), 0, 0 ) );
-
-        JScrollPane scroll = new RelativeSizeScrollPane( panel, 0.70f, 50 );
-        scroll.getViewport().setOpaque( false );
-        scroll.setOpaque( false );
-        scroll.setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
-        scroll.setBorder( BorderFactory.createEmptyBorder(0,0,20,0) );
-        return scroll;
+        add( new JLabel(), new GridBagConstraints(0, row++, 1, 1, 0.0, 1.0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
     }
 
-    private int addLink( JPanel panel, int row, DataObject dob ) {
+    private int addLink( int row, DataObject dob ) {
         OpenCookie oc = (OpenCookie)dob.getCookie( InstanceCookie.class );
         if( null != oc ) {
+            JPanel panel = new JPanel( new GridBagLayout() );
+            panel.setOpaque( false );
+            
             LinkAction la = new LinkAction( dob );
-            ActionButton lb = new ActionButton( la, true, getUrlString( dob ) );
+            ActionButton lb = new ActionButton( la, false, Utils.getUrlString( dob ) );
+            panel.add( lb, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
+            
+            //TODO remove when the 'tour' link is actually available on the web
+            lb.setEnabled( !("tour".equals( dob.getName() )) );
+            
+            String bundleName = (String)dob.getPrimaryFile().getAttribute("SystemFileSystem.localizingBundle");//NOI18N
+            if( null != bundleName ) {
+                ResourceBundle bundle = NbBundle.getBundle(bundleName);
+                Object imgKey = dob.getPrimaryFile().getAttribute("imageKey"); //NOI18N
+                if( null != imgKey ) {
+                    String imgLocation = bundle.getString(imgKey.toString());
+                    Image img = Utilities.loadImage(imgLocation, true);
+                    JLabel lbl = new JLabel( new ImageIcon(img) );
+                    lbl.setVerticalAlignment( SwingConstants.TOP );
+                    panel.add( lbl, 
+                            new GridBagConstraints(0,0,1,3,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,new Insets(0,0,0,18),0,0) );
+                }
+                String descriptionKey = (String) dob.getPrimaryFile().getAttribute("descriptionKey"); //NOI18N
+                if( null != descriptionKey ) {
+                    String description = bundle.getString( descriptionKey );
+                    JLabel lbl = new JLabel( "<html>"+description ); //NOI18N
+                    panel.add( lbl, 
+                            new GridBagConstraints(1,1,2,1,1.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
+                    panel.add( new JLabel(), 
+                            new GridBagConstraints(1,2,2,1,0.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.VERTICAL,new Insets(0,0,0,0),0,0) );
+                }
+            }
+                
             lb.getAccessibleContext().setAccessibleName( lb.getText() );
             lb.getAccessibleContext().setAccessibleDescription( 
                     BundleSupport.getAccessibilityDescription( "GettingStarted", lb.getText() ) ); //NOI18N
-            panel.add( lb, new GridBagConstraints( 0,row++,1,1,1.0,0.0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                new Insets(row==1? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT+3,0,2*TEXT_INSETS_RIGHT), 0, 0 ) );
+            add( panel, new GridBagConstraints( 0,row++,1,1,1.0,0.0,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
+                new Insets(0,0,15,0), 0, 0 ) );
         }
         return row;
-    }
-
-    /**
-     * Try to extract the URL from the given DataObject using reflection.
-     * (The DataObject should be URLDataObject in most cases)
-     */
-    private String getUrlString(DataObject dob) {
-        try {
-            Method m = dob.getClass().getDeclaredMethod( "getURLString", new Class[] {} );
-            m.setAccessible( true );
-            Object res = m.invoke( dob );
-            if( null != res ) {
-                return res.toString();
-            }
-        } catch (Exception ex) {
-            //ignore
-        }
-        return null;
     }
 
     private static class LinkAction extends AbstractAction {
@@ -141,7 +143,7 @@ public class GetStarted extends ContentPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            OpenCookie oc = (OpenCookie)dob.getCookie( OpenCookie.class );
+            OpenCookie oc = dob.getCookie( OpenCookie.class );
             if( null != oc )
                 oc.open();
         }

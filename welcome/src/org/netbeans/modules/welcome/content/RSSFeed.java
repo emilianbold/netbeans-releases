@@ -19,12 +19,13 @@
 
 package org.netbeans.modules.welcome.content;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -39,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -47,6 +49,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,11 +57,12 @@ import java.util.prefs.Preferences;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.JToolTip;
 import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 import org.openide.ErrorManager;
@@ -77,23 +81,25 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-public class RSSFeed extends JScrollPane implements Constants, PropertyChangeListener {
-    
-    protected static final int NEWS_COUNT = 10;
+public class RSSFeed extends JPanel implements Constants, PropertyChangeListener {
     
     private String url;
     
     private boolean showProxyButton = true;
 
     private RequestProcessor.Task reloadTimer;
-    private long lastReload = 0;
+    protected long lastReload = 0;
 
     public static final String FEED_CONTENT_PROPERTY = "feedContent";
     
     private static DateFormat parsingDateFormat = new SimpleDateFormat( "EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH ); // NOI18N
     private static DateFormat parsingDateFormatShort = new SimpleDateFormat( "EEE, dd MMM yyyy", Locale.ENGLISH ); // NOI18N
-    private static DateFormat printingDateFormat = DateFormat.getDateTimeInstance( DateFormat.SHORT, DateFormat.SHORT );
     private static DateFormat printingDateFormatShort = DateFormat.getDateInstance( DateFormat.SHORT );
+    
+    private boolean isCached = false;
+    
+    private final Logger LOGGER = Logger.getLogger( RSSFeed.class.getName() );
+
 
     /** Returns file for caching of content. 
      * Enclosing folder is created if it does not exist yet.
@@ -114,17 +120,14 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     }
     
     public RSSFeed( String url, boolean showProxyButton ) {
+        super( new BorderLayout() );
         this.url = url;
         this.showProxyButton = showProxyButton;
         setBorder(null);
         setOpaque(false);
 
-        setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
-        getViewport().setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
-        setViewportView( buildContentLoadingLabel() );
+        add( buildContentLoadingLabel(), BorderLayout.CENTER );
         
-        setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
-
         HttpProxySettings.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, HttpProxySettings.getDefault() ) );
     }
     
@@ -133,21 +136,30 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     }
     
     public void setContent( Component content ) {
-        setViewportView( content );
+        removeAll();
+        Dimension d = new Dimension();
+        add( content, BorderLayout.CENTER );
         firePropertyChange( FEED_CONTENT_PROPERTY, null, content );
+        revalidate();
+        invalidate();
+        repaint();
     }
 
     public Component getContent() {
-        return getViewport().getView();
+        return this;
     }
 
     public void reload() {
         new Reload().start();
     }
+    
+    protected int getMaxItemCount() {
+        return 10;
+    }
 
-    protected ArrayList/*<FeedItem>*/ buildItemList() throws SAXException, ParserConfigurationException, IOException {
+    protected List<FeedItem> buildItemList() throws SAXException, ParserConfigurationException, IOException {
         XMLReader reader = XMLUtil.createXMLReader( false, true );
-        FeedHandler handler = new FeedHandler();
+        FeedHandler handler = new FeedHandler( getMaxItemCount() );
         reader.setContentHandler( handler );
         reader.setEntityResolver( org.openide.xml.EntityCatalog.getDefault() );
         reader.setErrorHandler( new ErrorCatcher() );
@@ -158,78 +170,67 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         return handler.getItemList();
     }
 
+
+    private String url2path( URL u ) {
+        StringBuilder pathSB = new StringBuilder(u.getHost());
+        if (u.getPort() != -1) {
+            pathSB.append(u.getPort());
+        }
+        pathSB.append(u.getPath());
+        return pathSB.toString();
+    }
+    
     /** Searches either for localy cached copy of URL content of original.
      */
-    protected InputSource findInputSource(URL u) throws IOException {
-        try {
-            Preferences prefs = NbPreferences.forModule(RSSFeed.class);
-            StringBuilder pathSB = new StringBuilder(u.getHost());
-            if (u.getPort() != -1) {
-                pathSB.append(u.getPort());
+    protected InputSource findInputSource( URL u ) throws IOException {
+        HttpURLConnection httpCon = (HttpURLConnection) u.openConnection();
+        httpCon.setRequestProperty( "Accept-Encoding", "gzip, deflate" );     // NOI18N
+
+        Preferences prefs = NbPreferences.forModule( RSSFeed.class );
+        String path = url2path( u );
+        String lastModified = prefs.get( path, null );
+        if( lastModified != null ) {
+            httpCon.addRequestProperty("If-Modified-Since",lastModified); // NOI18N
+        }
+
+        httpCon.connect();
+        //if it returns Not modified then we already have the content, return
+        if( httpCon.getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED ) {
+            //disconnect() should only be used when you won't
+            //connect to the same site in a while,
+            //since it disconnects the socket. Only losing
+            //the stream on an HTTP 1.1 connection will
+            //maintain the connection waiting and be
+            //faster the next time around
+            File cacheFile = initCacheStore(path);
+            LOGGER.log(Level.FINE, "Reading content of {0} from {1}", //NOI18N
+                    new Object[] {u.toString(), cacheFile.getAbsolutePath()});
+            isCached = true;
+            return new org.xml.sax.InputSource( new BufferedInputStream( new FileInputStream(cacheFile) ) );
+        }
+        else {
+            //obtain the encoding returned by the server
+            String encoding = httpCon.getContentEncoding();
+            LOGGER.log(Level.FINER, "Connection encoding: {0}", encoding); //NOI18N
+
+            LOGGER.log(Level.FINER, "ETag: {0}", httpCon.getHeaderField("ETag")); //NOI18N
+
+            InputStream is = null;
+            if ("gzip".equalsIgnoreCase(encoding)) { //NOI18N
+                is = new GZIPInputStream(httpCon.getInputStream());
             }
-            pathSB.append(u.getPath());
-            String path = pathSB.toString();
-            java.net.HttpURLConnection httpCon = 
-                    (java.net.HttpURLConnection) u.openConnection();
-            httpCon.setRequestProperty("Accept-Encoding", "gzip, deflate");     // NOI18N
-
-            // obtain the ETag from a local store, returns null if not found
-//            String etag = loadETag(); 
-
-//if (etag != null) {
-//  sourceConnection.addRequestProperty("If-None-Match", etag);
-//}
-//
-            String lastModified = prefs.get(path, null);
-            if (lastModified != null) {
-                httpCon.addRequestProperty("If-Modified-Since",lastModified); // NOI18N
-            }
-
-            httpCon.connect();
-            //if it returns Not modified then we already have the content, return
-            if (httpCon.getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED) {
-              //disconnect() should only be used when you won't
-              //connect to the same site in a while,
-              //since it disconnects the socket. Only losing
-              //the stream on an HTTP 1.1 connection will
-              //maintain the connection waiting and be
-              //faster the next time around
-                File cacheFile = initCacheStore(path);
-                Logger.getLogger(RSSFeed.class.getName()).
-                        log(Level.INFO, "Reading content of {0} from {1}", new Object[] {u.toString(), cacheFile.getAbsolutePath()});
-//                httpCon.disconnect();
-                return new org.xml.sax.InputSource(new BufferedInputStream(new FileInputStream(cacheFile)));
+            else if ("deflate".equalsIgnoreCase(encoding)) { //NOI18N
+                is = new InflaterInputStream(httpCon.getInputStream(), new Inflater(true));
             }
             else {
-                //obtain the encoding returned by the server
-                String encoding = httpCon.getContentEncoding();
-                Logger.getLogger(RSSFeed.class.getName()).log(Level.FINE, "Connection encoding: {0}", encoding);
-
-////get the last modified & etag and
-////store them for the next check
-//storeETag(sourceConnection.getHeaderField("ETag"));
-                Logger.getLogger(RSSFeed.class.getName()).log(Level.FINE, "ETag: {0}", httpCon.getHeaderField("ETag"));
-
-                InputStream is = null;
-                if ("gzip".equalsIgnoreCase(encoding)) {
-                    is = new GZIPInputStream(httpCon.getInputStream());
-                }
-                else if ("deflate".equalsIgnoreCase(encoding)) {
-                    is = new InflaterInputStream(httpCon.getInputStream(), new Inflater(true));
-                }
-                else {
-                  is = httpCon.getInputStream();
-                }
-                Logger.getLogger(RSSFeed.class.getName()).log(Level.INFO, "Reading {0} from original source and caching", url);
-                return new org.xml.sax.InputSource(new CachingInputStream(is, path, httpCon.getHeaderField("Last-Modified")));
+              is = httpCon.getInputStream();
             }
-        } catch (IOException ioe) {
-            Logger.getLogger(RSSFeed.class.getName()).log(Level.INFO, null, ioe);
-            throw ioe;
+            LOGGER.log( Level.FINE, "Reading {0} from original source and caching", url ); //NOI18N
+            return new org.xml.sax.InputSource(new CachingInputStream(is, path, httpCon.getHeaderField("Last-Modified"))); //NOI18N
         }
     }
-
-    /** Inner class error catcher for handling SAXParseExceptions */
+    
+        /** Inner class error catcher for handling SAXParseExceptions */
     static class ErrorCatcher implements org.xml.sax.ErrorHandler {
         private void message(Level level, org.xml.sax.SAXParseException e) {
             Logger l = Logger.getLogger(RSSFeed.class.getName());
@@ -257,9 +258,10 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         public void run() {
             try {
                 lastReload = System.currentTimeMillis();
+//                System.err.println("reloading: " + lastReload + "url=" + url);
 
-                ArrayList itemList = buildItemList();
-                final JPanel contentPanel = new NoHorizontalScrollPanel();
+                List<FeedItem> itemList = buildItemList();
+                final JPanel contentPanel = new JPanel( new GridBagLayout() );
                 contentPanel.setOpaque( false );
                 int contentRow = 0;
 
@@ -270,51 +272,24 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                                 new Insets(0,0,0,0),0,0 ) );
                 }
 
-                for( int i=0; i<Math.min(itemList.size(), NEWS_COUNT); i++ ) {
-                    FeedItem item = (FeedItem)itemList.get(i);
+                for( int i=0; i<Math.min(itemList.size(), getMaxItemCount()); i++ ) {
+                    FeedItem item = itemList.get(i);
 
                     if( null != item.title && null != item.link ) {
-                        JPanel panel = new JPanel( new GridBagLayout() );
-                        panel.setOpaque( false );
-                        int row = 0;
-                        if( item.dateTime != null) {
-                            JLabel label = new JLabel();
-                            label.setFont( RSS_DESCRIPTION_FONT );
-                            label.setForeground( Utils.getColor(RSS_DATETIME_COLOR) );
-                            label.setText( formatDateTime( item.dateTime ) );
-                            panel.add( label, new GridBagConstraints(0,row++,1,1,0.0,0.0,
-                                    GridBagConstraints.WEST,GridBagConstraints.NONE,
-                                    new Insets(0,TEXT_INSETS_LEFT+5,2,TEXT_INSETS_RIGHT),0,0 ) );
-                        }
+                        
+                        Component comp = createFeedItemComponent( item );
 
-                        WebLink linkButton = new WebLink( item.title, item.link, true );
-                        linkButton.getAccessibleContext().setAccessibleName( 
-                                BundleSupport.getAccessibilityName( "WebLink", item.title ) ); //NOI18N
-                        linkButton.getAccessibleContext().setAccessibleDescription( 
-                                BundleSupport.getAccessibilityDescription( "WebLink", item.link ) ); //NOI18N
-                        linkButton.setFont( HEADER_FONT );
-                        panel.add( linkButton, new GridBagConstraints(0,row++,1,1,1.0,1.0,
-                                GridBagConstraints.WEST,GridBagConstraints.NONE,
-                                new Insets(0,5,2,TEXT_INSETS_RIGHT),0,0 ) );
-
-
-                        if (item.description != null) {
-                            JLabel label = new JLabel();
-                            label.setFont( RSS_DESCRIPTION_FONT );
-                            label.setText( "<html>"+trimHtml( item.description )  ); // NOI18N
-                            panel.add( label, new GridBagConstraints(0,row++,1,1,1.0,1.0,
-                                    GridBagConstraints.WEST,GridBagConstraints.BOTH,
-                                    new Insets(0,TEXT_INSETS_LEFT+5,0,TEXT_INSETS_RIGHT),0,0 ) );
-                        }
-
-                        contentPanel.add( panel, new GridBagConstraints(0,contentRow++,1,1,1.0,1.0,
+                        contentPanel.add( comp, new GridBagConstraints(0,contentRow++,1,1,1.0,0.0,
                                 GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,
-                                new Insets(contentRow==1 ? UNDER_HEADER_MARGIN : 0,0,16,0),0,0 ) );
+                                new Insets(contentRow==1 ? 0/*UNDER_HEADER_MARGIN*/ : 0,0,16,0),0,0 ) );
                     }
                 }
+                contentPanel.add( new JLabel(), new GridBagConstraints(0,contentRow++,1,1,0.0,1.0,
+                                GridBagConstraints.CENTER,GridBagConstraints.VERTICAL,new Insets(0,0,0,0),0,0 ) );
 
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
+//                        contentPanel.setMinimumSize( contentPanel.getPreferredSize() );
                         setContent( contentPanel );
                     }
                 });
@@ -341,6 +316,15 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                     }
                 });
             } catch( Exception e ) {
+                if( isContentCached()) {
+                    try {
+                        NbPreferences.forModule( RSSFeed.class ).remove( url2path( new URL(url))) ;
+                        run();
+                        return;
+                    } catch( MalformedURLException mE ) {
+                        //ignore
+                    }
+                }
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
                         setContent( buildErrorLabel() );
@@ -349,6 +333,40 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                 ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
             }
         }
+    }
+    
+    protected Component createFeedItemComponent( FeedItem item ) {
+        JPanel panel = new JPanel( new GridBagLayout() );
+        panel.setOpaque( false );
+        int row = 0;
+        if( item.dateTime != null) {
+            JLabel label = new JLabel();
+            label.setFont( RSS_DESCRIPTION_FONT );
+            label.setText( formatDateTime( item.dateTime ) );
+            panel.add( label, new GridBagConstraints(2,row,1,1,0.0,0.0,
+                    GridBagConstraints.EAST,GridBagConstraints.NONE,
+                    new Insets(0,TEXT_INSETS_LEFT+5,2,TEXT_INSETS_RIGHT),0,0 ) );
+        }
+
+        WebLink linkButton = new WebLink( item.title, item.link, true );
+        linkButton.getAccessibleContext().setAccessibleName( 
+                BundleSupport.getAccessibilityName( "WebLink", item.title ) ); //NOI18N
+        linkButton.getAccessibleContext().setAccessibleDescription( 
+                BundleSupport.getAccessibilityDescription( "WebLink", item.link ) ); //NOI18N
+        linkButton.setFont( BUTTON_FONT );
+        panel.add( linkButton, new GridBagConstraints(0,row++,1,1,1.0,0.0,
+                GridBagConstraints.WEST,GridBagConstraints.NONE,
+                new Insets(0,5,2,TEXT_INSETS_RIGHT),0,0 ) );
+
+
+        if (item.description != null) {
+            JLabel label = new DescriptionLabel(item.description);
+            label.setFont( RSS_DESCRIPTION_FONT );
+            panel.add( label, new GridBagConstraints(0,row++,4,1,0.0,0.0,
+                    GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,
+                    new Insets(0,TEXT_INSETS_LEFT+5,0,TEXT_INSETS_RIGHT),0,0 ) );
+        }
+        return panel;
     }
     
     protected static String getTextContent(Node node) {
@@ -362,7 +380,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     protected String formatDateTime( String strDateTime ) {
         try {
             Date date = parsingDateFormat.parse( strDateTime );
-            return printingDateFormat.format( date );
+            return printingDateFormatShort.format( date );
         } catch( NumberFormatException nfE ) {
             //ignore
         } catch( ParseException pE ) {
@@ -379,26 +397,23 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     }
     
     private static final long serialVersionUID = 1L; 
-
-    public Dimension getPreferredSize() {
-        Dimension retValue = super.getPreferredSize();
-        retValue.width = 1;
-        retValue.height = 1;
-        return retValue;
-    }
     
+    @Override
     public void removeNotify() {
-        //cancel reload timer
-        if( null != reloadTimer ) {
-            reloadTimer.cancel();
-            reloadTimer = null;
-        }
+        stopReloading();
         super.removeNotify();
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
-        if( null == reloadTimer && !Boolean.getBoolean("netbeans.full.hack")) {
+        startReloading();
+    }
+
+    private boolean firstReload = true;
+    protected void startReloading() {
+        if( /*(isShowing() || firstReload) &&*/ null == reloadTimer && !Boolean.getBoolean("netbeans.full.hack")) {
+            firstReload = false;
             if( System.currentTimeMillis() - lastReload >= RSS_FEED_TIMER_RELOAD_MILLIS ) {
                 reload();
             } else {
@@ -407,8 +422,15 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
             }
         }
     }
-
-    private String trimHtml( String htmlSnippet ) {
+    
+    protected void stopReloading() {
+        if( null != reloadTimer ) {
+            reloadTimer.cancel();
+            reloadTimer = null;
+        }
+    }
+    
+    private static String trimHtml( String htmlSnippet ) {
         String res = htmlSnippet.replaceAll( "<[^>]*>", "" ); // NOI18N // NOI18N
         res = res.replaceAll( "&nbsp;", " " ); // NOI18N // NOI18N
         res = res.trim();
@@ -419,13 +441,8 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         return res;
     }
     
-    protected int getMaxDecsriptionLength() {
-        int verticalSize = Toolkit.getDefaultToolkit().getScreenSize().height;
-        if( verticalSize >= 1200 )
-            return 350;
-        if( verticalSize >= 1024 )
-            return 220;
-        return 140;
+    protected static int getMaxDecsriptionLength() {
+        return 500;
     }
 
     protected Component getContentHeader() {
@@ -434,7 +451,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
 
     private JComponent buildProxyPanel() {
         Component header = getContentHeader();
-        JPanel panel = null == header ? new JPanel(new GridBagLayout()) : new NoHorizontalScrollPanel();
+        JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque( false );
 
         int row = 0;
@@ -465,25 +482,25 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         JLabel label = new JLabel( BundleSupport.getLabel( "ContentLoading" ) ); // NOI18N
         label.setHorizontalAlignment( JLabel.CENTER );
         label.setVerticalAlignment( JLabel.CENTER );
-        label.setForeground( Utils.getColor(DEFAULT_TEXT_COLOR) );
-        label.setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
         label.setOpaque( false );
         Component header = getContentHeader();
         if( null != header ) {
-            JPanel panel = new NoHorizontalScrollPanel();
+            JPanel panel = new JPanel( new GridBagLayout() );
             panel.setOpaque( false );
             panel.add( header, new GridBagConstraints(0,0,1,1,1.0,1.0,
                 GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0 ) );
             panel.add( label, new GridBagConstraints(0,1,1,1,1.0,1.0,
                 GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0 ) );
+            panel.setBorder( BorderFactory.createEmptyBorder(40, 0, 40, 0));
             return panel;
         }
+        label.setBorder( BorderFactory.createEmptyBorder(40, 0, 40, 0));
         return label;
     }
 
     private JComponent buildErrorLabel() {
         Component header = getContentHeader();
-        JPanel panel = null == header ? new JPanel(new GridBagLayout()) : new NoHorizontalScrollPanel();
+        JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque( false );
 
         int row = 0;
@@ -500,6 +517,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         button.setOpaque( false );
         button.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                lastReload = 0;
                 reload();
             }
         });
@@ -510,15 +528,27 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
 
     public void propertyChange(PropertyChangeEvent evt) {
         if( HttpProxySettings.PROXY_SETTINGS.equals( evt.getPropertyName() ) ) {
-            setViewportView( buildContentLoadingLabel() );
+            removeAll();
+            add( buildContentLoadingLabel(), BorderLayout.CENTER );
+            lastReload = 0;
             reload();
         }
+    }
+    
+    public boolean isContentCached() {
+        return isCached;
     }
 
     static class FeedHandler implements ContentHandler {
         private FeedItem currentItem;
         private StringBuffer textBuffer;
-        private ArrayList<FeedItem> itemList = new ArrayList<FeedItem>( 10 );
+        private int maxItemCount;
+        private ArrayList<FeedItem> itemList;
+        
+        public FeedHandler( int maxItemCount ) {
+            this.maxItemCount = maxItemCount;
+            itemList = new ArrayList<FeedItem>( maxItemCount );
+        }
 
         public void setDocumentLocator(Locator locator) {
         }
@@ -536,7 +566,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         }
 
         public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-            if( itemList.size() < NEWS_COUNT ) {
+            if( itemList.size() < maxItemCount ) {
                 if( "item".equals( localName ) ) { // NOI18N
                     currentItem = new FeedItem();
                 } else if( "link".equals( localName ) // NOI18N
@@ -545,12 +575,14 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                         || "description".equals( localName ) // NOI18N
                         || "title".equals( localName ) ) { // NOI18N
                     textBuffer = new StringBuffer( 110 );
+                } else if( "enclosure".equals( localName ) && null != currentItem ) { //NOI18N
+                    currentItem.enclosureUrl = atts.getValue( "url" ); //NOI18N
                 }
             }
         }
 
         public void endElement(String uri, String localName, String qName) throws SAXException {
-            if( itemList.size() < NEWS_COUNT ) {
+            if( itemList.size() < maxItemCount ) {
                 if( "item".equals( localName ) ) { // NOI18N
                     if( null != currentItem && currentItem.isValid() ) {
                         itemList.add( currentItem );
@@ -595,15 +627,40 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         }
     }
 
-    static class FeedItem {
-        String title;
-        String link;
-        String description;
-        String dateTime;
+    protected static class FeedItem {
+        public String title;
+        public String link;
+        public String description;
+        public String dateTime;
+        public String enclosureUrl;
 
-        boolean isValid() {
+        public boolean isValid() {
             return null != title && null != link;
         }
+    }
+
+    private static class DescriptionLabel extends JLabel {
+        public DescriptionLabel( String label ) {
+            super( trimHtml(label) );
+            setToolTipText( "<html>"+trimHtml(label) );
+        }
+
+        @Override
+        public JToolTip createToolTip() {
+            JToolTip tip = super.createToolTip();
+            JLabel lbl = new JLabel( getToolTipText() );
+            Dimension preferredSize = lbl.getPreferredSize();
+            
+            FontMetrics fm = tip.getFontMetrics( tip.getFont() );
+            int lines = preferredSize.width / 500;
+            if( preferredSize.width % 500 > 0 )
+                lines++;
+            preferredSize.height =  Math.min( lines * fm.getHeight() + 10, 300 );
+            preferredSize.width = 500;
+            tip.setPreferredSize( preferredSize );
+            return tip;
+        }
+
     }
     
     static class CachingInputStream extends FilterInputStream {

@@ -25,6 +25,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Map;
@@ -35,6 +37,7 @@ import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -88,7 +91,7 @@ public class Utils {
         if (fo != null && fo.isValid()) {
             try {
                 DataObject dob = DataObject.find(fo);
-                InstanceCookie ic = (InstanceCookie) dob.getCookie(InstanceCookie.class);
+                InstanceCookie ic = dob.getCookie(InstanceCookie.class);
                 
                 if (ic != null) {
                     Object instance = ic.instanceCreate();
@@ -106,7 +109,7 @@ public class Utils {
     }
 
     public static Action createSampleProjectAction() {
-        ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup( ClassLoader.class );
+        ClassLoader loader = Lookup.getDefault().lookup( ClassLoader.class );
         if( null == loader )
             loader = ClassLoader.getSystemClassLoader();
         try {
@@ -130,5 +133,35 @@ public class Utils {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, nfE );
             return Color.BLACK;
         }
+    }
+    
+    public static File getCacheStore() throws IOException {
+        File cacheStore;
+        String userDir = System.getProperty("netbeans.user"); // NOI18N
+        if (userDir != null) {
+            cacheStore = new File(new File(new File (userDir, "var"), "cache"), "welcome"); // NOI18N
+        } else {
+            File cachedir = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            cacheStore = new File(cachedir, "welcome"); // NOI18N
+        }
+        return cacheStore;
+    }
+
+    /**
+     * Try to extract the URL from the given DataObject using reflection.
+     * (The DataObject should be URLDataObject in most cases)
+     */
+    public static String getUrlString(DataObject dob) {
+        try {
+            Method m = dob.getClass().getDeclaredMethod( "getURLString", new Class[] {} ); //NOI18N
+            m.setAccessible( true );
+            Object res = m.invoke( dob );
+            if( null != res ) {
+                return res.toString();
+            }
+        } catch (Exception ex) {
+            //ignore
+        }
+        return null;
     }
 }

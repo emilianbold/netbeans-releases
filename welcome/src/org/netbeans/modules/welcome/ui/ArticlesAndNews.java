@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.welcome.ui;
 
-import java.awt.Component;
+import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -27,7 +27,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.welcome.WelcomeOptions;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.CombinationRSSFeed;
 import org.netbeans.modules.welcome.content.RSSFeed;
@@ -39,20 +38,19 @@ import org.openide.util.NbPreferences;
  *
  * @author S. Aubrecht
  */
-public class ArticlesAndNews extends RSSFeedReaderPanel {
+class ArticlesAndNews extends RSSFeedReaderPanel {
 
     private RSSFeed feed;
 
-    private static final boolean firstTimeStart = WelcomeOptions.getDefault().isFirstTimeStart();
+    private static final int MAX_ARTICLES_COUNT = 4;
 
     public ArticlesAndNews() {
         super( "ArticlesAndNews", true ); // NOI18N
 
-        WelcomeOptions.getDefault().setFirstTimeStart( false );
-
-        setBottomContent( buildBottomContent() );
+        add( buildBottomContent(), BorderLayout.SOUTH );
     }
 
+    @Override
     protected JComponent buildContent(String url, boolean showProxyButton) {
         final Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate"); // NOI18N
         if( null != p ) {
@@ -68,11 +66,9 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
     
     protected JComponent buildBottomContent() {
         WebLink news = new WebLink( "AllNews", false ); // NOI18N
-        news.setFont( HEADER_FONT );
         BundleSupport.setAccessibilityProperties( news, "AllNews" ); //NOI18N
         
         WebLink articles = new WebLink( "AllArticles", false ); // NOI18N
-        articles.setFont( HEADER_FONT );
         BundleSupport.setAccessibilityProperties( articles, "AllArticles" ); //NOI18N
 
         JPanel panel = new JPanel( new GridBagLayout() );
@@ -83,7 +79,7 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
                 new Insets(5,5,0,5),0,0) );
         panel.add( new JLabel(), new GridBagConstraints(1,1,1,1,1.0,0.0,
                 GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,
-                new Insets(0,0,0,0),0,0) );
+                new Insets(5,5,0,5),0,0) );
         panel.add( articles, new GridBagConstraints(2,1,1,1,0.0,0.0,
                 GridBagConstraints.SOUTHEAST,GridBagConstraints.HORIZONTAL,
                 new Insets(5,5,0,5),0,0) );
@@ -91,43 +87,9 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
         return panel;
     }
 
-    private boolean firstTimeLoad = true;
-    protected void feedContentLoaded() {
-        if( firstTimeLoad ) {
-            firstTimeLoad = false;
-
-            requestAttention();
-        }
-    }
-
     private class ArticlesAndNewsRSSFeed extends CombinationRSSFeed {
-        private JPanel contentHeader;
         public ArticlesAndNewsRSSFeed( String url1, String url2, boolean showProxyButton ) {
-            super( url1, url2, showProxyButton );
-        }
-
-        protected Component getContentHeader() {
-            if( firstTimeStart ) {
-                if( null == contentHeader ) {
-                    contentHeader = new JPanel( new GridBagLayout() );
-                    contentHeader.setOpaque( false );
-
-                    JLabel lblHeader = new JLabel( BundleSupport.getLabel( "FirstTimeHeader" ) ); // NOI18N
-                    lblHeader.setFont( WELCOME_HEADER_FONT );
-
-                    JLabel lblDescription = new JLabel( BundleSupport.getLabel( "FirstTimeDescription" ) ); // NOI18N
-                    lblDescription.setFont( WELCOME_DESCRIPTION_FONT );
-
-                    contentHeader.add( lblHeader, new GridBagConstraints(0,0,1,1,1.0,1.0,
-                            GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,
-                            new Insets(15,TEXT_INSETS_LEFT,5,TEXT_INSETS_RIGHT),0,0 ) );
-                    contentHeader.add( lblDescription, new GridBagConstraints(0,1,1,1,1.0,1.0,
-                            GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,
-                            new Insets(0,TEXT_INSETS_LEFT,25,TEXT_INSETS_RIGHT),0,0 ) );
-                }
-                return contentHeader;
-            }
-            return null;
+            super( url1, url2, showProxyButton, MAX_ARTICLES_COUNT );
         }
     }
 }

@@ -28,13 +28,12 @@ import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.welcome.WelcomeOptions;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
-import org.netbeans.modules.welcome.content.Utils;
 
 /**
  *
  * @author S. Aubrecht
  */
-public class ShowNextTime extends JPanel implements ActionListener, Constants {
+class ShowNextTime extends JPanel implements ActionListener, Constants {
 
     private JCheckBox button;
 
@@ -47,8 +46,6 @@ public class ShowNextTime extends JPanel implements ActionListener, Constants {
         button = new JCheckBox( BundleSupport.getLabel( "ShowOnStartup" ) ); // NOI18N
         button.setSelected( WelcomeOptions.getDefault().isShowOnStartup() );
         button.setFont( BUTTON_FONT );
-        button.setForeground( Utils.getColor(BUTTON_TEXT_COLOR) );
-        button.setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
         button.setOpaque( false );
         BundleSupport.setAccessibilityProperties( button, "ShowOnStartup" ); //NOI18N
         add( button, BorderLayout.CENTER );

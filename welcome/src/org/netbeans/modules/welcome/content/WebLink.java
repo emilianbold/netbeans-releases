@@ -45,10 +45,12 @@ public class WebLink extends LinkButton {
         Utils.showURL( url );
     }
     
+    @Override
     protected void onMouseExited(MouseEvent e) {
         StatusDisplayer.getDefault().setStatusText( "" );
     }
 
+    @Override
     protected void onMouseEntered(MouseEvent e) {
         StatusDisplayer.getDefault().setStatusText( url );
     }

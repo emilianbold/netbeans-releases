@@ -229,6 +229,7 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
                 <friend>org.netbeans.modules.startpage</friend>
+                <friend>org.netbeans.modules.welcome</friend>
                 <package>org.netbeans.modules.project.ui.api</package>
             </friend-packages>
         </data>

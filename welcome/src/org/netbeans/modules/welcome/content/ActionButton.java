@@ -28,6 +28,7 @@ public class ActionButton extends LinkButton {
 
     private Action action;
     private String urlString;
+    private boolean visited = false;
 
     public ActionButton( Action a, boolean showBullet, String urlString ) {
         super( a.getValue( Action.NAME ).toString(), showBullet );
@@ -45,6 +46,8 @@ public class ActionButton extends LinkButton {
         if( null != action ) {
             action.actionPerformed( e );
         }
+        if( null != urlString )
+            visited = true;
     }
 
     protected void onMouseExited(MouseEvent e) {
@@ -59,5 +62,9 @@ public class ActionButton extends LinkButton {
         }
     }
 
+    protected boolean isVisited() {
+        return visited;
+    }
+    
     private static final long serialVersionUID = 1L; 
 }

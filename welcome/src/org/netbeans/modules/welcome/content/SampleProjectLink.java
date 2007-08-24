@@ -38,7 +38,8 @@ public class SampleProjectLink extends LinkButton {
         this.template = template;
         getAccessibleContext().setAccessibleName( title );
         getAccessibleContext().setAccessibleDescription( 
-                BundleSupport.getAccessibilityDescription( "SampleProject", title ) );
+                BundleSupport.getAccessibilityDescription( "SampleProject", title ) ); //NOI18N
+        setFont( BIGGER_FONT );
     }
 
     public void actionPerformed( ActionEvent e ) {

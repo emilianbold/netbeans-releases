@@ -19,17 +19,22 @@ package org.netbeans.modules.welcome;
 import org.openide.modules.ModuleInstall;
 import org.openide.windows.WindowManager;
 
-/** Checks the feedback survey.
+/** 
+ * Checks the feedback survey.
  */
-public class Installer extends ModuleInstall 
-implements Runnable {
+public class Installer extends ModuleInstall implements Runnable {
     
     @Override public void restored() {
         WindowManager.getDefault().invokeWhenUIReady(this);
     }
 
     public void run() {
+        if( WelcomeOptions.getDefault().isShowOnStartup() ) {
+            WelcomeComponent.findComp().open();
+            WelcomeComponent.findComp().requestActive();
+        } else {
+            WelcomeComponent.findComp().close();
+        }
         FeedbackSurvey.start();
     }
-    
 }

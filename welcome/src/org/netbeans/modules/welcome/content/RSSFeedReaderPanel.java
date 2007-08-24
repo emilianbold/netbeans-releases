@@ -19,23 +19,35 @@
 
 package org.netbeans.modules.welcome.content;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 /**
  *
  * @author S. Aubrecht
  */
-public abstract class RSSFeedReaderPanel extends ContentPanel {
+public class RSSFeedReaderPanel extends JPanel implements PropertyChangeListener {
+
+    private static final int FEED_PANEL_MIN_WIDTH = 200;
+    private static final int FEED_PANEL_MAX_WIDTH = 600;
+
+    /** Creates a new instance of AbstractFeedReaderPanel */
+    public RSSFeedReaderPanel( String url ) {
+        super( new BorderLayout() );
+        setOpaque( false );
+        add( buildContent( url, false ), BorderLayout.CENTER );
+        setMaximumSize( new Dimension(400, Integer.MAX_VALUE) );
+    }
 
     /** Creates a new instance of AbstractFeedReaderPanel */
     public RSSFeedReaderPanel( String key, boolean showProxyButton ) {
-        super( BundleSupport.getLabel( key ) );
-        setOpaque( true );
-        setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
-        setContent( buildContent( BundleSupport.getURL( key ), showProxyButton ) );
+        super( new BorderLayout() );
+        setOpaque( false );
+        add( buildContent( BundleSupport.getURL( key ), showProxyButton ), BorderLayout.CENTER );
     }
 
     protected JComponent buildContent( String url, boolean showProxyButton ) {
@@ -43,59 +55,13 @@ public abstract class RSSFeedReaderPanel extends ContentPanel {
         feed.addPropertyChangeListener( RSSFeed.FEED_CONTENT_PROPERTY, this );
         return feed;
     }
-
-    public void setSize(Dimension d) {
-        if( d.width < FEED_PANEL_MIN_WIDTH || d.width > FEED_PANEL_MAX_WIDTH ) {
-            d = new Dimension( d );
-            if( d.width < FEED_PANEL_MIN_WIDTH )
-                d.width = FEED_PANEL_MIN_WIDTH;
-            else
-                d.width = FEED_PANEL_MAX_WIDTH;
-        }
-        super.setSize(d);
-    }
-
-    public void setBounds(Rectangle r) {
-        if( r.width < FEED_PANEL_MIN_WIDTH || r.width > FEED_PANEL_MAX_WIDTH ) {
-            r = new Rectangle( r );
-            if( r.width < FEED_PANEL_MIN_WIDTH )
-                r.width = FEED_PANEL_MIN_WIDTH;
-            else
-                r.width = FEED_PANEL_MAX_WIDTH;
-        }
-        super.setBounds(r);
-    }
-
-    public void setBounds(int x, int y, int width, int height) {
-        if( width < FEED_PANEL_MIN_WIDTH )
-            width = FEED_PANEL_MIN_WIDTH;
-        else if( width > FEED_PANEL_MAX_WIDTH )
-            width = FEED_PANEL_MAX_WIDTH;
-        super.setBounds(x, y, width, height);
-    }
-
-    public Dimension getPreferredSize() {
-        Dimension d = super.getPreferredSize();
-        if( d.width < FEED_PANEL_MIN_WIDTH || d.width > FEED_PANEL_MAX_WIDTH ) {
-            d = new Dimension( d );
-            if( d.width < FEED_PANEL_MIN_WIDTH )
-                d.width = FEED_PANEL_MIN_WIDTH;
-            else
-                d.width = FEED_PANEL_MAX_WIDTH;
-        }
-        return d;
-    }
-
+    
     protected void feedContentLoaded() {
-        
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         if( RSSFeed.FEED_CONTENT_PROPERTY.equals( evt.getPropertyName() ) ) {
             feedContentLoaded();
-        } else {
-            super.propertyChange( evt );
         }
-
     }
 }

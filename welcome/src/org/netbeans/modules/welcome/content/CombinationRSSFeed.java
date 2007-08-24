@@ -20,7 +20,6 @@
 package org.netbeans.modules.welcome.content;
 
 import java.io.IOException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -28,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.welcome.content.RSSFeed.ErrorCatcher;
@@ -39,46 +39,57 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
- *
+ * Combines two RSS feeds into one.
+ * 
  * @author S. Aubrecht
  */
 public class CombinationRSSFeed extends RSSFeed {
 
     private String url1;
     private String url2;
+    private int maxItemCount;
 
     /** Creates a new instance of CombinationRSSFeed */
-    public CombinationRSSFeed( String url1, String url2, boolean showProxyButton ) {
+    public CombinationRSSFeed( String url1, String url2, boolean showProxyButton, int maxItemCount ) {
         super( showProxyButton );
+        this.maxItemCount = maxItemCount;
         this.url1 = url1;
         this.url2 = url2;
     }
 
-    protected ArrayList<FeedItem> buildItemList() throws SAXException, ParserConfigurationException, IOException {
+    @Override
+    protected List<FeedItem> buildItemList() throws SAXException, ParserConfigurationException, IOException {
         XMLReader reader = XMLUtil.createXMLReader( false, true );
-        FeedHandler handler = new FeedHandler();
+        FeedHandler handler = new FeedHandler( getMaxItemCount() );
         reader.setContentHandler( handler );
         reader.setEntityResolver( org.openide.xml.EntityCatalog.getDefault() );
         reader.setErrorHandler( new ErrorCatcher() );
-        InputSource is = findInputSource(new URL(url1));
-        reader.parse( is );
+        reader.parse( new InputSource(url1) );
 
-        ArrayList<FeedItem> res = new ArrayList<FeedItem>( 2*NEWS_COUNT );
+        ArrayList<FeedItem> res = new ArrayList<FeedItem>( 2*getMaxItemCount() );
         res.addAll( handler.getItemList() );
 
-        handler = new FeedHandler();
+        handler = new FeedHandler( getMaxItemCount() );
         reader.setContentHandler( handler );
-        is = findInputSource(new URL(url2));
-        reader.parse( is );
+        reader.parse( new InputSource(url2) );
 
         res.addAll( handler.getItemList() );
 
-        return sortNodes( res );
+        List<FeedItem> items = sortNodes( res );
+        if( items.size() > getMaxItemCount() ) {
+            items = items.subList( 0, getMaxItemCount() );
+        }
+        return items;
     }
 
     private ArrayList<FeedItem> sortNodes( ArrayList<FeedItem> res ) {
         Collections.sort( res, new DateFeedItemComparator() );
         return res;
+    }
+
+    @Override
+    protected int getMaxItemCount() {
+        return this.maxItemCount;
     }
 
     private static class DateFeedItemComparator implements Comparator<FeedItem> {

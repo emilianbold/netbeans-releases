@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.welcome;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import org.openide.util.HelpCtx;
@@ -55,7 +54,7 @@ public class ShowWelcomeAction extends CallableSystemAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(ShowWelcomeAction.class, "LBL_Action");
+        return NbBundle.getMessage(ShowWelcomeAction.class, "LBL_Action"); //NOI18N
     }
     
     @Override protected String iconResource() {
@@ -69,5 +68,4 @@ public class ShowWelcomeAction extends CallableSystemAction {
     @Override protected boolean asynchronous(){
         return false;
     }
-
 }

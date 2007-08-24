@@ -31,7 +31,7 @@ public class WelcomeOptions {
     private static WelcomeOptions theInstance;
     
     private static final String PROP_SHOW_ON_STARTUP = "showOnStartup";
-    private static final String PROP_FIRST_TIME_START = "firstTimeStart";
+    private static final String PROP_LAST_ACTIVE_TAB = "lastActiveTab";
     
     /** Creates a new instance of WelcomeOptions */
     private WelcomeOptions() {
@@ -56,11 +56,11 @@ public class WelcomeOptions {
         return prefs().getBoolean(PROP_SHOW_ON_STARTUP, true);
     }
 
-    public void setFirstTimeStart( boolean firstTime ) {
-        prefs().putBoolean(PROP_FIRST_TIME_START, firstTime);
+    public void setLastActiveTab( int tabIndex ) {
+        prefs().putInt(PROP_LAST_ACTIVE_TAB, tabIndex);
     }
 
-    public boolean isFirstTimeStart() {
-        return prefs().getBoolean(PROP_FIRST_TIME_START, true);
+    public int getLastActiveTab() {
+        return prefs().getInt(PROP_LAST_ACTIVE_TAB, 0);
     }
 }

@@ -51,8 +51,8 @@ public abstract class LinkButton extends JButton
 
     public LinkButton( String label, boolean showBullet ) {
         super( label );
-        setForeground( Utils.getColor(HEADER_TEXT_COLOR) );
-        setFont( REGULAR_FONT );
+        setForeground( Utils.getColor(LINK_COLOR) );
+        setFont( BUTTON_FONT );
         setBorder( new EmptyBorder(1, 1, 1, 1) );
         setCursor( Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) );
         setHorizontalAlignment( JLabel.LEFT );
@@ -81,17 +81,21 @@ public abstract class LinkButton extends JButton
     }
 
     public void mouseEntered(MouseEvent e) {
-        underline = true;
-        setForeground( Utils.getColor(RSS_LINK_COLOR) );
-        repaint();
-        onMouseEntered( e );
+        if( isEnabled() ) {
+            underline = true;
+            setForeground( Utils.getColor(LINK_IN_FOCUS_COLOR) );
+            repaint();
+            onMouseEntered( e );
+        }
     }
 
     public void mouseExited(MouseEvent e) {
-        underline = false;
-        setForeground( Utils.getColor(HEADER_TEXT_COLOR) );
-        repaint();
-        onMouseExited( e );
+        if( isEnabled() ) {
+            underline = false;
+            setForeground( Utils.getColor(isVisited() ? VISITED_LINK_COLOR : LINK_COLOR) );
+            repaint();
+            onMouseExited( e );
+        }
     }
 
     protected void paintComponent(Graphics g) {
@@ -99,7 +103,7 @@ public abstract class LinkButton extends JButton
         super.paintComponent(g2);
 
         Dimension size = getSize();
-        if( hasFocus() ) {
+        if( hasFocus() && isEnabled() ) {
             g2.setStroke( LINK_IN_FOCUS_STROKE );
             g2.setColor( Utils.getColor(LINK_IN_FOCUS_COLOR) );
             g2.drawRect( 0, 0, size.width - 1, size.height - 1 );
@@ -121,9 +125,10 @@ public abstract class LinkButton extends JButton
     protected void onMouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void paint(Graphics g) {
         super.paint(g);
-        if( underline ) {
+        if( underline && isEnabled() ) {
             Font f = getFont();
             FontMetrics fm = getFontMetrics(f);
             int iconWidth = 0;
@@ -136,5 +141,9 @@ public abstract class LinkButton extends JButton
             if( getText().length() > 0 )
                 g.drawLine(x1, y1, x2, y1);
         }
+    }
+    
+    protected boolean isVisited() {
+        return false;
     }
 }

@@ -28,6 +28,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Utilities;
 
 /**
@@ -44,10 +45,6 @@ public class Logo extends JPanel implements Constants, MouseListener {
 
     public static Logo createJavaLogo() {
         return new Logo( JAVA_LOGO_IMAGE, BundleSupport.getURL( "JavaLogo" ) ); // NOI18N
-    }
-
-    public static Logo createNbLogo() {
-        return new Logo( NB_LOGO_IMAGE, BundleSupport.getURL( "NetBeansLogo" ) ); // NOI18N
     }
 
     /** Creates a new instance of RecentProjects */
@@ -75,8 +72,10 @@ public class Logo extends JPanel implements Constants, MouseListener {
     }
 
     public void mouseEntered(MouseEvent e) {
+        StatusDisplayer.getDefault().setStatusText( url );
     }
 
     public void mouseExited(MouseEvent e) {
+        StatusDisplayer.getDefault().setStatusText( null );
     }
 }

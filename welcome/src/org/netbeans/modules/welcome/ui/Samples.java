@@ -22,20 +22,10 @@ package org.netbeans.modules.welcome.ui;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.UIManager;
-import org.netbeans.modules.welcome.content.ContentPanel;
-import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
-import org.netbeans.modules.welcome.content.LinkButton;
 import org.netbeans.modules.welcome.content.SampleProjectLink;
-import org.netbeans.modules.welcome.content.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -47,73 +37,54 @@ import org.openide.loaders.DataShadow;
  *
  * @author S. Aubrecht
  */
-public class Samples extends ContentPanel implements Constants {
+class Samples extends JPanel implements Constants {
 
     protected int row = 0;
+    protected int col = 0;
+    protected int maxRow = 0;
 
     /** Creates a new instance of RecentProjects */
     public Samples() {
-        super( BundleSupport.getLabel( "Samples" ) ); // NOI18N
-        setOpaque( true );
-        setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
+        super( new GridBagLayout() );
+        setOpaque( false );
         
-        setContent( buildContent() );
-
-        NewProjectButton button = new NewProjectButton();
-
-        JPanel panel = new JPanel( new GridBagLayout() );
-        panel.setOpaque( false );
-
-        panel.add( button, new GridBagConstraints(0,1,1,1,0.0,0.0,
-                GridBagConstraints.SOUTHWEST,GridBagConstraints.HORIZONTAL,
-                new Insets(5,5,0,5),0,0) );
-        panel.add( new JLabel(), new GridBagConstraints(1,1,1,1,1.0,0.0,
-                GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,
-                new Insets(0,0,0,0),0,0) );
-
-        setBottomContent( panel );
+        buildContent();
     }
     
-    private JComponent buildContent() {
-        JPanel panel = new JPanel( new GridBagLayout() );
-        panel.setOpaque( false );
+    private void buildContent() {
+        createLinks();
 
-        createLinks( panel );
-
-        panel.add( new JLabel(), new GridBagConstraints(0, row++, 1, 1, 0.0, 1.0,
+        add( new JLabel(), new GridBagConstraints(col++, maxRow == 0 ? row++ : maxRow+1, 1, 1, 1.0, 1.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
-
-        JScrollPane scroll = new RelativeSizeScrollPane( panel, 0.30f, 30 );
-        scroll.getViewport().setOpaque( false );
-        scroll.setOpaque( false );
-        scroll.setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
-        scroll.setBorder( BorderFactory.createEmptyBorder() );
-        return scroll;
     }
 
-    protected void addLink( JPanel panel, String category, String title ) {
+    protected void addLink( String category, String title ) {
         SampleProjectLink link = new SampleProjectLink( category, null, title );
-        link.setForeground( Utils.getColor(HEADER_TEXT_COLOR) );
-        panel.add( link, new GridBagConstraints( 0, row++, 1, 1, 1.0, 0.0,
+        add( link, new GridBagConstraints( col, row++, 1, 1, 0.0, 0.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
-                new Insets(row==1 ? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT+3,
-                0,TEXT_INSETS_RIGHT/2+UIManager.getInt("ScrollBar.width")), 0, 0 ) ); // NOI18N
+                new Insets(0,col == 0 ? 0 : 20, 3, 0), 0, 0 ) ); // NOI18N
     }
 
-    protected void createLinks( JPanel panel ) {
+    protected void createLinks() {
         FileObject root = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project/Samples" ); // NOI18N
         DataFolder df = DataFolder.findFolder( root );
         DataObject[] children = df.getChildren();
         for( int i=0; i<children.length; i++ ) {
             try {
-                createLinkForCategory( panel, children[i] );
+                createLinkForCategory( children[i] );
+                if( children.length >= 8 && i+1 == children.length/2+children.length%2 ) {
+                    col = 1;
+                    maxRow = row;
+                    row = 0;
+                }
+
             } catch (DataObjectNotFoundException ex) {
                 ex.printStackTrace();
             }
         }
     }
 
-    protected void createLinkForCategory( JPanel panel, DataObject categoryDO ) throws DataObjectNotFoundException {
+    protected void createLinkForCategory( DataObject categoryDO ) throws DataObjectNotFoundException {
         if( categoryDO instanceof DataShadow ) {
             categoryDO = ((DataShadow)categoryDO).getOriginal();
         }
@@ -141,21 +112,6 @@ public class Samples extends ContentPanel implements Constants {
 
         String label = categoryDO.getNodeDelegate().getDisplayName();
 
-        addLink( panel, category, label );
-    }
-
-    private static class NewProjectButton extends LinkButton {
-        public NewProjectButton() {
-            super( BundleSupport.getLabel( "NewProject" ), false ); // NOI18N
-            BundleSupport.setAccessibilityProperties( this, "NewProject" ); //NOI18N
-            setFont( HEADER_FONT );
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            Action a = Utils.findAction( "Actions/Project/org-netbeans-modules-project-ui-NewProject.instance" ); // NOI18N
-            if( null != a ) {
-                a.actionPerformed( e );
-            }
-        }
+        addLink( category, label );
     }
 }

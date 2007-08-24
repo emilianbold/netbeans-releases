@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.welcome.ui;
 
+import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -33,24 +34,22 @@ import org.netbeans.modules.welcome.content.WebLink;
  *
  * @author S. Aubrecht
  */
-public class Blogs extends RSSFeedReaderPanel {
+class Blogs extends RSSFeedReaderPanel {
 
-    /** Creates a new instance of NbNews */
     public Blogs() {
         super( "Blogs", false ); // NOI18N
 
-        setBottomContent( buildBottomContent() );
+        add( buildBottomContent(), BorderLayout.SOUTH );
     }
 
     protected JComponent buildBottomContent() {
         WebLink allBlogs = new WebLink( "AllBlogs", false ); // NOI18N
-        allBlogs.setFont( HEADER_FONT );
         BundleSupport.setAccessibilityProperties( allBlogs, "AllBlogs" ); //NOI18N
 
         JPanel panel = new JPanel( new GridBagLayout() );
         panel.setOpaque( false );
         panel.add( allBlogs, new GridBagConstraints(0,1,1,1,0.0,0.0,GridBagConstraints.SOUTHWEST,GridBagConstraints.HORIZONTAL,new Insets(5,5,0,5),0,0) );
-        panel.add( new JLabel(), new GridBagConstraints(1,1,1,1,1.0,0.0,GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
+        panel.add( new JLabel(), new GridBagConstraints(1,1,1,1,1.0,0.0,GridBagConstraints.CENTER,GridBagConstraints.HORIZONTAL,new Insets(5,5,0,5),0,0) );
 
         return panel;
     }

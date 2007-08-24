@@ -20,18 +20,17 @@
 package org.netbeans.modules.welcome;
 
 import java.lang.ref.WeakReference;
-import org.netbeans.modules.welcome.content.ContentPanel;
 import org.openide.util.NbBundle;
 import org.openide.windows.*;
 import java.awt.*;
 import javax.swing.*;
-import org.netbeans.modules.welcome.content.ContentFactory;
+import org.netbeans.modules.welcome.ui.StartPageContent;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
 /**
  * The welcome screen.
- * @author  Richard Gregor
+ * @author  Richard Gregor, S. Aubrecht
  */
 public class WelcomeComponent extends TopComponent {
     static final long serialVersionUID=6021472310161712674L;
@@ -59,12 +58,12 @@ public class WelcomeComponent extends TopComponent {
     private void doInitialize() {
         initAccessibility();
         
-        content = ContentFactory.createContentPane();
-        if( null == content )
-            return;
+        if( null == content ) {
+            content = new StartPageContent();
 
-        add( content, BorderLayout.CENTER );
-        setFocusable( false );
+            add( content, BorderLayout.CENTER );
+            setFocusable( false );
+        }
     }
         
     /* Singleton accessor. As WelcomeComponent is persistent singleton this
@@ -122,17 +121,6 @@ public class WelcomeComponent extends TopComponent {
     }
 
     /**
-     * #38900 - lazy addition of GUI components
-     */    
-    @Override public void addNotify() {
-        if (!initialized) {
-            initialized = true;
-            doInitialize();
-        }
-        super.addNotify();
-    }
-    
-    /**
      * Called when <code>TopComponent</code> is about to be shown.
      * Shown here means the component is selected or resides in it own cell
      * in container in its <code>Mode</code>. The container is visible and not minimized.
@@ -149,38 +137,35 @@ public class WelcomeComponent extends TopComponent {
             initialized = true;
             doInitialize();
         }
+        if( null != content && getComponentCount() == 0 ) {
+            //notify components down the hierarchy tree that they should 
+            //refresh their content (e.g. RSS feeds)
+            add( content, BorderLayout.CENTER );
+        }
         super.componentShowing();
         setActivatedNodes( new Node[] {} );
     }
 
-    private static boolean firstTimeOpen = true;
-    @Override protected void componentOpened() {
-        super.componentOpened();
-        if( firstTimeOpen ) {
-            firstTimeOpen = false;
-            if( !WelcomeOptions.getDefault().isShowOnStartup() ) {
-                close();
-            }
+    @Override protected void componentHidden() {
+        super.componentHidden();
+        if( null != content ) {
+            //notify components down the hierarchy tree that they no long 
+            //need to periodically refresh their content (e.g. RSS feeds)
+            remove( content );
         }
     }
 
-    @Override protected void componentActivated() {
-        super.componentActivated();
-        focusAnyContentPanel( content );
+    @Override
+    public void requestFocus() {
+        if( null != content )
+            content.requestFocus();
     }
 
-    private boolean focusAnyContentPanel( Container comp ) {
-        Component[] children = comp.getComponents();
-        for( int i=0; i<children.length; i++ ) {
-            if( children[i] instanceof ContentPanel ) {
-                ((ContentPanel)children[i]).switchFocus();
-                return true;
-            } else if( children[i] instanceof Container 
-                    && focusAnyContentPanel( (Container)children[i] ) ) {
-                return true;
-            }
-        }
-        return false;
+    @Override
+    public boolean requestFocusInWindow() {
+        if( null != content )
+            return content.requestFocusInWindow();
+        return super.requestFocusInWindow();
     }
 }
 
