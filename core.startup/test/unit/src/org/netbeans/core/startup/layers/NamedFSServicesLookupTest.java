@@ -164,4 +164,12 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
         tst.verify();
     }
 
+    public void testSupportsClassNameEncodedInAFileName() throws Exception {
+        FileObject inst = FileUtil.createData(root, "inst/class/" + Inst.class.getName().replace('.', '-') + ".instance");
+        Lookup l = Lookups.forPath("inst/class");
+        assertNotNull("Instance created", l.lookup(Inst.class));
+    }
+    
+    public static final class Inst extends Object {
+    }
 }

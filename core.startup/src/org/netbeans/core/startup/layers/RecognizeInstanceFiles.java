@@ -41,6 +41,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
@@ -178,6 +179,15 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             Object r = ref.get();
             if (r == null) {
                 r = fo.getAttribute("instanceCreate");
+                if (r == null) {
+                    try {
+                        r = getType().newInstance();
+                    } catch (InstantiationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalAccessException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
                 if (r != null) {
                     ref = new WeakReference<Object>(r);
                 }
