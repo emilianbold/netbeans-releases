@@ -46,7 +46,7 @@ import org.netbeans.installer.utils.system.NativeUtils;
  */
 public class ExeLauncher extends CommonLauncher {
     private static final String EXE_EXT = ".exe"; //NOI18N
-    private static final int EXE_STUB_FILL_SIZE = 120000;
+    private static final int EXE_STUB_FILL_SIZE = 420000;
     private static final long MAXDWORD = 4294967296L; // actually it is MAXDWORD + 1
     
     public static final String DEFAULT_WINDOWS_RESOURCE_SUFFIX =

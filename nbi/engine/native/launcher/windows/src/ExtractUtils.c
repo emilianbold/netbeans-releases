@@ -31,7 +31,7 @@
 #include "Launcher.h"
 #include "Main.h"
 
-const DWORD   STUB_FILL_SIZE      = 120000;
+const DWORD   STUB_FILL_SIZE      = 420000;
 
 void skipLauncherStub(LauncherProperties * props,  DWORD stubSize) {
     HANDLE hFileRead = props->handler;

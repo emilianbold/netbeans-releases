@@ -312,7 +312,9 @@ BOOL InitApplication(LauncherProperties * props, HINSTANCE hInstance) {
         wndclass.cbClsExtra = 0;
         wndclass.cbWndExtra = 0;
         wndclass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(100));
-        wndclass.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(101));
+        wndclass.hIconSm = (HICON)LoadImage(GetModuleHandle(NULL), 
+                MAKEINTRESOURCE(100), 
+                IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
         wndclass.hInstance = hInstance;
         wndclass.hCursor = LoadCursor( 0, IDC_ARROW );
         wndclass.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
