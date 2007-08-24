@@ -23,8 +23,10 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -76,6 +78,7 @@ public class SessionImpl extends PersistentObject implements Session {
     private String sessionType;
     
     // lazy initialization
+    private Set<String> interfacesSet;
     private String[] businessLocal;
     private String[] businessRemote;
     private EjbRef[] ejbRefs;
@@ -89,6 +92,7 @@ public class SessionImpl extends PersistentObject implements Session {
     public SessionImpl(Kind kind, AnnotationModelHelper helper, TypeElement typeElement) {
         super(helper, typeElement);
         this.kind = kind;
+        this.interfacesSet = new HashSet<String>();
         boolean valid = refresh(typeElement);
         assert valid;
     }
@@ -115,12 +119,35 @@ public class SessionImpl extends PersistentObject implements Session {
      * Initializes businessLocal and businessRemote fields
      */
     private void initBusinessInterfaces() {
+    
+        // try to remember set of interfaces from last initialization
+        // and if it is changed, reinitialize again
         
-        if (businessLocal != null && businessRemote != null) {
-            return;
-        }
+        boolean reinit = false;
         
         TypeElement typeElement = getTypeElement();
+        List<? extends TypeMirror> interfacesTypes = typeElement.getInterfaces();
+        if (interfacesTypes.size() != interfacesSet.size()) {
+            reinit = true;
+        } else {
+            for (TypeMirror typeMirror : typeElement.getInterfaces()) {
+                if (TypeKind.DECLARED == typeMirror.getKind()) {
+                    TypeElement interfaceTypeElement = (TypeElement) ((DeclaredType) typeMirror).asElement();
+                    if (!interfacesSet.contains(interfaceTypeElement.getQualifiedName().toString())) {
+                        reinit = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (!reinit) {
+            return;
+        }
+
+        interfacesSet = new HashSet<String>();
+        businessLocal = new String[] {};
+        businessRemote = new String[] {};
         
         List<TypeElement> interfaces = new ArrayList<TypeElement>(); // all business interface candidates, EJB 3.0 Spec, Chapter 10.2
         for (TypeMirror typeMirror : typeElement.getInterfaces()) {
@@ -130,6 +157,7 @@ public class SessionImpl extends PersistentObject implements Session {
                 if (ElementKind.INTERFACE == element.getKind()) {
                     TypeElement interfaceTypeElement = (TypeElement) element;
                     String fqn = interfaceTypeElement.getQualifiedName().toString();
+                    interfacesSet.add(fqn);
                     if (!"java.io.Serializable".equals(fqn) && !"java.io.Externalizable".equals(fqn) && !fqn.startsWith("javax.ejb")) {
                         interfaces.add(interfaceTypeElement);
                     }
