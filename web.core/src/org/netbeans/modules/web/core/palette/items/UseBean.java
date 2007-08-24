@@ -52,7 +52,6 @@ public class UseBean implements ActiveEditorDrop {
     public boolean handleTransfer(JTextComponent targetComponent) {
 
         UseBeanCustomizer c = new UseBeanCustomizer(this, targetComponent);
-        JSPPaletteUtilities.getAllBeans(targetComponent);
         boolean accept = c.showDialog(JSPPaletteUtilities.getAllBeans(targetComponent));
         if (accept) {
             String body = createBody();
