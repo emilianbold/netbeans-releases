@@ -349,7 +349,7 @@ class DropTargetLayer extends JComponent {
     private static int getIconLeft(JMenuItem item) {
         if(isWindows()) {
             if(hasRadioOrCheckSibling(item)) {
-                return 22;
+                return 20;
             } else {
                 return 20;
             }
