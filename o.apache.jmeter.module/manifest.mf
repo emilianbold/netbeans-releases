@@ -3,7 +3,7 @@ AutoUpdate-Show-In-Client: true
 OpenIDE-Module: org.apache.jmeter.module/1
 OpenIDE-Module-Layer: org/apache/jmeter/module/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/apache/jmeter/module/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.12
 
 Name: org/apache/jmeter/module/JMXTypeDataLoader.class
 OpenIDE-Module-Class: Loader

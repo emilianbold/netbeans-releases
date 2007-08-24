@@ -15,7 +15,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="targetSeparator" alignment="0" pref="625" max="32767" attributes="2"/>
+          <Component id="targetSeparator" alignment="0" pref="441" max="32767" attributes="2"/>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
@@ -26,12 +26,12 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="fileTextField" pref="511" max="32767" attributes="0"/>
+                          <Component id="fileTextField" pref="327" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="documentNameTextField" alignment="0" pref="391" max="32767" attributes="0"/>
-                                  <Component id="projectTextField" alignment="0" pref="391" max="32767" attributes="0"/>
-                                  <Component id="folderTextField" alignment="1" pref="391" max="32767" attributes="0"/>
+                                  <Component id="documentNameTextField" alignment="0" pref="207" max="32767" attributes="0"/>
+                                  <Component id="projectTextField" alignment="0" pref="207" max="32767" attributes="0"/>
+                                  <Component id="folderTextField" alignment="1" pref="207" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="browseButton" min="-2" pref="114" max="-2" attributes="0"/>
@@ -42,7 +42,7 @@
               </Group>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
-          <Component id="fillerPanel" alignment="0" pref="625" max="32767" attributes="0"/>
+          <Component id="fillerPanel" alignment="0" pref="441" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

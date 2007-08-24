@@ -18,7 +18,6 @@
         </file>
       </folder>
     </folder>
-    <!--
     <folder name="org-netbeans-modules-java-j2seproject">
       <folder name="Nodes">
         <file name="org-netbeans-modules-loadgenerator-project-ui-ScriptNodeFactory.instance">
@@ -26,6 +25,5 @@
         </file>
       </folder>
     </folder>
-    -->
   </folder>
 </filesystem>

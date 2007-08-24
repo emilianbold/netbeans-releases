@@ -66,6 +66,7 @@
   <folder name="Templates">
     <folder name="LoadTesting">
       <attr name="position" intvalue="2013"/>
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.jmeter.module.Bundle"/>
       <folder name="JMeter">
         <attr name="position" intvalue="100"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.jmeter.module.Bundle"/>
