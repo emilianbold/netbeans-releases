@@ -69,7 +69,6 @@ public class SelectMethodGeneratorTest extends TestBase {
         String ejbql = "SELECT COUNT(o) FROM CmpLR o";
         generator.generate(methodModel, true, true, true, ejbql);
         
-        // local interface
         final boolean[] found = new boolean[] { false };
         JavaSource javaSource = JavaSource.forFileObject(beanClass);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -79,6 +78,7 @@ public class SelectMethodGeneratorTest extends TestBase {
                 for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
                     if (executableElement.getSimpleName().contentEquals("ejbSelectTest")) {
                         MethodTree methodTree = workingCopy.getTrees().getTree(executableElement);
+                        assertNull(methodTree.getBody());
                         assertSame(TypeKind.INT, executableElement.getReturnType().getKind());
                         TypeElement finderException = workingCopy.getElements().getTypeElement("javax.ejb.FinderException");
                         assertTrue(executableElement.getThrownTypes().contains(finderException.asType()));
