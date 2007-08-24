@@ -268,31 +268,31 @@ public class GdbUtils {
         String key, value;
         int tstart, tend;
         int len = info.length();
-        int i = 0;
+        int idx = 0;
         char ch;
         
-        while (i < len) {
-            tstart = i++;
-            while (info.charAt(i++) != '=') {
+        while (idx < len) {
+            tstart = idx++;
+            while (info.charAt(idx++) != '=') {
             }
-            key = info.substring(tstart, i - 1);
-            if ((ch = info.charAt(i++)) == '{') {
-                tend = findMatchingCurly(info, i) - 1;
+            key = info.substring(tstart, idx - 1);
+            if ((ch = info.charAt(idx++)) == '{') {
+                tend = findMatchingCurly(info, idx);
             } else if (ch == '"') {
-                tend = findEndOfString(info, i);
+                tend = findEndOfString(info, idx);
             } else {
                 throw new IllegalStateException(NbBundle.getMessage(
                         GdbUtils.class, "ERR_UnexpectedGDBReasonMessage")); // NOI18N
             }
             
             // put the value in the list and prepare for the next property
-            value = info.substring(i, tend);
+            value = info.substring(idx, tend);
             if (Utilities.isWindows() && value.startsWith("/cygdrive/")) { // NOI18N
                 value = value.charAt(10) + ":" + value.substring(11); // NOI18N
             }
             list.add(key + "=" + value); // NOI18N
-            i = tend + 1;
-            i++;
+            idx = tend + 1;
+            idx++;
         }
         
         return list;
@@ -312,18 +312,17 @@ public class GdbUtils {
         String name, value; 
         List<GdbVariable> list = new ArrayList();
         int idx = 0;
-        int pos = findMatchingCurly(info, 0);
+        int pos = 0;
         
-        while (pos != -1) {
-            String frag = info.substring(idx, pos);
-            int pos2 = findNextComma(frag, 0);
+        while ((pos = findMatchingCurly(info, idx)) != -1 && pos < info.length()) {
+            String frag = info.substring(idx, pos + 1);
+            int pos2 = findNextComma(frag, 0, 1, 1);
             if (pos2 != -1) {
-                name = frag.substring(7, pos2 - 2);
-                value = frag.substring(pos2 + 7, frag.length() - 2);
+                name = frag.substring(7, pos2 - 1);
+                value = frag.substring(pos2 + 8, frag.length() - 2); // strip double quotes
                 list.add(new GdbVariable(name, null, value));
             }
             idx = info.indexOf('{', pos);
-            pos = findMatchingCurly(info, idx);
         }
         
         return list;
@@ -344,7 +343,7 @@ public class GdbUtils {
         int idx = 0;
         
         while (len > 0) {
-            String frag = info.substring(idx, findMatchingCurly(info, idx));
+            String frag = info.substring(idx, findMatchingCurly(info, idx) + 1);
             idx += frag.length() + 1;
             len -= frag.length() + 1;
             // {name=\"argc\",value=\"1\"},{name=\"argv\",value=\"(char **) 0x6625f8\"}
@@ -435,22 +434,19 @@ public class GdbUtils {
         char lbrace = pair.charAt(0);
         char rbrace = pair.charAt(1);
         char last = ' ';
-        int len = s.length() - idx;
         int count = 0;
         boolean inDoubleQuote = false;
         boolean inSingleQuote = false;
         
-        if (s == null || idx >= s.length() || idx < 0) {
+        if (s == null || s.length() == 0 || idx < 0) {
             return -1;
         }
-        
         if (s.charAt(idx) == lbrace) {
             idx++;
-            len--;
         }
         
-        while (len-- > 0) {
-            char ch = s.charAt(idx++);
+        while (idx < s.length()) {
+            char ch = s.charAt(idx);
             if (inDoubleQuote) {
                 if (ch == '"' && last != '\\') {
                     inDoubleQuote = false;
@@ -477,6 +473,7 @@ public class GdbUtils {
                 }
             }
             last = ch;
+            idx++;
         }
         
         return -1;
@@ -487,26 +484,37 @@ public class GdbUtils {
      *
      * @param s The string to search
      * @param idx The starting index
+     * @param idx The starting index
      */
     public static int findNextComma(String s, int idx) {
+        return findNextComma(s, idx, 0, 0);
+    }
+    
+    /**
+     * Find the next comma (ignoring ones in quotes and double quotes)
+     *
+     * @param s The string to search
+     * @param idx The starting index
+     * @param startSkipCount Number of chars to ignore at start if s[idx]
+     * @param endSkipCount Number of chars to ignore at the end of s
+     * @param idx The starting index
+     */
+    public static int findNextComma(String s, int idx, int startSkipCount, int endSkipCount) {
         char last = ' ';
-        int len = s.length() - idx;
         char ch;
         int i;
+        int slen = s.length() - endSkipCount;
         boolean inDoubleQuote = false;
         boolean inSingleQuote = false;
         
         assert s != null && s.length() > 0;
-        assert idx >= 0 && idx < s.length();
-        
-        ch = s.charAt(idx);
-        if (ch == ',' || ch == '{') { // skip 1st char in this case
-            idx++;
-            len--;
+        if (idx < 0) {
+            return -1; // allow this to allow other find* functions to provide idx
         }
+        idx += startSkipCount;
         
-        while (len-- > 0) {
-            ch = s.charAt(idx++);
+        while (idx < s.length()) {
+            ch = s.charAt(idx);
             if (inDoubleQuote) {
                 if (ch == '"' && last != '\\') {
                     inDoubleQuote = false;
@@ -518,28 +526,25 @@ public class GdbUtils {
             } else if (ch == '{') {
                 i = GdbUtils.findMatchingCurly(s, idx);
                 if (i == -1) {
-                    len = 0;
+                    break;
                 } else {
-                    len -= (i - idx + 1);
                     idx = i;
                 }
             } else if (ch == '<') {
                 i = GdbUtils.findMatchingLtGt(s, idx);
                 if (i == -1) {
-                    len = 0;
+                    break;
                 } else {
-                    len -= (i - idx + 1);
                     idx = i;
                 }
             } else if (ch == '[') {
                 i = GdbUtils.findMatchingBrace(s, idx);
                 if (i == -1) {
-                    len = 0;
+                    break;
                 } else {
-                    len -= (i - idx + 1);
                     idx = i;
                 }
-            } else if (ch == ',') {
+            } else if (ch == ',' && !isMultiString(s, idx)) {
                 return idx;
             } else if (ch == '\"' && last != '\\') {
                 if (inDoubleQuote) {
@@ -551,6 +556,100 @@ public class GdbUtils {
                 inSingleQuote = true;
             }
             last = ch;
+            idx++;
+        }
+        
+        return -1;
+    }
+ 
+    /**
+     * Gdb sometimes returns strings with an extra ',' followed by a single character and
+     * "<repeats xx times>" (where xx is some int). See if this is such a comman and return
+     * true if it is.
+     */
+    private static boolean isMultiString(String s, int idx) {
+        String frag;
+        if (++idx < s.length()) {
+            int pos = s.indexOf(',', idx);
+            if (pos == -1) {
+                frag = s.substring(idx);
+            } else {
+                frag = s.substring(idx, pos);
+            }
+            if (frag.contains("<repeats ") && frag.contains(" times>")) { // NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Find the next simicolon (ignoring ones in quotes and double quotes)
+     *
+     * @param s The string to search
+     * @param idx The starting index
+     */
+    public static int findNextSemi(String s, int idx) {
+        char last = ' ';
+        char ch;
+        int i;
+        boolean inDoubleQuote = false;
+        boolean inSingleQuote = false;
+        
+        assert s != null && s.length() > 0;
+        if (idx < 0) {
+            return -1;
+        }
+        
+        ch = s.charAt(idx);
+        if (ch == ';' || ch == '{') { // skip 1st char in this case
+            idx++;
+        }
+        
+        while (idx < s.length()) {
+            ch = s.charAt(idx);
+            if (inDoubleQuote) {
+                if (ch == '"' && last != '\\') {
+                    inDoubleQuote = false;
+                }
+            } else if (inSingleQuote) {
+                if (ch == '\'' && last != '\\') {
+                    inSingleQuote = false;
+                }
+            } else if (ch == '{') {
+                i = GdbUtils.findMatchingCurly(s, idx);
+                if (i == -1) {
+                    break;
+                } else {
+                    idx = i;
+                }
+            } else if (ch == '<') {
+                i = GdbUtils.findMatchingLtGt(s, idx);
+                if (i == -1) {
+                    break;
+                } else {
+                    idx = i;
+                }
+            } else if (ch == '[') {
+                i = GdbUtils.findMatchingBrace(s, idx);
+                if (i == -1) {
+                    break;
+                } else {
+                    idx = i;
+                }
+            } else if (ch == ';') {
+                return idx;
+            } else if (ch == '\"' && last != '\\') {
+                if (inDoubleQuote) {
+                    inDoubleQuote = false;
+                } else {
+                    inDoubleQuote = true;
+                }
+            } else if (ch == '\'' && last != '\\') {
+                inSingleQuote = true;
+            }
+            last = ch;
+            idx++;
         }
         
         return -1;

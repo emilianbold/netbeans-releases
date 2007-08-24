@@ -51,6 +51,12 @@ public class GdbVariable {
         derefValue = null;
         children = new ArrayList();
         debugger = null;
+        
+        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (currentEngine == null) {
+            throw new IllegalStateException(); // creating a var after the session has been killed...
+        }
+        debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
     }
     
     public String getName() {
@@ -101,28 +107,34 @@ public class GdbVariable {
         this.value = value;
     }
     
+    public String getDerefedValue() {
+        return derefValue;
+    }
+    
     public void setDerefedValue(String derefValue) {
         this.derefValue = derefValue;
     }
     
     public List<GdbVariable> getChildren() {
-        if (children.size() == 0 && !Thread.currentThread().getName().equals("GdbReaderRP")) {
-            if (getRealType() != null) {
-                if (!GdbUtils.isFunctionPointer(getRealType()) || GdbUtils.isArray(getRealType())) {
-                    if (GdbUtils.isArray(getRealType())) {
-                        parseArray(this, value.substring(1, value.length() - 1));
-                    } else if (GdbUtils.isStructOrUnion(getRealType())) {
-                        if (value.charAt(0) == '{') {
+        synchronized (children) {
+            if (children.size() == 0 && !Thread.currentThread().getName().equals("GdbReaderRP")) {
+                if (getRealType() != null) {
+                    if (!GdbUtils.isFunctionPointer(getRealType()) || GdbUtils.isArray(getRealType())) {
+                        if (GdbUtils.isArray(getRealType())) {
+                            parseArray(this, value.substring(1, value.length() - 1));
+                        } else if (GdbUtils.isStructOrUnion(getRealType())) {
+                            if (value.charAt(0) == '{') {
+                                parseStructUnionClass(value.substring(1, value.length() - 1));
+                            } else if (value.charAt(0) == '(' && derefValue != null) {
+                                // derefValue can be null if we're dereferencing an unititialized variable
+                                parseStructUnionClass(derefValue.substring(1, derefValue.length() - 1));
+                            }
+                        } else if (GdbUtils.isClass(getRealType())) {
                             parseStructUnionClass(value.substring(1, value.length() - 1));
-                        } else if (value.charAt(0) == '(' && derefValue != null) {
-                            // derefValue can be null if we're dereferencing an unititialized variable
-                            parseStructUnionClass(derefValue.substring(1, derefValue.length() - 1));
                         }
-                    } else if (GdbUtils.isClass(getRealType())) {
-                        parseStructUnionClass(value.substring(1, value.length() - 1));
-                    }
-                    for (GdbVariable child : children) {
-                        child.children = child.getChildren();
+                        for (GdbVariable child : children) {
+                            child.children = child.getChildren();
+                        }
                     }
                 }
             }
@@ -262,13 +274,6 @@ public class GdbVariable {
     
     /** We need the debugger to get the current stack to get struct type completion... */
     private GdbDebugger getDebugger() {
-        if (debugger == null) {
-            DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-            if (currentEngine == null) {
-                return null;
-            }
-            debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
-        }
         return debugger;
     }
 }

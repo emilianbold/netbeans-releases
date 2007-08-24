@@ -260,7 +260,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         
         if (pos1 != -1 && pos2 != -1) {
             buf.append(info.substring(0, pos1).trim());
-            buf.append(info.substring(pos2).trim());
+            buf.append(info.substring(pos2 + 1).trim());
         } else {
             buf.append(info);
         }
@@ -518,7 +518,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void execAsyncOutput(int token, String msg) {
         if (msg.startsWith("*stopped")) { // NOI18N
             Map<String, String> map = GdbUtils.createMapFromString(msg.substring(9));
-            if (map.get("reason") == null && firstStop) { // NOI18N
+            String reason = map.get("reason"); // NOI18N
+            String bkptno;
+            if ((reason == null || (Utilities.getOperatingSystem() == Utilities.OS_MAC &&
+                    (bkptno = map.get("bkptno")) != null && bkptno.equals("1"))) && firstStop) { // NOI18N
                 firstStop(); // temporary breakpoint from initial -exec-run command
             } else {
                 if (firstStop) { // got a user-set breakpoint first
@@ -612,6 +615,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         ex.printStackTrace();
                     }
                 }
+            } else if (msg.startsWith("[Switching to process ")) { // NOI18N
+                int pos = msg.indexOf(' ', 22);
+                if (pos > 0) {
+                    try {
+                        programPID = Long.valueOf(msg.substring(22, pos));
+                    } catch (NumberFormatException ex) {
+                        ex.printStackTrace();
+                    }
+                }
             }
         }
     }
@@ -636,9 +648,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     private Map getFieldMap(String info) {
-        HashMap map = new HashMap();
+        Map map = new HashMap();
         int pos1 = info.indexOf('{');
-        int pos2 = info.indexOf('}');
+        int pos2 = GdbUtils.findMatchingCurly(info, pos1);
         String fields = null;
         
         if (pos1 == -1 && pos2 == -1) {
@@ -649,30 +661,122 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (o != null) { // t can be null if stepping into a macro in a header file
                 String t = o.toString();
                 pos1 = t.indexOf('{');
-                pos2 = t.indexOf('}');
+                pos2 = GdbUtils.findMatchingCurly(t, pos1);
                 if (pos1 != -1 && pos2 != -1) {
                     fields = t.substring(pos1 + 1, pos2);
                 }
             }
         } else if (pos1 != -1 && pos2 != -1) {
-            fields = info.substring(pos1 + 1, pos2);
+            fields = info.substring(pos1 + 1, pos2 - 1);
         }
         if (fields != null) {
-            FieldTokenizer tok = new FieldTokenizer(fields);
-            while (tok.hasMoreFields()) {
-                String[] field = tok.nextField();
-                pos1 = field[1].indexOf('[');
-                if (pos1 == -1) {
-                    map.put(field[1], field[0]);
-                } else {
-                    map.put(field[1].substring(0, pos1), field[0] + field[1].substring(pos1));
-                }
-            }
+            map = parseFields(map, fields);
             if (map.isEmpty()) {
-                map.put("<" + info.substring(0, pos1) + ">", "<no data fields>");
+                map.put("<" + info.substring(0, pos1) + ">", "<No data fields>"); // NOI18N
             }
         }
         return map;
+    }
+        
+    private Map parseFields(Map map, String info) {
+        if (info != null) {
+            int pos, pos2;
+            FieldTokenizer tok = new FieldTokenizer(info);
+            while (tok.hasMoreFields()) {
+                String[] field = tok.nextField();
+                if (field[0] != null) {
+                    if (isNonAnonymousCSUDef(field)) {
+                        pos = field[0].indexOf('{');
+                        pos2 = field[0].lastIndexOf('}');
+                        Map m;
+                        m = parseFields(new HashMap(), field[0].substring(pos + 1, pos2).trim());
+                        m.put("<typename>", shortenType(field[0])); // NOI18N
+                        map.put(field[1], m);
+                    } else if (field[1].startsWith("<anonymous")) { // NOI18N
+                        // replace string def with Map
+                        pos = field[0].indexOf('{');
+                        String frag = field[0].substring(pos + 1, field[0].length() - 1).trim();
+                        Map m = parseFields(new HashMap(), frag);
+                        map.put(field[1], m);
+                    } else {
+                        pos = field[1].indexOf('[');
+                        if (pos == -1) {
+                            map.put(field[1], field[0]);
+                        } else {
+                            map.put(field[1].substring(0, pos), field[0] + field[1].substring(pos));
+                        }
+                    }
+                }
+            }
+        }
+        return map;
+    }
+    
+    private String shortenType(String type) {
+        if (type.startsWith("class {")) { // NOI18N
+            return "class {...}"; // NOI18N
+        } else if (type.startsWith("struct {")) { // NOI18N
+            return "struct {...}"; // NOI18N
+        } else if (type.startsWith("union {")) { // NOI18N
+            return "union {...}"; // NOI18N
+        } else {
+            return type;
+        }
+    }
+    
+    /**
+     * See if the info string defines an embedded class/struct/union which is <b>not</b> an
+     * anonymous c/s/u (those don't get typenames).
+     *
+     * @param info The string to check for a non-anonymous class/struct/union definition
+     * @returns True for a non-anonymous class/struct/union definition
+     */
+    private boolean isNonAnonymousCSUDef(String[] field) {
+        String name = field[1];
+        String info = field[0];
+        if (!name.startsWith("<anonymous") && // NOI18N
+                (info.startsWith("class {") || info.startsWith("struct {") || info.startsWith("union {"))) { // NOI18N
+            int start = info.indexOf('{');
+            int end = GdbUtils.findMatchingCurly(info, start) + 1;
+            if (start != -1 && end != 0 && !info.substring(start, end).equals("{...}")) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /** Remove some C++ keywords from the field list */
+    private String stripField(String field) {
+        if (isCplusPlus()) {
+            boolean modified = true;
+            
+            while (modified) {
+                modified = false;
+                if (field.startsWith("static ")) { // NOI18N
+                    field = field.substring(7).trim();
+                    modified = true;
+                } else if (field.startsWith("public: ")) { // NOI18N
+                    field = field.substring(8).trim();
+                    modified = true;
+                } else if (field.startsWith("private: ")) { // NOI18N
+                    field = field.substring(9).trim();
+                    modified = true;
+                } else if (field.startsWith("protected: ")) { // NOI18N
+                    field = field.substring(11).trim();
+                    modified = true;
+                } else if (field.startsWith("virtual ")) { // NOI18N
+                    field = field.substring(8).trim();
+                    modified = true;
+                } else if (field.startsWith("const ")) { // NOI18N
+                    field = field.substring(6).trim();
+                    modified = true;
+                } else if (field.endsWith(" const")) { // NOI18N
+                    field = field.substring(0, field.length() - 6).trim();
+                    modified = true;
+                }
+            }
+        }
+        return field;
     }
     
     /** Parse a substring from a ptype class response to see if we have any superclasses */
@@ -737,17 +841,38 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             Object o = entry.getValue();
             if (o instanceof String) {
                 String type = o.toString();
-                if (!GdbUtils.isSimple(type) && !type.equals("<no data fields>")) {
+                if (!GdbUtils.isSimple(type) && !type.equals("<No data fields>") && !isUnnamedType(type)) {
                     addTypeCompletion(o.toString());
                 }
             }
         }
     }
     
+    private boolean isUnnamedType(String type) {
+        int pos = type.indexOf('{');
+        if (pos != -1) {
+            String tmp = null;
+            if (type.startsWith("class ")) { // NOI18N
+                tmp = type.substring(5, pos + 1).trim();
+            } else if (type.startsWith("struct ")) { // NOI18N
+                tmp = type.substring(6, pos + 1).trim();
+            } else if (type.startsWith("union ")) { // NOI18N
+                tmp = type.substring(5, pos + 1).trim();
+            } else {
+                log.warning("Unexpected type information [" + type + "]");
+                tmp = "  "; // NOI18N - this makes this method return false...
+            }
+            return tmp.length() == 1;
+        } else {
+            return false;
+        }
+    }
+    
     public void addTypeCompletion(String key) {
         key = trimKey(key);
         assert key != null && key.length() > 0;
-        if (!GdbUtils.isSimple(key) && !typePendingTable.contains(key) && getCurrentCallStackFrame().getType(key) == null) {
+        if (!GdbUtils.isSimple(key) && !typePendingTable.contains(key) && getCurrentCallStackFrame().getType(key) == null &&
+                !(isCplusPlus() && key.equals("bool"))) { // NOI18N
             int token = gdb.symbol_type(key.replace('$', ' ').trim());
             typeCompletionTable.put(Integer.valueOf(token), new StringBuilder(key + '='));
             typePendingTable.add(key);
@@ -761,11 +886,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else {
                 int i = 0;
                 while (!isTypeCompletionComplete() && state == STATE_STOPPED && i++ < 40) {
-//                    System.err.println("GDI.waitForTypeCompletion: [" +
-//                            symbolCompletionTable.size() + ", " +
-//                            typeCompletionTable.size() + ", " +
-//                            typePendingTable.size() + ", " +
-//                            valueCompletionTable.size() + "]"); // NOI18N
+                    log.warning("Waiting for type completion"); // NOI18N
                     try {
                         Thread.sleep(250);
                     } catch (InterruptedException ex) {
@@ -777,8 +898,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     public boolean isTypeCompletionComplete() {
-        return typeCompletionTable.isEmpty() && typePendingTable.isEmpty() &&
-                valueCompletionTable.isEmpty();
+        return typeCompletionTable.isEmpty() && typePendingTable.isEmpty() && valueCompletionTable.isEmpty();
     }
     
     /**
@@ -838,7 +958,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 if (value.charAt(0) == '(') {
                     int pos = GdbUtils.findMatchingParen(value, 0);
                     if (pos > 0) {
-                        String cast = value.substring(0, pos);
+                        String cast = value.substring(0, pos + 1);
                         if (cast.indexOf("*)") > 0) { // NOI18N
                             token = gdb.data_evaluate_expression('*' + var.getName());
                             valueCompletionTable.put(Integer.valueOf(token), var);
@@ -859,7 +979,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.data_evaluate_expression("_CndSigInit()"); // NOI18N
             gdb.break_insert(GDB_INVISIBLE_BREAKPOINT, "_CndSigHandler"); // NOI18N
             gdb.info_threads(); // we get the PID from this...
-        } else {
+        } else if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
             gdb.info_proc(); // we get the PID from this...
         }
         
@@ -1119,20 +1239,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     finish();
                 }
             } else if (reason.equals("end-stepping-range")) { // NOI18N
-                String frame = map.get("frame"); // NOI18N
-                if (frame == null) {
-                    // didn't change method so we get "line" and "file" properties
-                    try {
-                        int lineNumber = Integer.parseInt(map.get("line")); // NOI18N
-                        CallStackFrame csf = getCurrentCallStackFrame();
-                        csf.setLineNumber(lineNumber);
-                    } catch (Exception ex) {
-                    }
-                } else {
-                    // changed method (and possibly file) so we get a full frame and need to
-                    // update the entire stack (unless we're stopped in signal handling code)
-                    gdb.stack_list_frames();
-                }
+                gdb.stack_list_frames();
                 setStopped();
                 if (GdbTimer.getTimer("Step").getSkipCount() == 0) { // NOI18N
                     GdbTimer.getTimer("Step").stop("Step1");// NOI18N

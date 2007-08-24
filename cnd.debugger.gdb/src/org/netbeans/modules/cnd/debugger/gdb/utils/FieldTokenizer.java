@@ -20,7 +20,6 @@
 package org.netbeans.modules.cnd.debugger.gdb.utils;
 
 import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
 
 /**
  * Read the field information from a struct/union/class returned by gdb. This class is
@@ -37,26 +36,34 @@ import java.util.StringTokenizer;
 public class FieldTokenizer {
     
     private String[] retval = new String[2];
-    private StringTokenizer tok;
+    private MyStringTokenizer tok;
+    private int anon_count;
     
     /** Creates a new instance of FieldTokenizer */
     public FieldTokenizer(String fields) {
         if (fields == null) {
             throw new NullPointerException();
         }
-        tok = new StringTokenizer(fields, ";"); // NOI18N
+        tok = new MyStringTokenizer(fields);
+        anon_count = 0;
 	retval[0] = null;
     }
     
     private void findNextField() {
         while (tok.hasMoreTokens()) {
             String token = tok.nextToken().trim();
-            if (!token.endsWith(")") && !token.endsWith(") const")) {
+            if (!token.endsWith(")") && !token.endsWith(") const")) { // NOI18N
                 parseNextField(token);
                 return;
             }
         }
-	retval[0] = null;
+	if (anon_count > 0) {
+	    retval[0] = Integer.toString(anon_count);
+	    retval[1] = "<anon-count>";
+	    anon_count = 0;
+	} else {
+	    retval[0] = null;
+	}
     }
     
     private void parseNextField(String field) {
@@ -88,25 +95,31 @@ public class FieldTokenizer {
             }
         }
         
-        int pos = field.lastIndexOf(' ');
-        if (pos != -1) {
-            int pos2 = field.indexOf('*', pos);
-            if (pos2 != -1) {
-                retval[0] = field.substring(0, pos2 + 1).trim();
-                retval[1] = field.substring(pos2 + 1).trim();
-            } else {
-                retval[0] = field.substring(0, pos).trim();
-                retval[1] = field.substring(pos).trim();
-            }
+        if (field.endsWith("}")) { // NOI18N
+            // This happens for anonymous structs/unions/classes...
+            retval[0] = field;
+            retval[1] = "<anonymous" + ++anon_count + ">"; // NOI18N
         } else {
-            retval[0] = "int"; // NOI18N - missing type (GNU's basic_string does this)
-            retval[1] = field;
+            int pos = field.lastIndexOf(' ');
+            if (pos != -1) {
+                int pos2 = field.indexOf('*', pos);
+                if (pos2 != -1) {
+                    retval[0] = field.substring(0, pos2 + 1).trim();
+                    retval[1] = field.substring(pos2 + 1).trim();
+                } else {
+                    retval[0] = field.substring(0, pos).trim();
+                    retval[1] = field.substring(pos).trim();
+                }
+            } else {
+                retval[0] = "int"; // NOI18N - missing type (GNU's basic_string does this)
+                retval[1] = field;
+            }
         }
     }
     
     public boolean hasMoreFields() {
 	findNextField();
-        return retval[0] != null;
+        return retval[0] != null || anon_count != 0;
     }
     
     public String[] nextField() {
@@ -114,5 +127,45 @@ public class FieldTokenizer {
 	    throw new NoSuchElementException();
 	}
         return retval;
+    }
+    
+    /**
+     * This private string tokenizer differs from StringTokenizer by ignoring the delimeter
+     * if its in quotes or betwwn curly braces. StringTokenizer fails in cases similar to
+     * the following:
+     *
+     *      class A { class B { int x; } i; };
+     *
+     * See IZ 112664 for a full test file.
+     */
+    private final class MyStringTokenizer {
+        
+        private String info;
+        private int start, end;
+        
+        public MyStringTokenizer(String info) {
+            this.info = info;
+            start = 0;
+        }
+        
+        public boolean hasMoreTokens() {
+            return start < info.length();
+        }
+        
+        public String nextToken() {
+            if (start >= info.length()) {
+                throw new NoSuchElementException();
+            }
+            String t;
+            end = GdbUtils.findNextSemi(info, start);
+            if (end == -1) {
+                t = info.substring(start);
+                start = info.length(); // this will make the next hasMoreTokens() call return false
+            } else {
+                t = info.substring(start, end);
+                start = end + 1;
+            }
+            return t;
+        }
     }
 }
