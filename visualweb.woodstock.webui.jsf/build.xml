@@ -21,30 +21,4 @@ Microsystems, Inc. All Rights Reserved.
 <project name="org.netbeans.modules.visualweb.woodstock.webui.jsf" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.visualweb.woodstock.webui.jsf.</description>
     <import file="../../../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/docs"/>
-        <copy todir="${cluster}/docs">
-            <fileset dir="external">
-                <include name="webui-jsf-doc.zip"/>
-                <include name="webui-jsf-src.zip"/>
-                <include name="webui-jsf-tld.zip"/>
-            </fileset>
-        </copy>
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="external">
-                <include name="dojo-0.4.3-ajax.jar"/>
-                <include name="jsf-extensions-common-0.1.jar"/>
-                <include name="jsf-extensions-dynamic-faces-0.1.jar"/>
-                <include name="json.jar"/>
-                <include name="prototype-1.5.0.jar"/>
-                <include name="webui-jsf-dt.jar"/>
-                <include name="webui-jsf.jar"/>
-            </fileset>
-        </copy>
-    </target>
-
 </project>
