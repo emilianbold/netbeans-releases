@@ -29,9 +29,11 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../ant/debugger</project>
                 <project>../../ant/freeform</project>
                 <project>../../ant/grammar</project>
+                <project>../../ant/kit</project>
                 <project>../../ant/project</project>
                 <project>../../apisupport/ant</project>
                 <project>../../apisupport/harness</project>
+                <project>../../apisupport/kit</project>
                 <project>../../apisupport/project</project>
                 <project>../../apisupport/refactoring</project>
                 <project>../../apisupport/samples/PaintApp-sample-ui</project>
@@ -52,6 +54,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../cnd/gdb</project>
                 <project>../../cnd/gotodeclaration</project>
                 <project>../../cnd/highlight</project>
+                <project>../../cnd/kit</project>
                 <project>../../cnd/makeproject</project>
                 <project>../../cnd/modelapi</project>
                 <project>../../cnd/modeldiscovery</project>
@@ -70,6 +73,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../core/favorites</project>
                 <project>../../core/ide</project>
                 <project>../../core/javahelp</project>
+                <project>../../core/kit</project>
                 <project>../../core/multiview</project>
                 <project>../../core/navigator</project>
                 <project>../../core/options</project>
@@ -85,6 +89,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../core/swing/plaf</project>
                 <project>../../core/swing/tabcontrol</project>
                 <project>../../core/tasklist/api</project>
+                <project>../../core/tasklist/kit</project>
                 <project>../../core/tasklist/todo</project>
                 <project>../../core/tasklist/ui</project>
                 <project>../../core/ui</project>
@@ -93,6 +98,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../db/core</project>
                 <project>../../db/dbapi</project>
                 <project>../../db/derby</project>
+                <project>../../db/kit</project>
                 <project>../../db/model</project>
                 <project>../../db/sqleditor</project>
                 <project>../../db/visualsqleditor</project>
@@ -118,6 +124,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../editor/hints</project>
                 <project>../../editor/hints/highlights</project>
                 <project>../../editor/indent</project>
+                <project>../../editor/kit</project>
                 <project>../../editor/lib</project>
                 <project>../../editor/lib2</project>
                 <project>../../editor/mimelookup</project>
@@ -137,6 +144,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../enterprise/bpel/debuggerui</project>
                 <project>../../enterprise/bpel/editors</project>
                 <project>../../enterprise/bpel/editorsapi</project>
+                <project>../../enterprise/bpel/kit</project>
                 <project>../../enterprise/bpel/project</project>
                 <project>../../enterprise/bpel/refactoring</project>
                 <project>../../enterprise/bpel/samples</project>
@@ -145,12 +153,16 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../enterprise/compapp/capshelp</project>
                 <project>../../enterprise/compapp/casaeditor</project>
                 <project>../../enterprise/compapp/jbimanager</project>
-                <project>../../enterprise/compapp/libwsdl4j1.5.2</project>
-                <project>../../enterprise/compapp/libxmlbeans2.1.0</project>
+                <project>../../enterprise/compapp/kit</project>
                 <project>../../enterprise/compapp/projectbase</project>
                 <project>../../enterprise/compapp/projectjbi</project>
                 <project>../../enterprise/compapp/projectwizard</project>
+                <project>../../enterprise/libs/httpunit</project>
+                <project>../../enterprise/libs/wsdl4j</project>
+                <project>../../enterprise/libs/xmlbeans</project>
+                <project>../../enterprise/libs/xmlunit</project>
                 <project>../../enterprise/soa/jgo</project>
+                <project>../../enterprise/soa/kit</project>
                 <project>../../enterprise/soa/mapper</project>
                 <project>../../enterprise/soa/ui</project>
                 <project>../../enterprise/sql/jdbchelp</project>
@@ -166,6 +178,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../extbrowser</project>
                 <project>../../form</project>
                 <project>../../form/j2ee</project>
+                <project>../../form/kit</project>
                 <project>../../form/swingapp</project>
                 <project>../../graph/lib</project>
                 <project>../../html</project>
@@ -177,11 +190,14 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../i18n</project>
                 <project>../../i18n/form</project>
                 <project>../../ide/branding</project>
+                <project>../../ide/branding/kit</project>
                 <project>../../ide/defaults</project>
+                <project>../../ide/kit</project>
                 <project>../../ide/launcher/upgrade</project>
                 <project>../../ide/updatecenters</project>
                 <project>../../ide/welcome</project>
                 <project>../../identity/ant</project>
+                <project>../../identity/kit</project>
                 <project>../../identity/profileapi</project>
                 <project>../../identity/profileui</project>
                 <project>../../identity/samples</project>
@@ -199,9 +215,11 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../j2ee/ejbrefactoring</project>
                 <project>../../j2ee/ejbverification</project>
                 <project>../../j2ee/genericserver</project>
+                <project>../../j2ee/kit</project>
                 <project>../../j2ee/metadata</project>
                 <project>../../j2ee/metadata/support</project>
                 <project>../../j2ee/persistence</project>
+                <project>../../j2ee/persistence/kit</project>
                 <project>../../j2ee/persistence/refactoring</project>
                 <project>../../j2ee/persistence/verification</project>
                 <project>../../j2ee/persistenceapi</project>
@@ -221,6 +239,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../java/hints</project>
                 <project>../../java/j2seplatform</project>
                 <project>../../java/j2seproject</project>
+                <project>../../java/kit</project>
                 <project>../../java/lexer</project>
                 <project>../../java/navigation</project>
                 <project>../../java/platform</project>
@@ -243,7 +262,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../languages/manifest</project>
                 <project>../../languages/yaml</project>
                 <project>../../lexer</project>
-                <project>../../lexer/editorbridge</project>
                 <project>../../lexer/nbbridge</project>
                 <project>../../libs/commons_logging</project>
                 <project>../../libs/freemarker</project>
@@ -253,6 +271,9 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../libs/resolver</project>
                 <project>../../libs/swing-layout</project>
                 <project>../../libs/xerces</project>
+                <project>../../logger/uihandler</project>
+                <project>../../logger/uihandlerlib</project>
+                <project>../../logger/uihandlerreporter</project>
                 <project>../../mobility/ant-ext</project>
                 <project>../../mobility/api</project>
                 <project>../../mobility/cdcplatform</project>
@@ -262,6 +283,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../mobility/cdcplatform/semc</project>
                 <project>../../mobility/cdcplatform/sun</project>
                 <project>../../mobility/cdcplugins</project>
+                <project>../../mobility/cdcplugins/kit</project>
                 <project>../../mobility/cdcplugins/nokiaS80</project>
                 <project>../../mobility/cdcplugins/nsicom</project>
                 <project>../../mobility/cdcplugins/ricoh</project>
@@ -272,11 +294,11 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../mobility/deployment/deviceanywhere</project>
                 <project>../../mobility/deployment/ftpscp</project>
                 <project>../../mobility/deployment/nokia</project>
+                <project>../../mobility/deployment/ricoh</project>
                 <project>../../mobility/deployment/sonyericsson</project>
                 <project>../../mobility/deployment/webdav</project>
                 <project>../../mobility/deployment/wm</project>
                 <project>../../mobility/designer</project>
-                <project>../../mobility/designer/nb_midp_module</project>
                 <project>../../mobility/designer2/analyzer</project>
                 <project>../../mobility/designer2/codegen</project>
                 <project>../../mobility/designer2/flow</project>
@@ -284,6 +306,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../mobility/designer2/inspector</project>
                 <project>../../mobility/designer2/io</project>
                 <project>../../mobility/designer2/iojavame</project>
+                <project>../../mobility/designer2/kit</project>
                 <project>../../mobility/designer2/midp</project>
                 <project>../../mobility/designer2/midpconverter</project>
                 <project>../../mobility/designer2/midpnb</project>
@@ -298,9 +321,13 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../mobility/examples/midp</project>
                 <project>../../mobility/j2meunit</project>
                 <project>../../mobility/javahelp</project>
+                <project>../../mobility/kit</project>
                 <project>../../mobility/layouts/agui-swing</project>
                 <project>../../mobility/layouts/pp-awt</project>
                 <project>../../mobility/licensing</project>
+                <project>../../mobility/miscme/netbeans_midp_components_basic_module</project>
+                <project>../../mobility/miscme/netbeans_midp_components_pda_module</project>
+                <project>../../mobility/miscme/netbeans_midp_components_wma_module</project>
                 <project>../../mobility/nbactivesync</project>
                 <project>../../mobility/proguard</project>
                 <project>../../mobility/project</project>
@@ -349,6 +376,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../ruby/gsf</project>
                 <project>../../ruby/gsf/api</project>
                 <project>../../ruby/gsf/platform</project>
+                <project>../../ruby/help</project>
                 <project>../../ruby/hints</project>
                 <project>../../ruby/javaint</project>
                 <project>../../ruby/jruby</project>
@@ -421,7 +449,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../visualweb/designtime/rave</project>
                 <project>../../visualweb/designtimeext</project>
                 <project>../../visualweb/ejb</project>
-                <project>../../visualweb/ejb/support</project>
                 <project>../../visualweb/errorhandler/client</project>
                 <project>../../visualweb/errorhandler/server</project>
                 <project>../../visualweb/extension_j2eeserver_api</project>
@@ -434,6 +461,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../visualweb/jsfsupport/designtime-1.1</project>
                 <project>../../visualweb/jsfsupport/designtime-1.2</project>
                 <project>../../visualweb/jsfsupport/runtime</project>
+                <project>../../visualweb/kit</project>
                 <project>../../visualweb/navigation</project>
                 <project>../../visualweb/outline</project>
                 <project>../../visualweb/palette</project>
@@ -452,17 +480,12 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../visualweb/ravelibs/commons-fileupload</project>
                 <project>../../visualweb/ravelibs/commons-logging</project>
                 <project>../../visualweb/ravelibs/el-ri-1.2</project>
-                <project>../../visualweb/ravelibs/javaee-5</project>
-                <project>../../visualweb/ravelibs/jsf-metadata</project>
                 <project>../../visualweb/ravelibs/jsf-ri-1.2</project>
-                <project>../../visualweb/ravelibs/jsp-api</project>
-                <project>../../visualweb/ravelibs/jstl</project>
                 <project>../../visualweb/ravelibs/jtidy</project>
                 <project>../../visualweb/ravelibs/portlet-api</project>
-                <project>../../visualweb/ravelibs/rowset</project>
-                <project>../../visualweb/ravelibs/servlet-api</project>
                 <project>../../visualweb/ravelibs/sun-apache-commons</project>
                 <project>../../visualweb/rowset</project>
+                <project>../../visualweb/samples/bundled</project>
                 <project>../../visualweb/websvcmgr</project>
                 <project>../../visualweb/webui/designtime</project>
                 <project>../../visualweb/webui/runtime</project>
@@ -474,20 +497,22 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../web/css</project>
                 <project>../../web/el/lexer</project>
                 <project>../../web/examples</project>
-                <project>../../web/flyingsaucer</project>
                 <project>../../web/freeform</project>
                 <project>../../web/jsf</project>
+                <project>../../web/jsf/kit</project>
                 <project>../../web/jsf/navigation</project>
-                <project>../../web/jsf12</project>
                 <project>../../web/jspdebug</project>
                 <project>../../web/jspparser</project>
                 <project>../../web/jspsyntax</project>
                 <project>../../web/jspsyntax/lexer</project>
-                <project>../../web/jstl11</project>
+                <project>../../web/kit</project>
+                <project>../../web/libs/flyingsaucer</project>
                 <project>../../web/libs/glassfish_logging</project>
+                <project>../../web/libs/jsf-1_2</project>
+                <project>../../web/libs/jstl11</project>
+                <project>../../web/libs/servletjspapi</project>
                 <project>../../web/project</project>
                 <project>../../web/refactoring</project>
-                <project>../../web/servletjspapi</project>
                 <project>../../web/struts</project>
                 <project>../../web/webapi</project>
                 <project>../../websvc/clientapi</project>
@@ -495,13 +520,15 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../websvc/customization</project>
                 <project>../../websvc/design</project>
                 <project>../../websvc/editorhints</project>
+                <project>../../websvc/examples</project>
                 <project>../../websvc/jaxrpc16</project>
                 <project>../../websvc/jaxrpcsupport</project>
-                <project>../../websvc/jaxws20</project>
+                <project>../../websvc/jaxws21</project>
+                <project>../../websvc/jaxws21/jaxws21api</project>
                 <project>../../websvc/jaxwsapi</project>
                 <project>../../websvc/jaxwsmodel</project>
+                <project>../../websvc/kit</project>
                 <project>../../websvc/registry</project>
-                <project>../../websvc/rest</project>
                 <project>../../websvc/rest/partnersvc</project>
                 <project>../../websvc/restapi</project>
                 <project>../../websvc/serviceapi</project>
@@ -509,15 +536,14 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../websvc/websvcddapi</project>
                 <project>../../websvc/wsitconf</project>
                 <project>../../websvc/wsitmodelext</project>
-                <project>../../websvc/examples</project>
                 <project>../../xml/api</project>
                 <project>../../xml/axi</project>
                 <project>../../xml/catalog</project>
                 <project>../../xml/catalogsupport</project>
                 <project>../../xml/core</project>
-                <project>../../xml/graph</project>
                 <project>../../xml/jaxb</project>
                 <project>../../xml/jxpath</project>
+                <project>../../xml/kit</project>
                 <project>../../xml/lexer</project>
                 <project>../../xml/multiview</project>
                 <project>../../xml/nbprefuse</project>
@@ -530,12 +556,14 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../../xml/schema/completion</project>
                 <project>../../xml/schema/refactoring</project>
                 <project>../../xml/schema/schemaui</project>
+                <project>../../xml/search</project>
                 <project>../../xml/tageditorsupport</project>
                 <project>../../xml/tax</project>
                 <project>../../xml/text-edit</project>
                 <project>../../xml/tools</project>
                 <project>../../xml/validation</project>
                 <project>../../xml/wsdl/api</project>
+                <project>../../xml/wsdl/kit</project>
                 <project>../../xml/wsdl/refactoring</project>
                 <project>../../xml/wsdlbindingsupport</project>
                 <project>../../xml/wsdlbindingsupport/api</project>
