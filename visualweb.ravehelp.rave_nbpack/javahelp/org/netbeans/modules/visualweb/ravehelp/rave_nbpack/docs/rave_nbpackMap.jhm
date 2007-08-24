@@ -290,8 +290,7 @@
 	<mapID target="projrave_ui_elements_palette_bh_propsheets_bh_breadcrumbs_props_themecss" url="ui_elements/palette/bh/propsheets/bh_breadcrumbs_props.html#themecss"/>
 	<mapID target="projrave_ui_elements_palette_bh_propsheets_bh_button_css" url="ui_elements/palette/bh/propsheets/bh_button_css.html"/>
 	<mapID target="projrave_ui_elements_palette_bh_propsheets_bh_button_props" url="ui_elements/palette/bh/propsheets/bh_button_props.html"/>
-	<mapID target="projrave_ui_elements_palette_bh_propsheets_bh_button_props_themecss" url="ui_elements/palette/bh/propsheets/bh_button_props.html#themecss"/>
-	<mapID target="projrave_ui_elements_palette_bh_propsheets_bh_calendar_css" url="ui_elements/palette/bh/propsheets/bh_calendar_css.html"/>
+	<mapID target="projrave_ui_elements_palette_bh_propsheets_bh_calendar_css " url="ui_elements/palette/bh/propsheets/bh_calendar_css.html"/>
 	<mapID target="projrave_ui_elements_palette_bh_propsheets_bh_calendar_props" url="ui_elements/palette/bh/propsheets/bh_calendar_props.html"/>
 	<mapID target="projrave_ui_elements_palette_bh_propsheets_bh_calendar_props_themecss" url="ui_elements/palette/bh/propsheets/bh_calendar_props.html#themecss"/>
 	<mapID target="projrave_ui_elements_palette_bh_propsheets_bh_checkbox_group_props" url="ui_elements/palette/bh/propsheets/bh_checkbox_group_props.html"/>
@@ -609,7 +608,9 @@
 	<mapID target="projrave_web_svc_howtowebservices_ws_bind_list" url="web_svc/howtowebservices/ws_bind_list.html"/>
 	<mapID target="projrave_web_svc_howtowebservices_ws_bind_simple" url="web_svc/howtowebservices/ws_bind_simple.html"/>
 	<mapID target="projrave_web_svc_howtowebservices_ws_bind_table" url="web_svc/howtowebservices/ws_bind_table.html"/>
+	<mapID target="projraveui_elements_dialogs_resolve_ref_probs_db" url="ui_elements/dialogs/resolve_ref_probs_db.html"/>
 	<mapID target="projraveweb_create_tag_framework_jsf_about_visweb_framework" url="web/create/tag/framework/jsf/about_visweb_framework.html"/>
+	<mapID target="projraveweb_svc_web_services_process" url="web_svc/web_services_process.html"/>
 	<mapID target="propfiles.prop" url="ui_elements/editors/about_properties_editor.html"/>
 	<mapID target="servlet_create" url="web/create/servlet/servlet_create.html"/>
 	<mapID target="servlet_edit" url="web/create/servlet/servlet_edit.html"/>
@@ -624,6 +625,4 @@
 	<mapID target="webapps_process" url="web/about/webapps_process.html"/>
 	<mapID target="webapps_quickref" url="web/about/webapps_quickref.html"/>
 	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html"/>
-	<mapID target="projraveweb_svc_web_services_process" url="web_svc/web_services_process.html"/>
-	<mapID target="projraveui_elements_dialogs_resolve_ref_probs_db" url="ui_elements/dialogs/resolve_ref_probs_db.html"/>
 </map>

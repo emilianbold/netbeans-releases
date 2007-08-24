@@ -29,7 +29,7 @@
 <h3>Resource Bundles and Property Files</h3>
 <p>In general, when you want to provide a resource bundle inside your application, 
 you must create a properties file to contain the messages, as described in 
-<a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/propfiles/creating_resourcebundles.html">Creating and Deleting a Resource Bundle</a>. </p>
+<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/propfiles/creating_resourcebundles.html">Creating and Deleting a Resource Bundle</a>. </p>
 <p>After you create a new properties file, it opens in the Property Editor. For each property you want to add, click New Property and, in the New Property dialog box, enter a key and a value. </p>
 <p>When you deploy your application, the properties file is copied to the <code>WEB-INF/classes/<i>project-name</i></code> directory for you, so that it is available for the <code>&lt;f:loadBundle&gt;</code> tag to load. When you use the bundle file, you specify a value for the for the <code>basename</code> property of an <code>&lt;f:loadBundle&gt;</code> tag that is the combination of the project name (same as the package name) and the properties file base name separated by a period. For example, if your project name is <code>webapplication1</code> and the properties file is named <code>Bundle</code>, the code is:</p>
 <p><code>&lt;f:loadBundle basename=&quot;webapplication1.Bundle&quot; var=&quot;<i>var-name</i>&quot;/&gt;</code></p>
