@@ -79,7 +79,10 @@
             </file>
             <file name="genericstub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/genericstub.template">
                 <attr name="position" intvalue="0"/>
-            </file>            
+            </file>
+            <file name="stubonly.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/stubonly.template">
+                <attr name="position" intvalue="0"/>
+            </file>
         </folder>
     </folder>
     

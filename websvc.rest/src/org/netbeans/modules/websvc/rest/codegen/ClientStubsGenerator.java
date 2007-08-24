@@ -52,6 +52,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String PROJECTSTUB_TEMPLATE = "Templates/WebServices/projectstub.js"; //NOI18N
     public static final String CONTAINERSTUB_TEMPLATE = "Templates/WebServices/containerstub.js"; //NOI18N
     public static final String GENERICSTUB_TEMPLATE = "Templates/WebServices/genericstub.js"; //NOI18N
+    public static final String STUB_ONLY_TEMPLATE = "Templates/WebServices/stubonly.js"; //NOI18N
     public static final String COMMON = "common"; //NOI18N
     public static final String JS = "js"; //NOI18N
     public static final String HTML = "html"; //NOI18N
@@ -241,10 +242,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             this.jsFolder = jsFolder;
         }
         
-        public FileObject generate() throws IOException {
-            if(this.r == null || r.getRepresentation().getRoot() == null)
-                return null;
-            
+        public FileObject generate() throws IOException {        
             FileObject fo = jsFolder.getFileObject(r.getFileNameExt());
             if (fo != null) {
                 if(isOverwrite())
@@ -254,8 +252,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             if(r.isContainer())
                 RestUtils.createDataObjectFromTemplate(CONTAINERSTUB_TEMPLATE, jsFolder, r.getFileName());
-            else
+            else if(r.getRepresentation().getRoot() != null)
                 RestUtils.createDataObjectFromTemplate(GENERICSTUB_TEMPLATE, jsFolder, r.getFileName());
+            else //generate only stub for no representation
+                RestUtils.createDataObjectFromTemplate(STUB_ONLY_TEMPLATE, jsFolder, r.getFileName());
             fo = jsFolder.getFileObject(r.getFileNameExt());
             FileLock lock = fo.lock();
             try {
@@ -300,6 +300,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 "__FIELDS_TOSTRING__",
                 "__STUB_METHODS__"
             };
+            String[] stubOnlyTokens = {
+                "__RESOURCE_NAME__",
+                "__STUB_METHODS__"
+            };
             if(r.isContainer()) {
                 String containerName = r.getName();
                 String containerRepName = root.getName();
@@ -320,7 +324,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     else if("__STUB_METHODS__".equals(token))
                         replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r));
                 }
-            } else {
+            } else if(root != null){
                 String resourceName = r.getName();
                 String resourceRepName = root.getName();
                 for(String token: genericStubTokens) {
@@ -340,6 +344,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
                         replacedLine = replacedLine.replaceAll("__SUB_RESOURCE_PATH_NAME__", "");
                     else if("__FIELDS_TOSTRING__".equals(token))
                         replacedLine = replacedLine.replace("__FIELDS_TOSTRING__", createFieldsToStringBody(root, true));
+                    else if("__STUB_METHODS__".equals(token))
+                        replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r));
+                }
+            } else {
+                String resourceName = r.getName();
+                for(String token: stubOnlyTokens) {
+                    if("__RESOURCE_NAME__".equals(token))
+                        replacedLine = replacedLine.replaceAll("__RESOURCE_NAME__", resourceName);
                     else if("__STUB_METHODS__".equals(token))
                         replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r));
                 }
