@@ -246,7 +246,8 @@ public class Inflector {
      *  be lower cased instead of upper cased
      */
     public String camelize(String word, boolean flag) {
-
+        if (word.length() == 0) return word;
+        
         StringBuffer sb = new StringBuffer(word.length());
         if (flag) {
             sb.append(Character.toLowerCase(word.charAt(0)));

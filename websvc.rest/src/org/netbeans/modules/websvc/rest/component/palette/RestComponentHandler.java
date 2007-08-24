@@ -18,6 +18,7 @@ package org.netbeans.modules.websvc.rest.component.palette;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
@@ -27,7 +28,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.rest.codegen.WsdlComponentGenerator;
 import org.netbeans.modules.websvc.rest.codegen.RestComponentGenerator;
 import org.netbeans.modules.websvc.rest.codegen.WadlComponentGenerator;
-import org.netbeans.modules.websvc.rest.codegen.model.WsdlResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.modules.websvc.rest.wizard.ProgressDialog;
 import org.openide.DialogDescriptor;
@@ -47,63 +48,77 @@ import org.openide.util.RequestProcessor;
  * @author Owner
  */
 public class RestComponentHandler implements ActiveEditorDrop {
+
     private FileObject targetFO;
     private RestComponentData data;
     private RequestProcessor.Task generatorTask;
- 
+
     public RestComponentHandler() {
     }
-    
+
     public boolean handleTransfer(JTextComponent targetComponent) {
         targetFO = getTargetFile(targetComponent);
+
         if (targetFO == null) {
             return false;
         }
-        
+
         final List<Exception> errors = new ArrayList<Exception>();
         final Project project = FileOwnerQuery.getOwner(targetFO);
         Lookup pItem = RestPaletteFactory.getCurrentPaletteItem();
-        Node n = pItem.lookup(Node.class);
-        final RestComponentData data = RestPaletteFactory.getRestComponentData(n);
+        final Node n = pItem.lookup(Node.class);
+        final RestComponentData data = RestPaletteFactory.getRestComponentData(n); 
         final String type = data.getService().getMethods().get(0).getType();
-        
-        final ProgressDialog dialog = new ProgressDialog(NbBundle.getMessage(
-                RestComponentHandler.class, "LBL_RestComponentProgress",
+       
+        final ProgressDialog dialog = new ProgressDialog(
+                NbBundle.getMessage(RestComponentHandler.class, "LBL_RestComponentProgress", 
                 n.getName()));
-        
+
         generatorTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 try {
                     RestComponentGenerator codegen = null;
-                    if (RestComponentData.isWSDL(type))
-                        codegen = new WsdlComponentGenerator(targetFO, data); 
-                    else if (RestComponentData.isWADL(type))
+
+                    if (RestComponentData.isWSDL(type)) {
+                        codegen = new WsdlComponentGenerator(targetFO, data);
+                    } else if (RestComponentData.isWADL(type)) {
                         codegen = new WadlComponentGenerator(targetFO, data);
-                    if (codegen.needsInputs()) {
-                        InputValuesPanel panel = new InputValuesPanel(codegen.getInputParameterTypes(), project);
-                        DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(RestComponentHandler.class, "LBL_ConstantParams"));
-                        Object response = DialogDisplayer.getDefault().notify(desc);
-                        if (response.equals(NotifyDescriptor.YES_OPTION)) {
-                            codegen.setConstantInputValues(panel.getInputParamValues());
-                        } else { // cancel
-                            return;
-                        }     
-                    }    
+                    }
+                
+                    RestComponentSetupPanel panel = new RestComponentSetupPanel(
+                            codegen.getSubresourceLocatorUriTemplate(),
+                            codegen.getResourceBean().getQualifiedClassName(), 
+                            codegen.getInputParameterTypes(), 
+                            project, 
+                            codegen.wrapperResourceExists());
+
+                    DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(RestComponentHandler.class, 
+                            "LBL_CustomizeComponent", n.getName()));
+                    Object response = DialogDisplayer.getDefault().notify(desc);
                     
+                    if (response.equals(NotifyDescriptor.YES_OPTION)) {
+                        codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
+                        codegen.setSubresourceLocatorName(panel.getMethodName());
+                        codegen.setConstantInputValues(panel.getInputParamValues());
+                    } else {
+                        // cancel
+                        return;
+                    }
+
                     codegen.generate(dialog.getProgressHandle());
-                    Utils.showMethod(targetFO, codegen.getSubResourceLocator());
-                } catch(Exception ioe) {
+                    Utils.showMethod(targetFO, codegen.getSubresourceLocatorName());
+                } catch (Exception ioe) {
                     errors.add(ioe);
                 } finally {
                     dialog.close();
                 }
             }
         });
-        
+
         generatorTask.schedule(50);
-        
+
         dialog.open();
-        
+
         if (errors.size() > 0) {
             for (Exception e : errors) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", e);
@@ -112,20 +127,21 @@ public class RestComponentHandler implements ActiveEditorDrop {
         }
         return true;
     }
-    
+
     public static FileObject getTargetFile(JTextComponent targetComponent) {
-        if (targetComponent == null)
+        if (targetComponent == null) {
             return null;
-        
+        }
         DataObject d = NbEditorUtilities.getDataObject(targetComponent.getDocument());
-        if (d == null)
+        if (d == null) {
             return null;
-        
+        }
         EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
-        if(ec == null || ec.getOpenedPanes() == null)
+        if (ec == null || ec.getOpenedPanes() == null) {
             return null;
-        
+        }
         return d.getPrimaryFile();
     }
+    
     
 }

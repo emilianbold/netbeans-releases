@@ -67,8 +67,6 @@ public class WadlComponentGenerator extends RestComponentGenerator {
         bean.setPrivateFieldForQueryParam(true);
         this.bean = bean;
         wrapperResourceFile = SourceGroupSupport.findJavaSourceFile(project, bean.getName());
-
-        getSubResourceMethodName = "get" + Util.upperFirstChar(bean.getShortName());
     }
     
     public Map<String,String> getInputParameterTypes() {
@@ -80,11 +78,7 @@ public class WadlComponentGenerator extends RestComponentGenerator {
     public void setConstantInputValues(Map<String,Object> constantParamValues) {
         ((WadlResourceBean)bean).setConstantParams(constantParamValues);
     }
-    
-    public boolean needsInputs() {
-        return this.bean.getQueryParams().length > 0;
-    }
-    
+     
     /**
      *  Return target and generated file objects
      */

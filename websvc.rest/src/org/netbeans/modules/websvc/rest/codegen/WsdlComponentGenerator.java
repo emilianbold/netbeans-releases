@@ -109,9 +109,6 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
         ((WsdlResourceBean)bean).setConstantParams(constantParamValues);
     }
     
-    public boolean needsInputs() {
-        return wrapperResourceFile == null;
-    }
     
     private void setupWebServiceClient() {
         for(JaxwsOperationInfo info : ((WsdlResourceBean)bean).getOperationInfos()) {
@@ -571,66 +568,5 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
     
     private String getOutputWrapperQualifiedName() throws IOException {
         return JavaSourceHelper.getClassType(jaxbOutputWrapperJS);
-    }
-    
-    public void addSubResourceMethod() throws IOException {
-        ModificationResult result = targetResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.RESOLVED);
-                JavaSourceHelper.addImports(copy, new String[] {getOutputWrapperQualifiedName()});
-                ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
-                String[] annotations = new String[] { Constants.URI_TEMPLATE_ANNOTATION };
-                Object[] annotationAttrs = new Object[] { bean.getUriWhenUsedAsSubResource() };
-                String[] params = bean.getQueryParams();
-                Object[] paramTypes = bean.getQueryParamTypes();
-                String[] paramAnnotations = getQueryParamAnnotations(bean);
-                Object[] paramAnnotationAttrs = bean.getQueryParams();
-                StringBuilder args = new StringBuilder();
-                for (int i=0; i<params.length; i++) {
-                    String access = match(JavaSourceHelper.getTopLevelClassElement(copy), params[i]);
-                    if (i != 0) args.append(", ");
-                    if (access != null) {
-                        args.append(access);
-                        params[i] = null;
-                        paramTypes[i] = null;
-                        paramAnnotations[i] = null;
-                        paramAnnotationAttrs[i] = null;
-                    } else {
-                        args.append(params[i]);
-                    }
-                }
-                
-                List<String> paramList = shrink(params);
-                List paramTypeList = shrink(paramTypes);
-                List<String> paramAnnotationList = shrink(paramAnnotations);
-                List paramAnnotationAttrList = shrink(paramAnnotationAttrs);
-
-                String uriParamAnnotationAttribute = getUriParam(JavaSourceHelper.getTopLevelClassElement(copy));
-                if (uriParamAnnotationAttribute != null) {
-                    paramList.add(0, "id");
-                    paramTypeList.add(0, Integer.class.getName());
-                    paramAnnotationList.add(0, Constants.URI_PARAM_ANNOTATION);
-                    paramAnnotationAttrList.add(0, uriParamAnnotationAttribute);
-                }
-                
-                String body = "{return new $CLASS$($ARGS$);}";
-                body = body.replace("$CLASS$", JavaSourceHelper.getClassName(wrapperResourceJS));
-                body = body.replace("$ARGS$", args);
-                String comment = "Returns "+bean.getName()+" sub-resource.\n";
-
-                ClassTree modifiedTree = JavaSourceHelper.addMethod(
-                        copy, tree, Constants.PUBLIC, annotations, annotationAttrs,
-                        getSubResourceMethodName, bean.getQualifiedClassName(),
-                        paramList.toArray(new String[1]), paramTypeList.toArray(), 
-                        paramAnnotationList.toArray(new String[1]), paramAnnotationAttrList.toArray(),
-                        body, comment);
-                copy.rewrite(tree, modifiedTree);
-                
-                if (paramAnnotationList.contains(Constants.QUERY_PARAM_ANNOTATION)) {
-                    JavaSourceHelper.addImports(copy, new String[] { Constants.QUERY_PARAM });
-                }
-                
-            }});
-            result.commit();
     }
 }

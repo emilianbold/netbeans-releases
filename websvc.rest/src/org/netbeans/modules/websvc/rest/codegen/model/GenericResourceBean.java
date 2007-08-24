@@ -62,7 +62,7 @@ public class GenericResourceBean {
     private final String name;
     private String packageName;
     
-    private final String uriTemplate;
+    private String uriTemplate;
     private String[] queryParams;
     private String[] queryParamTypes;
     private MimeType[] mimeTypes;
@@ -147,6 +147,10 @@ public class GenericResourceBean {
     
     public String getUriTemplate() {
         return uriTemplate;
+    }
+    
+    public void setUriTemplate(String uriTemplate) {
+        this.uriTemplate = uriTemplate;
     }
     
     public MimeType[] getMimeTypes() {
