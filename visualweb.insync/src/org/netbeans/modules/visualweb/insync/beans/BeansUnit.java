@@ -822,10 +822,7 @@ public class BeansUnit implements Unit {
 
         try {        
             if(cls.isArray()) {
-                Class elemClass = cls.getComponentType();
-                if(!elemClass.isInterface() && !Modifier.isAbstract(elemClass.getModifiers())) {
-                    return Array.newInstance(elemClass, 0);
-                }
+                return Array.newInstance(cls.getComponentType(), 0);
             }else {
                 if(!cls.isInterface() && !Modifier.isAbstract(cls.getModifiers())) {
                     return cls.newInstance();
