@@ -18,11 +18,5 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="html/editor" default="netbeans" basedir=".">
-
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra">
-        <copy file="../external/html40.zip" todir="${cluster}/docs"/>
-    </target>
-
 </project>
