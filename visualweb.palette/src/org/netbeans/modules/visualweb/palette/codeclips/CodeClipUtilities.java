@@ -59,11 +59,11 @@ public class CodeClipUtilities {
         final String displayNameString = NbBundle.getMessage(CodeClipUtilities.class, "CLIP");
 
 
-        CodeClipViewerPanel snippetViewer = new CodeClipViewerPanel(displayNameString, "");
+        CodeClipViewerPanel snippetViewer = new CodeClipViewerPanel(displayNameString, displayNameString, "");
         snippetViewer.setVisible(true);
         if (!snippetViewer.isCancelled()) {
             try {
-                CodeClipUtilities.createCodeClipFile(categoryFile, snippetViewer.getContentText(), snippetViewer.getClipName(), null, null);
+                CodeClipUtilities.createCodeClipFile(categoryFile, snippetViewer.getContentText(), snippetViewer.getClipName(), null, snippetViewer.getToolTip());
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             } catch (MissingResourceException mre) {

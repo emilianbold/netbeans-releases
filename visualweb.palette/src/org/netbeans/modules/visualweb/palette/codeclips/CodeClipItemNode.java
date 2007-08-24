@@ -223,14 +223,12 @@ public final class CodeClipItemNode extends FilterNode implements EditCookie {
     public String _getShortDescription(String bundleName, String tooltipKey, String displayNameKey) {
 
         String tooltip = null;
-        if (tooltipKey != null) {
+        if (tooltipKey != null && bundleName != null) {
             try {
                 tooltip = NbBundle.getBundle(bundleName).getString(tooltipKey);
             } catch (Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
-        } else if (body != null) {
-
             /* This will make sure the tooltips.  I chose to do this here even
              * thou it means that sometimes it may happen twice due to
              * performance.  I prefer that the palette not be dependent on loading
@@ -239,24 +237,31 @@ public final class CodeClipItemNode extends FilterNode implements EditCookie {
              * I would suggest that we never allow the user to use the body as
              * the tooltip, but I guess that is preference.
              */
-            tooltip = CodeClipUtilities.fillFromBundle(body, bundleName);
-            if (tooltip.length() > 200) {
-                tooltip = tooltip.substring(0, 200);
-            }
-
-            tooltip = tooltip.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>");
-
-            /*
-             * This is a temporary workaround.
-             * For some reason if the tooltip bigs with / the first line
-             * is removed altogether form the tooltip.  Not sure where this is
-             * happening.
-             */
-            if (tooltip.startsWith("//")) {
-                tooltip = " <br>" + tooltip;
-            }
-
-            tooltip = "<html>".concat(tooltip).concat("</html>");
+//        } else if (body != null) {
+//
+//
+//            tooltip = CodeClipUtilities.fillFromBundle(body, bundleName);
+//            if (tooltip.length() > 200) {
+//                tooltip = tooltip.substring(0, 200);
+//            }
+//
+//            tooltip = tooltip.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>");
+//
+//            /*
+//             * This is a temporary workaround.
+//             * For some reason if the tooltip bigs with / the first line
+//             * is removed altogether form the tooltip.  Not sure where this is
+//             * happening.
+//             */
+//            
+//            if (tooltip.startsWith("//")) {
+//                tooltip = " <br>" + tooltip;
+//            }
+//
+//            tooltip = "<html>".concat(tooltip).concat("</html>");
+        } else if (tooltipKey != null ) {
+            tooltip = tooltipKey;
+            
         } else {
             // no tooltip derived from the item
             tooltip = _getDisplayName(bundleName, displayNameKey);
@@ -292,23 +297,34 @@ public final class CodeClipItemNode extends FilterNode implements EditCookie {
      */
     public void edit() {
         String oldDisplayName = this.getDisplayName();
-        CodeClipViewerPanel snippetViewer = new CodeClipViewerPanel( this.getDisplayName(), this.body);
+        String oldToolTip = this.getShortDescription();
+        CodeClipViewerPanel snippetViewer = new CodeClipViewerPanel( this.getDisplayName(), oldToolTip, this.body);
         snippetViewer.setVisible(true);
         if (!snippetViewer.isCancelled()) {
             String newDisplayName = displayNameKey; /* Store the bundle key */
             String myBundleName = this.bundleName;
             String text = snippetViewer.getContentText();
             String title = snippetViewer.getClipName();
-            String myToolTip = tooltipKey;
+            String newToolTip = tooltipKey;
+            String toolTip = snippetViewer.getToolTip();
             
             /* If the name has changed then we will stop worry about keys, etc. */
             if( !oldDisplayName.equals(title)) {
                 newDisplayName = title;
+                if( this.bundleName != null ) /* if this is the first time it is going to null */ {
+                    newToolTip = toolTip;
+                }
                 myBundleName = null; /* If the title has changed, we no longer need the bundle. */
-                myToolTip = title;   /* Let's modify the tooltip to the title once it has ben removed */
+            } 
+            if ( !oldToolTip.equals(toolTip)) {
+                newToolTip = toolTip;
+                if( this.bundleName != null ){
+                    newDisplayName = title;
+                }
+                myBundleName = null;
             }
             try {
-                CodeClipUtilities.createCodeClipFile(fileObj.getParent(), text, newDisplayName, myBundleName, tooltipKey);
+                CodeClipUtilities.createCodeClipFile(fileObj.getParent(), text, newDisplayName, myBundleName, newToolTip);
                 this.destroy();
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

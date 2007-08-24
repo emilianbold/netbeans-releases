@@ -23,18 +23,23 @@ public class CodeClipViewerPanel extends javax.swing.JPanel {
     private static final int DIALOG_HEIGHT = 250;
 
     /** Creates new form NewJPanel */
-    public CodeClipViewerPanel(String title, String content) {
+    public CodeClipViewerPanel(String title, String tooltip, String content) {
         initComponents();
 
         setBorder(new EtchedBorder(EtchedBorder.LOWERED));
         setClipName(title);
         setContentText(content);
+        setToolTip(tooltip);
         
         titleField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeClipViewerPanel.class, "Acc_CodeSnippetViewer_Title"));
         titleField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeClipViewerPanel.class, "Acc_CodeSnippetViewer_TitleDesc"));
 
         clipContentTextArea.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeClipViewerPanel.class, "Acc_EditorPane_Name")); // NOI18N
         clipContentTextArea.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeClipViewerPanel.class, "Acc_EditorPane_Desc")); // NOI18N
+  
+        tooltipField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeClipViewerPanel.class, "Acc_CodeSnippetViewer_Tooltip"));
+        tooltipField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CodeClipViewerPanel.class, "Acc_CodeSnippetViewer_Tooltip_Desc"));
+
     }
 
     /** This method is called from within the constructor to
@@ -49,6 +54,8 @@ public class CodeClipViewerPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         clipContentTextArea = new javax.swing.JTextArea();
         titleLabel = new javax.swing.JLabel();
+        tooltipLabel = new javax.swing.JLabel();
+        tooltipField = new javax.swing.JTextField();
 
         titleField.setText(org.openide.util.NbBundle.getMessage(CodeClipViewerPanel.class, "CodeClipViewerPanel.titleField.text")); // NOI18N
 
@@ -58,19 +65,31 @@ public class CodeClipViewerPanel extends javax.swing.JPanel {
 
         titleLabel.setText(org.openide.util.NbBundle.getMessage(CodeClipViewerPanel.class, "CodeClipViewerPanel.titleLabel.text")); // NOI18N
 
+        tooltipLabel.setText(org.openide.util.NbBundle.getMessage(CodeClipViewerPanel.class, "CodeClipViewerPanel.tooltipLabel.text")); // NOI18N
+
+        tooltipField.setText(org.openide.util.NbBundle.getMessage(CodeClipViewerPanel.class, "CodeClipViewerPanel.tooltipField.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(6, 6, 6)
-                        .add(titleLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(titleField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 231, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(18, 18, 18)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(layout.createSequentialGroup()
+                                .add(tooltipLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(tooltipField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(layout.createSequentialGroup()
+                                .add(titleLabel)
+                                .add(27, 27, 27)
+                                .add(titleField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -78,10 +97,14 @@ public class CodeClipViewerPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(titleField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(titleLabel))
-                .add(18, 18, 18)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 227, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(titleLabel)
+                    .add(titleField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(tooltipLabel)
+                    .add(tooltipField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(14, 14, 14)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 202, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -90,6 +113,8 @@ public class CodeClipViewerPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField titleField;
     private javax.swing.JLabel titleLabel;
+    private javax.swing.JTextField tooltipField;
+    private javax.swing.JLabel tooltipLabel;
     // End of variables declaration//GEN-END:variables
 
     public String getContentText() {
@@ -106,6 +131,13 @@ public class CodeClipViewerPanel extends javax.swing.JPanel {
 
     public void setClipName(String clipName) {
         titleField.setText(clipName);
+    }
+    
+    public String getToolTip() {
+        return tooltipField.getText();
+    }
+    public void setToolTip(String tooltip) {
+        tooltipField.setText(tooltip);
     }
 
     private DialogDescriptor dd;
