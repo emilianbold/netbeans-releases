@@ -64,6 +64,8 @@ public class HgModuleConfig {
     private static final String DEFAULT_EXPORT_FILENAME = "/tmp/%b_%r_%h";                                  // NOI18N
     private static final HgModuleConfig INSTANCE = new HgModuleConfig();    
     
+    private static String userName;
+
     public static HgModuleConfig getDefault() {
         return INSTANCE;
     }
@@ -132,7 +134,7 @@ public class HgModuleConfig {
      * or a default username if none is found.
      */
     public String getUserName() {
-        String userName = HgConfigFiles.getInstance().getUserName();
+        userName = HgConfigFiles.getInstance().getUserName();
         if (userName.length() == 0) {
             String userId = System.getProperty("user.name"); // NOI18N
             String hostName;
@@ -151,6 +153,7 @@ public class HgModuleConfig {
     }
 
     public Boolean isUserNameValid(String name) {
+        if (name.equals(userName)) return true;
         if (name.length() == 0) return true;
         return HgMail.isUserNameValid(name);
     }

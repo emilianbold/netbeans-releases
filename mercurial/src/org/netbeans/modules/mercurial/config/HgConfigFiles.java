@@ -96,8 +96,12 @@ public class HgConfigFiles {
     }
  
     public void setProperty(String section, String name, String value) {
-        Ini.Section inisection = getSection(hgrc, section, true);
-        inisection.put(name, value);
+        if (value.length() == 0) {
+            removeProperty(section, name);
+        } else {
+            Ini.Section inisection = getSection(hgrc, section, true);
+            inisection.put(name, value);
+        }
         storeIni(hgrc, "hgrc"); // NOI18N
     }
 
