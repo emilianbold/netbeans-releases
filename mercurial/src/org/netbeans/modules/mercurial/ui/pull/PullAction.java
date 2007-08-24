@@ -21,7 +21,10 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgException;
@@ -49,7 +52,8 @@ import org.openide.filesystems.FileUtil;
  * @author John Rice
  */
 public class PullAction extends AbstractAction {
-
+    private static final String CHANGESET_FILES_PREFIX = "files:"; //NOI18N
+    
     public enum PullType {
 
         LOCAL, OTHER
@@ -68,11 +72,40 @@ public class PullAction extends AbstractAction {
         pull(context);
     }
 
-    public static boolean confirmWithLocalChanges(VCSContext ctx, Class bundleLocation, String title, String query) {
+    public static boolean confirmWithLocalChanges(VCSContext ctx, Class bundleLocation, String title, String query, 
+            List<String> listIncoming) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-        File[] localModFiles = cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY);
-        if (localModFiles != null && localModFiles.length > 0) {
-            int response = JOptionPane.showOptionDialog(null, NbBundle.getMessage(bundleLocation, query), NbBundle.getMessage(bundleLocation, title), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+        File[] localModNewFiles = cache.listFiles(ctx, 
+                FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);
+        List<String> listIncomingAndLocalMod = new ArrayList<String>();
+        Set<String> setFiles = new HashSet<String>();
+        String filesStr;
+        String[] aFileStr;
+        String root = HgUtils.getRootPath(ctx);
+        
+        for(String s: listIncoming){
+            if(s.indexOf(CHANGESET_FILES_PREFIX) == 0){
+                filesStr = (s.substring(CHANGESET_FILES_PREFIX.length())).trim();
+                aFileStr = filesStr.split(" ");
+                for(String fileStr: aFileStr){
+                    setFiles.add(root + File.separator + fileStr);
+                }
+            }
+        }
+        for(File f : localModNewFiles){
+            for(String s : setFiles){
+                if( s.equals(f.getAbsolutePath())){
+                    listIncomingAndLocalMod.add(s);
+                }
+            }
+        }
+
+        if (listIncomingAndLocalMod != null && listIncomingAndLocalMod.size() > 0) {
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_OVERWRITE_LOCAL")); // NOI18N
+            HgUtils.outputMercurialTab(listIncomingAndLocalMod);
+            int response = JOptionPane.showOptionDialog(null, 
+                    NbBundle.getMessage(bundleLocation, query), NbBundle.getMessage(bundleLocation, title), 
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
 
             if (response == JOptionPane.NO_OPTION) {
                 return false;
@@ -141,10 +174,11 @@ public class PullAction extends AbstractAction {
             
             boolean bNoChanges = HgCommand.isNoChanges(listIncoming.get(listIncoming.size() - 1));
 
-            // Warn User when there are Local Changes are present that Pull could overwrite
-            if (!bNoChanges && !confirmWithLocalChanges(ctx, PullAction.class, "MSG_PULL_LOCALMODS_CONFIRM_TITLE", "MSG_PULL_LOCALMODS_CONFIRM_QUERY")) { // NOI18N
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE")); // NOI18N
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE_SEP")); // NOI18N
+            
+            // Warn User when there are Local Changes present that Pull will overwrite
+            if (!bNoChanges && !confirmWithLocalChanges(ctx, PullAction.class, "MSG_PULL_LOCALMODS_CONFIRM_TITLE", "MSG_PULL_LOCALMODS_CONFIRM_QUERY", listIncoming)) { // NOI18N
                 HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_LOCALMODS_CANCEL")); // NOI18N
                 HgUtils.outputMercurialTab(""); // NOI18N
                 return;
@@ -163,8 +197,6 @@ public class PullAction extends AbstractAction {
             }            
                        
             if (list != null && !list.isEmpty()) {
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE")); // NOI18N
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_TITLE_SEP")); // NOI18N
 
                 if (!bNoChanges) {
                     annotateChangeSets(listIncoming, PullAction.class, "MSG_CHANGESETS_TO_PULL"); // NOI18N

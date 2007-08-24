@@ -100,9 +100,8 @@ public class RollbackAction extends AbstractAction {
                                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();        
                                     if(cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT).length != 0){
                                         ConflictResolvedAction.resolved(ctx);                                       
-                                    }else{
-                                        HgUtils.forceStatusRefresh(root); 
                                     }
+                                    HgUtils.forceStatusRefresh(root);                                     
                                     
                                     if (list != null && !list.isEmpty()){
                                         HgUtils.outputMercurialTab(list);
