@@ -21,21 +21,20 @@ package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.welcome.content.Constants;
 import java.awt.Image;
+import java.awt.event.MouseAdapter;
 import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.welcome.WelcomeOptions;
 import org.netbeans.modules.welcome.content.Utils;
@@ -70,8 +69,8 @@ class Tabs extends JPanel implements Constants {
         this.imgStripWest = Utilities.loadImage( IMAGE_STRIP_BOTTOM_WEST );
         this.imgStripEast = Utilities.loadImage( IMAGE_STRIP_BOTTOM_EAST );
         
-        final JToggleButton leftButton = new TabToggleButton( leftTabTitle );
-        final JToggleButton rightButton = new TabToggleButton( rightTabTitle );
+        final Tab leftButton = new Tab( leftTabTitle, true );
+        final Tab rightButton = new Tab( rightTabTitle, false );
         
         ActionListener al = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -87,9 +86,9 @@ class Tabs extends JPanel implements Constants {
         
         JPanel buttons = new JPanel( new GridBagLayout() );
         buttons.setOpaque(false);
-        buttons.add( new Tab( leftButton, true ), new GridBagConstraints(0,0,1,1,1.0,0.0,
+        buttons.add( leftButton, new GridBagConstraints(0,0,1,1,1.0,0.0,
                 GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
-        buttons.add( new Tab( rightButton, false ), new GridBagConstraints(1,0,1,1,1.0,0.0,
+        buttons.add( rightButton, new GridBagConstraints(1,0,1,1,1.0,0.0,
                 GridBagConstraints.EAST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
         
         add( buttons, BorderLayout.NORTH );
@@ -137,7 +136,6 @@ class Tabs extends JPanel implements Constants {
     }
     
     private static class Tab extends JPanel {
-        private JToggleButton button;
         private boolean isLeftTab;
         private Image imgUnselBottom;
         private Image imgSelLeft;
@@ -146,10 +144,13 @@ class Tabs extends JPanel implements Constants {
         private Image imgSelRight;
         private Image imgSelUpperRight;
         private Image imgSelLowerRight;
+        private boolean isSelected = false;
+        private ActionListener actionListener;
+        private JLabel lbl;
         
-        public Tab( final JToggleButton button, boolean isLeftTab ) {
+        
+        public Tab( String title, boolean isLeftTab ) {
             super( new GridBagLayout() );
-            this.button = button;
             this.isLeftTab = isLeftTab;
             imgUnselBottom = Utilities.loadImage( IMAGE_TAB_UNSEL );
             if( isLeftTab ) {
@@ -161,29 +162,44 @@ class Tabs extends JPanel implements Constants {
                 imgSelUpperRight = Utilities.loadImage( IMAGE_TAB_SEL_UPPER_LEFT );
                 imgSelLowerRight = Utilities.loadImage( IMAGE_TAB_SEL_LOWER_LEFT );
             }
-            button.addChangeListener( new ChangeListener() {
-                public void stateChanged(ChangeEvent e) {
-                    button.setForeground( Utils.getColor( button.isSelected() 
-                            ? COLOR_TAB_SEL_FOREGROUND 
-                            : COLOR_TAB_UNSEL_FOREGROUND ) );
-                    repaint();
-                }
-            });
-            add( button, new GridBagConstraints(0,0,1,1,1.0,1.0,
+            lbl = new JLabel(title);
+            lbl.setOpaque( false );
+            add( lbl, new GridBagConstraints(0,0,1,1,1.0,1.0,
                     GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(5,5,4,0),0,0) );
-            button.setBorder( BorderFactory.createEmptyBorder() );
-            button.setBorderPainted( false );
-            button.setOpaque( false );
-            button.setFont( TAB_FONT );
-            button.setForeground( Utils.getColor( button.isSelected() 
+            lbl.setFont( TAB_FONT );
+            lbl.setForeground( Utils.getColor( isSelected
                     ? COLOR_TAB_SEL_FOREGROUND 
                     : COLOR_TAB_UNSEL_FOREGROUND ) );
+            lbl.setHorizontalAlignment( JLabel.CENTER );
+            
+            addMouseListener( new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    super.mouseClicked(e);
+                    setSelected( !isSelected );
+                    if( null != actionListener ) {
+                        actionListener.actionPerformed( new ActionEvent( Tab.this, 0, "clicked") );
+                    }
+                }
+            });
+        }
+        
+        public void addActionListener( ActionListener l ) {
+            assert null == actionListener;
+            this.actionListener = l;
+        }
+        
+        public void setSelected( boolean sel ) {
+            this.isSelected = sel;
+            lbl.setForeground( Utils.getColor( isSelected
+                    ? COLOR_TAB_SEL_FOREGROUND 
+                    : COLOR_TAB_UNSEL_FOREGROUND ) );
+            repaint();
         }
 
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            boolean isSelected = button.isSelected();
             g.setColor( Utils.getColor( isSelected ? COLOR_SCREEN_BACKGROUND : COLOR_TAB_UNSEL_BACKGROUND ) );
             int width = getWidth();
             int height = getHeight();
@@ -225,23 +241,6 @@ class Tabs extends JPanel implements Constants {
 
         @Override
         protected void paintBorder(Graphics g) {
-        }
-    }
-    
-    private class TabToggleButton extends JToggleButton {
-        public TabToggleButton( String label ) {
-            super( label );
-        }
-
-        @Override
-        public void updateUI() {
-            super.updateUI();
-            setBorderPainted( false );
-            setBorder( BorderFactory.createEmptyBorder() );
-            setContentAreaFilled( false );
-            setRolloverEnabled( getRolloverIcon() != null );
-            setOpaque(false);
-            setFocusPainted(false);
         }
     }
 }
