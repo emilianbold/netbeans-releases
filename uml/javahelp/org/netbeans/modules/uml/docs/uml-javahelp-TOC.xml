@@ -218,7 +218,6 @@
 			</tocitem>
 			<tocitem text="Generating Code" target="uml_diagrams_generating_code">
 				<tocitem text="Setting General Code Engineering Preferences" target="uml_round_trip_eng_setting_general_prefs" />
-				<tocitem text="Setting Element Code Engineering Preferences" target="uml_round_trip_eng_setting_element_prefs" />
 				<tocitem text="Setting Java Code Engineering Preferences" target="uml_round_trip_eng_setting_java_prefs" />
 				<tocitem text="Source Code Synchronization" target="uml_diagrams_source_code_synchronization" />
 			</tocitem>

@@ -230,7 +230,6 @@
 	<mapID target="uml_reverse_eng_reference_classes" url="reverse_eng/reference_classes.html"/>
 	<mapID target="uml_rose_import_completing_wizard" url="rose_import/completing_wizard.html"/>
 	<mapID target="uml_round_trip_eng_about_roundtrip_engineering" url="round_trip_eng/about_roundtrip_engineering.html"/>
-	<mapID target="uml_round_trip_eng_setting_element_prefs" url="round_trip_eng/setting_element_prefs.html"/>
 	<mapID target="uml_round_trip_eng_setting_general_prefs" url="round_trip_eng/setting_general_prefs.html"/>
 	<mapID target="uml_round_trip_eng_setting_java_prefs" url="round_trip_eng/setting_java_prefs.html"/>
 	<mapID target="uml_tasks_packages_changing_symbol_display" url="tasks_packages/changing_symbol_display.html"/>
