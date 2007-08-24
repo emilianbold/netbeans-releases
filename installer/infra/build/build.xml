@@ -242,7 +242,7 @@
 
 
 
-        <property name="javaeesdk-javadocs.build.number" value="20060907"/>
+        <property name="javaeesdk-javadocs.build.number" value="20070814"/>
         -->
         <!--
         <get
