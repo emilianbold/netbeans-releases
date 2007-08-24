@@ -130,9 +130,9 @@ public final class CodeClipItemNode extends FilterNode implements EditCookie {
     }
 
     public String getShortDescription() {
-        if (description == null && bundleName != null) {
+        if (description == null ) {
             description = _getShortDescription(bundleName, tooltipKey, displayNameKey);
-        }
+        } 
         return description;
     }
 
@@ -262,9 +262,11 @@ public final class CodeClipItemNode extends FilterNode implements EditCookie {
         } else if (tooltipKey != null ) {
             tooltip = tooltipKey;
             
-        } else {
+        } else if( bundleName != null ){
             // no tooltip derived from the item
             tooltip = _getDisplayName(bundleName, displayNameKey);
+        } else {
+            tooltip = displayNameKey;
         }
 
         return tooltip;
