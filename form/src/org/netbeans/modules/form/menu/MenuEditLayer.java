@@ -746,7 +746,7 @@ public class MenuEditLayer extends JPanel {
                 if(isMenuRelatedRADComponent(rad) && !isMenuBarContainer(rad)) { // don't mess w/ the menubar's background
                     JComponent c = (JComponent) formDesigner.getComponent(rad);
                     if(c != null) { // could be null if comp was just deleted
-                        c.setBackground(getNormalBackground(c));
+                            c.setBackground(getNormalBackground(c));
                     }
                 }
             }
@@ -777,8 +777,8 @@ public class MenuEditLayer extends JPanel {
                     if (c instanceof JMenu) {
                         showMenuPopup((JMenu) c);
                     }
+                    }
                 }
-            }
 
             repaint();
         
@@ -808,7 +808,7 @@ public class MenuEditLayer extends JPanel {
         Color color = UIManager.getDefaults().getColor(prefix+".background");
         color = backgroundMap.get(c);
         if(color == null) {
-            color = Color.WHITE;
+            //color = Color.RED;
         }
         return color;
     }
