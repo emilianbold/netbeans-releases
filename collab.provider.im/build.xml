@@ -17,51 +17,6 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="collab-im" default="netbeans" basedir=".">
-
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext">
-          <fileset dir="../external">
-           <include name="collab-service.jar"/>
-           <include name="jso-*-0.12.5.jar"/>
-           <include name="log4j-1.2.8.jar"/>
-           <include name="xp-0.5.jar"/>
-           <include name="jaxen-core-1.0.jar"/>
-           <include name="saxpath-1.0.jar"/>        
-          </fileset>
-        </copy>
-    </target>
-
-    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <makenbm file="build/${nbm}"
-                 productdir="${cluster}"
-                 module="${module.jar}"
-                 homepage="${nbm.homepage}"
-                 distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}"
-                 releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}">
-            <license>
-                <text>For the integration module:</text>
-                <file location="${license.file}"/>
-		<text>Jabber Stream Objects 0.12.5</text>
-                <file location="../external/jso-0.12.5-license.txt"/>
-		<text>Log4J - Apache Common Logging 1.2.8</text>
-                <file location="../external/log4j-1.2.8-license.txt"/>
-                <text>XP - XML Parser 0.5</text>
-                <file location="../external/xp-0.5-license.txt"/>
-                <text>Jaxen 1.0</text>
-                <file location="../external/jaxen-core-1.0-license.txt"/>
-                <text>SaxPath 1.0</text>
-                <file location="../external/saxpath-1.0-license.txt"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
-
 </project>

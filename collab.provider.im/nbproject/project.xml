@@ -68,63 +68,63 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>ext/collab-service.jar</runtime-relative-path>
-                <binary-origin>../external/collab-service.jar</binary-origin>
+                <binary-origin>external/collab-service.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jso-core-0.12.5.jar</runtime-relative-path>
-                <binary-origin>../external/jso-core-0.12.5.jar</binary-origin>
+                <binary-origin>external/jso-core-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jso-sasl-0.12.5.jar</runtime-relative-path>
-                <binary-origin>../external/jso-sasl-0.12.5.jar</binary-origin>
+                <binary-origin>external/jso-sasl-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jso-tls-0.12.5.jar</runtime-relative-path>
-                <binary-origin>../external/jso-tls-0.12.5.jar</binary-origin>
+                <binary-origin>external/jso-tls-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jso-x-core-0.12.5.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-core-0.12.5.jar</binary-origin>
+                <binary-origin>external/jso-x-core-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jso-x-disco-0.12.5.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-disco-0.12.5.jar</binary-origin>
+                <binary-origin>external/jso-x-disco-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jso-x-fneg-0.12.5.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-fneg-0.12.5.jar</binary-origin>
+                <binary-origin>external/jso-x-fneg-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jso-x-info-0.12.5.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-info-0.12.5.jar</binary-origin>
+                <binary-origin>external/jso-x-info-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jso-x-si-0.12.5.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-si-0.12.5.jar</binary-origin>
+                <binary-origin>external/jso-x-si-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jso-x-sift-0.12.5.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-sift-0.12.5.jar</binary-origin>
+                <binary-origin>external/jso-x-sift-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jso-x-xdata-0.12.5.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-xdata-0.12.5.jar</binary-origin>
+                <binary-origin>external/jso-x-xdata-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/log4j-1.2.8.jar</runtime-relative-path>
-                <binary-origin>../external/log4j-1.2.8.jar</binary-origin>
+                <binary-origin>external/log4j-1.2.8.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/xp-0.5.jar</runtime-relative-path>
-                <binary-origin>../external/xp-0.5.jar</binary-origin>
+                <binary-origin>external/xp-0.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxen-core-1.0.jar</runtime-relative-path>
-                <binary-origin>../external/jaxen-core-1.0.jar</binary-origin>
+                <binary-origin>external/jaxen-core-1.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/saxpath-1.0.jar</runtime-relative-path>
-                <binary-origin>../external/saxpath-1.0.jar</binary-origin>
+                <binary-origin>external/saxpath-1.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
