@@ -53,6 +53,14 @@ public class UncaughtExceptionTest extends HintsTestBase {
 	performTestDoNotPerform("Test", 12, 33);
     }
     
+    /** 
+     * Surround with try catch as this() parameter
+     * exception-throwing-method call
+     */
+    public void testBug113448c() throws Exception {
+	performTestDoNotPerform("Test", 19, 33);
+    }
+    
     /** Surround with try catch inside ctor */
     public void testInsideCtor() throws Exception {
 	performTestDoNotPerform("Test", 16, 21);

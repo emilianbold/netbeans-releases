@@ -16,7 +16,7 @@ public class Test {
         new FileInputStream("");
     }
     
-    Test(Runnable r) {}
+    Test(Runnable r) { this(bb.thx());}
 
     Test(aa a) {
        this(new Runnable() {
@@ -25,10 +25,17 @@ public class Test {
             }
         });
     }
+    
+    Test(double d) {}
 }
 
 class aa {
     public aa(FileInputStream is) {
+    }
+}
+
+class bb {
+    static double thx() throws java.io.IOException {
     }
 }
     

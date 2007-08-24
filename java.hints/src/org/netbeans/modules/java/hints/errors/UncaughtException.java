@@ -137,7 +137,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                     el = info.getTrees().getElement(path);
 		    
 		    if(isThisParameter(path)) {
-			disableSurroundWithTryCatch = el != null && el.getKind() == ElementKind.CONSTRUCTOR;
+			disableSurroundWithTryCatch = el != null && (el.getKind() == ElementKind.CONSTRUCTOR || el.getKind() == ElementKind.METHOD);
 		    }
 		    
                     if (el != null && EXECUTABLE_ELEMENTS.contains(el.getKind())) {
