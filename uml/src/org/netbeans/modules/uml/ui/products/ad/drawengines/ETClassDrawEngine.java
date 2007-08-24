@@ -60,7 +60,6 @@ import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
 import org.netbeans.modules.uml.core.support.umlsupport.IETSize;
 import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.INamedCollection;
-import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
@@ -99,7 +98,6 @@ import com.tomsawyer.graph.TSEdge;
 import com.tomsawyer.graph.TSNode;
 import com.tomsawyer.drawing.geometry.TSConstRect;
 import com.tomsawyer.editor.TSTransform;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 
 
 public class ETClassDrawEngine extends ETNodeDrawEngine
@@ -1041,21 +1039,7 @@ public class ETClassDrawEngine extends ETNodeDrawEngine
                 if (addedOrRemovedCompartment || checkTemplate())
                     setIsDirty();
             }
-            
-            // Fixed iz=78803. Update the operation compartment when there's 
-            // any change to the Operation element, e.g. parameter deleted, modified...)
-            String featureType = feature != null ? feature.getElementType() : "";
-            
-            if ( nKind == ModelElementChangedKind.MECK_ELEMENTMODIFIED  &&
-                    featureType.equals("Operation") )
-            {    
-                IADOperationListCompartment operationsCompartment = 
-                        getCompartmentByKind(IADOperationListCompartment.class);
-                if ( operationsCompartment != null)
-                {
-                    operationsCompartment.modelElementHasChanged(pTargets);
-                }
-            }
+           
         }
         
         if ((nKind != ModelElementChangedKind.MECK_ELEMENTMODIFIED || isTaggedValue) && !addedOrRemovedCompartment)
