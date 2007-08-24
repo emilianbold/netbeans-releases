@@ -483,7 +483,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
         JTextComponent comp = getActiveComponent();
         boolean compEditable = (comp != null && comp.isEditable());
-        boolean guardedPos = !(comp.getDocument() instanceof GuardedDocument) || ((GuardedDocument)comp.getDocument()).isPosGuarded(comp.getSelectionEnd());
+        boolean guardedPos = comp.getDocument() instanceof GuardedDocument && ((GuardedDocument)comp.getDocument()).isPosGuarded(comp.getSelectionEnd());
         Object obj = inputMap.get(ks);
         if (obj != null) {
             Action action = actionMap.get(obj);
