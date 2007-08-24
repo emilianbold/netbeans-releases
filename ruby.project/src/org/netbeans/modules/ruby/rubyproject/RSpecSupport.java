@@ -178,7 +178,7 @@ public class RSpecSupport {
         desc.allowInput();
         desc.classPath(classPath); // Applies only to JRuby
         desc.fileLocator(fileLocator);
-        desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
+        desc.addStandardRecognizers();
         desc.addOutputRecognizer(new TestNotifier());
         new RubyExecution(desc, charsetName).run();
     }

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.ruby.rubyproject;
@@ -128,8 +128,7 @@ public class RakeSupport {
         desc.allowInput();
         desc.classPath(classPath); // Applies only to JRuby
         desc.fileLocator(fileLocator);
-        desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
-        desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
+        desc.addStandardRecognizers();
 
         if (test) {
             desc.addOutputRecognizer(new TestNotifier());

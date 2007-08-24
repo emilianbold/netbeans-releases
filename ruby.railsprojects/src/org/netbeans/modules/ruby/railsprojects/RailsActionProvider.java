@@ -406,7 +406,7 @@ public class RailsActionProvider implements ActionProvider {
             new RubyExecution(new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getRake()).
                     fileLocator(fileLocator).
                     classPath(classPath).
-                    addOutputRecognizer(RubyExecution.RUBY_COMPILER).
+                    addStandardRecognizers().
                     addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
                     project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
                     ).
@@ -455,7 +455,7 @@ public class RailsActionProvider implements ActionProvider {
                     additionalArgs("appdoc"). // NOI18N
                     postBuild(showBrowser).
                     fileLocator(fileLocator).
-                    addOutputRecognizer(RubyExecution.RUBY_COMPILER),
+                    addStandardRecognizers(),
                     project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
                     ).
                     run();
@@ -519,7 +519,7 @@ public class RailsActionProvider implements ActionProvider {
                 //initialArgs(options).
                 //additionalArgs(getApplicationArguments()).
                 fileLocator(new RubyFileLocator(context)).
-                addOutputRecognizer(RubyExecution.RUBY_COMPILER),
+                addStandardRecognizers(),
                 project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
                 ).
                 run();
@@ -605,7 +605,7 @@ public class RailsActionProvider implements ActionProvider {
         desc.classPath(classPath);
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RailsFileLocator(context, project));
-        desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
+        desc.addStandardRecognizers();
         desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
         
         if (extraRecognizers != null) {

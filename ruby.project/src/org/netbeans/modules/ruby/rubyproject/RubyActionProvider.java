@@ -208,7 +208,7 @@ public class RubyActionProvider implements ActionProvider {
         desc.classPath(classPath);
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RubyFileLocator(context, project));
-        desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
+        desc.addStandardRecognizers();
         desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
         
         if (extraRecognizers != null) {
@@ -384,7 +384,7 @@ public class RubyActionProvider implements ActionProvider {
                     fileLocator(fileLocator).
                     allowInput().
                     classPath(classPath).
-                    addOutputRecognizer(RubyExecution.RUBY_COMPILER).
+                    addStandardRecognizers().
                     addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
                     project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
                     ).
@@ -452,7 +452,7 @@ public class RubyActionProvider implements ActionProvider {
                     allowInput().
                     classPath(classPath).
                     fileLocator(new RubyFileLocator(context, project)).
-                    addOutputRecognizer(RubyExecution.RUBY_COMPILER),
+                    addStandardRecognizers(),
                     project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
                     ).
                     run();
@@ -474,7 +474,7 @@ public class RubyActionProvider implements ActionProvider {
                     allowInput().
                     classPath(classPath).
                     fileLocator(new RubyFileLocator(context, project)).
-                    addOutputRecognizer(RubyExecution.RUBY_COMPILER),
+                    addStandardRecognizers(),
                     project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
                     ).
                     run();
@@ -495,7 +495,7 @@ public class RubyActionProvider implements ActionProvider {
                     allowInput().
                     classPath(classPath).
                     fileLocator(new RubyFileLocator(context, project)).
-                    addOutputRecognizer(RubyExecution.RUBY_COMPILER),
+                    addStandardRecognizers(),
                     project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
                     ).
                     run();
@@ -537,7 +537,7 @@ public class RubyActionProvider implements ActionProvider {
             new RubyExecution(new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getRDoc()).
                     fileLocator(fileLocator).
                     postBuild(showBrowser).
-                    addOutputRecognizer(RubyExecution.RUBY_COMPILER),
+                    addStandardRecognizers(),
                     project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
                     ).
                     run();

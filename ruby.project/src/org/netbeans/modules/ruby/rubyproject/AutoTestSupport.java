@@ -76,7 +76,7 @@ public class AutoTestSupport {
         desc.classPath(classPath); // Applies only to JRuby
         desc.showProgress(false);
         desc.addOutputRecognizer(new TestNotifier());
-        desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
+        desc.addStandardRecognizers();
         new RubyExecution(desc, charsetName).run();
     }
 }

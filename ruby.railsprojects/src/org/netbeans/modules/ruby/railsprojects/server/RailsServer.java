@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.ruby.railsprojects.server;
@@ -149,7 +149,7 @@ public class RailsServer {
         desc.additionalArgs("--port", Integer.toString(port)); // NOI18N
         desc.postBuild(finishedAction);
         desc.classPath(classPath);
-        desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
+        desc.addStandardRecognizers();
         desc.addOutputRecognizer(new WebrickMessageListener(getStartedMessage(serverId)));
         desc.frontWindow(false);
         desc.debug(debug);
