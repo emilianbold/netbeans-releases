@@ -50,6 +50,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
@@ -61,6 +62,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -167,7 +169,7 @@ public class GlobalSourcePath {
         }
     }
     
-    public synchronized boolean isLibrary (final ClassPath cp) {
+    public boolean isLibrary (final ClassPath cp) {
         assert cp != null;
         Set<URL> libs = getLibsSources();
         for (ClassPath.Entry entry : cp.entries()) {
@@ -360,82 +362,88 @@ public class GlobalSourcePath {
         return Collections.<PathResourceImplementation>emptySet();
     }
     
-    private synchronized Set<URL> getLibsSources () {
-        if (this.libsSrcs == null) {
-            Set<URL> res = new HashSet<URL>();
-            this.libsSrcs = res;
-            Set<JavaPlatform> platforms = new HashSet<JavaPlatform> (Arrays.asList(pm.getInstalledPlatforms()));
-            Set<JavaPlatform> oldPlatforms = new HashSet<JavaPlatform> (this.seenPlatforms);
-            for (JavaPlatform platform : platforms) {                
-                if (!oldPlatforms.remove(platform)) {
-                    platform.addPropertyChangeListener(this.libsListener);
-                }
-                ClassPath cp = platform.getSourceFolders();
-                for (ClassPath.Entry e : cp.entries()) {
-                    URL url = e.getURL();
-                    try {
-                        Project p = FileOwnerQuery.getOwner(url.toURI());
-                        if (p != null) {
-                            Sources src = p.getLookup().lookup(Sources.class);
-                            if (src != null) {
-                                for (SourceGroup group : src.getSourceGroups("java")) {        //NOI18N
-                                    if (url.equals(group.getRootFolder().getURL())) {
-                                        break;
-                                    }
-                                }
+    private Set<URL> getLibsSources () {
+        final Mutex.Action<Set<URL>> libsTask = new Mutex.Action<Set<URL>> () {
+            public Set<URL> run () {
+                synchronized (GlobalSourcePath.this) {
+                    if (GlobalSourcePath.this.libsSrcs == null) {
+                        GlobalSourcePath.this.libsSrcs = new HashSet<URL>();
+                        Set<JavaPlatform> platforms = new HashSet<JavaPlatform> (Arrays.asList(pm.getInstalledPlatforms()));
+                        Set<JavaPlatform> oldPlatforms = new HashSet<JavaPlatform> (GlobalSourcePath.this.seenPlatforms);
+                        for (JavaPlatform platform : platforms) {                
+                            if (!oldPlatforms.remove(platform)) {
+                                platform.addPropertyChangeListener(GlobalSourcePath.this.libsListener);
                             }
-                        }
-                    } catch (URISyntaxException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    catch (FileStateInvalidException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    res.add(url);
-                }
-            }
-            for (JavaPlatform platform : oldPlatforms) {
-                platform.removePropertyChangeListener(this.libsListener);
-            }
-            this.seenPlatforms = platforms;
-            
-            Set<Library> libs = new HashSet<Library> (Arrays.asList(lm.getLibraries()));
-            Set<Library> oldLibs = new HashSet<Library> (this.seenLibs);
-            for (Library lib :libs) {
-                if (!oldLibs.remove(lib)) {
-                    lib.addPropertyChangeListener(this.libsListener);
-                }
-                if (lib.getContent("classpath") != null) {      //NOI18N
-                    List<URL> libSrc = lib.getContent("src");      //NOI18N
-                    for (URL url : libSrc) {                        
-                        try {
-                            Project p = FileOwnerQuery.getOwner(url.toURI());
-                            if (p != null) {
-                                Sources src = p.getLookup().lookup(Sources.class);
-                                if (src != null) {
-                                    for (SourceGroup group : src.getSourceGroups("java")) {        //NOI18N
-                                        if (url.equals(group.getRootFolder().getURL())) {
-                                            break;
+                            ClassPath cp = platform.getSourceFolders();
+                            for (ClassPath.Entry e : cp.entries()) {
+                                URL url = e.getURL();
+                                try {
+                                    Project p = FileOwnerQuery.getOwner(url.toURI());
+                                    if (p != null) {
+                                        Sources src = p.getLookup().lookup(Sources.class);
+                                        if (src != null) {
+                                            for (SourceGroup group : src.getSourceGroups("java")) {        //NOI18N
+                                                if (url.equals(group.getRootFolder().getURL())) {
+                                                    break;
+                                                }
+                                            }
                                         }
                                     }
+                                } catch (URISyntaxException ex) {
+                                    Exceptions.printStackTrace(ex);
                                 }
+                                catch (FileStateInvalidException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                                GlobalSourcePath.this.libsSrcs.add(url);
                             }
-                        } catch (URISyntaxException ex) {
-                            Exceptions.printStackTrace(ex);
                         }
-                        catch (FileStateInvalidException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }                        
-                        res.add(url);
+                        for (JavaPlatform platform : oldPlatforms) {
+                            platform.removePropertyChangeListener(GlobalSourcePath.this.libsListener);
+                        }
+                        GlobalSourcePath.this.seenPlatforms = platforms;
+
+                        Set<Library> libs = new HashSet<Library> (Arrays.asList(lm.getLibraries()));
+                        Set<Library> oldLibs = new HashSet<Library> (GlobalSourcePath.this.seenLibs);
+                        for (Library lib :libs) {
+                            if (!oldLibs.remove(lib)) {
+                                lib.addPropertyChangeListener(GlobalSourcePath.this.libsListener);
+                            }
+                            if (lib.getContent("classpath") != null) {      //NOI18N
+                                List<URL> libSrc = lib.getContent("src");      //NOI18N
+                                for (URL url : libSrc) {                        
+                                    try {
+                                        Project p = FileOwnerQuery.getOwner(url.toURI());
+                                        if (p != null) {
+                                            Sources src = p.getLookup().lookup(Sources.class);
+                                            if (src != null) {
+                                                for (SourceGroup group : src.getSourceGroups("java")) {        //NOI18N
+                                                    if (url.equals(group.getRootFolder().getURL())) {
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } catch (URISyntaxException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                    catch (FileStateInvalidException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }                        
+                                    GlobalSourcePath.this.libsSrcs.add(url);
+                                }
+
+                            }
+                        }
+                        for (Library lib : oldLibs) {
+                            lib.removePropertyChangeListener(GlobalSourcePath.this.libsListener);
+                        }
                     }
-                    
+                    return GlobalSourcePath.this.libsSrcs;
                 }
             }
-            for (Library lib : oldLibs) {
-                lib.removePropertyChangeListener(this.libsListener);
-            }
-        }
-        return this.libsSrcs;
+        };
+        return ProjectManager.mutex().readAccess(libsTask);
     }
        
     private class WeakValue extends WeakReference<ClassPath> implements Runnable {
