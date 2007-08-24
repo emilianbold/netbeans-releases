@@ -25,6 +25,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ConstructorImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.DestructorDDImpl;
@@ -152,6 +153,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                     // we have two MethodDDImpl classses:
                     if (object instanceof DestructorDDImpl) {
                         aHandler = DESTRUCTOR_DEF_DECL_IMPL;
+                    } else if (object instanceof ConstructorDDImpl) {
+                        aHandler = CONSTRUCTOR_DEF_DECL_IMPL;
                     } else {
                         aHandler = METHOD_DEF_DECL_IMPL;
                     }
@@ -289,6 +292,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             case CONSTRUCTOR_DEF_IMPL:
                 obj = new ConstructorDefinitionImpl(stream);
                 break;
+                
+            case CONSTRUCTOR_DEF_DECL_IMPL:
+                obj = new ConstructorDDImpl(stream);
+                break;                
                 
             case FUNCTION_DEF_IMPL:
                 obj = new FunctionDefinitionImpl(stream);
@@ -430,7 +437,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int FRIEND_FUNCTION_DEF_DECL_IMPL  = FRIEND_FUNCTION_DEF_IMPL + 1;
     
     //// methods
-    private static final int DESTRUCTOR_DEF_DECL_IMPL       = FRIEND_FUNCTION_DEF_DECL_IMPL + 1;
+    private static final int CONSTRUCTOR_DEF_DECL_IMPL      = FRIEND_FUNCTION_DEF_DECL_IMPL + 1;
+    private static final int DESTRUCTOR_DEF_DECL_IMPL       = CONSTRUCTOR_DEF_DECL_IMPL + 1;
     private static final int METHOD_DEF_DECL_IMPL           = DESTRUCTOR_DEF_DECL_IMPL + 1;
     private static final int CONSTRUCTOR_IMPL               = METHOD_DEF_DECL_IMPL + 1;
     private static final int DESTRUCTOR_IMPL                = CONSTRUCTOR_IMPL + 1;

@@ -19,35 +19,31 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.*;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * @author Vladimir Kvasihn
+ * @author Vladimir Voskresensky
  */
-public final class DestructorImpl extends MethodImpl{
+public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implements CsmConstructor {
 
-    public DestructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
+    public ConstructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
         super(ast, cls, visibility, true);
     }
-
+ 
     @Override
     public CsmType getReturnType() {
         return NoType.instance();
     }
-
-    @Override
-    public String getName() {
-        return DestructorImpl.getDestructorName(this);
-    }
-
-    public static String getDestructorName(CsmMethod method) {
-        return "~" + method.getContainingClass().getName(); // NOI18N
-    }
     
+    public List getInitializerList() {
+        return Collections.EMPTY_LIST;
+    }    
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
@@ -56,7 +52,7 @@ public final class DestructorImpl extends MethodImpl{
         super.write(output);
     }
     
-    public DestructorImpl(DataInput input) throws IOException {
+    public ConstructorDDImpl(DataInput input) throws IOException {
         super(input);
     }    
 }
