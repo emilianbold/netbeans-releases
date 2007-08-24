@@ -161,9 +161,9 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
     }   
     
     public void testUsingCout() throws Exception {
-        performTest("main.cc", 68, 10, "file.cc", 63, 5); //myCout in S1::myCout;
-        performTest("main.cc", 69, 20, "file.cc", 63, 5); //myCout in using S1::myCout;
-        performTest("main.cc", 70, 6, "file.cc", 63, 5); //myCout;
+        performTest("main.cc", 69, 10, "file.cc", 63, 5); //myCout in S1::myCout;
+        performTest("main.cc", 70, 20, "file.cc", 63, 5); //myCout in using S1::myCout;
+        performTest("main.cc", 71, 6, "file.cc", 63, 5); //myCout;
     }   
     
     public void testUsingNS2() throws Exception {
@@ -175,9 +175,9 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testUsingDirectivesS2() throws Exception {
         // IZ#106772: incorrect resolving of using directive
-        performTest("main.cc", 60, 6, "file.h", 12, 9); //clsS2 in clsS2 c2;
-        performTest("main.cc", 62, 6, "file.cc", 21, 9); //var2 = 10;
-        performTest("main.cc", 64, 6, "file.cc", 23, 9); //boo();
+        performTest("main.cc", 61, 6, "file.h", 12, 9); //clsS2 in clsS2 c2;
+        performTest("main.cc", 63, 6, "file.cc", 21, 9); //var2 = 10;
+        performTest("main.cc", 65, 6, "file.cc", 23, 9); //boo();
     }        
 
     

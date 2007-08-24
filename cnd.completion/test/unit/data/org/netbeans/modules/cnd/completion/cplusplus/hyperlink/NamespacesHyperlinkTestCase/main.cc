@@ -51,6 +51,7 @@ void usingNS2() {
     var2 = 10;
     boo();
     clsS2 c2;
+    c2.clsS2pubFun();    
 }
 
 void usingDirectivesS2() {
