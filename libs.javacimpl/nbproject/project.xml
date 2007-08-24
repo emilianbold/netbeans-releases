@@ -33,7 +33,7 @@
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/javac-impl.jar</runtime-relative-path>
-                <binary-origin>../../external/javac-impl.jar</binary-origin>
+                <binary-origin>external/javac-impl.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
