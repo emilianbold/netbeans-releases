@@ -487,19 +487,19 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.CLASS,
             CsmDeclaration.Kind.ENUM
         };
-        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, false, match, inspectParentClasses);
+        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, false, match, inspectParentClasses,true);
         if (res != null && this.isSortNeeded()) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
     }
     
-    public List/*<CsmField>*/ getMethods(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses) {
+    public List/*<CsmField>*/ getMethods(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses,boolean scopeAccessedClassifier) {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION
         };
-        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses);
+        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses,scopeAccessedClassifier);
         if (res != null && this.isSortNeeded()) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -507,21 +507,21 @@ public final class CsmProjectContentResolver {
     }
     
     public List/*<CsmField>*/ getFields(CsmClass clazz, boolean staticOnly) {
-        return getFields(clazz, clazz, "", staticOnly, false, true);
+        return getFields(clazz, clazz, "", staticOnly, false, true,false);
     }
     
-    public List/*<CsmField>*/ getFields(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses) {
-        List res = getClassMembers(clazz, contextDeclaration, CsmDeclaration.Kind.VARIABLE, strPrefix, staticOnly, match, inspectParentClasses);
+    public List/*<CsmField>*/ getFields(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses,boolean scopeAccessedClassifier) {
+        List res = getClassMembers(clazz, contextDeclaration, CsmDeclaration.Kind.VARIABLE, strPrefix, staticOnly, match, inspectParentClasses,scopeAccessedClassifier);
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
     }
     
-    public List/*<CsmEnumerator>*/ getEnumerators(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match, boolean inspectParentClasses) {
+    public List/*<CsmEnumerator>*/ getEnumerators(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match, boolean inspectParentClasses,boolean scopeAccessedClassifier) {
         boolean sort = isSortNeeded();
         // get all enums and check theirs enumerators
-        List enums = getClassMembers(clazz, contextDeclaration, CsmDeclaration.Kind.ENUM, "", false, false, inspectParentClasses);
+        List enums = getClassMembers(clazz, contextDeclaration, CsmDeclaration.Kind.ENUM, "", false, false, inspectParentClasses,scopeAccessedClassifier);
         List res = new ArrayList();
         if (enums != null) {
             for (Iterator it = enums.iterator(); it.hasNext();) {
@@ -543,21 +543,21 @@ public final class CsmProjectContentResolver {
         return res;
     }
     
-    public List/*<CsmMember>*/ getFieldsAndMethods(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses) {
+    public List/*<CsmMember>*/ getFieldsAndMethods(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean scopeAccessedClassifier) {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.VARIABLE,
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION
         };
-        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses);
+        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses,scopeAccessedClassifier);
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
     }
     
-    private List/*<CsmMember>*/ getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kind, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses) {
-        return getClassMembers(clazz, contextDeclaration, new CsmDeclaration.Kind [] {kind}, strPrefix, staticOnly, match, inspectParentClasses);
+    private List/*<CsmMember>*/ getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kind, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses,boolean scopeAccessedClassifier) {
+        return getClassMembers(clazz, contextDeclaration, new CsmDeclaration.Kind [] {kind}, strPrefix, staticOnly, match, inspectParentClasses,scopeAccessedClassifier);
     }
     
     // =============== help methods to get/check content of containers =========
@@ -567,12 +567,14 @@ public final class CsmProjectContentResolver {
     private static final int EXACT_CLASS = 2;
     private static final int CHILD_INHERITANCE = 3;
     
-    private List/*<CsmMember>*/ getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kinds[], String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses) {
+    private List/*<CsmMember>*/ getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kinds[], String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses,boolean scopeAccessedClassifier) {
         assert (clazz != null);
         CsmVisibility minVisibility;
         if (contextDeclaration == null) {
             // we are in global context and are interested in all static members
             minVisibility = CsmInheritanceUtilities.MAX_VISIBILITY;
+        } else if (scopeAccessedClassifier) {
+            minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, CsmVisibility.PUBLIC, inspectParentClasses);
         } else {
             minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration);
         }

@@ -414,14 +414,14 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     }
     
     static List findFieldsAndMethods(CsmFinder finder, CsmOffsetableDeclaration context, CsmClassifier classifier, String name,
-                                     boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort) {
+                                     boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses,boolean scopeAccessedClassifier,boolean sort) {
         // Find inner classes
         List ret = new ArrayList();
         classifier = CsmBaseUtilities.getOriginalClassifier(classifier);
         if (!CsmKindUtilities.isClass(classifier)) {
             return ret;
         }
-        CsmClass cls = (CsmClass)classifier;
+        CsmClass cls = (CsmClass) classifier;
         CsmFunction contextFunction = CsmBaseUtilities.getContextFunction(context);
         CsmClass contextClass = CsmBaseUtilities.getContextClass(context);
 //        if (staticOnly) {
@@ -431,41 +431,30 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                ret = finder.findClasses(ns, cls.getName() + '.' + name, false);
 //            }
 //        }
-
-        // XXX: this is hack, we should rather create JCFinder2 iface with findFields,
-        // findMethods methods accepting current package parameter
-//        if (finder instanceof JCBaseFinder) {
-//            // Add fields
-//            ret.addAll(((JCBaseFinder)finder).findFields(curPkg, cls, name, exactMatch, staticOnly, inspectOuterClasses));
-//            // Add methods
-//            ret.addAll(((JCBaseFinder)finder).findMethods(curPkg, cls, name, exactMatch, staticOnly, inspectOuterClasses));
-//        } else {
         if (CsmInheritanceUtilities.isAssignableFrom(contextClass, cls)) {
             staticOnly = false;
         }
-            // Add fields
-            List res = finder.findFields(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, sort);
-            if (res != null) {
-                ret.addAll(res);
-            }
-            // add enumerators
-            res = finder.findEnumerators(context, cls, name, exactMatch, inspectOuterClasses, inspectParentClasses, sort);
-            if (res != null) {
-                ret.addAll(res);
-            }
-            
-            // in global context add all methods
-            if (contextFunction == null) {
-                staticOnly = false;
-                context = cls;
-            }
-            // Add methods
-            res = finder.findMethods(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, sort);
-            if (res != null) {
-                ret.addAll(res);
-            }
-//        }
-        
+        // Add fields
+        List res = finder.findFields(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier,sort);
+        if (res != null) {
+            ret.addAll(res);
+        }
+        // add enumerators
+        res = finder.findEnumerators(context, cls, name, exactMatch, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier,sort);
+        if (res != null) {
+            ret.addAll(res);
+        }
+
+        // in global context add all methods, but only direct ones
+        if (contextFunction == null) {
+            staticOnly = false;
+            context = cls;
+        }
+        // Add methods
+        res = finder.findMethods(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier,sort);
+        if (res != null) {
+            ret.addAll(res);
+        }
         return ret;
     }
     
@@ -537,8 +526,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         /** Whether currently scanning either the package or the class name
         * so the results should limit the search to the static fields and methods.
         */
-        private boolean staticOnly = true;
+        private boolean staticOnly = false;
 
+        /** 
+         * stores information where there is class or variable was resolved
+        */
+        private boolean scopeAccessedClassifier = false;
+        
         /** Last package found when scanning dot expression */
         private CsmNamespace lastNamespace;
 
@@ -654,7 +648,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), 
 //                                    cls, "", false, staticOnly, false); // NOI18N
-                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true, sort); // NOI18N
+                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true,this.scopeAccessedClassifier,sort); // NOI18N
                         }
                         // Get all fields and methods of the cls
                         result = new CsmCompletionResult(component, getBaseDocument(), res, formatType(lastType, true, true, true),
@@ -704,6 +698,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 lastDot = true;
                 // let it flow to SCOPE
             case CsmCompletionExpression.SCOPE: // Scope expression
+                staticOnly = true;
                 parmCnt = exp.getParameterCount(); // Number of items in the dot exp
 
                 for (int i = 0; i < parmCnt && ok; i++) { // resolve all items in a dot exp
@@ -731,7 +726,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), 
 //                                    cls, "", false, staticOnly, false); // NOI18N
-                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true, sort); // NOI18N
+                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true,this.scopeAccessedClassifier,sort); // NOI18N
                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, "", false, true, sort);
                             res.addAll(nestedClassifiers);                            
                         }
@@ -900,6 +895,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 if (lastType != null) { // variable found
                                     staticOnly = false;
                                 } else { // no variable found
+                                    if (kind == ExprKind.SCOPE) {
+                                        scopeAccessedClassifier = true;
+                                    }
                                     lastNamespace = kind != ExprKind.SCOPE ? null : finder.getExactNamespace(var); // try package
                                     if (lastNamespace == null) { // not package, let's try class name
                                         CsmClass cls = sup.getClassFromName(var, true);
@@ -939,7 +937,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         if (ad == 0) { // zero array depth
                                             if (CsmKindUtilities.isClass(lastType.getClassifier())) {
                                                 CsmClass clazz = (CsmClass)lastType.getClassifier();
-                                                List fldList = finder.findFields(clazz, clazz, var, true, staticOnly, true, true, this.sort);
+                                                List fldList = finder.findFields(clazz, clazz, var, true, staticOnly, true, true,scopeAccessedClassifier, this.sort);
 //                                                // add enumerators
 //                                                List enumerators = finder.findEnumerators(clazz, clazz, var, true, true, true, this.sort);
 //                                                if (enumerators != null) {
@@ -969,7 +967,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     } else { // Array of some depth
                                         cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
                                     }
-                                    List res = findFieldsAndMethods(finder, contextElement, cls, var, false, staticOnly, false, true, sort);
+                                    List res = findFieldsAndMethods(finder, contextElement, cls, var, false, staticOnly, false, true,this.scopeAccessedClassifier,sort);
                                     List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
                                     res.addAll(nestedClassifiers);
                                     result = new CsmCompletionResult(
@@ -1325,7 +1323,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 }
                                 // try to find method in last resolved class appropriate for current context
                                 if (CsmKindUtilities.isClass(classifier)) {
-                                    mtdList = finder.findMethods(this.contextElement, (CsmClass)classifier, mtdName, true, false, first, true, this.sort);
+                                    mtdList = finder.findMethods(this.contextElement, (CsmClass)classifier, mtdName, true, false, first, true,scopeAccessedClassifier, this.sort);
                                 }
                             }
                         }

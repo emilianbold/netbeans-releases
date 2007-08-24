@@ -224,6 +224,15 @@ public final class CsmInheritanceUtilities {
         return intToVis(newMinVis);
     }    
     
+    // get new maximal visibility as result of analyzing input visibilities
+    private static CsmVisibility getMaxVisibility(CsmVisibility vis1, CsmVisibility vis2) {
+        assert (vis1 != null && vis2 != null);
+        int visInt1 = visToInt(vis1);
+        int visInt2 = visToInt(vis2);
+        int newMaxVis = Math.min(visInt1, visInt2);
+        return intToVis(newMaxVis);
+    }
+    
     /**
      * gets info, how content of class "clazz" is visible from context defined by
      * "contextDeclaration". Context declaration could be class or function. If
@@ -263,7 +272,7 @@ public final class CsmInheritanceUtilities {
             // by default we see public and protected members of parent
             CsmVisibility mergedVisibility = CsmVisibility.PROTECTED;
             for (int i = 0; i < chain.size(); i++) {
-                CsmInheritance inherit = (CsmInheritance) chain.get(i);
+                CsmInheritance inherit = chain.get(i);
                 if (i == 0) {
                     // create merged visibility based on child inheritance
                     mergedVisibility = CsmInheritanceUtilities.mergeInheritedVisibility(mergedVisibility, inherit.getVisibility());
@@ -272,33 +281,13 @@ public final class CsmInheritanceUtilities {
                     mergedVisibility = CsmInheritanceUtilities.mergeChildInheritanceVisibility(mergedVisibility, inherit.getVisibility());
                 }
             }          
-            return mergedVisibility;
+            // return not less than default visibility
+            return getMaxVisibility(defVisibilityValue, mergedVisibility);
         } else {
             // not inherited class see only public, friend was checked above
             // return passed default public visibility
             return defVisibilityValue;
         }
-    }
-
-    private static boolean isFriend(CsmClass clazz, CsmClass friendClassCandidate) {
-        if (friendClassCandidate == null) {
-            return false;
-        }
-        // does not support friends yet
-        return false;
-        // should be:
-//        check if any friend class has the same declaration
-    }
-
-    private static boolean isFriend(CsmClass clazz, CsmFunction friendFunctionCandidate) {
-        if (friendFunctionCandidate == null) {
-            return false;
-        }
-        // does not support friends yet
-        return false;
-        // should be:
-//        get funtion declaration, 
-//        check if any friend function has the same declaration
     }
     
     /**

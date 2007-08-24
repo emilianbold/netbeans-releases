@@ -107,7 +107,7 @@ public interface CsmFinder {
     * @return list of the matching fields
     */
     public List findFields(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch,
-                           boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort);
+                           boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses,boolean scopeAccessedClassifier, boolean sort);
 
     /** Find enumerators by name in a given class.
     * @param contextDeclaration declaration which defines context (class or function)
@@ -120,7 +120,7 @@ public interface CsmFinder {
     * @return list of the matching fields
     */    
     public List findEnumerators(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, 
-            boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort);
+            boolean inspectOuterClasses, boolean inspectParentClasses,boolean scopeAccessedClassifier, boolean sort);
     
     /** Find methods by name in a given class.
     * @param contextDeclaration declaration which defines context (class or function)
@@ -134,7 +134,7 @@ public interface CsmFinder {
     * @return list of the matching methods
     */
     public List findMethods(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch,
-                            boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort);    
+                            boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses,boolean scopeAccessedClassifier, boolean sort);    
     
     /** Find nested classifiers by name in a given class.
     * @param contextDeclaration declaration which defines context (class or function)

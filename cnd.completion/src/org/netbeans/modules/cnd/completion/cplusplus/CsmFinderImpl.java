@@ -694,14 +694,10 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     *   added or not. This should be false when searching for 'this.'
     * @return list of the matching fields
     */    
-    public List findFields(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort) {
-        TreeSet ts = naturalSort ? new TreeSet(CsmSortUtilities.NATURAL_MEMBER_NAME_COMPARATOR) : new TreeSet();
-        
+    public List findFields(CsmOffsetableDeclaration contextDeclaration, CsmClass classifier, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses,boolean scopeAccessedClassifier, boolean sort) {
         // get class variables visible in this method
-        CsmClass clazz = c;
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
-//        CsmVisibility vis = CsmInheritanceUtilities.getContextVisibility(contextClass, clazz);        
-        List classFields = contResolver.getFields(clazz, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses);
+        List classFields = contResolver.getFields(classifier, contextDeclaration, name, staticOnly, exactMatch,inspectParentClasses, scopeAccessedClassifier);
         return classFields;        
     }
 
@@ -715,14 +711,9 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     *   added or not. This should be false when searching for 'this.'
     * @return list of the matching fields
     */    
-    public List findEnumerators(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort) {
-        TreeSet ts = naturalSort ? new TreeSet(CsmSortUtilities.NATURAL_MEMBER_NAME_COMPARATOR) : new TreeSet();
-        
-        // get class variables visible in this method
-        CsmClass clazz = c;
+    public List findEnumerators(CsmOffsetableDeclaration contextDeclaration, CsmClass classifier, String name, boolean exactMatch, boolean inspectOuterClasses, boolean inspectParentClasses,boolean scopeAccessedClassifier, boolean sort) {
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
-//        CsmVisibility vis = CsmInheritanceUtilities.getContextVisibility(contextClass, clazz);        
-        List classFields = contResolver.getEnumerators(clazz, contextDeclaration, name, exactMatch, inspectParentClasses);
+        List classFields = contResolver.getEnumerators(classifier, contextDeclaration, name, exactMatch, inspectParentClasses,scopeAccessedClassifier);
         return classFields;        
     }
     
@@ -737,15 +728,14 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
     *   added or not. This should be false when searching for 'this.'
     * @return list of the matching methods
     */
-    public List findMethods(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort) {
-        CsmClass clazz = c;
+    public List findMethods(CsmOffsetableDeclaration contextDeclaration, CsmClass classifier, String name, boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses,boolean scopeAccessedClassifier, boolean sort) {
+        CsmClass clazz = classifier;
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
-//        CsmVisibility vis = CsmInheritanceUtilities.getContextVisibility(contextClass, clazz);
         if (contextDeclaration == null) {
             // in global context get all
             contextDeclaration = clazz;
         }
-        List classFields = contResolver.getMethods(clazz, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses);
+        List classFields = contResolver.getMethods(clazz, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses,scopeAccessedClassifier);
         return classFields;          
     }
 

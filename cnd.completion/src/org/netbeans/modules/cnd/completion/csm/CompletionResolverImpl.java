@@ -225,13 +225,13 @@ public class CompletionResolverImpl implements CompletionResolver {
                 CsmClass clazz = CsmBaseUtilities.getFunctionClass(fun);
                 if (clazz != null) {
                     // get class variables visible in this method
-                    classFields = contResolver.getFields(clazz, fun, strPrefix, staticContext, match, true);
+                    classFields = contResolver.getFields(clazz, fun, strPrefix, staticContext, match, true,false);
 
                     // get class enumerators visible in this method
-                    classEnumerators = contResolver.getEnumerators(clazz, fun, strPrefix, match, true);
+                    classEnumerators = contResolver.getEnumerators(clazz, fun, strPrefix, match, true,false);
 
                     // get class methods visible in this method
-                    classMethods = contResolver.getMethods(clazz, fun, strPrefix, staticContext, match, true);
+                    classMethods = contResolver.getMethods(clazz, fun, strPrefix, staticContext, match, true,false);
                 }
             }
         } else if (needClassElements(context, offset)) {
@@ -244,16 +244,16 @@ public class CompletionResolverImpl implements CompletionResolver {
                 CsmOffsetableDeclaration contextDeclaration = fun != null ? fun : CsmContextUtilities.getClass(context, false);
                 if (needClassMethods(context, offset)) {
                     if (clazz != null) {
-                        classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, true);
+                        classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, true,false);
                     }
                 }
                 if (needClassFields(context, offset)) {
                     // get class variables visible in this context
-                    classFields = contResolver.getFields(clazz, contextDeclaration, strPrefix, staticContext, match, true);
+                    classFields = contResolver.getFields(clazz, contextDeclaration, strPrefix, staticContext, match, true,false);
                 }
                 if (needClassEnumerators(context, offset)) {
                     // get class enumerators visible in this context
-                    classEnumerators = contResolver.getEnumerators(clazz, contextDeclaration, strPrefix, match, true);
+                    classEnumerators = contResolver.getEnumerators(clazz, contextDeclaration, strPrefix, match, true,false);
                 }
                 if (needNestedClassifiers(context, offset)) {
                     // get class nested classifiers visible in this context
