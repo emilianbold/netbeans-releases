@@ -412,8 +412,8 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
     
     <target name="-post-init-clean">
-        <delete dir="${basedir}/cache/raw"/>
-        <delete>
+        <delete dir="${basedir}/cache/raw" failonerror="false"/>
+        <delete failonerror="false">
             <fileset dir="${basedir}/cache/packaged">
                 <!-- nb components -->
                 <exclude name="**/nb*${build.number}*"/>
