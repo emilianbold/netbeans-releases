@@ -22,6 +22,8 @@ package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,6 +42,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -140,33 +144,46 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
         // directory for validity
         if (serverTypeCombo.getSelectedItem().equals(NbBundle.getMessage(ServerPropertiesPanel.class, "SERVER_TYPE_LOCAL"))) { // NOI18N
             if (!isValidDomainRoot(domainPathField.getText())) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_INVALID_DOMAIN_ROOT")); // NOI18N
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+                        instantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_INVALID_DOMAIN_ROOT"))); // NOI18N
                 return false;
             }
         }
 
+        if (InstanceProperties.getInstanceProperties(getUrl()) != null) {
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+                    instantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_ALREADY_REGISTERED")));
+            return false;
+        }
+
         // check the host field (not empty)
         if (hostField.getText().trim().equals("")) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_INVALID_HOST")); // NOI18N
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+                    instantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_INVALID_HOST"))); // NOI18N
         }
 
         // check the port field (not empty and a positive integer)
         if (!portField.getText().trim().matches("[0-9]+")) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_INVALID_PORT")); // NOI18N
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+                    instantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesPanel.class, "ERR_INVALID_PORT"))); // NOI18N
         }
 
         // no checks for username & password as they may be intentionally blank
 
         // save the data to the parent instantiating iterator
-        instantiatingIterator.setDomainRoot(domainPathField.getText());
-        instantiatingIterator.setHost(hostField.getText());
-        instantiatingIterator.setPort(portField.getText());
+        instantiatingIterator.setUrl(getUrl());
         instantiatingIterator.setUsername(usernameField.getText());
         instantiatingIterator.setPassword(new String(passwordField.getPassword()));
         instantiatingIterator.setIsLocal(serverTypeCombo.getSelectedItem().equals(NbBundle.getMessage(ServerPropertiesPanel.class, "SERVER_TYPE_LOCAL")) ? "true" : "false"); // NOI18N
 
         // everything seems ok
         return true;
+    }
+
+    private String getUrl() {
+        return WLDeploymentFactory.URI_PREFIX + hostField.getText()
+                + ":" + portField.getText() + ":" + instantiatingIterator.getServerRoot() // NOI18N;
+                + ":" + domainPathField.getText(); // NOI18N;
     }
 
     /**
@@ -541,6 +558,8 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel1.add(localInstancesLabel, gridBagConstraints);
+
+        localInstancesCombo.addItemListener(new LocalInstancesItemListener());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -693,6 +712,18 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
     }
 
     /**
+     * Simple listener for instance combo box changes.
+     */
+    private class LocalInstancesItemListener implements ItemListener {
+
+        public void itemStateChanged(ItemEvent e) {
+            updateInstanceInfo();
+            isValid();
+        }
+
+    }
+
+    /**
      * A listener that reacts to the change of the server type combobox,
      * is the local server type is selected we should disable several fields
      * and enable some others instead.
@@ -743,22 +774,6 @@ public class ServerPropertiesPanel extends javax.swing.JPanel implements WizardD
             }
 
             isValid();
-        }
-    }
-
-    /**
-     * A simple listeners that reacts to user's selectin a local instance. It
-     * updates the selected instance info.
-     *
-     * @author Kirill Sorokin
-     */
-    private class InstanceSelectionListener implements ActionListener {
-        /**
-         * The main action handler. This method is called when a new local
-         * instance is selected
-         */
-        public void actionPerformed(ActionEvent e) {
-            updateInstanceInfo();
         }
     }
 

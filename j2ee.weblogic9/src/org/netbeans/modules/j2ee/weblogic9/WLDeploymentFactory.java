@@ -18,7 +18,8 @@
  */
 package org.netbeans.modules.j2ee.weblogic9;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -33,11 +34,11 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
 
-import javax.enterprise.deploy.spi.*;
-import javax.enterprise.deploy.spi.factories.*;
-import javax.enterprise.deploy.spi.exceptions.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.openide.util.NbBundle;

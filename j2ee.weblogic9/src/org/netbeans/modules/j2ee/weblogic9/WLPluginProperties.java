@@ -30,12 +30,10 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.modules.SpecificationVersion;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -274,17 +272,5 @@ public class WLPluginProperties {
     
     public String getInstallLocation(){
         return this.installLocation;
-    }
-    
-    private static final String J2SE_PLATFORM_VERSION_15 = "1.5"; // NOI18N
-    private static final String J2SE_PLATFORM_VERSION_16 = "1.6"; // NOI18N
-    
-    public static boolean runningOnCorrectJdk() {
-        SpecificationVersion defPlatVersion = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion();
-        // test just JDK 1.5 and 1.6 for now, because WL 9.x requires it. Future releases may come with another requirements.
-        if (J2SE_PLATFORM_VERSION_15.equals(defPlatVersion.toString()) ||
-            J2SE_PLATFORM_VERSION_16.equals(defPlatVersion.toString()))
-            return true;
-        return false;
     }
 }
