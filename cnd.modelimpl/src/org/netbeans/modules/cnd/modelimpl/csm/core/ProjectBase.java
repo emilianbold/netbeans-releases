@@ -1055,15 +1055,40 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     /**
      * Creates a dummy ClassImpl for uresolved name, stores in map
      * @param nameTokens name
-     * @param nameTokens file file that contains unresolved name (used for the purpose of statictics)
-     * @param nameTokens name offset that contains unresolved name (used for the purpose of statictics)
+     * @param file file that contains unresolved name (used for the purpose of statictics)
+     * @param name offset that contains unresolved name (used for the purpose of statictics)
      */
     public CsmClass getDummyForUnresolved(String[] nameTokens, CsmFile file, int offset) {
+        if (Diagnostic.needStatistics()) Diagnostic.onUnresolvedError(nameTokens, file, offset);
+        return getUnresolved().getDummyForUnresolved(nameTokens);
+    }
+
+    /**
+     * Creates a dummy ClassImpl for uresolved name, stores in map.
+     * Should be used only when restoring from persistence:
+     * in contrary to getDummyForUnresolved(String[] nameTokens, CsmFile file, int offset),
+     * it does not gather statistics!
+     * @param nameTokens name
+     */
+    public CsmClass getDummyForUnresolved(String name) {
+        return getUnresolved().getDummyForUnresolved(name);
+    }
+    
+    public CsmNamespace getUnresolvedNamespace( ) {
+        return getUnresolved().getUnresolvedNamespace();
+    }
+    
+    public CsmFile getUnresolvedFile( ) {
+        return getUnresolved().getUnresolvedFile();
+    }
+    
+    private Unresolved getUnresolved() {
+	// we don't sinc here since this isn't important enough:
+	// at worst a map with one or two dummies will be thrown away
         if( unresolved == null ) {
             unresolved = new Unresolved(this);
         }
-        if (Diagnostic.needStatistics()) Diagnostic.onUnresolvedError(nameTokens, file, offset);
-        return unresolved.getDummyForUnresolved(nameTokens);
+        return unresolved;
     }
     
     public boolean isValid() {

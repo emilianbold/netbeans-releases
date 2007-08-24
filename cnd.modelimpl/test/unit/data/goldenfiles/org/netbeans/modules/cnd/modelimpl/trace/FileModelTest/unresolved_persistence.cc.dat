@@ -1,0 +1,57 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE unresolved_persistence.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+FUNCTION foo [1:1/0-1:15/14] FunctionImpl
+    DEFINITION: null
+    SIGNATURE foo()
+    UNIQUE NAME F:foo()
+    PARAMETERS:
+    RETURNS void TEXT=void  [1:1/0-1:5/4]
+FUNCTION DEFINITION foo  [3:1/16-5:2/34] FunctionDefinitionImpl
+    SIGNATURE foo()
+    UNIQUE NAME f:C::foo()
+    DECLARATION: null
+    PARAMETERS:
+    RETURNS void TEXT=void  [3:1/16-3:5/20]
+    STATEMENT Compound  [3:15/30-5:2/34]
+CLASS D (D ) [7:1/36-11:3/78] lcurly=48
+    BASE CLASSES:
+        CLASS=$unresolved$::C VISIBILITY==private virtual==false text='C'
+    MEMBERS:
+        FUNCTION DEFINITION foo_2  [8:5/54-10:6/75] MethodDDImpl
+            SIGNATURE foo_2()
+            UNIQUE NAME f:D::foo_2()
+            DECLARATION: foo_2  [8:5/54-10:6/75]
+            PARAMETERS:
+            RETURNS void TEXT=void  [8:5/54-8:9/58]
+            STATEMENT Compound  [8:18/67-10:6/75]
+
+========== Dumping model of PROJECT DummyProject
+FUNCTION foo [1:1/0-1:15/14] FunctionImpl
+    DEFINITION: null
+    SIGNATURE foo()
+    UNIQUE NAME F:foo()
+    PARAMETERS:
+    RETURNS void TEXT=void  [1:1/0-1:5/4]
+CLASS D (D ) [7:1/36-11:3/78] lcurly=48
+    BASE CLASSES:
+        CLASS=$unresolved$::C VISIBILITY==private virtual==false text='C'
+    MEMBERS:
+        FUNCTION DEFINITION foo_2  [8:5/54-10:6/75] MethodDDImpl
+            SIGNATURE foo_2()
+            UNIQUE NAME f:D::foo_2()
+            DECLARATION: foo_2  [8:5/54-10:6/75]
+            PARAMETERS:
+            RETURNS void TEXT=void  [8:5/54-8:9/58]
+            STATEMENT Compound  [8:18/67-10:6/75]
+

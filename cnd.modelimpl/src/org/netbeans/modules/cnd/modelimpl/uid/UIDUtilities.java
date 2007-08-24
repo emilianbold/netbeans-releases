@@ -20,9 +20,11 @@
 package org.netbeans.modules.cnd.modelimpl.uid;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.api.model.CsmBuiltIn;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -37,7 +39,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  * utilities to create CsmUID for CsmObjects
@@ -85,7 +91,19 @@ public class UIDUtilities {
     public static CsmUID<CsmInclude> createIncludeUID(CsmInclude incl) {
         return UIDManager.instance().getSharedUID(new IncludeUID(incl));
     }    
+    
+    public static CsmUID<CsmClass> createUnresolvedClassUID(String name, CsmProject project) {
+	return UIDManager.instance().getSharedUID(new UnresolvedClassUID(name, project));
+    }
 
+    public static CsmUID<CsmFile> createUnresolvedFileUID(CsmProject project) {
+	return UIDManager.instance().getSharedUID(new UnresolvedFileUID(project));
+    }
+
+    public static CsmUID<CsmNamespace> createUnresolvedNamespaceUID(CsmProject project) {
+	return UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
+    }
+    
     private static CsmUID handleUnnamedDeclaration(CsmOffsetableDeclaration decl) {
         if (TraceFlags.TRACE_UNNAMED_DECLARATIONS) {
             System.err.print("\n\ndeclaration with empty name '" + decl.getUniqueName() + "'");
@@ -286,4 +304,90 @@ public class UIDUtilities {
             return "<UNNAMED OFFS-DECL UID>"; // NOI18N
         }        
     } 
+    
+    /**
+     * Abstract base class for Unresolved* UIDs.
+     */    
+    /* package */ static abstract class UnresolvedUIDBase<T> implements CsmUID<T>, SelfPersistent {
+	
+	private CsmUID<CsmProject> projectUID;
+	
+        public UnresolvedUIDBase(CsmProject project) {
+            projectUID = project.getUID();
+        }
+	
+	protected ProjectBase getProject() {
+	    return (ProjectBase) projectUID.getObject();
+	}
+
+        /* package */ UnresolvedUIDBase (DataInput aStream) throws IOException {
+            projectUID = UIDObjectFactory.getDefaultFactory().readUID(aStream);
+        }
+
+	public abstract T getObject();
+
+	public void write(DataOutput output) throws IOException {
+	    UIDObjectFactory.getDefaultFactory().writeUID(projectUID, output);
+	}
+	
+        protected String getToStringPrefix() {
+            return "<UNRESOLVED UID>"; // NOI18N
+        }        
+    }
+    
+    /* package */ static final class UnresolvedClassUID<T> extends UnresolvedUIDBase<CsmClass> {
+	
+	private String name;
+	
+	public UnresolvedClassUID(String name, CsmProject project) {
+	    super(project);
+	    this.name = name;
+	}
+	
+	public CsmClass getObject() {
+            return getProject().getDummyForUnresolved(name);
+	}
+
+	public UnresolvedClassUID(DataInput input) throws IOException {
+	    super(input);
+	    name = PersistentUtils.readUTF(input);
+	}
+	
+	@Override
+	public void write(DataOutput output) throws IOException {
+	    super.write(output);
+            PersistentUtils.writeUTF(name, output);
+	}
+	
+    }
+    
+    /* package */ static final class UnresolvedNamespaceUID extends UnresolvedUIDBase<CsmNamespace> {
+	
+        public UnresolvedNamespaceUID(CsmProject project) {
+            super(project);
+	}
+	
+	public UnresolvedNamespaceUID(DataInput input) throws IOException {
+	    super(input);
+	}
+
+	public CsmNamespace getObject() {
+	    return getProject().getUnresolvedNamespace();
+	}
+    }
+	
+    /* package */ static final class UnresolvedFileUID extends UnresolvedUIDBase<CsmFile> {
+	
+        public UnresolvedFileUID(CsmProject project) {
+            super(project);
+	}
+	
+	public UnresolvedFileUID(DataInput input) throws IOException {
+	    super(input);
+	}
+
+	public CsmFile getObject() {
+	    return getProject().getUnresolvedFile();
+	}
+    }
 }

@@ -41,6 +41,9 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ProjectUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.TypedefUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnnamedClassifierUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnnamedOffsetableDeclarationUID;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnresolvedClassUID;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnresolvedFileUID;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnresolvedNamespaceUID;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -234,6 +237,12 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             aHandler = UID_DECLARATION_UID;
         } else if (object instanceof BuiltInUID) {
             aHandler = UID_BUILT_IN_UID;
+        } else if (object instanceof UnresolvedClassUID) {
+            aHandler = UID_UNRESOLVED_CLASS;
+        } else if (object instanceof UnresolvedFileUID) {
+            aHandler = UID_UNRESOLVED_FILE;
+        } else if (object instanceof UnresolvedNamespaceUID) {
+            aHandler = UID_UNRESOLVED_NAMESPACE;
         } else {
             throw new IllegalArgumentException("The UID is an instance of unknow class"); //NOI18N
         }
@@ -287,11 +296,21 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 break;
                 
             case UID_BUILT_IN_UID:
-            {
                 anUID = BuiltinTypes.readUID(aStream);
                 share = false;
-            }
-            break;
+                break;
+
+            case UID_UNRESOLVED_CLASS:
+		anUID = new UIDUtilities.UnresolvedClassUID(aStream);
+                break;
+
+            case UID_UNRESOLVED_FILE:
+		anUID = new UIDUtilities.UnresolvedFileUID(aStream);
+                break;
+
+            case UID_UNRESOLVED_NAMESPACE:
+		anUID = new UIDUtilities.UnresolvedNamespaceUID(aStream);
+                break;
             default:
                 throw new IllegalArgumentException("The UID is an instance of unknown class: " + handler); //NOI18N
         }
@@ -323,7 +342,11 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     private static final int UID_DECLARATION_UID        = UID_UNNAMED_OFFSETABLE_DECLARATION_UID + 1;
     private static final int UID_BUILT_IN_UID           = UID_DECLARATION_UID + 1;
     
+    private static final int UID_UNRESOLVED_CLASS       = UID_BUILT_IN_UID + 1;
+    private static final int UID_UNRESOLVED_FILE        = UID_UNRESOLVED_CLASS + 1;
+    private static final int UID_UNRESOLVED_NAMESPACE   = UID_UNRESOLVED_FILE + 1;
+    
     // index to be used in another factory (but only in one)
     // to start own indeces from the next after LAST_INDEX
-    public static final int LAST_INDEX                  = UID_BUILT_IN_UID;
+    public static final int LAST_INDEX                  = UID_UNRESOLVED_NAMESPACE;
 }

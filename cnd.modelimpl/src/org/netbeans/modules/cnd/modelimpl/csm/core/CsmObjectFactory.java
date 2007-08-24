@@ -97,10 +97,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = GRAPH_CONTAINER;
         } else if (object instanceof FileImpl) {
             aHandler = FILE_IMPL;
-        } else if (object instanceof Unresolved.UnresolvedFile) {
-            aHandler = UNRESOLVED_FILE;
-        } else if (object instanceof Unresolved.UnresolvedClass) {
-            aHandler = UNRESOLVED_CLASS;
+//        } else if (object instanceof Unresolved.UnresolvedFile) {
+//            aHandler = UNRESOLVED_FILE;
+//        } else if (object instanceof Unresolved.UnresolvedClass) {
+//            aHandler = UNRESOLVED_CLASS;
         } else if (object instanceof EnumImpl) {
             aHandler = ENUM_IMPL;
         } else if (object instanceof ClassImpl) {
@@ -226,13 +226,13 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new FileImpl(stream);
                 break;
                 
-            case UNRESOLVED_FILE:
-                obj = new Unresolved.UnresolvedFile(stream);
-                break;
-                
-            case UNRESOLVED_CLASS:
-                obj = new Unresolved.UnresolvedClass(stream);
-                break;
+//            case UNRESOLVED_FILE:
+//                obj = new Unresolved.UnresolvedFile(stream);
+//                break;
+//                
+//            case UNRESOLVED_CLASS:
+//                obj = new Unresolved.UnresolvedClass(stream);
+//                break;
                 
             case ENUM_IMPL:
                 obj = new EnumImpl(stream);
@@ -401,9 +401,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int FILE_IMPL                      = DECLARATION_CONTAINER + 1;
     private static final int ENUM_IMPL                      = FILE_IMPL + 1;
     private static final int CLASS_IMPL                     = ENUM_IMPL + 1;
-    private static final int UNRESOLVED_FILE                = CLASS_IMPL + 1;
-    private static final int UNRESOLVED_CLASS               = UNRESOLVED_FILE + 1;
-    private static final int TYPEDEF_IMPL                   = UNRESOLVED_CLASS + 1;
+//    private static final int UNRESOLVED_FILE                = CLASS_IMPL + 1;
+//    private static final int UNRESOLVED_CLASS               = UNRESOLVED_FILE + 1;
+//    private static final int TYPEDEF_IMPL                   = UNRESOLVED_CLASS + 1;
+    private static final int TYPEDEF_IMPL                   = CLASS_IMPL + 1;
     private static final int MEMBER_TYPEDEF                 = TYPEDEF_IMPL + 1;
     private static final int NAMESPACE_IMPL                 = MEMBER_TYPEDEF + 1;
     private static final int NAMESPACE_DEF_IMPL             = NAMESPACE_IMPL + 1;

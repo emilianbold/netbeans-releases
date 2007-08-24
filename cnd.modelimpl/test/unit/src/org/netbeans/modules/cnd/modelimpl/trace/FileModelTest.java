@@ -133,6 +133,10 @@ public class FileModelTest extends TraceModelTestBase {
 	performTest("empty_long_hex.c"); // NOI18N
     }
     
+    public void testUnresolvedPersistence() throws Exception {
+        performTest("unresolved_persistence.cc"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
