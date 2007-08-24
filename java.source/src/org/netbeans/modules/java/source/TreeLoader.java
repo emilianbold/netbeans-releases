@@ -21,6 +21,7 @@ package org.netbeans.modules.java.source;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.model.LazyTreeLoader;
@@ -125,7 +126,17 @@ public class TreeLoader extends LazyTreeLoader {
             if (outputFile.exists())
                 return ;//no point in dumping again already existing sig file
             writer = new PrintWriter(outputFile, "UTF-8");
-            SymbolDumper.dump(writer, Types.instance(context), clazz, clazz.owner.kind != Kinds.PCK ? clazz.owner : null);
+            Symbol owner;
+            if (clazz.owner.kind == Kinds.PCK) {
+                owner = null;
+            }
+            else if (clazz.owner.kind == Kinds.VAR) {
+                owner = clazz.owner.owner;
+            }
+            else {
+                owner = clazz.owner;
+            }
+            SymbolDumper.dump(writer, Types.instance(context), clazz, owner);
         } finally {
             if (writer != null)
                 writer.close();
