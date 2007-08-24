@@ -21,16 +21,4 @@ Microsystems, Inc. All Rights Reserved.
 <project name="org.netbeans.modules.visualweb.webui.jsf.defaulttheme" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project com.sun.rave.webui.jsf.themes.defaulttheme.</description>
     <import file="../../../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="external">
-                <include name="webui-jsf-suntheme.jar"/>
-            </fileset>
-        </copy>
-    </target>
-
 </project>
