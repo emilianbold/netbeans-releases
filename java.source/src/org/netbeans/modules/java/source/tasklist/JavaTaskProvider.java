@@ -123,6 +123,7 @@ public final class JavaTaskProvider extends PushTaskScanner {
     }
     
     private static final Set<RequestProcessor.Task> TASKS = new HashSet<RequestProcessor.Task>();
+    private static boolean clearing;
     private static final RequestProcessor WORKER = new RequestProcessor("Java Task Provider");
     private static Map<FileObject, Set<FileObject>> root2FilesWithAttachedErrors = new WeakHashMap<FileObject, Set<FileObject>>();
     
@@ -134,7 +135,9 @@ public final class JavaTaskProvider extends PushTaskScanner {
             task.addTaskListener(new TaskListener() {
                 public void taskFinished(org.openide.util.Task task) {
                     synchronized (TASKS) {
-                        TASKS.remove(task);
+                        if (!clearing) {
+                            TASKS.remove(task);
+                        }
                     }
                 }
             });
@@ -146,10 +149,15 @@ public final class JavaTaskProvider extends PushTaskScanner {
     
     private static void cancelAllCurrent() {
         synchronized (TASKS) {
-            for (RequestProcessor.Task t : TASKS) {
-                t.cancel();
+            clearing = true;
+            try {
+                for (RequestProcessor.Task t : TASKS) {
+                    t.cancel();
+                }
+                TASKS.clear();
+            } finally {
+                clearing = false;
             }
-            TASKS.clear();
         }
         
         synchronized (JavaTaskProvider.class) {
