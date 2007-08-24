@@ -1348,7 +1348,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (type.getKind() == TypeKind.ERROR && el != null && el.getKind().isClass()) {
                                 el = controller.getElements().getPackageElement(((TypeElement)el).getQualifiedName());
                             }
-                            if (el != null && el.getKind() == PACKAGE) {
+                            if (el != null && el.getKind() == PACKAGE) {                                
                                 if (parent.getKind() == Tree.Kind.NEW_CLASS && ((NewClassTree)parent).getIdentifier() == fa && prefix != null) {
                                     String typeName = Utilities.getElementName(el, true) + "." + prefix; //NOI18N
                                     TypeMirror tm = controller.getTreeUtilities().parseType(typeName, env.getScope().getEnclosingClass());
@@ -1365,6 +1365,19 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         }
                                 } else {
                                     addPackageContent(env, (PackageElement)el, kinds, baseType);
+                                }
+                                if (results.isEmpty() && ((PackageElement)el).getQualifiedName() == el.getSimpleName()) {
+                                    // no package content? Check for unimported class
+                                    ClassIndex ci = controller.getClasspathInfo().getClassIndex();
+                                    if (el.getEnclosedElements().isEmpty() && ci.getPackageNames(el.getSimpleName() + ".", true, EnumSet.allOf(ClassIndex.SearchScope.class)).isEmpty()) {
+                                        Set<ElementHandle<TypeElement>> tes = ci.getDeclaredTypes(el.getSimpleName().toString(), ClassIndex.NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class));
+                                        if (tes.size() == 1) {
+                                            TypeElement te = tes.iterator().next().resolve(controller);
+                                            if (te != null) {
+                                                addMembers(env, te.asType(), te, kinds, baseType, inImport);
+                                            }
+                                        }
+                                    }
                                 }
                             }
                     }
