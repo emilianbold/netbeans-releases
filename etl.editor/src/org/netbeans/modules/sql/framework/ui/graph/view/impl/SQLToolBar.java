@@ -179,7 +179,7 @@ public class SQLToolBar extends BasicToolBar {
         super.initializeToolBar();
 
         // Add SQL operators
-        Node node = model.getRootNode();
+      /*  Node node = model.getRootNode();
         Children children = node.getChildren();
         Node[] nodes = children.getNodes();
 
@@ -188,7 +188,7 @@ public class SQLToolBar extends BasicToolBar {
             if (shouldDisplay(catNode.getToolbarType())) {
                 createOperatorCategories(catNode);
             }
-        }
+        }*/
     }
     
     public void setActiveMenu(SQLToolBarMenu menu) {
