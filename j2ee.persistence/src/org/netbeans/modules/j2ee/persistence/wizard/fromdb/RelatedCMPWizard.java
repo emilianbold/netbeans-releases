@@ -28,13 +28,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
+import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-//import org.netbeans.modules.j2ee.persistence.api.EntitiesFromDBGenerator;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -220,16 +218,17 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
         }
         
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "TXT_EjbGeneration" : "TXT_EntityClassesGeneration");
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(title); 
         final ProgressContributor progressContributor = AggregateProgressFactory.createProgressContributor(title);
-        
+        final AggregateProgressHandle handle = 
+                AggregateProgressFactory.createHandle(title, new ProgressContributor[]{progressContributor}, null, null);
         progressPanel = new ProgressPanel();
-        final JComponent progressComponent = ProgressHandleFactory.createProgressComponent(handle);
+        final JComponent progressComponent = AggregateProgressFactory.createProgressComponent(handle);
         
         final Runnable r = new Runnable() {
 
             public void run() {
                 try {
+                    handle.start();
                     createBeans(wiz, progressContributor);
                 } catch (IOException ioe) {
                     Logger.getLogger("global").log(Level.INFO, null, ioe);
@@ -237,6 +236,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
                     DialogDisplayer.getDefault().notify(nd);
                 } finally {
                     generator.uninit();
+                    handle.finish();
                 }
             }
         };
