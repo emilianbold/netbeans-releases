@@ -21,44 +21,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/docs"/>
-        <copy file="external/junit-3.8.2-api.zip" todir="${cluster}/docs"/>
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="external">
-                <include name="junit*.jar"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <property name="nbm.target.cluster" value=""/> <!-- fallback -->
-        <makenbm file="build/${nbm}"
-                 productdir="${cluster}"
-                 module="${module.jar}"
-                 homepage="${nbm.homepage}"
-                 distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}"
-                 releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}"
-                 global="${nbm.is.global}"
-                 targetcluster="${nbm.target.cluster}">
-            <license>
-                <text>For the JUnit module itself:</text>
-                <file location="${license.file}"/>
-                <text>For the JUnit 3.8.2 framework:</text>
-                <file location="external/junit-3.8.2-license.txt"/>
-                <text>For the JUnit 4.1 framework:</text>
-                <file location="external/junit-4.1-license.html"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
-    
     <target name="files-init" depends="projectized-common.files-init">
         <property name="extra.arch.files.dir" value="arch"/>
         <patternset id="extra.arch.files" includes="JUnitPlugin.png"/>
