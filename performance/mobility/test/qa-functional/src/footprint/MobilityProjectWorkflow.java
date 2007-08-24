@@ -71,7 +71,7 @@ public class MobilityProjectWorkflow extends org.netbeans.performance.test.utili
     }
     
     public ComponentOperator open(){
-        projectName = MPFootprintUtilities.createproject("Mobility", "Mobile Application", true); //NOI18N
+        projectName = MPFootprintUtilities.createproject("Mobility", "MIDP Application", true); //NOI18N
         log("Created project name: "+projectName);
         // get opened editor
         Operator.StringComparator defaultOperator = Operator.getDefaultStringComparator();
@@ -80,7 +80,7 @@ public class MobilityProjectWorkflow extends org.netbeans.performance.test.utili
         Operator.setDefaultStringComparator(defaultOperator);
             
         // switch to Screen Design
-        new JToggleButtonOperator(midletEditor, "Screen Design").pushNoBlock(); //NOI18N
+        new JToggleButtonOperator(midletEditor, "Screen").pushNoBlock(); //NOI18N
         new EventTool().waitNoEvent(1500);
         
         // switch to Source
@@ -88,7 +88,7 @@ public class MobilityProjectWorkflow extends org.netbeans.performance.test.utili
         new EventTool().waitNoEvent(3000);
         
         // switch to Screen Design
-        new JToggleButtonOperator(midletEditor, "Flow Design").pushNoBlock(); //NOI18N
+        new JToggleButtonOperator(midletEditor, "Flow").pushNoBlock(); //NOI18N
         new EventTool().waitNoEvent(1500);
         
         MPFootprintUtilities.buildproject(projectName);
