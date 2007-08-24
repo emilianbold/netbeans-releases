@@ -46,31 +46,33 @@ class CustomEditorTableModel extends DefaultTableModel {
 
     @Override
     public void removeRow(int row) {
-        if (dataVector.size() > 0) {
-            if (row > 0 && hasHeader) {
-                row--;
-            }
-            super.removeRow(row);
-        }
+        dataVector.removeElementAt(row);
+        fireTableStructureChanged();
     }
 
     @Override
-    @SuppressWarnings("unchecked") // NOI18N
+    @SuppressWarnings(value = "unchecked") // NOI18N
     public void addRow(Object[] rowData) {
         dataVector.addElement(convertToVector(rowData));
         fireTableStructureChanged();
     }
 
-    @SuppressWarnings("unchecked") // NOI18N
-    public void addColumn(String columnName) {
+    @SuppressWarnings(value = "unchecked") // NOI18N
+    public void addColumn(String columnName, boolean needRow) {
         if (hasHeader) {
             header.addElement(columnName);
         }
-        for (int i = 0; i < dataVector.size(); i++) {
-            Vector row = (Vector) dataVector.elementAt(i);
-            row.addElement(columnName);
-        }
 
+        if (dataVector.size() > 0) {
+            for (int i = 0; i < dataVector.size(); i++) {
+                Vector row = (Vector) dataVector.elementAt(i);
+                row.addElement(columnName);
+            }
+        } else if (needRow) {
+            Vector row = new Vector(1);
+            row.add(columnName);
+            dataVector.addElement(row);
+        }
         fireTableStructureChanged();
     }
 
@@ -81,7 +83,9 @@ class CustomEditorTableModel extends DefaultTableModel {
 
     @Override
     public int getColumnCount() {
-        if (dataVector.size() > 0) {
+        if (hasHeader) {
+            return header.size();
+        } else if (dataVector.size() > 0) {
             return ((Vector) dataVector.get(0)).size();
         }
         return 0;
@@ -124,13 +128,13 @@ class CustomEditorTableModel extends DefaultTableModel {
                 header.addElement((String) columnArray[i]);
             }
         }
-        super.dataVector = nonNullVector(convertToVector(dataArrays));
+        dataVector = nonNullVector(convertToVector(dataArrays));
         fireTableStructureChanged();
     }
 
-    private static Vector nonNullVector(Vector v) { 
-	return (v != null) ? v : new Vector(); 
-    } 
+    private static Vector nonNullVector(Vector v) {
+        return (v != null) ? v : new Vector();
+    }
 
     public void clear() {
         dataVector.clear();
@@ -138,13 +142,13 @@ class CustomEditorTableModel extends DefaultTableModel {
     }
 
     public void setUseHeader(boolean useHeader) {
-        this.hasHeader = useHeader;
-        if (hasHeader && header.size() != getColumnCount()) {
+        if (useHeader && header.size() != getColumnCount()) {
             header.clear();
             for (int i = 0; i < getColumnCount(); i++) {
                 header.addElement(""); // NOI18N
             }
         }
+        this.hasHeader = useHeader;
         fireTableStructureChanged();
     }
 
@@ -155,5 +159,4 @@ class CustomEditorTableModel extends DefaultTableModel {
     public Vector<String> getHeader() {
         return header;
     }
-    
 }

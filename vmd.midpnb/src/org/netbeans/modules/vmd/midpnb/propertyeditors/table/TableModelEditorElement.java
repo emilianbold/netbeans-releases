@@ -67,7 +67,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
     }
 
     public List<String> getPropertyValueNames() {
-        return Arrays.asList(new String[] {SimpleTableModelCD.PROP_COLUMN_NAMES, SimpleTableModelCD.PROP_VALUES});
+        return Arrays.asList(new String[]{SimpleTableModelCD.PROP_COLUMN_NAMES, SimpleTableModelCD.PROP_VALUES});
     }
 
     @Override
@@ -125,7 +125,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         // UI stuff
         setAllEnabled(true);
         setTableValues(columns[0], values[0]);
-        checkRemoveButtons();
+        checkButtons();
     }
 
     public synchronized void tableChanged(TableModelEvent e) {
@@ -133,14 +133,14 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         if (isShowing() && !doNotFireEvent) {
             Vector dataVector = tableModel.getDataVector();
             boolean useHeader = tableModel.hasHeader();
-            
-            if (useHeader && dataVector.size() > 0 && ((Vector) dataVector.get(0)).size() != tableModel.getHeader().size()) {
-                // TODO debug only
-                Debug.illegalState("Headers size must be qual to column count!"); // NOI18N
-            }
+
+//            if (useHeader && dataVector.size() > 0 && ((Vector) dataVector.get(0)).size() != tableModel.getHeader().size()) {
+//                // TODO debug only
+//                Debug.illegalState("Headers size must be qual to column count!"); // NOI18N
+//            }
             setTextFields(dataVector.size(), tableModel.getColumnCount());
-            checkRemoveButtons();
-            
+            checkButtons();
+
             List<PropertyValue> propertyValueColumn = new ArrayList<PropertyValue>(dataVector.size());
             for (int i = 0; i < dataVector.size(); i++) {
                 Vector row = (Vector) dataVector.elementAt(i);
@@ -157,8 +157,8 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
 
             PropertyValue headers;
             if (useHeader) {
-                List<PropertyValue> propertyValueHeader = new ArrayList<PropertyValue>(tableModel.getColumnCount());
                 Vector<String> header = tableModel.getHeader();
+                List<PropertyValue> propertyValueHeader = new ArrayList<PropertyValue>(header.size());
                 for (int j = 0; j < header.size(); j++) {
                     String str = header.elementAt(j);
                     propertyValueHeader.add(MidpTypes.createStringValue(str != null ? str : "")); // NOI18N
@@ -184,7 +184,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         boolean useHeader = (columns != null) && (columns.getArray() != null);
         String[] header = null;
         String[][] arrays = null;
-        
+
         if (useHeader) {
             List<PropertyValue> list = columns.getArray();
             header = new String[list.size()];
@@ -223,9 +223,10 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         doNotFireEvent = false;
     }
 
-    private void checkRemoveButtons() {
+    private void checkButtons() {
         removeRowButton.setEnabled(tableModel.getDataVector().size() > 0);
         removeColButton.setEnabled(tableModel.getColumnCount() > 0);
+        addColButton.setEnabled(tableModel.hasHeader() || tableModel.getRowCount() > 0);
     }
 
     void setAllEnabled(boolean isEnabled) {
@@ -300,11 +301,13 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(addColButton, org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.addColButton.text")); // NOI18N
@@ -365,33 +368,28 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tableLabel)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(12, 12, 12)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(headerCheckBox)
-                        .add(36, 36, 36))
-                    .add(layout.createSequentialGroup()
+                        .add(tableLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 349, Short.MAX_VALUE)))
+                .add(0, 0, 0)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, headerCheckBox)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(columnsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(columnsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 55, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(addColButton)
-                    .add(removeColButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, removeRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, addRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                            .add(rowsLabel)
-                            .add(18, 18, 18)
-                            .add(rowsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 61, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                        .add(columnsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(rowsLabel)
+                        .add(18, 18, 18)
+                        .add(rowsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
+                    .add(removeColButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                    .add(removeRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                    .add(addRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)
+                    .add(addColButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE)))
         );
-
-        layout.linkSize(new java.awt.Component[] {addColButton, removeColButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        layout.linkSize(new java.awt.Component[] {columnsTextField, rowsTextField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -399,20 +397,19 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(headerCheckBox)
+                        .add(headerCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(rowsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(rowsLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(rowsLabel)
+                            .add(rowsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(6, 6, 6)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(columnsLabel)
+                            .add(columnsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(addRowButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeRowButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(columnsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(columnsLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(addColButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -423,8 +420,8 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
     }// </editor-fold>//GEN-END:initComponents
 
     private void addColButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addColButtonActionPerformed
-        tableModel.addColumn(""); // NOI18N
-    }//GEN-LAST:event_addColButtonActionPerformed
+        tableModel.addColumn("", false); // NOI18N//GEN-LAST:event_addColButtonActionPerformed
+    }                                            
 
     private void removeColButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeColButtonActionPerformed
         tableModel.removeLastColumn();
@@ -438,19 +435,21 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
     }//GEN-LAST:event_removeRowButtonActionPerformed
 
     private void addRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addRowButtonActionPerformed
-        int columnCount = table.getColumnCount();
-        String[] row = new String[columnCount];
-        for (int i = 0; i < row.length; i++) {
-            row[i] = ""; // NOI18N
+        int columnCount = tableModel.getColumnCount();
+        if (columnCount == 0) {
+            tableModel.addColumn("", true); // NOI18N
+        } else {
+            String[] row = new String[columnCount];
+            for (int i = 0; i < row.length; i++) {
+                row[i] = ""; // NOI18N
+            }
+            tableModel.addRow(row);
         }
-        tableModel.addRow(row);
     }//GEN-LAST:event_addRowButtonActionPerformed
 
     private void headerCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_headerCheckBoxActionPerformed
         tableModel.setUseHeader(headerCheckBox.isSelected());
     }//GEN-LAST:event_headerCheckBoxActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addColButton;
     private javax.swing.JButton addRowButton;
