@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/webui.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/commons-fileupload.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/commons-fileupload-1.0.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>

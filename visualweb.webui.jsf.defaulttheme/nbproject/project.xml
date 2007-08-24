@@ -96,7 +96,7 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>ext/webui-jsf-suntheme.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/webui-jsf-suntheme.jar</binary-origin>
+                <binary-origin>external/webui-jsf-suntheme.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

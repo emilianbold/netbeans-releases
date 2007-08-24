@@ -28,4 +28,14 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="release/startup/bin/deploy-ejbs-bin.sh" toFile="${netbeans.dest.dir}/bin/deploy-ejbs.sh" filtering="on"/>
     </target>
     -->
+    <target name="netbeans-extra" depends="release"/>
+
+    <target name="release" depends="init">
+        <mkdir dir="${cluster}/modules/ext"/>
+        <copy todir="${cluster}/modules/ext">
+            <fileset dir="external">
+                <include name="ejb-2.0.jar"/>
+            </fileset>
+        </copy>
+    </target>
 </project>

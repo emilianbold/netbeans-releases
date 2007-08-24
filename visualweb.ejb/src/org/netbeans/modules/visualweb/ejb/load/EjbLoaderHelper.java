@@ -27,7 +27,7 @@ public class EjbLoaderHelper {
         
         try {
             // Class loader for loading the classes in the client jar files
-            // and the ejb20.jar (it contains the super classes/interfaces for the EJBs)
+            // and the ejb-2.0.jar (it contains the super classes/interfaces for the EJBs)
             
             URL[] clientJarURLs = new URL[ ejbGroup.getClientJarFiles().size() + 1 ];
             
@@ -39,7 +39,7 @@ public class EjbLoaderHelper {
                 
             }
             
-            // ejb20.jar
+            // ejb-2.0.jar
             clientJarURLs[jarFileNames.size()] = new File(EjbLoader.ejb20Jar).toURL();
             
             URLClassLoader classloader = URLClassLoader.newInstance( clientJarURLs );

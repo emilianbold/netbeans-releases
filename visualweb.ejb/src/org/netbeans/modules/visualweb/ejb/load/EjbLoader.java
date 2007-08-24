@@ -41,7 +41,7 @@ public class EjbLoader {
     public static final String CLIENT_WRAPPER_PACKAGE_NAME = "org.netbeans.modules.visualweb.ejb";
     
     // Two jar files needed for compiling the generated data provider and wrapper classes
-    public static final String ejb20Jar = InstalledFileLocator.getDefault().locate("modules/ext/ejb20.jar", null, false ).getAbsolutePath(); // NOI18N
+    public static final String ejb20Jar = InstalledFileLocator.getDefault().locate("modules/ext/ejb-2.0.jar", null, false ).getAbsolutePath(); // NOI18N
     public static final String dataproviderJar = InstalledFileLocator.getDefault().locate("modules/ext/dataprovider.jar", null, false ).getAbsolutePath(); // NOI18N
     public static final String designTimeJar = InstalledFileLocator.getDefault().locate( "modules/ext/designtime.jar", null, false).getAbsolutePath(); // NOI18N
     
