@@ -19,7 +19,6 @@
 package org.netbeans.modules.visualweb.dataconnectivity.naming;
 
 
-import java.io.File;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
@@ -36,10 +35,8 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
-import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.openide.ErrorManager;
 
 /**
@@ -47,9 +44,7 @@ import org.openide.ErrorManager;
  *
  * @author John Kline, John Baker
  */
-class DesignTimeContext implements Context {
-    static final String         PRJ_CTX_FILE     = "datasources.xml"; // NOI18N
-    static final String         USER_CTX     = "context.xml"; // NOI18N
+class DesignTimeContext implements Context {   
     private static Project      currentProj;
     public static final String  ROOT_CTX_TAG = "rootContext"; // NOI18N
     public static final String  CTX_TAG      = "context"; // NOI18N
@@ -61,18 +56,11 @@ class DesignTimeContext implements Context {
     private static DesignTimeContext thisInstance;
     private Map                 bindings;
     private static Hashtable    env;
-    private String              ctxPathName;
     private boolean             update = false;
 
     private static ResourceBundle rb = ResourceBundle.getBundle("org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle", // NOI18N
         Locale.getDefault());
-
-    private ObjectChangeListener objectChangeListener = new ObjectChangeListener() {
-        public void objectChanged(ObjectChangeEvent evt) throws NamingException {
-            Log.getLogger().entering(getClass().getName(), "objectChanged", evt); //NOI18N
-        }
-    };
-
+    
     // entry for subcontexts in a context's TreeMap (map)
     private class Subcontext {
         private String            subcontextName;
@@ -86,7 +74,6 @@ class DesignTimeContext implements Context {
     /** Creates a new instance of DesignTimeDatasourceContext */
     private DesignTimeContext(Project p,  Hashtable env) {
         currentProj = p;
-        this.ctxPathName = p.getProjectDirectory().getPath() + File.separator + "web" + File.separator + PRJ_CTX_FILE;;
         this.env    = new Hashtable(env);  
         thisInstance  = this;                                                                    
     }
