@@ -37,7 +37,7 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
 
     private JRadioButton radioButton;
     private SVGImageEditorElement customEditor;
-    private String resourcePath;
+    private String resourcePath = ""; // NOI18N
 
     private PropertyEditorSVGImage() {
         super(NbBundle.getMessage(PropertyEditorSVGImage.class, "LBL_SVGIMAGE_UCLABEL")); // NOI18N;
@@ -112,6 +112,9 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
     public void elementChanged(PropertyEditorResourceElementEvent event) {
         PropertyValue propertyValue = event.getPropertyValue();
         resourcePath = MidpTypes.getString(propertyValue);
+        if (resourcePath == null) {
+            resourcePath = ""; // NOI18N
+        }
         radioButton.setSelected(true);
     }
 
