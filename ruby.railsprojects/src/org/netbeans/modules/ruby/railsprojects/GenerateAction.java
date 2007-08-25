@@ -146,6 +146,7 @@ public final class GenerateAction extends NodeAction {
         desc.setMessageType(DialogDescriptor.PLAIN_MESSAGE);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
+        dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GenerateAction.class, "AD_GeneratorDialog"));
         dlg.setVisible(true);
 
         if (desc.getValue() != options[0]) {
