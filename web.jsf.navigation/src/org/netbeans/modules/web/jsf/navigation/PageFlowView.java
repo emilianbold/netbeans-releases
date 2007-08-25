@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -56,6 +57,7 @@ import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor.Pa
 import org.netbeans.modules.web.jsf.navigation.graph.layout.LayoutUtility;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneData;
+import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
 import org.netbeans.modules.web.jsf.navigation.graph.SceneSerializer;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
@@ -346,7 +348,14 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 //        widget.getAccessibleContext().setAccessibleDescription(ACN_PAGE);
         scene.addPin(pageNode, new Pin(pageNode));
         runPinSetup(pageNode, widget);
+        selectPageFlowSceneElement(pageNode);
         return widget;
+    }
+
+    private void selectPageFlowSceneElement(PageFlowSceneElement element) {
+        Set<PageFlowSceneElement> selectedSet = new HashSet<PageFlowSceneElement>(1);
+        selectedSet.add(element);
+        scene.setSelectedObjects(selectedSet);
     }
 
     /* This method was put into place to gather all the pin data for a given page.
@@ -430,7 +439,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         }
     }
 
-
     /**
      * Creates a PageFlowScene pin from a pageNode and pin name String.
      * In general a pin represents a NavigasbleComponent orginally designed for VWP.
@@ -466,6 +474,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         setEdgeSourcePin(navCaseEdge, fromPageNode);
         setEdgeTargePin(navCaseEdge, toPageNode);
 
+        selectPageFlowSceneElement(navCaseEdge);
         //connectionWidget.getAccessibleContext().setAccessibleName(ACN_EDGE);
         //connectionWidget.getAccessibleContext().setAccessibleDescription(ACDS_PAGE);
     }

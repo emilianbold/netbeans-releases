@@ -324,7 +324,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
         @Override
         protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
-            Border BORDER_HOVERED = (Border) javax.swing.BorderFactory.createLineBorder(java.awt.Color.BLACK);
+            Border BORDER_HOVERED = javax.swing.BorderFactory.createLineBorder(java.awt.Color.BLACK);
             Border BORDER = BorderFactory.createEmptyBorder();
             if (previousState.isHovered() == state.isHovered()) {
                 return;
