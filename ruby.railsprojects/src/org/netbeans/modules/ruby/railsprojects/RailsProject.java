@@ -22,25 +22,20 @@ package org.netbeans.modules.ruby.railsprojects;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.ListCellRenderer;
 import org.netbeans.api.gsfpath.classpath.ClassPath;
 import org.netbeans.api.gsfpath.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.ruby.railsprojects.SourceRoots;
 import org.netbeans.modules.ruby.railsprojects.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.ruby.railsprojects.queries.RailsProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServer;
 import org.netbeans.modules.ruby.railsprojects.ui.RailsLogicalViewProvider;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -112,6 +107,7 @@ public class RailsProject implements Project, RakeProjectListener {
         return helper.getProjectDirectory();
     }
 
+    @Override
     public String toString() {
         return "RailsProject[" + FileUtil.getFileDisplayName(getProjectDirectory()) + "]"; // NOI18N
     }
@@ -180,7 +176,7 @@ public class RailsProject implements Project, RakeProjectListener {
     public RakeProjectHelper getRakeProjectHelper() {
         return helper;
     }
-
+    
     protected Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         Lookup base = Lookups.fixed(new Object[] {
@@ -206,6 +202,7 @@ public class RailsProject implements Project, RakeProjectListener {
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
             new RailsProjectEncodingQueryImpl(evaluator()),
+            evaluator(),
             new RailsServer(this)
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-ruby-railsprojects/Lookup"); //NOI18N
@@ -372,7 +369,7 @@ public class RailsProject implements Project, RakeProjectListener {
             }
 */
             // register project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             //GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
@@ -413,7 +410,7 @@ public class RailsProject implements Project, RakeProjectListener {
             }
             
             // unregister project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             //GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));

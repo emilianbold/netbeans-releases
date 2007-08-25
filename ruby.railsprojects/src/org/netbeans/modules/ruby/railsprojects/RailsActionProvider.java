@@ -199,8 +199,7 @@ public class RailsActionProvider implements ActionProvider {
             }
             // Save all files first
             LifecycleManager.getDefault().saveAll();
-            RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
-            rake.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
+            RakeSupport rake = new RakeSupport(project);
             rake.setTest(true);
             File pwd = FileUtil.toFile(project.getProjectDirectory());
             String displayName = NbBundle.getMessage(RailsActionProvider.class, "Tests");
@@ -258,8 +257,7 @@ public class RailsActionProvider implements ActionProvider {
             if (RakeSupport.isRakeFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
-                RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
-                rake.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
+                RakeSupport rake = new RakeSupport(project);
                 rake.runRake(null, file, file.getName(), new RubyFileLocator(context), true);
                 return;
             }
@@ -279,8 +277,7 @@ public class RailsActionProvider implements ActionProvider {
             if (isMigrationFile(file)) {
                 String name = file.getName();
                 String version = Integer.toString(Integer.parseInt(name.substring(0, 3)));
-                RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
-                rake.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
+                RakeSupport rake = new RakeSupport(project);
                 rake.runRake(null, file, file.getName(), new RubyFileLocator(context), true, "db:migrate", "VERSION=" + version); // NOI18N
                 return;
             }

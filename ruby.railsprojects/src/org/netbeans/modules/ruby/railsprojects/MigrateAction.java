@@ -35,7 +35,6 @@ import javax.swing.JPopupMenu;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.openide.LifecycleManager;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
@@ -304,8 +303,7 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
             //            
             File pwd = FileUtil.toFile(project.getProjectDirectory());
 
-            RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
-            rake.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
+            RakeSupport rake = new RakeSupport(project);
             if (version == -1) {
                 // Run to the current migration
                 rake.runRake(pwd, null, displayName, fileLocator, true, "db:migrate"); // NOI18N

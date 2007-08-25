@@ -54,10 +54,10 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.awt.Actions;
@@ -692,11 +692,8 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
                 pwd = FileUtil.toFile(project.getProjectDirectory());
             }
 
-            // XXX TODO - how do we obtain the target name now?
-            String charsetName = null;
-            RakeSupport rake = new RakeSupport(charsetName);
-            // TODO - set class path?
-
+            RakeSupport rake = new RakeSupport(project);
+            
             String targetName = target.getTarget();
 
             if (targetName != null && (targetName.equals("test") || targetName.startsWith("test:"))) { // NOI18N

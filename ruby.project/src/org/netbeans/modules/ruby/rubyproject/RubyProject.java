@@ -25,16 +25,13 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.ListCellRenderer;
 import org.netbeans.api.gsfpath.classpath.ClassPath;
 import org.netbeans.api.gsfpath.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.ruby.rubyproject.SourceRoots;
 import org.netbeans.modules.ruby.rubyproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.rubyproject.ui.RubyLogicalViewProvider;
@@ -114,6 +111,7 @@ public final class RubyProject implements Project, RakeProjectListener {
         return helper.getProjectDirectory();
     }
 
+    @Override
     public String toString() {
         return "RubyProject[" + FileUtil.getFileDisplayName(getProjectDirectory()) + "]"; // NOI18N
     }
@@ -207,7 +205,8 @@ public final class RubyProject implements Project, RakeProjectListener {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),            
-            new RubyProjectEncodingQueryImpl(evaluator())
+            new RubyProjectEncodingQueryImpl(evaluator()),
+            evaluator()
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-ruby-rubyproject/Lookup"); //NOI18N
     }

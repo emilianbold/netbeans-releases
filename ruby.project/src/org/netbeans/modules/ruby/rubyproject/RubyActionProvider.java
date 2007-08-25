@@ -405,8 +405,7 @@ public class RubyActionProvider implements ActionProvider {
 
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
-                RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
-                rake.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
+                RakeSupport rake = new RakeSupport(project);
                 rake.runRake(null, file, file.getName(), new RubyFileLocator(context, project), true);
                 return;
             }

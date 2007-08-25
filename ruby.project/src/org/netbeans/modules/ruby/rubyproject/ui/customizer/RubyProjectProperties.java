@@ -79,7 +79,6 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
     // Special properties of the project
     //public static final String Ruby_PROJECT_NAME = "ruby.project.name"; // NOI18N
     public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
-    public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
     
     // Properties stored in the PROJECT.PROPERTIES    
     // TODO - nuke me!
@@ -385,7 +384,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
             }
         });
         Map<String,String> def = new TreeMap<String,String>();
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR}) {
+        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR, RAKE_ARGS}) {
             String v = updateHelper.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
             if (v == null) {
                 v = updateHelper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
@@ -428,9 +427,9 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR}) {
+        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR, RAKE_ARGS}) {
             String v = def.get(prop);
-            EditableProperties ep = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR)) ?
+            EditableProperties ep = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR) || prop.equals(RAKE_ARGS)) ?
                 privateProperties : projectProperties;
             if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                 if (v != null && v.length() > 0) {
@@ -456,7 +455,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
             for (Map.Entry<String,String> entry2 : c.entrySet()) {
                 String prop = entry2.getKey();
                 String v = entry2.getValue();
-                String path = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR)) ?
+                String path = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR) || prop.equals(RAKE_ARGS)) ?
                     privatePath : sharedPath;
                 EditableProperties ep = updateHelper.getProperties(path);
                 if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
