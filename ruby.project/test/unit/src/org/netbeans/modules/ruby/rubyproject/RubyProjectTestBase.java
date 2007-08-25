@@ -38,6 +38,11 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
     public RubyProjectTestBase(String testName) {
         super(testName);
     }
+
+    protected @Override void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+    }
     
     protected Project getTestProject(String path) {
         FileObject fo = getTestFile(path);
@@ -86,7 +91,7 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
     }
 
     protected RubyProject createTestProject(String projectName) throws Exception {
-        File dataDir = getDataDir();
+        File dataDir = getWorkDir();
         if (!dataDir.exists()) {
             dataDir.mkdirs();
         }

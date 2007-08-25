@@ -1,8 +1,20 @@
 /*
- * NewRubyFileWizardIteratorTest.java
- * JUnit based test
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * Created on July 20, 2007, 10:35 AM
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.ruby.rubyproject.templates;
@@ -16,25 +28,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.event.ChangeListener;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.gsf.GsfDataLoader;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
-import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
 
 /**
- *
  * @autho!r Tor Norbye
  */
 public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
@@ -91,7 +94,7 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
         FileObject templateFile = getProjectSourceFolder().getFileObject(path + "/" + templateName);
         assertNotNull(templateFile);
         // Workaround since it's not coming from the layer
-        FileObject dataFolder = FileUtil.toFileObject(getDataDir());
+        FileObject dataFolder = FileUtil.toFileObject(getWorkDir());
         assertNotNull(dataFolder);
         FileObject copiedTemplate = dataFolder.getFileObject(templateFile.getName() + "." + templateFile.getExt());
         if (copiedTemplate == null) {
