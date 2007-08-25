@@ -3,6 +3,10 @@
 */
 
 function Customer(uri_) {
+    this.Customer(uri_, false);
+}
+
+function Customer(uri_, initialized_) {
     this.uri = uri_;
     this.customerId = '';
     this.zip = '';
@@ -17,7 +21,7 @@ function Customer(uri_) {
     this.creditLimit = '';
     this.discountCodeRef = '';
 
-    this.initialized = false;
+    this.initialized = initialized_;
 }
 
 Customer.prototype = {
@@ -172,10 +176,15 @@ Customer.prototype = {
       }
    },
 
-   save : function() {
+   flush : function() {
       var remote = new CustomerRemote(this.uri);
-      remote.putJson(this.toString());
+      return remote.putJson(this.toString());
    },
+   
+   delete_ : function() {
+      var remote = new CustomerRemote(this.uri);
+      return remote.delete_();
+   },   
 
    toString : function() {
       if(!this.initialized)
@@ -195,7 +204,7 @@ Customer.prototype = {
          '"fax":{"$":"'+this.fax+'"},'+
          '"email":{"$":"'+this.email+'"},'+
          '"creditLimit":{"$":"'+this.creditLimit+'"},'+
-         '"discountCodeRef":{"@uri":"'+this.discountCodeRef.getUri()+'", "discountCode":{"$":"'+this.discountCodeRef.getDiscountCode()+'"}},'+
+         '"discountCodeRef":{"@uri":"'+this.discountCodeRef.getUri()+'", "discountCode":{"$":"'+this.discountCodeRef.getDiscountCode()+'"}}'+
 
          '}'+
       '}';
@@ -227,7 +236,7 @@ CustomerRemote.prototype = {
    },
 
    delete_ : function() {
-      return delete_(this.uri);
+      return delete__(this.uri);
    },
 
    getDiscountCodeResource : function(discountCode) {

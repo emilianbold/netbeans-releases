@@ -29,6 +29,13 @@ CustomerDB.prototype = {
       this.initialized = true;
    },
 
+   flush : function(resources_) {
+      for(j=0;j<resources_.length;j++) {
+        var r = resources_[j];
+        r.flush();
+      }
+   },
+   
    toString : function() {
       var s = '';
       for(j=0;j<this.resources.length;j++) {

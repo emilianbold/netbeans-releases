@@ -23,6 +23,13 @@ Customers.prototype = {
    addItem : function(item) {
       this.items[this.items.length+1] = item;
    },
+   
+   removeItem : function(item) {
+      var status = item.delete_();
+      if(status != '-1')
+        this.init(); //re-read items
+      return status;
+   },   
 
    init : function() {
       var remote = new CustomersRemote(this.uri);
@@ -49,10 +56,15 @@ Customers.prototype = {
       this.items[j] = new Customer(uri2);
    },
 
-   save : function() {
+   flush : function() {
       var remote = new CustomersRemote(this.uri);
-      remote.postJson(this.toString());
+      return remote.postJson(this.toString());
    },
+   
+   flush : function(customer) {
+      var remote = new CustomersRemote(this.uri);
+      return remote.postJson(customer.toString());
+   },   
 
    toString : function() {
       if(!this.initialized)
@@ -61,10 +73,11 @@ Customers.prototype = {
       var j = 0;
       for(j=0;j<this.items.length;j++) {
          var c = this.items[j];
+         var id = findIdFromUrl(c.getUri());
          if(j<this.items.length-1)
-            s = s + '{"@uri":"'+c.getUri()+'", "customerId":{"$":"'+findIdFromUrl(c.getUri())+'"}},';
+            s = s + '{"@uri":"'+c.getUri()+'", "customerId":{"$":"'+id+'"}},';
          else
-            s = s + '{"@uri":"'+c.getUri()+'", "customerId":{"$":"'+findIdFromUrl(c.getUri())+'"}}';
+            s = s + '{"@uri":"'+c.getUri()+'", "customerId":{"$":"'+id+'"}}';
       }
       var myObj = 
          '{"customers":{'+

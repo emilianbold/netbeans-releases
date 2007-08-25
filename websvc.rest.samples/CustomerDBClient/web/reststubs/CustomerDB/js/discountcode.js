@@ -3,12 +3,16 @@
 */
 
 function DiscountCode(uri_) {
+    this.DiscountCode(uri_, false);
+}
+
+function DiscountCode(uri_, initialized_) {
     this.uri = uri_;
     this.discountCode = '';
     this.rate = '';
     this.customers = new Array();
 
-    this.initialized = false;
+    this.initialized = initialized_;
 }
 
 DiscountCode.prototype = {
@@ -64,11 +68,16 @@ DiscountCode.prototype = {
       }
    },
 
-   save : function() {
+   flush : function() {
       var remote = new DiscountCodeRemote(this.uri);
-      remote.putJson(this.toString());
+      return remote.putJson(this.toString());
    },
 
+   delete_ : function() {
+      var remote = new DiscountCodeRemote(this.uri);
+      return remote.delete_();
+   }, 
+   
    toString : function() {
       if(!this.initialized)
          this.init();
@@ -110,7 +119,7 @@ DiscountCodeRemote.prototype = {
    },
 
    delete_ : function() {
-      return delete_(this.uri);
+      return delete__(this.uri);
    },
 
    getCustomersResource : function(customers) {

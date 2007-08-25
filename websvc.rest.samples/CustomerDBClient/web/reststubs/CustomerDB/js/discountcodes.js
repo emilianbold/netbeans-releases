@@ -23,7 +23,14 @@ DiscountCodes.prototype = {
    addItem : function(item) {
       this.items[this.items.length+1] = item;
    },
-
+   
+   removeItem : function(item) {
+      var status = item.delete_();
+      if(status != '-1')
+        this.init(); //re-read items
+      return status;
+   },  
+   
    init : function() {
       var remote = new DiscountCodesRemote(this.uri);
       var c = remote.getJson();
@@ -49,7 +56,7 @@ DiscountCodes.prototype = {
       this.items[j] = new DiscountCode(uri2);
    },
 
-   save : function() {
+   flush : function() {
       var remote = new DiscountCodesRemote(this.uri);
       remote.postJson(this.toString());
    },

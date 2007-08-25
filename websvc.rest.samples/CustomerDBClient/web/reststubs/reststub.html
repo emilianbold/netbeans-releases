@@ -5,8 +5,10 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>REST Client Stubs</title>
         <!-- JS_DECLARE_START - DO NOT REMOVE-->
+        <link rel="stylesheet" href="./css/style.css" type="text/css"/>
         <script type="text/javascript" src="./common/js/support.js"></script>
-	<script type='text/javascript' src='./CustomerDB/js/CustomerDB.js'></script>
+        <script type="text/javascript" src="./js/main.js"></script>
+        <script type='text/javascript' src='./CustomerDB/js/CustomerDB.js'></script>
 	<script type='text/javascript' src='./CustomerDB/js/customers.js'></script>
 	<script type='text/javascript' src='./CustomerDB/js/discountcodes.js'></script>
 	<script type='text/javascript' src='./CustomerDB/js/customer.js'></script>
@@ -14,41 +16,41 @@
         <!-- JS_DECLARE_END - DO NOT REMOVE-->
     </head>
     <body>
-
-    <h1>Test Page - Javascript client stub for RESTful Web Services.</h1>
-
-    <div id="containerContent"> </div>
-
-    <!-- JS_USAGE_START - DO NOT REMOVE-->
-
-	<!-- Using JavaScript files for project CustomerDB-->
-	<script language='Javascript'>
-		var str = '';
-		//Example test code for CustomerDB
-		str = '<h2>Resources:</h2><br><table border="1">';
-		var app = new CustomerDB();
-		var resources = app.getResources();
-		for(i=0;i<resources.length;i++) {
-		  var resource = resources[i];
-		  var uri = resource.getUri();
-		  str += '<tr><td valign="top"><a href="'+uri+'" target="_blank">'+uri+'</a></td><td>';
-		  var items  = resource.getItems();
-		  if(items != undefined) {
-		    for(j=0;j<items.length;j++) {
-		        var item = items[j];
-		        var uri2 = item.getUri();
-		        str += '<a href="'+uri2+'" target="_blank">'+uri2+'</a><br/>';
-		        str += '&nbsp;&nbsp;<font size="-3">'+item.toString()+'</font><br/>';
-		    }
-		  }
-		  str += '</td></tr>';
-		}
-		str += '</table><br>';
-		var n = document.getElementById('containerContent');
-		n.innerHTML = n.innerHTML + str;
-
-	</script>
-    <!-- JS_USAGE_END - DO NOT REMOVE--> 
-    
+        <div class="outerBorder">
+            <div class="border2">
+            <div class="header border2">
+                <div class="banner">Customer App</div>
+                <!--<div id="subheader" class="subheader"></div>--> <!-- sub-header -->
+            </div> <!-- header -->               
+            <div id="main" class="main">
+                <table>
+                    <tr>
+                        <td id="content" class="content  bkgclr" valign="top">                      
+                            <div id="vw_pl" class="hide">
+                                <div class="clr"></div>
+                                <div class="heading mglf">Customers</div>
+                                <div id="vw_pl_content" class="form-container"></div>
+                            </div>
+                            <div id="cr_pl" class="hide">
+                                <div class="clr"></div>
+                                <div class="heading mglf">Create Customer</div>
+                                <div id="cr_pl_content" class="form-container"></div>
+                            </div>
+                            <div id="vw_pl_item" class="hide">
+                                <div class="clr"></div>
+                                <div class="heading mglf">Customers</div>                             
+                                <div id="vw_pl_item_content" class="form-container"></div>
+                                <br/><br/>
+                                <div id="add_song_content" class="form-container"></div>
+                            </div>                              
+                        </td>
+                    </tr>                   
+                </table>
+            </div> <!-- main -->
+            </div> <!-- border2 -->
+        </div> <!-- outerborder -->
+        <script language="Javascript">
+            showCustomers();
+        </script>
     </body>
 </html>
