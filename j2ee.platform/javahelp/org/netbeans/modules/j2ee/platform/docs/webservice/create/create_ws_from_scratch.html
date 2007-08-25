@@ -19,38 +19,19 @@ Use is subject to license terms.  *-->
         <li>Type the web service name and specify a package to house the web service.</li>
         <li>Select the creation type:
             <ul><li><b>Create an Empty Web Service.</b> Use this when you have no existing code to expose.</li>
-            <li><b>Delegate to Existing Session Enterprise Bean.</b> Use this when you have a session bean
-            in an EJB module.
+                <li><b>Delegate to Existing Session Enterprise Bean.</b> Use this when you have a session bean
+                    in an EJB module.
             Click Browse to select the session bean to which you want to delegate.</li></ul>
             </ul>
         </li>
-        <li>Click Finish.
-            <p>For JAX-WS web services (Java EE 5 specification), the IDE 
+        <li>Click Finish.</p>
+            <p>The IDE 
             creates an implementation class. The
             implementation class is created with the required web 
             service annotations and import statements.
-        
-            <p>For JAX-RPC web services (J2EE 1.4 specification), the IDE runs the <tt>wscompile</tt> tool.
-            The IDE provides the following:
-
-            <ul>
-            <li>The Service Endpoint Interface (the "interface"), which declares the web service's operations. 
-            In the IDE, the interface is identified by the suffix "SEI". For example, if you named your 
-            web service <tt>CalculatorWS</tt>, its interface is named <tt>CalculatorWSSEI</tt>.
-            The IDE automatically populates the interface with a declaration for each web service operation
-            added by means of the <a href="add_ws_operation.html">Add Operation dialog box</a>.</li>
-            <li>The class for the implementation of the interface. 
-            In the IDE, an implementation class is identified by the suffix "Impl" (for web applications)
-            or "Bean" (for EJB modules). For example, if your 
-            web service is named <tt>CalculatorWS</tt>, its implementation class is named <tt>CalculatorWSImpl</tt>
-            or <tt>CalculatorWSBean</tt>.</li></ul>
-            By default, both files are housed in a package within your project's <tt>src</tt> folder (in the Files window)
-            and you can access it in the Source Packages node (in the Projects window).
-            </ul>
         </li>
         <li>Use the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/editing_about.html">Source Editor</a> to develop the
             web service. 
-
             <ul class="note">
                 <li>For help on designing and developing your web services,
                     go to Help &gt; Java BluePrints Solutions Catalog.

@@ -55,33 +55,10 @@ Use is subject to license terms.  *-->
                 in the WSDL file are added to this class.
             </li></ul>
         
-            <p>For JAX-RPC web services (J2EE 1.4 specification), the IDE runs the <tt>wscompile</tt> tool, which results inS the following:
-            <ul>
-	
-            <li>A new WSDL file. The abstract portion is copied as is from the original file, 
-            while the concrete portion is "normalized" from the original. 
-            For example, a SOAP binding element is created if it did
-            not exist in the WSDL file. Also, the service element is created to be compatible with
-            the binding.</li>
-            <li>A Service Endpoint Interface (the "interface"), which declares the web service's operations. 
-            In the IDE, the interface class is identified by the name of the 
-            portType element defined in the WSDL.
-            The IDE automatically populates the interface with a declaration for each web service operation
-            from the WSDL file.</li>
-            <li>An implementation class. The operations found
-            in the WSDL file are added to this class. In the IDE, a JAX-WS class is
-            identified by the name that you specify in the wizard. 
-            In the IDE, a JAX-RPC implementation class is identified by the name of the 
-            portType element defined in the WSDL together with the suffix "_Impl" (for web applications)
-            or "_Bean" (for EJB modules).</li></ul>
-            By default, the WSDL file is housed in the <tt>WEB-INF/wsdl</tt> (or <tt>META-INF/wsdl</tt>) folder. The 
-            interface and the implementation class are housed in a package within your project's <tt>src</tt> folder (in the Files window)
-            and you can access them in the Source Packages node (in the Projects window).
-            </ul>
-            <ul class="note">
-                <li>You cannot add operations to a web service created from a WSDL file.
-                </li>
-            </ul>
+            <p>For JAX-RPC web services (J2EE 1.4 specification), the IDE runs the <tt>wscompile</tt> 
+            tool, resulting in classes that comply to the JAX-RPC specification.
+            
+           
 
         </li>
         </ul>
