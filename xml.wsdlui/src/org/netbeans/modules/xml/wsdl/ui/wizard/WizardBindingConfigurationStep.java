@@ -51,10 +51,12 @@ import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.BindingConfigurationPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
 import org.openide.WizardDescriptor;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -174,6 +176,8 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
     public void storeSettings(Object settings) {
         TemplateWizard templateWizard = (TemplateWizard)settings;
         if(templateWizard.getValue() == TemplateWizard.CANCEL_OPTION) {
+        	DataObject dobj = ActionHelper.getDataObject(mTempModel);
+        	if (dobj != null) dobj.setModified(false);
         	return;
         }
         

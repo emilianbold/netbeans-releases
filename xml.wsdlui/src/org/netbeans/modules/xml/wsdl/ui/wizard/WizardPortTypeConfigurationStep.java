@@ -50,11 +50,13 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationType;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
 import org.openide.WizardDescriptor;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -177,6 +179,8 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
     public void storeSettings(Object settings) {
         TemplateWizard templateWizard = (TemplateWizard)settings;
         if(templateWizard.getValue() == TemplateWizard.CANCEL_OPTION) {
+        	DataObject dobj = ActionHelper.getDataObject(mTempModel);
+        	if (dobj != null) dobj.setModified(false);
         	return;
         }
 
@@ -267,7 +271,7 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
             this.mImports = ptGen.getImports();
 
             this.mTempModel.endTransaction();
-
+            
             templateWizard.putProperty(PORTTYPE, this.mPortType);
         }
 

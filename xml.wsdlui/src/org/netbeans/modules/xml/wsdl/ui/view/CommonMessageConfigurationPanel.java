@@ -25,15 +25,21 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view;
 
-import java.awt.Point;
+import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -89,13 +95,14 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        jPanel1 = new javax.swing.JPanel();
+
         partsScrollPane = new javax.swing.JScrollPane();
         partsTable = new javax.swing.JTable();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
 
         partsScrollPane.setAutoscrolls(true);
+
         partsTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null},
@@ -117,14 +124,14 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
         partsTable.setSurrendersFocusOnKeystroke(true);
         partsScrollPane.setViewportView(partsTable);
 
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(CommonMessageConfigurationPanel.class, "CommonMessageConfigurationPanel.addButton.textNoMnemonic")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(CommonMessageConfigurationPanel.class, "CommonMessageConfigurationPanel.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(CommonMessageConfigurationPanel.class, "CommonMessageConfigurationPanel.removeButton.textNoMnemonic")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(CommonMessageConfigurationPanel.class, "CommonMessageConfigurationPanel.removeButton.text")); // NOI18N
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -132,40 +139,41 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, partsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(addButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(removeButton)
-                .add(272, 272, 272))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(partsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addButton)
-                    .add(removeButton)))
-        );
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(addButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(removeButton)
+                .addContainerGap())
+            .add(partsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(0, 0, 0)
+                .add(partsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(addButton)
+                    .add(removeButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
-    
+
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+        PartAndElementOrTypeTableModel model = (PartAndElementOrTypeTableModel) partsTable.getModel();
+        if (partsTable.getCellEditor() != null) {
+            partsTable.getCellEditor().cancelCellEditing();
+        }
+        model.addNewRow();
+    }//GEN-LAST:event_addButtonActionPerformed
+
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
+        if (partsTable.getCellEditor() != null) {
+            partsTable.getCellEditor().cancelCellEditing();
+        }
         PartAndElementOrTypeTableModel model = (PartAndElementOrTypeTableModel) partsTable.getModel();
         int[] rows = partsTable.getSelectedRows();
         if(rows != null) {
@@ -176,29 +184,39 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_removeButtonActionPerformed
-    
-    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        PartAndElementOrTypeTableModel model = (PartAndElementOrTypeTableModel) partsTable.getModel();
-        model.addNewRow();
-    }//GEN-LAST:event_addButtonActionPerformed
-    
+            
     private void initGUI() {
         PartAndElementOrTypeTableModel model =  new PartAndElementOrTypeTableModel(namespaceToPrefixMap);
         partsTable.setModel(model);
         partsTable.getColumnModel().getColumn(0).setCellRenderer(new ElementOrTypeTableCellRenderer());
         setUpElementOrTypeColumn(partsTable.getColumnModel().getColumn(1));
         model.addTableModelListener(new TableModelChangeListener());
-        FocusListener fl = new PanelFocusListener();
-        partsTable.addFocusListener(fl);
-        addButton.addFocusListener(fl);
-        removeButton.addFocusListener(fl);
-        this.addFocusListener(fl);
+        partsTable.addFocusListener(new FocusListener() {
+            public void focusGained(FocusEvent e) {
+            	if (e.getSource() == partsTable) {
+            		if (partsTable.getRowCount() == 0) {
+            			addButton.requestFocus();
+            			return;
+            		}
+            		if (partsTable.getSelectedRow() == -1) {
+            			partsTable.setRowSelectionInterval(0, 0);
+            		}
+            	}
+            }
+            
+            public void focusLost(FocusEvent e) {
+            	//do nothing
+            }
+            
+        });
+        
         partsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     if (partsTable.getSelectedRowCount() > 0) {
                         removeButton.setEnabled(true);
                     } else {
+                    	addButton.requestFocus();
                         removeButton.setEnabled(false);
                     }
                 }
@@ -206,6 +224,23 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
         });
         
         partsTable.getTableHeader().setReorderingAllowed(false);
+        
+        //This code enables the mnemonic for add and remove button to work only when this panel is focused.
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.ALT_DOWN_MASK), "button-pressed");
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK), "button-pressed");
+        
+        Action buttonAction = new AbstractAction() {
+		
+			public void actionPerformed(ActionEvent e) {
+				if (e.getActionCommand().equals("a")) {
+					addButton.doClick();
+				} else if (e.getActionCommand().equals("r")) {
+					removeButton.doClick();
+				}
+			}
+		
+		};
+        getActionMap().put("button-pressed", buttonAction);
     }
     
     
@@ -242,17 +277,18 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
         // This rectangle is relative to the table where the
         // northwest corner of cell (0,0) is always (0,0).
         Rectangle rect = partsTable.getCellRect(rowIndex, vColIndex, true);
-    
-        // The location of the viewport relative to the table
-        Point pt = viewport.getViewPosition();
-    
-        // Translate the cell location so that it is relative
-        // to the view, assuming the northwest corner of the
-        // view is (0,0)
-        rect.setLocation(rect.x-pt.x, rect.y-pt.y);
-    
-        // Scroll the area into view
-        viewport.scrollRectToVisible(rect);
+        Rectangle viewportRect = viewport.getViewRect();
+        Dimension tableDimension = partsTable.getSize();
+        
+        if (viewportRect.contains(rect)) {
+        	return;
+        }
+
+        //if view port does not contain the cell, make sure that the viewport is moved to the start of the cell.
+        viewportRect.x = rect.x;
+        viewportRect.y = rect.y;
+        
+        viewport.setViewPosition(viewportRect.getLocation());
     }
     
     
@@ -298,19 +334,6 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
     }
     
     
-    class PanelFocusListener implements FocusListener {
-        public void focusGained(FocusEvent e) {
-            org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(CommonMessageConfigurationPanel.class, "CommonMessageConfigurationPanel.addButton.text"));
-                org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(CommonMessageConfigurationPanel.class, "CommonMessageConfigurationPanel.removeButton.text"));
-        }
-        
-        public void focusLost(FocusEvent e) {
-            org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(CommonMessageConfigurationPanel.class, "CommonMessageConfigurationPanel.addButton.textNoMnemonic"));
-            org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(CommonMessageConfigurationPanel.class, "CommonMessageConfigurationPanel.removeButton.textNoMnemonic"));
-        }
-        
-    }
-    
     public static void main(String[] args) {
         
 //        JFrame frame = new JFrame();
@@ -329,7 +352,6 @@ public class CommonMessageConfigurationPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane partsScrollPane;
     private javax.swing.JTable partsTable;
     private javax.swing.JButton removeButton;
