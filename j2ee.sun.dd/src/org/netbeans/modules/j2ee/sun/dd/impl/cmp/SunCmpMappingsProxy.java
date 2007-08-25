@@ -426,4 +426,9 @@ public class SunCmpMappingsProxy implements SunCmpMappings, RootInterfaceImpl {
         return ASDDVersion.getASDDVersionFromCmpMappingsVersion(getVersion());
     }
     
+    public boolean isTrivial(String nameProperty) {
+        // Root nodes are non-trivial by definition.
+        return false;
+    }
+    
 }

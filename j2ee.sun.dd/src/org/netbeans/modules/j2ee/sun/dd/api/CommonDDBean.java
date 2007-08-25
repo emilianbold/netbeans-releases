@@ -124,7 +124,12 @@ if (lock!=null) {
     public void write(java.io.OutputStream os) throws java.io.IOException;
 
     public void write(java.io.Writer w) throws java.io.IOException, org.netbeans.modules.j2ee.sun.dd.api.DDException;
-        
+
+    /** Check if there are any non-null subproperties in this bean (other than
+     *  the name property, if specified.
+     */
+    public boolean isTrivial(String nameProperty);
+    
     /** Clone this bean.
      */
     public Object clone();

@@ -442,4 +442,9 @@ public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
         return ASDDVersion.getASDDVersionFromEjbVersion(getVersion());
     }
     
+    public boolean isTrivial(String nameProperty) {
+        // Root nodes are non-trivial by definition.
+        return false;
+    }
+    
 }

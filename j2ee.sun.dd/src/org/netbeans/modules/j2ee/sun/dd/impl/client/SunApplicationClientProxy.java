@@ -624,4 +624,9 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
         return ASDDVersion.getASDDVersionFromAppClientVersion(getVersion());
     }
     
+    public boolean isTrivial(String nameProperty) {
+        // Root nodes are non-trivial by definition.
+        return false;
+    }
+    
 }

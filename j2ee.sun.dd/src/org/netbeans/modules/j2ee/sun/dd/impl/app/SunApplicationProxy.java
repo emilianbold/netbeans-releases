@@ -422,4 +422,9 @@ public class SunApplicationProxy implements SunApplication, RootInterfaceImpl {
         return ASDDVersion.getASDDVersionFromAppVersion(getVersion());
     }
     
+    public boolean isTrivial(String nameProperty) {
+        // Root nodes are non-trivial by definition.
+        return false;
+    }
+    
 }
