@@ -423,9 +423,10 @@ public class RubyInstallation {
                 new File(getJRubyLib() + File.separator + "ruby" + File.separator + "gems" + // NOI18N
                     File.separator + DEFAULT_RUBY_RELEASE);
 
-            if (gemDir.exists()) {
+            if (gemDir.isDirectory()) {
                 return gemDir.getAbsolutePath();
             } else {
+                LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
                 return null;
             }
         }
@@ -435,16 +436,18 @@ public class RubyInstallation {
         if (!lib.isDirectory()) {
             String gemHome = TEST_GEM_HOME; // test hook
             if (gemHome == null) {
-                gemHome = System.getenv().get("GEM_HOME");
+                gemHome = System.getenv().get("GEM_HOME"); // NOI18N
             }
             if (gemHome != null) {
                 lib = new File(gemHome); // NOI18N
                 if (!lib.isDirectory()) {
+                    LOGGER.finest("Cannot find Gems repository. \"" + lib + "\" does not exist or is not a directory."); // NOI18N
                     return null;
                 } else {
                     return lib.getAbsolutePath();
                 }
             } else {
+                LOGGER.finest("Cannot find Gems repository. No GEM_HOME set."); // NOI18N
                 return null;
             }
         }
@@ -456,18 +459,14 @@ public class RubyInstallation {
         } else {
             // Search for a numbered directory
             File[] children = lib.listFiles();
-
             if (children != null) {
                 for (File c : children) {
                     if (!c.isDirectory()) {
                         continue;
                     }
 
-                    String name = c.getName();
-
-                    if (name.matches("\\d+\\.\\d+")) { // NOI18N
+                    if (c.getName().matches("\\d+\\.\\d+")) { // NOI18N
                         gemdir = c.getAbsolutePath();
-
                         break;
                     }
                 }
@@ -1084,9 +1083,12 @@ public class RubyInstallation {
             File gemDir = new File(f, SPECIFICATIONS);
 
             if (gemDir.exists()) {
+                LOGGER.finest("Initializing \"" + gemDir + "\" repository");
                 // Add each of */lib/
                 File[] gems = gemDir.listFiles();
                 gems = chooseGems(gems);
+            } else {
+                LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
             }
         }
     }
