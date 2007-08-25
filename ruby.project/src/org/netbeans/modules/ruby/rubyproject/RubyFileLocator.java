@@ -32,12 +32,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
-
 /**
- *
  * @author Tor Norbye
  */
 public class RubyFileLocator implements FileLocator {
+    
     private Lookup context;
     private Project project;
 
@@ -104,6 +103,17 @@ public class RubyFileLocator implements FileLocator {
 
             if (fo != null) {
                 return fo;
+            }
+        }
+
+        // Try to resolve relatively to project directory (see e.g. #112254)
+        File f = new File(FileUtil.toFile(project.getProjectDirectory()), file);
+        if (f.exists()) {
+            try {
+                f = f.getCanonicalFile();
+                return FileUtil.toFileObject(f);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
 
