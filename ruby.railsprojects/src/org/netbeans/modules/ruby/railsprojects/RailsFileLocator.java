@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.ruby.railsprojects;
@@ -27,7 +27,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-
 
 /**
  * TODO - I should just use RubyFileLocator!
@@ -113,6 +112,17 @@ public class RailsFileLocator implements FileLocator {
 
             if (fo != null) {
                 return fo;
+            }
+        }
+
+        // Try to resolve relatively to project directory (see e.g. #112254)
+        File f = new File(FileUtil.toFile(project.getProjectDirectory()), file);
+        if (f.exists()) {
+            try {
+                f = f.getCanonicalFile();
+                return FileUtil.toFileObject(f);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
 
