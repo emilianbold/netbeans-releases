@@ -76,7 +76,7 @@ public final class ClassCD extends ComponentDescriptor {
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
                 .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Instance_Name"), PropertyEditorInstanceName.createInstance(TYPEID), PROP_INSTANCE_NAME) // NOI18N
-                .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Is_Lazy_Initialized"), PropertyEditorBooleanUC.createInstance(false), PROP_LAZY_INIT); // NOI18N
+                .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Is_Lazy_Initialized"), PropertyEditorBooleanUC.createInstance(), PROP_LAZY_INIT); // NOI18N
                 
     }
 

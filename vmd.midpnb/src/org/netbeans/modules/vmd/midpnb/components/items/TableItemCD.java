@@ -109,7 +109,7 @@ public class TableItemCD extends ComponentDescriptor {
                         NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NEW"), //NOI18N
                         NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NONE"), //NOI18N
                         NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_TableModel_UCLABEL")), PROP_MODEL) //NOI18N
-                    .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_ShowBorders"), PropertyEditorBooleanUC.createInstance(false), PROP_BORDERS) //NOI18N   
+                    .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_ShowBorders"), PropertyEditorBooleanUC.createInstance(), PROP_BORDERS) //NOI18N   
                     .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_TitleFont"), PropertyEditorResource.createFontPropertyEditor(), PROP_TITLE_FONT) //NOI18N
                     .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_HeadersFont"), PropertyEditorResource.createFontPropertyEditor(), PROP_HEADERS_FONT) //NOI18N
                     .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_ValuesFont"), PropertyEditorResource.createFontPropertyEditor(), PROP_VALUES_FONT); //NOI18N

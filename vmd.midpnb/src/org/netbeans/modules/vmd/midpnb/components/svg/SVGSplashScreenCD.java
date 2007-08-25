@@ -80,7 +80,8 @@ public class SVGSplashScreenCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty(NbBundle.getMessage(SVGSplashScreenCD.class, "DISP_SVGSplashScreen_Timeout"), PropertyEditorNumber.createIntegerInstance(), PROP_TIMEOUT) // NOI18N
-                .addProperty(NbBundle.getMessage(SVGSplashScreenCD.class, "DISP_SVGSplashScreen_AllowTimeoutInterrupt"), PropertyEditorBooleanUC.createInstance(), PROP_ALLOW_TIMEOUT_INTERRUPT); // NOI18N
+                .addProperty(NbBundle.getMessage(SVGSplashScreenCD.class, "DISP_SVGSplashScreen_AllowTimeoutInterrupt"), // NOI18N
+                    PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SVGSplashScreenCD.class, "LBL_SVGSplashScreen_AllowTimeoutInterrupt")), PROP_ALLOW_TIMEOUT_INTERRUPT); // NOI18N
     }
 
     private Presenter createSetterPresenter () {

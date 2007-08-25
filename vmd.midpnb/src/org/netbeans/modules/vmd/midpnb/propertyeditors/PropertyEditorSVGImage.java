@@ -42,7 +42,7 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
     private PropertyEditorSVGImage() {
         super(NbBundle.getMessage(PropertyEditorSVGImage.class, "LBL_SVGIMAGE_UCLABEL")); // NOI18N;
         initComponents();
-        
+
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
@@ -53,7 +53,6 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorSVGImage.class, "LBL_SVGIMAGE_STR")); // NOI18N;
-        
         customEditor = new SVGImageEditorElement();
         customEditor.addPropertyEditorResourceElementListener(this);
     }
@@ -67,14 +66,12 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
     }
 
     public void updateState(PropertyValue value) {
-        if (customEditor.isShowing()) {
-            if (value == null) {
-                customEditor.setDesignComponentWrapper(null);
-            } else if (component != null && component.get() != null) {
-                customEditor.setDesignComponentWrapper(new DesignComponentWrapper(component.get()));
-            }
-            customEditor.setAllEnabled(true);
+        if (value == null) {
+            customEditor.setDesignComponentWrapper(null);
+        } else if (component != null && component.get() != null) {
+            customEditor.setDesignComponentWrapper(new DesignComponentWrapper(component.get()));
         }
+        customEditor.setAllEnabled(true);
     }
 
     public void setTextForPropertyValue(String text) {
@@ -121,5 +118,4 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
     private void saveValue(String text) {
         super.setValue(MidpTypes.createStringValue(text));
     }
-
 }

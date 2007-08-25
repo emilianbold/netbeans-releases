@@ -91,7 +91,9 @@ public final class CanvasCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty(NbBundle.getMessage(CanvasCD.class, "DISP_Canvas_Full_Screen"), NbBundle.getMessage(CanvasCD.class, "TTIP_Canvas_Full_Screen"), PropertyEditorBooleanUC.createInstance(), PROP_IS_FULL_SCREEN); // NOI18N
+                .addProperty(NbBundle.getMessage(CanvasCD.class, "DISP_Canvas_Full_Screen"), // NOI18N
+                    NbBundle.getMessage(CanvasCD.class, "TTIP_Canvas_Full_Screen"), // NOI18N
+                    PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(CanvasCD.class, "LBL_Canvas_Full_Screen")), PROP_IS_FULL_SCREEN); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {

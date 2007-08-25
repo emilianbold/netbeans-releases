@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.JPanel;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -61,21 +62,35 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
     @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        
         gauge.setSize(panel.getSize());
-        gauge.setInteractive(MidpTypes.getBoolean(getComponent().readProperty(GaugeCD.PROP_INTERACTIVE)));
-        int maxValue = MidpTypes.getInteger(getComponent().readProperty(GaugeCD.PROP_MAX_VALUE));
+        
+        PropertyValue pv = getComponent().readProperty(GaugeCD.PROP_INTERACTIVE);
+        if (PropertyValue.Kind.VALUE.equals(pv.getKind())) {
+            gauge.setInteractive(MidpTypes.getBoolean(pv));
+        }
+        
+        pv = getComponent().readProperty(GaugeCD.PROP_MAX_VALUE);
+        int maxValue = 1;
+        if (PropertyValue.Kind.VALUE.equals(pv.getKind())) {
+            maxValue = MidpTypes.getInteger(pv);
+        }
         if (maxValue < 0) {
             maxValue = 1;
         }
         gauge.setMaxValue(maxValue);
-        int value = MidpTypes.getInteger(getComponent().readProperty(GaugeCD.PROP_VALUE));
+        
+        pv = getComponent().readProperty(GaugeCD.PROP_MAX_VALUE);
+        int value = 0;
+        if (PropertyValue.Kind.VALUE.equals(pv.getKind())) {
+            value = MidpTypes.getInteger(pv);
+        }
         if (value < 0) {
             value = 0;
         } else if (value > maxValue) {
             value = maxValue;
         }
         gauge.setValue(value);
+        
         panel.repaint();
     }
     

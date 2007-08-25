@@ -37,10 +37,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collections;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
-import org.netbeans.modules.vmd.midp.components.general.ClassCode;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.openide.explorer.propertysheet.InplaceEditor;
 
@@ -51,22 +49,23 @@ import org.openide.explorer.propertysheet.InplaceEditor;
  */
 public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode implements PropertyEditorElement {
 
-    private String[] tags = {"true", "false"}; // NOI18N
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private BooleanInplaceEditor inplaceEditor;
     private Boolean valueState;
     private boolean executeInsideWriteTransactionUsed = true;
+    private String rbLabel;
 
-    private PropertyEditorAlertIndicator() {
+    private PropertyEditorAlertIndicator(String rbLabel) {
         super(NbBundle.getMessage(PropertyEditorAlertIndicator.class, "LBL_VALUE_ALERT_INDICATOR_UCLABEL")); // NOI18N
+        this.rbLabel = rbLabel;
         initComponents();
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
-    public static PropertyEditorAlertIndicator createInstance() {
-        return new PropertyEditorAlertIndicator();
+    public static PropertyEditorAlertIndicator createInstance(String rbLabel) {
+        return new PropertyEditorAlertIndicator(rbLabel);
     }
 
     private void initComponents() {
@@ -197,7 +196,7 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
             gauge.writeProperty(GaugeCD.PROP_INTERACTIVE, MidpTypes.createBooleanValue(false));
             gauge.writeProperty(GaugeCD.PROP_USED_BY_ALERT, MidpTypes.createBooleanValue(true));
             gauge.writeProperty(ItemCD.PROP_LABEL, PropertyValue.createNull());
-            gauge.writeProperty(ClassCD.PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested (gauge, "indicator"));
+            gauge.writeProperty(ClassCD.PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested (gauge, "indicator")); //NOI18N
             PropertyValue newGauge = PropertyValue.createComponentReference(gauge);
             PropertyEditorAlertIndicator.super.setValue(newGauge);
             alertComponent.addComponent(gauge);
@@ -246,7 +245,7 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
 
     private class CustomEditor extends JPanel implements ActionListener {
 
-        private JComboBox combobox;
+        private JCheckBox checkBox;
 
         public CustomEditor() {
             initComponents();
@@ -254,17 +253,20 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
 
         private void initComponents() {
             setLayout(new BorderLayout());
-            combobox = new JComboBox(tags);
-            combobox.addActionListener(this);
-            add(combobox, BorderLayout.CENTER);
+            checkBox = new JCheckBox();
+            if (rbLabel != null) {
+                Mnemonics.setLocalizedText(checkBox, rbLabel);
+            }
+            checkBox.addActionListener(this);
+            add(checkBox, BorderLayout.CENTER);
         }
 
         public void setValue(PropertyValue value) {
-            combobox.setSelectedItem(Boolean.toString(value != null && value.getComponent() != null));
+            checkBox.setSelected(value != null && value.getPrimitiveValue() != null && MidpTypes.getBoolean(value));
         }
 
         public String getText() {
-            return (String) combobox.getSelectedItem();
+            return checkBox.isSelected() ? "true" : "false"; // NOI18N
         }
 
         public void actionPerformed(ActionEvent evt) {

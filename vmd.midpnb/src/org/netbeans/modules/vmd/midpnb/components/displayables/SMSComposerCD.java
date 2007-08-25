@@ -119,7 +119,7 @@ public final class SMSComposerCD extends ComponentDescriptor {
                    .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_Port_Number"), //NOI18N
                         PropertyEditorNumber.createIntegerInstance(), PROP_PORT_NUMBER)
                    .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_AutomaticallySend"), //NOI18N
-                        PropertyEditorBooleanUC.createInstance(), PROP_SEND_AUTOMATICALLY)
+                        PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SMSComposerCD.class, "LBL_SMSComposer_AutomaticallySend")), PROP_SEND_AUTOMATICALLY) //NOI18N
                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                    .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_BackgroundColor"), //NOI18N
                         new PropertyEditorColorChooser(true), PROP_BGK_COLOR)

@@ -66,9 +66,9 @@ public class SVGMenuSelectCommandEventSourceCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter ()
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES) // TODO - its is not a code property
-                .addProperty (NbBundle.getMessage(SVGMenuSelectCommandEventSourceCD.class,
-                    "DISP_SVGMenuSelectCommandEventSource_ShowSelectCommand"), // NOI18N
-                    PropertyEditorBooleanUC.createInstance(), PROP_SHOW_SELECT_COMMAND);
+                .addProperty (NbBundle.getMessage(SVGMenuSelectCommandEventSourceCD.class, "DISP_SVGMenuSelectCommandEventSource_ShowSelectCommand"), // NOI18N
+                    PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SVGMenuSelectCommandEventSourceCD.class,
+                        "LBL_SVGMenuSelectCommandEventSource_ShowSelectCommand")), PROP_SHOW_SELECT_COMMAND); // NOI18N
     }
 
     @Override

@@ -83,7 +83,7 @@ public class SVGMenuCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                .addProperty(NbBundle.getMessage(SVGMenuCD.class, "DISP_SVGMenu_IndexBasedSwitch"), PropertyEditorBooleanUC.createInstance(false), PROP_INDEX_BASED_SWITCH); //NOI18N
+                .addProperty(NbBundle.getMessage(SVGMenuCD.class, "DISP_SVGMenu_IndexBasedSwitch"), PropertyEditorBooleanUC.createInstance(), PROP_INDEX_BASED_SWITCH); //NOI18N
         
     }
 
@@ -95,6 +95,7 @@ public class SVGMenuCD extends ComponentDescriptor {
     }
 
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         MidpActionsSupport.addNewActionPresenter(presenters, SVGMenuElementEventSourceCD.TYPEID);
         super.gatherPresenters (presenters);

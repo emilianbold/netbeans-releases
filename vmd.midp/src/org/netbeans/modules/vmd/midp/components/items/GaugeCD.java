@@ -115,17 +115,27 @@ public class GaugeCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                     .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Is_Interactive"), PropertyEditorBooleanUC.createInstance(AlertCD.TYPEID), PROP_INTERACTIVE) // NOI18N
-                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Maximum_Value"), PropertyEditorGaugeMaxValue.createInstance(), PROP_MAX_VALUE) // NOI18N
-                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Value"), PropertyEditorNumber.createIntegerInstance(), PROP_VALUE ) // NOI18N
+                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Is_Interactive"), // NOI18N
+                            PropertyEditorBooleanUC.createInstance(AlertCD.TYPEID,
+                                NbBundle.getMessage(GaugeCD.class, "DISP_RB_Label")), PROP_INTERACTIVE) // NOI18N
+                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Maximum_Value"), // NOI18N
+                            PropertyEditorGaugeMaxValue.createInstance(), PROP_MAX_VALUE)
+                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Value"),
+                            PropertyEditorNumber.createIntegerInstance(), PROP_VALUE ) // NOI18N
                         .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label"), // NOI18N
-                            PropertyEditorString.createInstance(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label_UCLABEL"), AlertCD.TYPEID), ItemCD.PROP_LABEL) // NOI18N
-                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Default_Command"), PropertyEditorDefaultCommand.createInstance(AlertCD.TYPEID), ItemCD.PROP_DEFAULT_COMMAND) // NOI18N
-                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Layout"), PropertyEditorLayout.createInstance(), ItemCD.PROP_LAYOUT) // NOI18N
-                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Size"), PropertyEditorArrayInteger.create(AlertCD.TYPEID), ItemCD.PROP_PREFERRED_WIDTH, ItemCD.PROP_PREFERRED_HEIGHT) // NOI18N
+                            PropertyEditorString.createInstance(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label_UCLABEL"),
+                                AlertCD.TYPEID), ItemCD.PROP_LABEL) // NOI18N
+                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Default_Command"),
+                            PropertyEditorDefaultCommand.createInstance(AlertCD.TYPEID), ItemCD.PROP_DEFAULT_COMMAND) // NOI18N
+                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Layout"),
+                            PropertyEditorLayout.createInstance(), ItemCD.PROP_LAYOUT) // NOI18N
+                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Size"),
+                            PropertyEditorArrayInteger.create(AlertCD.TYPEID), ItemCD.PROP_PREFERRED_WIDTH, ItemCD.PROP_PREFERRED_HEIGHT) // NOI18N
                      .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                        .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Instance_Name"), PropertyEditorInstanceName.createInstance(ClassCD.TYPEID), ClassCD.PROP_INSTANCE_NAME) // NOI18N
-                        .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Is_Lazy_Initialized"), PropertyEditorBooleanUC.createInstance(false), ClassCD.PROP_LAZY_INIT); // NOI18N
+                        .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Instance_Name"),
+                            PropertyEditorInstanceName.createInstance(ClassCD.TYPEID), ClassCD.PROP_INSTANCE_NAME) // NOI18N
+                        .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Is_Lazy_Initialized"),
+                            PropertyEditorBooleanUC.createInstance(), ClassCD.PROP_LAZY_INIT); // NOI18N
                         
     }
     

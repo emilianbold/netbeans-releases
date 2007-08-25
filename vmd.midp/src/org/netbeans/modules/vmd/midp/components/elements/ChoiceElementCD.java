@@ -90,7 +90,7 @@ public final class ChoiceElementCD extends ComponentDescriptor {
                 .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_String"), // NOI18N
                     PropertyEditorString.createInstance(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_String_UCLABEL")), PROP_STRING) // NOI18N
                 .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_Image"), PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
-                .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_Selected"), PropertyEditorBooleanUC.createInstance(), PROP_SELECTED) // NOI18N
+                .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_Selected"), PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(ChoiceElementCD.class, "LBL_ChoiceElement")), PROP_SELECTED) // NOI18N
                 .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_Font"), PropertyEditorResource.createFontPropertyEditor(), PROP_FONT); // NOI18N
     }
     

@@ -66,7 +66,8 @@ public final class ListSelectCommandEventSourceCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES) // TODO - maybe it should be another category
-                .addProperty (NbBundle.getMessage(ListSelectCommandEventSourceCD.class, "DISP_ListSelectCommandEventSource_Show_Select_Command"), PropertyEditorBooleanUC.createInstance(), PROP_SHOW_SELECT_COMMAND); // NOI18N
+                .addProperty (NbBundle.getMessage(ListSelectCommandEventSourceCD.class, "DISP_ListSelectCommandEventSource_Show_Select_Command"), // NOI18N
+                    PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(ListSelectCommandEventSourceCD.class, "LBL_ListSelectCommandEventSource")), PROP_SHOW_SELECT_COMMAND); // NOI18N
     }
 
     @Override

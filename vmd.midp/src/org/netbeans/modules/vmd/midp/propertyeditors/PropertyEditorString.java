@@ -354,9 +354,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
 
         public void setText(String text) {
-            if (!editorPane.isShowing()) {
-                editorPane.setText(text);
-            }
+            editorPane.setText(text);
         }
 
         public String getText() {

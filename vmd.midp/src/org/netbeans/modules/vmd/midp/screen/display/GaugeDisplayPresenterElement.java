@@ -16,7 +16,6 @@
  */
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;

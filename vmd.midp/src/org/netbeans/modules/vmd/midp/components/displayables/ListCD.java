@@ -108,7 +108,7 @@ public final class ListCD extends ComponentDescriptor {
                             NbBundle.getMessage(ListCD.class, "DISP_List_Fit_Policy_UCLABEL")), PROP_FIT_POLICY) // NOI18N
                     .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Select_Command"), PropertyEditorListSelectCommand.createInstance(), PROP_SELECT_COMMAND) // NOI18N
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Index_Based_Switch"), PropertyEditorBooleanUC.createInstance(false), PROP_INDEX_BASED_SWITCH); // NOI18N
+                    .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Index_Based_Switch"), PropertyEditorBooleanUC.createInstance(), PROP_INDEX_BASED_SWITCH); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {

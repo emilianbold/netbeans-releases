@@ -47,31 +47,32 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     private static final PropertyValue TRUE_VALUE = MidpTypes.createBooleanValue(true);
     private static final PropertyValue FALSE_VALUE = MidpTypes.createBooleanValue(false);
 
-    private final String[] tags = {"true", "false"}; // NOI18N
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private BooleanInplaceEditor inplaceEditor;
     private boolean supportsCustomEditor;
     private TypeID parentTypeID;
+    private String rbLabel;
 
-    private PropertyEditorBooleanUC(boolean supportsCustomEditor, TypeID parentTypeID) {
+    private PropertyEditorBooleanUC(boolean supportsCustomEditor, TypeID parentTypeID, String rbLabel) {
         super(NbBundle.getMessage(PropertyEditorBooleanUC.class, "LBL_VALUE_BOOLEAN_UCLABEL")); // NOI18N
         this.supportsCustomEditor = supportsCustomEditor;
         this.parentTypeID = parentTypeID;
+        this.rbLabel = rbLabel;
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
-    public static PropertyEditorBooleanUC createInstance(boolean supportsCustomEditor) {
-        return new PropertyEditorBooleanUC(supportsCustomEditor, null);
+    public static PropertyEditorBooleanUC createInstance() {
+        return new PropertyEditorBooleanUC(false, null, null);
     }
 
-    public static PropertyEditorBooleanUC createInstance() {
-        return new PropertyEditorBooleanUC(true, null);
+    public static PropertyEditorBooleanUC createInstance(String rbLabel) {
+        return new PropertyEditorBooleanUC(true, null, rbLabel);
     }
     
-    public static PropertyEditorBooleanUC createInstance(TypeID parentTypeID) {
-        return new PropertyEditorBooleanUC(true, parentTypeID);
+    public static PropertyEditorBooleanUC createInstance(TypeID parentTypeID, String rbLabel) {
+        return new PropertyEditorBooleanUC(true, parentTypeID, rbLabel);
     }
 
     @Override
@@ -111,10 +112,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
 
     @Override
     public boolean supportsCustomEditor() {
-        if (!supportsCustomEditor) {
-            return false;
-        }
-        return super.supportsCustomEditor();
+        return supportsCustomEditor ? super.supportsCustomEditor() : false;
     }
 
     public JComponent getCustomEditorComponent() {
@@ -139,7 +137,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     }
 
     public boolean isVerticallyResizable() {
-        return true;
+        return false;
     }
 
     public boolean isInitiallySelected() {
@@ -220,7 +218,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
 
     private class CustomEditor extends JPanel implements ActionListener {
 
-        private JComboBox combobox;
+        private JCheckBox checkBox;
 
         public CustomEditor() {
             initComponents();
@@ -228,21 +226,20 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
 
         private void initComponents() {
             setLayout(new BorderLayout());
-            combobox = new JComboBox(tags);
-            combobox.addActionListener(this);
-            add(combobox, BorderLayout.CENTER);
+            checkBox = new JCheckBox();
+            if (rbLabel != null) {
+                Mnemonics.setLocalizedText(checkBox, rbLabel);
+            }
+            checkBox.addActionListener(this);
+            add(checkBox, BorderLayout.CENTER);
         }
 
         public void setValue(PropertyValue value) {
-            if (value == null || value.getPrimitiveValue() == null || !MidpTypes.getBoolean(value)) {
-                combobox.setSelectedItem("false"); // NOI18N
-            } else {
-                combobox.setSelectedItem("true"); // NOI18N
-            }
+            checkBox.setSelected(value != null && value.getPrimitiveValue() != null && MidpTypes.getBoolean(value));
         }
 
         public String getText() {
-            return (String) combobox.getSelectedItem();
+            return checkBox.isSelected() ? "true" : "false"; // NOI18N
         }
 
         public void actionPerformed(ActionEvent evt) {

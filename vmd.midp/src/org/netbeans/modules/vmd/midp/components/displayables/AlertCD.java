@@ -103,7 +103,8 @@ public final class AlertCD extends ComponentDescriptor {
                         PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID,
                         NbBundle.getMessage(AlertCD.class, "DISP_Alert_Type_RB_LABEL"), // NOI18N
                         NbBundle.getMessage(AlertCD.class, "DISP_Alert_Type_UCLABEL")), PROP_ALERT_TYPE) // NOI18N
-                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Use_Indicator"), PropertyEditorAlertIndicator.createInstance(), PROP_INDICATOR) // NOI18N
+                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Use_Indicator"), // NOI18N
+                        PropertyEditorAlertIndicator.createInstance(NbBundle.getMessage(AlertCD.class, "LBL_Alert_Use_Indicator")), PROP_INDICATOR) // NOI18N
                     .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Timeout"), PropertyEditorTimeout.createInstance(), PROP_TIMEOUT); // NOI18N
     }
 
