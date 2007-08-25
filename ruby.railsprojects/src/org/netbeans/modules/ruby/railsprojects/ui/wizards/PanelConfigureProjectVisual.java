@@ -85,6 +85,11 @@ public class PanelConfigureProjectVisual extends JPanel {
     }
     
     boolean valid( WizardDescriptor wizardDescriptor ) {
+        
+        if (!optionsPanel.valid(wizardDescriptor)) {
+            return false;
+        }
+
         // Temporary workaround
         // Spaces in paths won't work for now with Rails
         //if (Utilities.isWindows()) {

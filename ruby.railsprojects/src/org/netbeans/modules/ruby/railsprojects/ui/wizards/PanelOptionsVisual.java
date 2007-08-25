@@ -24,16 +24,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.MessageFormat;
-import java.util.StringTokenizer;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -69,6 +63,9 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                 break;
         }
         
+        jdbcCheckBox.addActionListener(this);
+        warCheckBox.addActionListener(this);
+        
         //this.mainClassTextField.getDocument().addDocumentListener( new DocumentListener () {
         //   
         //    public void insertUpdate(DocumentEvent e) {
@@ -86,7 +83,12 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         //});
     }
 
-    public void actionPerformed( ActionEvent e ) {        
+    public void actionPerformed( ActionEvent e ) {  
+        if (e.getSource() == jdbcCheckBox) {
+            this.panel.fireChangeEvent();
+        } else if (e.getSource() == warCheckBox) {
+            this.panel.fireChangeEvent();
+        }
         //if ( e.getSource() == createMainCheckBox ) {
         //    lastMainClassCheck = createMainCheckBox.isSelected();
         //    mainClassTextField.setEnabled( lastMainClassCheck );        
@@ -113,41 +115,79 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         setAsMainCheckBox = new javax.swing.JCheckBox();
-        jPanel1 = new javax.swing.JPanel();
-
-        setLayout(new java.awt.GridBagLayout());
+        dbLabel = new javax.swing.JLabel();
+        dbCombo = new javax.swing.JComboBox();
+        jdbcCheckBox = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
+        warCheckBox = new javax.swing.JCheckBox();
 
         setAsMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(setAsMainCheckBox, gridBagConstraints);
+
+        dbLabel.setLabelFor(dbCombo);
+        dbLabel.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "Database")); // NOI18N
+
+        dbCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "mysql", "oracle", "postgresql", "sqlite2", "sqlite3" }));
+
+        jdbcCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "UseJdbc")); // NOI18N
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "UsingRuby")); // NOI18N
+
+        warCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "WarFile")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(setAsMainCheckBox)
+                    .add(layout.createSequentialGroup()
+                        .add(dbLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(dbCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel1)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jdbcCheckBox))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(warCheckBox)))
+                .addContainerGap(20, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(setAsMainCheckBox)
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(dbLabel)
+                    .add(dbCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jdbcCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(warCheckBox)
+                .addContainerGap())
+        );
+
         setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
         setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_setAsMainCheckBox")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
-        jPanel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_jPanel1")); // NOI18N
-        jPanel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCD_jPanel1")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_PanelOptionsVisual")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     boolean valid(WizardDescriptor settings) {
+        if ((warCheckBox.isSelected() || jdbcCheckBox.isSelected()) && !RubyInstallation.getInstance().isJRubySet()) {
+            settings.putProperty( "WizardPanel_errorMessage", 
+                    NbBundle.getMessage(PanelOptionsVisual.class, "JRubyRequired") ); //NOI18N
+            return false;
+        }
         //if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
         //    if (!valid) {
         //        settings.putProperty( "WizardPanel_errorMessage", // NOI18N
@@ -171,11 +211,18 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     void store( WizardDescriptor d ) {
         d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         //d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N
+        d.putProperty(NewRailsProjectWizardIterator.RAILS_DB_WN, dbCombo.getSelectedItem()); // NOI18N
+        d.putProperty(NewRailsProjectWizardIterator.JDBC_WN, jdbcCheckBox.isSelected() && jdbcCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
+        d.putProperty(NewRailsProjectWizardIterator.GOLDSPIKE_WN, warCheckBox.isSelected() && warCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JComboBox dbCombo;
+    private javax.swing.JLabel dbLabel;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JCheckBox jdbcCheckBox;
     private javax.swing.JCheckBox setAsMainCheckBox;
+    private javax.swing.JCheckBox warCheckBox;
     // End of variables declaration//GEN-END:variables
     
     //private void mainClassChanged () {

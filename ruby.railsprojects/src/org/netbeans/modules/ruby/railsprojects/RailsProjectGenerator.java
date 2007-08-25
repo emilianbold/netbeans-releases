@@ -70,7 +70,7 @@ public class RailsProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static RakeProjectHelper createProject(File dir, String name, boolean create) throws IOException {
+    public static RakeProjectHelper createProject(File dir, String name, boolean create, String database, boolean jdbc) throws IOException {
         FileObject dirFO = createProjectDir (dir);
         
         // Run Rails to generate the appliation skeleton
@@ -83,9 +83,16 @@ public class RailsProjectGenerator {
             if (runThroughRuby) {
                 desc = new ExecutionDescriptor(displayName, pwd,
                     RubyInstallation.getInstance().getRails());
-                desc.additionalArgs(name);
+                if (database != null) {
+                    desc.additionalArgs(name, "--database=" + database);
+                } else {
+                    desc.additionalArgs(name);
+                }
             } else {
                 desc = new ExecutionDescriptor(displayName, pwd, name);
+                if (database != null) {
+                    desc.additionalArgs("--database=" + database);
+                }
                 desc.cmd(new File(RubyInstallation.getInstance().getRails()));
             }
             desc.fileLocator(new DirectoryFileLocator(dirFO));
@@ -111,12 +118,12 @@ public class RailsProjectGenerator {
             }
             
             dirFO.getFileSystem().refresh(true);
+
+            if (jdbc) {
+                insertActiveJdbcHook(dirFO);
+            }
         }
 
-        //insertActiveJdbcHook(dirFO);
-        
-        // TODO - open database.yml and edit in JDBC stuff?
-        
         RakeProjectHelper h = createProject(dirFO, name/*, "app", "test", mainClass, manifestFile, false*/); //NOI18N
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
@@ -153,7 +160,7 @@ public class RailsProjectGenerator {
                     offset = text.indexOf("Rails::Initializer.run do |config|"); // NOI18N
                     if (offset != -1) {
                         String insert =
-                            "# Inserted by NetBeans Ruby support to support JRuby; you can delete if not using JRuby\n" +
+                            "# Inserted by NetBeans Ruby support to support JRuby\n" +
                             "if RUBY_PLATFORM =~ /java/\n" + // NOI18N
                             "  require 'rubygems'\n" + // NOI18N
                             "  RAILS_CONNECTION_ADAPTERS = %w(jdbc)\n" + // NOI18N
@@ -173,9 +180,6 @@ public class RailsProjectGenerator {
                 Exceptions.printStackTrace(ioe);
             }
         }
-        
-        
-        
     }
     
 

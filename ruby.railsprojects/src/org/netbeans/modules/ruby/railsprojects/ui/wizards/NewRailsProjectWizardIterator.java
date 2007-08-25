@@ -32,6 +32,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectGenerator;
 import org.netbeans.modules.ruby.railsprojects.ui.FoldersListSettings;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
@@ -53,7 +54,13 @@ import org.openide.util.NbBundle;
  * TODO: Disable when no valid Rails install
  */
 public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
-
+    /** Wizard descriptor name for using jdbc as database access means */
+    static final String JDBC_WN = "useJdbc"; // NOI18N
+    /** Wizard descriptor name for the target Rails database */
+    static final String RAILS_DB_WN = "railsDatabase"; // NOI18N
+    /** Wizard descriptor name for including Goldspike for WAR deployment */
+    static final String GOLDSPIKE_WN = "goldspike"; // NOI18N
+    
     static final int TYPE_APP = 0;
     //static final int TYPE_LIB = 1;
     static final int TYPE_EXT = 2;
@@ -110,7 +117,11 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
 
         RakeProjectHelper h = null;
         
-        h = RailsProjectGenerator.createProject(dirF, name, type == TYPE_APP);
+        String database = (String)wiz.getProperty(RAILS_DB_WN); // NOI18N
+        Boolean jdbc = (Boolean)wiz.getProperty(JDBC_WN); // NOI18N
+        Boolean deploy = (Boolean)wiz.getProperty(GOLDSPIKE_WN); // NOI18N
+        
+        h = RailsProjectGenerator.createProject(dirF, name, type == TYPE_APP, database, jdbc == Boolean.TRUE);
         handle.progress (2);
 
 //        if (mainClass != null && mainClass.length () > 0) {
@@ -131,6 +142,18 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
 //        }
         handle.progress (3);
 
+        // Install goldspike if the user wants Rails deployment
+        if (deploy == Boolean.TRUE) {
+            InstalledFileLocator locator = InstalledFileLocator.getDefault();
+            File goldspikeFile = locator.locate("goldspike.zip", "org.netbeans.modules.ruby.railsprojects", false);
+            if (goldspikeFile != null) {
+                FileObject fo = FileUtil.toFileObject(goldspikeFile);
+                if (fo != null) {
+                    NbUtilities.extractZip(fo, dir);
+                }
+            }
+        }
+
         // Returning FileObject of project diretory. 
         // Project will be open and set as main
 //        Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
@@ -144,26 +167,44 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         
         // Open README.rails in the JRuby distribution
         // (unless we're creating a rails app from existing sources - those probably don't need configuration steps)
-        if ((type == TYPE_APP) && (RubyInstallation.getInstance().isJRubySet())) {
-            String jrubyHome = RubyInstallation.getInstance().getJRubyHome();
-            if (jrubyHome != null) {
-                File railsFile = new File(jrubyHome + File.separator + "docs" + File.separator + "README.rails");
-                FileObject fo = FileUtil.toFileObject(railsFile);
-                if (fo != null) {
-                    // Open
-                    try {
-                        DataObject dobj = DataObject.find(fo);
-                        EditorCookie cookie = dobj.getCookie(EditorCookie.class);
-                        if (cookie != null) {
-                            cookie.open();
-                        }
-                    } catch (DataObjectNotFoundException ex) {
-                        ErrorManager.getDefault().notify(ex);
+        //if ((type == TYPE_APP) && (RubyInstallation.getInstance().isJRubySet())) {
+        //    String jrubyHome = RubyInstallation.getInstance().getJRubyHome();
+        //    if (jrubyHome != null) {
+        //        File railsFile = new File(jrubyHome + File.separator + "docs" + File.separator + "README.rails");
+        //        FileObject fo = FileUtil.toFileObject(railsFile);
+        //        if (fo != null) {
+        //            // Open
+        //            try {
+        //                DataObject dobj = DataObject.find(fo);
+        //                EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+        //                if (cookie != null) {
+        //                    cookie.open();
+        //                }
+        //            } catch (DataObjectNotFoundException ex) {
+        //                ErrorManager.getDefault().notify(ex);
+        //            }
+        //        }
+        //    }
+        //}
+
+        // Open database.yml so the user can edit the database
+        // (unless we're creating a rails app from existing sources - those probably don't need configuration steps)
+        if (type == TYPE_APP) {
+            FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
+            if (fo != null) {
+                // Open
+                try {
+                    DataObject dobj = DataObject.find(fo);
+                    EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+                    if (cookie != null) {
+                        cookie.open();
                     }
+                } catch (DataObjectNotFoundException ex) {
+                    ErrorManager.getDefault().notify(ex);
                 }
             }
         }
-                        
+        
         return resultSet;
     }
     
