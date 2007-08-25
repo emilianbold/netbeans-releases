@@ -18,7 +18,14 @@
  */
 package org.netbeans.modules.ruby;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -31,7 +38,10 @@ import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
@@ -152,5 +162,64 @@ public class NbUtilities {
         }
 
         return false;
+    }
+    
+    public static void extractZip(final FileObject extract, final FileObject dest) throws IOException {
+        File extractFile = FileUtil.toFile(extract);
+        extractZip(dest, new BufferedInputStream(new FileInputStream(extractFile)));
+    }
+    
+    // Based on openide/fs' FileUtil.extractJar
+    private static void extractZip(final FileObject fo, final InputStream is)
+    throws IOException {
+        FileSystem fs = fo.getFileSystem();
+
+        fs.runAtomicAction(
+            new FileSystem.AtomicAction() {
+                public void run() throws IOException {
+                    extractZipImpl(fo, is);
+                }
+            }
+        );
+    }
+
+    /** Does the actual extraction of the Jar file.
+     */
+    // Based on openide/fs' FileUtil.extractJarImpl
+    private static void extractZipImpl(FileObject fo, InputStream is)
+    throws IOException {
+        ZipEntry je;
+
+        ZipInputStream jis = new ZipInputStream(is);
+
+        while ((je = jis.getNextEntry()) != null) {
+            String name = je.getName();
+
+            if (name.toLowerCase().startsWith("meta-inf/")) {
+                continue; // NOI18N
+            }
+
+            if (je.isDirectory()) {
+                FileUtil.createFolder(fo, name);
+
+                continue;
+            }
+
+            // copy the file
+            FileObject fd = FileUtil.createData(fo, name);
+            FileLock lock = fd.lock();
+
+            try {
+                OutputStream os = fd.getOutputStream(lock);
+
+                try {
+                    FileUtil.copy(jis, os);
+                } finally {
+                    os.close();
+                }
+            } finally {
+                lock.releaseLock();
+            }
+        }
     }
 }
