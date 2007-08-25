@@ -88,7 +88,8 @@ import org.netbeans.modules.xml.xdm.nodes.Attribute;
 import javax.swing.text.BadLocationException;
 
 //import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.compapp.catd.jbimanager.EnvironmentVariableHandler;
+//import org.netbeans.modules.compapp.catd.jbimanager.EnvironmentVariableHandler;
+import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 
 /**
  * Test the HTTP SOAP processing
@@ -1909,7 +1910,12 @@ public class ConfiguredTest extends TestCase {
         
         if (destination.indexOf("${") != -1 && destination.indexOf("}") != -1) {
             try {
-                destination = EnvironmentVariableHandler.translate(destination);
+                String nbUserDir = System.getProperty("NetBeansUserDir");
+                AdministrationService adminService = new AdministrationService(nbUserDir);
+                // Currently only deal with http soap bc because soap binding is the 
+                // only supported binding type in test driver.
+                destination = //EnvironmentVariableHandler.translate(destination);
+                        adminService.translate(destination, "bindingComponents", "sun-http-binding");
             } catch (Exception ex) {
                 if (stdErr != null) {
                     System.setErr(origErr);

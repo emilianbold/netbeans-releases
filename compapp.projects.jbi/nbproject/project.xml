@@ -103,6 +103,13 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.compapp.manager.jbi</code-name-base>
+                    <build-prerequisite/>
+                    <!--<run-dependency>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>-->
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.diff</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

@@ -624,6 +624,7 @@ Microsystems, Inc. All Rights Reserved.
             <target name="-do-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
                 <junit showoutput="true" fork="yes" dir="${{basedir}}" failureproperty="tests.failed" errorproperty="tests.failed">
                     <classpath>
+                        <pathelement path="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
                         <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/catd.jar"/>
                         <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/xmlunit1.0.jar"/>
                         <!--<pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/httpunit-1.6.jar"/> -->
@@ -671,6 +672,7 @@ Microsystems, Inc. All Rights Reserved.
             <target name="-do-single-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
                 <junit showoutput="true" fork="yes" dir="${{basedir}}" failureproperty="tests.failed" errorproperty="tests.failed">
                     <classpath>
+                        <pathelement path="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
                         <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/catd.jar"/>
                         <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/xmlunit1.0.jar"/>
                         <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/httpunit-1.6.jar"/>
