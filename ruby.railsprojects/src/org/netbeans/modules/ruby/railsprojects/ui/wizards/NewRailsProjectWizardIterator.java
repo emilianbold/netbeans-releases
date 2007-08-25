@@ -22,30 +22,23 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectGenerator;
-import org.netbeans.modules.ruby.railsprojects.ui.FoldersListSettings;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
 /**
@@ -121,7 +114,8 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         Boolean jdbc = (Boolean)wiz.getProperty(JDBC_WN); // NOI18N
         Boolean deploy = (Boolean)wiz.getProperty(GOLDSPIKE_WN); // NOI18N
         
-        h = RailsProjectGenerator.createProject(dirF, name, type == TYPE_APP, database, jdbc == Boolean.TRUE);
+        h = RailsProjectGenerator.createProject(dirF, name, type == TYPE_APP, database, 
+                jdbc == Boolean.TRUE, deploy == Boolean.TRUE);
         handle.progress (2);
 
 //        if (mainClass != null && mainClass.length () > 0) {
@@ -142,17 +136,7 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
 //        }
         handle.progress (3);
 
-        // Install goldspike if the user wants Rails deployment
-        if (deploy == Boolean.TRUE) {
-            InstalledFileLocator locator = InstalledFileLocator.getDefault();
-            File goldspikeFile = locator.locate("goldspike.zip", "org.netbeans.modules.ruby.railsprojects", false);
-            if (goldspikeFile != null) {
-                FileObject fo = FileUtil.toFileObject(goldspikeFile);
-                if (fo != null) {
-                    NbUtilities.extractZip(fo, dir);
-                }
-            }
-        }
+        // TODO - check for Java DB and if so configure it
 
         // Returning FileObject of project diretory. 
         // Project will be open and set as main

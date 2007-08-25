@@ -31,6 +31,7 @@ import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectPropert
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
 import org.netbeans.modules.ruby.rubyproject.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionService;
@@ -47,6 +48,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
@@ -70,7 +72,8 @@ public class RailsProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static RakeProjectHelper createProject(File dir, String name, boolean create, String database, boolean jdbc) throws IOException {
+    public static RakeProjectHelper createProject(File dir, String name, boolean create, 
+            String database, boolean jdbc, boolean deploy) throws IOException {
         FileObject dirFO = createProjectDir (dir);
         
         // Run Rails to generate the appliation skeleton
@@ -136,6 +139,18 @@ public class RailsProjectGenerator {
         //if (server != null) {
         //    server.ensureRunning();
         //}
+        
+        // Install goldspike if the user wants Rails deployment
+        if (deploy) {
+            InstalledFileLocator locator = InstalledFileLocator.getDefault();
+            File goldspikeFile = locator.locate("goldspike.zip", "org.netbeans.modules.ruby.railsprojects", false);
+            if (goldspikeFile != null) {
+                FileObject fo = FileUtil.toFileObject(goldspikeFile);
+                if (fo != null) {
+                    NbUtilities.extractZip(fo, p.getProjectDirectory());
+                }
+            }
+        }
 
         // Run Rake -T silently to determine the available targets and write into private area
         RakeTargetsAction.refreshTargets(p);
