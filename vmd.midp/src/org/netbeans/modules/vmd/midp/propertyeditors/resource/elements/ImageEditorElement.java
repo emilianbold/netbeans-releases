@@ -256,6 +256,12 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
                     width = -1;
                     height = previewHeight;
                 }
+                if (width == 0) {
+                    width = -1;
+                }
+                if (height == 0) {
+                    height = -1;
+                }
                 image = bufferedImage.getScaledInstance(width, height, Image.SCALE_SMOOTH | Image.SCALE_AREA_AVERAGING);
             } else {
                 image = bufferedImage;
