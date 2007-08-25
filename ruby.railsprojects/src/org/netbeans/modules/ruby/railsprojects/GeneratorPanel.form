@@ -86,6 +86,11 @@
           <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="GeneratorPanel.generateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_GenerateLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="pretendCB">
       <Properties>
@@ -96,6 +101,11 @@
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_PretendCB" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JComboBox" name="typeCombo">
       <Properties>
@@ -104,6 +114,11 @@
           <Connection code="getTypeModel()" type="code"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_TypeCombo" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="skipRadio">
       <Properties>
@@ -118,6 +133,11 @@
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_SkipRadio" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="overwriteRadio">
       <Properties>
@@ -131,6 +151,11 @@
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_OverwriteRadio" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Container class="javax.swing.JPanel" name="optionsPanel">
 
@@ -142,6 +167,11 @@
               <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="Name" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_NameLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="11" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -149,6 +179,11 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JTextField" name="nameText">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_NameText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="-1" gridY="-1" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="10" weightX="1.0" weightY="0.0"/>
@@ -156,6 +191,11 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JLabel" name="parameter1Label">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_Parameter1Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="12" insetsLeft="0" insetsBottom="0" insetsRight="11" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -163,6 +203,11 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JTextField" name="parameter1Text">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_Parameter1Text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="-1" gridY="-1" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="12" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="10" weightX="1.0" weightY="0.0"/>
@@ -170,6 +215,11 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JLabel" name="parameter2Label">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_Parameter2Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="12" insetsLeft="0" insetsBottom="0" insetsRight="11" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -177,6 +227,11 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JTextField" name="parameter2Text">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_Parameter2Text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="-1" gridY="-1" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="12" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="10" weightX="1.0" weightY="0.0"/>
@@ -191,6 +246,11 @@
           <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="GeneratorPanel.forceLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_ForceLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator1">
     </Component>
@@ -207,6 +267,11 @@
             <Property name="editable" type="boolean" value="false"/>
             <Property name="rows" type="int" value="5"/>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_UsageText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
         </Component>
       </SubComponents>
     </Container>
@@ -218,6 +283,11 @@
           <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="GeneratorPanel.installGeneratorsButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="AD_InstallGeneratorsButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="installGeneratorsButtonActionPerformed"/>
       </Events>

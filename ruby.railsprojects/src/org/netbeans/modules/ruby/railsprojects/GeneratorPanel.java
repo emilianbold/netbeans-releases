@@ -56,6 +56,7 @@ import org.openide.util.Utilities;
  * @author  Tor Norbye
  */
 public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
+    
     private ChangeListener changeListener;
     private List<Generator> generators = new ArrayList<Generator>();
     private Project project;
@@ -526,31 +527,42 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 11);
         optionsPanel.add(nameLabel, gridBagConstraints);
+        nameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_NameLabel")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         optionsPanel.add(nameText, gridBagConstraints);
+        nameText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_NameText")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         optionsPanel.add(parameter1Label, gridBagConstraints);
+        parameter1Label.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_Parameter1Label")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         optionsPanel.add(parameter1Text, gridBagConstraints);
+        parameter1Text.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_Parameter1Text")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         optionsPanel.add(parameter2Label, gridBagConstraints);
+        parameter2Label.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_Parameter2Label")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         optionsPanel.add(parameter2Text, gridBagConstraints);
+        parameter2Text.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_Parameter2Text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(forceLabel, org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.forceLabel.text")); // NOI18N
 
@@ -558,6 +570,8 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         usageText.setEditable(false);
         usageText.setRows(5);
         jScrollPane1.setViewportView(usageText);
+        usageText.getAccessibleContext().setAccessibleName("");
+        usageText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_UsageText")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(installGeneratorsButton, org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "GeneratorPanel.installGeneratorsButton.text")); // NOI18N
         installGeneratorsButton.addActionListener(formListener);
@@ -613,6 +627,14 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        generateLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_GenerateLabel")); // NOI18N
+        pretendCB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_PretendCB")); // NOI18N
+        typeCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_TypeCombo")); // NOI18N
+        skipRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_SkipRadio")); // NOI18N
+        overwriteRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_OverwriteRadio")); // NOI18N
+        forceLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_ForceLabel")); // NOI18N
+        installGeneratorsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneratorPanel.class, "AD_InstallGeneratorsButton")); // NOI18N
     }
 
     // Code for dispatching events from components to event handlers.
