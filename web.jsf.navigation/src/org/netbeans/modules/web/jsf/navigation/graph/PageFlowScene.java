@@ -26,11 +26,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Set;
-import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.LinkCreateProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -45,16 +42,12 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.KeyStroke;
-import javax.swing.Popup;
 import javax.swing.border.Border;
 import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
@@ -62,7 +55,6 @@ import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
-import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.vmd.VMDColorScheme;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
@@ -77,12 +69,10 @@ import org.netbeans.modules.web.jsf.navigation.PageFlowView;
 import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.MapActionUtility;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.MyActionMapAction;
-import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowAcceptProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowDeleteAction;
 import org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowPopupProvider;
 import org.netbeans.modules.web.jsf.navigation.graph.layout.ConnectionWrapperLayout;
 import org.openide.actions.DeleteAction;
-import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
@@ -172,7 +162,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         popupProvider = new PageFlowPopupProvider(this, tc);
         actions.addAction(ActionFactory.createPopupMenuAction(popupProvider));
         actions.addAction(createActionMap());
-        addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        addObjectSceneListener(new PFObjectSceneListener(tc), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
 
 
         /* Temporary workaround  ISSUE# 107506 Still an issue. */
@@ -181,6 +171,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         //actions.addAction(ActionFactory.createActionMapAction(inputMap, actionMap));
         //MyActionMapAction action = new MyActionMapAction(null, null);
         FreePlaceNodesLayouter fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
+        
     }
 
 
@@ -624,54 +615,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         }
     }
 
-    private final static UnsupportedOperationException uoe = new  UnsupportedOperationException("Not supported yet.");
-
-
-    private class MyObjectSceneListener implements ObjectSceneListener {
-
-        public void objectAdded(ObjectSceneEvent event, Object addedObject) {
-            throw uoe;
-        }
-
-        public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
-            throw uoe;
-        }
-
-        public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState prevState, ObjectState newState) {
-            throw uoe;
-        }
-
-        public void selectionChanged(ObjectSceneEvent event, Set<Object> prevSelection, Set<Object> newSelection) {
-
-            Set<Node> selected = new HashSet<Node>();
-            for (Object obj : newSelection) {
-                if (obj instanceof PageFlowSceneElement) {
-                    PageFlowSceneElement element = (PageFlowSceneElement) obj;
-
-                    selected.add(element.getNode());
-                }
-            }
-
-            if (selected.isEmpty()) {
-                tc.setDefaultActivatedNode();
-            } else {
-                tc.setActivatedNodes(selected.toArray(new Node[selected.size()]));
-            }
-        }
-
-        public void highlightingChanged(ObjectSceneEvent event, Set<Object> prevHighlighting, Set<Object> newHighlighting) {
-            throw uoe;
-        }
-
-        public void hoverChanged(ObjectSceneEvent event, Object prevHoveredObject, Object newHoveredObject) {
-            throw uoe;
-        }
-
-        public void focusChanged(ObjectSceneEvent event, Object prevFocusedObject, Object newFocusedObject) {
-            throw uoe;
-        }
-    }
-
+  
 
 
 
