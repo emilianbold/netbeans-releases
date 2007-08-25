@@ -448,6 +448,10 @@ public final class GenCodeUtil
 		IMultiplicityRange range = iter.next();
 		if (range != null) {
 		    type = range.getCollectionTypeValue(true);
+		    if (type == null || type.trim().equals("")) 
+		    {
+			type = IMultiplicityRange.AS_ARRAY;
+		    }
 		    if (! IMultiplicityRange.AS_ARRAY.equals(type)) {
 			type = JavaClassUtils.convertUMLtoJava(type);
 		    }
