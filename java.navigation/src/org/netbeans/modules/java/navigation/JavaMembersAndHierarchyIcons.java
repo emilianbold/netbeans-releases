@@ -33,7 +33,7 @@ import javax.swing.ImageIcon;
  */
 final class JavaMembersAndHierarchyIcons {
     public static final Icon INHERITED_ICON = new ImageIcon(Utilities.loadImage(
-                "org/netbeans/modules/java/navigation/resources/inherited.gif")); // NOI18N
+                "org/netbeans/modules/java/navigation/resources/filterHideInherited.png")); // NOI18N
     
     public static final Icon SUPER_TYPE_HIERARCHY_ICON = new ImageIcon(Utilities.loadImage(
                 "org/netbeans/modules/java/navigation/resources/supertypehierarchy.gif")); // NOI18N
