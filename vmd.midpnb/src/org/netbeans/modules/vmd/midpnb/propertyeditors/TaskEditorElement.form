@@ -15,8 +15,14 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="taskLabel" min="-2" max="-2" attributes="0"/>
-          <Component id="gotoButton" alignment="0" min="-2" max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="taskLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="gotoButton" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="43" max="-2" attributes="0"/>
+          </Group>
+          <Component id="jScrollPane1" alignment="0" pref="176" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -25,7 +31,8 @@
               <Component id="taskLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="gotoButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="107" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jScrollPane1" pref="122" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -59,5 +66,27 @@
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
+    <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTextArea" name="jTextArea1">
+          <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="ed" green="e9" id="Panel.background" palette="3" red="eb" type="palette"/>
+            </Property>
+            <Property name="columns" type="int" value="20"/>
+            <Property name="editable" type="boolean" value="false"/>
+            <Property name="rows" type="int" value="5"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle.properties" key="TaskEditorElement.jTextArea1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
   </SubComponents>
 </Form>

@@ -83,6 +83,8 @@ public class TaskEditorElement extends PropertyEditorResourceElement {
 
         taskLabel = new javax.swing.JLabel();
         gotoButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
 
         taskLabel.setLabelFor(gotoButton);
         org.openide.awt.Mnemonics.setLocalizedText(taskLabel, org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "TaskEditorElement.taskLabel.text")); // NOI18N
@@ -96,12 +98,23 @@ public class TaskEditorElement extends PropertyEditorResourceElement {
             }
         });
 
+        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+        jTextArea1.setColumns(20);
+        jTextArea1.setEditable(false);
+        jTextArea1.setRows(5);
+        jTextArea1.setText(org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "TaskEditorElement.jTextArea1.text")); // NOI18N
+        jScrollPane1.setViewportView(jTextArea1);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(taskLabel)
-            .add(gotoButton)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(taskLabel)
+                    .add(gotoButton))
+                .add(43, 43, 43))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -109,7 +122,8 @@ public class TaskEditorElement extends PropertyEditorResourceElement {
                 .add(taskLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(gotoButton)
-                .addContainerGap(107, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -124,6 +138,8 @@ public class TaskEditorElement extends PropertyEditorResourceElement {
     // Variables declaration - do not modify
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton gotoButton;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JLabel taskLabel;
     // End of variables declaration//GEN-END:variables
 }
