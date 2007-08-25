@@ -103,6 +103,7 @@
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.bpel.search</friend>
+                <friend>org.netbeans.modules.iep.editor</friend>
                 <friend>org.netbeans.modules.script.core</friend>
                 <friend>org.netbeans.modules.worklist.editor</friend>
                 <friend>org.netbeans.modules.xml.schema</friend>
