@@ -63,6 +63,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 import org.netbeans.modules.j2ee.sun.dd.api.cmp.SunCmpMappings;
+import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.CmpResource;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans;
@@ -136,6 +137,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     private File resourceDir;
     private boolean keepUpdated;
 
+    private DescriptorListener descriptorListener;
     private DDFilesListener ddFilesListener;
 
     private static final RequestProcessor resourceProcessor = new RequestProcessor("sun-resource-ref"); // NOI18N
@@ -220,12 +222,13 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             throw new ConfigurationException("No Project and/or J2eeModuleProvider located for " + configFiles[0].getPath()); // NOI18N
         }
 
-        // -------- prototype ------- checking server version
+// -------- prototype ------- checking server version
 //        provider.addInstanceListener(this);
 //        String instance = provider.getServerInstanceID();
 //        String serverType = provider.getServerID();
 //        System.out.println("SunONEDeploymentConfiguration::init: instance: " + instance + ", serverType: " + serverType);
 // -------- end prototype ------- checking server version
+        
         try {
             // Determine what the available server types can be (WS 6.0, AS 7.0, AS 8.1, AS 9.0)
             // based on j2ee spec version.
@@ -236,17 +239,13 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             maxASVersion = computeMaxASVersion();
 
             appServerVersion = maxASVersion;
-//            // Connectors are not supported by the configuration editor since sun-ra.xml is deprecated.
-//            // To avoid failing initialization here when encountering that file, we will ignore it explicitly.
-//            if("sun-ra.xml".equals(configFiles[0].getName())) {
-//                return;
-//            }
+
+            J2EEBaseVersion j2eeVersion = J2EEBaseVersion.getVersion(moduleType, moduleVersion);
+            boolean isPreJavaEE5 = (j2eeVersion != null) ? (J2EEVersion.J2EE_1_4.compareSpecification(j2eeVersion) >= 0) : false;
             if (!cfgFiles[0].exists()) {
                 // If module is J2EE 1.4 (or 1.3), or this is a web app (where we have
                 // a default property even for JavaEE5), then copy the default template.
-                J2EEBaseVersion j2eeVersion = J2EEBaseVersion.getVersion(moduleType, moduleVersion);
-                boolean isJ2ee14 = (j2eeVersion != null) ? (J2EEVersion.J2EE_1_4.compareSpecification(j2eeVersion) >= 0) : false;
-                if (J2eeModule.WAR.equals(moduleType) || isJ2ee14) {
+                if (J2eeModule.WAR.equals(moduleType) || isPreJavaEE5) {
                     try {
                         createDefaultSunDD(configFiles[0]);
                     } catch (IOException ex) {
@@ -256,11 +255,29 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                     }
                 }
             }
+            
+            if(isPreJavaEE5) {
+                // Create standard descriptor listener holder
+                descriptorListener = new DescriptorListener(this);
+                
+                // Attach folder listener to config folder (primarily to monitor for webservices.xml
+                // if it does not exist yet.)
+                File configDir = configFiles[0].getParentFile();
+                FileObject configFolder = FileUtil.toFileObject(configDir);
+                if(configFolder != null) {
+                    FolderListener.createListener(configFiles[0], configFolder, moduleType);
+                }
+                
+                // Attach listeners to the standard descriptors to handle automatic
+                // jndi-name and endpoint assignment.
+                addDescriptorListener(getStandardRootDD());
+                addDescriptorListener(getWebServicesRootDD());
+            }
         } catch (RuntimeException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
-
+    
     public void dispose() {
 //        J2eeModuleProvider provider = getProvider(configFiles[0].getParentFile());
 //        if(provider != null) {
@@ -269,6 +286,11 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
 //            String serverType = provider.getServerID();
 //            System.out.println("SunONEDeploymentConfiguration::dispose: instance: " + instance + ", serverType: " + serverType);
 //        }
+        if(descriptorListener != null) {
+            descriptorListener.removeListeners();
+            descriptorListener = null;
+        }
+        
         SunONEDeploymentConfiguration storedCfg = getConfiguration(configFiles[0]);
         if (storedCfg != this) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Stored DeploymentConfiguration (" + storedCfg + ") instance not the one being disposed of (" + this + ").");
@@ -337,6 +359,21 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         return module.getMetadataModel(type);
     }
 
+    void addDescriptorListener(FileObject target) {
+        // Note: We don't use target to locate the genuine descriptor file.  We
+        // lookup the descriptor file through proper channels and add a listener
+        // to that result (which 99% of the time ought to be the same as what was
+        // passed in here.  But there's that pesky 1% case.... bleah.)
+        addDescriptorListener("webservices.xml".equals(target.getNameExt()) ? 
+            getWebServicesRootDD() : getStandardRootDD());
+    }
+    
+    private void addDescriptorListener(org.netbeans.modules.j2ee.dd.api.common.RootInterface rootDD) {
+        if(rootDD != null) {
+            descriptorListener.addListener(rootDD);
+        }
+    }
+    
     public void updateResourceDir(File resourceDir) {
         this.resourceDir = resourceDir;
     }
@@ -667,8 +704,8 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             if (localStorage != null) {
                 deferredAppServerChange = false;
                 localStorage.setChanged();
-            }
         }
+    }
     }
 
     /** Set the AppServer version to be used for saving deployment descriptors.
@@ -885,8 +922,8 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             // parse the content
             byte[] content = (byte[]) contentMap.get(key);
             if (content == null) {
-                return null;
-            }
+        return null;
+    }
 
             if (parser == null) {
                 jsr88Logger.severe("Missing parser");
@@ -1023,6 +1060,153 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "SunONEDeploymentConfiguration.setContextRoot() invoked on incorrect module type: " + module.getModuleType());
         }
         return contextRoot;
+    }
+    
+    /**
+     * Set or clear the default JNDI name for the specified EJB
+     */
+    enum ChangeOperation { CREATE, DELETE };
+    
+    void updateDefaultEjbJndiName(final String ejbName, final String prefix, final ChangeOperation op) {
+        try {
+            FileObject primarySunDDFO = getSunDD(configFiles[0], op == ChangeOperation.CREATE);
+            
+            if(primarySunDDFO != null) {
+                boolean changed = false;
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+                if (sunDDRoot instanceof SunEjbJar) {
+                    SunEjbJar sunEjbJar = (SunEjbJar) sunDDRoot;
+                    EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
+                    if(eb == null && op == ChangeOperation.CREATE) {
+                        eb = sunEjbJar.newEnterpriseBeans();
+                        sunEjbJar.setEnterpriseBeans(eb);
+                    }
+
+                    if(eb != null) {
+                        Ejb ejb = findNamedBean(eb, ejbName, EnterpriseBeans.EJB, Ejb.EJB_NAME);
+                        if(ejb == null && op == ChangeOperation.CREATE) {
+                            ejb = eb.newEjb();
+                            ejb.setEjbName(ejbName);
+                            eb.addEjb(ejb);
+                        }
+
+                        if(ejb != null) {
+                            assert ejbName.equals(ejb.getEjbName());
+
+                            String defaultJndiName = ejbName.startsWith(prefix) ? ejbName : (prefix + ejbName);
+                            if(op == ChangeOperation.CREATE && Utils.strEmpty(ejb.getJndiName())) {
+                                ejb.setJndiName(defaultJndiName);
+                                changed = true;
+                            } else if(op == ChangeOperation.DELETE && Utils.strEquals(defaultJndiName, ejb.getJndiName())) {
+                                ejb.setJndiName(null);
+                                if(ejb.isTrivial(Ejb.EJB_NAME)) {
+                                    eb.removeEjb(ejb);
+                                    if(eb.isTrivial(null)) {
+                                        sunEjbJar.setEnterpriseBeans(null);
+                                    }
+                                }
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+                
+                if(changed) {
+                    sunDDRoot.write(primarySunDDFO);
+                }
+            }
+        } catch(IOException ex) {
+            // This is a legitimate exception that could occur, such as a problem
+            // writing the changed descriptor to disk.
+            // !PW FIXME notify user
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch(Exception ex) {
+            // This would probably be a runtime exception due to a bug, but we
+            // must trap it here so it doesn't cause trouble upstream.
+            // We handle it the same as above for now.
+            // !PW FIXME should we notify here, or just log?
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+    }
+    
+    /**
+     * Set a default Endpoint Address URI for the specified ejb hosted endpoint.
+     */
+    void updateDefaultEjbEndpointUri(final String linkName, final String portName, final ChangeOperation op) {
+        try {
+            FileObject primarySunDDFO = getSunDD(configFiles[0], true);
+            
+            if(primarySunDDFO != null) {
+                boolean changed = false;
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+                if (sunDDRoot instanceof SunEjbJar) {
+                    SunEjbJar sunEjbJar = (SunEjbJar) sunDDRoot;
+                    EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
+                    if(eb == null && op == ChangeOperation.CREATE) {
+                        eb = sunEjbJar.newEnterpriseBeans();
+                        sunEjbJar.setEnterpriseBeans(eb);
+                    }
+                    
+                    if(eb != null) {
+                        Ejb ejb = findNamedBean(eb, linkName, EnterpriseBeans.EJB, Ejb.EJB_NAME);
+                        if(ejb == null && op == ChangeOperation.CREATE) {
+                            ejb = eb.newEjb();
+                            ejb.setEjbName(linkName);
+                            eb.addEjb(ejb);
+                        }
+                        
+                        if(ejb != null) {
+                            assert linkName.equals(ejb.getEjbName());
+
+                            WebserviceEndpoint endpoint = findNamedBean(ejb, portName, Ejb.WEBSERVICE_ENDPOINT, 
+                                    WebserviceEndpoint.PORT_COMPONENT_NAME);
+                            if(endpoint == null && op == ChangeOperation.CREATE) {
+                                endpoint = ejb.newWebserviceEndpoint();
+                                endpoint.setPortComponentName(portName);
+                                ejb.addWebserviceEndpoint(endpoint);
+                            }
+                            
+                            if(endpoint != null) {
+                                assert portName.equals(endpoint.getPortComponentName());
+
+                                if(op == ChangeOperation.CREATE && Utils.strEmpty(endpoint.getEndpointAddressUri())) {
+                                    String defaultUri = portName;
+                                    endpoint.setEndpointAddressUri(defaultUri);
+                                    changed = true;
+                                } else if(op == ChangeOperation.DELETE) {
+                                    endpoint.setEndpointAddressUri(null);
+                                    if(endpoint.isTrivial(WebserviceEndpoint.PORT_COMPONENT_NAME)) {
+                                        ejb.removeWebserviceEndpoint(endpoint);
+                                        if(ejb.isTrivial(Ejb.EJB_NAME)) {
+                                            eb.removeEjb(ejb);
+                                            if(eb.isTrivial(null)) {
+                                                sunEjbJar.setEnterpriseBeans(null);
+                                            }
+                                        }
+                                    }
+                                    changed = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if(changed) {
+                    sunDDRoot.write(primarySunDDFO);
+                }
+            }
+        } catch(IOException ex) {
+            // This is a legitimate exception that could occur, such as a problem
+            // writing the changed descriptor to disk.
+            // !PW FIXME notify user
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch(Exception ex) {
+            // This would probably be a runtime exception due to a bug, but we
+            // must trap it here so it doesn't cause trouble upstream.
+            // We handle it the same as above for now.
+            // !PW FIXME should we notify here, or just log?
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
     }
 
     /* Get the deploymentModuleName value which is usually passed in by an IDE
