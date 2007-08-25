@@ -645,7 +645,7 @@ public class RubyInstallation {
         do {
             String bin = getRubyBin(canonical);
             if (bin != null) {
-                LOGGER.finest("Looking for '" + toFind + "' gem executable; used intepreter: '" + bin + "'"); // NOI18N
+                LOGGER.finest("Looking for '" + toFind + "' gem executable; used intepreter: '" + getRuby() + "'"); // NOI18N
                 exec = bin + File.separator + toFind;
                 if (!new File(exec).isFile()) {
                     LOGGER.finest("'" + exec + "' is not a file."); // NOI18N
@@ -1076,16 +1076,16 @@ public class RubyInstallation {
     private void initGemList() {
         if (gemFiles == null) {
             // Initialize lazily
-            String f = getRubyLibGemDir();
-            if (f == null) {
+            String gemDir = getRubyLibGemDir();
+            if (gemDir == null) {
                 return;
             }
-            File gemDir = new File(f, SPECIFICATIONS);
+            File specDir = new File(gemDir, SPECIFICATIONS);
 
-            if (gemDir.exists()) {
+            if (specDir.exists()) {
                 LOGGER.finest("Initializing \"" + gemDir + "\" repository");
                 // Add each of */lib/
-                File[] gems = gemDir.listFiles();
+                File[] gems = specDir.listFiles();
                 gems = chooseGems(gems);
             } else {
                 LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
