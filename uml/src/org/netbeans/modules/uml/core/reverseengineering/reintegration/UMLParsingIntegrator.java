@@ -4263,15 +4263,30 @@ public class UMLParsingIntegrator
                         // First check if the type is been specified as a data type
                         // either a primitive or user defined data type.
                         boolean isAssociation = pLanguage.isDataType(typeName);
-                        if (isAssociation == false)
+                       if (isAssociation == false)
                         {
                             ArrayList < ETPairT < Node, String > > symbolList = m_SymbolTable.get(typeName);
                             // 103234 in case of RE part of existing project, search type in entire project
                             // rather than the symbol table created for this RE session
-                            if ((symbolList != null) && (symbolList.size() > 0) ||
-                                    m_Locator.findByNameInMembersAndImports(m_Namespace, typeName).size()>0)
-                            {
-                                isAllowed = true;
+                            if ((symbolList != null) && (symbolList.size() > 0))
+			    {
+				isAllowed = true;
+			    } 
+			    else 
+			    { 
+				ETList < INamedElement > list = 
+                                    m_Locator.findByNameInMembersAndImports(m_Namespace, typeName);
+				if (list != null && list.size() > 0) 
+				{ 
+				    for(INamedElement el : list) 
+				    {
+					if (! (el instanceof IDataType)) 
+					{
+					    isAllowed = true;
+					    break;
+					}
+				    }
+				}
                             }                          
                         }
                     }
