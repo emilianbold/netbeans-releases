@@ -109,7 +109,7 @@ class ActionFilterNode extends FilterNode {
     }
 
     public Action[] getActions(boolean context) {
-        Action[] result = initActions();        
+        Action[] result = initActions();
         return result;
     }
 
@@ -126,7 +126,7 @@ class ActionFilterNode extends FilterNode {
 
     private Action[] initActions () {
         if (actionCache == null) {
-            List result = new ArrayList(2);
+            List<Action> result = new ArrayList<Action>(2);
             if (mode == MODE_FILE) {
                 Action[] superActions = super.getActions(false);
                 for (int i=0; i<superActions.length; i++) {
@@ -143,12 +143,12 @@ class ActionFilterNode extends FilterNode {
                     if (superActions[i] instanceof FindAction) {
                         result.add (superActions[i]);
                     }
-                }                
+                }
                 if (mode == MODE_ROOT) {
                     result.add (SystemAction.get(RemoveClassPathRootAction.class));
                 }
-            }            
-            actionCache = (Action[]) result.toArray(new Action[result.size()]);
+            }
+            actionCache = result.toArray(new Action[result.size()]);
         }
         return actionCache;
     }
@@ -215,17 +215,17 @@ class ActionFilterNode extends FilterNode {
                    String cp = props.getProperty (classPathId);
                    if (cp != null) {
                        String[] entries = PropertyUtils.tokenizePath(cp);
-                       List/*<String>*/ result = new ArrayList ();                       
+                       List<String> result = new ArrayList<String>();
                        for (int i=0; i<entries.length; i++) {
 //                           if (!entryId.equals(ClassPathSupport.getAntPropertyName(entries[i]))) {
 //                               int size = result.size();
 //                               if (size>0) {
 //                                   result.set (size-1,(String)result.get(size-1) + ':'); //NOI18N
 //                               }
-//                               result.add (entries[i]);                                                                                             
+//                               result.add (entries[i]);
 //                           }
                        }
-                       props.setProperty (classPathId, (String[])result.toArray(new String[result.size()]));
+                       props.setProperty (classPathId,result.toArray(new String[result.size()]));
                        helper.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH,props);
                        Project project = FileOwnerQuery.getOwner(helper.getRakeProjectHelper().getProjectDirectory());
                        assert project != null;

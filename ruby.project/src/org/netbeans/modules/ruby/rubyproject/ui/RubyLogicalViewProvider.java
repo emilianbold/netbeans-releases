@@ -20,11 +20,9 @@
 package org.netbeans.modules.ruby.rubyproject.ui;
 
 import java.awt.Image;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
@@ -48,10 +45,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
-import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
-import org.netbeans.modules.ruby.rubyproject.SourceRoots;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -75,7 +70,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
-import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -101,7 +95,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
-    private List changeListeners;
+    private List<ChangeListener> changeListeners;
     
     public RubyLogicalViewProvider(RubyProject project, UpdateHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
@@ -132,7 +126,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
     }
     
     public Node findPath(Node root, Object target) {
-        Project project = (Project) root.getLookup().lookup(Project.class);
+        Project project = root.getLookup().lookup(Project.class);
         if (project == null) {
             return null;
         }
@@ -146,7 +140,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             
             Node[] nodes = root.getChildren().getNodes(true);
             for (int i = 0; i < nodes.length; i++) {
-                TreeRootNode.PathFinder pf2 = (TreeRootNode.PathFinder) nodes[i].getLookup().lookup(TreeRootNode.PathFinder.class);
+                TreeRootNode.PathFinder pf2 = nodes[i].getLookup().lookup(TreeRootNode.PathFinder.class);
                 if (pf2 != null) {
                     Node n =  pf2.findPath(nodes[i], target);
                     if (n != null) {
@@ -163,7 +157,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
     
     public synchronized void addChangeListener(ChangeListener l) {
         if (this.changeListeners == null) {
-            this.changeListeners = new ArrayList();
+            this.changeListeners = new ArrayList<ChangeListener>();
         }
         this.changeListeners.add(l);
     }
@@ -186,8 +180,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             if (this.changeListeners == null) {
                 return;
             }
-            _listeners = (ChangeListener[]) this.changeListeners.toArray(
-                    new ChangeListener[this.changeListeners.size()]);
+            _listeners = this.changeListeners.toArray(new ChangeListener[this.changeListeners.size()]);
         }
         ChangeEvent event = new ChangeEvent(this);
         for (int i=0; i < _listeners.length; i++) {
@@ -269,14 +262,14 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
         private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
         
         // icon badging >>>
-        private Set files;
-        private Map fileSystemListeners;
+        private Set<FileObject> files;
+        private Map<FileSystem, FileStatusListener> fileSystemListeners;
         private RequestProcessor.Task task;
         private final Object privateLock = new Object();
         private boolean iconChange;
         private boolean nameChange;
         private ChangeListener sourcesListener;
-        private Map groupsListeners;
+        private Map<SourceGroup, PropertyChangeListener> groupsListeners;
         //private Project project;
         // icon badging <<<
         
@@ -308,15 +301,13 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
         
         private final void setGroups(Collection groups) {
             if (groupsListeners != null) {
-                Iterator it = groupsListeners.keySet().iterator();
-                while (it.hasNext()) {
-                    SourceGroup group = (SourceGroup) it.next();
-                    PropertyChangeListener pcl = (PropertyChangeListener) groupsListeners.get(group);
+                for (SourceGroup group : groupsListeners.keySet()) {
+                    PropertyChangeListener pcl = groupsListeners.get(group);
                     group.removePropertyChangeListener(pcl);
                 }
             }
-            groupsListeners = new HashMap();
-            Set roots = new HashSet();
+            groupsListeners = new HashMap<SourceGroup, PropertyChangeListener>();
+            Set<FileObject> roots = new HashSet<FileObject>();
             Iterator it = groups.iterator();
             while (it.hasNext()) {
                 SourceGroup group = (SourceGroup) it.next();
@@ -329,24 +320,24 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             setFiles(roots);
         }
         
-        protected final void setFiles(Set files) {
+        protected final void setFiles(Set<FileObject> files) {
             if (fileSystemListeners != null) {
                 Iterator it = fileSystemListeners.keySet().iterator();
                 while (it.hasNext()) {
                     FileSystem fs = (FileSystem) it.next();
-                    FileStatusListener fsl = (FileStatusListener) fileSystemListeners.get(fs);
+                    FileStatusListener fsl = fileSystemListeners.get(fs);
                     fs.removeFileStatusListener(fsl);
                 }
             }
             
-            fileSystemListeners = new HashMap();
+            fileSystemListeners = new HashMap<FileSystem, FileStatusListener>();
             this.files = files;
             if (files == null) {
                 return;
             }
             
             Iterator it = files.iterator();
-            Set hookedFileSystems = new HashSet();
+            Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
             while (it.hasNext()) {
                 FileObject fo = (FileObject) it.next();
                 try {
@@ -382,7 +373,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             
             if (files != null && files.iterator().hasNext()) {
                 try {
-                    FileObject fo = (FileObject) files.iterator().next();
+                    FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -402,7 +393,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             
             if (files != null && files.iterator().hasNext()) {
                 try {
-                    FileObject fo = (FileObject) files.iterator().next();
+                    FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -500,7 +491,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             
             ResourceBundle bundle = NbBundle.getBundle(RubyLogicalViewProvider.class);
             
-            List actions = new ArrayList();
+            List<Action> actions = new ArrayList<Action>();
             
             actions.add(CommonProjectActions.newFileAction());
             actions.add(null);
@@ -537,13 +528,13 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
                 if (fo != null) {
                     DataObject dobj = DataObject.find(fo);
                     FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                    Lookup.Template query = new Lookup.Template(Object.class);
+                    Lookup.Template<Object> query = new Lookup.Template<Object>(Object.class);
                     Lookup lookup = actionRegistry.getLookup();
                     Iterator it = lookup.lookup(query).allInstances().iterator();
                     while (it.hasNext()) {
                         Object next = it.next();
                         if (next instanceof Action) {
-                            actions.add(next);
+                            actions.add((Action) next);
                         } else if (next instanceof JSeparator) {
                             actions.add(null);
                         }
@@ -560,8 +551,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
 //            }
             actions.add(CommonProjectActions.customizeProjectAction());
             
-            return (Action[]) actions.toArray(new Action[actions.size()]);
-            
+            return actions.toArray(new Action[actions.size()]);
         }
         
 //        private boolean isBroken() {
