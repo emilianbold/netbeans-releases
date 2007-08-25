@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.ruby;
@@ -29,13 +29,9 @@ import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 final class RubyOptionsPanelController extends OptionsPanelController {
     
@@ -129,21 +125,9 @@ final class RubyOptionsPanelController extends OptionsPanelController {
     }
     
     private void readPanels() {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject fo = fs.getRoot().getFileObject(TAB_FOLDER);
-        
-        DataFolder dataFolder = DataFolder.findFolder(fo);        
-        FolderLookup fl = new FolderLookup( dataFolder );
-        
-        Lookup lookup = fl.getLookup();
-        
-        Lookup.Result<AdvancedOption> result = lookup.lookup(new Lookup.Template<AdvancedOption>( AdvancedOption.class ));
-        
         options = new LinkedList<AdvancedOption>();
-        
-        for( AdvancedOption advancedOption : result.allInstances()) {
+        for(AdvancedOption advancedOption : Lookups.forPath(TAB_FOLDER).lookupAll(AdvancedOption.class)) {
             options.add(advancedOption);
         }
-        
     }
 }

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -65,11 +65,6 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -357,7 +352,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             }
         }
         
-        public String getHtmlDisplayName() {
+        public @Override String getHtmlDisplayName() {
             String dispName = super.getDisplayName();
             try {
                 dispName = XMLUtil.toElementContent(dispName);
@@ -368,7 +363,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             return broken || illegalState ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N
         }
         
-        public Image getIcon(int type) {
+        public @Override Image getIcon(int type) {
             Image img = getMyIcon(type);
             
             if (files != null && files.iterator().hasNext()) {
@@ -388,7 +383,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
         }
         
-        public Image getOpenedIcon(int type) {
+        public @Override Image getOpenedIcon(int type) {
             Image img = getMyOpenedIcon(type);
             
             if (files != null && files.iterator().hasNext()) {
@@ -457,19 +452,19 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             setProjectFiles(project);
         }
         
-        public Action[] getActions( boolean context ) {
+        public @Override Action[] getActions( boolean context ) {
             return getAdditionalActions();
         }
         
-        public boolean canRename() {
+        public @Override boolean canRename() {
             return true;
         }
         
-        public void setName(String s) {
+        public @Override void setName(String s) {
             DefaultProjectOperations.performDefaultRenameOperation(project, s);
         }
         
-        public HelpCtx getHelpCtx() {
+        public @Override HelpCtx getHelpCtx() {
             return new HelpCtx(RubyLogicalViewRootNode.class);
         }
         
@@ -523,28 +518,18 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             
             // honor 57874 contact
             
-            try {
-                FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Projects/Actions"); // NOI18N
-                if (fo != null) {
-                    DataObject dobj = DataObject.find(fo);
-                    FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                    Lookup.Template<Object> query = new Lookup.Template<Object>(Object.class);
-                    Lookup lookup = actionRegistry.getLookup();
-                    Iterator it = lookup.lookup(query).allInstances().iterator();
-                    while (it.hasNext()) {
-                        Object next = it.next();
-                        if (next instanceof Action) {
-                            actions.add((Action) next);
-                        } else if (next instanceof JSeparator) {
-                            actions.add(null);
-                        }
+            Collection<? extends Object> res = Lookups.forPath("Projects/Actions").lookupAll(Object.class); // NOI18N
+            if (!res.isEmpty()) {
+                actions.add(null);
+                for (Object next : res) {
+                    if (next instanceof Action) {
+                        actions.add((Action) next);
+                    } else if (next instanceof JSeparator) {
+                        actions.add(null);
                     }
                 }
-            } catch (DataObjectNotFoundException ex) {
-                // data folder for existing fileobject expected
-                ErrorManager.getDefault().notify(ex);
             }
-            
+
             actions.add(null);
 //            if (broken) {
 //                actions.add(brokenLinksAction);
