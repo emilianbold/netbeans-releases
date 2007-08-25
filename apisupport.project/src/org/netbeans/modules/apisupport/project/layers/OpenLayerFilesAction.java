@@ -23,6 +23,11 @@ import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 //import java.util.HashSet;
@@ -39,7 +44,6 @@ import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.XMLFileSystem;
@@ -124,7 +128,7 @@ public class OpenLayerFilesAction extends CookieAction {
                                         // Build an XML FS for the given URL
                                         XMLFileSystem aXMLFileSystem = new XMLFileSystem(url);
                                         
-                                        // Find the resource usiung the file path
+                                        // Find the resource using the file path
                                         originalF = aXMLFileSystem.findResource(f.getPath());
                                         
                                         // Found?
@@ -187,15 +191,29 @@ public class OpenLayerFilesAction extends CookieAction {
             editorCookie.open();
             LineCookie lineCookie = layerDataObject.getCookie(LineCookie.class);
             if (lineCookie != null) {
+                List<FileObject> lineage = new LinkedList<FileObject>();
+                FileObject parent = originalF;
+                while (parent != null) {
+                    if (parent.getParent() != null) {
+                        lineage.add(0, parent);
+                    }
+                    parent = parent.getParent();
+                }
                 try {
                     InputSource in = new InputSource(layerDataObject.getPrimaryFile().getURL().toExternalForm());
                     SAXParserFactory factory = SAXParserFactory.newInstance();
                     SAXParser parser = factory.newSAXParser();
                     final int[] line = new int[1];
-                    final String elementName = originalF.isFolder() ? "folder" : "file"; // NOI18N
+                    //final int[] col = new int[1];
                     final String name = originalF.getNameExt();
                     class Handler extends DefaultHandler {
                         private Locator locator;
+                        private Iterator<FileObject> lineageIterator;
+                        private FileObject lookingFor;
+                        Handler(List<FileObject> lineage) {
+                            lineageIterator = lineage.iterator();
+                            lookingFor = lineageIterator.next(); 
+                        }
                         @Override
                         public void setDocumentLocator(Locator l) {
                             locator = l;
@@ -203,17 +221,23 @@ public class OpenLayerFilesAction extends CookieAction {
                         @Override
                         public void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
                             if (line[0] == 0) {
-                                if (qname.equals(elementName) && name.equals(attr.getValue("name"))) { // NOI18N
-                                    line[0] = locator.getLineNumber();
+                                if (((lookingFor.isFolder() ? "folder".equals(qname) : "file".equals(qname)) &&
+                                    lookingFor.getNameExt().equals(attr.getValue("name")))) { // NOI18N
+                                    if (lineageIterator.hasNext()) {
+                                        lookingFor = lineageIterator.next();
+                                    } else {
+                                        line[0] = locator.getLineNumber();
+                                        // col[0] = locator.getColumnNumber();
+                                    }
                                 }
                             }
                         }
                     }
-                    parser.parse(in, new Handler());
+                    parser.parse(in, new Handler(lineage));
                     if (line[0] < 1) {
                         return;
                     }
-                    lineCookie.getLineSet().getCurrent(line[0] - 1).show(Line.SHOW_GOTO);
+                    lineCookie.getLineSet().getCurrent(line[0] - 1).show(Line.SHOW_GOTO /*, Math.max(0, col[0])*/);
                 } catch (Exception e) {
                     return;
                 }
