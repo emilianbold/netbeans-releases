@@ -19,8 +19,8 @@
             <include name="config/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
             <!-- JRuby+Rails stuff -->
-            <include name="jruby-1.0/**"/>
-            <exclude name="jruby-1.0/**/netbeans-index-*.zip"/>
+            <include name="jruby-1.0.1/**"/>
+            <exclude name="jruby-1.0.1/**/netbeans-index-*.zip"/>
         </patternset>
     </target>    
 
