@@ -72,6 +72,8 @@ public abstract class IEPModel extends AbstractDocumentModel<IEPComponent> imple
    
      public abstract PlanComponent getPlanComponent();
      
+     public abstract String getIEPFileName();
+     
      public abstract File getWsdlFile(); 
      
 	 public abstract void saveWsdl() throws Exception;
