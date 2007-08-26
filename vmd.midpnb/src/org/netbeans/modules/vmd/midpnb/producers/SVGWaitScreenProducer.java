@@ -45,6 +45,7 @@ public class SVGWaitScreenProducer extends MidpComponentProducer {
         super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, NbBundle.getMessage(SVGWaitScreenProducer.class, "DISP_SVG_Wait_Screen"), NbBundle.getMessage(SVGWaitScreenProducer.class, "TTIP_SVG_Wait_Screen"), SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent waitScreen) {
         return produceSVGWaitScreen (document, waitScreen, true);
     }
@@ -75,6 +76,7 @@ public class SVGWaitScreenProducer extends MidpComponentProducer {
             return new Result (waitScreen, successCommand, failureCommand, successEventSource, failureEventSource);
     }
 
+    @Override
     public boolean checkValidity(DesignDocument document) {
             return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
                    MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N

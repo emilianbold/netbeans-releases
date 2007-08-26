@@ -90,7 +90,7 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty(NbBundle.getMessage(AbstractInfoScreenCD.class, "DISP_AbstractInfoScreen_text"), // NOI18N
                     PropertyEditorString.createInstance(NbBundle.getMessage(AbstractInfoScreenCD.class,
-                    "DISP_AbstractInfoScreen_text_UCLABEL")), PROP_TEXT) // NOI18N
+                        "LBL_AbstractInfoScreen_text")), PROP_TEXT) // NOI18N
                 .addProperty(NbBundle.getMessage(AbstractInfoScreenCD.class, "DISP_AbstractInfoScreen_image"), // NOI18N
                     PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE)
                 .addProperty(NbBundle.getMessage(AbstractInfoScreenCD.class, "DISP_AbstractInfoScreen_textFont"), // NOI18N

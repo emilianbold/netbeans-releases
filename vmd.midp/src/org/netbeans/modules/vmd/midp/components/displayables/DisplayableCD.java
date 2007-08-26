@@ -104,7 +104,7 @@ public final class DisplayableCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty (NbBundle.getMessage(DisplayableCD.class, "DISP_Displayable_Title"), // NOI18N
-                        PropertyEditorString.createTextFieldInstance(NbBundle.getMessage(DisplayableCD.class, "DISP_Displayable_Title_UCLABEL")), PROP_TITLE) // NOI18N
+                        PropertyEditorString.createTextFieldInstance(NbBundle.getMessage(DisplayableCD.class, "LBL_Displayable_Title")), PROP_TITLE) // NOI18N
                     .addProperty (NbBundle.getMessage(DisplayableCD.class, "DISP_Displayable_Ticker"), PropertyEditorResource.createTickerPropertyEditor(), PROP_TICKER); // NOI18N
     }
 

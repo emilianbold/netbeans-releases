@@ -120,10 +120,10 @@ public class GaugeCD extends ComponentDescriptor {
                                 NbBundle.getMessage(GaugeCD.class, "DISP_RB_Label")), PROP_INTERACTIVE) // NOI18N
                         .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Maximum_Value"), // NOI18N
                             PropertyEditorGaugeMaxValue.createInstance(), PROP_MAX_VALUE)
-                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Value"),
-                            PropertyEditorNumber.createIntegerInstance(), PROP_VALUE ) // NOI18N
+                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Value"), // NOI18N
+                            PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(GaugeCD.class, "LBL_Gauge_Value")), PROP_VALUE ) // NOI18N
                         .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label"), // NOI18N
-                            PropertyEditorString.createInstance(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label_UCLABEL"),
+                            PropertyEditorString.createInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Label"), // NOI18N
                                 AlertCD.TYPEID), ItemCD.PROP_LABEL) // NOI18N
                         .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Default_Command"),
                             PropertyEditorDefaultCommand.createInstance(AlertCD.TYPEID), ItemCD.PROP_DEFAULT_COMMAND) // NOI18N

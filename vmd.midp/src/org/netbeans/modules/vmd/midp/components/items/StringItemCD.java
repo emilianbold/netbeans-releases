@@ -78,7 +78,7 @@ public class StringItemCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Text"), // NOI18N
-                    PropertyEditorString.createInstance(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Text_UCLABEL")), PROP_TEXT) // NOI18N
+                    PropertyEditorString.createInstance(NbBundle.getMessage(StringItemCD.class, "LBL_StringItem_Text")), PROP_TEXT) // NOI18N
                 .addProperty(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Appearance"), // NOI18N
                     PropertyEditorComboBox.createInstance(ImageItemCD.getAppearanceValues(), TYPEID,
                         NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Appearance_RB_LABEL"), // NOI18N

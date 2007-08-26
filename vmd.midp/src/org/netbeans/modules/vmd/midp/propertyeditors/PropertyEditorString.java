@@ -63,6 +63,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private String defaultValue;
     private boolean useTextArea;
     private TypeID parentTypeID;
+    private String label;
 
     /**
      * Creates instance of PropertyEditorString.
@@ -75,11 +76,12 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * example is given text length is more than TextBoxCD.PROP_MAX_SIZE then
      * this property will be automatically increased to be equal of text length.
      */
-    private PropertyEditorString(String comment, int dependence, boolean useTextArea, String userCodeLabel, TypeID parentTypeID) {
-        super(userCodeLabel);
+    private PropertyEditorString(String comment, int dependence, boolean useTextArea, String label, TypeID parentTypeID) {
+        super(NbBundle.getMessage(PropertyEditorString.class, "LBL_STRING_STR")); // NOI18N
         this.comment = comment;
         this.dependence = dependence;
         this.useTextArea = useTextArea;
+        this.label = label;
         this.parentTypeID = parentTypeID; 
         initComponents();
 
@@ -99,16 +101,16 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @param String default value of the property editor, could be different from default
      * value specified in the component descriptor
      */
-    private PropertyEditorString(String comment, int dependence, String defaultValue, String userCodeLabel) {
-        this(comment, dependence, true, userCodeLabel, null);
+    private PropertyEditorString(String comment, int dependence, String defaultValue, String label) {
+        this(comment, dependence, true, label, null);
         this.defaultValue = defaultValue;
     }
 
     /**
      * Creates instance of PropertyEditorString without dependences.
      */
-    public static final PropertyEditorString createInstance(String userCodeLabel) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, true, userCodeLabel, null);
+    public static final PropertyEditorString createInstance(String label) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, true, label, null);
     }
 
     /**
@@ -116,8 +118,8 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @param int dependence
      * @see PropertyEditorString(String comment, int dependence)
      */
-    public static final PropertyEditorString createInstance(int dependence, String userCodeLabel) {
-        return new PropertyEditorString(null, dependence, true, userCodeLabel, null);
+    public static final PropertyEditorString createInstance(int dependence, String label) {
+        return new PropertyEditorString(null, dependence, true, label, null);
     }
     
     /**
@@ -126,34 +128,34 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @param parentTypeID parentComponent TypeID
      * @see PropertyEditorString(String comment, int dependence)
      */
-    public static final PropertyEditorString createInstance(String userCodeLabel, TypeID parentTypeID) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, true, userCodeLabel, parentTypeID);
+    public static final PropertyEditorString createInstance(String label, TypeID parentTypeID) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, true, label, parentTypeID);
     }
 
     /**
      * Creates instance of PropertyEditorString using JTExtField.
      */
-    public static final PropertyEditorString createTextFieldInstance(String userCodeLabel) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, false, userCodeLabel, null);
+    public static final PropertyEditorString createTextFieldInstance(String label) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, false, label, null);
     }
 
     /**
      * Creates instance of PropertyEditorString without dependences with default value.
      */
-    public static final PropertyEditorString createInstanceWithDefaultValue(String defaultValue, String userCodeLabel) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, defaultValue, userCodeLabel);
+    public static final PropertyEditorString createInstanceWithDefaultValue(String defaultValue, String label) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, defaultValue, label);
     }
 
     /**
      * Creates instance of PropertyEditorString without dependences with default value.
      */
-    public static final PropertyEditorString createInstanceWithComment(String comment, String userCodeLabel) {
-        return new PropertyEditorString(comment, DEPENDENCE_NONE, null, userCodeLabel);
+    public static final PropertyEditorString createInstanceWithComment(String comment, String label) {
+        return new PropertyEditorString(comment, DEPENDENCE_NONE, null, label);
     }
 
     private void initComponents() {
         radioButton = new JRadioButton();
-        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorString.class, "LBL_STRING_STR")); // NOI18N
+        Mnemonics.setLocalizedText(radioButton, label);
         customEditor = new CustomEditor(comment);
     }
 

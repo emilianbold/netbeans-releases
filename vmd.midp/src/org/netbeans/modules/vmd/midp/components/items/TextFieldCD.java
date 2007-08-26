@@ -100,10 +100,11 @@ public class TextFieldCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Maximum_Size"), PropertyEditorNumber.createIntegerInstance(), PROP_MAX_SIZE) // NOI18N
+                .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Maximum_Size"), // NOI18N
+                    PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(TextFieldCD.class, "LBL_TextField_Maximum_Size")), PROP_MAX_SIZE) // NOI18N
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Text"), // NOI18N
                     PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_FIELD,
-                        NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Text_UCLABEL")), PROP_TEXT) // NOI18N
+                        NbBundle.getMessage(TextFieldCD.class, "LBL_TextField_Text")), PROP_TEXT) // NOI18N
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Initial_Input_Mode"), PropertyEditorInputMode.createInstance(), PROP_INITIAL_INPUT_MODE) // NOI18N
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Input_Constraints"), PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS); // NOI18N
     }

@@ -103,8 +103,8 @@ public class TableItemCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_Title"),
-                        PropertyEditorString.createTextFieldInstance(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_Title_UCLABEL")), PROP_TITLE) //NOI18N
+                    .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_Title"), //NOI18N
+                        PropertyEditorString.createTextFieldInstance(NbBundle.getMessage(TableItemCD.class, "LBL_TableItem_Title")), PROP_TITLE) //NOI18N
                     .addProperty(NbBundle.getMessage(TableItemCD.class, "DISP_TableItem_TableModel"), PropertyEditorResource.createInstance(new TableModelEditorElement(), //NOI18N
                         NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NEW"), //NOI18N
                         NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NONE"), //NOI18N

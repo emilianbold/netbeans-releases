@@ -84,7 +84,8 @@ public class ImageItemCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty(NbBundle.getMessage(ImageItemCD.class, "DISP_ImageItem_Alternate_Text"), // NOI18N
-                    PropertyEditorString.createInstance(NbBundle.getMessage(ImageItemCD.class, "DISP_ImageItem_Alternate_Text_UCLABEL")), PROP_ALT_TEXT) // NOI18N
+                    PropertyEditorString.createInstance(NbBundle.getMessage(ImageItemCD.class,
+                        "LBL_ImageItem_Alternate_Text")), PROP_ALT_TEXT) // NOI18N
                 .addProperty(NbBundle.getMessage(ImageItemCD.class, "DISP_ImageItem_Appearance"), // NOI18N
                     PropertyEditorComboBox.createInstance(getAppearanceValues(), TYPEID,
                         NbBundle.getMessage(ImageItemCD.class, "DISP_ImageItem_Appearance_RB_LABEL"), // NOI18N

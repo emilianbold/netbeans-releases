@@ -61,7 +61,7 @@ public final class TickerCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty(NbBundle.getMessage(TickerCD.class, "DISP_Ticker_String"), // NOI18N
-                        PropertyEditorString.createInstance(NbBundle.getMessage(TickerCD.class, "DISP_Ticker_String_UCLABEL")), PROP_STRING); // NOI18N
+                        PropertyEditorString.createInstance(NbBundle.getMessage(TickerCD.class, "LBL_Ticker_String")), PROP_STRING); // NOI18N
     }
 
     private static Presenter createSetterPresenter () {

@@ -98,7 +98,7 @@ public final class AlertCD extends ComponentDescriptor {
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Image"), PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
                     .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_String"), // NOI18N
-                        PropertyEditorString.createInstance(NbBundle.getMessage(AlertCD.class, "DISP_Alert_String_UCLABEL")), PROP_STRING) // NOI18N
+                        PropertyEditorString.createInstance(NbBundle.getMessage(AlertCD.class, "LBL_Alert_String")), PROP_STRING) // NOI18N
                     .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Type"), // NOI18N
                         PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID,
                         NbBundle.getMessage(AlertCD.class, "DISP_Alert_Type_RB_LABEL"), // NOI18N

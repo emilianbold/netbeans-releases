@@ -46,7 +46,7 @@ public class WaitScreenProducer extends MidpComponentProducer {
        super(WaitScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(WaitScreenProducer.class, "DISP_Wait_Screen"), NbBundle.getMessage(WaitScreenProducer.class, "TTIP_Wait_Screen"), WaitScreenCD.ICON_PATH, WaitScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
-
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent waitScreen) {
         return produceWaitScreen (document, waitScreen, true);
     }
@@ -77,6 +77,7 @@ public class WaitScreenProducer extends MidpComponentProducer {
             return new Result (waitScreen, successCommand, failureCommand, successEventSource, failureEventSource);
     }
 
+    @Override
     public boolean checkValidity(DesignDocument document) {
         return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
     }

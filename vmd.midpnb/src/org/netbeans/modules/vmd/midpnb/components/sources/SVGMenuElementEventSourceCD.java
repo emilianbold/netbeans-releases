@@ -75,7 +75,7 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty(NbBundle.getMessage(SVGMenuElementEventSourceCD.class, "DISP_SVGMenuElementEventSource_String"), // NOI18N
                     PropertyEditorString.createInstance(NbBundle.getMessage(SVGMenuElementEventSourceCD.class,
-                    "DISP_SVGMenuElementEventSource_String_UCLABEL")), PROP_STRING); // NOI18N
+                        "LBL_SVGMenuElementEventSource_String")), PROP_STRING); // NOI18N
     }
 
     @Override

@@ -34,6 +34,7 @@ public class PIMBrowserProducer extends MidpComponentProducer {
         super(PIMBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(PIMBrowserProducer.class, "DISP_PIM_Browser"), NbBundle.getMessage(PIMBrowserProducer.class, "TTIP_PIM_Browser"), PIMBrowserCD.ICON_PATH, PIMBrowserCD.ICON_LARGE_PATH)); // NOI18N
     }
 
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent pimBrowser) {
         DesignComponent openCommand = MidpDocumentSupport.getSingletonCommand(document, PIMBrowserOpenCommandCD.TYPEID);
         DesignComponent openEventSource = document.createComponent(PIMBrowserOpenCommandEventSourceCD.TYPEID);
@@ -44,6 +45,7 @@ public class PIMBrowserProducer extends MidpComponentProducer {
         return new Result(pimBrowser, openCommand, openEventSource);
     }
     
+    @Override
     public boolean checkValidity(DesignDocument document) {
         return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.List"); // NOI18N
     }

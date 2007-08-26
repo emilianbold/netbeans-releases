@@ -91,7 +91,7 @@ public final class FileBrowserCD extends ComponentDescriptor {
                         NbBundle.getMessage(FileBrowserCD.class, "TTIP_FileBrowser_filter"), // NOI18N
                         PropertyEditorString.createInstanceWithComment(
                             NbBundle.getMessage(FileBrowserCD.class, "FILE_BROWSER_COMMENT"), // NOI18N
-                            NbBundle.getMessage(FileBrowserCD.class, "FILE_BROWSER_FILTER_UCLABEL")), // NOI18N
+                            NbBundle.getMessage(FileBrowserCD.class, "LBL_FILE_BROWSER_FILTER")), // NOI18N
                         PROP_FILTER);
     }
      

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.midpnb.producers;
 
-import java.awt.Color;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
@@ -45,6 +44,7 @@ public class LoginScreenProducer extends MidpComponentProducer {
         super(LoginScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(LoginScreenProducer.class, "DISP_Login_Screen"), NbBundle.getMessage(LoginScreenProducer.class, "TTIP_Login_Screen"), LoginScreenCD.ICON_PATH, LoginScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
+    @Override
     public Result postInitialize(DesignDocument document, DesignComponent loginScreen) {
         DesignComponent loginCommand = MidpDocumentSupport.getSingletonCommand(document, LoginScreenLoginCommandCD.TYPEID);
         DesignComponent loginEventSource = document.createComponent(LoginScreenLoginCommandEventSourceCD.TYPEID);
@@ -59,6 +59,7 @@ public class LoginScreenProducer extends MidpComponentProducer {
         return new Result(loginScreen, loginCommand, loginEventSource);
     }
 
+    @Override
     public boolean checkValidity(DesignDocument document) {
         return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
     }

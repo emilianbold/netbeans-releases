@@ -45,6 +45,7 @@ public class SMSComposerProducer extends MidpComponentProducer {
         super(SMSComposerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(SMSComposerProducer.class, "DISP_SMS_Composer"), NbBundle.getMessage(SMSComposerProducer.class, "TTIP_SMS_Composer"), SMSComposerCD.ICON_PATH, SMSComposerCD.ICON_LARGE_PATH)); // NOI18N
     }
     
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent smsComposer) {
         DesignComponent sendCommand = MidpDocumentSupport.getSingletonCommand(document, SMSComposerSendCommandCD.TYPEID);
         DesignComponent smsEventSource = document.createComponent(SMSComposerSendCommandEventSourceCD.TYPEID);
@@ -58,6 +59,7 @@ public class SMSComposerProducer extends MidpComponentProducer {
         return new Result(smsComposer, sendCommand, smsEventSource);
     }
     
+    @Override
     public boolean checkValidity(DesignDocument document) {
         return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
     }

@@ -34,6 +34,7 @@ public class FileBrowserProducer extends MidpComponentProducer {
         super(FileBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(FileBrowserProducer.class, "DISP_File_Browser"), NbBundle.getMessage(FileBrowserProducer.class, "TTIP_File_Browser"), FileBrowserCD.ICON_PATH, FileBrowserCD.ICON_LARGE_PATH)); // NOI18N
     }
 
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent fileBrowser) {
         DesignComponent openCommand = MidpDocumentSupport.getSingletonCommand(document, FileBrowserOpenCommandCD.TYPEID);
         DesignComponent openEventSource = document.createComponent(FileBrowserOpenCommandEventSourceCD.TYPEID);
@@ -44,6 +45,7 @@ public class FileBrowserProducer extends MidpComponentProducer {
         return new Result(fileBrowser, openCommand, openEventSource);
     }
     
+    @Override
     public boolean checkValidity(DesignDocument document) {
         return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.List"); // NOI18N
     }

@@ -41,6 +41,7 @@ public class SVGSplashScreenProducer extends MidpComponentProducer {
         super(SVGSplashScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, NbBundle.getMessage(SVGSplashScreenProducer.class, "DISP_SVG_Splash_Screen"), NbBundle.getMessage(SVGSplashScreenProducer.class, "TTIP_SVG_Splash_Screen"), SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent splashScreen) {
         DesignComponent dismissCommand = MidpDocumentSupport.getSingletonCommand(document, SVGSplashScreenDismissCommandCD.TYPEID);
         
@@ -54,6 +55,7 @@ public class SVGSplashScreenProducer extends MidpComponentProducer {
         return new Result(splashScreen, dismissCommand, dismissEventSource);
     }
     
+    @Override
     public boolean checkValidity(DesignDocument document) {
             return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
                    MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N

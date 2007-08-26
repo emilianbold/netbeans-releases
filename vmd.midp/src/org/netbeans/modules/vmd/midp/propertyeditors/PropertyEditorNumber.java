@@ -50,9 +50,11 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     private CustomEditor customEditor;
     private JRadioButton radioButton;
+    private String label;
     
-    private PropertyEditorNumber(String userCodeLabel) {
+    private PropertyEditorNumber(String label, String userCodeLabel) {
         super(userCodeLabel);
+        this.label = label;
         initComponents();
         
         initElements(Collections.<PropertyEditorElement>singleton(this));
@@ -61,24 +63,21 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     /**
      * Creates instance of property editor for integer type
      *
+     * @param label localized label with mnemonics for radio button
      * @return propertyEditor
      */
-    public static final PropertyEditorNumber createIntegerInstance() {
-        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_INTEGER_UCLABEL")); // NOI18N
+    public static final PropertyEditorNumber createIntegerInstance(String label) {
+        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_INTEGER_UCLABEL")); // NOI18N
     }
     
     /**
      * Creates instance of property editor for long type
      *
+     * @param label localized label with mnemonics for radio button
      * @return propertyEditor
      */
-    public static final PropertyEditorNumber createLongInstance() {
-        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_LONG_UCLABEL")) { // NOI18N
-            @Override
-            protected String getLocalizedRadioButtonLabel() {
-                return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_LONG_STR"); // NOI18N
-            }
-            
+    public static final PropertyEditorNumber createLongInstance(String label) {
+        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_LONG_UCLABEL")) { // NOI18N
             @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
@@ -97,15 +96,11 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     /**
      * Creates instance of property editor for byte type
      *
+     * @param label localized label with mnemonics for radio button
      * @return propertyEditor
      */
-    public static final PropertyEditorNumber createByteInstance() {
-        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_BYTE_UCLABEL")) { // NOI18N
-            @Override
-            protected String getLocalizedRadioButtonLabel() {
-                return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_BYTE_STR"); // NOI18N
-            }
-            
+    public static final PropertyEditorNumber createByteInstance(String label) {
+        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_BYTE_UCLABEL")) { // NOI18N
             @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
@@ -124,15 +119,11 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     /**
      * Creates instance of property editor for short type
      *
+     * @param label localized label with mnemonics for radio button
      * @return propertyEditor
      */
-    public static final PropertyEditorNumber createShortInstance() {
-        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_SHORT_UCLABEL")) { // NOI18N
-            @Override
-            protected String getLocalizedRadioButtonLabel() {
-                return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_SHORT_STR"); // NOI18N
-            }
-            
+    public static final PropertyEditorNumber createShortInstance(String label) {
+        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_SHORT_UCLABEL")) { // NOI18N
             @Override
             protected void saveValue(String text) {
                 if (text.length() > 0) {
@@ -151,10 +142,11 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     /**
      * Creates instance of property editor for float type
      *
+     * @param label localized label with mnemonics for radio button
      * @return propertyEditor
      */
-    public static final PropertyEditorNumber createFloatInstance() {
-        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_FLOAT_UCLABEL")) { // NOI18N
+    public static final PropertyEditorNumber createFloatInstance(String label) {
+        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_FLOAT_UCLABEL")) { // NOI18N
             @Override
             protected boolean isTextCorrect(String text) {
                 return Pattern.matches("[\\d\\-\\.]+", text); // NOI18N
@@ -163,11 +155,6 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             @Override
             protected String prepareText(String text) {
                 return text.replaceAll("[^0-9\\-\\.]+", ""); // NOI18N
-            }
-            
-            @Override
-            protected String getLocalizedRadioButtonLabel() {
-                return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_FLOAT_STR"); // NOI18N
             }
             
             @Override
@@ -188,10 +175,11 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     /**
      * Creates instance of property editor for double type
      *
+     * @param label localized label with mnemonics for radio button
      * @return propertyEditor
      */
-    public static final PropertyEditorNumber createDoubleInstance() {
-        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_DOUBLE_UCLABEL")) { // NOI18N
+    public static final PropertyEditorNumber createDoubleInstance(String label) {
+        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_DOUBLE_UCLABEL")) { // NOI18N
             @Override
             protected boolean isTextCorrect(String text) {
                 return Pattern.matches("[\\d\\-\\.]+", text); // NOI18N
@@ -200,11 +188,6 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             @Override
             protected String prepareText(String text) {
                 return text.replaceAll("[^0-9\\-\\.]+", ""); // NOI18N
-            }
-            
-            @Override
-            protected String getLocalizedRadioButtonLabel() {
-                return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_DOUBLE_STR"); // NOI18N
             }
             
             @Override
@@ -225,10 +208,11 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     /**
      * Creates instance of property editor for char type
      *
+     * @param label localized label with mnemonics for radio button
      * @return propertyEditor
      */
-    public static final PropertyEditorNumber createCharInstance() {
-        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_CHAR_UCLABEL")) { // NOI18N
+    public static final PropertyEditorNumber createCharInstance(String label) {
+        return new PropertyEditorNumber(label, NbBundle.getMessage(PropertyEditorNumber.class, "LBL_CHAR_UCLABEL")) { // NOI18N
             @Override
             protected boolean isTextCorrect(String text) {
                 return Pattern.matches("[\\d\\-]+", text); // NOI18N
@@ -237,11 +221,6 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             @Override
             protected String prepareText(String text) {
                 return text.replaceAll("[^0-9\\-]+", ""); // NOI18N
-            }
-            
-            @Override
-            protected String getLocalizedRadioButtonLabel() {
-                return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_CHAR_STR"); // NOI18N
             }
             
             @Override
@@ -261,7 +240,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     private void initComponents() {
         radioButton = new JRadioButton();
-        Mnemonics.setLocalizedText(radioButton, getLocalizedRadioButtonLabel());
+        Mnemonics.setLocalizedText(radioButton, label);
         customEditor = new CustomEditor();
     }
     
@@ -292,15 +271,6 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             return text.replace("0x", ""); // NOI18N
         }
         return text.replaceAll("[^0-9\\-]+", ""); // NOI18N
-    }
-    
-    /**
-     * Returns localized label for radio button for given format.
-     *
-     * @return localized label
-     */
-    protected String getLocalizedRadioButtonLabel() {
-        return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_INTEGER_STR"); // NOI18N
     }
     
     /**

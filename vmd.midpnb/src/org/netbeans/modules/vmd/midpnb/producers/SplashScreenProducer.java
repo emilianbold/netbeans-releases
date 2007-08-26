@@ -42,6 +42,7 @@ public class SplashScreenProducer extends MidpComponentProducer {
        super(SplashScreenCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(SplashScreenProducer.class, "DISP_Splash_Screen"), NbBundle.getMessage(SplashScreenProducer.class, "TTIP_Splash_Screen"), SplashScreenCD.ICON_PATH, SplashScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent splashScreen) {
         DesignComponent dismissCommand = MidpDocumentSupport.getSingletonCommand (document, SplashScreenDismissCommandCD.TYPEID);
 
@@ -55,6 +56,7 @@ public class SplashScreenProducer extends MidpComponentProducer {
         return new Result(splashScreen, dismissCommand, dismissEventSource);
     }
     
+    @Override
     public boolean checkValidity(DesignDocument document) {
         return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
     }

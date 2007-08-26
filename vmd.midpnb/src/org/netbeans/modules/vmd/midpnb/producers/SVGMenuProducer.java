@@ -43,6 +43,7 @@ public class SVGMenuProducer extends MidpComponentProducer {
         super(SVGMenuCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, NbBundle.getMessage(SVGMenuProducer.class, "DISP_SVG_Menu"), NbBundle.getMessage(SVGMenuProducer.class, "TTIP_SVG_Menu"), SVGMenuCD.ICON_PATH, SVGMenuCD.ICON_LARGE_PATH)); // NOI18N
     }
 
+    @Override
     public Result postInitialize (DesignDocument document, DesignComponent menu) {
         DesignComponent selectCommand = MidpDocumentSupport.getSingletonCommand(document, SVGMenuSelectCommandCD.TYPEID);
         
@@ -57,6 +58,7 @@ public class SVGMenuProducer extends MidpComponentProducer {
         return new Result(menu, selectCommand, selectEventSource);
     }
     
+    @Override
     public boolean checkValidity(DesignDocument document) {
             return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
                    MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
