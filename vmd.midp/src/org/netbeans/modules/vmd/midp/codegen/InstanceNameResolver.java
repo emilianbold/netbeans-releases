@@ -118,6 +118,7 @@ public final class InstanceNameResolver {
 
     public static Presenter createValidatorPresenter () {
         return new ValidatorPresenter() {
+            @Override
             protected void checkCustomValidity () {
                 InstanceNameResolver.checkValidity (getComponent ().getDocument ());
             }
