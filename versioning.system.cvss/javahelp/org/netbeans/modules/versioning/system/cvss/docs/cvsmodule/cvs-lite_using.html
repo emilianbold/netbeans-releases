@@ -7,72 +7,103 @@
 <html>
     <head>
         <title>Using CVS with the IDE</title>
-        <link rel="StyleSheet"
-        href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
     </head>
+    
     <body>
-        <h2>Using CVS with the IDE </h2>
+        <h2>Using CVS with the IDE</h2>
+        
         <p><small><a href="#seealso">See Also</a></small></p>
+        
         <p>The IDE's CVS support enables you to manage the evolution of changes
-        in version-controlled files by displaying status information directly
-        in the IDE's various windows (Projects, Files, Versioning, etc.) so
-        that you can call CVS commands as you work.</p>
+            in version-controlled files by displaying status information directly in
+            the IDE's various windows (e.g. Projects, Files, Favorites, Versioning) so
+            that you can call CVS commands as you work.</p>
         
-        <h3>Tracking Changes in the Versioning Window </h3>
-        <p>The Versioning window presents a real-time view of the changes in
-        selected directories that distinguishes between file revisions using color
-        coding and font styles. Current CVS file status is also indicated by adding badges
-        to project, package and directory icons that contain modified files. By default, the Versioning window opens at the 
-        bottom of the IDE whenever you view changes. </p>
-        <p>To open the Versioning window, choose CVS &gt; Show
-        All Changes. Alternately, you can right-click any project,
-        directory, or file that is in a CVS working directory and choose CVS
-        &gt; Show Changes. </p>
+        <h3><a name="tracking">Tracking Changes in the Versioning Window</a></h3>
         
-        <p>Using the filter buttons in the toolbar,
-        you can limit the list of displayed files to either locally or remotely
-        modified files. The Versioning window toolbar also includes buttons
-        that enable you to invoke the most common CVS tasks on all files
-        displayed in the list. </p>
+        <p>The Versioning window presents a real-time view of the changes in selected 
+            directories. It opens at the bottom of the IDE whenever you view changes 
+            made in version-controlled files. By default, the Versioning window displays 
+            a list of all modified files within the selected package or folder.</p>
+        
+        <p>You can open the Versioning window by choosing Versioning &gt; CVS &gt; 
+            Show Changes from the main menu. Alternately, you can right-click any versioned 
+            project, directory, or file and choose CVS &gt; Show Changes.</p>        
+        
+        <p>Using the filter buttons in the toolbar, you can limit the list of displayed 
+            files to either locally or remotely modified files. The Versioning window 
+            toolbar also includes buttons that enable you to invoke the most common 
+            CVS tasks on all files displayed in the list, such as committing, 
+            updating, refreshing status, and performing diff's.</p>
+        
+        <p>The following CVS commands are available in the Versioning window's 
+            toolbar:</p>
+        
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>Icon</th>
+                <th width="100px">Name</th>
+                <th>Function</th>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/refresh.png" alt="refresh status icon"></td>
+                <td align="center"><strong>Refresh Status</strong></td>
+                <td>Refreshes the status of the selected files and folders. Files displayed 
+                    in the Versioning window can be refreshed to reflect any changes that
+                    may have been made externally.</td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/diff.png" alt="diff all icon"></td>
+                <td align="center"><strong>Diff All</strong></td>
+                <td>Opens the Diff Viewer providing you with a side-by-side comparison of 
+                    your local copies and the versions maintained in the repository.</td>
+            </tr>     
+            <tr>
+                <td align="center"><img src="images/update.png" alt="update all icon"></td>
+                <td align="center"><strong>Update All</strong></td>
+                <td>Updates all selected files from the repository.</td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/commit.png" alt="commit all icon"></td>
+                <td align="center"><strong>Commit All</strong></td>
+                <td>Enables you to commit local changes to the repository.</td>
+            </tr>            
+        </table>
         
         <h3>Calling Version Control Commands</h3>
+        
         <p>You can call CVS commands on versioned-controlled files (those
-        exisiting within a registered working directory) using the CVS menu in
-        the IDE's main window. In addition, many CVS commands are available in
-        the CVS commands submenu for the currently selected file or directory. </p>
-        <p>You can access the CVS commands submenu by right-clicking a file or
-        directory in any of the following:</p>
+            existing within a registered working directory) using the CVS menu in
+            the IDE's main window. In addition, many CVS commands are available in
+            the context-sensitive menu for a selected file or directory.</p>
+        
+        <p>You can access the CVS commands context-sensitive menu by right-clicking 
+            a file or directory in any of the following:</p>
+        
         <ul>
-            <li><b>Projects window</b></li>
-            <li><b>Files window</b></li>
-            <li><b>Favorites window </b></li>
-            <li><b>Versioning window</b></li>
-            <li><b>Search Histories window </b></li>
-            <li><b>Search Results window</b></li>
-            <li><b>Source Editor</b>
-            <p>The Status Bar in the bottom left of the IDE window displays the
-            current command's status. </p></li>
+            <li><strong>Projects window</strong></li>
+            <li><strong>Files window</strong></li>
+            <li><strong>Favorites window</strong></li>
+            <li><strong>Versioning window</strong></li>
+            <li><strong>History Viewer</strong></li>
+            <li><strong>Source Editor</strong> (i.e. from the tab of an open file)</li>
         </ul>
-        <p>The following common CVS commands are available in the Versioning window's toolbar: </p>
-        <ul>
-            <li><b>Refresh Status.</b></li>
-            <li><b>Diff All.</b></li>
-            <li><b>Update All.</b></li>
-            <li><strong>Commit All.</strong></li>
-        </ul>        
+        
+        <ul class="note">
+            <li>The IDE's status bar, located in the bottom right of the interface, displays 
+                the current command's status.</li>
+        </ul>
+        
         <dl>
-            <dt> <a name="seealso">See Also</a></dt>
-            <dd> <a href="./cvs-lite_about.html">About CVS</a></dd>            
-            <dd> <a href="./cvs-lite_overview.html">Working with CVS </a></dd>
-            <dd> <a href="./cvs-lite_quickref.html">CVS Tasks: Quick Reference</a></dd>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="cvs-lite_about.html">About CVS</a></dd>
+            <dd><a href="cvs-lite_overview.html">Working with CVS</a></dd>
+            <dd><a href="cvs-lite_quickref.html">CVS Tasks: Quick Reference</a></dd>
         </dl>
-        <hr> <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
     </body>
 </html>

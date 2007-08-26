@@ -6,40 +6,58 @@
 -->
 <html>
     <head>
-        <title>Reverting CVS Modifications</title>
-        <link rel="StyleSheet"
-              href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <title>Reverting Modifications</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
     </head>
+    
     <body>
-        <h2>Reverting CVS Modifications</h2>
-        <p>Occasionally it may be necessary to revert changes that you have
-            made
-            in a local copy of a file so that it matches the repository version.
-        The IDE enables you to do this using the Revert Changes command.</p>
-        <p><b>To revert changes made in a file:</b></p>
-        <ol>
-            <li> In the Projects, Files, or Versioning window, right-click the file for which
-            you want to revert changes.
-            <li>Choose Revert Modifications.</li>
-            <p>The IDE reverts any changes in the local file back to the state
-            prior to making the edits, corresponding with the repository version. </p>
-        </ol>
-        <dl>
-            <dt> <a name="seealso">See Also</a></dt>
-            <dd> <a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
-            <dd> <a href="cvs-lite_merge.html">Merging File Revisions from a
-            Branch</a></dd>
-            <dd> <a href="cvs-lite_updating.html">Updating Files in a Local
-            Working Directory</a></dd>
+        <h2>Reverting Modifications</h2>
+        
+        <p>Occasionally it may be desirable or necessary to revert changes made to files in your
+            local working copy. You may need to either revert changes made locally, or retrieve
+            revisions from the repository, and undo any changes to files caused by these revisions.
+            The IDE enables you to do this using the Revert Modifications command.</p>
             
+        <h4>To revert modifications:</h4>
+        
+        <ul>
+            <li>Select the versioned file for which you want to revert changes (e.g. from the Projects,
+                Files, Favorites or <a href="csh/cvs-lite_versioning_window.html">Versioning</a> window) and 
+                choose Revert Modifications (or CVS &gt; Revert Modifications). The 
+                <a href="csh/cvs-lite_revert_mod_dialog.html">Revert Modifications dialog box</a> opens, 
+                enabling you to specify criteria.</li>
+            <li>In the Revert Modifications dialog box, select one of three options:
+            
+                <ul>
+                    <li><strong>Revert Local Changes.</strong> Reverts any changes made in your local 
+                        working copy to the previously committed or updated version.</li>
+                    <li><strong>Revert Modifications from Single Commit.</strong> Reverts the local 
+                        working copy to the repository revision made prior to the previous commit. (Specify 
+                        a revision number in the Revision text field.)</li>
+                    <li><strong>Revert Modifications from Previous Commits.</strong> Reverts the local 
+                        working copy to a specified revision from the repository. (Specify starting and 
+                        ending revision numbers in the corresponding text fields.)</li>
+                </ul>
+                
+                <ul class="note">
+                    <li>You can delete any files or folders which were created in your local working 
+                        copy since the point which you are reverting to by selecting the <strong>Remove 
+                        Newly Added Files and Folders</strong> option.</li>
+                </ul></li>
+                
+            <li>Click Revert. The IDE reverts any changes in the local file to a state that corresponds with
+                the repository version, according to the specified parameters.</li>
+        </ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="cvs-lite_merge.html">Merging File Revisions in CVS</a></dd>            
+            <dd><a href="cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
+            <dd><a href="cvs-lite_updating.html">Updating Files in a Local Working Directory</a></dd>
         </dl>
-        <hr> <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
     </body>
 </html>

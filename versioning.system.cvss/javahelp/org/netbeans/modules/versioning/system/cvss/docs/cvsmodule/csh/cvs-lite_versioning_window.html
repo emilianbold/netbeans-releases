@@ -28,17 +28,37 @@
 	You can click the column headings above the listed files to sort the files by name, status or location.</p>
 	<p>The Versioning window toolbar also includes buttons that enable you to invoke the most common CVS tasks on all files displayed in the list.
 	The following table lists the CVS commands available in the toolbar of the Versioning window: </p>
-	<table border="1" cellpadding="5" cellspacing="0" summary="The left column contains the graphic icon for toolbar icons in the Versioning window. 
-	    The right column contains a description of the task the icon invokes.">
-	    <tr>
-		<td><b>Icon</b></td>
-		<td><b>Description</b></td>
-	    </tr>     	
-	    <tr><td><img src="../images/refresh.png" alt="Refresh Status icon"></td><td><b>Refresh Status.</b></td></tr>
-	    <tr><td><img src="../images/diff.png" alt="Diff All icon"></td><td><b>Diff All.</b></td></tr>
-	    <tr><td><img src="../images/update.png" alt="Update All icon"></td><td><b>Update All.</b></td></tr>
-	    <tr><td><img src="../images/commit.png" alt="Commit All icon"></td><td><b>Commit All.</b></td></tr>
-	</table>
+        
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>Icon</th>
+                <th width="100px">Name</th>
+                <th>Function</th>
+            </tr>
+            <tr>
+                <td align="center"><img src="../images/refresh.png" alt="refresh status icon"></td>
+                <td align="center"><strong>Refresh Status</strong></td>
+                <td>Refreshes the status of the selected files and folders. Files displayed 
+                    in the Versioning window can be refreshed to reflect any changes that
+                    may have been made externally.</td>
+            </tr>
+            <tr>
+                <td align="center"><img src="../images/diff.png" alt="diff all icon"></td>
+                <td align="center"><strong>Diff All</strong></td>
+                <td>Opens the Diff Viewer providing you with a side-by-side comparison of 
+                    your local copies and the versions maintained in the repository.</td>
+            </tr>     
+            <tr>
+                <td align="center"><img src="../images/update.png" alt="update all icon"></td>
+                <td align="center"><strong>Update All</strong></td>
+                <td>Updates all selected files from the repository.</td>
+            </tr>
+            <tr>
+                <td align="center"><img src="../images/commit.png" alt="commit all icon"></td>
+                <td align="center"><strong>Commit All</strong></td>
+                <td>Enables you to commit local changes to the repository.</td>
+            </tr>            
+        </table>
 
 	<p>You can access CVS commands in the Versioning window by right-clicking the file and choosing a command in the pop-up window.
 	You can also specify files that you want to exclude from a commit or to ignore altogether by right-clicking the file and then choosing Exclude from Commit or Ignore.
