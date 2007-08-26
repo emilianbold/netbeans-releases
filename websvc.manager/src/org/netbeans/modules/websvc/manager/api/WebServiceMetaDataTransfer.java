@@ -20,6 +20,9 @@ package org.netbeans.modules.websvc.manager.api;
 
 import com.sun.tools.ws.processor.model.java.JavaMethod;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 
@@ -43,11 +46,16 @@ public class WebServiceMetaDataTransfer {
      * The {@link DataFlavor} representing a web service method
      */
     public static DataFlavor METHOD_FLAVOR;
+
+    public static final DataFlavor METHOD_NODE_FLAVOR;
+    protected static final DataFlavor PORT_NODE_FLAVOR;
     
     static {
         try {
             PORT_FLAVOR = new DataFlavor("application/x-java-netbeans-websvcmgr-port;class=org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer$Port"); // NOI18N
+            PORT_NODE_FLAVOR = new DataFlavor("application/x-java-netbeans-websvcmgr-port;class=org.openide.nodes.Node");
             METHOD_FLAVOR = new DataFlavor("application/x-java-netbeans-websvcmgr-method;class=org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer$Method"); // NOI18N
+            METHOD_NODE_FLAVOR = new DataFlavor("application/x-java-netbeans-websvcmgr-method;class=org.openide.nodes.Node");
         } catch (ClassNotFoundException e) {
             throw new AssertionError(e);
         }
@@ -100,5 +108,63 @@ public class WebServiceMetaDataTransfer {
             return operation;
         }        
     }
+    
+    
+    public static final class MethodTransferable implements Transferable {
+        private static final DataFlavor[] SUPPORTED_FLAVORS = { METHOD_FLAVOR, METHOD_NODE_FLAVOR };
+        private final WebServiceMetaDataTransfer.Method transferData;
+        
+        public MethodTransferable(WebServiceMetaDataTransfer.Method transferData) {
+            this.transferData = transferData;
+        }
+        
+        public DataFlavor[] getTransferDataFlavors() {
+            return SUPPORTED_FLAVORS;
+        }
+
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return flavor == SUPPORTED_FLAVORS[0] || flavor == SUPPORTED_FLAVORS[1];
+        }
+
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (!isDataFlavorSupported(flavor)) {
+                throw new UnsupportedFlavorException(flavor);
+            }else {
+                return transferData;
+            }
+        }
+    }
+
+    public static final class PortTransferable implements Transferable {
+        private static final DataFlavor[] SUPPORTED_FLAVORS = { PORT_FLAVOR, PORT_NODE_FLAVOR };
+        private final WebServiceMetaDataTransfer.Port transferData;
+        
+        public PortTransferable(WebServiceMetaDataTransfer.Port transferData) {
+            this.transferData = transferData;
+        }
+        
+        public PortTransferable(Method method) {
+             WebServiceData wsData = method.getWebServiceData();
+             String portName = method.getPortName();
+             this.transferData = new Port(wsData, portName);
+        }
+        
+        public DataFlavor[] getTransferDataFlavors() {
+            return SUPPORTED_FLAVORS;
+        }
+
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return flavor == SUPPORTED_FLAVORS[0] || flavor == SUPPORTED_FLAVORS[1];
+        }
+
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (!isDataFlavorSupported(flavor)) {
+                throw new UnsupportedFlavorException(flavor);
+            }else {
+                return transferData;
+            }
+        }
+    }
+    
     
 }

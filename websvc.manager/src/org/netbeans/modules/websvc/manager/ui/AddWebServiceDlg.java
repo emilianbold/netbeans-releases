@@ -220,12 +220,17 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     
     private String fixFileURL(String inFileURL) {
         String returnFileURL = inFileURL;
-        if(returnFileURL.substring(0,1).equalsIgnoreCase("/")) {
-            returnFileURL = "file://" + returnFileURL;
-        } else {
-            returnFileURL = "file:///" + returnFileURL;
-        }
         
+        try {
+            File f = new File(returnFileURL);
+            return f.toURI().toURL().toString();
+        }catch (Exception ex) {
+            if (returnFileURL.substring(0, 1).equalsIgnoreCase("/")) {
+                returnFileURL = "file://" + returnFileURL;
+            } else {
+                returnFileURL = "file:///" + returnFileURL;
+            }
+        }        
         return returnFileURL;
     }
     

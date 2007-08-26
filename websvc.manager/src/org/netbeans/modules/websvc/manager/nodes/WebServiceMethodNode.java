@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
+import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer.MethodTransferable;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
@@ -69,21 +70,11 @@ import org.openide.util.lookup.InstanceContent;
  * @author octav
  */
 public class WebServiceMethodNode extends AbstractNode {
-    private static final DataFlavor METHOD_NODE_FLAVOR;
-    
-    static {
-        try {
-            METHOD_NODE_FLAVOR = new java.awt.datatransfer.DataFlavor("application/x-java-netbeans-websvcmgr-method;class=org.openide.nodes.Node");
-        } catch (ClassNotFoundException ex) {
-            throw new AssertionError(ex);
-        }
-    
-    }
-    
     
     private WebServiceData wsData;
     private JavaMethod javaMethod;
     private WsdlPort port;
+    private WsdlOperation operation;
     private Transferable transferable;
     
     public JavaMethod getJavaMethod() {
@@ -118,20 +109,16 @@ public class WebServiceMethodNode extends AbstractNode {
         if(null == inOperation) {
             return;
         }
+        operation = inOperation;
         javaMethod = ((Operation)inOperation.getInternalJAXWSOperation()).getJavaMethod() ;
         setName(inOperation.getJavaName());
-        
-        // Use the port's transferable if the underlying method returns void
-        if ("void".equals(javaMethod.getReturnType().getRealName())) { // NOI18N
-            transferable = ExTransferable.create(new WebServicesPortNode.PortTransferable(new WebServiceMetaDataTransfer.Port(inWsData, inPort.getName())));
-        }else {
-            transferable = ExTransferable.create(new MethodTransferable(new WebServiceMetaDataTransfer.Method(wsData, javaMethod, port.getName(), inOperation)));
-        }
-        transferable = addFlavors(transferable);
-        content.add(transferable);
+        content.add(inOperation);
         content.add(wsData);
         content.add(javaMethod);
         content.add(port);
+        
+        transferable = ExTransferable.create(new MethodTransferable(
+                new WebServiceMetaDataTransfer.Method(wsData, javaMethod, port.getName(), operation)));
         
         /**
          * Set the shortDescription (tooltip) to the method signature
@@ -337,11 +324,11 @@ public class WebServiceMethodNode extends AbstractNode {
         if (!isMethodDroppable()) {
             return super.clipboardCopy();
         }
-        
-        return transferable;
+
+        return addFlavors(transferable);
     }
     
-    private static Transferable addFlavors(Transferable transfer) {
+    static Transferable addFlavors(Transferable transfer) {
         Collection<? extends WebServiceTransferManager> managers = Lookup.getDefault().lookupAll(WebServiceTransferManager.class);
         Transferable result = transfer;
         
@@ -351,28 +338,4 @@ public class WebServiceMethodNode extends AbstractNode {
         return result;
     }
     
-    private static final class MethodTransferable implements Transferable {
-        private static final DataFlavor[] SUPPORTED_FLAVORS = { WebServiceMetaDataTransfer.METHOD_FLAVOR, METHOD_NODE_FLAVOR };
-        private final WebServiceMetaDataTransfer.Method transferData;
-        
-        public MethodTransferable(WebServiceMetaDataTransfer.Method transferData) {
-            this.transferData = transferData;
-        }
-        
-        public DataFlavor[] getTransferDataFlavors() {
-            return SUPPORTED_FLAVORS;
-        }
-
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return flavor == SUPPORTED_FLAVORS[0] || flavor == SUPPORTED_FLAVORS[1];
-        }
-
-        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-            if (!isDataFlavorSupported(flavor)) {
-                throw new UnsupportedFlavorException(flavor);
-            }else {
-                return transferData;
-            }
-        }
-    }
 }

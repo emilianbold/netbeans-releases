@@ -52,9 +52,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer.PortTransferable;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * The node displayed in the Server Navigator for a web service port
@@ -62,16 +65,6 @@ import org.openide.util.datatransfer.ExTransferable;
  * @author  david, cao
  */
 public class WebServicesPortNode  extends AbstractNode implements Node.Cookie {
-    protected static final DataFlavor PORT_NODE_FLAVOR;
-    
-    static {
-        try {
-            PORT_NODE_FLAVOR = new java.awt.datatransfer.DataFlavor("application/x-java-netbeans-websvcmgr-port;class=org.openide.nodes.Node");
-        } catch (ClassNotFoundException ex) {
-            throw new AssertionError(ex);
-        }
-    
-    }
     
     private WebServiceData wsData;
     private WsdlPort port;
@@ -82,7 +75,11 @@ public class WebServicesPortNode  extends AbstractNode implements Node.Cookie {
     }
     
     public WebServicesPortNode(WebServiceData inData, WsdlPort  inPort) {
-        super(new WebServicesPortNodeChildren(inData, inPort));
+        this(inData, inPort, new InstanceContent());
+    }
+    
+    private WebServicesPortNode(WebServiceData inData, WsdlPort  inPort, InstanceContent content) {
+        super(new WebServicesPortNodeChildren(inData, inPort), new AbstractLookup(content));
         
         wsData = inData;
         
@@ -90,6 +87,8 @@ public class WebServicesPortNode  extends AbstractNode implements Node.Cookie {
             throw new NullPointerException("Cannot instantiate WebServicesPortNode with null port");
         }
         port = inPort;
+        content.add(wsData);
+        content.add(port);
         setName(port.getName());
         transferable = ExTransferable.create(new PortTransferable(new WebServiceMetaDataTransfer.Port(inData, inPort.getName())));
     }
@@ -210,32 +209,6 @@ public class WebServicesPortNode  extends AbstractNode implements Node.Cookie {
         
         return result;
     }
-    
-    static final class PortTransferable implements Transferable {
-        private static final DataFlavor[] SUPPORTED_FLAVORS = { WebServiceMetaDataTransfer.PORT_FLAVOR, PORT_NODE_FLAVOR };
-        private final WebServiceMetaDataTransfer.Port transferData;
-        
-        public PortTransferable(WebServiceMetaDataTransfer.Port transferData) {
-            this.transferData = transferData;
-        }
-        
-        public DataFlavor[] getTransferDataFlavors() {
-            return SUPPORTED_FLAVORS;
-        }
-
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return flavor == SUPPORTED_FLAVORS[0] || flavor == SUPPORTED_FLAVORS[1];
-        }
-
-        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-            if (!isDataFlavorSupported(flavor)) {
-                throw new UnsupportedFlavorException(flavor);
-            }else {
-                return transferData;
-            }
-        }
-    }
-    
     
     public WebServiceData getWebServiceData() {
         return this.wsData;
