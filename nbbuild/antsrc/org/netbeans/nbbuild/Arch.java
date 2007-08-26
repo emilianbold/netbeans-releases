@@ -731,7 +731,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         
         if (last.equals("xhtml1-strict.dtd")) {
             // try to find relative libraries
-            String dtd = "libs/external/dtds/xhtml1-20020801/DTD/xhtml1-strict.dtd".replace('/', File.separatorChar);
+            String dtd = "nbbuild/external/xhtml1-dtds/xhtml1-strict.dtd".replace('/', File.separatorChar);
             File f = questionsFile.getParentFile();
             while (f != null) {
                 File check = new File(f, dtd);
