@@ -322,12 +322,12 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
                     reportPerformance(performanceDataName, measuredTime[i], "ms", i, expectedTime);
 
-                    getScreenshotOfMeasuredIDEInTimeOfMeasurement(i);
+                    //getScreenshotOfMeasuredIDEInTimeOfMeasurement(i);
 
                 }catch(Exception exc){ // catch for prepare(), open()
                     log("------- [ "+i+" ] ---------------- Exception rises while measuring performance :"+exc.getMessage());
                     exc.printStackTrace(getLog());
-                    getScreenshot("exception_during_open");
+                    //getScreenshot("exception_during_open");
                     exceptionDuringMeasurement = exc.getMessage();
                     // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
                 }finally{ // finally for prepare(), open()
@@ -344,7 +344,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     }catch(Exception e){ // catch for close()
                         log("------- [ "+i+" ] ---------------- Exception rises while closing tested component :"+e.getMessage());
                         e.printStackTrace(getLog());
-                        getScreenshot("exception_during_close");
+                        //getScreenshot("exception_during_close");
                         exceptionDuringMeasurement = e.getMessage();
                         //throw new JemmyException("Exception arises while closing tested component :"+e.getMessage());
                     }finally{ // finally for close()
@@ -360,7 +360,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         }catch (Exception e) { // catch for initialize(), shutdown(), closeAllDialogs()
             log("----------------------- Exception rises while shuting down / initializing:"+e.getMessage());
             e.printStackTrace(getLog());
-            getScreenshot("exception_during_init_or_shutdown");
+            //getScreenshot("exception_during_init_or_shutdown");
             // throw new JemmyException("Exception rises while shuting down :"+e.getMessage());
             exceptionDuringMeasurement = e.getMessage();
         }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
@@ -431,7 +431,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             }catch(Exception exc){ // catch for prepare(), open()
                 exc.printStackTrace(getLog());
                 exceptionDuringMeasurement = exc;
-                getScreenshot("exception_during_open");
+                //getScreenshot("exception_during_open");
                 // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
             }finally{
                 try{
@@ -445,7 +445,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
                 }catch(Exception e){
                     e.printStackTrace(getLog());
-                    getScreenshot("exception_during_close");
+                    //getScreenshot("exception_during_close");
                     exceptionDuringMeasurement = e;
                 }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
                     // XXX export results?
@@ -479,7 +479,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             closeAllDialogs();
         }catch (Exception e) {
             e.printStackTrace(getLog());
-            getScreenshot("shutdown");
+            //getScreenshot("shutdown");
             exceptionDuringMeasurement = e;
         }finally{
         }
