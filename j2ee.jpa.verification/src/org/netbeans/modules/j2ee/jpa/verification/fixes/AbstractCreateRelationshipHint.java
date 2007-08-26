@@ -351,6 +351,7 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         
         VariableTree targetField = null;
         VariableElement targetFieldElem = ModelUtils.getField(targetClass, mappedBy);
+        MethodTree targetFieldAccesor = null;
         
         if (targetFieldElem != null){
             targetField = (VariableTree) workingCopy.getTrees().getTree(targetFieldElem);
@@ -362,27 +363,13 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
             ClassTree modifiedClass = genUtils.addClassFields(targetClassTree, Collections.singletonList(targetField));
             
             ModifiersTree accessorMutatorModifiers = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PUBLIC));
-            MethodTree accessor = genUtils.createPropertyGetterMethod(accessorMutatorModifiers, mappedBy, remoteFieldType);
+            targetFieldAccesor = genUtils.createPropertyGetterMethod(accessorMutatorModifiers, mappedBy, remoteFieldType);
             MethodTree mutator = genUtils.createPropertySetterMethod(accessorMutatorModifiers, mappedBy, remoteFieldType);
-            modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, accessor);
+            modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, targetFieldAccesor);
             modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, mutator);
             
             workingCopy.rewrite(targetClassTree, modifiedClass);
             targetClassTree = modifiedClass;
-        }
-        
-        MethodTree targetFieldAccesor = null;
-        ExecutableElement targetFieldAccesorElem = ModelUtils.getAccesor(targetClass, mappedBy);
-        
-        if (targetFieldAccesorElem != null){
-            targetFieldAccesor = workingCopy.getTrees().getTree(targetFieldAccesorElem);
-        } else{
-            ModifiersTree modifiersTree = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PUBLIC));
-            targetFieldAccesor = genUtils.createPropertyGetterMethod(modifiersTree, mappedBy, remoteFieldType);
-            ClassTree modifiedClass = workingCopy.getTreeMaker().addClassMember(targetClassTree, targetFieldAccesor);
-            MethodTree targetFieldMutator = genUtils.createPropertySetterMethod(modifiersTree, mappedBy, remoteFieldType);
-            modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, targetFieldMutator);
-            workingCopy.rewrite(targetClassTree, modifiedClass);
         }
         
         List<ExpressionTree> targetAnnArgs = null;
