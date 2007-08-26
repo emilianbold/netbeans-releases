@@ -178,7 +178,8 @@ public class RailsProjectGenerator {
                             "# Inserted by NetBeans Ruby support to support JRuby\n" +
                             "if RUBY_PLATFORM =~ /java/\n" + // NOI18N
                             "  require 'rubygems'\n" + // NOI18N
-                            "  RAILS_CONNECTION_ADAPTERS = %w(jdbc)\n" + // NOI18N
+                            "  gem 'ActiveRecord-JDBC'\n" + // NOI18N
+                            "  require 'jdbc_adapter'\n" + // NOI18N
                             "end\n\n"; // NOI18N
                         doc.insertString(offset, insert, null);
                         SaveCookie sc = dobj.getCookie(SaveCookie.class);
