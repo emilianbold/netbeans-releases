@@ -1,4 +1,5 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
 <!--
 *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
@@ -6,134 +7,111 @@
 <html>
     <head>
         <title>Working with CVS</title>
-        <link rel="StyleSheet"
-        href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+              rel="StyleSheet" type="text/css">
     </head>
+    
     <body>
         <h2>Working with CVS</h2>
+        
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>The following table outlines the basic workflow when working with
-        CVS in the IDE.</p>
-        <table
-            summary="The left column contains each process step. The right column contains detail information to accomplish that process."
-            border="0" cellpadding="5" cellspacing="0">
-            <tbody>
-                <tr valign="center">
-                    <td align="center"><img src="images/circle1.gif" alt="Number one"><br>
-                    <b>Set Up VCS</b> </td>
-                    <td>
-                        <ul>
-                            <li><a href="cvs-lite_setup.html">Set up CVS.</a></li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                    <hr align="center" width="80%"> </td>
-                </tr>
-                <tr valign="center">
-                    <td align="center"><img src="images/circle2.gif" alt="Number one"><br>
-                    <b>Check Out Sources</b> </td>
-                    <td>
-                        <ul>
-                            <li><a href="cvs-lite_checkout.html">Check out files from a CVS
-                            repository.</a></li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                    <hr align="center" width="80%"> </td>
-                </tr>
-                <tr valign="center">
-                    <td align="center"><img src="images/circle3.gif" alt="Number Three"><br>
-                    <b>Update Local Versions</b> </td>
-                    <td>
-                        <ul>
-                            <li><a href="cvs-lite_updating.html">Update</a> local versions
-                            of files with changes committed to the CVS repository.</li>
-                        </ul>
-                    </td>
-                </tr>                
-                <tr>
-                    <td colspan="2">
-                    <hr align="center" width="80%"> </td>
-                </tr>
-                <tr valign="center">
-                    <td align="center"><img src="images/circle4.gif" alt="Number Three"><br>
-                    <b>Build</b></td>
-                    <td>
-                        <ul>
-                            <li>Compile sources to ensure that local versions of files 
-                            contain the appropriate changes prior to committing them 
-                            to the CVS repository.</li>
-                        </ul>
-                    </td>
-                </tr> 
-                <tr>
-                    <td colspan="2">
-                    <hr align="center" width="80%"> </td>
-                </tr>
-                <tr valign="center">
-                    <td align="center"><img src="images/circle5.gif" alt="Number one"><br>
-                    <b>Edit Sources</b> </td>
-                    <td>
-                        <ul>
-                            <li>Make changes to local copies of versioned files.</li>
-                            
-                            <li><a href="cvs-lite_merge.html">Merge</a> changes in
-                            repository revisions with the local copy of a file.</li>
-                            <li><a href="cvs-lite_mergeresolve.html">Resolve Conflicts</a>
-                            between local versions of files with changes committed to CVS
+        
+        <p>The following table outlines the basic workflow when working with CVS 
+            in the IDE.</p>
+        
+        <table cellpadding="5">
+            <tr>
+                <td align="center"><img src="images/circle1.gif" alt="Number One"><br>
+                    <strong>Set Up CVS</strong></td>
+                <td>
+                    <ul>
+                        <li><a href="cvs-lite_setup.html">Set up</a> CVS.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                <hr align="center" width="80%"></td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/circle2.gif" alt="Number Two"><br>
+                    <strong>Synchronize local files with repository</strong></td>
+                <td>
+                    <ul>
+                        <li><a href="cvs-lite_checkout.html">Check out</a> files from a repository.</li>
+                        <li><a href="cvs-lite_import.html">Import</a> your project into a CVS 
+                            repository.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                <hr align="center" width="80%"></td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/circle3.gif" alt="Number Three"><br>
+                    <strong>Edit Sources</strong></td>
+                <td>
+                    <ul>
+                        <li>Make changes to local copies of versioned files.</li>
+                        <li><a href="cvs-lite_diff.html">Diff</a> file revisions between 
+                            repository versions and your local working copies.</li>
+                        <li><a href="cvs-lite_merge.html">Merge</a> changes in repository
+                            revisions with the local copies.</li>
+                    </ul>                
+                </td>
+            </tr>                             
+            <tr>
+                <td colspan="2">
+                <hr align="center" width="80%"></td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/circle4.gif" alt="Number Four"><br>
+                    <strong>Update Local Versions</strong></td>
+                <td>
+                    <ul>
+                        <li><a href="cvs-lite_updating.html">Update</a> local versions of files 
+                            with changes committed to the CVS repository.</li>
+                    </ul>
+                </td>
+            </tr>   
+            <tr>
+                <td colspan="2">
+                <hr align="center" width="80%"> </td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/circle5.gif" alt="Number Five"><br>
+                    <strong>Resolve Conflicts</strong></td>
+                <td>
+                    <ul>
+                        <li><a href="cvs-lite_mergeresolve.html">Resolve</a> conflicts between 
+                            local versions of files with changes committed to CVS
                             repository revisions.</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                    <hr align="center" width="80%"> </td>
-                </tr>
-                <tr valign="center">
-                    <td align="center"><img src="images/circle6.gif"
-                    alt="Number three"><br>
-                    <b>Diff File Revisions</b> </td>
-                    <td>
-                        <ul>
-                            <li><a href="cvs-lite_diff.html">View the differences</a> between
-                            the repository version and the local working copy of a file.</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                    <hr align="center" width="80%"></td>
-                </tr>
-                <tr valign="top">
-                    <td align="center"><img src="images/circle7.gif"
-                    alt="Number three"><br>
-                    <b>Commit </b><b>Sources</b> </td>
-                    <td> <br>
-                        <ul>
-                            <li><a href="cvs-lite_commit.html">Commit</a> local changes to
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                <hr align="center" width="80%"></td>
+            </tr>
+            <tr>
+                <td align="center"><img src="images/circle6.gif" alt="Number Six"><br>
+                    <strong>Commit Sources</strong></td>
+                <td>
+                    <ul>
+                        <li><a href="cvs-lite_commit.html">Commit</a> local changes to
                             files into the repository.</li>
-                        </ul>
-                    </td>
-                </tr>
-            </tbody>
+                    </ul>
+                </td>
+            </tr>
         </table>
+        
         <dl>
-            <dt> <a name="seealso">See Also</a></dt>
-            <dd> <a href="cvs-lite_about.html">About CVS</a></dd>
-            <dd> <a href="./cvs-lite_using.html">Using CVS with the IDE</a></dd>
-            <dd> <a href="./cvs-lite_quickref.html">CVS Tasks: Quick Reference</a></dd>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="cvs-lite_about.html">About the IDE's CVS Support</a></dd>
+            <dd><a href="cvs-lite_quickref.html">CVS Tasks: Quick Reference</a></dd>
         </dl>
-        <hr> <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
     </body>
 </html>
