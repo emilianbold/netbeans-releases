@@ -20,6 +20,9 @@
 package org.netbeans.modules.websvc.manager.impl;
 
 import java.awt.datatransfer.Transferable;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -28,12 +31,12 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.core.jaxws.nodes.OperationNode;
 import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsCodeGenerator;
+import org.netbeans.modules.websvc.manager.api.WebServiceManager;
 import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
 import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer.Method;
-import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer.Port;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
+import org.netbeans.modules.websvc.manager.util.WebServiceLibReferenceHelper;
 import org.openide.ErrorManager;
 import org.openide.text.ActiveEditorDrop;
 
@@ -55,15 +58,20 @@ public class JaxWsEditorDrop implements ActiveEditorDrop {
         if (mimeType!=null && ("text/x-java".equals(mimeType) || "text/x-jsp".equals(mimeType) )) { //NOI18N
             
             try {
-                boolean enableDnD=false;
-                //Node clientNode = manager.getParentNode().getParentNode().getParentNode();
-                //FileObject srcRoot = (FileObject)clientNode.getLookup().lookup(FileObject.class);
-                //Project clientProject = FileOwnerQuery.getOwner(srcRoot);
                 Project targetProject = FileOwnerQuery.getOwner(
-                    NbEditorUtilities.getFileObject(targetComponent.getDocument()));
+                    NbEditorUtilities.getFileObject(targetComponent.getDocument()));                
                 Method method = 
                     (Method) transferable.getTransferData(WebServiceMetaDataTransfer.METHOD_FLAVOR);
                 WebServiceData d = method.getWebServiceData();
+                
+                //copy client jars
+                List<String> jars = new ArrayList<String>();
+                jars.add(WebServiceManager.WEBSVC_HOME + File.separator + 
+                        d.getName() + File.separator + WebServiceData.JAX_WS + File.separator + 
+                        d.getName() + ".jar");
+                WebServiceLibReferenceHelper.addArchiveRefsToProject(
+                        targetProject, jars);              
+
                 WsdlService service = d.getWsdlService();
                 WsdlPort port = service.getPortByName(method.getPortName());
                 WsdlOperation operation = method.getOperation();
