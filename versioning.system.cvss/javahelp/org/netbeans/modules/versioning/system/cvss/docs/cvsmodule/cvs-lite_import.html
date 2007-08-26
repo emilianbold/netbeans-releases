@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Placing Projects Under Version Control</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Placing Projects Under Version Control</h2>
+
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The IDE enables you to place any project you are working on under version
+            control. You effectively <em>import</em> your sources into the remote 
+            repository. To do so, you need to be able to access a CVS repository
+            which you have write privileges for.</p>
+        
+        <h4>To place an IDE project under version control:</h4>
+        
+        <ol>
+            <li>In the Projects window, select an unversioned project and choose either:
+            
+                <ul>
+                    <li>Versioning &gt; Import into CVS Repository from the node's 
+                        right-click menu.</li>
+                    <li>Versioning &gt; CVS &gt; Import into Repository from the IDE's
+                        main menu.</li>
+                </ul>The CVS Import wizard opens.</li>
+                
+            <li>In the CVS Root page of the Import wizard, specify the CVS
+                <a href="#rootType">root type</a> and location of the repository as 
+                defined by the CVS URL. 
+                
+                <ul class="note">
+                    <li>Depending on your selection, you may need to specify further 
+                        settings, such as repository password or, in the case of 
+                        <tt>ext:</tt>, you must specify whether to use an internal SSH
+                        client or an external shell. When external shells are used, 
+                        you must also supply the shell command. Click Next.</li>
+                     </li>
+                 </ul></li>
+                 
+            <li>In the Folder to Import panel, enter a description of the project you
+                are importing into the repository into the Import Message text area.</li>            
+            <li>In the Repository Folder text field, specify the repository folder 
+                in which you want to place the project in the repository. A folder 
+                containing the name of your project is suggested for you in the 
+                Repository Folder text field by default.</li>
+            <li>Select the Checkout After Import option if you want to checkout and 
+                work with the project immediately after importing it. Then click Finish 
+                to initiate the import. The IDE uploads the project files to the 
+                repository and the Ouput window opens to display progress.</li>
+        </ol>
+        
+        <h4><a name="rootType"></a>The IDE supports the following CVS root types:</h4>
+        
+        <ul>
+            <li><strong>pserver</strong>. For connecting to pserver repositories.<br> 
+                <tt>:pserver:username@hostname:/repository_path</tt></li>
+            <li><strong>ext</strong>. For connecting to CVS repositories using SSH, etc.<br> 
+                <tt>:ext:username@hostname:/repository_path</tt></li>
+        </ul>
+        
+        <p>The following root types require an external CVS executable:</p>
+        
+	<ul>
+            <li><strong>fork</strong>. For protocol access to local CVS repository<br> 
+                <tt>:fork:/repository_path</tt></li>    
+            <li><strong>local</strong>. For direct access to local CVS repository<br> 
+                <tt>:local:/repository_path</tt></li> 
+        </ul>    
+         
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_about.html">About Projects</a></dd>            
+            <dd><a href="cvs-lite_overview.html">Working with CVS</a></dd>
+        </dl>
+        
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

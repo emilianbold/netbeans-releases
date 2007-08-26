@@ -25,6 +25,8 @@
 	<mapID target="cvs-lite_revert" url="cvsmodule/cvs-lite_reverting.html" />        
 	<mapID target="cvs-lite_projects" url="cvsmodule/cvs-lite_project-system.html" />
 
+        <mapID target="cvs-lite_import" url="cvsmodule/cvs-lite_import.html" />
+
 	<mapID target="cvs-lite_tagging" url="cvsmodule/cvs-lite_tagging.html" /> 
 	<mapID target="cvs-lite_branches" url="cvsmodule/cvs-lite_branches.html" />        
 	<mapID target="cvs-lite_merge" url="cvsmodule/cvs-lite_merge.html" />
