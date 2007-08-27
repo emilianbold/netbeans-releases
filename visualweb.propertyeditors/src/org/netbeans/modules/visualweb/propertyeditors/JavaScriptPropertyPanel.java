@@ -94,6 +94,7 @@ public class JavaScriptPropertyPanel extends PropertyPanelBase {
         // Label with instructions
         final JLabel label = new JLabel(instructions);
         label.setFont(getFont());
+        label.setDisplayedMnemonic(ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("JavaScriptPropertyPanel.label.mnemonic").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -122,7 +123,12 @@ public class JavaScriptPropertyPanel extends PropertyPanelBase {
         editorPane = new JEditorPane();
         editorPane.setContentType("text/javascript"); // NOI18N
         editorPane.setText(string);
-        scrollPane.setViewportView(editorPane);
+        editorPane.getAccessibleContext().setAccessibleName(ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString(
+                "JavaScriptPropertyPanel.editor.accessibleName"));
+        label.setLabelFor(editorPane);        
+        
+        //"Javascript editor"
+        scrollPane.setViewportView(editorPane);        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
