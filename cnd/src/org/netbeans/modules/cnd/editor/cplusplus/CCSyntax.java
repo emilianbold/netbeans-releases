@@ -1629,8 +1629,8 @@ public class CCSyntax extends Syntax {
                                     && buffer[offset++] == 'm'
                                     && buffer[offset++] == 'e')
                                     ? CCTokenContext.TYPENAME : null;
-                        case 'o': // keyword "typeof" (C only)
-                            return (lang == IS_C && len == 6 && buffer[offset++] == 'f')
+                        case 'o': // keyword "typeof" (C++ only)
+                            return (lang == IS_CPLUSPLUS && len == 6 && buffer[offset++] == 'f')
                                 ? CCTokenContext.TYPEOF : null;      
                         default:
                             return null;                                
