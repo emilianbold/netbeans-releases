@@ -120,7 +120,12 @@
 	    <!-- FIELD_TEMPLATE -->
 	    <Component class="javax.swing.JTextField" name="_textFieldName_">
 	      <BindingProperties>
-                <BindingProperty name="text" source="masterTable" sourcePath="${selectedElement._fieldName_}" target="_textFieldName_" targetPath="text"/>
+              <BindingProperty name="text" source="masterTable" sourcePath="${selectedElement._fieldName_}" target="_textFieldName_" targetPath="text" updateStrategy="0">
+                <BindingParameter name="javax.swing.binding.ParameterKeys.TEXT_CHANGE_STRATEGY" value="javax.swing.binding.TextChangeStrategy.ON_TYPE"/>
+              </BindingProperty>
+              <BindingProperty name="enabled" source="masterTable" sourcePath="${selectedElement != null}" target="_textFieldName_" targetPath="enabled" updateStrategy="1">
+                <BindingParameter name="javax.swing.binding.ParameterKeys.TEXT_CHANGE_STRATEGY" value="javax.swing.binding.TextChangeStrategy.ON_TYPE"/>
+              </BindingProperty>
 	      </BindingProperties>
 	    </Component><!-- FIELD_TEMPLATE -->
 	    <Component class="javax.swing.JButton" name="saveButton">

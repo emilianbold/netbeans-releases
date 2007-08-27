@@ -13,8 +13,6 @@ import application.TaskMonitor;
 import application.Task;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;/* DETAIL_ONLY */
 import java.util.Collection;
 import java.util.Iterator;
@@ -26,6 +24,8 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.jdesktop.beansbinding.AbstractBindingListener;
+import org.jdesktop.beansbinding.Binding;
 
 /**
  * The application's main frame.
@@ -102,13 +102,16 @@ public class ShellView extends FrameView {
             });
 
         // tracking changes to save
-        bindingContext.addPropertyChangeListener("hasEditedTargetValues",
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent e) {
-                    // save action observes saveNeeded property
-                    firePropertyChange("saveNeeded", e.getOldValue(), e.getNewValue());
+        bindingGroup.addBindingListener(new AbstractBindingListener() {
+            @Override
+            public void targetEdited(Binding binding) {
+                // save action observes saveNeeded property
+                if (!saveNeeded) {
+                    saveNeeded = true;
+                    firePropertyChange("saveNeeded", false, true);
                 }
-            });
+            }
+        });
 
         // have a transaction started
         entityManager.getTransaction().begin();
@@ -116,7 +119,7 @@ public class ShellView extends FrameView {
 
 
     public boolean isSaveNeeded() {
-        return bindingContext.getHasEditedTargetValues();
+        return saveNeeded;
     }
 
     public boolean isRecordSelected() {
@@ -129,8 +132,12 @@ public class ShellView extends FrameView {
             protected Void doInBackground() {
                 entityManager.getTransaction().commit();
                 entityManager.getTransaction().begin();
-                bindingContext.clearHasEditedTargetValues();
                 return null;
+            }
+            @Override
+            protected void finished() {
+                saveNeeded = false;
+                ShellView.this.firePropertyChange("saveNeeded", true, false);
             }
         };
     }
@@ -227,4 +234,6 @@ public class ShellView extends FrameView {
     private int busyIconIndex = 0;
 
     private JDialog aboutBox;
+
+    private boolean saveNeeded;
 }
