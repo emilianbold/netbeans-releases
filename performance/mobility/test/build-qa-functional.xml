@@ -170,10 +170,10 @@
     <!-- ============= -->
 
     <target name="set-wtk-path" unless="wtk.zipfile.name">
-        <condition property="wtk.zipfile.name" value="wtk251_win.zip">
+        <condition property="wtk.zipfile.name" value="wtk22_win.zip">
             <os family="windows"/>
         </condition>
-        <condition property="wtk.zipfile.name" value="wtk251_linux.zip">
+        <condition property="wtk.zipfile.name" value="wtk22_linux.zip">
             <os family="unix" name="linux"/>
         </condition>
     </target>
