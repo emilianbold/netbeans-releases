@@ -423,7 +423,7 @@ is divided into following sections:
             <target name="dist_se">
                 <xsl:attribute name="depends">init,pre-dist</xsl:attribute>
                 <jar compress="${{jar.compress}}" jarfile="${{build.dir}}/SEDeployment.jar">
-                    <fileset includes="**/*" dir="${{basedir}}/${{build.dir}}"/>
+                    <fileset includes="**/*" excludes="**/SEDeployment.jar" dir="${{basedir}}/${{build.dir}}"/>
                     <!--issue 112930- fileset includes="**/*.xsl,**/*.xslt,**/*.wsdl,**/*.xsd" dir="${{basedir}}/${{build.dir}}"/>
                     
                     <fileset dir="${{basedir}}/${{build.dir}}">
