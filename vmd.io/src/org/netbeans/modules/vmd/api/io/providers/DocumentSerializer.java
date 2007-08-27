@@ -97,11 +97,6 @@ public final class DocumentSerializer {
                 return;
             loading = true;
 
-            StackTraceElement[] stackTraceElements = Thread.currentThread ().getStackTrace ();
-            System.out.println ("DocumentSerializer invocation:"); // NOI18N
-            for (StackTraceElement stackTraceElement : stackTraceElements)
-                System.out.println (stackTraceElement);
-
             RequestProcessor.getDefault ().post (loader);
         }
     }
