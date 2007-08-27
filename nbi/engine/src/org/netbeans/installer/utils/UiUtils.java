@@ -35,7 +35,6 @@ import javax.swing.JProgressBar;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
-import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.UiMode;
 
@@ -43,7 +42,6 @@ import static javax.swing.JOptionPane.YES_NO_OPTION;
 import static javax.swing.JOptionPane.YES_OPTION;
 import static javax.swing.JOptionPane.NO_OPTION;
 import static org.netbeans.installer.utils.SystemUtils.getCurrentPlatform;
-import static org.netbeans.installer.utils.SystemUtils.getEnvironmentVariable;
 
 /**
  *
@@ -346,7 +344,7 @@ public final class UiUtils {
                     // KDE, then we should try to use the GTK look and feel
                     try {
                         if (getCurrentPlatform().isCompatibleWith(Platform.LINUX) &&
-                                (getEnvironmentVariable("KDE_FULL_SESSION") != null)) {
+                                (System.getenv("KDE_FULL_SESSION") != null)) {
                             // check whether the GTK look and feel class is
                             // available -- we'll get CNFE if it is not and it will
                             // not be set
@@ -354,8 +352,6 @@ public final class UiUtils {
                             
                             className = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
                         }
-                    } catch (NativeException e) {
-                        ErrorManager.notifyDebug("Cannot force the use of GTK look and feel", e);
                     } catch (ClassNotFoundException e) {
                         ErrorManager.notifyDebug("Cannot force the use of GTK look and feel", e);
                     }
