@@ -1820,6 +1820,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 URL root = it.next();
                 handledRoots.add(root);
                 FileObject rootFO = URLMapper.findFileObject(root);
+                if (rootFO == null) {
+                    it.remove();
+                    continue;
+                }
                 long start = System.currentTimeMillis();
                 final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
                 File cacheRoot = Index.getClassFolder(root);
