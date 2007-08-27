@@ -147,6 +147,8 @@ public final class NavigatorController implements LookupListener, ActionListener
         curNodes = null;
         curHints = null;
         curNode = null;
+        // #113764: mem leak fix - update lookup - force SimpleProxyLookup to free its delegate
+        clientsLookup.lookup(Object.class);
         lastActivatedRef = null;
         navigatorTC.setPanels(null);
         panelLookupNodesResult = null;

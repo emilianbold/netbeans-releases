@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.navigator;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -303,6 +304,47 @@ public class NavigatorTCTest extends NbTestCase {
         ic.remove(undoHint);
         navTC.componentClosed();
         
+    }
+
+    /** Test for IZ issue #113764. Checks that after closing navigator window, clientsLookup 
+     * in NavigatorController is updated properly and does not hold Node instance through
+     * SimpleProxyLookup.delegate member variable.
+     */
+    public void testBugfix113764_clientsLookupLeak () throws Exception {
+        System.out.println("Testing bugfix #113764, clientsLookup leak...");
+
+        InstanceContent ic = getInstanceContent();
+        
+        TestLookupHint actNodesHint = new TestLookupHint("undoRedo/tester");
+        ic.add(actNodesHint);
+        
+        // add node to play activated node role
+        Node actNode = new AbstractNode(Children.LEAF);
+        actNode.setDisplayName("clientsLookupLeak test node");
+        ic.add(actNode);
+            
+        NavigatorTC navTC = NavigatorTC.getInstance();
+        navTC.componentOpened();
+
+        // wait for selected node change to be applied, because changes are
+        // reflected with little delay
+        waitForChange();
+
+        // get the lookup that leaked, take weak ref on it
+        Lookup lkp = navTC.getController().getLookup();
+        WeakReference<Lookup> wLkp = new WeakReference<Lookup>(lkp);
+        
+        assertNotNull("Lookup mustn't be null", lkp);
+        
+        // erase, close and check, lookup delegate should be freed
+        lkp = null;
+        navTC.componentClosed();
+        
+        assertGC("Lookup instance NavigatorController.getLookup() still not GCed", wLkp);
+        
+        // cleanup
+        ic.remove(actNodesHint);
+        ic.remove(actNode);
     }
     
     
