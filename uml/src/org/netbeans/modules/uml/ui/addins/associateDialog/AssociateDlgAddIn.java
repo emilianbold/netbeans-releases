@@ -25,28 +25,20 @@ package org.netbeans.modules.uml.ui.addins.associateDialog;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
-
-//import org.netbeans.modules.uml.core.addinframework.IAddIn;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
-import org.netbeans.modules.uml.core.support.umlmessagingcore.IMessageService;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.core.support.umlsupport.FileSysManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.products.ad.application.ApplicationView;
 import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
 import org.netbeans.modules.uml.ui.products.ad.application.action.ContextMenuActionClass;
-//import org.netbeans.modules.uml.ui.products.ad.application.action.IContributionItem;
 import org.netbeans.modules.uml.ui.products.ad.application.action.IETContextMenuHandler;
-//import org.netbeans.modules.uml.ui.products.ad.application.action.IViewActionDelegate;
-//import org.netbeans.modules.uml.ui.products.ad.application.action.PluginAction;
-//import org.netbeans.modules.uml.ui.products.ad.application.selection.ISelection;
 import org.netbeans.modules.uml.ui.products.ad.drawEngineManagers.LabelManager;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
@@ -56,23 +48,17 @@ import org.netbeans.modules.uml.ui.support.finddialog.FindResults;
 import org.netbeans.modules.uml.ui.support.finddialog.IFindResults;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
-import org.netbeans.modules.uml.ui.swing.projecttree.ISwingProjectTreeModel;
-import org.netbeans.modules.uml.ui.swing.projecttree.JProjectTree;
 import com.tomsawyer.drawing.TSLabel;
 
 /**
  * @author jingmingm
  *
  */
-//public class AssociateDlgAddIn implements IETContextMenuHandler //, IAddIn, IViewActionDelegate
 public class AssociateDlgAddIn implements IETContextMenuHandler
 {
-    private IMessageService m_MessageService = null;
     private AddInEventSink m_EventsSink = null;
     private DispatchHelper m_Helper = new DispatchHelper();
     private String m_Version = "1";
-    private ApplicationView m_View = null;
     
     protected boolean m_FromDiagram = false;
     protected IProjectTreeControl m_ProjectTree = null;
@@ -287,20 +273,7 @@ public class AssociateDlgAddIn implements IETContextMenuHandler
                     pGUI.doLayout();
                     pGUI.setModal(true);
                     pGUI.setVisible(true);
-                }
-                else
-                {
-                    //					String 	CComBSTR str;
-                    //					VERIFY(str.LoadString(IDS_MULTIPLEPROJECTS));
-                    //					CComBSTR str2;
-                    //					VERIFY(str2.LoadString(IDS_PROJNAME2));
-                    //					CComPtr < IErrorDialog > pTemp;
-                    //					_VH(pTemp.CoCreateInstance(__uuidof(ErrorDialog)));
-                    //					if (pTemp)
-                    //					{
-                    //						_VH(pTemp->Display3(str, EDIK_ICONINFORMATION, long(0), str2));
-                    //					}
-                }
+                }                
             }
         }
     }
@@ -557,7 +530,6 @@ public class AssociateDlgAddIn implements IETContextMenuHandler
                         }
                         else if (pProject.equals(pProj))
                         {
-                            //pProject = pProj;
                             continue;
                         }
                         else
@@ -587,7 +559,6 @@ public class AssociateDlgAddIn implements IETContextMenuHandler
                             }
                             else if (pProject.equals(pProj))
                             {
-                                //pTemp = pProj;
                                 continue;
                             }
                             else
@@ -753,8 +724,6 @@ public class AssociateDlgAddIn implements IETContextMenuHandler
     
     public long initialize(Object context)
     {
-        // Get the current message service
-        m_MessageService = ProductHelper.getMessageService();
         
         if (m_EventsSink == null)
         {
@@ -768,10 +737,7 @@ public class AssociateDlgAddIn implements IETContextMenuHandler
     }
     
     public long deInitialize(Object context)
-    {
-        // Release our message service
-        m_MessageService = null;
-        
+    {      
         // Unregister from the dispatchers
         m_Helper.revokeProjectTreeContextMenuSink(m_EventsSink);
         
@@ -809,202 +775,4 @@ public class AssociateDlgAddIn implements IETContextMenuHandler
         return null;
     }
     
-    public void init(ApplicationView view)
-    {
-        m_View = view;
-    }
-    
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.uml.ui.products.ad.application.action.IPlugginAction#run()
-         */
-    public void run(ActionEvent e)
-    {
-        //		if (m_View != null)
-        //		{
-        //			String id = m_View.getId();
-        //			if (id.equals("org.netbeans.modules.uml.view.projecttree"))
-        //			{
-        //				JProjectTree projTree = (JProjectTree)m_View;
-        //				//handleProjectTreeItemSelected(projTree);
-        //				m_AssociateContext = projTree;
-        //				handleAssociate();
-        //			}
-        //			else if (id.equals("org.netbeans.modules.uml.view.drawingarea"))
-        //			{
-        //				IDrawingAreaControl control = (IDrawingAreaControl)m_View;
-        //				//handleProjectTreeItemSelected(projTree);
-        //				m_AssociateContext = control.getDiagram();
-        //				handleAssociate();
-        //			}
-        //		}
-        //
-        //		// cvc - m_View has no definition in NB4.1 like it did in the
-        //		//  ETI project tree world
-        //		else
-        //			handleAssociate();
-    }
-    
-    
-    //	public void run(ETList<IElement> elements)
-    //	{
-    //		if (m_View != null)
-    //		{
-    //			String id = m_View.getId();
-    //			if (id.equals("org.netbeans.modules.uml.view.projecttree"))
-    //			{
-    //				JProjectTree projTree = (JProjectTree)m_View;
-    //				//handleProjectTreeItemSelected(projTree);
-    //				m_AssociateContext = projTree;
-    //				handleAssociate();
-    //			}
-    //			else if (id.equals("org.netbeans.modules.uml.view.drawingarea"))
-    //			{
-    //				IDrawingAreaControl control = (IDrawingAreaControl)m_View;
-    //				//handleProjectTreeItemSelected(projTree);
-    //				m_AssociateContext = control.getDiagram();
-    //				handleAssociate();
-    //			}
-    //		}
-    //
-    //		// cvc - m_View has no definition in NB4.1 like it did in the
-    //		//  ETI project tree world
-    //		else
-    //			handleAssociate(elements);
-    //	}
-    
-    
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.uml.ui.products.ad.application.action.IPlugginAction#selectionChanged(org.netbeans.modules.uml.ui.products.ad.application.action.PluginAction, org.netbeans.modules.uml.ui.products.ad.application.selection.ISelection)
-         */
-    //	public void selectionChanged(PluginAction action, ISelection selection) {
-    //		// TODO Auto-generated method stub
-    //
-    //	}
-    
-    //	public boolean validate(ApplicationView view, IContributionItem item, IMenuManager pContextMenu)
-    //	{
-    //		boolean valid = false;
-    //
-    //		// Fix W6157:  Do not add the menu item if the item is a label
-    //		Object cpItemClickedOn = pContextMenu.getContextObject();
-    //		if( !(cpItemClickedOn instanceof TSLabel))
-    //		{
-    //			valid = true;
-    //		}
-    //
-    //		if (valid)
-    //		{
-    //			//this part is checked in setSensitivityAndCheck, but I am not adding the menu item if
-    //			//it is not visible as I do not know how to disable it at the moment.
-    //			valid = false;
-    //
-    //			if (view instanceof IProjectTreeControl)
-    //			{
-    //				//its a project tree or design center
-    //				JProjectTree control = (JProjectTree)view;
-    //				ISwingProjectTreeModel model = control.getProjectModel();
-    //				String name = model.getProjectTreeName();
-    //				boolean continueFlag = true;
-    //				if (name != null && name.equals("DesignCenter"))
-    //				{
-    //					boolean isSel = isProjectTreeItemSelected(control);
-    //					if (isSel)
-    //					{
-    //						IProjectTreeItem[] pTreeItems = control.getSelected();
-    //						if (pTreeItems != null)
-    //						{
-    //							int count = pTreeItems.length;
-    //							for (int x = 0; x < count; x++)
-    //							{
-    //								IProjectTreeItem pTreeItem = pTreeItems[x];
-    //								if (pTreeItem != null)
-    //								{
-    //									IProject pProject = control.retrieveProjectFromItem(pTreeItem);
-    //									if (pProject != null)
-    //									{
-    //										boolean bMember = isMemberOfDesignCenterProject(pProject);
-    //										if (bMember)
-    //										{
-    //											// it is a member of an etpat file so bail and do not
-    //											// enable the associate with button
-    //											continueFlag = false;
-    //											break;
-    //										}
-    //									}
-    //								}
-    //							}
-    //						}
-    //					}
-    //					else
-    //					{
-    //						// the tree item is in the design center, but is not a designated project
-    //						// tree item, so it is probably a macro catalog item or a requirement
-    //						// bail
-    //						continueFlag = false;
-    //					}
-    //				}
-    //				if (continueFlag)
-    //				{
-    //					// not enabling if workspace is selected
-    //					boolean isWork = isWorkspaceSelected(control);
-    //					if (!isWork)
-    //					{
-    //						// not enabling if a folder is selected
-    //						boolean isFolder = isFolderSelected(control);
-    //						if (!isFolder)
-    //						{
-    //							// not enabling if a closed project is selected
-    //							String sFirstSelectedClosedProject = control.getFirstSelectedClosedProject();
-    //							if (sFirstSelectedClosedProject == null || sFirstSelectedClosedProject.length() == 0)
-    //							{
-    //								IProjectTreeItem[] pTreeItems = control.getSelected();
-    //								if (pTreeItems != null)
-    //								{
-    //									int count = pTreeItems.length;
-    //									if (count > 0)
-    //									{
-    //										valid = true;
-    //									}
-    //								}
-    //							}
-    //						}
-    //					}
-    //				}
-    //			}
-    //			else if (view instanceof IDrawingAreaControl)
-    //			{
-    //				//its a diagram
-    //				IDrawingAreaControl control = (IDrawingAreaControl)view;
-    //				IDiagram pDiagram = control.getDiagram();
-    //				if (pDiagram != null)
-    //				{
-    //					boolean bReadOnly = pDiagram.getReadOnly();
-    //					if (bReadOnly)
-    //					{
-    //						valid = false;
-    //					}
-    //					else
-    //					{
-    //						// in diagram area, not enabling if nothing selected on diagram
-    //						// get the items selected on the diagram
-    //						ETList<IPresentationElement> pSelected = pDiagram.getSelected();
-    //						if (pSelected != null)
-    //						{
-    //							// get what is selected
-    //							int count = pSelected.size();
-    //							if (count > 0)
-    //							{
-    //								valid = true;
-    //							}
-    //						}
-    //					}
-    //				}
-    //			}
-    //		}
-    //		return valid;
-    //	}
-    
 }
-
-
-
