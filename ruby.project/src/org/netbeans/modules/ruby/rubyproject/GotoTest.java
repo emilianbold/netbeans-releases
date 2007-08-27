@@ -307,8 +307,8 @@ public class GotoTest extends AbstractAction implements EditorAction {
             // so that we can jump to the test declaration itself?
             // Or better yet, the test case method corresponding to
             // the method you're in, or vice versa
-            
-            return new DeclarationLocation(matching, 0);
+
+            return new DeclarationLocation(matching, -1);
         } else {
             if (caretOffset != -1) {
                 DeclarationLocation location = findTestPair(fileObject, caretOffset, findTest);
