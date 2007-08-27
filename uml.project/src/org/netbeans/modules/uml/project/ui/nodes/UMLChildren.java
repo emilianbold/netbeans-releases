@@ -67,7 +67,8 @@ public class UMLChildren extends Children.SortedArray
 	   {
 	       for(Node n : arr) 
 	       {
-		   batchedNodes.add(n);
+		   if (! batchedNodes.contains(n))
+		       batchedNodes.add(n);
 	       }
 	   }
 	   return true;
@@ -170,7 +171,6 @@ public class UMLChildren extends Children.SortedArray
     */
    public void recalculateChildren()
    {
-     
       final NetBeansUMLProjectTreeModel model = UMLModelRootNode.getProjectTreeModel(); 
       final ITreeItem item = getItem();
       item.setIsInitalized(false);
@@ -199,7 +199,7 @@ public class UMLChildren extends Children.SortedArray
 	 {
 	     public void run() 
 	     {
-		 batchAddRequests = true;
+		 //batchAddRequests = true;
 		 model.fireItemExpanding(item, new ChildrenNodeContext());  
 		 flushBatchedAddRequests();
 	     }
