@@ -286,13 +286,13 @@ public final class ProjectManager {
     // its helperRef cache) then only this second fail is logged, but the cause - 
     // the failure to create project - is never logged. So, better log it here:
                     } catch (Error e) {
-                        LOG.log(Level.INFO, null, e);
+                        LOG.log(Level.FINE, null, e);
                         throw e;
                     } catch (RuntimeException e) {
-                        LOG.log(Level.INFO, null, e);
+                        LOG.log(Level.FINE, null, e);
                         throw e;
                     } catch (IOException e) {
-                        LOG.log(Level.INFO, null, e);
+                        LOG.log(Level.FINE, null, e);
                         throw e;
                     }
                 }
