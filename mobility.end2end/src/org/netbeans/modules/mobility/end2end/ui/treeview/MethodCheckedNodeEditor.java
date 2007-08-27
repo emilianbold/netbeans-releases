@@ -54,7 +54,7 @@ public class MethodCheckedNodeEditor extends AbstractCellEditor implements TreeC
     }
     
     public Object getCellEditorValue() {
-        return customRenderer.getRenderer();
+        return customRenderer;
     }
     
     public boolean isCellEditable(final EventObject e) {
@@ -125,8 +125,8 @@ public class MethodCheckedNodeEditor extends AbstractCellEditor implements TreeC
             public void itemStateChanged(@SuppressWarnings("unused") ItemEvent e) {
                 //System.out.println("itemStateChanged") ;
                 if (stopCellEditing()){
-                    if (editor instanceof MethodCheckedNodeRenderer.RendererComponent){
-                        ((MethodCheckedNodeRenderer.RendererComponent)editor).removeItemListener(itemListener);
+                    if (editor instanceof MethodCheckedNodeRenderer){
+                        ((MethodCheckedNodeRenderer)editor).removeItemListener(itemListener);
                     }
                     final Node node = Visualizer.findNode(value);
                     
@@ -138,9 +138,9 @@ public class MethodCheckedNodeEditor extends AbstractCellEditor implements TreeC
             }
         };
         //  System.out.println("editor2 = " + editor.getClass().getName());
-        if (editor instanceof MethodCheckedNodeRenderer.RendererComponent){
+        if (editor instanceof MethodCheckedNodeRenderer){
             // System.out.println("add Item Listener");
-            ((MethodCheckedNodeRenderer.RendererComponent)editor).addItemListener(itemListener);
+            ((MethodCheckedNodeRenderer)editor).addItemListener(itemListener);
         }
         return editor;
     }
