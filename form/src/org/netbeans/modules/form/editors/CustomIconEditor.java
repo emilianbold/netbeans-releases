@@ -38,10 +38,10 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.form.editors.IconEditor.NbImageIcon;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -347,7 +347,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
         boolean hasSubfolders = false;
         boolean hasFiles = false;
         for (FileObject fo : folder.getChildren()) {
-            if (fo.isFolder()) {
+            if (fo.isFolder() && VisibilityQuery.getDefault().isVisible(fo)) {
                 collectPackages(fo, root, col);
                 hasSubfolders = true;
             }
