@@ -38,7 +38,7 @@ while [ $# -gt 0 ] ; do
     case "$1" in
         --userdir) shift; if [ $# -gt 0 ] ; then userdir="$1"; fi
             ;;
-        *) args="$args $1"
+        *) args="$args \"$1\""
             ;;
     esac
     shift
@@ -86,7 +86,7 @@ case "`uname`" in
             --clusters '"$clusters"' \
             --userdir '"${userdir}"' \
             ${default_options} \
-            '$args'
+            "$args"
         ;;
     *)  
        sh=sh
@@ -101,6 +101,7 @@ case "`uname`" in
             --clusters '"$clusters"' \
             --userdir '"${userdir}"' \
             ${default_options} \
-            '$args'
+            "$args"
+       exit 1
         ;;
 esac

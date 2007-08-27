@@ -20,10 +20,14 @@
 package org.netbeans.modules.apisupport.project.suite;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -43,6 +47,8 @@ import org.openide.DialogDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbCollections;
+import org.openide.util.Utilities;
 
 /**
  * Checks building of ZIP support.
@@ -168,6 +174,38 @@ public class BuildZipDistributionTest extends TestBase {
         if (hidden.length() != 0) {
             fail("There should be no hidden files in the zip file: " + hidden);
         }
+        
+        File expand = new File(getWorkDir(), "expand");
+        JarFile f = new JarFile(FileUtil.toFile(zip));
+        for (JarEntry jarEntry : NbCollections.iterable(f.entries())) {
+            String path = jarEntry.getName().replace('/', File.separatorChar);
+            if (path.endsWith("/")) {
+                continue;
+            }
+            File entry = new File(expand, path);
+            entry.getParentFile().mkdirs();
+            FileOutputStream os = new FileOutputStream(entry);
+            FileUtil.copy(f.getInputStream(jarEntry), os);
+            os.close();
+        }
+
+        File root = new File(expand, "fakeapp");
+        File launch;
+        if (Utilities.isWindows()) {
+            launch = new File(new File(root, "bin"), "fakeapp.exe");
+        } else {
+            launch = new File(new File(root, "bin"), "fakeapp");
+        }
+        
+        assertTrue("Launcher exists " + launch, launch.canRead());
+        
+        run(launch, "*");
+        
+        String[] args = MainCallback.getArgs(getWorkDir());
+        
+        if (!Arrays.asList(args).contains("*")) {
+            fail("There should be a * in\n" + Arrays.asList(args));
+        }
     }
     
     private File createNewJarFile (String prefix) throws IOException {
@@ -187,4 +225,81 @@ public class BuildZipDistributionTest extends TestBase {
             }
         }
     }
+    
+    private void run(File nbexec, String... args) throws Exception {
+
+        URL tu = MainCallback.class.getProtectionDomain().getCodeSource().getLocation();
+        File testf = new File(tu.toURI());
+        assertTrue("file found: " + testf, testf.exists());
+        
+        LinkedList<String> allArgs = new LinkedList<String>(Arrays.asList(args));
+        allArgs.addFirst("-J-Dnetbeans.mainclass=" + MainCallback.class.getName());
+        allArgs.addFirst(getWorkDirPath());
+        allArgs.addFirst("--userdir");
+        allArgs.addFirst(testf.getPath());
+        allArgs.addFirst("-cp:p");
+        
+        if (!Utilities.isWindows()) {
+            allArgs.addFirst(nbexec.getPath());
+            allArgs.addFirst("-x");
+            allArgs.addFirst("/bin/sh");
+        } else {
+            allArgs.addFirst(nbexec.getPath());
+        }
+
+        String[] envp = {
+            "jdkhome=" + System.getProperty("java.home") 
+        };
+        
+        StringBuffer sb = new StringBuffer();
+        Process p = Runtime.getRuntime().exec(allArgs.toArray(new String[0]), envp, nbexec.getParentFile());
+        int res = readOutput(sb, p);
+        
+        String output = sb.toString();
+        
+        assertEquals("Execution is ok: " + output, 0, res);
+    }
+    
+    private static int readOutput(final StringBuffer sb, Process p) throws Exception {
+        class Read extends Thread {
+            private InputStream is;
+
+            public Read(String name, InputStream is) {
+                super(name);
+                this.is = is;
+                setDaemon(true);
+            }
+
+            @Override
+            public void run() {
+                byte[] arr = new byte[4096];
+                try {
+                    for(;;) {
+                        int len = is.read(arr);
+                        if (len == -1) {
+                            return;
+                        }
+                        sb.append(new String(arr, 0, len));
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        Read out = new Read("out", p.getInputStream());
+        Read err = new Read("err", p.getErrorStream());
+        out.start();
+        err.start();
+
+        int res = p.waitFor();
+
+        out.interrupt();
+        err.interrupt();
+        out.join();
+        err.join();
+
+        return res;
+    }
+    
 }
