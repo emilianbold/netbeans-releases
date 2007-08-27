@@ -84,7 +84,6 @@ import org.netbeans.modules.websvc.core.WsWsdlCookie;
 import org.openide.ErrorManager;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Task;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -771,16 +770,11 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         if (((projectType != 0 && !Util.isJavaEE5orHigher(project))
                 || (projectType == 0 && jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)))
                 && (wsdlSource != WSDL_FROM_FILE)) {
-            retriever = new WsdlRetriever(this,
-                    wsdlSource==WSDL_FROM_PROJECT?jTxtWsdlProject.getText():jTxtWsdlURL.getText().trim());
             
-            Task task = new Task(retriever);
-            try {
-                task.run();
-                // not exceed one minute for retrieving large wsdl file
-                task.waitFinished(60000);
-            } catch (InterruptedException ex) {
-            }
+            retriever = new WsdlRetriever(this,
+                    wsdlSource==WSDL_FROM_PROJECT?jTxtWsdlProject.getText():jTxtWsdlURL.getText().trim());      
+            retriever.run();
+            
             if (retriever.getState() != WsdlRetriever.STATUS_COMPLETE) {
                 retrieverFailed = true;
                 throw new WizardValidationException(this, "", ""); //NOI18N
