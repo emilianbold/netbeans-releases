@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.io.File;
@@ -83,6 +84,19 @@ public class Utils {
                 ? systemDefaultFont.getSize()
                 : 12;
         }
+    }
+    
+    /**
+     * We want Arial font but it may not be present on all platforms/locales
+     */
+    static String getPreferredFontName() {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        String[] fontNames = ge.getAvailableFontFamilyNames();
+        for( String fn : fontNames ) {
+            if( "Arial".compareToIgnoreCase( fn ) == 0 ) //NOI18N
+                return fn;
+        }
+        return null;
     }
 
     public static Action findAction( String key ) {
