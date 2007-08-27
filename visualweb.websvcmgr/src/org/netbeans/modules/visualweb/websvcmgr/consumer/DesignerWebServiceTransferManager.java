@@ -38,6 +38,7 @@ import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.websvcmgr.WebServiceDescriptor;
 import org.netbeans.modules.visualweb.websvcmgr.WebServiceMetaDataTransfer;
 import org.netbeans.modules.visualweb.websvcmgr.WebServiceTransferManager;
+import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderJavaMethod;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderModelMethod;
 import org.netbeans.modules.visualweb.websvcmgr.model.WebServiceData;
 import org.netbeans.modules.visualweb.websvcmgr.nodes.WebServiceLibReferenceHelper;
@@ -259,16 +260,27 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
             // webservice port/method node is even dragged onto the designer
             // without dropping
             WebServiceDescriptor wsDescriptor = getProxyDescriptorForProject(wsData);
-            String methodSig = Util.getMethodSignatureAsString(new DataProviderModelMethod(javaMethod));
+            String methodSig = null;
+            
+            if (wsDescriptor.getWsType() == WebServiceDescriptor.JAX_WS_TYPE) {
+                methodSig = Util.getMethodSignatureAsString(new DataProviderModelMethod(javaMethod));
+            }else {
+                java.lang.reflect.Method m = Util.getCorrespondingJaxRpcMethod(javaMethod, port.getName(), wsData);
+                methodSig = Util.getMethodSignatureAsString(new DataProviderJavaMethod(m));
+            }
             DesignerWebServiceExtData data = 
                     (DesignerWebServiceExtData)wsDescriptor.getConsumerData().get(DesignerWebServiceExtImpl.CONSUMER_ID);
             String beanClassName = data.getPortToDataProviderMap().get(port.getName()).get(methodSig);
             
             if (beanClassName != null) {
                 addJarReferences( (wsDescriptor.getWsType() == wsDescriptor.JAX_WS_TYPE), WebServiceLibReferenceHelper.getActiveProject(), wsDescriptor);
+                return beanClassName;
+            }else {
+                // XXX return something that cannot be instantiated by the designer so the drop will be rejected
+                return "x";
             }
             
-            return beanClassName;
+            
         }
         
         public Result beanCreatedSetup(DesignBean designBean) {

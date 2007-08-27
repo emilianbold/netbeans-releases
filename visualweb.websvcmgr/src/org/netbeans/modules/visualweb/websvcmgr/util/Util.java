@@ -23,13 +23,20 @@ package org.netbeans.modules.visualweb.websvcmgr.util;
 import com.sun.tools.ws.processor.model.java.JavaMethod;
 import java.io.FileInputStream;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.*;
 import java.text.*;
 import java.io.*;
+import org.netbeans.modules.visualweb.websvcmgr.WebServiceDescriptor;
+import org.netbeans.modules.visualweb.websvcmgr.consumer.DesignerWebServiceExtData;
+import org.netbeans.modules.visualweb.websvcmgr.consumer.DesignerWebServiceExtImpl;
+import org.netbeans.modules.visualweb.websvcmgr.model.WebServiceData;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 import org.w3c.dom.*;
 
@@ -38,6 +45,7 @@ import com.sun.tools.ws.processor.model.java.JavaParameter;
 // import com.sun.tools.ws.wscompile.JavaCompilerHelper;
 import com.sun.tools.ws.processor.model.java.JavaType;
 // import com.sun.tools.ws.processor.util.ClientProcessorEnvironment;
+import java.net.URLClassLoader;
 
 /*
 import com.sun.xml.rpc.util.JavaCompilerHelper;
@@ -578,6 +586,79 @@ public class Util {
         return sig.toString();    
     }
 
+    public static Method getCorrespondingJaxRpcMethod(JavaMethod modelMethod, String portName, WebServiceData wsData) {
+        WebServiceDescriptor descriptor = wsData.getJaxRpcDescriptor();
+        if (descriptor == null) {
+            return null;
+        }
+        try {
+            List<URL> urlList = buildClasspath(null, "libs.jaxrpc16.classpath"); // NOI18N
+            for (WebServiceDescriptor.JarEntry entry : descriptor.getJars()) {
+                if (entry.getType().equals(WebServiceDescriptor.JarEntry.PROXY_JAR_TYPE)) {
+                    File jarFile = new File(descriptor.getXmlDescriptorFile().getParent(), entry.getName());
+                    urlList.add(jarFile.toURI().toURL());
+                }
+            }
+            
+            ClassLoader urlClassLoader = new URLClassLoader(urlList.toArray(new URL[urlList.size()]));
+            WsdlPort port = wsData.getWsdlService().getPortByName(portName);
+            
+            DesignerWebServiceExtData data =
+                    (DesignerWebServiceExtData)descriptor.getConsumerData().get(DesignerWebServiceExtImpl.CONSUMER_ID);
+            String beanClassName = data.getPortToProxyBeanNameMap().get(port.getName());
+            
+            Class beanClass = urlClassLoader.loadClass(beanClassName);
+            
+            Method[] methods = beanClass.getDeclaredMethods();
+            List<Method> candidateMethods = new ArrayList<Method>();
+            
+            for (int i = 0; i < methods.length; i++) {
+                if (methods[i].getName().equalsIgnoreCase(modelMethod.getName())) {
+                    candidateMethods.add(methods[i]);
+                }
+            }
+            
+            if (candidateMethods.size() == 1) {
+                return candidateMethods.get(0);
+            }
+            
+            Method result = null;
+            int matchingParams = -1;
+            for (Method m : candidateMethods) {
+                int curMatchParams = getMatchingParametersCount(m, modelMethod);
+                if (curMatchParams > matchingParams) {
+                    result = m;
+                    matchingParams = curMatchParams;
+                }else if (curMatchParams == matchingParams && m.getParameterTypes().length == modelMethod.getParametersList().size()) {
+                    result = m;
+                }
+            }
+            
+            return result;
+        } catch (ClassNotFoundException ex) {
+            return null;
+        }catch (IOException ex) {
+            return null;
+        }
+    }
+    
+    private static int getMatchingParametersCount(Method method, JavaMethod model) {
+        List<JavaParameter> modelParams = model.getParametersList();
+        Type[] params = method.getGenericParameterTypes();
+        int matching = 0;
+        
+        for (int i = 0; i < params.length && i < modelParams.size(); i++) {
+            String paramRealName = typeToString(params[i]);
+            JavaParameter jParam = modelParams.get(i);
+            
+            if (!jParam.isHolder() && jParam.getType().getRealName().startsWith(paramRealName)) {
+                matching += 1;
+            }
+        }
+        
+        return matching;
+    }
+    
     /**
      * This method will take a WSDL port name like "threat.cfc" and change it to
      * "ThreatCfc"

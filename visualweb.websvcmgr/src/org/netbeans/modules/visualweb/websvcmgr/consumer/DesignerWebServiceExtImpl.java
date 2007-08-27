@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
     protected static final String VW_DESIGNTIME_JAR = "vw-dt";
     
-    protected static final String CONSUMER_ID = DesignerWebServiceExtImpl.class.getName();    
+    public static final String CONSUMER_ID = DesignerWebServiceExtImpl.class.getName();    
     private static final String WEBSVC_HOME_PROP = "websvc.home";
     private static final String USER_FILE_PROP = "user.properties.file";
     private static final String WSDL_NAME_PROP = "serviceName";
