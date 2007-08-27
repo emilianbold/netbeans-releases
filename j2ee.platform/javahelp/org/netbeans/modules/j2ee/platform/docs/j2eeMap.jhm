@@ -27,7 +27,8 @@
 	<mapID target="about_implement_ws" url="webservice/create/about_implement_ws.html" />
         <mapID target="create_rest_from_scratch" url="webservice/create/create_rest_from_scratch.html" />
 	<mapID target="create_ws_from_scratch" url="webservice/create/create_ws_from_scratch.html" />
-	<mapID target="create_ws_from_wsdl" url="webservice/create/create_ws_from_wsdl.html" />
+	<mapID target="create_ws_from_java" url="webservice/create/create_ws_from_java.html" />
+        <mapID target="create_ws_from_wsdl" url="webservice/create/create_ws_from_wsdl.html" />
 	<mapID target="create_wsdl_file" url="webservice/create/create_wsdl_file.html" />
 	<mapID target="add_ws_operation" url="webservice/create/add_ws_operation.html" />
 	<!-- End of "Create" section -->
