@@ -238,7 +238,13 @@ public class TraceModel {
             model.startup();
             initProject();
             currentIncludePaths = quoteIncludePaths;
-        }	
+        }
+
+        /*package*/ final void setIncludePaths(List<String> sysIncludes, List<String> usrIncludes) {
+            this.quoteIncludePaths = usrIncludes;
+            this.systemIncludePaths = sysIncludes;
+            this.currentIncludePaths = this.quoteIncludePaths;
+        }
         
         /*package*/ final void shutdown() {
             model.shutdown();

@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
@@ -41,9 +42,15 @@ public final class TestModelHelper {
         return traceModel;
     }
     
-    public void initParsedProject(String projectRoot) throws Exception {
+    public void initParsedProject(String projectRoot, 
+            List<String> sysIncludes, List<String> usrIncludes) throws Exception {
+        traceModel.setIncludePaths(sysIncludes, usrIncludes);
         traceModel.test(new File(projectRoot), System.out, System.err);
     } 
+    
+    public void initParsedProject(String projectRoot) throws Exception {
+        traceModel.test(new File(projectRoot), System.out, System.err);
+    }     
     
     public ProjectBase getProject(){
         return traceModel.getProject();
