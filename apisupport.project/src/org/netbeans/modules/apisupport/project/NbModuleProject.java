@@ -92,6 +92,7 @@ import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 
 /**
  * A NetBeans module project.
@@ -115,6 +116,13 @@ public final class NbModuleProject implements Project {
     private final NbModuleProviderImpl typeProvider;
     
     NbModuleProject(AntProjectHelper helper) throws IOException {
+        AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
+        for (int v = 4; v < 10; v++) {
+            if (aux.getConfigurationFragment("data", "http://www.netbeans.org/ns/nb-module-project/" + v, true) != null) { // NOI18N
+                throw Exceptions.attachLocalizedMessage(new IOException("too new"), // NOI18N
+                        NbBundle.getMessage(NbModuleProject.class, "NbModuleProject.too_new", FileUtil.getFileDisplayName(helper.getProjectDirectory())));
+            }
+        }
         this.helper = helper;
         genFilesHelper = new GeneratedFilesHelper(helper);
         Util.err.log("Loading project in " + getProjectDirectory());
@@ -198,7 +206,7 @@ public final class NbModuleProject implements Project {
         Lookup baseLookup = Lookups.fixed(
             this,
             new Info(),
-            helper.createAuxiliaryConfiguration(),
+            aux,
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
             UILookupMergerSupport.createProjectOpenHookMerger(new OpenedHook()),
@@ -753,7 +761,7 @@ public final class NbModuleProject implements Project {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName() == ProjectInformation.PROP_DISPLAY_NAME) {
+            if (ProjectInformation.PROP_DISPLAY_NAME.equals(evt.getPropertyName())) {
                 setDisplayName((String) evt.getNewValue());
             }
         }
