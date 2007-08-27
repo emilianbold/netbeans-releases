@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -121,7 +121,7 @@
     <!-- <mapID target="org.netbeans.modules.subversion.options.SvnOptionsController" url="svnmodule/csh/svn_options.html" /> -->
 
     <!-- Subversion Manage Connection Settings dialog (accessed from Options window) -->
-    <!-- TODO: Request new target (currently: org.openide.util.HelpCtx.DEFAULT_HELP)
+    <!-- TODO: Request new target (currently: org.openide.util.HelpCtx.DEFAULT_HELP)-->
 
     <!-- Subversion Manage Labels dialog (accessed from Options window) -->
     <mapID target="org.netbeans.modules.subversion.options.AnnotationSettings" url="pending.html" />
