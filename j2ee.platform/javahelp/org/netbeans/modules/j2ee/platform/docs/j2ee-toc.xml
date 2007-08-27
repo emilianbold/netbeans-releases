@@ -179,9 +179,14 @@
                     <tocitem text="Generating a JAX-WS Web Service from Scratch" target="create_ws_from_scratch" />
                     <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
                 </tocitem>
+                <tocitem text="Creating a JAX-WS Web Service from a Java Class" >
+                    <tocitem text="Generating a JAX-WS Web Service from a Java Class" target="create_ws_from_java" />
+                    <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
+                </tocitem>
                 <tocitem text="Creating a JAX-WS Web Service from a WSDL File" >
                     <tocitem text="Generating a WSDL File" target="create_wsdl_file" />
                     <tocitem text="Generating a JAX-WS Web Service from a WSDL File" target="create_ws_from_wsdl" />
+                    <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
                 </tocitem>
             </tocitem>
             <tocitem text="Configuring Web Services" >
