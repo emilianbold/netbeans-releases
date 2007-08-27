@@ -17,7 +17,10 @@
 
 <p>The Threads window lists all threads in the current debugging session. 
 You open the Threads window by choosing Window &gt; Debugging &gt; Threads.</p>
-<p>The information given for each thread is the thread name and state. One thread is the current thread. By default, the current thread is the thread in the current session from which the debugger gained control. When you select a different current session, the Threads window is updated to show the threads for that session.</p>
+<p>The information given for each thread is the thread name, state and if the thread is suspended. 
+One thread is the current thread. 
+By default, the current thread is the thread in the current session from which the debugger gained control. 
+When you select a different current session, the Threads window is updated to show the threads for that session.</p>
 
 <h3><a name="threadstates">Thread States</a></h3>
 <p>The following table describes the thread states for the debugger. </p>
@@ -89,32 +92,44 @@ You open the Threads window by choosing Window &gt; Debugging &gt; Threads.</p>
 <p>Right-clicking the Threads window opens the pop-up menu, where you can choose the following actions:</p>
 <table border="1" cellpadding="5" cellspacing="0">
 	<tr align="left" valign="top">
-		<th scope="col" nowrap>Menu Item</th>
-		<th scope="col">Description</th>
+            <th scope="col">Menu Item</th>
+            <th scope="col">Description</th>
 	</tr>
 	<tr valign="top">
-		<td>Make Current </td>
-		<td>Makes the selected thread the current thread. This command is equivalent to double-clicking the thread.</td>
+          <td>Make Current </td>
+          <td>Makes the selected thread the current thread. This command is equivalent to double-clicking the thread.</td>
 	</tr>
 	<tr valign="top">
-      <td nowrap>Resume</td>
-      <td>Resumes execution of the selected thread. </td>
-  </tr>
-	<tr valign="top">
-		<td>Go to Source</td>
-		<td>Shows the source code for the newest frame on the selected thread's stack.</td>
+          <td>Resume</td>
+          <td>Resumes execution of the selected thread. </td>
+        </tr>
+        <tr valign="top">
+          <td>Suspend</td>
+          <td>Suspends execution of the selected thread. </td>
+        </tr>
+        <tr valign="top">
+          <td>Interrupt</td>
+          <td>Interrupts execution of the selected thread. </td>
+        </tr>
+        <tr valign="top">
+            <td>Go to Source</td>
+            <td>Shows the source code for the newest frame on the selected thread's stack.</td>
 	</tr>
 	<tr valign="top">
-		<td>List Options</td>
-		<td>Enables you to customize the display of the Threads window, including adding and removing columns of information, reordering the columns, and sorting the columns. 
-See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
+            <td>List Options</td>
+            <td>Enables you to customize the display of the Threads window, including adding and removing columns of information, reordering the columns, and sorting the columns. 
+            See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
 	</tr>
 </table>
 
 <h3>Properties</h3>
-<p>You can see all the <a href="threads_properties.html">properties</a> for a thread by right-clicking the node for the thread 
- and choosing Properties.</p>
- <p>By default, all properties are also displayed directly in the Threads window, except for the Suspended property.</p>
+ <p>By default, all thread properties are displayed directly in the Threads window, except for the Suspended property.
+ To display the Suspended property in the Threads window, 
+ click the <img src="../images/ChangeColumn.gif" alt="Change Column">&nbsp;icon in the upper right corner of the window, 
+ or right-click in the window and choose List Options &gt; Change Visible Columns and then select the Suspended checkbox in the dialog box.</p>
+ <p>If a thread is suspended (for example because a breakpoint was reached during the debugging session), 
+ the checkbox for that thread is selected in the Suspended column.
+Deselecting the Suspended checkbox causes the thread to resume.</p>
 
 <dl>
 	<dt><a name="seealso">See Also</a></dt>
