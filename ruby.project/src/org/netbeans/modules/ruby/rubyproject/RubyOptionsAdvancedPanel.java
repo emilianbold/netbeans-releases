@@ -82,7 +82,7 @@ public class RubyOptionsAdvancedPanel extends AdvancedOption {
                 OptionsPanelController controller = option.create();
                 categoryToController.put(category, controller);
                 JPanel panel = new JPanel();
-                panel.setBorder(BorderFactory.createTitledBorder(category));
+                //panel.setBorder(BorderFactory.createTitledBorder(category));
                 panel.setLayout(new BorderLayout());
                 panel.add(controller.getComponent(masterLookup));
                 categoryToPanel.put(category, panel);
@@ -94,18 +94,22 @@ public class RubyOptionsAdvancedPanel extends AdvancedOption {
             if (panel == null) {
                 panel = new JPanel();
                 panel.setLayout(new GridBagLayout());
-                int index = 0;
                 for(String category : categoriesOrdered) {
                     JComponent component = categoryToPanel.get(category);
                     GridBagConstraints gbc = new GridBagConstraints();
                     gbc.anchor = GridBagConstraints.NORTHWEST;
                     gbc.fill = GridBagConstraints.BOTH;
-                    gbc.weightx = 1.0;
-                    gbc.weighty = 1.0;
-                    gbc.gridy = index++;
-                    gbc.gridx = 0;
+                    gbc.weightx = 0.0;
+                    gbc.weighty = 0.0;
+                    gbc.gridwidth = java.awt.GridBagConstraints.REMAINDER;
                     panel.add(component,gbc);
                 }
+                // Dummy panel to eat up all the rest of the space
+                GridBagConstraints gridBagConstraints = new GridBagConstraints();
+                gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+                gridBagConstraints.weightx = 1.0;
+                gridBagConstraints.weighty = 1.0;
+                panel.add(new JPanel(), gridBagConstraints);
             }
             
             return panel;
