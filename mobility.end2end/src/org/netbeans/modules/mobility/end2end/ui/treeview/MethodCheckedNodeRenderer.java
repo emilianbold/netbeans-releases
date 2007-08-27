@@ -1,203 +1,216 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * MethodCheckedNodeRenderer.java
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.mobility.end2end.ui.treeview;
+
 import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.event.ItemListener;
+import java.beans.BeanInfo;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JPanel;
+import javax.swing.JTree;
+import javax.swing.UIManager;
+import javax.swing.tree.TreeCellRenderer;
+import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
 
-import javax.swing.*;
-import javax.swing.tree.TreeCellRenderer;
-import java.awt.*;
-import java.awt.event.ItemListener;
-import java.beans.BeanInfo;
-import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
-
 /**
- * User: suchys
- * Date: Dec 20, 2003
- * Time: 12:30:14 PM
+ *
+ * @author  Adam
  */
-public class MethodCheckedNodeRenderer implements TreeCellRenderer {
-    private RendererComponent customRenderer = null;
+public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRenderer {
+
+    private static final Color selectionForeground = UIManager.getColor("Tree.selectionForeground"); //NOI18N
+    private static final Color selectionBackground = UIManager.getColor("Tree.selectionBackground"); //NOI18N
+    private static final Color textForeground = UIManager.getColor("Tree.textForeground"); //NOI18N
     private Object defaultRenderer = null;
     private MethodCheckedTreeBeanView storage;
-    private Color selectionForeground, selectionBackground, textForeground;//, textBackground;
-    
-    protected RendererComponent getRenderer(){
-        return customRenderer;
-    }
-    
-    public MethodCheckedNodeRenderer(Object defaultRenderer) {
-        // System.out.println("in MethodCheckedNodeRenderer cc");
-        this.defaultRenderer = defaultRenderer;
-        selectionForeground = UIManager.getColor("Tree.selectionForeground"); //NOI18N
-        selectionBackground = UIManager.getColor("Tree.selectionBackground"); //NOI18N
-        textForeground = UIManager.getColor("Tree.textForeground"); //NOI18N
-        customRenderer = new RendererComponent();
-        Font fontValue = UIManager.getFont("Tree.font"); //NOI18N
-        if (fontValue != null){
-            customRenderer.setFont(fontValue);
-        }
-        Boolean booleanValue = (Boolean)UIManager.get("Tree.drawsFocusBorderAroundIcon"); //NOI18N
-        customRenderer.setFocusPainted((booleanValue != null) && (booleanValue.booleanValue()));
-    }
-    
+    private final CardLayout layout;
+
+    /** Creates new form MethodCheckedNodeRenderer */
     public MethodCheckedNodeRenderer() {
         this(null);
     }
-    
+
+    /** Creates new form MethodCheckedNodeRenderer */
+    public MethodCheckedNodeRenderer(Object defaultRenderer) {
+        this.defaultRenderer = defaultRenderer;
+        Font fontValue = UIManager.getFont("Tree.font"); //NOI18N
+        if (fontValue != null) {
+            setFont(fontValue);
+        }
+        initComponents();
+        Boolean booleanValue = (Boolean) UIManager.get("Tree.drawsFocusBorderAroundIcon"); //NOI18N
+        setFocusPainted((booleanValue != null) && (booleanValue.booleanValue()));
+        jPanel2.setSize(jCheckBox1.getSize());
+        layout = (CardLayout) jPanel1.getLayout();
+    }
+
     public void setContentStorage(final MethodCheckedTreeBeanView storage) {
         this.storage = storage;
     }
-    
-    public Component getTreeCellRendererComponent(final JTree tree, final Object value,
-            final boolean selected, final boolean expanded,
-            final boolean leaf, final int row, final boolean hasFocus) {
+
+    public Component getTreeCellRendererComponent(final JTree tree, final Object value, final boolean selected, final boolean expanded, final boolean leaf, final int row, final boolean hasFocus) {
         // System.out.println("in getTreeCellRendererComponent");
         Component returnValue = null;
         final Node node = Visualizer.findNode(value);
         /* sigal */
-        
-        if (node != null && storage != null && !node.equals(storage.getWaitNode())){
-            customRenderer.setText(node.getDisplayName());
+
+        if (node != null && storage != null && !node.equals(storage.getWaitNode())) {
+            setText(node.getDisplayName());
             // System.out.println("node = " + node.getDisplayName() );
-            customRenderer.setEnabled(tree.isEnabled());
-            
-            if (selected){
+            setEnabled(tree.isEnabled());
+
+            if (selected) {
                 // System.out.println("SELECTED");
-                customRenderer.setForeground(selectionForeground, textForeground);
-                customRenderer.setBackground(selectionBackground, tree.getBackground());
+                setForeground(selectionForeground, textForeground);
+                setBackground(selectionBackground, tree.getBackground());
             } else {
                 // System.out.println("NOT  SELECTED");
-                customRenderer.setForeground(textForeground);
-                customRenderer.setBackground(tree.getBackground());
+                setForeground(textForeground);
+                setBackground(tree.getBackground());
             }
-            // customRenderer.setText(node.getDisplayName());
-            if (storage == null){
+            // setText(node.getDisplayName());
+            if (storage == null) {
                 // System.out.println("storage = null");
-                customRenderer.setState(MethodCheckedTreeBeanView.UNSELECTED);
+                setState(MethodCheckedTreeBeanView.UNSELECTED);
             } else {
                 final Object state = storage.getState(node);
                 //System.out.println("state = "+ state.toString());
-                customRenderer.setState(state == null ? MethodCheckedTreeBeanView.UNSELECTED : state);
+                setState(state == null ? MethodCheckedTreeBeanView.UNSELECTED : state);
             }
-            
+
             // Strikeout the line
-            if( node.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE ) != null &&
-                    !((Boolean)node.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE )).booleanValue()) {
-                customRenderer.setText( "<html><s>" + node.getDisplayName() + "</s></html>");
-                customRenderer.setEnabled( false );
+            if (node.getValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE) != null && !((Boolean) node.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE )).booleanValue()) {
+                setText("<html><s>" + node.getDisplayName() + "</s></html>");
+                setEnabled(false);
             } else {
-                customRenderer.setEnabled( true );
+                setEnabled(true);
             }
-            
-            customRenderer.setIcon(new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16)));
-            return customRenderer;
+
+            setIcon(new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16)));
+            return this;
         }
-        if (defaultRenderer != null){
-            returnValue = ((TreeCellRenderer)defaultRenderer).getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+        if (defaultRenderer != null) {
+            returnValue = ((TreeCellRenderer) defaultRenderer).getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
         }
         return returnValue;
     }
-    
-    static class RendererComponent extends JPanel{
-        MultiStateCheckBox jCheckBox1;
-        final private JPanel jPanel1, jPanel2;
-        final private JLabel jLabel1;
-        final private CardLayout layout;
-        
-        public RendererComponent() {
-            jPanel1 = new JPanel();
-            layout = new CardLayout();
-            jPanel1.setLayout(layout);
-            jCheckBox1 = new MultiStateCheckBox();
-            jCheckBox1.setBorder(null);
-            jPanel1.add(jCheckBox1, Boolean.TRUE.toString());
-            jPanel2 = new JPanel();
-            jPanel2.setSize(jCheckBox1.getSize());
-            jPanel1.add(jPanel2, Boolean.FALSE.toString());
-            jLabel1 = new JLabel();
-            //todo badges around icons !!!
-            setLayout(new BorderLayout(5,0));
-            add(jPanel1, BorderLayout.WEST);
-            add(jLabel1, BorderLayout.CENTER);
-        }
-        
-        public void setForeground(final Color fg){
-            setForeground(fg, fg);
-        }
-        
-        public void setBackground(final Color bg){
-            setBackground(bg, bg);
-        }
-        
-        public void setForeground(final Color selection, final Color text) {
-            if ( jCheckBox1 == null || jLabel1 == null || jPanel1 == null) return;
-            jCheckBox1.setForeground(text);
-            jLabel1.setForeground(selection);
-            super.setForeground(selection);
-        }
-        
-        public void setBackground(final Color selection, final Color text) {
-            if ( jCheckBox1 == null || jLabel1 == null || jPanel1 == null) return;
-            //System.err.println(jCheckBox1);
-            jCheckBox1.setBackground(text);
-            jPanel2.setBackground(text);
-            jLabel1.setBackground(selection);
-            super.setBackground(selection);
-        }
-        
-        public void setFocusPainted(final boolean painted) {
-            jCheckBox1.setFocusPainted(painted);
-        }
-        
-        public void setText(final String text) {
-            jLabel1.setText(text);
-        }
-        
-        public String getText(){
-            return jLabel1.getText();
-        }
-        
-        public void setState(final Object state) {
-            jCheckBox1.setState(state);
-        }
-        
-        public void setIcon(final Icon icon){
-            //System.err.println(icon);
-            jLabel1.setIcon(icon);
-        }
-        
-        public void setEnabled(final boolean enabled) {
-            layout.show(jPanel1, new Boolean(enabled).toString());
-        }
-        
-        public void addItemListener(final ItemListener itemListener) {
-            // System.out.println("in add item listener");
-            jCheckBox1.addItemListener(itemListener);
-        }
-        
-        public void removeItemListener(final ItemListener itemListener) {
-            // System.out.println("remove item listener");
-            jCheckBox1.removeItemListener(itemListener);
-        }
+
+    public void setForeground(final Color fg) {
+        setForeground(fg, fg);
     }
-    
+
+    public void setBackground(final Color bg) {
+        setBackground(bg, bg);
+    }
+
+    public void setForeground(final Color selection, final Color text) {
+        if (jCheckBox1 == null || jLabel1 == null || jPanel1 == null) {
+            return;
+        }
+        jCheckBox1.setForeground(text);
+        jLabel1.setForeground(selection);
+        super.setForeground(selection);
+    }
+
+    public void setBackground(final Color selection, final Color text) {
+        if (jCheckBox1 == null || jLabel1 == null || jPanel1 == null) {
+            return;
+        }
+        //System.err.println(jCheckBox1);
+        jCheckBox1.setBackground(text);
+        jPanel2.setBackground(text);
+        jLabel1.setBackground(selection);
+        super.setBackground(selection);
+    }
+
+    public void setFocusPainted(final boolean painted) {
+        jCheckBox1.setFocusPainted(painted);
+    }
+
+    public void setText(final String text) {
+        jLabel1.setText(text);
+    }
+
+    public String getText() {
+        return jLabel1.getText();
+    }
+
+    public void setState(final Object state) {
+        jCheckBox1.setState(state);
+    }
+
+    public void setIcon(final Icon icon) {
+        //System.err.println(icon);
+        jLabel1.setIcon(icon);
+    }
+
+    public void setEnabled(final boolean enabled) {
+        layout.show(jPanel1, new Boolean(enabled).toString());
+    }
+
+    public void addItemListener(final ItemListener itemListener) {
+        // System.out.println("in add item listener");
+        jCheckBox1.addItemListener(itemListener);
+    }
+
+    public void removeItemListener(final ItemListener itemListener) {
+        // System.out.println("remove item listener");
+        jCheckBox1.removeItemListener(itemListener);
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        jPanel1 = new javax.swing.JPanel();
+        jCheckBox1 = new org.netbeans.modules.mobility.end2end.ui.treeview.MultiStateCheckBox();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        jPanel1.setLayout(new java.awt.CardLayout());
+        jPanel1.add(jCheckBox1, "true");
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 127, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 23, Short.MAX_VALUE)
+        );
+
+        jPanel1.add(jPanel2, "false");
+
+        add(jPanel1, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        add(jLabel1, gridBagConstraints);
+    }// </editor-fold>//GEN-END:initComponents
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private org.netbeans.modules.mobility.end2end.ui.treeview.MultiStateCheckBox jCheckBox1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    // End of variables declaration//GEN-END:variables
 }
