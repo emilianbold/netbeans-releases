@@ -42,9 +42,10 @@ public interface APTIncludeHandler {
      * notify about inclusion
      * @param path included file absolute path
      * @param directiveLine line number of #include directive in original file (1-based)
+     * @param resolvedDirIndex index of resolved directory in lists of include paths
      * @return false if inclusion is recursive and was prohibited
      */
-    public boolean pushInclude(String path, int directiveLine);
+    public boolean pushInclude(String path, int directiveLine, int resolvedDirIndex);
     
     /*
      * notify about finished inclusion
@@ -69,6 +70,7 @@ public interface APTIncludeHandler {
     public interface IncludeInfo {
         public String getIncludedPath();
         public int getIncludeDirectiveLine();
+        public int getIncludedDirIndex();
     } 
     
 }

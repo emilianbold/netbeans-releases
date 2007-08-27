@@ -48,11 +48,13 @@ public class APTWalkerTest extends APTAbstractWalker {
         return resolvingTime;
     }
 
+    @Override
     protected void onInclude(APT apt) {
         lastTime = System.currentTimeMillis();
         super.onInclude(apt);
     }
 
+    @Override
     protected void onIncludeNext(APT apt) {
         lastTime = System.currentTimeMillis();
         super.onIncludeNext(apt);
@@ -60,7 +62,12 @@ public class APTWalkerTest extends APTAbstractWalker {
 
     protected void include(ResolvedPath resolvedPath, APTInclude aptInclude) {
         resolvingTime += System.currentTimeMillis() - lastTime;
-        if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude.getToken().getLine())) {
+        if (resolvedPath != null && 
+                getIncludeHandler().pushInclude(
+                                                resolvedPath.getPath(), 
+                                                aptInclude.getToken().getLine(), 
+                                                resolvedPath.getIndex())
+                                                ) {
             APTFile apt;
             boolean res = false;
             try {

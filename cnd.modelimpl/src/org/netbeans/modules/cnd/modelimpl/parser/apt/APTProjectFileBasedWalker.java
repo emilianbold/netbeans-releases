@@ -62,7 +62,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
             if (path.indexOf("..") > 0) { // NOI18N
                 path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
             }
-            if (getIncludeHandler().pushInclude(path, apt.getToken().getLine())) {
+            if (getIncludeHandler().pushInclude(path, apt.getToken().getLine(), resolvedPath.getIndex())) {
                 ProjectBase startProject = this.getStartProject();
                 if (startProject != null) {
                     ProjectBase inclFileOwner = LibraryManager.getInsatnce().resolveFileProjectOnInclude(startProject, getFile(), resolvedPath);
