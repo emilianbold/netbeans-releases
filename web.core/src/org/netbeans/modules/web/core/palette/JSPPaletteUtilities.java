@@ -19,12 +19,17 @@
 
 package org.netbeans.modules.web.core.palette;
 
+import java.io.IOException;
+import javax.lang.model.element.TypeElement;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.indent.Indent;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -37,56 +42,15 @@ import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Libor Kotouc
  */
 public final class JSPPaletteUtilities {
-    
-    //marekf: who calls this???? It seems the method is not used and was the only reason of having impl. dep. on web/jspsyntax, grrrr.
-//    public static int wrapTags(int start, int end, BaseDocument doc) {
-//        try {
-//            TokenHierarchy th = TokenHierarchy.get(doc);
-//            TokenSequence jspTs = th.tokenSequence();
-//            if(jspTs.move(start) == Integer.MAX_VALUE) {
-//                return end; //no token in sequence
-//            }
-//            Token token = jspTs.token();
-//            //wrap JSP tags
-//            while (token.offset(th) < end && jspTs.moveNext()) { // interested only in the tokens inside the body
-//                token = jspTs.token();
-//                if (token.text().toString().startsWith("<") && token.id() == JspTokenId.SYMBOL) {
-//                    // it's '<' token
-//                    int offset = token.offset(th);
-//                    doc.insertString(offset, "\n", null);   // insert a new-line before '<'
-//                    end++;  // remember new body end
-//                }
-//            }
-//            //wrap HTML tags
-//            TokenSequence htmlTs = th.tokenSequence(HTMLTokenId.language());
-//            if(htmlTs == null || htmlTs.move(start) == Integer.MAX_VALUE) {
-//                return end; //no token in sequence
-//            }
-//            while (token.offset(th) < end && htmlTs.moveNext()) { // interested only in the tokens inside the body
-//                token = htmlTs.token();
-//                if (token.text().toString().startsWith("<") && token.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
-//                    // it's '<' token
-//                    int offset = token.offset(th);
-//                    doc.insertString(offset, "\n", null);   // insert a new-line before '<'
-//                    end++;  // remember new body end
-//                }
-//            }
-//        } catch (IllegalStateException ise) {
-//            //ignore
-//        } catch (BadLocationException ble) {
-//            //ignore
-//        }
-//        
-//        return end;
-//    }
 
-    public static void insert(String s, JTextComponent target) 
+    public static void insert(String s, JTextComponent target)
     throws BadLocationException 
     {
         insert(s, target, true);
@@ -176,5 +140,28 @@ public final class JSPPaletteUtilities {
 
         return false;
     }
-
+    
+    public static TypeElement getTypeForName(JTextComponent target, final String fqcn)
+    {
+            BaseDocument doc = (BaseDocument) target.getDocument();
+            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+            FileObject fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile() : null;
+            if(fqcn==null || fobj==null) return null;
+            class _CancellableTask implements CancellableTask<CompilationController>
+            {
+                public TypeElement element = null;
+                public void cancel() {}               
+                public void run(CompilationController parameter) throws Exception {
+                    element =  parameter.getElements().getTypeElement(fqcn);
+                }
+            }
+            _CancellableTask task = new _CancellableTask();
+            try{
+                JavaSource.forFileObject(fobj).runUserActionTask(task, false);
+                return task.element;
+            }catch(Exception e){}
+        return null;
+    }
+     
+    
 }

@@ -124,6 +124,7 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
         
         int scopeIndex = jComboBox2.getSelectedIndex();
         useBean.setScopeIndex(scopeIndex);
+        
     }
     
     private void validateInput()
@@ -145,6 +146,13 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
         if(jTextField1.getText().equals(""))
         {
             String msg = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.Bundle").getString("Error_Empty_class"); // NOI18N
+            descriptor.setValid(false);
+            errorMessage.setText(msg);
+            return;
+        }
+        if(JSPPaletteUtilities.getTypeForName(target, jTextField1.getText())==null)
+        {
+            String msg = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.Bundle").getString("Error_No_Such_class"); // NOI18N
             descriptor.setValid(false);
             errorMessage.setText(msg);
             return;
