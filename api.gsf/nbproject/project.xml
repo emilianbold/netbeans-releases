@@ -99,6 +99,7 @@
                 <friend>org.netbeans.modules.languages.php</friend>
                 <friend>org.netbeans.modules.languages.erlang.platform</friend>
                 <friend>org.netbeans.modules.javafx.dataloader</friend>
+                <friend>org.netbeans.modules.spellchecker.bindings.ruby</friend>
                 <package>org.netbeans.api.gsf</package>
                 <package>org.netbeans.api.gsf.annotations</package>
                 <package>org.netbeans.api.gsf</package>
