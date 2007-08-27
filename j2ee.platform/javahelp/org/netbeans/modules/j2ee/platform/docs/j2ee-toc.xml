@@ -171,7 +171,7 @@
                 <tocitem text="About Creating Web Services" target="about_implement_ws" />
                  <tocitem text="RESTful Web Service Creation" >
                     <tocitem text="Generating a RESTful Web Service from Scratch" target="create_rest_from_scratch" />
-                    <tocitem text="Using the Preregistered RESTful Web Service Clients" target="wsc_rest" />
+                    <tocitem text="Using the Preregistered RESTful Web Service Components" target="wsc_rest" />
                     <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
                     <tocitem text="Testing a RESTful Web Service" target="test_rest" />
                 </tocitem>
