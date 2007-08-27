@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JSeparator;
@@ -174,9 +176,7 @@ public final class ProjectNodeWrapper extends FilterNode implements Runnable, Fi
                 fs.addFileStatusListener(fsl);
                 fileSystemListeners.put(fs, fsl);
             } catch (FileStateInvalidException e) {
-                ErrorManager err = ErrorManager.getDefault();
-                err.annotate(e, "Can not get " + fo + " filesystem, ignoring...");  // NO18N
-                err.notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger(ProjectNodeWrapper.class.getName()).log(Level.INFO, "Cannot get " + fo + " filesystem, ignoring...", e); // NOI18N
             }
         }
     }
