@@ -17,14 +17,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.cnd.apt.utils;
+package org.netbeans.modules.cnd.apt.support;
 
 import java.util.List;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
-import org.netbeans.modules.cnd.apt.support.APTMacroMap;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
 
 /**
  * utilities for working with APT states (macro-state, include-state, preproc-state)
