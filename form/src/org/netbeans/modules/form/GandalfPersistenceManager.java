@@ -4121,7 +4121,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     binding.getSourcePath(),
                     binding.getTarget().getName(),
                     binding.getTargetPath(),
-                    Integer.toString(binding.getUpdateStratedy()),
+                    Integer.toString(binding.getUpdateStrategy()),
                     Boolean.toString(binding.isBindImmediately())
                 });
             
@@ -4191,7 +4191,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     binding.getSourcePath(),
                     binding.getTarget().getName(),
                     binding.getTargetPath(),
-                    Integer.toString(binding.getUpdateStratedy()),
+                    Integer.toString(binding.getUpdateStrategy()),
                     Boolean.toString(binding.isBindImmediately())
                 });
         }

@@ -126,7 +126,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
         StringBuilder sb = new StringBuilder();
         boolean observable = Boolean.TRUE.equals(observableValue);
         if (observable) {
-            sb.append("com.sun.java.util.BindingCollections.observableList("); // NOI18N
+            sb.append("org.jdesktop.observablecollections.ObservableCollections.observableList("); // NOI18N
         }
         if ("null".equals("" + query)) { // NOI18N
             sb.append("((javax.persistence.Query)null)");  // NOI18N

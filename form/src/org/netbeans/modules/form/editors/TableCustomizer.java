@@ -1067,27 +1067,26 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 if (binding.hasSubBindings()) {
                     binding.clearSubBindings();
                 }
-                int count = 0;
                 for (ColumnInfo info : columns) {
                     String expression = info.getExpression();
-                    String title = expression;
-                    if (BindingDesignSupport.isSimpleExpression(title)) {
-                        title = BindingDesignSupport.unwrapSimpleExpression(title);
-                        title = capitalize(title);
-                    }
+                    MetaBinding subBinding = binding.addSubBinding(expression, null);
                     FormProperty titleProp = info.getColumn().getTitle();
-                    if (titleProp.isChanged()) {
+                    Object value = null;
+                    try {
+                        value = titleProp.getValue();
+                    } catch (Exception ex) {
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+                    }
+                    if (value instanceof String) {
                         try {
-                            Object value = titleProp.getValue();
-                            if ((value instanceof String) && value.equals(title)) {
-                                titleProp.restoreDefaultValue();
-                            }
+                            subBinding.setParameter(MetaBinding.NAME_PARAMETER, (String)value);
+                            titleProp.restoreDefaultValue();
                         } catch (Exception ex) {
                             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                         }
+                    } else {
+                        subBinding.setParameter(MetaBinding.NAME_PARAMETER, null);
                     }
-                    MetaBinding subBinding = binding.addSubBinding(expression, null);
-                    subBinding.setParameter(MetaBinding.TABLE_COLUMN_PARAMETER, Integer.toString(count));
                     String clazz = info.getClazz();
                     if ((clazz != null) && (!clazz.equals("Object"))) { // NOI18N
                         subBinding.setParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER, clazz + ".class"); // NOI18N
@@ -1095,7 +1094,6 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                     if (!info.isEditable()) {
                         subBinding.setParameter(MetaBinding.EDITABLE_PARAMETER, "false"); // NOI18N
                     }
-                    count++;
                 }
             }
             bindingProperty.setValue(binding);
@@ -1363,42 +1361,31 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }            
         } else if (modelBoundChoice.isSelected()) {
-            MetaBinding binding = (MetaBinding)bindingProperty.getValue();
+            MetaBinding binding = bindingProperty.getValue();
             if (binding != null) {
                 TableModel model = table.getModel();
-                int columnCount = 0;
-                if (binding.hasSubBindings()) {
-                    for (MetaBinding subBinding : binding.getSubBindings()) {
-                        String tableColumn = subBinding.getParameter(MetaBinding.TABLE_COLUMN_PARAMETER);
-                        if (tableColumn != null) columnCount++;
-                    }
-                }
-                ensureColumnCount(columnCount);
+                ensureColumnCount(binding.getSubBindings().size());
                 int index = 0;
                 if (binding.hasSubBindings()) {
                     for (MetaBinding subBinding : binding.getSubBindings()) {
-                        String tableColumn = subBinding.getParameter(MetaBinding.TABLE_COLUMN_PARAMETER);
-                        if (tableColumn != null) {
-                            ColumnInfo info = columns.get(index);
-                            String columnClass = subBinding.getParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER);
-                            if ((columnClass != null) && columnClass.trim().endsWith(".class")) { // NOI18N
-                                columnClass = columnClass.trim();
-                                columnClass = columnClass.substring(0, columnClass.length()-6);
-                            }
-                            info.setClazz(columnClass);
-                            info.setExpression(subBinding.getSourcePath());
-                            FormProperty title = info.getColumn().getTitle();
-                            if (!title.isChanged() && (model != null) && (model.getColumnCount() > index)) {
-                                try {
-                                    title.setValue(model.getColumnName(index));
-                                } catch (Exception ex) {
-                                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-                                }
+                        ColumnInfo info = columns.get(index);
+                        String columnClass = subBinding.getParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER);
+                        if ((columnClass != null) && columnClass.trim().endsWith(".class")) { // NOI18N
+                            columnClass = columnClass.trim();
+                            columnClass = columnClass.substring(0, columnClass.length()-6);
+                        }
+                        info.setClazz(columnClass);
+                        info.setExpression(subBinding.getSourcePath());
+                        FormProperty title = info.getColumn().getTitle();
+                        if (!title.isChanged() && (model != null) && (model.getColumnCount() > index)) {
+                            try {
+                                title.setValue(model.getColumnName(index));
+                            } catch (Exception ex) {
+                                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                             }
                         }
                         String editableColumn = subBinding.getParameter(MetaBinding.EDITABLE_PARAMETER);
                         if (editableColumn != null) {
-                            ColumnInfo info = columns.get(index);
                             info.setEditable(!"false".equals(editableColumn)); // NOI18N
                         }
                         index++;
@@ -1633,27 +1620,6 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         updateWidthCombos();
     }
     private PropertyChangeListener titleListener;
-
-    private static String capitalize(String title) {
-        StringBuilder builder = new StringBuilder(title);
-        boolean lastWasUpper = false;
-        for (int i = 0; i < builder.length(); i++) {
-            char aChar = builder.charAt(i);
-            if (i == 0) {
-                builder.setCharAt(i, Character.toUpperCase(aChar));
-                lastWasUpper = true;
-            } else if (Character.isUpperCase(aChar)) {
-                if (!lastWasUpper) {
-                    builder.insert(i, ' ');
-                }
-                lastWasUpper = true;
-                i++;
-            } else {
-                lastWasUpper = false;
-            }
-        }
-        return builder.toString();
-    }
 
     static class ColumnInfo {
         private TableColumnModelEditor.FormTableColumn column;

@@ -27,8 +27,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.beans.binding.BindingConverter;
-import javax.beans.binding.BindingValidator;
+import org.jdesktop.beansbinding.Converter;
+import org.jdesktop.beansbinding.Validator;
 import org.openide.nodes.Node;
 
 import org.openide.nodes.PropertySupport;
@@ -59,9 +59,9 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
             name = FormUtils.getBundleString("MSG_Binding_IncompletePathProperty"); // NOI18N
             incompleteValueProperty = new Property(prop, "incompletePathValue", desc.getValueType(), name, name, false); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Validator"); // NOI18N
-            validatorProperty = new Property(prop, "validator", BindingValidator.class, name, name, true); // NOI18N
+            validatorProperty = new Property(prop, "validator", Validator.class, name, name, true); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Converter"); // NOI18N
-            converterProperty = new Property(prop, "converter", BindingConverter.class, name, name, true); // NOI18N
+            converterProperty = new Property(prop, "converter", Converter.class, name, name, true); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Name"); // NOI18N
             nameProperty = new Property(prop, "name", String.class, name, name, true); // NOI18N
         }

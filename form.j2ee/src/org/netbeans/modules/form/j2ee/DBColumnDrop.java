@@ -256,7 +256,10 @@ public class DBColumnDrop extends DBConnectionDrop {
                 prop = control.getBindingProperty(controlProperty); // NOI18N
                 binding = new MetaBinding(metaEntity, BindingDesignSupport.elWrap(sourcePath), control, controlProperty); // NOI18N
             } else {
-                prop = control.getBindingProperty(controlProperty); // NOI18N
+                prop = control.getBindingProperty("enabled"); // NOI18N
+                binding = new MetaBinding(metaTable, BindingDesignSupport.elWrap("selectedElement != null"), control, "enabled"); // NOI18N
+                prop.setValue(binding);
+                prop = control.getBindingProperty(controlProperty);
                 binding = new MetaBinding(metaTable, BindingDesignSupport.elWrap("selectedElement." + sourcePath), control, controlProperty); // NOI18N
             }
             prop.setValue(binding);

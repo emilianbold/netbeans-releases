@@ -25,13 +25,15 @@ public class MetaBinding {
     public static final int UPDATE_STRATEGY_READ_WRITE = 0;
     public static final int UPDATE_STRATEGY_READ = 1;
     public static final int UPDATE_STRATEGY_READ_ONCE = 2;
-    public static final String TABLE_COLUMN_PARAMETER = "javax.swing.binding.ParameterKeys.COLUMN"; // NOI18N
     public static final String TABLE_COLUMN_CLASS_PARAMETER = "javax.swing.binding.ParameterKeys.COLUMN_CLASS"; // NOI18N
     public static final String EDITABLE_PARAMETER = "javax.swing.binding.ParameterKeys.EDITABLE"; // NOI18N
     public static final String TEXT_CHANGE_STRATEGY = "javax.swing.binding.ParameterKeys.TEXT_CHANGE_STRATEGY"; // NOI18N
     public static final String TEXT_CHANGE_ON_TYPE = "javax.swing.binding.TextChangeStrategy.ON_TYPE"; // NOI18N
     public static final String TEXT_CHANGE_ON_ACTION_OR_FOCUS_LOST = "javax.swing.binding.TextChangeStrategy.ON_ACTION_OR_FOCUS_LOST"; // NOI18N;
     public static final String TEXT_CHANGE_ON_FOCUS_LOST = "javax.swing.binding.TextChangeStrategy.ON_FOCUS_LOST"; // NOI18N;
+    public static final String DISPLAY_PARAMETER = "DISPLAY"; // NOI18N
+    public static final String NAME_PARAMETER = "NAME"; // NOI18N
+    public static final String IGNORE_ADJUSTING_PARAMETER = "IGNORE_ADJUSTING"; // NOI18N
     private RADComponent source;
     private RADComponent target;
     private String sourcePath;
@@ -55,7 +57,7 @@ public class MetaBinding {
         return source;
     }
 
-    public void setSource(RADComponent source) {
+    void setSource(RADComponent source) {
         this.source = source;
     }
 
@@ -63,27 +65,29 @@ public class MetaBinding {
         return target;
     }
 
-    public void setTarget(RADComponent target) {
+    void setTarget(RADComponent target) {
         this.target = target;
+        // backward compatibility hack
+        Class clazz = target.getBeanClass();
+        if (hasSubBindings() && 
+                (javax.swing.JComboBox.class.isAssignableFrom(clazz)
+                || javax.swing.JList.class.isAssignableFrom(clazz))) {
+            assert (subBindings.size() == 1);
+            MetaBinding display = getSubBindings().iterator().next();
+            setParameter(DISPLAY_PARAMETER, display.getSourcePath());
+            clearSubBindings();
+        }
     }
 
     public String getSourcePath() {
         return sourcePath;
     }
 
-    public void setSourcePath(String path) {
-        sourcePath = path;
-    }
-
     public String getTargetPath() {
         return targetPath;
     }
 
-    public void setTargetPath(String path) {
-        targetPath = path;
-    }
-
-    public int getUpdateStratedy() {
+    public int getUpdateStrategy() {
         return updateStrategy;
     }
 
@@ -147,9 +151,7 @@ public class MetaBinding {
 
     private static String changeObsoleteName(String name) {
         if (name.startsWith("javax.swing.binding.SwingBindingSupport")) { // NOI18N
-            if (name.equals("javax.swing.binding.SwingBindingSupport.TableColumnParameter")) { // NOI18N
-                name = MetaBinding.TABLE_COLUMN_PARAMETER;
-            } else if (name.startsWith("javax.swing.binding.SwingBindingSupport.TableColumnClassParameter")) { // NOI18N
+            if (name.startsWith("javax.swing.binding.SwingBindingSupport.TableColumnClassParameter")) { // NOI18N
                 name = MetaBinding.TABLE_COLUMN_CLASS_PARAMETER;
             } else if (name.startsWith("javax.swing.binding.SwingBindingSupport.EditableParameter")) { // NOI18N
                 name = MetaBinding.EDITABLE_PARAMETER;

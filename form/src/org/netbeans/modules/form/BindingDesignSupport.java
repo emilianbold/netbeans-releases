@@ -24,8 +24,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.lang.ref.*;
 import java.lang.reflect.*;
-import javax.beans.binding.*;
-import javax.beans.binding.ext.PropertyDelegateProvider;
 import java.util.*;
 import java.beans.*;
 import java.io.IOException;
@@ -36,8 +34,13 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
-import javax.swing.binding.ParameterKeys;
-import javax.swing.binding.TextChangeStrategy;
+import javax.swing.JList;
+import javax.swing.JTable;
+import javax.swing.JComboBox;
+import javax.swing.text.JTextComponent;
+import org.jdesktop.beansbinding.*;
+import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
+import org.jdesktop.swingbinding.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -60,12 +63,10 @@ public class BindingDesignSupport {
     private Map<MetaBinding, List<Binding>> bindingsMap = new HashMap<MetaBinding, List<Binding>>();
     /** Realizations of bindings among metacomponents. */
     private Map<MetaBinding, Binding> modelBindings = new HashMap<MetaBinding, Binding>();
-    /** Binding context for reference instances in metacomponents. */
-    private BindingContext bindingContext;
-
-    private static Map<Class,Object> classToInstance = new WeakHashMap<Class,Object>();
-    private static Object NO_INSTANCE = new Object();
-    private static Binding.ParameterKey<ModifiableBoolean> INVALID_BINDING = new Binding.ParameterKey<ModifiableBoolean>(""); // NOI18N
+    /** Binding to BindingGroup mapping. */
+    private Map<Binding, BindingGroup> bindingToGroup = new HashMap<Binding, BindingGroup>();
+    /** Binding group for reference instances in metacomponents. */
+    private BindingGroup bindingGroup;
 
     /**
      * Create binding design support for the given form model.
@@ -75,8 +76,8 @@ public class BindingDesignSupport {
     public BindingDesignSupport(FormModel model) {
         formModel = model;
 
-        bindingContext = new BindingContext();
-        bindingContext.bind();
+        bindingGroup = new BindingGroup();
+        bindingGroup.bind();
 
         formModel.addFormModelListener(new ModelListener());
     }
@@ -149,8 +150,8 @@ public class BindingDesignSupport {
 
     private static boolean hasRelativeType(Class clazz, String property) {
         return ("elements".equals(property) // NOI18N
-            || "selectedElement".equals(property) // NOI18N
-            || "selectedElements".equals(property)) // NOI18N
+            // selectedElement(_...), selectedElements(_...)
+            || property.startsWith("selectedElement")) // NOI18N
           && (javax.swing.JTable.class.isAssignableFrom(clazz)
             || javax.swing.JList.class.isAssignableFrom(clazz)
             || javax.swing.JComboBox.class.isAssignableFrom(clazz));
@@ -159,82 +160,98 @@ public class BindingDesignSupport {
     // Used to determine binding properties only
     List<BindingDescriptor>[] getBindingDescriptors(RADComponent component) {
         BeanDescriptor beanDescriptor = component.getBeanInfo().getBeanDescriptor();
-        return getBindingDescriptors(null, beanDescriptor, component.getBeanInstance());
+        List<BindingDescriptor>[] descs = getBindingDescriptors(null, beanDescriptor);
+        Class<?> beanClass = component.getBeanClass();
+        if (JTextComponent.class.isAssignableFrom(beanClass)) {
+            // get rid of text_... descriptors
+            descs[0] = filterDescriptors(descs[0], "text_"); // NOI18N
+        } else if (JTable.class.isAssignableFrom(beanClass)
+                || JList.class.isAssignableFrom(beanClass)
+                || JComboBox.class.isAssignableFrom(beanClass)) {
+            // get rid of selectedElement(s)_... descriptors
+            descs[0] = filterDescriptors(descs[0], "selectedElement_"); // NOI18N
+            descs[0] = filterDescriptors(descs[0], "selectedElements_"); // NOI18N
+            // add elements descriptor
+            BindingDescriptor desc = new BindingDescriptor("elements", List.class); // NOI18N
+            descs[0].add(0, desc);
+        }
+        return descs;
     }
 
-    @SuppressWarnings("unchecked") // generic array creation NOI18N
-    private List<BindingDescriptor>[] getBindingDescriptors(TypeHelper type, BeanDescriptor beanDescriptor, Object instance) {
+    List<BindingDescriptor> filterDescriptors(List<BindingDescriptor> descs, String forbiddenPrefix) {
+        List<BindingDescriptor> filtered = new LinkedList<BindingDescriptor>();
+        for (BindingDescriptor bd : descs) {
+            if (!bd.getPath().startsWith(forbiddenPrefix)) { // NOI18N
+                filtered.add(bd);
+            }
+        }
+        return filtered;
+    }
+
+    private List<BindingDescriptor>[] getBindingDescriptors(TypeHelper type, BeanDescriptor beanDescriptor) {
+        Class<?> beanClass = beanDescriptor.getBeanClass();
         List<BindingDescriptor> bindingList = new LinkedList<BindingDescriptor>();
         List<BindingDescriptor> prefList = new LinkedList<BindingDescriptor>();
         List<BindingDescriptor> observableList = new LinkedList<BindingDescriptor>();
         List<BindingDescriptor> nonObservableList = new LinkedList<BindingDescriptor>();
         List<BindingDescriptor> list;
-        Class beanClass = beanDescriptor.getBeanClass();
         Object[] propsCats = FormUtils.getPropertiesCategoryClsf(beanClass, beanDescriptor);
-        Iterable<? extends FeatureDescriptor> fds;
-        if (instance == NO_INSTANCE) {
-            PropertyDescriptor[] pd;
-            try {
-                 pd = FormUtils.getBeanInfo(beanClass).getPropertyDescriptors();
-            } catch (Exception ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-                pd = new PropertyDescriptor[0];
-            }
-            fds = Arrays.asList(pd);
-        } else {
-            fds = bindingContext.getFeatureDescriptors(instance);
+        PropertyDescriptor[] pds;
+        try {
+             pds = FormUtils.getBeanInfo(beanClass).getPropertyDescriptors();
+        } catch (Exception ex) {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+            pds = new PropertyDescriptor[0];
         }
-        for (FeatureDescriptor fd : fds) {
-            if (Boolean.TRUE.equals(fd.getValue(PropertyDelegateProvider.PREFERRED_BINDING_PROPERTY))) {
-                // preferred binding property
+        List<PropertyDescriptor> specialPds = BeanAdapterFactory.getAdapterPropertyDescriptors(beanClass);
+        Map<String,PropertyDescriptor> pathToDesc = new HashMap<String,PropertyDescriptor>();
+        for (PropertyDescriptor pd : pds) {
+            pathToDesc.put(pd.getName(), pd);
+        }
+        for (PropertyDescriptor pd : specialPds) {
+            if (pathToDesc.get(pd.getName()) != null) {
+                pathToDesc.remove(pd.getName());
+            }
+        }
+        List<PropertyDescriptor> allPds = new LinkedList<PropertyDescriptor>(specialPds);
+        allPds.addAll(pathToDesc.values());
+        int count = 0;
+        for (PropertyDescriptor pd : allPds) {
+            if (count++<specialPds.size()) {
                 list = bindingList;
             } else {
-                Object propCat = FormUtils.getPropertyCategory(fd, propsCats);
+                Object propCat = FormUtils.getPropertyCategory(pd, propsCats);                
                 if (propCat == FormUtils.PROP_HIDDEN) {
                     // hidden property => hide also the binding property
                     continue;
                 } else {
-                    if (fd instanceof PropertyDescriptor) {
-                        PropertyDescriptor pd = (PropertyDescriptor)fd;
-                        if (pd.isBound()) {
-                            // observable property
-                            if (propCat == FormUtils.PROP_PREFERRED) {
-                                list = prefList;
-                            } else {
-                                list = observableList;
-                            }
+                    if (pd.isBound()) {
+                        // observable property
+                        if (propCat == FormUtils.PROP_PREFERRED) {
+                            list = prefList;
                         } else {
-                            // non-observable property
-                            list = nonObservableList;
+                            list = observableList;
                         }
                     } else {
-                        list = observableList; // Is that correct? Hopefully will not happen.
-                    }                        
+                        // non-observable property
+                        list = nonObservableList;
+                    }
                 }
             }
 
-            PropertyDescriptor pd = null;
-            if (fd instanceof PropertyDescriptor) {
-                pd = (PropertyDescriptor)fd;
-            }
+            Method method = pd.getReadMethod();
+            if ((method != null) && ("getClass".equals(method.getName()))) continue; // NOI18N
+            Type retType = (method == null) ? pd.getPropertyType() : method.getGenericReturnType();
+            if (retType == null) continue;
             BindingDescriptor bd;
-            if (pd == null) {
-                // fallback - hopefully will not happen
-                bd = new BindingDescriptor(fd.getName(), Object.class);
+            if (type == null) {
+                bd = new BindingDescriptor(pd.getName(), retType);
             } else {
-                Method method = pd.getReadMethod();
-                if ((method != null) && ("getClass".equals(method.getName()))) continue; // NOI18N
-                Type retType = (method == null) ? pd.getPropertyType() : method.getGenericReturnType();
-                if (retType == null) continue;
-                if (type == null) {
-                    bd = new BindingDescriptor(pd.getName(), retType);
-                } else {
-                    TypeHelper t = new TypeHelper(retType, type.getActualTypeArgs()).normalize();
-                    bd = new BindingDescriptor(pd.getName(), t);
-                }
-                bd.setDisplayName(pd.getDisplayName());
-                bd.setShortDescription(pd.getShortDescription());
+                TypeHelper t = new TypeHelper(retType, type.getActualTypeArgs()).normalize();
+                bd = new BindingDescriptor(pd.getName(), t);
             }
+            bd.setDisplayName(pd.getDisplayName());
+            bd.setShortDescription(pd.getShortDescription());
 
             if (hasRelativeType(beanClass, bd.getPath())) {
                 bd.markTypeAsRelative();
@@ -376,7 +393,7 @@ public class BindingDesignSupport {
                 && !clazz.isArray()) {
             try {
                 BeanInfo beanInfo = FormUtils.getBeanInfo(clazz);
-                List<BindingDescriptor>[] typesFromBinary = getBindingDescriptors(type, beanInfo.getBeanDescriptor(), getInstance(clazz));
+                List<BindingDescriptor>[] typesFromBinary = getBindingDescriptors(type, beanInfo.getBeanDescriptor());
                 Map<String,BindingDescriptor>[] maps = new Map[3];
                 for (int i=0; i<3; i++) {
                     maps[i] = listToMap(typesFromBinary[i]);
@@ -601,15 +618,15 @@ public class BindingDesignSupport {
                 if (javax.swing.JTable.class.isAssignableFrom(comp.getBeanClass())
                         || javax.swing.JList.class.isAssignableFrom(comp.getBeanClass())
                         || javax.swing.JComboBox.class.isAssignableFrom(comp.getBeanClass())) {
-                    MetaBinding binding = (MetaBinding)comp.getBindingProperty("elements").getValue(); // NOI18N
+                    MetaBinding binding = comp.getBindingProperty("elements").getValue(); // NOI18N
                     if (binding != null) {
                         RADComponent subComp = binding.getSource();
                         String subSourcePath = binding.getSourcePath();
                         // PENDING beware of stack overflow
                         TypeHelper t = determineType(subComp, subSourcePath);
-                        if ("selectedElement".equals(pathItem)) { // NOI18N
+                        if ("selectedElement".equals(pathItem) || pathItem.startsWith("selectedElement_")) { // NOI18N
                             type = typeOfElement(t);
-                        } else if ("selectedElements".equals(pathItem) || "elements".equals(pathItem)) { // NOI18N
+                        } else if (pathItem.startsWith("selectedElements") || "elements".equals(pathItem)) { // NOI18N
                             type = t;
                         }
                     } else {
@@ -695,7 +712,7 @@ public class BindingDesignSupport {
     public void establishUpdatedBindings(RADComponent metacomp,
                                          boolean recursive,
                                          Map map,
-                                         BindingContext context, boolean inModel)
+                                         BindingGroup group, boolean inModel)
     {
         for (MetaBinding bindingDef : collectBindingDefs(metacomp, recursive)) {
             RADComponent sourceComp = bindingDef.getSource();
@@ -712,7 +729,7 @@ public class BindingDesignSupport {
                     Object target = map != null ?
                         map.get(targetComp.getId()) : targetComp.getBeanInstance();
                     if (source != null && target != null)
-                        addBinding(bindingDef, source, target, context, false);
+                        addBinding(bindingDef, source, target, group, false);
                 }
             }
         }
@@ -721,7 +738,7 @@ public class BindingDesignSupport {
     public static void establishOneOffBindings(RADComponent metacomp,
                                                boolean recursive,
                                                Map map,
-                                               BindingContext context)
+                                               BindingGroup group)
     {
         for (MetaBinding bindingDef : collectBindingDefs(metacomp, recursive)) {
             RADComponent sourceComp = bindingDef.getSource();
@@ -734,7 +751,7 @@ public class BindingDesignSupport {
             Object target = map != null ?
                 map.get(targetComp.getId()) : targetComp.getBeanInstance();
             if (source != null && target != null)
-                createBinding(bindingDef, source, target, context);
+                createBinding(bindingDef, source, target, group, null);
         }
     }
 
@@ -756,7 +773,7 @@ public class BindingDesignSupport {
             RADComponent metacomp, boolean recursive, Collection<MetaBinding> col)
     {
         for (BindingProperty bProp : metacomp.getKnownBindingProperties()) {
-            MetaBinding bindingDef = (MetaBinding) bProp.getValue();
+            MetaBinding bindingDef = bProp.getValue();
             if (bindingDef != null) {
                 if (col == null)
                     col = new LinkedList<MetaBinding>();
@@ -777,7 +794,7 @@ public class BindingDesignSupport {
         addBinding(bindingDef,
             bindingDef.getSource().getBeanInstance(),
             bindingDef.getTarget().getBeanInstance(),
-            bindingContext, true);
+            bindingGroup, true);
     }
     
     /**
@@ -788,23 +805,23 @@ public class BindingDesignSupport {
      * @param bindingDef description of the binding
      * @param source binding source
      * @param target binding target
-     * @param context binding context where the binding should be added
+     * @param group binding group where the binding should be added
      * @param inModel determines whether we are creating binding in the model
      */
     public void addBinding(MetaBinding bindingDef,
                            Object source, Object target,
-                           BindingContext context, boolean inModel)
+                           BindingGroup group, boolean inModel)
     {
         if (inModel) {
             if (modelBindings.get(bindingDef) == null) {
-                modelBindings.put(bindingDef, createBinding(bindingDef, source, target, context));
+                modelBindings.put(bindingDef, createBinding(bindingDef, source, target, group, bindingToGroup));
             }
         } else {
             List<Binding> establishedBindings = bindingsMap.get(bindingDef);
             if (establishedBindings != null) {
                 for (Binding binding : establishedBindings) {
-                    if (binding.getSource() == source
-                        && binding.getTarget() == target)
+                    if (binding.getSourceObject() == source
+                        && binding.getTargetObject() == target)
                         return; // this binding already exists
                 }
             }
@@ -812,50 +829,407 @@ public class BindingDesignSupport {
                 establishedBindings = new LinkedList<Binding>();
                 bindingsMap.put(bindingDef, establishedBindings);
             }
-            establishedBindings.add(createBinding(bindingDef, source, target, context));
+            establishedBindings.add(createBinding(bindingDef, source, target, group, bindingToGroup));
         }
+    }
+    
+    private static String actualTargetPath(MetaBinding bindingDef) {
+        String targetPath = bindingDef.getTargetPath();
+        if ("text".equals(targetPath)) { // NOI18N
+            Class<?> targetClass = bindingDef.getTarget().getBeanClass();
+            if (JTextComponent.class.isAssignableFrom(targetClass)) {
+                String strategy = bindingDef.getParameter(MetaBinding.TEXT_CHANGE_STRATEGY);
+                if (MetaBinding.TEXT_CHANGE_ON_ACTION_OR_FOCUS_LOST.equals(strategy)) {
+                    targetPath += "_ON_ACTION_OR_FOCUS_LOST"; // NOI18N
+                } else if (MetaBinding.TEXT_CHANGE_ON_FOCUS_LOST.equals(strategy)) {
+                    targetPath += "_ON_FOCUS_LOST"; // NOI18N
+                }
+            }
+        } else if ("selectedElement".equals(targetPath) || "selectedElements".equals(targetPath)) { // NOI18N
+            Class<?> targetClass = bindingDef.getTarget().getBeanClass();
+            if (JList.class.isAssignableFrom(targetClass)
+                || JTable.class.isAssignableFrom(targetClass)
+                || JComboBox.class.isAssignableFrom(targetClass)) {
+                String value = bindingDef.getParameter(MetaBinding.IGNORE_ADJUSTING_PARAMETER);
+                if ("Y".equals(value)) { // NOI18N
+                    targetPath += "_IGNORE_ADJUSTING"; // NOI18N
+                }
+            }
+        }
+        return targetPath;
+    }
+
+    private static void generateTargetProperty(MetaBinding bindingDef, StringBuilder buf) {
+        String targetPath = actualTargetPath(bindingDef);
+        String property = BeanProperty.class.getName() + ".create(\"" + targetPath + "\")"; // NOI18N
+        buf.append(property);
+    }
+
+    private static Property createTargetProperty(MetaBinding bindingDef) {
+        String targetPath = actualTargetPath(bindingDef);
+        Property property = BeanProperty.create(targetPath);
+        return property;
+    }
+
+    public static String generateBinding(BindingProperty prop, StringBuilder buf) {
+        String variable;
+        MetaBinding bindingDef = prop.getValue();
+        // Update strategy
+        int updateStrategy = bindingDef.getUpdateStrategy();
+        String strategy = AutoBinding.class.getName() + ".UpdateStrategy."; // NOI18N
+        if (updateStrategy == MetaBinding.UPDATE_STRATEGY_READ) {
+            strategy += "READ"; // NOI18N
+        } else if (updateStrategy == MetaBinding.UPDATE_STRATEGY_READ_ONCE) {
+            strategy += "READ_ONCE"; // NOI18N
+        } else {
+            strategy += "READ_WRITE"; // NOI18N
+        }
+        strategy += ", "; // NOI18N
+        
+        RADComponent target = bindingDef.getTarget();
+        FormModel formModel = target.getFormModel();
+        JavaCodeGenerator generator = (JavaCodeGenerator)FormEditor.getCodeGenerator(formModel);
+        Class targetClass = target.getBeanClass();
+        String targetPath = bindingDef.getTargetPath();
+        String sourcePath = bindingDef.getSourcePath();
+        Class<?> sourceClass = bindingDef.getSource().getBeanClass();
+        if ("elements".equals(targetPath) && JTable.class.isAssignableFrom(targetClass)
+                && (List.class.isAssignableFrom(sourceClass) || (sourcePath != null))) { // NOI18N
+            String elVariable = elVariableHelper(sourcePath, buf, generator);
+            variable = generator.getBindingDescriptionVariable(JTableBinding.class, buf, false);
+            if (variable == null) {
+                variable = generator.getBindingDescriptionVariable(JTableBinding.class, buf, true);
+                buf.append(' ');
+            }
+            buf.append(variable);
+            buf.append(" = "); // NOI18N
+            buf.append(SwingBindings.class.getName()).append(".createTableBinding("); // NOI18N
+            buf.append(strategy);
+            buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getSource().getCodeExpression(), "this")); // NOI18N
+            buf.append(", "); // NOI18N
+            if (sourcePath != null) {
+                buf.append(elVariable);
+                buf.append(", "); // NOI18N
+            }
+            buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getTarget().getCodeExpression(), "this")); // NOI18N
+            buf.append(");\n"); // NOI18N
+            if (bindingDef.hasSubBindings()) {
+                for (MetaBinding sub : bindingDef.getSubBindings()) {
+                    String columnVariable = generator.getBindingDescriptionVariable(JTableBinding.ColumnBinding.class, buf, false);
+                    if (columnVariable == null) {
+                        columnVariable = generator.getBindingDescriptionVariable(JTableBinding.ColumnBinding.class, buf, true);
+                        buf.append(' ');
+                    }
+                    buf.append(columnVariable);
+                    buf.append(" = "); // NOI18N
+                    buf.append(variable);
+                    buf.append(".addColumnBinding("); // NOI18N
+                    buf.append(ELProperty.class.getName());
+                    buf.append(".create(\""); // NOI18N
+                    buf.append(sub.getSourcePath());
+                    buf.append("\"));\n"); // NOI18N
+                    String title = sub.getParameter(MetaBinding.NAME_PARAMETER);
+                    if (title == null) {
+                        title = sub.getSourcePath();
+                        if (isSimpleExpression(title)) {
+                            title = unwrapSimpleExpression(title);
+                            title = capitalize(title);
+                        }
+                    }
+                    buf.append(columnVariable);
+                    buf.append(".setColumnName(\""); // NOI18N
+                    buf.append(title);
+                    buf.append("\");\n"); // NOI18N
+                    String columnClass = sub.getParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER);
+                    if (columnClass != null) {
+                        buf.append(columnVariable);
+                        buf.append(".setColumnClass("); // NOI18N
+                        buf.append(columnClass);
+                        buf.append(");\n"); // NOI18N
+                    }
+                    String editable = sub.getParameter(MetaBinding.EDITABLE_PARAMETER);
+                    if (editable != null) {
+                        buf.append(columnVariable);
+                        buf.append(".setEditable("); // NOI18N
+                        buf.append(editable);
+                        buf.append(");\n"); // NOI18N
+                    }
+                }
+            }
+        } else if ("elements".equals(targetPath) && javax.swing.JList.class.isAssignableFrom(targetClass)
+                && (List.class.isAssignableFrom(sourceClass) || (sourcePath != null))) { // NOI18N
+            String elVariable = elVariableHelper(sourcePath, buf, generator);
+            variable = generator.getBindingDescriptionVariable(JListBinding.class, buf, false);
+            if (variable == null) {
+                variable = generator.getBindingDescriptionVariable(JListBinding.class, buf, true);
+                buf.append(' ');
+            }
+            buf.append(variable);
+            buf.append(" = "); // NOI18N
+            buf.append(SwingBindings.class.getName()).append(".createListBinding("); // NOI18N
+            buf.append(strategy);
+            buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getSource().getCodeExpression(), "this")); // NOI18N
+            buf.append(", "); // NOI18N
+            if (sourcePath != null) {
+                buf.append(elVariable);
+                buf.append(", "); // NOI18N
+            }
+            buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getTarget().getCodeExpression(), "this")); // NOI18N
+            buf.append(");\n"); // NOI18N
+            String detailPath = bindingDef.getParameter(MetaBinding.DISPLAY_PARAMETER);
+            if (detailPath != null) {
+                buf.append(variable);
+                buf.append(".setDetailBinding("); // NOI18N
+                buf.append(ELProperty.class.getName());
+                buf.append(".create(\""); // NOI18N
+                buf.append(detailPath);
+                buf.append("\"));\n"); // NOI18N
+            }
+        } else if ("elements".equals(targetPath) && javax.swing.JComboBox.class.isAssignableFrom(targetClass)
+                && (List.class.isAssignableFrom(sourceClass) || (sourcePath != null))) { // NOI18N
+            String elVariable = elVariableHelper(sourcePath, buf, generator);
+            variable = generator.getBindingDescriptionVariable(JComboBoxBinding.class, buf, false);
+            if (variable == null) {
+                variable = generator.getBindingDescriptionVariable(JComboBoxBinding.class, buf, true);
+                buf.append(' ');
+            }
+            buf.append(variable);
+            buf.append(" = "); // NOI18N
+            buf.append(SwingBindings.class.getName()).append(".createComboBoxBinding("); // NOI18N
+            buf.append(strategy);
+            buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getSource().getCodeExpression(), "this")); // NOI18N
+            buf.append(", "); // NOI18N
+            if (sourcePath != null) {
+                buf.append(elVariable);
+                buf.append(", "); // NOI18N
+            }
+            buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getTarget().getCodeExpression(), "this")); // NOI18N
+            buf.append(");\n"); // NOI18N
+//            String detailPath = bindingDef.getParameter(MetaBinding.DISPLAY_PARAMETER);
+//            if (detailPath != null) {
+//                buf.append(variable);
+//                buf.append(".setDetailBinding("); // NOI18N
+//                buf.append(ELProperty.class.getName());
+//                buf.append(".create(\""); // NOI18N
+//                buf.append(detailPath);
+//                buf.append("\"));\n"); // NOI18N
+//            }
+        } else {
+            variable = generator.getBindingDescriptionVariable(Binding.class, buf, false);
+            StringBuilder sb = new StringBuilder();
+            if (variable == null) {
+                variable = generator.getBindingDescriptionVariable(Binding.class, buf, true);
+                buf.append(' ');
+                buf.append(sb);
+            }
+            buf.append(variable);
+            buf.append(" = "); // NOI18N
+            buf.append(Bindings.class.getName()).append(sb).append(".createAutoBinding("); // NOI18N
+            buf.append(strategy);
+            buildBindingParamsCode(prop, buf);
+        }
+        return variable;
+    }
+    
+    private static ELProperty createELProperty(String path) {
+        ELProperty property;
+        try {
+            property = ELProperty.create(path);
+        } catch (Exception ex) {
+            Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            // fallback
+            property = ELProperty.create("error"); // NOI18N
+        }
+        return property;
+    }
+
+    private static String elVariableHelper(String sourcePath, StringBuilder buf, JavaCodeGenerator generator) {
+        String elVariable = null;
+        if (sourcePath != null) {
+            elVariable = generator.getBindingDescriptionVariable(ELProperty.class, buf, false);
+            if (elVariable == null) {
+                elVariable = generator.getBindingDescriptionVariable(ELProperty.class, buf, true);
+                buf.append(' ');
+            }
+            buf.append(elVariable);
+            buf.append(" = "); // NOI18N
+            buf.append(ELProperty.class.getName());
+            buf.append(".create(\""); // NOI18N
+            buf.append(sourcePath);
+            buf.append("\");\n"); // NOI18N
+        }
+        return elVariable;
+    }
+
+    private static void buildBindingParamsCode(BindingProperty prop, StringBuilder buf) {
+        MetaBinding bindingDef = prop.getValue();
+        String sourcePath = bindingDef.getSourcePath();
+        String targetPath = bindingDef.getTargetPath();
+        buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getSource().getCodeExpression(), "this")); // NOI18N
+        buf.append(", "); // NOI18N
+        if (sourcePath != null) {
+            buf.append(ELProperty.class.getName());
+            buf.append(".create(\""); // NOI18N
+            buf.append(sourcePath);
+            buf.append("\")"); // NOI18N
+        } else {
+            buf.append(ObjectProperty.class.getName());
+            buf.append(".create()"); // NOI18N
+        }
+        buf.append(", "); // NOI18N
+        buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getTarget().getCodeExpression(), "this")); // NOI18N
+        buf.append(", "); // NOI18N
+        if (targetPath != null) {
+            generateTargetProperty(bindingDef, buf);
+        } else {
+            buf.append(ObjectProperty.class.getName());
+            buf.append(".create()"); // NOI18N
+        }
+        if (bindingDef.isNameSpecified()) {
+            try {
+                FormProperty property = prop.getNameProperty();
+                Object value = property.getValue();
+                if (value != null) {
+                    buf.append(", "); // NOI18N
+                    buf.append(property.getJavaInitializationString());
+                }
+            } catch (IllegalAccessException iaex) {
+                iaex.printStackTrace();
+            } catch (InvocationTargetException itex) {
+                itex.printStackTrace();
+            }
+        }
+        buf.append(");\n"); // NOI18N
+    }
+
+    private static Binding createBinding0(MetaBinding bindingDef, Object source, Object target, BindingGroup group) {
+        String name = null;
+        if (bindingDef.isNameSpecified()) {
+            BindingProperty prop = bindingDef.getTarget().getBindingProperty(bindingDef.getTargetPath());
+            FormProperty nameProp = prop.getNameProperty();
+            try {
+                Object value = nameProp.getRealValue();
+                if ((value != null) && (value instanceof String)) {
+                    name = (String)value;
+                }
+            } catch (IllegalAccessException iaex) {
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
+            } catch (InvocationTargetException itex) {
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
+            }
+            if (group.getBinding(name) != null) {
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, "More than one binding with name: " + name); // NOI18N
+                name = null; // ignore name parameter
+            }
+        }
+        AutoBinding.UpdateStrategy updateStrategy = AutoBinding.UpdateStrategy.READ_WRITE;
+        switch (bindingDef.getUpdateStrategy()) {
+            case MetaBinding.UPDATE_STRATEGY_READ_WRITE:
+                updateStrategy = AutoBinding.UpdateStrategy.READ_WRITE;
+                break;
+            case MetaBinding.UPDATE_STRATEGY_READ:
+                updateStrategy = AutoBinding.UpdateStrategy.READ;
+                break;
+            case MetaBinding.UPDATE_STRATEGY_READ_ONCE:
+                updateStrategy = AutoBinding.UpdateStrategy.READ_ONCE;
+                break;
+            default: assert false;
+        }
+        Binding<Object,?,Object,?> binding;
+        Property targetProperty = createTargetProperty(bindingDef);
+        Property sourceProperty = (bindingDef.getSourcePath() == null) ? ObjectProperty.create() : createELProperty(bindingDef.getSourcePath());
+        RADComponent targetComp = bindingDef.getTarget();
+        String targetPath = bindingDef.getTargetPath();
+        String sourcePath = bindingDef.getSourcePath();
+        if ("elements".equals(targetPath) && javax.swing.JTable.class.isAssignableFrom(targetComp.getBeanClass())
+                && ((source instanceof List) || (sourcePath != null))) { // NOI18N
+            JTableBinding<Object,Object,Object> tableBinding;
+            if (sourcePath == null) {
+                tableBinding = SwingBindings.createTableBinding(updateStrategy, (List)source, (JTable)target, name);
+            } else {
+                tableBinding = SwingBindings.createTableBinding(updateStrategy, source, sourceProperty, (JTable)target, name);
+            }
+            if (bindingDef.hasSubBindings()) {
+                Collection<MetaBinding> subBindings = bindingDef.getSubBindings();
+                for (MetaBinding sub : subBindings) {
+                    JTableBinding.ColumnBinding columnBinding = tableBinding.addColumnBinding(createELProperty(sub.getSourcePath()));
+                    String title = sub.getParameter(MetaBinding.NAME_PARAMETER);
+                    if (title == null) {
+                        title = sub.getSourcePath();
+                        if (isSimpleExpression(title)) {
+                            title = unwrapSimpleExpression(title);
+                            title = capitalize(title);
+                        }
+                    }
+                    columnBinding.setColumnName(title);
+                    String columnClass = sub.getParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER);
+                    if (columnClass != null) {
+                        try {
+                            if ((columnClass != null) && columnClass.trim().endsWith(".class")) { // NOI18N
+                                columnClass = columnClass.trim();
+                                columnClass = columnClass.substring(0, columnClass.length()-6);
+                            }
+                            if (columnClass.indexOf('.') == -1) {
+                                columnClass = "java.lang." + columnClass; // NOI18N
+                            }
+                            Class<?> clazz = FormUtils.loadClass(columnClass, bindingDef.getSource().getFormModel());
+                            columnBinding.setColumnClass(clazz);
+                        } catch (ClassNotFoundException cnfex) {
+                            Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, cnfex.getMessage(), cnfex);
+                        }
+                    }
+                    String editable = sub.getParameter(MetaBinding.EDITABLE_PARAMETER);
+                    if (editable != null) {
+                        Boolean value = "false".equals(editable) ? Boolean.FALSE : Boolean.TRUE; // NOI18N
+                        columnBinding.setEditable(value);
+                    }
+                }
+            }
+            binding = tableBinding;
+        } else if ("elements".equals(targetPath) && javax.swing.JList.class.isAssignableFrom(targetComp.getBeanClass())
+                && ((source instanceof List) || (sourcePath != null))) { // NOI18N
+            JListBinding listBinding;
+            if (sourcePath == null) {
+                listBinding = SwingBindings.createListBinding(updateStrategy, (List)source, (JList)target, name);
+            } else {
+                listBinding = SwingBindings.createListBinding(updateStrategy, source, sourceProperty, (JList)target, name);
+            }
+            String detailPath = bindingDef.getParameter(MetaBinding.DISPLAY_PARAMETER);
+            if (detailPath != null) {
+                listBinding.setDetailBinding(createELProperty(detailPath));
+            }
+            binding = listBinding;
+        } else if ("elements".equals(targetPath) && javax.swing.JComboBox.class.isAssignableFrom(targetComp.getBeanClass())
+                && ((source instanceof List) || (sourcePath != null))) { // NOI18N
+            JComboBoxBinding comboBinding;
+            if (sourcePath == null) {
+                comboBinding = SwingBindings.createComboBoxBinding(updateStrategy, (List)source, (JComboBox)target, name);
+            } else {
+                comboBinding = SwingBindings.createComboBoxBinding(updateStrategy, source, sourceProperty, (JComboBox)target, name);
+            }
+//            String detailPath = bindingDef.getParameter(MetaBinding.DISPLAY_PARAMETER);
+//            if (detailPath != null) {
+//                comboBinding.setDetailBinding(createELProperty(detailPath));
+//            }
+            binding = comboBinding;
+        } else {
+            binding = Bindings.createAutoBinding(updateStrategy, source, sourceProperty, target, targetProperty, name);
+        }
+        return binding;
     }
 
     private static Binding createBinding(MetaBinding bindingDef,
                                          Object source, Object target,
-                                         BindingContext context)
-    {
-        Binding binding = new Binding(source, bindingDef.getSourcePath(), target, bindingDef.getTargetPath());
-        String changeStrategy = bindingDef.getParameter(MetaBinding.TEXT_CHANGE_STRATEGY);
-        if (changeStrategy != null) {
-            TextChangeStrategy value = null;
-            if (MetaBinding.TEXT_CHANGE_ON_ACTION_OR_FOCUS_LOST.equals(changeStrategy)) {
-                value = TextChangeStrategy.ON_ACTION_OR_FOCUS_LOST;
-            } else if (MetaBinding.TEXT_CHANGE_ON_FOCUS_LOST.equals(changeStrategy)) {
-                value = TextChangeStrategy.ON_FOCUS_LOST;
-            } else if (MetaBinding.TEXT_CHANGE_ON_TYPE.equals(changeStrategy)) {
-                value = TextChangeStrategy.ON_TYPE;
-            }
-            if (value != null) {
-                binding.putParameter(ParameterKeys.TEXT_CHANGE_STRATEGY, value);
-            }
-        }
-        Binding.UpdateStrategy updateStrategy = null;
-        switch (bindingDef.getUpdateStratedy()) {
-            case MetaBinding.UPDATE_STRATEGY_READ_WRITE:
-                updateStrategy = Binding.UpdateStrategy.READ_WRITE;
-                break;
-            case MetaBinding.UPDATE_STRATEGY_READ:
-                updateStrategy = Binding.UpdateStrategy.READ;
-                break;
-            case MetaBinding.UPDATE_STRATEGY_READ_ONCE:
-                updateStrategy = Binding.UpdateStrategy.READ_ONCE;
-                break;
-            default: assert false;
-        }
-        binding.setUpdateStrategy(updateStrategy);
+                                         BindingGroup group,
+                                         Map<Binding,BindingGroup> bindingToGroup) {
+        Binding<Object,Object,Object,Object> binding = (Binding<Object,Object,Object,Object>)createBinding0(bindingDef, source, target, group);
         if (bindingDef.isNullValueSpecified()) {
             BindingProperty prop = bindingDef.getTarget().getBindingProperty(bindingDef.getTargetPath());
             FormProperty nullProp = prop.getNullValueProperty();
             try {
                 Object value = nullProp.getRealValue();
                 if (value != null) {
-                    binding.setNullSourceValue(value);
+                    binding.setSourceNullValue(value);
                 }
             } catch (IllegalAccessException iaex) {
                 Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
@@ -869,7 +1243,7 @@ public class BindingDesignSupport {
             try {
                 Object value = incompleteProp.getRealValue();
                 if (value != null) {
-                    binding.setValueForIncompleteSourcePath(value);
+                    binding.setSourceUnreadableValue(value);
                 }
             } catch (IllegalAccessException iaex) {
                 Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
@@ -882,8 +1256,8 @@ public class BindingDesignSupport {
             FormProperty converterProp = prop.getConverterProperty();
             try {
                 Object value = converterProp.getRealValue();
-                if ((value != null) && (value instanceof BindingConverter)) {
-                    binding.setConverter((BindingConverter)value);
+                if ((value != null) && (value instanceof Converter)) {
+                    binding.setConverter((Converter)value);
                 }
             } catch (IllegalAccessException iaex) {
                 Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
@@ -896,8 +1270,8 @@ public class BindingDesignSupport {
             FormProperty validatorProp = prop.getValidatorProperty();
             try {
                 Object value = validatorProp.getRealValue();
-                if ((value != null) && (value instanceof BindingValidator)) {
-                    binding.setValidator((BindingValidator)value);
+                if ((value != null) && (value instanceof Validator)) {
+                    binding.setValidator((Validator)value);
                 }
             } catch (IllegalAccessException iaex) {
                 Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
@@ -905,79 +1279,15 @@ public class BindingDesignSupport {
                 Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
             }
         }
-        if (bindingDef.hasSubBindings()) {
-            Collection<MetaBinding> subBindings = bindingDef.getSubBindings();
-            for (MetaBinding sub : subBindings) {
-                Binding subBinding = binding.addChildBinding(sub.getSourcePath(), sub.getTargetPath());
-                String tableColumn = sub.getParameter(MetaBinding.TABLE_COLUMN_PARAMETER);
-                if (tableColumn != null) {
-                    try {
-                        int column = Integer.parseInt(tableColumn);
-                        subBinding.putParameter(ParameterKeys.COLUMN, column);
-                    } catch (NumberFormatException nfex) {
-                        Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, nfex.getMessage(), nfex);
-                    }
-                }
-                String columnClass = sub.getParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER);
-                if (columnClass != null) {
-                    try {
-                        if ((columnClass != null) && columnClass.trim().endsWith(".class")) { // NOI18N
-                            columnClass = columnClass.trim();
-                            columnClass = columnClass.substring(0, columnClass.length()-6);
-                        }
-                        if (columnClass.indexOf('.') == -1) {
-                            columnClass = "java.lang." + columnClass; // NOI18N
-                        }
-                        Class clazz = FormUtils.loadClass(columnClass, bindingDef.getSource().getFormModel());
-                        subBinding.putParameter(ParameterKeys.COLUMN_CLASS, clazz);
-                    } catch (ClassNotFoundException cnfex) {
-                        Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, cnfex.getMessage(), cnfex);
-                    }
-                }
-                String editable = sub.getParameter(MetaBinding.EDITABLE_PARAMETER);
-                if (editable != null) {
-                    Boolean value = "false".equals(editable) ? Boolean.FALSE : Boolean.TRUE; // NOI18N
-                    subBinding.putParameter(ParameterKeys.EDITABLE, value);
-                }
-                
-            }
-        }
-        binding.putParameter(INVALID_BINDING, new ModifiableBoolean());
-        context.addBinding(binding);
-
-        // Checking for name duplicates is performed only when binding is already in context
-        if (bindingDef.isNameSpecified()) {
-            BindingProperty prop = bindingDef.getTarget().getBindingProperty(bindingDef.getTargetPath());
-            FormProperty nameProp = prop.getNameProperty();
-            try {
-                Object value = nameProp.getRealValue();
-                if ((value != null) && (value instanceof String)) {
-                    binding.setName((String)value);
-                }
-            } catch (IllegalArgumentException iaex) {
-                // duplicate name
-                System.err.println(iaex.getMessage());
-            } catch (IllegalAccessException iaex) {
-                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
-            } catch (InvocationTargetException itex) {
-                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
-            }
+        group.addBinding(binding);
+        if (bindingToGroup != null) {
+            bindingToGroup.put(binding, group);
         }
         
         try {
             binding.bind();
-        } catch (Exception ex) { // PropertyResolverException, com.sun.el.parser.ParseException
-            // PENDING implement better error handling and reporting
-            String message = ex.getMessage();
-            // simple heuristics that gets rid of JComponent.toString()
-            int index = message.indexOf('[');
-            if (index != -1) {
-                index = message.lastIndexOf(' ', index);
-                message = message.substring(0, index+1) + bindingDef.getTarget().getName() + message.substring(message.lastIndexOf(']')+1);
-            }
-            System.err.println(message);
-            ModifiableBoolean invalid = binding.getParameter(INVALID_BINDING, null);
-            invalid.value = true;
+        } catch (Exception ex) {
+            Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         return binding;
     }
@@ -993,16 +1303,10 @@ public class BindingDesignSupport {
         }
     }
 
-    private static void removeBinding(Binding binding) {
-        BindingContext context = binding.getContext();
-        if (!(binding.getParameter(INVALID_BINDING, null).value)) { // Issue 104960
-            binding.unbind();
-            context.removeBinding(binding);
-        } else {
-            try {
-                binding.unbind();
-            } catch (NullPointerException npex) {} // ugly implementation detail of binding library
-        }
+    private void removeBinding(Binding binding) {
+        BindingGroup group = bindingToGroup.remove(binding);
+        binding.unbind();
+        group.removeBinding(binding);
     }
 
     private void removeBindingInModel(MetaBinding bindingDef) {
@@ -1012,20 +1316,25 @@ public class BindingDesignSupport {
         }
     }
 
-    private static Object getInstance(Class clazz) {
-        Object instance = classToInstance.get(clazz);
-        if (instance instanceof Reference) {
-            instance = ((Reference)instance).get();
-        }
-        if (instance == null) {
-            try {
-                instance = CreationFactory.createDefaultInstance(clazz);
-            } catch (Exception ex) {
-                instance = NO_INSTANCE;
+    private static String capitalize(String title) {
+        StringBuilder builder = new StringBuilder(title);
+        boolean lastWasUpper = false;
+        for (int i = 0; i < builder.length(); i++) {
+            char aChar = builder.charAt(i);
+            if (i == 0) {
+                builder.setCharAt(i, Character.toUpperCase(aChar));
+                lastWasUpper = true;
+            } else if (Character.isUpperCase(aChar)) {
+                if (!lastWasUpper) {
+                    builder.insert(i, ' ');
+                }
+                lastWasUpper = true;
+                i++;
+            } else {
+                lastWasUpper = false;
             }
-            classToInstance.put(clazz, (instance == NO_INSTANCE) ? instance : new WeakReference<Object>(instance));
         }
-        return instance;
+        return builder.toString();
     }
 
     /**
@@ -1047,7 +1356,7 @@ public class BindingDesignSupport {
                         break;
                     case FormModelEvent.COMPONENT_ADDED:
                         if (!ev.getCreatedDeleted()) {
-                            establishUpdatedBindings(ev.getComponent(), true, null, bindingContext, true);
+                            establishUpdatedBindings(ev.getComponent(), true, null, bindingGroup, true);
                         }
                         break;
                 }

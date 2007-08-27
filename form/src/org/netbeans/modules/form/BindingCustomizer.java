@@ -139,6 +139,8 @@ public class BindingCustomizer extends JPanel {
             model.addElement(FormUtils.getBundleString("MSG_BindingCustomizer_UpdateWhen3")); // NOI18N
             updateWhenCombo.setModel(model);
         }
+        
+        ignoreAdjustingChoice.setVisible(showIgnoreAdjusting());
 
         importDataButton.setVisible(showImportData());
 
@@ -194,6 +196,13 @@ public class BindingCustomizer extends JPanel {
         return "text".equals(path) && JTextComponent.class.isAssignableFrom(bindingComponent.getBeanClass()); // NOI18N
     }
 
+    private boolean showIgnoreAdjusting() {
+        String path = bindingDescriptor.getPath();
+        Class<?> beanClass = bindingComponent.getBeanClass();
+        return ("selectedElement".equals(path) || "selectedElements".equals(path))  // NOI18N
+            && (JList.class.isAssignableFrom(beanClass) || JTable.class.isAssignableFrom(beanClass) || JComboBox.class.isAssignableFrom(beanClass));
+    }
+
     private boolean showImportData() {
         String path = bindingDescriptor.getPath();
         Class clazz = bindingComponent.getBeanClass();
@@ -209,7 +218,7 @@ public class BindingCustomizer extends JPanel {
         Class clazz = bindingComponent.getBeanClass();
         return "elements".equals(path) // NOI18N
             && (JList.class.isAssignableFrom(clazz)
-                || JComboBox.class.isAssignableFrom(clazz));        
+                /*|| JComboBox.class.isAssignableFrom(clazz)*/);
     }
 
     private boolean showColumnSelector() {
@@ -354,9 +363,9 @@ public class BindingCustomizer extends JPanel {
                 String sourcePath = binding.getSourcePath();
                 expressionCombo.setSelectedItem(sourcePath == null ? "null" : sourcePath); // NOI18N
             }
-            updateModeCombo.setSelectedIndex(binding.getUpdateStratedy());
+            updateModeCombo.setSelectedIndex(binding.getUpdateStrategy());
             if (showUpdateWhen()) {
-                int updateWhen = 0;
+                int updateWhen = 2;
                 String value = binding.getParameter(MetaBinding.TEXT_CHANGE_STRATEGY);
                 if (MetaBinding.TEXT_CHANGE_ON_ACTION_OR_FOCUS_LOST.equals(value)) {
                     updateWhen = 0;
@@ -367,34 +376,27 @@ public class BindingCustomizer extends JPanel {
                 }
                 updateWhenCombo.setSelectedIndex(updateWhen);
             }
+            if (showIgnoreAdjusting()) {
+                String value = binding.getParameter(MetaBinding.IGNORE_ADJUSTING_PARAMETER);
+                boolean ignoreAdjusting = "Y".equals(value); // NOI18N
+                ignoreAdjustingChoice.setSelected(ignoreAdjusting);
+            }
             if (showDisplayExpression()) {
-                String subPath = null;
-                if (binding.hasSubBindings()) {
-                    MetaBinding subBinding = binding.getSubBindings().iterator().next();
-                    subPath = subBinding.getSourcePath();
-                }
-                displayExpressionCombo.setSelectedItem(subPath == null ? "null" : subPath); // NOI18N
+                String displayPath = binding.getParameter(MetaBinding.DISPLAY_PARAMETER);
+                displayExpressionCombo.setSelectedItem(displayPath == null ? "null" : displayPath); // NOI18N
             }
             updateColumnSelector();
             if (columnSelector != null) {
                 if (binding.hasSubBindings()) {
-                    SortedMap<Integer,String> columns = new TreeMap<Integer,String>();
-                    for (MetaBinding subBinding : binding.getSubBindings()) {
-                        Object value = subBinding.getParameter(MetaBinding.TABLE_COLUMN_PARAMETER);
-                        if (value != null) {
-                            columns.put(new Integer(value.toString()), subBinding.getSourcePath());
-                        }
-                    }
                     List<String> available = new LinkedList<String>(columnSelector.getSelectedItems());
                     List<String> selected = new LinkedList<String>();
-                    Iterator iter = columns.values().iterator();
-                    while (iter.hasNext()) {
-                        String column = iter.next().toString();
+                    for (MetaBinding subBinding : binding.getSubBindings()) {
+                        String column = subBinding.getSourcePath();
                         column = BindingDesignSupport.unwrapSimpleExpression(column);
                         if (available.contains(column)) {
                             selected.add(column);
                             available.remove(column);
-                        }
+                        }                        
                     }
                     columnSelector.setItems(available, selected);
                 } else {
@@ -423,7 +425,10 @@ public class BindingCustomizer extends JPanel {
             sourceCombo.setSelectedIndex(0);
             updateModeCombo.setSelectedIndex(0);
             if (showUpdateWhen()) {
-                updateWhenCombo.setSelectedIndex(0);
+                updateWhenCombo.setSelectedIndex(2);
+            }
+            if (showIgnoreAdjusting()) {
+                ignoreAdjustingChoice.setSelected(false);
             }
             nullValueCheckBox.setSelected(false);
             incompletePathValueCheckBox.setSelected(false);
@@ -511,12 +516,16 @@ public class BindingCustomizer extends JPanel {
                 int index = updateWhenCombo.getSelectedIndex();
                 String updateWhen = null;
                 switch (index) {
-                    case 0: updateWhen = null; /*MetaBinding.TEXT_CHANGE_ON_ACTION_OR_FOCUS_LOST*/ break; // default value
+                    case 0: updateWhen = MetaBinding.TEXT_CHANGE_ON_ACTION_OR_FOCUS_LOST; break;
                     case 1: updateWhen = MetaBinding.TEXT_CHANGE_ON_FOCUS_LOST; break;
                     case 2: updateWhen = MetaBinding.TEXT_CHANGE_ON_TYPE; break;
                     default: assert false;
                 }
                 binding.setParameter(MetaBinding.TEXT_CHANGE_STRATEGY, updateWhen);
+            }
+            if (showIgnoreAdjusting()) {
+                String ignoreAdjusting = ignoreAdjustingChoice.isSelected() ? "Y" : "N"; // NOI18N
+                binding.setParameter(MetaBinding.IGNORE_ADJUSTING_PARAMETER, ignoreAdjusting);
             }
             if (showDisplayExpression()) {
                 String displayExpression = displayExpressionCombo.getSelectedItem().toString();
@@ -524,7 +533,7 @@ public class BindingCustomizer extends JPanel {
                     displayExpression = null;
                 }
                 if (displayExpression != null) {
-                    binding.addSubBinding(displayExpression, null);
+                    binding.setParameter(MetaBinding.DISPLAY_PARAMETER, displayExpression);
                 }
             }
             if (columnSelector != null) {
@@ -534,7 +543,6 @@ public class BindingCustomizer extends JPanel {
                     for (int i=0; i<items.size(); i++) {
                         String item = items.get(i).toString();
                         MetaBinding subBinding = binding.addSubBinding(BindingDesignSupport.elWrap(item), null);
-                        subBinding.setParameter(MetaBinding.TABLE_COLUMN_PARAMETER, i+""); // NOI18N
                         String columnType = columnToType.get(item);
                         if ((columnType != null) && (!columnType.equals("java.lang.Object"))) { // NOI18N
                             String clazz = FormUtils.autobox(columnType);
@@ -606,6 +614,7 @@ public class BindingCustomizer extends JPanel {
         identificationLabel = new javax.swing.JLabel();
         nameLabel = new javax.swing.JLabel();
         namePanel = new org.openide.explorer.propertysheet.PropertyPanel();
+        ignoreAdjustingChoice = new javax.swing.JCheckBox();
 
         FormListener formListener = new FormListener();
 
@@ -633,7 +642,7 @@ public class BindingCustomizer extends JPanel {
         );
         detailPanelLayout.setVerticalGroup(
             detailPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 286, Short.MAX_VALUE)
+            .add(0, 297, Short.MAX_VALUE)
         );
 
         org.jdesktop.layout.GroupLayout bindingPanelLayout = new org.jdesktop.layout.GroupLayout(bindingPanel);
@@ -704,7 +713,7 @@ public class BindingCustomizer extends JPanel {
         nullValuePanel.setLayout(nullValuePanelLayout);
         nullValuePanelLayout.setHorizontalGroup(
             nullValuePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 317, Short.MAX_VALUE)
+            .add(0, 305, Short.MAX_VALUE)
         );
         nullValuePanelLayout.setVerticalGroup(
             nullValuePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -717,7 +726,7 @@ public class BindingCustomizer extends JPanel {
         incompletePathValuePanel.setLayout(incompletePathValuePanelLayout);
         incompletePathValuePanelLayout.setHorizontalGroup(
             incompletePathValuePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 317, Short.MAX_VALUE)
+            .add(0, 305, Short.MAX_VALUE)
         );
         incompletePathValuePanelLayout.setVerticalGroup(
             incompletePathValuePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -754,7 +763,7 @@ public class BindingCustomizer extends JPanel {
         converterPanel.setLayout(converterPanelLayout);
         converterPanelLayout.setHorizontalGroup(
             converterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 378, Short.MAX_VALUE)
+            .add(0, 342, Short.MAX_VALUE)
         );
         converterPanelLayout.setVerticalGroup(
             converterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -769,7 +778,7 @@ public class BindingCustomizer extends JPanel {
         validatorPanel.setLayout(validatorPanelLayout);
         validatorPanelLayout.setHorizontalGroup(
             validatorPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 378, Short.MAX_VALUE)
+            .add(0, 342, Short.MAX_VALUE)
         );
         validatorPanelLayout.setVerticalGroup(
             validatorPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -797,12 +806,14 @@ public class BindingCustomizer extends JPanel {
         namePanel.setLayout(namePanelLayout);
         namePanelLayout.setHorizontalGroup(
             namePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 378, Short.MAX_VALUE)
+            .add(0, 342, Short.MAX_VALUE)
         );
         namePanelLayout.setVerticalGroup(
             namePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(0, 24, Short.MAX_VALUE)
         );
+
+        org.openide.awt.Mnemonics.setLocalizedText(ignoreAdjustingChoice, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_IgnoreAdjusting")); // NOI18N
 
         org.jdesktop.layout.GroupLayout advancedPanelLayout = new org.jdesktop.layout.GroupLayout(advancedPanel);
         advancedPanel.setLayout(advancedPanelLayout);
@@ -821,8 +832,8 @@ public class BindingCustomizer extends JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(namePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(updateModeCombo, 0, 378, Short.MAX_VALUE)
-                            .add(updateWhenCombo, 0, 378, Short.MAX_VALUE)
+                            .add(updateModeCombo, 0, 342, Short.MAX_VALUE)
+                            .add(updateWhenCombo, 0, 342, Short.MAX_VALUE)
                             .add(converterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(validatorPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .add(advancedPanelLayout.createSequentialGroup()
@@ -860,7 +871,10 @@ public class BindingCustomizer extends JPanel {
                         .add(updateLabel))
                     .add(advancedPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(identificationLabel)))
+                        .add(identificationLabel))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(ignoreAdjustingChoice)))
                 .addContainerGap())
         );
         advancedPanelLayout.setVerticalGroup(
@@ -884,6 +898,8 @@ public class BindingCustomizer extends JPanel {
                 .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(updateWhenLabel)
                     .add(updateWhenCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(ignoreAdjustingChoice)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(conversionLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -912,7 +928,7 @@ public class BindingCustomizer extends JPanel {
                 .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.CENTER, incompletePathValueCheckBox)
                     .add(org.jdesktop.layout.GroupLayout.CENTER, incompletePathValuePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         updateModeCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_UpdateMode_ACSD")); // NOI18N
@@ -935,7 +951,7 @@ public class BindingCustomizer extends JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tabbedPane)
+            .add(tabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
         );
 
         tabbedPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_ACSD")); // NOI18N
@@ -1059,6 +1075,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     javax.swing.JLabel displayValuesLabel;
     javax.swing.JLabel expressionLabel;
     javax.swing.JLabel identificationLabel;
+    javax.swing.JCheckBox ignoreAdjustingChoice;
     javax.swing.JButton importDataButton;
     javax.swing.JCheckBox incompletePathValueCheckBox;
     org.openide.explorer.propertysheet.PropertyPanel incompletePathValuePanel;

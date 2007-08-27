@@ -278,14 +278,12 @@ public class DBTableDrop extends DBConnectionDrop {
         BindingProperty prop = table.getBindingProperty("elements"); // NOI18N
         MetaBinding binding = new MetaBinding(resultList, null, table, "elements"); // NOI18N
 
-        int count = 0;
         List<String> propertyNames = J2EEUtils.propertiesForColumns(mappings, entityInfo[0], null);
         FileObject formFile = FormEditor.getFormDataObject(model).getPrimaryFile();
         List<String> propertyTypes = J2EEUtils.typesOfProperties(formFile, entityInfo[1], propertyNames);
         Iterator<String> typeIter = propertyTypes.iterator();
         for (String column : propertyNames) {
             MetaBinding subBinding = binding.addSubBinding(BindingDesignSupport.elWrap(column), null);
-            subBinding.setParameter(MetaBinding.TABLE_COLUMN_PARAMETER, ""+count++); // NOI18N
             String clazz = typeIter.next();
             if (clazz != null) {
                 subBinding.setParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER, clazz);

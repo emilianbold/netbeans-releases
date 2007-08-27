@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.beans.binding.BindingContext;
+import org.jdesktop.beansbinding.BindingGroup;
 
 import org.openide.ErrorManager;
 
@@ -56,7 +56,7 @@ public class VisualReplicator {
 
     private Map<String,SwingLayoutBuilder> layoutBuilders = new HashMap<String,SwingLayoutBuilder>();
 
-    private BindingContext bindingContext;
+    private BindingGroup bindingGroup;
     private BindingDesignSupport bindingSupport;
 
     private boolean designRestrictions;
@@ -114,12 +114,12 @@ public class VisualReplicator {
         return builder;
     }
 
-    private BindingContext getBindingContext() {
-        if (bindingContext == null) {
-            bindingContext = new BindingContext();
-            bindingContext.bind();
+    private BindingGroup getBindingGroup() {
+        if (bindingGroup == null) {
+            bindingGroup = new BindingGroup();
+            bindingGroup.bind();
         }
-        return bindingContext;
+        return bindingGroup;
     }
 
     // ---------
@@ -134,7 +134,7 @@ public class VisualReplicator {
         idToClone.clear();
         cloneToId.clear();
         layoutBuilders.clear();
-        bindingContext = null;
+        bindingGroup = null;
     }
 
     public boolean getDesignRestrictions() {
@@ -175,18 +175,18 @@ public class VisualReplicator {
                     entry.setValue(rc.getBeanInstance());
                 }
             }
-            BindingContext context = getBindingContext();
+            BindingGroup group = getBindingGroup();
             boolean restrictions = getDesignRestrictions();
             for (String id : mapToClones.keySet()) {
                 RADComponent comp = formModel.getMetaComponent(id);
                 if (restrictions) { // this is an updated view (designer)
                     bindingSupport.establishUpdatedBindings(
-                            comp, false, mapToClones, context, false);
+                            comp, false, mapToClones, group, false);
                     // BindingDesignSupport will unbind and remove these bindings
                     // automatically if user removes a binding or whole component
                 } else { // this is a one-off view (preview)
                     BindingDesignSupport.establishOneOffBindings(
-                            comp, false, mapToClones, context);
+                            comp, false, mapToClones, group);
                 }
             }
         }
@@ -593,7 +593,7 @@ public class VisualReplicator {
                 Object source = isConverted(metaSource) ? metaSource.getBeanInstance() : getClonedComponent(metaSource);
                 if (source == null) // source not cloned - let's use the bean instance directly
                     source = newBinding.getSource().getBeanInstance();
-                bindingSupport.addBinding(newBinding, source, target, getBindingContext(), false);
+                bindingSupport.addBinding(newBinding, source, target, getBindingGroup(), false);
             }
         }
     }

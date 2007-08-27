@@ -1023,7 +1023,7 @@ public class FormEditor {
     public static boolean updateProjectForBeansBinding(FormModel formModel) {
         FormEditor formEditor = getFormEditor(formModel);
         if (formEditor != null
-                && !ClassPathUtils.isOnClassPath(formEditor.getFormDataObject().getFormFile(), javax.beans.binding.Binding.class.getName())) {
+                && !ClassPathUtils.isOnClassPath(formEditor.getFormDataObject().getFormFile(), org.jdesktop.beansbinding.Binding.class.getName())) {
             try {
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
                                                  new String[] { ClassSource.LIBRARY_SOURCE },
