@@ -98,8 +98,8 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
           &gt; Java Platforms.</li>
       </ul></td>
   </tr>
-  <tr valign="top">
-    <td>Automatically change the application version with each build</td>
+  <tr valign="top"> 
+    <td>Automatically increment the application version with each build</td>
     <td><ul>
         <li>Right-click on a project and choose Properties.</li>
         <li>Choose General from the left pane. </li>
@@ -116,7 +116,7 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
     <td>Edit the Application Descriptor (JAD) File<a name="jad"></a></td>
     <td><ol>
         <li>Right-click on a project and choose Properties.</li>
-        <li>Select the Application Descriptor category.
+        <li>Select the Application Descriptor category. 
         <li>Select the appropriate tab to change the <a href="../ui/projectprop_appdescriptor.html">Attributes</a>, 
           <a href="../ui/projectprop_midlets.html">MIDlet</a>, <a href="../ui/projectprop_apipermissions.html">API 
           permissions</a>, or <a href="../ui/projectprop_pushregistry.html">Push 
@@ -149,7 +149,7 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
         <li>Right-click on a project and choose Properties. Expand the Build node 
           in the left pane and choose the <a href="../ui/projectprop_signing.html">Signing</a> 
           node.</li>
-        <li>Check the Sign Distribution checkbox. </li>
+        <li>Check the Sign Distribution check box. </li>
         <li>Click the Open Keystores Manager button to add, import, or export 
           a keystore.</li>
       </ol></td>
@@ -160,8 +160,7 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
         <li>Right-click on a project and choose Properties.</li>
         <li>Expand the Build node in the left pane and choose the <a href="../ui/projectprop_obfuscating.html">Obfuscating</a> 
           node. </li>
-        <li>In the left pane, use the Obfuscation Level control to set the obfuscation 
-          level . <br>
+        <li>Use the Obfuscation Level control to set the obfuscation level. <br>
           The Level Description pane describes each level of obfuscation. </li>
       </ol></td>
   </tr>
@@ -174,16 +173,24 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
       </ul></td>
   </tr>
   <tr valign="top"> 
-    <td>Build all project configurations</td>
-    <td><ul>
-        <li>Right-click on a project node and choose Build All Project Configurations.</li>
-      </ul></td>
+    <td>Build all (or selected) project configurations</td>
+    <td><ol>
+        <li>Right-click on a project node and choose Batch Build.</li>
+        <li>In the Build Selected Project Configurations dialog, check the box 
+          of each configuration you want to build. </li>
+        <li>Click OK. <br>
+          The IDE creates a separate JAR file for each configuration.</li>
+      </ol></td>
   </tr>
   <tr valign="top"> 
     <td>Deploy all project configurations</td>
     <td><ul>
-        <li>Right-click on a project node and choose <a href="../deploy/deploy_deploying.html">Deploy</a> 
-          All Project Configurations.</li>
+        <li>Right-click on a project node and choose Batch Deploy.</li>
+        <li>In the Deploy Selected Project Configurations dialog, check the box 
+          of each configuration you want to deploy. </li>
+        <li>Click OK. <br>
+          The IDE deploys a separate JAR file for each configuration according 
+          to the Deploy property settings for that configuration. </li>
       </ul></td>
   </tr>
   <tr valign="top"> 
@@ -193,12 +200,13 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
           This opens the Project Properties dialog. </li>
         <li>Select <a href="../configuration/abilities_about.html">Abilities</a> 
           from the Category menu tree.</li>
-        <li>If necessary, uncheck the Use Values From &quot;DefaultConfiguration&quot; 
-          checkbox. </li>
+        <li>If necessary, uncheck the &quot;Use Values From DefaultConfiguration&quot; 
+          check box. </li>
         <li>Click the Add Ability button.</li>
-        <li>Enter a name for the new ability. Click OK. <br>
-          The new ability is listed in the Abilities window.Then click OK to close 
-          the Project Properties dialog.</li>
+        <li>Enter a name for the new ability and, optionally, a value. Click OK. 
+          <br>
+          The new ability is listed in the Abilities window.</li>
+        <li>Click OK to close the Project Properties dialog.</li>
       </ol></td>
   </tr>
   <tr valign="top"> 
@@ -222,16 +230,6 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
       </ul></td>
   </tr>
   <tr valign="top"> 
-    <td>Run a project with a different emulator platform or device emulator </td>
-    <td><ol>
-        <li>Right-click on a project and choose Quick Run With. </li>
-        <li>Choose an installed <a href="../emulator/emulator_about.html">emulator 
-          platform</a> and device emulator from the dropdown menus.<br>
-          The project uses the current distribution JAR and does not rebuild the 
-          project before running. </li>
-      </ol></td>
-  </tr>
-  <tr valign="top"> 
     <td>Create a project configuration</td>
     <td><ol>
         <li>Select a Project and choose File &gt; &quot;<em>Active project name</em>&quot; 
@@ -247,17 +245,16 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
   <tr valign="top"> 
     <td>Set the active configuration</td>
     <td><ul>
-        <li>Select a project and Choose File &gt; Set Active Configuration. Or, 
-          you can choose the active configuration from the drop-down menu in the 
-          toolbar. </li>
+        <li>Choose the active configuration from the drop-down menu in the toolbar. 
+        </li>
       </ul></td>
   </tr>
   <tr valign="top"> 
     <td>Customize a project configuration</td>
     <td><ul>
-        <li>Select a Project and choose File &gt; &quot;<em>Active project name</em>&quot; 
+        <li>Select a Project and choose File &gt; &quot;<em>project name</em>&quot; 
           Properties.</li>
-        <li>If necessary, uncheck the Use Values from &quot;DefaultConfiguration&quot; 
+        <li>If necessary, uncheck the &quot;Use Values from DefaultConfiguration&quot; 
           check box.</li>
         <li>Customize the property sheets for the project. </li>
         <li>Optionally, <a href="../configuration/preprocess_about.html">add preprocessor 
@@ -269,9 +266,9 @@ This topic describes common tasks you can perform to create a Java ME MIDP appli
     <td height="69">Debug a project</td>
     <td><ul>
         <li>To <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_about.html">debug</a> 
-          the main project, choose Run &nbsp;Debug Main Project (Ctrl-F5).</li>
+          the main project, choose Run &nbsp;Debug Main Project (Ctrl+F5).</li>
         <li>To debug any individual project, right-click the project and choose 
-          Debug Project. </li>
+          Debug. </li>
       </ul></td>
   </tr>
   <!-- <tr valign="top">
