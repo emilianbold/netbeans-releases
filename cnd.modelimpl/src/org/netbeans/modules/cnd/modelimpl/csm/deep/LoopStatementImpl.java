@@ -40,8 +40,8 @@ public class LoopStatementImpl extends StatementBase implements CsmLoopStatement
     private CsmStatement body;
     private boolean postCheck;
     
-    public LoopStatementImpl(AST ast, CsmFile file, boolean postCheck) {
-        super(ast, file);
+    public LoopStatementImpl(AST ast, CsmFile file, boolean postCheck, CsmScope scope) {
+        super(ast, file, scope);
         this.postCheck = postCheck;
     }
    
@@ -74,13 +74,13 @@ public class LoopStatementImpl extends StatementBase implements CsmLoopStatement
         for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
             int type = token.getType();
             if( type == CPPTokenTypes.CSM_CONDITION ) {
-                condition = renderer.renderCondition(token);
+                condition = renderer.renderCondition(token, this);
             }
             else if( AstRenderer.isExpression(type) ) {
                 condition = new ConditionExpressionImpl(token, getContainingFile());
             }
             else if( AstRenderer.isStatement(type) ) {
-                body = AstRenderer.renderStatement(token, getContainingFile());
+                body = AstRenderer.renderStatement(token, getContainingFile(), this);
             }
         }
     }

@@ -61,7 +61,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             super((FileImpl) ClassImpl.this.getContainingFile());
         }
         
-        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
+        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, 
+		MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,CsmScope scope) {
+	    
             FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility);
             ClassImpl.this.addMember(field);
             return field;

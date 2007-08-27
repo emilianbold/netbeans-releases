@@ -39,8 +39,8 @@ public class CaseStatementImpl extends StatementBase implements CsmCaseStatement
     
     private CsmExpression expression;
     
-    public CaseStatementImpl(AST ast, CsmFile file) {
-        super(ast, file);
+    public CaseStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
     }
 
     public CsmExpression getExpression() {

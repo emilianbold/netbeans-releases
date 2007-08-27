@@ -39,8 +39,8 @@ public class UniversalStatement extends StatementBase {
     
     private CsmStatement.Kind kind; 
     
-    public UniversalStatement(AST ast, CsmFile file, CsmStatement.Kind kind) {
-            super(ast, file);
+    public UniversalStatement(AST ast, CsmFile file, CsmStatement.Kind kind, CsmScope scope) {
+            super(ast, file, scope);
             this.kind = kind;
     }
     

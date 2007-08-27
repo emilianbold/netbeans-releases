@@ -39,8 +39,8 @@ public class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmEx
     
     private ParameterImpl parameter;
     
-    public ExceptionHandlerImpl(AST ast,  CsmFile file) {
-        super(ast, file);
+    public ExceptionHandlerImpl(AST ast,  CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
     }
     
     public CsmStatement.Kind getKind() {
@@ -56,7 +56,7 @@ public class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmEx
         if( parameter == null ) {
             AST ast = AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_PARAMETER_DECLARATION);
             if( ast != null ) {
-                parameter = AstRenderer.renderParameter(ast, getContainingFile());
+                parameter = AstRenderer.renderParameter(ast, getContainingFile(), this);
             }
         }
         return parameter;

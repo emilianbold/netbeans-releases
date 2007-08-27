@@ -34,13 +34,13 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * CsmTryCatchStatement implementation
  * @author Vladimir Kvashin
  */
-public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchStatement {
+public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchStatement, CsmScope {
     
     private StatementBase tryStatement;
     private List<CsmExceptionHandler> handlers;
     
-    public TryCatchStatementImpl(AST ast, CsmFile file) {
-        super(ast, file);
+    public TryCatchStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
     }
     
     public CsmStatement.Kind getKind() {
@@ -66,12 +66,20 @@ public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchS
         for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT:
-                    tryStatement = AstRenderer.renderStatement(token, getContainingFile());
+                    tryStatement = AstRenderer.renderStatement(token, getContainingFile(), this);
                     break;
                 case CPPTokenTypes.CSM_CATCH_CLAUSE:
-                    handlers.add(new ExceptionHandlerImpl(token, getContainingFile()));
+                    handlers.add(new ExceptionHandlerImpl(token, getContainingFile(), this));
                     break;
             }
         }
     }
+
+    public List<CsmScopeElement> getScopeElements() {
+	List<CsmScopeElement> elements = new ArrayList<CsmScopeElement>();
+	elements.add(tryStatement);
+	elements.addAll(handlers);
+	return elements;
+    }
+    
 }

@@ -38,8 +38,8 @@ public class LabelImpl extends StatementBase implements CsmStatement {
 
     String label;
 
-    public LabelImpl(AST ast, CsmFile file) {
-        super(ast, file);
+    public LabelImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
     }
     
     public CsmStatement.Kind getKind() {

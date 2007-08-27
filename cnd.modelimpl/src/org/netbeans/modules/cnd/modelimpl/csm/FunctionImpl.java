@@ -83,6 +83,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         name = initName(ast);
         rawName = AstUtil.getRawNameInChildren(ast);
+	
+        if (TraceFlags.USE_REPOSITORY) {
+            RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        }
+	
         _const = initConst(ast);
         returnType = initReturnType(ast);
         initTemplate(ast);
@@ -265,6 +270,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     protected void registerInProject() {
         CsmProject project = getContainingFile().getProject();
         if( project instanceof ProjectBase ) {
+	    // implicitely calls RepositoryUtils.put()
             ((ProjectBase) project).registerDeclaration(this);
         }
     }
@@ -445,7 +451,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 ast = ast2;
             }
         }
-        return AstRenderer.renderParameters(ast, getContainingFile());
+        return AstRenderer.renderParameters(ast, getContainingFile(), this);
     }
 
     private boolean isVoidParameter(AST node) {

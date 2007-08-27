@@ -38,8 +38,8 @@ public class ExpressionStatementImpl extends StatementBase implements CsmExpress
     
     private ExpressionBase expression;
     
-    public ExpressionStatementImpl(AST ast, CsmFile file) {
-        super(ast, file);
+    public ExpressionStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
     }
     
     public CsmStatement.Kind getKind() {

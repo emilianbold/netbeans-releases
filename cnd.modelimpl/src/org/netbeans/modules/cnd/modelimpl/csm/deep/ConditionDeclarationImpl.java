@@ -36,19 +36,23 @@ public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondi
     
     private VariableImpl declaration;
     
-    public ConditionDeclarationImpl(AST ast, CsmFile file) {
+    public ConditionDeclarationImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
-        initDeclaration(ast);
+        initDeclaration(ast, scope);
     }
 
     public CsmCondition.Kind getKind() {
         return CsmCondition.Kind.DECLARATION;
     }
     
-    private void initDeclaration(AST node) {
+    
+    private void initDeclaration(AST node, final CsmScope scope) {
         AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile()) {
-            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
-                ConditionDeclarationImpl.this.declaration = super.createVariable(offsetAst, file, type, name, _static, container1, container2);
+            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, 
+		    MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope passedScope) {
+		
+                ConditionDeclarationImpl.this.declaration = super.createVariable(offsetAst, file, type, name, _static, 
+			container1, container2, scope);
                 return declaration;
             }
         };

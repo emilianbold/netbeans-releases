@@ -42,8 +42,8 @@ public class ForStatementImpl extends StatementBase implements CsmForStatement {
     private StatementBase body;
     private boolean rendered = false;
     
-    public ForStatementImpl(AST ast, CsmFile file) {
-        super(ast, file);
+    public ForStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
     }
     
     public CsmStatement.Kind getKind() {
@@ -97,22 +97,22 @@ public class ForStatementImpl extends StatementBase implements CsmForStatement {
                         case CPPTokenTypes.CSM_TYPE_BUILTIN:
                         case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             //renderer.renderVariable(token, null, null);
-                            init = new DeclarationStatementImpl(token, getContainingFile());
+                            init = new DeclarationStatementImpl(token, getContainingFile(), ForStatementImpl.this);
                             break;
                         default:
                             if( AstRenderer.isExpression(child) ) {
-                                init = new ExpressionStatementImpl(token, getContainingFile());
+                                init = new ExpressionStatementImpl(token, getContainingFile(), ForStatementImpl.this);
                             }
                             break;
                     }
                 }
                 break;
             case CPPTokenTypes.CSM_CONDITION:
-                condition = renderer.renderCondition(token);
+                condition = renderer.renderCondition(token, this);
                 break;
             default:
                 if( AstRenderer.isStatement(token) ) {
-                    body = body = AstRenderer.renderStatement(token, getContainingFile());
+                    body = body = AstRenderer.renderStatement(token, getContainingFile(), this);
                 }
                 else if( AstRenderer.isExpression(token) ) {
                     iteration = renderer.renderExpression(token);

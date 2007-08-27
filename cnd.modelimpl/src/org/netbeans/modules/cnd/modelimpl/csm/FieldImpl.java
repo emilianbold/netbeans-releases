@@ -36,7 +36,7 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
     private final CsmVisibility visibility;
     
     public FieldImpl(AST ast, CsmFile file, CsmType type, String name, ClassImpl cls, CsmVisibility visibility) {
-        super(ast, file, type, name, false);
+        super(ast, file, type, name, /*cls*/null, false);
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_static:
@@ -45,7 +45,7 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
             }
         }
         this.visibility = visibility;
-        setScope(cls);
+	setScope(cls);
     }
     
     public CsmClass getContainingClass() {

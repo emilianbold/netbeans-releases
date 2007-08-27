@@ -38,8 +38,8 @@ public class ReturnStatementImpl extends StatementBase implements CsmReturnState
 
     private ExpressionBase expression;
     
-    public ReturnStatementImpl(AST ast, CsmFile file) {
-        super(ast, file);
+    public ReturnStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
     }
     
     public CsmStatement.Kind getKind() {

@@ -51,7 +51,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     
     private final boolean _extern;
     private ExpressionBase initExpr;
-    
+
     /** Creates a new instance of VariableImpl 
      * @param ast 
      * @param file 
@@ -60,12 +60,25 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * @param registerInProject 
      */
     public VariableImpl(AST ast, CsmFile file, CsmType type, String name, boolean registerInProject) {
+	this(ast, file, type, name, null, registerInProject);
+    }
+    
+    /** Creates a new instance of VariableImpl 
+     * @param ast 
+     * @param file 
+     * @param type 
+     * @param name 
+     * @param scope variable scope
+     * @param registerInProject 
+     */
+    public VariableImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope,  boolean registerInProject) {
         super(ast, file);
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
         this.name = name;
         this.type = type;
+	_setScope(scope);
         if (registerInProject) {
             registerInProject();
         }
@@ -245,7 +258,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     private void _setScope(CsmScope scope) {
-        if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
+	// for variables declared in bodies scope is CsmCompoundStatement - it is not Identifiable
+        if ((scope instanceof CsmIdentifiable) && TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (scopeUID != null || scope == null);
         } else {

@@ -38,8 +38,8 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
     
     private List<CsmStatement> statements;
     
-    public CompoundStatementImpl(AST ast, CsmFile file) {
-        super(ast, file);
+    public CompoundStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
     }
     
     public CsmStatement.Kind getKind() {
@@ -56,7 +56,7 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
     
     protected void renderStatements(AST ast) {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-            CsmStatement stmt = AstRenderer.renderStatement(token, getContainingFile());
+            CsmStatement stmt = AstRenderer.renderStatement(token, getContainingFile(), this);
             if( stmt != null ) {
                 statements.add(stmt);
             }

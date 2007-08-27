@@ -38,8 +38,8 @@ public class GotoStatementImpl extends StatementBase implements CsmGotoStatement
 
     private String label;
     
-    public GotoStatementImpl(AST ast, CsmFile file) {
-        super(ast, file);
+    public GotoStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
     }
     
     public CsmStatement.Kind getKind() {

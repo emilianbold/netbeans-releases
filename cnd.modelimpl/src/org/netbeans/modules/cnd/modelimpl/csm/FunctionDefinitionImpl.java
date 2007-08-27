@@ -48,7 +48,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     
     protected  FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) {
         super(ast, file, scope, false);
-        body = AstRenderer.findCompoundStatement(ast, getContainingFile());
+        body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
         if (register) {
             registerInProject();

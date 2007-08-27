@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
@@ -37,8 +38,8 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
  */
 public class EmptyCompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
     
-    public EmptyCompoundStatementImpl(AST ast, CsmFile file) {
-        super(ast, file);
+    public EmptyCompoundStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
         ast.setFirstChild(null);
     }
     

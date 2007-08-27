@@ -41,7 +41,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
 
     public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope, false);
-        body = AstRenderer.findCompoundStatement(ast, getContainingFile());
+        body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         assert body != null : "null body in function definition, line " + getStartPosition().getLine() + ":" + file.getAbsolutePath();
         registerInProject();
     }

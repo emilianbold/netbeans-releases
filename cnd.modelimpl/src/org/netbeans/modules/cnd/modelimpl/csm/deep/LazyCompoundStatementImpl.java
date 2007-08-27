@@ -47,8 +47,8 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
     private SoftReference<List/*<CsmStatement>*/> statements = null;
     private final int firstTokenOffset;
     
-    public LazyCompoundStatementImpl(AST ast, CsmFile file) {
-        super(ast, file);
+    public LazyCompoundStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
+        super(ast, file, scope);
         assert(ast.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY);
         // remember start offset of compound statement
         firstTokenOffset = getStartOffset();
@@ -142,7 +142,7 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
     
     private void renderStatements(AST ast, List list) {
         for(ast = (ast == null ? null : ast.getFirstChild()); ast != null; ast = ast.getNextSibling() ) {
-            CsmStatement stmt = AstRenderer.renderStatement(ast, getContainingFile());
+            CsmStatement stmt = AstRenderer.renderStatement(ast, getContainingFile(), this);
             if( stmt != null ) {
                 list.add(stmt);
             }

@@ -34,8 +34,8 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 public final class ParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
     private final boolean varArg;
 
-    public ParameterImpl(AST ast, CsmFile file, CsmType type, String name) {
-        super(ast, file, type, name, false);
+    public ParameterImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope) {
+        super(ast, file, type, name, scope, false);
         varArg = ast.getType() == CPPTokenTypes.ELLIPSIS;
     }
 

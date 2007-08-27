@@ -39,8 +39,8 @@ public class SwitchStatementImpl extends StatementBase implements CsmSwitchState
     private CsmCondition condition;
     private StatementBase body;
     
-    public SwitchStatementImpl(AST ast, CsmFile file) {
-        super(ast, file);
+    public SwitchStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
     }
     
     public CsmStatement.Kind getKind() {
@@ -51,7 +51,7 @@ public class SwitchStatementImpl extends StatementBase implements CsmSwitchState
         if( condition == null ) {
             AST token = AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_CONDITION);
             if( token != null ) {
-                condition = new AstRenderer((FileImpl) getContainingFile()).renderCondition(token);
+                condition = new AstRenderer((FileImpl) getContainingFile()).renderCondition(token, this);
             }
         }
         //renderIfNeed();
@@ -63,7 +63,7 @@ public class SwitchStatementImpl extends StatementBase implements CsmSwitchState
         if( body == null ) {
             for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( AstRenderer.isStatement(token) ) {
-                    body = AstRenderer.renderStatement(token, getContainingFile());
+                    body = AstRenderer.renderStatement(token, getContainingFile(), this);
                     break;
                 }
             }

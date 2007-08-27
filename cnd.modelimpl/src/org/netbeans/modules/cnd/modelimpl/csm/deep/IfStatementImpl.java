@@ -40,8 +40,8 @@ public class IfStatementImpl extends StatementBase implements CsmIfStatement {
     private CsmStatement thenStmt;
     private CsmStatement elseStmt;
     
-    public IfStatementImpl(AST ast, CsmFile file) {
-        super(ast, file);
+    public IfStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
     }
     
     public CsmStatement.Kind getKind() {
@@ -75,14 +75,14 @@ public class IfStatementImpl extends StatementBase implements CsmIfStatement {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.CSM_CONDITION:
-                    condition = renderer.renderCondition(token);
+                    condition = renderer.renderCondition(token, this);
                     break;
                 case CPPTokenTypes.LITERAL_else:
                     inElse = true;
                     break;
                 default:
                     //if( AstRenderer.isStatement(token) ) {
-                    CsmStatement stmt = AstRenderer.renderStatement(token, getContainingFile());
+                    CsmStatement stmt = AstRenderer.renderStatement(token, getContainingFile(), this);
                     if( stmt != null ) {
                         if( inElse ) {
                             elseStmt = stmt;

@@ -38,8 +38,8 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 
     private List<CsmDeclaration> declarators;
     
-    public DeclarationStatementImpl(AST ast, CsmFile file) {
-            super(ast, file);
+    public DeclarationStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file, scope);
     }
 
     public CsmStatement.Kind getKind() {
@@ -70,8 +70,8 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 	    super((FileImpl) getContainingFile());
 	}
 	
-	protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
-	    VariableImpl var = super.createVariable(offsetAst, file, type, name, _static, container1, container2);
+	protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,CsmScope scope) {
+	    VariableImpl var = super.createVariable(offsetAst, file, type, name, _static, container1, container2, getScope());
 	    declarators.add(var);
 	    return var;
 	}
@@ -125,7 +125,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 				    type = TypeFactory.createType(typeToken, getContainingFile(), null, 0);
 				}
 				String name = next.getText();
-				VariableImpl var = createVariable(next, getContainingFile(), type, name, false, currentNamespace, container);
+				VariableImpl var = createVariable(next, getContainingFile(), type, name, false, currentNamespace, container, getScope());
 				// we ignore both currentNamespace and container; <= WHY?
 				// eat all tokens up to the comma that separates the next decl
 				next = next.getNextSibling();
@@ -143,38 +143,39 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 	    }
 	}
 
-	/**
-	 * Creates a variable for declaration like int x(y);
-	 * Returns a token that follows this declaration or null
-	 */
-	private AST createVarWithCtor(AST token) {
-	    assert(token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND);
-	    AST typeToken = token;
-	    AST next = token.getNextSibling();
-	    if( next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-		TypeImpl type;
-		if( typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
-		    type = TypeFactory.createBuiltinType(typeToken.getText(), null, 0, typeToken, getContainingFile());
-		}
-		else {
-		    type = TypeFactory.createType(typeToken, getContainingFile(), null, 0);
-		}
-		String name = next.getText();
-		VariableImpl var = new VariableImpl(next, getContainingFile(), type, name, true);
-		// we ignore both currentNamespace and container
-		declarators.add(var);
-		// eat all tokens up to the comma that separates the next decl
-		next = next.getNextSibling();
-		if( next != null && next.getType() == CPPTokenTypes.CSM_PARMLIST ) {
-		    next = next.getNextSibling();
-		}
-		if( next != null && next.getType() == CPPTokenTypes.COMMA ) {
-		    next = next.getNextSibling();
-		}
-		return next;
-	    }
-	    return null;
-	}
+// Never used 
+//	/**
+//	 * Creates a variable for declaration like int x(y);
+//	 * Returns a token that follows this declaration or null
+//	 */
+//	private AST createVarWithCtor(AST token) {
+//	    assert(token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND);
+//	    AST typeToken = token;
+//	    AST next = token.getNextSibling();
+//	    if( next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+//		TypeImpl type;
+//		if( typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
+//		    type = TypeFactory.createBuiltinType(typeToken.getText(), null, 0, typeToken, getContainingFile());
+//		}
+//		else {
+//		    type = TypeFactory.createType(typeToken, getContainingFile(), null, 0);
+//		}
+//		String name = next.getText();
+//		VariableImpl var = new VariableImpl(next, getContainingFile(), type, name, true);
+//		// we ignore both currentNamespace and container
+//		declarators.add(var);
+//		// eat all tokens up to the comma that separates the next decl
+//		next = next.getNextSibling();
+//		if( next != null && next.getType() == CPPTokenTypes.CSM_PARMLIST ) {
+//		    next = next.getNextSibling();
+//		}
+//		if( next != null && next.getType() == CPPTokenTypes.COMMA ) {
+//		    next = next.getNextSibling();
+//		}
+//		return next;
+//	    }
+//	    return null;
+//	}
     }
 	    
 }

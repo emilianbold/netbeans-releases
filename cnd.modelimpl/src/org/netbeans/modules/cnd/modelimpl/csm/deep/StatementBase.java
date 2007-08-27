@@ -29,22 +29,47 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
  * Common ancestor for all statements
  * @author Vladimir Kvashin
  */
 public abstract class StatementBase extends OffsetableBase implements CsmStatement {
+    
     private final AST ast;
     
-    public StatementBase(AST ast, CsmFile file) {
+    private CsmScope scopeRef;
+    private CsmUID<CsmScope> scopeUID;
+    
+    public StatementBase(AST ast, CsmFile file, CsmScope scope) {
             super(ast, file);
             this.ast = ast;
+	    if( scope != null ) {
+		setScope(scope);
+	    }
     }
     
     public CsmScope getScope() {
-        // TODO: implement
-        return null;
+        CsmScope scope = this.scopeRef;
+        if (scope == null) {
+            if (TraceFlags.USE_REPOSITORY) {
+                scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
+                assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
+            }
+        }
+        return scope;
+    }
+    
+    protected void setScope(CsmScope scope) {
+	// within bodies scope is a statement - it is not Identifiable
+        if ((scope instanceof CsmIdentifiable) && TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
+            this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+            assert (scopeUID != null || scope == null);
+        } else {
+            this.scopeRef = scope;
+        }
     }
     
     protected AST getAst() {
