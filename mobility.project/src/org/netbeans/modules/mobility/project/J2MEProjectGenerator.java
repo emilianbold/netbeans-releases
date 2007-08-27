@@ -72,6 +72,7 @@ import java.beans.PropertyVetoException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mobility.project.ui.customizer.MIDletScanner;
