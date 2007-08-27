@@ -143,6 +143,13 @@ Microsystems, Inc. All Rights Reserved.
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
                 </test-type>
+               <test-type>
+                   <name>qa-functional</name>
+                   <test-dependency>
+                       <code-name-base>org.openide.util</code-name-base>
+                       <compile-dependency/>
+                   </test-dependency>
+               </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
