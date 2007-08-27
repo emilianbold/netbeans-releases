@@ -51,7 +51,6 @@ import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 import java.awt.event.ActionEvent;
 import java.awt.*;
@@ -351,22 +350,18 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                     ));
             actions.add(CommonProjectActions.newFileAction());
             
-            // add this only if the casa editor is installed, and <proj>.casa exists..
-            File pf = FileUtil.toFile(project.getProjectDirectory());
-            File casaFile = new File(CasaHelper.getCasaFileName(project));
-            if (casaFile.exists()) { // TODO: create CASA on demand
-                actions.add(null);
-                actions.add(ProjectSensitiveActions.projectSensitiveAction(
-                        new OpenEditorAction(), 
-                        bundle.getString("LBL_EditAction_Name"), // NOI18N
-                        null
-                        ));
-                actions.add(ProjectSensitiveActions.projectCommandAction(
-                        JbiProjectConstants.COMMAND_JBICLEANCONFIG,
-                        bundle.getString("LBL_JbiCleanConfigAction_Name"),  // NOI18N
-                        null
-                        ));
-            }                        
+            // Create CASA on demand            
+            actions.add(null);
+            actions.add(ProjectSensitiveActions.projectSensitiveAction(
+                    new OpenEditorAction(), 
+                    bundle.getString("LBL_EditAction_Name"), // NOI18N
+                    null
+                    ));
+            actions.add(ProjectSensitiveActions.projectCommandAction(
+                    JbiProjectConstants.COMMAND_JBICLEANCONFIG,
+                    bundle.getString("LBL_JbiCleanConfigAction_Name"),  // NOI18N
+                    null
+                    ));         
             
             actions.add(null);
 

@@ -44,6 +44,7 @@ import java.util.ResourceBundle;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.compapp.projects.jbi.ComponentHelper;
+import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -57,7 +58,6 @@ import org.openide.util.NbBundle;
  * @version 
  */
 public class AddProjectAction implements ProjectActionPerformer {
-    private List<String> componentNames = new ArrayList<String>();
     
     private List<String> javaeeAntArtifactTypes = new ArrayList<String>();
     private String descEjbProjectsOnly = "EJB projects only" ;
@@ -110,7 +110,7 @@ public class AddProjectAction implements ProjectActionPerformer {
      * @param jbiProject DOCUMENT ME!
      */
     public void perform(Project jbiProject) {
-        CasaHelper.saveCasa(jbiProject);
+        CasaHelper.saveCasa((JbiProject)jbiProject);
         
         JbiProjectProperties projProperties = ((ProjectPropertyProvider) jbiProject).getProjectProperties();
         List oldList = (List) projProperties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);

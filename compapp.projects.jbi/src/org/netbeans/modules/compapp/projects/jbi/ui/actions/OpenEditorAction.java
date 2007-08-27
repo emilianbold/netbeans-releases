@@ -26,6 +26,7 @@ import org.openide.loaders.DataObject;
 import org.openide.cookies.EditCookie;
 
 import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
+import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 
 /**
  * Open the casa editor.
@@ -58,7 +59,7 @@ public class OpenEditorAction implements ProjectActionPerformer {
      */
     public void perform(Project p) {
         try {
-            FileObject fobj = CasaHelper.getCasaFileObject(p, false);
+            FileObject fobj = CasaHelper.getCasaFileObject((JbiProject)p, true); // create on demand
             DataObject dobj = DataObject.find(fobj);
             EditCookie ec = dobj.getCookie(EditCookie.class);
             if (ec != null) {
@@ -66,7 +67,7 @@ public class OpenEditorAction implements ProjectActionPerformer {
             }
         } catch (Exception ex) {
             // failed to open casa...
-            // ex.printStackTrace();
+            ex.printStackTrace();
         }
     }
 }

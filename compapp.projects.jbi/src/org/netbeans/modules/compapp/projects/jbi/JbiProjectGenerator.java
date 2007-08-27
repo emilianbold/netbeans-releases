@@ -157,7 +157,7 @@ public class JbiProjectGenerator {
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
         ProjectManager.getDefault().saveProject(p);
 
-        CasaHelper.createDefaultCasaFileObject(p);
+        CasaHelper.createDefaultCasaFileObject((JbiProject)p);
         
         return h;
     }

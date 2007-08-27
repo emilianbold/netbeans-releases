@@ -580,7 +580,7 @@ public class JbiProjectProperties {
         this.properties = new HashMap<String, PropertyInfo>();
         this.antProjectHelper = antProjectHelper;
         this.refHelper = refHelper;
-        this.abpt = ((JbiProject) project).getAntBasedProjectType();
+        this.abpt = project.getAntBasedProjectType();
         read();
         
         PropertyEvaluator evaluator = antProjectHelper.getStandardPropertyEvaluator();
@@ -627,7 +627,7 @@ public class JbiProjectProperties {
         //            assert value instanceof List : "Wrong format of property " + propertyName; //NOI18N
         //            writeJavacClasspath ((List) value, antProjectHelper, refHelper);
         //        }
-        PropertyInfo pi = (PropertyInfo) properties.get(propertyName);
+        PropertyInfo pi = properties.get(propertyName);
         
         if (pi == null) {
             PropertyDescriptor pd = null;
@@ -705,7 +705,7 @@ public class JbiProjectProperties {
      * @return DOCUMENT ME!
      */
     public List getSortedSubprojectsList() {
-        ArrayList subprojects = new ArrayList(5);
+        List subprojects = new ArrayList(5);
         addSubprojects(project, subprojects); // Find the projects recursively
         
         // Replace projects in the list with formated names
@@ -735,7 +735,7 @@ public class JbiProjectProperties {
      * @param project DOCUMENT ME!
      * @param result DOCUMENT ME!
      */
-    private void addSubprojects(Project project, List result) {
+    private void addSubprojects(Project project, List<Project> result) {
         SubprojectProvider spp = 
                 project.getLookup().lookup(SubprojectProvider.class);
         
@@ -888,111 +888,11 @@ public class JbiProjectProperties {
         }
     }
     
-    private void updateAssemblyInfoAndCasa() throws Exception {
-        
+    private void updateAssemblyInfoAndCasa() throws Exception {        
         saveAssemblyInfo();
-        
-        FileObject casaFO = CasaHelper.getCasaFileObject(project, true);
-        if (casaFO == null) {
-            return;
-        }
-        
-        List<VisualClassPathItem> oldContentList =
-                (List) properties.get(JBI_CONTENT_ADDITIONAL).getOldValue();
-        List<VisualClassPathItem> newContentList =
-                (List) properties.get(JBI_CONTENT_ADDITIONAL).getValue();
-        
-        List<String> removedList = new ArrayList<String>();
-        for (VisualClassPathItem content : oldContentList) {
-            if (!newContentList.contains(content)) {
-                removedList.add(content.toString());
-            }
-        }
-        
-        List<String> addedList = new ArrayList<String>();
-        for (VisualClassPathItem content : newContentList) {
-            if (!oldContentList.contains(content)) {
-                addedList.add(content.toString());
-            }
-        }
-        
-        if (addedList.size() == 0 && removedList.size() == 0) {
-            return; // no casa/asi change needed
-        }
-        
-        File file = FileUtil.toFile(casaFO);
-        String fileLoc = file.getPath();
-        
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        factory.setValidating(false);
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document casaDocument = builder.parse(file);
-        
-        Element sus = (Element) casaDocument.getElementsByTagName(
-                CasaConstants.CASA_SERVICE_UNITS_ELEM_NAME).item(0);
-        NodeList seSUs = sus.getElementsByTagName(
-                CasaConstants.CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
-        
-        // Remove deleted service units from casa
-        for (String artifactName : removedList) {
-            for (int i = 0; i < seSUs.getLength(); i++) {
-                Element seSU = (Element) seSUs.item(i);
-                if (seSU.getAttribute(CasaConstants.CASA_ARTIFACTS_ZIP_ATTR_NAME).
-                        equals(artifactName)) {
-                    sus.removeChild(seSU);
-                    break;
-                }
-            }
-        }
-        
-        // Add new service units to casa
-        if (addedList.size() > 0) {
-            
-            List<String> newTargetIDs =
-                    (List) properties.get(JBI_CONTENT_COMPONENT).getValue();
-            
-            for (String artifactName : addedList) {
-                boolean found = false;
-                for (int i = 0; i < seSUs.getLength(); i++) {
-                    Element seSU = (Element) seSUs.item(i);
-                    if (seSU.getAttribute(CasaConstants.CASA_ARTIFACTS_ZIP_ATTR_NAME).
-                            equals(artifactName)) {
-                        found = true;
-                        break;
-                    }
-                }
-                
-                if (!found) {
-                    String targetCompID = "unknown"; // NOI18N
-                    for (int j = 0; j < newContentList.size(); j++) {
-                        if (newContentList.get(j).toString().equals(artifactName)) {
-                            targetCompID = newTargetIDs.get(j);
-                            break;
-                        }
-                    }
-                    Element seSU = casaDocument.createElement(
-                            CasaConstants.CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
-                    String compProjName = artifactName.substring(0, artifactName.length() - 4);
-                    seSU.setAttribute(CasaConstants.CASA_X_ATTR_NAME, "-1"); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_Y_ATTR_NAME, "-1"); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_INTERNAL_ATTR_NAME, "true"); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_DEFINED_ATTR_NAME, "true"); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_UNKNOWN_ATTR_NAME, "false"); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_NAME_ATTR_NAME, compProjName); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_UNIT_NAME_ATTR_NAME, compProjName); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_COMPONENT_NAME_ATTR_NAME, targetCompID); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_DESCRIPTION_ATTR_NAME, "some description"); // NOI18N
-                    seSU.setAttribute(CasaConstants.CASA_ARTIFACTS_ZIP_ATTR_NAME, artifactName);
-                    
-                    sus.appendChild(seSU);
-                }
-            }
-        }
-        
-        XmlUtil.writeToFile(fileLoc, casaDocument);
-        casaFO.refresh();
+        CasaHelper.updateCasaWithJBIModules(project, this);
     }
+    
     
     private void setPlatform(boolean isDefault) {
         Element pcd = antProjectHelper.getPrimaryConfigurationData(true);
@@ -1019,7 +919,7 @@ public class JbiProjectProperties {
         Set<VisualClassPathItem> newArtifacts = new HashSet<VisualClassPathItem>();
         
         for (int i = 0; i < allPaths.length; i++) {
-            PropertyInfo pi = (PropertyInfo) properties.get(allPaths[i]);
+            PropertyInfo pi = properties.get(allPaths[i]);
             
             // Get original artifacts
             List<VisualClassPathItem> oldList = (List) pi.getOldValue();
@@ -1195,8 +1095,6 @@ public class JbiProjectProperties {
             jbiFileLoc = path + "/" + "AssemblyInformation.xml"; // NOI18N
         }
         
-        JbiProject jbiProject = (JbiProject) project;
-        
         try {
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document document = builder.newDocument();
@@ -1212,8 +1110,8 @@ public class JbiProjectProperties {
             
             Element identificationElement = generateIdentificationElement(
                     document, 
-                    JbiProjectHelper.getJbiProjectName(jbiProject),
-                    JbiProjectHelper.getServiceAssemblyDescription(jbiProject));
+                    JbiProjectHelper.getJbiProjectName(project),
+                    JbiProjectHelper.getServiceAssemblyDescription(project));
             saElement.appendChild(identificationElement);
             
             // for each SE jar..
@@ -1230,7 +1128,7 @@ public class JbiProjectProperties {
                 String targetID = targetIDs.get(i);
                 assert (vi != null) && (targetID != null);                
                 Element sesuElement = generateServiceUnitElement(
-                        jbiProject, document, vi, targetID, true);
+                        project, document, vi, targetID, true);
                 saElement.appendChild(sesuElement);
             }
             
@@ -1240,7 +1138,7 @@ public class JbiProjectProperties {
                 String targetID = vi.getAsaTarget();                
                 if (vi != null && targetID != null && vi.isInDeployment()) {
                     Element bcsuElement = generateServiceUnitElement(
-                            jbiProject, document, vi, targetID, false);
+                            project, document, vi, targetID, false);
                     saElement.appendChild(bcsuElement);
                 }
             }
@@ -1674,7 +1572,7 @@ public class JbiProjectProperties {
             JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
             
             for (int i = 0; i < platforms.length; i++) {
-                String normalizedName = (String) platforms[i].getProperties().get(
+                String normalizedName = platforms[i].getProperties().get(
                         "platform.ant.name" // NOI18N
                         );
                 
@@ -1705,7 +1603,7 @@ public class JbiProjectProperties {
             if (platforms.length == 0) {
                 return null;
             } else {
-                return (String) platforms[0].getProperties().get("platform.ant.name"); //NOI18N
+                return platforms[0].getProperties().get("platform.ant.name"); //NOI18N
             }
         }
     }
@@ -1869,7 +1767,7 @@ public class JbiProjectProperties {
                 String library_tag_value = ""; // NOI18N
                 
                 switch (vcpi.getType()) {
-                    case VisualClassPathItem.TYPE_JAR:
+                                        case VisualClassPathItem.TYPE_JAR:
                         
                         String raw = vcpi.getRaw();
                         
@@ -1897,7 +1795,7 @@ public class JbiProjectProperties {
                         AntArtifact aa = (AntArtifact) vcpi.getObject();
                         // String reference = refHelper.addReference( aa, null );
                         String reference = aa == null ? vcpi.getRaw() : // prevent NPE thrown from older projects
-                            (String) refHelper.addReference(aa, aa.getArtifactLocations()[0]);
+                            refHelper.addReference(aa, aa.getArtifactLocations()[0]);
                         library_tag_value = reference;
                         
                         break;
