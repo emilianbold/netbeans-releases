@@ -203,8 +203,11 @@ public class CompletionProviderImpl implements CompletionProvider {
             doc = component.getDocument ();
             fileObject = NbEditorUtilities.getFileObject (doc);
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
-            if (doc instanceof NbEditorDocument)
+            boolean locked = false;
+            if (doc instanceof NbEditorDocument) {
                 ((NbEditorDocument) doc).readLock ();
+                locked = true;
+            }
             try {
                 int offset = component.getCaret ().getDot ();
                 TokenSequence tokenSequence = getInnerTokenSequence (
@@ -224,10 +227,15 @@ public class CompletionProviderImpl implements CompletionProvider {
                 }
                 addParserTags (resultSet, language);
             } catch (LanguageDefinitionNotFoundException ex) {
+                if (doc instanceof NbEditorDocument) {
+                    ((NbEditorDocument) doc).readUnlock ();
+                    locked = false;
+                }
                 resultSet.finish ();
             } finally {
-                if (doc instanceof NbEditorDocument)
+                if (doc instanceof NbEditorDocument && locked) {
                     ((NbEditorDocument) doc).readUnlock ();
+                }
             }
         }
     
