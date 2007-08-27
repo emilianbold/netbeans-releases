@@ -21,8 +21,8 @@
                 <package>com.sun.rowset</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/rowset.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/rowset.jar</binary-origin>
+                <runtime-relative-path>ext/rowset-1.0.1.jar</runtime-relative-path>
+                <binary-origin>external/rowset-1.0.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

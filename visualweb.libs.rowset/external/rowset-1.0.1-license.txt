@@ -1,0 +1,4 @@
+Name: Rowset
+Version: ?
+License: ?
+Files: rowset-1.0.1.jar
