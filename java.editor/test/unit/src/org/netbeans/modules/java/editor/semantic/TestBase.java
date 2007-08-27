@@ -56,6 +56,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
 
 /**
@@ -97,7 +98,7 @@ public abstract class TestBase extends NbTestCase {
     }
     
     protected void performTest(String fileName, final Performer performer, boolean doCompileRecursively) throws Exception {
-        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
+        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[] {new MIMEResolverImpl()});
         
 	FileObject scratch = SourceUtilsTestUtil.makeScratchDir(this);
 	FileObject cache   = scratch.createFolder("cache");
@@ -254,5 +255,16 @@ public abstract class TestBase extends NbTestCase {
                                  Set<Token> removedTokens) {
             highlights.addAll(toHighlights(doc, colorings));
         }
-}
+    }
+    
+    static class MIMEResolverImpl extends MIMEResolver {
+        public String findMIMEType(FileObject fo) {
+            if ("java".equals(fo.getExt())) {
+                return "text/x-java";
+            } else {
+                return null;
+            }
+        }
+    }
+    
 }

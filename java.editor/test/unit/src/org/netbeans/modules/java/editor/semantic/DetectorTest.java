@@ -347,7 +347,7 @@ public class DetectorTest extends TestBase {
     }
     
     protected void performRemoveUnusedImportTest(String fileName, int errorCount, int fixesCount, int errorToFix, int fixToPerform) throws Exception {
-        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
+        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[] {new MIMEResolverImpl()});
         
 	FileObject scratch = SourceUtilsTestUtil.makeScratchDir(this);
 	FileObject cache   = scratch.createFolder("cache");
