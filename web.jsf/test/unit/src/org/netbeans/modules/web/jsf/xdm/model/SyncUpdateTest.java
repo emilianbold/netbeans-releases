@@ -3,6 +3,7 @@ package org.netbeans.modules.web.jsf.xdm.model;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Hashtable;
 import java.util.List;
 import javax.swing.text.Document;
 import junit.framework.*;
@@ -11,6 +12,8 @@ import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
+import org.netbeans.modules.xml.xam.ComponentEvent;
+import org.netbeans.modules.xml.xam.ComponentListener;
 import org.openide.util.Exceptions;
 
 public class SyncUpdateTest extends NbTestCase {
@@ -24,6 +27,9 @@ public class SyncUpdateTest extends NbTestCase {
     
     protected void tearDown() throws Exception {
     }
+    
+    // for collecting and testing events
+    Hashtable <String, PropertyChangeEvent> events = new Hashtable<String, PropertyChangeEvent>();
     
     public void testSyncRuleElement() throws Exception {
         
@@ -85,8 +91,9 @@ public class SyncUpdateTest extends NbTestCase {
         JSFConfigModel model = Util.loadRegistryModel("faces-config-03.xml");
         
          model.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent arg0) {
-                propertyChangeCalled = true;
+            public void propertyChange(PropertyChangeEvent event) {
+                events.put(event.getPropertyName(), event);
+                System.out.format("Event (RemoveRule):  property name: %s, old value: %s, new value %s%n", event.getPropertyName(), event.getOldValue(), event.getNewValue());
             }
         });       
 
@@ -97,31 +104,55 @@ public class SyncUpdateTest extends NbTestCase {
             assertTrue(false);
         }
         
-        assertTrue(propertyChangeCalled);
+        assertNotNull(events.get(FacesConfig.NAVIGATION_RULE));
     }
     
     public void testSyncRemoveCase_99325() throws Exception {
         
-        propertyChangeCalled = false;
+        events.clear();
         
         /* Load a file that has a simple rule*/
         JSFConfigModel model = Util.loadRegistryModel("faces-config-99325.xml");
         
+         model.addComponentListener(new ComponentListener () {
+
+            public void valueChanged(ComponentEvent event) {
+                System.out.println(event.toString());
+                if (event.getSource() instanceof NavigationCase) {
+                    NavigationCase ncase = (NavigationCase) event.getSource();
+                    if (ncase.getToViewId().equals("RealPage5.jsp") 
+                            && ncase.getFromOutcome() == null) {
+                        events.put(NavigationCase.FROM_OUTCOME, new PropertyChangeEvent(ncase, NavigationCase.FROM_OUTCOME, null, null));
+                    }
+                }
+            }
+
+            public void childrenAdded(ComponentEvent event) {
+            }
+
+            public void childrenDeleted(ComponentEvent event) {
+            }
+         });
+         
          model.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent arg0) {
-                propertyChangeCalled = true;
-                System.out.println("event prisla : " + arg0);
+            public void propertyChange(PropertyChangeEvent event) {
+                System.out.format("Event (99325):  property name: %s, old value: %s, new value %s%n", event.getPropertyName(), event.getOldValue(), event.getNewValue());
+                events.put(event.getPropertyName(), event);
             }
         });       
 
         try {
+            Util.setDocumentContentTo(model,"faces-config-99325-middle.xml");
+            Util.setDocumentContentTo(model,"faces-config-99325-middle2.xml");
             Util.setDocumentContentTo(model,"faces-config-99325-end.xml");
         } catch (IOException ioe ){
             ioe.printStackTrace();
             assertTrue(false);
         }
         
-        assertTrue(propertyChangeCalled);
+        assertNotNull(events.get(NavigationCase.FROM_OUTCOME));
+        assertNotNull(events.get(NavigationRule.NAVIGATION_CASE));
+        assertNotNull(events.get(FacesConfig.NAVIGATION_RULE));
     }
     
     public void testSynceRenamePageInMode_l100321() throws Exception {

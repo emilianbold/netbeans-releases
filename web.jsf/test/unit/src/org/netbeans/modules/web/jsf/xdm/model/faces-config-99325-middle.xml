@@ -8,5 +8,10 @@
 <!-- =========== FULL CONFIGURATION FILE ================================== -->
 
 <faces-config>
-    
+    <navigation-rule>
+        <from-view-id>RealPage3.jsp</from-view-id>
+        <navigation-case>
+            <to-view-id>RealPage5.jsp</to-view-id>
+        </navigation-case>
+    </navigation-rule>
 </faces-config>
