@@ -12,42 +12,42 @@ Includes:
     <no includes>
 Macros:
 #define '__P[x]' [1:1/0-1:17/16]
-FUNCTION get_unit [2:1/17-2:65/81] FunctionImpl
+FUNCTION get_unit [2:1/17-2:65/81] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE get_unit(char*,int,ipf_stack_t*)
     UNIQUE NAME F:get_unit(char*,int,ipf_stack_t*)
     PARAMETERS:
-         [2:31/47-2:64/80] type: *char TEXT=char*  [2:31/47-2:35/51] init: null
-         [2:31/47-2:34/50] type: int TEXT=int  [2:31/47-2:34/50] init: null
-         [2:31/47-2:64/80] type: *$unresolved$::ipf_stack_t TEXT=ipf_stack_t*  [2:31/47-2:64/80] init: null
+         [2:31/47-2:64/80]  TYPE: *char TEXT=char*  [2:31/47-2:35/51]  INIT: null  SCOPE: null
+         [2:31/47-2:34/50]  TYPE: int TEXT=int  [2:31/47-2:34/50]  INIT: null  SCOPE: null
+         [2:31/47-2:64/80]  TYPE: *$unresolved$::ipf_stack_t TEXT=ipf_stack_t*  [2:31/47-2:64/80]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [1:1/0-1:1/0]
-FUNCTION get_variable [3:1/82-3:55/136] FunctionImpl
+FUNCTION get_variable [3:1/82-3:55/136] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE get_variable(char*,char**,int)
     UNIQUE NAME F:get_variable(char*,char**,int)
     PARAMETERS:
-         [3:27/108-3:54/135] type: *char TEXT=char*  [3:27/108-3:31/112] init: null
-         [3:27/108-3:54/135] type: **char TEXT=char**  [3:27/108-3:31/112] init: null
-         [3:27/108-3:30/111] type: int TEXT=int  [3:27/108-3:30/111] init: null
+         [3:27/108-3:54/135]  TYPE: *char TEXT=char*  [3:27/108-3:31/112]  INIT: null  SCOPE: null
+         [3:27/108-3:54/135]  TYPE: **char TEXT=char**  [3:27/108-3:31/112]  INIT: null  SCOPE: null
+         [3:27/108-3:30/111]  TYPE: int TEXT=int  [3:27/108-3:30/111]  INIT: null  SCOPE: null
     RETURNS *char TEXT=char*  [3:1/82-3:14/95]
 
 ========== Dumping model of PROJECT DummyProject
-FUNCTION get_unit [2:1/17-2:65/81] FunctionImpl
+FUNCTION get_unit [2:1/17-2:65/81] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE get_unit(char*,int,ipf_stack_t*)
     UNIQUE NAME F:get_unit(char*,int,ipf_stack_t*)
     PARAMETERS:
-         [2:31/47-2:64/80] type: *char TEXT=char*  [2:31/47-2:35/51] init: null
-         [2:31/47-2:34/50] type: int TEXT=int  [2:31/47-2:34/50] init: null
-         [2:31/47-2:64/80] type: *$unresolved$::ipf_stack_t TEXT=ipf_stack_t*  [2:31/47-2:64/80] init: null
+         [2:31/47-2:64/80]  TYPE: *char TEXT=char*  [2:31/47-2:35/51]  INIT: null  SCOPE: null
+         [2:31/47-2:34/50]  TYPE: int TEXT=int  [2:31/47-2:34/50]  INIT: null  SCOPE: null
+         [2:31/47-2:64/80]  TYPE: *$unresolved$::ipf_stack_t TEXT=ipf_stack_t*  [2:31/47-2:64/80]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [1:1/0-1:1/0]
-FUNCTION get_variable [3:1/82-3:55/136] FunctionImpl
+FUNCTION get_variable [3:1/82-3:55/136] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE get_variable(char*,char**,int)
     UNIQUE NAME F:get_variable(char*,char**,int)
     PARAMETERS:
-         [3:27/108-3:54/135] type: *char TEXT=char*  [3:27/108-3:31/112] init: null
-         [3:27/108-3:54/135] type: **char TEXT=char**  [3:27/108-3:31/112] init: null
-         [3:27/108-3:30/111] type: int TEXT=int  [3:27/108-3:30/111] init: null
+         [3:27/108-3:54/135]  TYPE: *char TEXT=char*  [3:27/108-3:31/112]  INIT: null  SCOPE: null
+         [3:27/108-3:54/135]  TYPE: **char TEXT=char**  [3:27/108-3:31/112]  INIT: null  SCOPE: null
+         [3:27/108-3:30/111]  TYPE: int TEXT=int  [3:27/108-3:30/111]  INIT: null  SCOPE: null
     RETURNS *char TEXT=char*  [3:1/82-3:14/95]
 

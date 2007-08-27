@@ -11,51 +11,51 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS B (B ) [2:1/1-6:3/47] lcurly=13
+CLASS B (B ) [2:1/1-6:3/47] lcurly=13 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=A VISIBILITY==private virtual==false text='A'
     MEMBERS:
-        CLASS D (B::D ) [3:5/19-5:7/44] lcurly=27
+        CLASS D (B::D ) [3:5/19-5:7/44] lcurly=27 SCOPE: B 
             BASE CLASSES:
             MEMBERS:
-NAMESPACE DEFINITOIN N [8:1/49-12:2/90]
-    CLASS A (N::A ) [9:5/67-11:7/88] lcurly=79
+NAMESPACE DEFINITOIN N [8:1/49-12:2/90] SCOPE: infinite1.cc
+    CLASS A (N::A ) [9:5/67-11:7/88] lcurly=79 SCOPE: N 
         BASE CLASSES:
             CLASS=B VISIBILITY==private virtual==false text='B'
         MEMBERS:
-CLASS A (A ) [14:1/92-16:3/124] lcurly=104
+CLASS A (A ) [14:1/92-16:3/124] lcurly=104 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=B VISIBILITY==private virtual==false text='B'
     MEMBERS:
-        FUNCTION foo [15:5/110-15:16/121] MethodImpl
+        FUNCTION foo [15:5/110-15:16/121] MethodImpl SCOPE: A 
             DEFINITION: foo  [18:1/126-20:2/152]
             SIGNATURE foo()
             UNIQUE NAME F:A::foo()
             PARAMETERS:
             RETURNS void TEXT=void  [15:5/110-15:9/114]
-FUNCTION DEFINITION foo  [18:1/126-20:2/152] FunctionDefinitionImpl
+FUNCTION DEFINITION foo  [18:1/126-20:2/152] FunctionDefinitionImpl SCOPE: infinite1.cc
     SIGNATURE foo()
     UNIQUE NAME f:A::foo()
     DECLARATION: foo  [15:5/110-15:16/121]
     PARAMETERS:
     RETURNS void TEXT=void  [18:1/126-18:5/130]
-    STATEMENT Compound  [18:15/140-20:2/152]
-        STATEMENT Declaration  [19:5/146-19:9/150]
-            VARIABLE a [19:5/146-19:9/150] type: $unresolved$::C TEXT=C  [19:5/146-19:6/147] init: null
+    STATEMENT Compound  [18:15/140-20:2/152] SCOPE: null
+        STATEMENT Declaration  [19:5/146-19:9/150] SCOPE: null
+            VARIABLE a [19:5/146-19:9/150]  TYPE: $unresolved$::C TEXT=C  [19:5/146-19:6/147]  INIT: null  SCOPE: null
 
 ========== Dumping model of PROJECT DummyProject
-CLASS B (B ) [2:1/1-6:3/47] lcurly=13
+CLASS B (B ) [2:1/1-6:3/47] lcurly=13 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=A VISIBILITY==private virtual==false text='A'
     MEMBERS:
-        CLASS D (B::D ) [3:5/19-5:7/44] lcurly=27
+        CLASS D (B::D ) [3:5/19-5:7/44] lcurly=27 SCOPE: B 
             BASE CLASSES:
             MEMBERS:
-CLASS A (A ) [14:1/92-16:3/124] lcurly=104
+CLASS A (A ) [14:1/92-16:3/124] lcurly=104 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=B VISIBILITY==private virtual==false text='B'
     MEMBERS:
-        FUNCTION foo [15:5/110-15:16/121] MethodImpl
+        FUNCTION foo [15:5/110-15:16/121] MethodImpl SCOPE: A 
             DEFINITION: foo  [18:1/126-20:2/152]
             SIGNATURE foo()
             UNIQUE NAME F:A::foo()
@@ -64,7 +64,7 @@ CLASS A (A ) [14:1/92-16:3/124] lcurly=104
 NAMESPACE DEFINITIONS for N (N) 
     infinite1.cc  [8:1/49-12:2/90]
 NAMESPACE N (N) 
-    CLASS A (N::A ) [9:5/67-11:7/88] lcurly=79
+    CLASS A (N::A ) [9:5/67-11:7/88] lcurly=79 SCOPE: N 
         BASE CLASSES:
             CLASS=B VISIBILITY==private virtual==false text='B'
         MEMBERS:

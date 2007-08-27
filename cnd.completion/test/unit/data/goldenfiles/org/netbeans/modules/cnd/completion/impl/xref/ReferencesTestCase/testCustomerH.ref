@@ -36,15 +36,15 @@
 ==============================================================
 'initName', tokenID=identifier, offset=1016 [29:31/1016-29:39/1024]
 --OWNER:
-    VARIABLE initName [29:18/1003-29:39/1024] ReferencesTestCase/customer.h type: const $unresolved$::string TEXT=const string  [29:18/1003-29:30/1015] init: null
+    VARIABLE initName [29:18/1003-29:39/1024] ReferencesTestCase/customer.h  TYPE: const $unresolved$::string TEXT=const string  [29:18/1003-29:30/1015]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE initName [29:18/1003-29:39/1024] ReferencesTestCase/customer.h type: const $unresolved$::string TEXT=const string  [29:18/1003-29:30/1015] init: null
+    VARIABLE initName [29:18/1003-29:39/1024] ReferencesTestCase/customer.h  TYPE: const $unresolved$::string TEXT=const string  [29:18/1003-29:30/1015]  INIT: null  SCOPE: null
 ==============================================================
 'initDiscount', tokenID=identifier, offset=1030 [29:45/1030-29:57/1042]
 --OWNER:
-    VARIABLE initDiscount [29:41/1026-29:57/1042] ReferencesTestCase/customer.h type: int TEXT=int  [29:41/1026-29:44/1029] init: null
+    VARIABLE initDiscount [29:41/1026-29:57/1042] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [29:41/1026-29:44/1029]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE initDiscount [29:41/1026-29:57/1042] ReferencesTestCase/customer.h type: int TEXT=int  [29:41/1026-29:44/1029] init: null
+    VARIABLE initDiscount [29:41/1026-29:57/1042] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [29:41/1026-29:44/1029]  INIT: null  SCOPE: null
 ==============================================================
 'string', tokenID=identifier, offset=1053 [30:9/1053-30:15/1059]
 --OWNER:
@@ -72,15 +72,15 @@
 ==============================================================
 'name', tokenID=identifier, offset=1147 [34:16/1147-34:20/1151]
 --OWNER:
-    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h type: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146] init: null
+    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h  TYPE: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146]  INIT: null  SCOPE: Customer 
 --RESOLVED TO:
-    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h type: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146] init: null
+    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h  TYPE: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146]  INIT: null  SCOPE: Customer 
 ==============================================================
 'discount', tokenID=identifier, offset=1165 [35:13/1165-35:21/1173]
 --OWNER:
-    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h type: int TEXT=int  [35:9/1161-35:12/1164] init: null
+    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [35:9/1161-35:12/1164]  INIT: null  SCOPE: Customer 
 --RESOLVED TO:
-    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h type: int TEXT=int  [35:9/1161-35:12/1164] init: null
+    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [35:9/1161-35:12/1164]  INIT: null  SCOPE: Customer 
 ==============================================================
 'ostream', tokenID=identifier, offset=1191 [37:16/1191-37:23/1198]
 --OWNER:
@@ -96,7 +96,7 @@
 ==============================================================
 'Customer', tokenID=identifier, offset=1228 [37:53/1228-37:61/1236]
 --OWNER:
-    VARIABLE  [37:47/1222-37:62/1237] ReferencesTestCase/customer.h type: const &Customer TEXT=const Customer&  [37:47/1222-37:52/1227] init: null
+    VARIABLE  [37:47/1222-37:62/1237] ReferencesTestCase/customer.h  TYPE: const &Customer TEXT=const Customer&  [37:47/1222-37:52/1227]  INIT: null  SCOPE: null
 --RESOLVED TO:
     CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
 ==============================================================

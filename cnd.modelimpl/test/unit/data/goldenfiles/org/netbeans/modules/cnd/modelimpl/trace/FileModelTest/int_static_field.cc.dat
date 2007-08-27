@@ -11,20 +11,20 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS A (A ) [1:1/0-9:3/126] lcurly=8
+CLASS A (A ) [1:1/0-9:3/126] lcurly=8 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FIELD public static  int TEXT=int  [3:5/22-3:15/32] pub [3:5/22-3:20/37]
-        FIELD public static  *int TEXT=int*  [4:5/42-4:17/54] pub_p [4:5/42-4:24/61]
-        FIELD private static  int TEXT=int  [6:5/75-6:15/85] priv [6:5/75-6:21/91]
-        FIELD protected static  int TEXT=int  [8:5/107-8:15/117] prot [8:5/107-8:21/123]
+        FIELD public static pub [3:5/22-3:20/37]  TYPE: int TEXT=int  [3:5/22-3:15/32]  INIT: null  SCOPE: A 
+        FIELD public static pub_p [4:5/42-4:24/61]  TYPE: *int TEXT=int*  [4:5/42-4:17/54]  INIT: null  SCOPE: A 
+        FIELD private static priv [6:5/75-6:21/91]  TYPE: int TEXT=int  [6:5/75-6:15/85]  INIT: null  SCOPE: A 
+        FIELD protected static prot [8:5/107-8:21/123]  TYPE: int TEXT=int  [8:5/107-8:15/117]  INIT: null  SCOPE: A 
 
 ========== Dumping model of PROJECT DummyProject
-CLASS A (A ) [1:1/0-9:3/126] lcurly=8
+CLASS A (A ) [1:1/0-9:3/126] lcurly=8 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FIELD public static  int TEXT=int  [3:5/22-3:15/32] pub [3:5/22-3:20/37]
-        FIELD public static  *int TEXT=int*  [4:5/42-4:17/54] pub_p [4:5/42-4:24/61]
-        FIELD private static  int TEXT=int  [6:5/75-6:15/85] priv [6:5/75-6:21/91]
-        FIELD protected static  int TEXT=int  [8:5/107-8:15/117] prot [8:5/107-8:21/123]
+        FIELD public static pub [3:5/22-3:20/37]  TYPE: int TEXT=int  [3:5/22-3:15/32]  INIT: null  SCOPE: A 
+        FIELD public static pub_p [4:5/42-4:24/61]  TYPE: *int TEXT=int*  [4:5/42-4:17/54]  INIT: null  SCOPE: A 
+        FIELD private static priv [6:5/75-6:21/91]  TYPE: int TEXT=int  [6:5/75-6:15/85]  INIT: null  SCOPE: A 
+        FIELD protected static prot [8:5/107-8:21/123]  TYPE: int TEXT=int  [8:5/107-8:15/117]  INIT: null  SCOPE: A 
 

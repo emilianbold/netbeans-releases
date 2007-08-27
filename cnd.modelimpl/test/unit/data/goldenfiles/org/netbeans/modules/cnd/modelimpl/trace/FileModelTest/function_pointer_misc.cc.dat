@@ -11,216 +11,216 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-ENUM op_type [1:1/0-1:36/35]
+ENUM op_type [1:1/0-1:36/35] SCOPE: $Global$ 
     ADD
     SUB
     MUL
     DIV
-FUNCTION DEFINITION add  [3:1/38-3:40/77] FunctionDDImpl
+FUNCTION DEFINITION add  [3:1/38-3:40/77] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE add(int,int)
     UNIQUE NAME f:add(int,int)
     DECLARATION: add  [3:1/38-3:40/77]
     PARAMETERS:
-        a [3:9/46-3:14/51] type: int TEXT=int  [3:9/46-3:12/49] init: null
-        b [3:16/53-3:21/58] type: int TEXT=int  [3:16/53-3:19/56] init: null
+        a [3:9/46-3:14/51]  TYPE: int TEXT=int  [3:9/46-3:12/49]  INIT: null  SCOPE: null
+        b [3:16/53-3:21/58]  TYPE: int TEXT=int  [3:16/53-3:19/56]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [3:1/38-3:4/41]
-    STATEMENT Compound  [3:23/60-3:40/77]
-        STATEMENT Return  [3:25/62-3:38/75] text: 'return a + b;'
-FUNCTION DEFINITION sub  [4:1/78-4:40/117] FunctionDDImpl
+    STATEMENT Compound  [3:23/60-3:40/77] SCOPE: null
+        STATEMENT Return  [3:25/62-3:38/75] SCOPE: null text: 'return a + b;'
+FUNCTION DEFINITION sub  [4:1/78-4:40/117] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE sub(int,int)
     UNIQUE NAME f:sub(int,int)
     DECLARATION: sub  [4:1/78-4:40/117]
     PARAMETERS:
-        a [4:9/86-4:14/91] type: int TEXT=int  [4:9/86-4:12/89] init: null
-        b [4:16/93-4:21/98] type: int TEXT=int  [4:16/93-4:19/96] init: null
+        a [4:9/86-4:14/91]  TYPE: int TEXT=int  [4:9/86-4:12/89]  INIT: null  SCOPE: null
+        b [4:16/93-4:21/98]  TYPE: int TEXT=int  [4:16/93-4:19/96]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [4:1/78-4:4/81]
-    STATEMENT Compound  [4:23/100-4:40/117]
-        STATEMENT Return  [4:25/102-4:38/115] text: 'return a - b;'
-FUNCTION DEFINITION mul  [5:1/118-5:40/157] FunctionDDImpl
+    STATEMENT Compound  [4:23/100-4:40/117] SCOPE: null
+        STATEMENT Return  [4:25/102-4:38/115] SCOPE: null text: 'return a - b;'
+FUNCTION DEFINITION mul  [5:1/118-5:40/157] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE mul(int,int)
     UNIQUE NAME f:mul(int,int)
     DECLARATION: mul  [5:1/118-5:40/157]
     PARAMETERS:
-        a [5:9/126-5:14/131] type: int TEXT=int  [5:9/126-5:12/129] init: null
-        b [5:16/133-5:21/138] type: int TEXT=int  [5:16/133-5:19/136] init: null
+        a [5:9/126-5:14/131]  TYPE: int TEXT=int  [5:9/126-5:12/129]  INIT: null  SCOPE: null
+        b [5:16/133-5:21/138]  TYPE: int TEXT=int  [5:16/133-5:19/136]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [5:1/118-5:4/121]
-    STATEMENT Compound  [5:23/140-5:40/157]
-        STATEMENT Return  [5:25/142-5:38/155] text: 'return a * b;'
-FUNCTION DEFINITION div  [6:1/158-6:40/197] FunctionDDImpl
+    STATEMENT Compound  [5:23/140-5:40/157] SCOPE: null
+        STATEMENT Return  [5:25/142-5:38/155] SCOPE: null text: 'return a * b;'
+FUNCTION DEFINITION div  [6:1/158-6:40/197] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE div(int,int)
     UNIQUE NAME f:div(int,int)
     DECLARATION: div  [6:1/158-6:40/197]
     PARAMETERS:
-        a [6:9/166-6:14/171] type: int TEXT=int  [6:9/166-6:12/169] init: null
-        b [6:16/173-6:21/178] type: int TEXT=int  [6:16/173-6:19/176] init: null
+        a [6:9/166-6:14/171]  TYPE: int TEXT=int  [6:9/166-6:12/169]  INIT: null  SCOPE: null
+        b [6:16/173-6:21/178]  TYPE: int TEXT=int  [6:16/173-6:19/176]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [6:1/158-6:4/161]
-    STATEMENT Compound  [6:23/180-6:40/197]
-        STATEMENT Return  [6:25/182-6:38/195] text: 'return a + b;'
-TYPEDEF OP  [8:1/199-8:29/227] TYPE: *int TEXT=int*(*)(int,int)  [8:9/207-8:15/213]
-VARIABLE curr_op [10:1/229-10:31/259] type: int TEXT=int(*)(int,int)  [10:1/229-10:7/235] init: text='add'
-FUNCTION call_op [12:1/261-12:48/308] FunctionImpl
+    STATEMENT Compound  [6:23/180-6:40/197] SCOPE: null
+        STATEMENT Return  [6:25/182-6:38/195] SCOPE: null text: 'return a + b;'
+TYPEDEF OP  [8:1/199-8:29/227] TYPE: *int TEXT=int*(*)(int,int)  [8:9/207-8:15/213] SCOPE: $Global$ 
+VARIABLE curr_op [10:1/229-10:31/259]  TYPE: int TEXT=int(*)(int,int)  [10:1/229-10:7/235]  INIT: text='add'  SCOPE: $Global$ 
+FUNCTION call_op [12:1/261-12:48/308] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE call_op(int(*)(int,int),int,int)
     UNIQUE NAME F:call_op(int(*)(int,int),int,int)
     PARAMETERS:
-        op [12:13/273-12:32/292] type: int TEXT=int(*)(int,int)  [12:13/273-12:19/279] init: null
-        a [12:34/294-12:39/299] type: int TEXT=int  [12:34/294-12:37/297] init: null
-        b [12:41/301-12:46/306] type: int TEXT=int  [12:41/301-12:44/304] init: null
+        op [12:13/273-12:32/292]  TYPE: int TEXT=int(*)(int,int)  [12:13/273-12:19/279]  INIT: null  SCOPE: null
+        a [12:34/294-12:39/299]  TYPE: int TEXT=int  [12:34/294-12:37/297]  INIT: null  SCOPE: null
+        b [12:41/301-12:46/306]  TYPE: int TEXT=int  [12:41/301-12:44/304]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [12:1/261-12:4/264]
-VARIABLE all_ops [14:1/310-14:40/349] type: OP[] TEXT=OP[]  [14:1/310-14:3/312] init: text='{'
-VARIABLE all_ops_2 [16:1/351-16:56/406] type: int[] TEXT=int[](*)(int,int)  [16:1/351-16:4/354] init: text='{'
-FUNCTION f0 [19:1/409-19:18/426] FunctionImpl
+VARIABLE all_ops [14:1/310-14:40/349]  TYPE: OP[] TEXT=OP[]  [14:1/310-14:3/312]  INIT: text='{'  SCOPE: $Global$ 
+VARIABLE all_ops_2 [16:1/351-16:56/406]  TYPE: int[] TEXT=int[](*)(int,int)  [16:1/351-16:4/354]  INIT: text='{'  SCOPE: $Global$ 
+FUNCTION f0 [19:1/409-19:18/426] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f0(int,int)
     UNIQUE NAME F:f0(int,int)
     PARAMETERS:
-         [19:8/416-19:11/419] type: int TEXT=int  [19:8/416-19:11/419] init: null
-         [19:13/421-19:16/424] type: int TEXT=int  [19:13/421-19:16/424] init: null
+         [19:8/416-19:11/419]  TYPE: int TEXT=int  [19:8/416-19:11/419]  INIT: null  SCOPE: null
+         [19:13/421-19:16/424]  TYPE: int TEXT=int  [19:13/421-19:16/424]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [19:1/409-19:4/412]
-FUNCTION f1 [20:1/427-20:19/445] FunctionImpl
+FUNCTION f1 [20:1/427-20:19/445] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f1(int,int)
     UNIQUE NAME F:f1(int,int)
     PARAMETERS:
-         [20:9/435-20:12/438] type: int TEXT=int  [20:9/435-20:12/438] init: null
-         [20:14/440-20:17/443] type: int TEXT=int  [20:14/440-20:17/443] init: null
+         [20:9/435-20:12/438]  TYPE: int TEXT=int  [20:9/435-20:12/438]  INIT: null  SCOPE: null
+         [20:14/440-20:17/443]  TYPE: int TEXT=int  [20:14/440-20:17/443]  INIT: null  SCOPE: null
     RETURNS *int TEXT=int*  [20:1/427-20:5/431]
-FUNCTION f2 [21:1/446-21:20/465] FunctionImpl
+FUNCTION f2 [21:1/446-21:20/465] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f2(int,int)
     UNIQUE NAME F:f2(int,int)
     PARAMETERS:
-         [21:10/455-21:13/458] type: int TEXT=int  [21:10/455-21:13/458] init: null
-         [21:15/460-21:18/463] type: int TEXT=int  [21:15/460-21:18/463] init: null
+         [21:10/455-21:13/458]  TYPE: int TEXT=int  [21:10/455-21:13/458]  INIT: null  SCOPE: null
+         [21:15/460-21:18/463]  TYPE: int TEXT=int  [21:15/460-21:18/463]  INIT: null  SCOPE: null
     RETURNS **int TEXT=int**  [21:1/446-21:6/451]
-FUNCTION f3 [22:1/466-22:21/486] FunctionImpl
+FUNCTION f3 [22:1/466-22:21/486] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f3(int,int)
     UNIQUE NAME F:f3(int,int)
     PARAMETERS:
-         [22:11/476-22:14/479] type: int TEXT=int  [22:11/476-22:14/479] init: null
-         [22:16/481-22:19/484] type: int TEXT=int  [22:16/481-22:19/484] init: null
+         [22:11/476-22:14/479]  TYPE: int TEXT=int  [22:11/476-22:14/479]  INIT: null  SCOPE: null
+         [22:16/481-22:19/484]  TYPE: int TEXT=int  [22:16/481-22:19/484]  INIT: null  SCOPE: null
     RETURNS ***int TEXT=int***  [22:1/466-22:7/472]
-VARIABLE ret_int_ptr_0 [24:1/488-24:36/523] type: int TEXT=int(*)(int,int)  [24:1/488-24:7/494] init: text='f0'
-VARIABLE ret_int_ptr_1 [25:1/524-25:37/560] type: *int TEXT=int*(*)(int,int)  [25:1/524-25:8/531] init: text='f1'
-VARIABLE ret_int_ptr_2 [26:1/561-26:38/598] type: **int TEXT=int**(*)(int,int)  [26:1/561-26:9/569] init: text='f2'
-VARIABLE ret_int_ptr_3 [27:1/599-27:39/637] type: ***int TEXT=int***(*)(int,int)  [27:1/599-27:10/608] init: text='f3'
-VARIABLE ret_int_ptr_0_p [29:1/639-29:51/689] type: int TEXT=int(**)(int,int)  [29:1/639-29:8/646] init: text='&'
-VARIABLE ret_int_ptr_1_p [30:1/690-30:52/741] type: *int TEXT=int*(**)(int,int)  [30:1/690-30:9/698] init: text='&'
-VARIABLE ret_int_ptr_2_p [31:1/742-31:53/794] type: **int TEXT=int**(**)(int,int)  [31:1/742-31:10/751] init: text='&'
-VARIABLE ret_int_ptr_3_p [32:1/795-32:54/848] type: ***int TEXT=int***(**)(int,int)  [32:1/795-32:11/805] init: text='&'
-VARIABLE ret_int_ptr_0_pp [34:1/850-34:55/904] type: int TEXT=int(***)(int,int)  [34:1/850-34:9/858] init: text='&'
-VARIABLE ret_int_ptr_1_pp [35:1/905-35:56/960] type: *int TEXT=int*(***)(int,int)  [35:1/905-35:10/914] init: text='&'
-VARIABLE ret_int_ptr_2_pp [36:1/961-36:57/1017] type: **int TEXT=int**(***)(int,int)  [36:1/961-36:11/971] init: text='&'
-VARIABLE ret_int_ptr_3_pp [37:1/1018-37:58/1075] type: ***int TEXT=int***(***)(int,int)  [37:1/1018-37:12/1029] init: text='&'
-VARIABLE p_foo_1 [39:1/1077-39:18/1094] type: int TEXT=int(*)()  [39:1/1077-39:7/1083] init: null
-VARIABLE p_foo_2 [40:1/1095-40:19/1113] type: int TEXT=int(**)()  [40:1/1095-40:8/1102] init: null
-VARIABLE p_foo_3 [41:1/1114-41:20/1133] type: int TEXT=int(***)()  [41:1/1114-41:9/1122] init: null
+VARIABLE ret_int_ptr_0 [24:1/488-24:36/523]  TYPE: int TEXT=int(*)(int,int)  [24:1/488-24:7/494]  INIT: text='f0'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_1 [25:1/524-25:37/560]  TYPE: *int TEXT=int*(*)(int,int)  [25:1/524-25:8/531]  INIT: text='f1'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_2 [26:1/561-26:38/598]  TYPE: **int TEXT=int**(*)(int,int)  [26:1/561-26:9/569]  INIT: text='f2'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_3 [27:1/599-27:39/637]  TYPE: ***int TEXT=int***(*)(int,int)  [27:1/599-27:10/608]  INIT: text='f3'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_0_p [29:1/639-29:51/689]  TYPE: int TEXT=int(**)(int,int)  [29:1/639-29:8/646]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_1_p [30:1/690-30:52/741]  TYPE: *int TEXT=int*(**)(int,int)  [30:1/690-30:9/698]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_2_p [31:1/742-31:53/794]  TYPE: **int TEXT=int**(**)(int,int)  [31:1/742-31:10/751]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_3_p [32:1/795-32:54/848]  TYPE: ***int TEXT=int***(**)(int,int)  [32:1/795-32:11/805]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_0_pp [34:1/850-34:55/904]  TYPE: int TEXT=int(***)(int,int)  [34:1/850-34:9/858]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_1_pp [35:1/905-35:56/960]  TYPE: *int TEXT=int*(***)(int,int)  [35:1/905-35:10/914]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_2_pp [36:1/961-36:57/1017]  TYPE: **int TEXT=int**(***)(int,int)  [36:1/961-36:11/971]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_3_pp [37:1/1018-37:58/1075]  TYPE: ***int TEXT=int***(***)(int,int)  [37:1/1018-37:12/1029]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE p_foo_1 [39:1/1077-39:18/1094]  TYPE: int TEXT=int(*)()  [39:1/1077-39:7/1083]  INIT: null  SCOPE: $Global$ 
+VARIABLE p_foo_2 [40:1/1095-40:19/1113]  TYPE: int TEXT=int(**)()  [40:1/1095-40:8/1102]  INIT: null  SCOPE: $Global$ 
+VARIABLE p_foo_3 [41:1/1114-41:20/1133]  TYPE: int TEXT=int(***)()  [41:1/1114-41:9/1122]  INIT: null  SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
-ENUM op_type [1:1/0-1:36/35]
+ENUM op_type [1:1/0-1:36/35] SCOPE: $Global$ 
     ADD
     SUB
     MUL
     DIV
-FUNCTION DEFINITION add  [3:1/38-3:40/77] FunctionDDImpl
+FUNCTION DEFINITION add  [3:1/38-3:40/77] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE add(int,int)
     UNIQUE NAME f:add(int,int)
     DECLARATION: add  [3:1/38-3:40/77]
     PARAMETERS:
-        a [3:9/46-3:14/51] type: int TEXT=int  [3:9/46-3:12/49] init: null
-        b [3:16/53-3:21/58] type: int TEXT=int  [3:16/53-3:19/56] init: null
+        a [3:9/46-3:14/51]  TYPE: int TEXT=int  [3:9/46-3:12/49]  INIT: null  SCOPE: null
+        b [3:16/53-3:21/58]  TYPE: int TEXT=int  [3:16/53-3:19/56]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [3:1/38-3:4/41]
-    STATEMENT Compound  [3:23/60-3:40/77]
-        STATEMENT Return  [3:25/62-3:38/75] text: 'return a + b;'
-FUNCTION DEFINITION sub  [4:1/78-4:40/117] FunctionDDImpl
+    STATEMENT Compound  [3:23/60-3:40/77] SCOPE: null
+        STATEMENT Return  [3:25/62-3:38/75] SCOPE: null text: 'return a + b;'
+FUNCTION DEFINITION sub  [4:1/78-4:40/117] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE sub(int,int)
     UNIQUE NAME f:sub(int,int)
     DECLARATION: sub  [4:1/78-4:40/117]
     PARAMETERS:
-        a [4:9/86-4:14/91] type: int TEXT=int  [4:9/86-4:12/89] init: null
-        b [4:16/93-4:21/98] type: int TEXT=int  [4:16/93-4:19/96] init: null
+        a [4:9/86-4:14/91]  TYPE: int TEXT=int  [4:9/86-4:12/89]  INIT: null  SCOPE: null
+        b [4:16/93-4:21/98]  TYPE: int TEXT=int  [4:16/93-4:19/96]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [4:1/78-4:4/81]
-    STATEMENT Compound  [4:23/100-4:40/117]
-        STATEMENT Return  [4:25/102-4:38/115] text: 'return a - b;'
-FUNCTION DEFINITION mul  [5:1/118-5:40/157] FunctionDDImpl
+    STATEMENT Compound  [4:23/100-4:40/117] SCOPE: null
+        STATEMENT Return  [4:25/102-4:38/115] SCOPE: null text: 'return a - b;'
+FUNCTION DEFINITION mul  [5:1/118-5:40/157] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE mul(int,int)
     UNIQUE NAME f:mul(int,int)
     DECLARATION: mul  [5:1/118-5:40/157]
     PARAMETERS:
-        a [5:9/126-5:14/131] type: int TEXT=int  [5:9/126-5:12/129] init: null
-        b [5:16/133-5:21/138] type: int TEXT=int  [5:16/133-5:19/136] init: null
+        a [5:9/126-5:14/131]  TYPE: int TEXT=int  [5:9/126-5:12/129]  INIT: null  SCOPE: null
+        b [5:16/133-5:21/138]  TYPE: int TEXT=int  [5:16/133-5:19/136]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [5:1/118-5:4/121]
-    STATEMENT Compound  [5:23/140-5:40/157]
-        STATEMENT Return  [5:25/142-5:38/155] text: 'return a * b;'
-FUNCTION DEFINITION div  [6:1/158-6:40/197] FunctionDDImpl
+    STATEMENT Compound  [5:23/140-5:40/157] SCOPE: null
+        STATEMENT Return  [5:25/142-5:38/155] SCOPE: null text: 'return a * b;'
+FUNCTION DEFINITION div  [6:1/158-6:40/197] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE div(int,int)
     UNIQUE NAME f:div(int,int)
     DECLARATION: div  [6:1/158-6:40/197]
     PARAMETERS:
-        a [6:9/166-6:14/171] type: int TEXT=int  [6:9/166-6:12/169] init: null
-        b [6:16/173-6:21/178] type: int TEXT=int  [6:16/173-6:19/176] init: null
+        a [6:9/166-6:14/171]  TYPE: int TEXT=int  [6:9/166-6:12/169]  INIT: null  SCOPE: null
+        b [6:16/173-6:21/178]  TYPE: int TEXT=int  [6:16/173-6:19/176]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [6:1/158-6:4/161]
-    STATEMENT Compound  [6:23/180-6:40/197]
-        STATEMENT Return  [6:25/182-6:38/195] text: 'return a + b;'
-TYPEDEF OP  [8:1/199-8:29/227] TYPE: *int TEXT=int*(*)(int,int)  [8:9/207-8:15/213]
-VARIABLE curr_op [10:1/229-10:31/259] type: int TEXT=int(*)(int,int)  [10:1/229-10:7/235] init: text='add'
-FUNCTION call_op [12:1/261-12:48/308] FunctionImpl
+    STATEMENT Compound  [6:23/180-6:40/197] SCOPE: null
+        STATEMENT Return  [6:25/182-6:38/195] SCOPE: null text: 'return a + b;'
+TYPEDEF OP  [8:1/199-8:29/227] TYPE: *int TEXT=int*(*)(int,int)  [8:9/207-8:15/213] SCOPE: $Global$ 
+VARIABLE curr_op [10:1/229-10:31/259]  TYPE: int TEXT=int(*)(int,int)  [10:1/229-10:7/235]  INIT: text='add'  SCOPE: $Global$ 
+FUNCTION call_op [12:1/261-12:48/308] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE call_op(int(*)(int,int),int,int)
     UNIQUE NAME F:call_op(int(*)(int,int),int,int)
     PARAMETERS:
-        op [12:13/273-12:32/292] type: int TEXT=int(*)(int,int)  [12:13/273-12:19/279] init: null
-        a [12:34/294-12:39/299] type: int TEXT=int  [12:34/294-12:37/297] init: null
-        b [12:41/301-12:46/306] type: int TEXT=int  [12:41/301-12:44/304] init: null
+        op [12:13/273-12:32/292]  TYPE: int TEXT=int(*)(int,int)  [12:13/273-12:19/279]  INIT: null  SCOPE: null
+        a [12:34/294-12:39/299]  TYPE: int TEXT=int  [12:34/294-12:37/297]  INIT: null  SCOPE: null
+        b [12:41/301-12:46/306]  TYPE: int TEXT=int  [12:41/301-12:44/304]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [12:1/261-12:4/264]
-VARIABLE all_ops [14:1/310-14:40/349] type: OP[] TEXT=OP[]  [14:1/310-14:3/312] init: text='{'
-VARIABLE all_ops_2 [16:1/351-16:56/406] type: int[] TEXT=int[](*)(int,int)  [16:1/351-16:4/354] init: text='{'
-FUNCTION f0 [19:1/409-19:18/426] FunctionImpl
+VARIABLE all_ops [14:1/310-14:40/349]  TYPE: OP[] TEXT=OP[]  [14:1/310-14:3/312]  INIT: text='{'  SCOPE: $Global$ 
+VARIABLE all_ops_2 [16:1/351-16:56/406]  TYPE: int[] TEXT=int[](*)(int,int)  [16:1/351-16:4/354]  INIT: text='{'  SCOPE: $Global$ 
+FUNCTION f0 [19:1/409-19:18/426] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f0(int,int)
     UNIQUE NAME F:f0(int,int)
     PARAMETERS:
-         [19:8/416-19:11/419] type: int TEXT=int  [19:8/416-19:11/419] init: null
-         [19:13/421-19:16/424] type: int TEXT=int  [19:13/421-19:16/424] init: null
+         [19:8/416-19:11/419]  TYPE: int TEXT=int  [19:8/416-19:11/419]  INIT: null  SCOPE: null
+         [19:13/421-19:16/424]  TYPE: int TEXT=int  [19:13/421-19:16/424]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [19:1/409-19:4/412]
-FUNCTION f1 [20:1/427-20:19/445] FunctionImpl
+FUNCTION f1 [20:1/427-20:19/445] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f1(int,int)
     UNIQUE NAME F:f1(int,int)
     PARAMETERS:
-         [20:9/435-20:12/438] type: int TEXT=int  [20:9/435-20:12/438] init: null
-         [20:14/440-20:17/443] type: int TEXT=int  [20:14/440-20:17/443] init: null
+         [20:9/435-20:12/438]  TYPE: int TEXT=int  [20:9/435-20:12/438]  INIT: null  SCOPE: null
+         [20:14/440-20:17/443]  TYPE: int TEXT=int  [20:14/440-20:17/443]  INIT: null  SCOPE: null
     RETURNS *int TEXT=int*  [20:1/427-20:5/431]
-FUNCTION f2 [21:1/446-21:20/465] FunctionImpl
+FUNCTION f2 [21:1/446-21:20/465] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f2(int,int)
     UNIQUE NAME F:f2(int,int)
     PARAMETERS:
-         [21:10/455-21:13/458] type: int TEXT=int  [21:10/455-21:13/458] init: null
-         [21:15/460-21:18/463] type: int TEXT=int  [21:15/460-21:18/463] init: null
+         [21:10/455-21:13/458]  TYPE: int TEXT=int  [21:10/455-21:13/458]  INIT: null  SCOPE: null
+         [21:15/460-21:18/463]  TYPE: int TEXT=int  [21:15/460-21:18/463]  INIT: null  SCOPE: null
     RETURNS **int TEXT=int**  [21:1/446-21:6/451]
-FUNCTION f3 [22:1/466-22:21/486] FunctionImpl
+FUNCTION f3 [22:1/466-22:21/486] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f3(int,int)
     UNIQUE NAME F:f3(int,int)
     PARAMETERS:
-         [22:11/476-22:14/479] type: int TEXT=int  [22:11/476-22:14/479] init: null
-         [22:16/481-22:19/484] type: int TEXT=int  [22:16/481-22:19/484] init: null
+         [22:11/476-22:14/479]  TYPE: int TEXT=int  [22:11/476-22:14/479]  INIT: null  SCOPE: null
+         [22:16/481-22:19/484]  TYPE: int TEXT=int  [22:16/481-22:19/484]  INIT: null  SCOPE: null
     RETURNS ***int TEXT=int***  [22:1/466-22:7/472]
-VARIABLE ret_int_ptr_0 [24:1/488-24:36/523] type: int TEXT=int(*)(int,int)  [24:1/488-24:7/494] init: text='f0'
-VARIABLE ret_int_ptr_1 [25:1/524-25:37/560] type: *int TEXT=int*(*)(int,int)  [25:1/524-25:8/531] init: text='f1'
-VARIABLE ret_int_ptr_2 [26:1/561-26:38/598] type: **int TEXT=int**(*)(int,int)  [26:1/561-26:9/569] init: text='f2'
-VARIABLE ret_int_ptr_3 [27:1/599-27:39/637] type: ***int TEXT=int***(*)(int,int)  [27:1/599-27:10/608] init: text='f3'
-VARIABLE ret_int_ptr_0_p [29:1/639-29:51/689] type: int TEXT=int(**)(int,int)  [29:1/639-29:8/646] init: text='&'
-VARIABLE ret_int_ptr_1_p [30:1/690-30:52/741] type: *int TEXT=int*(**)(int,int)  [30:1/690-30:9/698] init: text='&'
-VARIABLE ret_int_ptr_2_p [31:1/742-31:53/794] type: **int TEXT=int**(**)(int,int)  [31:1/742-31:10/751] init: text='&'
-VARIABLE ret_int_ptr_3_p [32:1/795-32:54/848] type: ***int TEXT=int***(**)(int,int)  [32:1/795-32:11/805] init: text='&'
-VARIABLE ret_int_ptr_0_pp [34:1/850-34:55/904] type: int TEXT=int(***)(int,int)  [34:1/850-34:9/858] init: text='&'
-VARIABLE ret_int_ptr_1_pp [35:1/905-35:56/960] type: *int TEXT=int*(***)(int,int)  [35:1/905-35:10/914] init: text='&'
-VARIABLE ret_int_ptr_2_pp [36:1/961-36:57/1017] type: **int TEXT=int**(***)(int,int)  [36:1/961-36:11/971] init: text='&'
-VARIABLE ret_int_ptr_3_pp [37:1/1018-37:58/1075] type: ***int TEXT=int***(***)(int,int)  [37:1/1018-37:12/1029] init: text='&'
-VARIABLE p_foo_1 [39:1/1077-39:18/1094] type: int TEXT=int(*)()  [39:1/1077-39:7/1083] init: null
-VARIABLE p_foo_2 [40:1/1095-40:19/1113] type: int TEXT=int(**)()  [40:1/1095-40:8/1102] init: null
-VARIABLE p_foo_3 [41:1/1114-41:20/1133] type: int TEXT=int(***)()  [41:1/1114-41:9/1122] init: null
+VARIABLE ret_int_ptr_0 [24:1/488-24:36/523]  TYPE: int TEXT=int(*)(int,int)  [24:1/488-24:7/494]  INIT: text='f0'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_1 [25:1/524-25:37/560]  TYPE: *int TEXT=int*(*)(int,int)  [25:1/524-25:8/531]  INIT: text='f1'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_2 [26:1/561-26:38/598]  TYPE: **int TEXT=int**(*)(int,int)  [26:1/561-26:9/569]  INIT: text='f2'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_3 [27:1/599-27:39/637]  TYPE: ***int TEXT=int***(*)(int,int)  [27:1/599-27:10/608]  INIT: text='f3'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_0_p [29:1/639-29:51/689]  TYPE: int TEXT=int(**)(int,int)  [29:1/639-29:8/646]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_1_p [30:1/690-30:52/741]  TYPE: *int TEXT=int*(**)(int,int)  [30:1/690-30:9/698]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_2_p [31:1/742-31:53/794]  TYPE: **int TEXT=int**(**)(int,int)  [31:1/742-31:10/751]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_3_p [32:1/795-32:54/848]  TYPE: ***int TEXT=int***(**)(int,int)  [32:1/795-32:11/805]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_0_pp [34:1/850-34:55/904]  TYPE: int TEXT=int(***)(int,int)  [34:1/850-34:9/858]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_1_pp [35:1/905-35:56/960]  TYPE: *int TEXT=int*(***)(int,int)  [35:1/905-35:10/914]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_2_pp [36:1/961-36:57/1017]  TYPE: **int TEXT=int**(***)(int,int)  [36:1/961-36:11/971]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE ret_int_ptr_3_pp [37:1/1018-37:58/1075]  TYPE: ***int TEXT=int***(***)(int,int)  [37:1/1018-37:12/1029]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE p_foo_1 [39:1/1077-39:18/1094]  TYPE: int TEXT=int(*)()  [39:1/1077-39:7/1083]  INIT: null  SCOPE: $Global$ 
+VARIABLE p_foo_2 [40:1/1095-40:19/1113]  TYPE: int TEXT=int(**)()  [40:1/1095-40:8/1102]  INIT: null  SCOPE: $Global$ 
+VARIABLE p_foo_3 [41:1/1114-41:20/1133]  TYPE: int TEXT=int(***)()  [41:1/1114-41:9/1122]  INIT: null  SCOPE: $Global$ 
 

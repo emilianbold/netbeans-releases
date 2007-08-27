@@ -12,36 +12,36 @@ Includes:
     <no includes>
 Macros:
 #define '__cdecl' [1:1/0-1:43/42]
-FUNCTION foo [2:1/43-2:34/76] FunctionImpl
+FUNCTION foo [2:1/43-2:34/76] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE foo(int,int)
     UNIQUE NAME F:foo(int,int)
     PARAMETERS:
-        a [2:20/62-2:25/67] type: int TEXT=int  [2:20/62-2:23/65] init: null
-        b [2:27/69-2:32/74] type: int TEXT=int  [2:27/69-2:30/72] init: null
+        a [2:20/62-2:25/67]  TYPE: int TEXT=int  [2:20/62-2:23/65]  INIT: null  SCOPE: null
+        b [2:27/69-2:32/74]  TYPE: int TEXT=int  [2:27/69-2:30/72]  INIT: null  SCOPE: null
     RETURNS *char TEXT=char*  [2:1/43-2:7/49]
-FUNCTION foo [3:1/77-3:25/101] FunctionImpl
+FUNCTION foo [3:1/77-3:25/101] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE foo(int)
     UNIQUE NAME F:foo(int)
     PARAMETERS:
-        a [3:18/94-3:23/99] type: int TEXT=int  [3:18/94-3:21/97] init: null
+        a [3:18/94-3:23/99]  TYPE: int TEXT=int  [3:18/94-3:21/97]  INIT: null  SCOPE: null
     RETURNS char TEXT=char  [3:1/77-3:5/81]
 
 ========== Dumping model of PROJECT DummyProject
-FUNCTION foo [2:1/43-2:34/76] FunctionImpl
+FUNCTION foo [2:1/43-2:34/76] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE foo(int,int)
     UNIQUE NAME F:foo(int,int)
     PARAMETERS:
-        a [2:20/62-2:25/67] type: int TEXT=int  [2:20/62-2:23/65] init: null
-        b [2:27/69-2:32/74] type: int TEXT=int  [2:27/69-2:30/72] init: null
+        a [2:20/62-2:25/67]  TYPE: int TEXT=int  [2:20/62-2:23/65]  INIT: null  SCOPE: null
+        b [2:27/69-2:32/74]  TYPE: int TEXT=int  [2:27/69-2:30/72]  INIT: null  SCOPE: null
     RETURNS *char TEXT=char*  [2:1/43-2:7/49]
-FUNCTION foo [3:1/77-3:25/101] FunctionImpl
+FUNCTION foo [3:1/77-3:25/101] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE foo(int)
     UNIQUE NAME F:foo(int)
     PARAMETERS:
-        a [3:18/94-3:23/99] type: int TEXT=int  [3:18/94-3:21/97] init: null
+        a [3:18/94-3:23/99]  TYPE: int TEXT=int  [3:18/94-3:21/97]  INIT: null  SCOPE: null
     RETURNS char TEXT=char  [3:1/77-3:5/81]
 

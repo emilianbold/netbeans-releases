@@ -42,15 +42,15 @@
 ==============================================================
 'module', tokenID=identifier, offset=1069 [30:32/1069-30:38/1075]
 --OWNER:
-    VARIABLE module [30:24/1061-30:38/1075] ReferencesTestCase/system.cc type: *Module TEXT=Module*  [30:24/1061-30:31/1068] init: null
+    VARIABLE module [30:24/1061-30:38/1075] ReferencesTestCase/system.cc  TYPE: *Module TEXT=Module*  [30:24/1061-30:31/1068]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE module [30:24/1061-30:38/1075] ReferencesTestCase/system.cc type: *Module TEXT=Module*  [30:24/1061-30:31/1068] init: null
+    VARIABLE module [30:24/1061-30:38/1075] ReferencesTestCase/system.cc  TYPE: *Module TEXT=Module*  [30:24/1061-30:31/1068]  INIT: null  SCOPE: null
 ==============================================================
 'moduleList', tokenID=identifier, offset=1083 [31:5/1083-31:15/1093]
 --OWNER:
     STMT Expression text='moduleList.push_back(module)'
 --RESOLVED TO:
-    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h type: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289] init: null
+    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289]  INIT: null  SCOPE: System 
 ==============================================================
 'push_back', tokenID=identifier, offset=1094 [31:16/1094-31:25/1103]
 --OWNER:
@@ -62,19 +62,19 @@
 --OWNER:
     STMT Expression text='moduleList.push_back(module)'
 --RESOLVED TO:
-    VARIABLE module [30:24/1061-30:38/1075] ReferencesTestCase/system.cc type: *Module TEXT=Module*  [30:24/1061-30:31/1068] init: null
+    VARIABLE module [30:24/1061-30:38/1075] ReferencesTestCase/system.cc  TYPE: *Module TEXT=Module*  [30:24/1061-30:31/1068]  INIT: null  SCOPE: null
 ==============================================================
 'supportMetric', tokenID=identifier, offset=1117 [32:5/1117-32:18/1130]
 --OWNER:
     STMT Expression text='supportMetric += module->GetSupportMetric()'
 --RESOLVED TO:
-    VARIABLE supportMetric [43:5/1306-43:23/1324] ReferencesTestCase/system.h type: int TEXT=int  [43:5/1306-43:8/1309] init: null
+    VARIABLE supportMetric [43:5/1306-43:23/1324] ReferencesTestCase/system.h  TYPE: int TEXT=int  [43:5/1306-43:8/1309]  INIT: null  SCOPE: System 
 ==============================================================
 'module', tokenID=identifier, offset=1134 [32:22/1134-32:28/1140]
 --OWNER:
     STMT Expression text='supportMetric += module->GetSupportMetric()'
 --RESOLVED TO:
-    VARIABLE module [30:24/1061-30:38/1075] ReferencesTestCase/system.cc type: *Module TEXT=Module*  [30:24/1061-30:31/1068] init: null
+    VARIABLE module [30:24/1061-30:38/1075] ReferencesTestCase/system.cc  TYPE: *Module TEXT=Module*  [30:24/1061-30:31/1068]  INIT: null  SCOPE: null
 ==============================================================
 'GetSupportMetric', tokenID=identifier, offset=1142 [32:30/1142-32:46/1158]
 --OWNER:
@@ -102,9 +102,9 @@
 ==============================================================
 'i', tokenID=identifier, offset=1195 [35:31/1195-35:32/1196]
 --OWNER:
-    VARIABLE i [35:27/1191-35:32/1196] ReferencesTestCase/system.cc type: int TEXT=int  [35:27/1191-35:30/1194] init: null
+    VARIABLE i [35:27/1191-35:32/1196] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [35:27/1191-35:30/1194]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE i [35:27/1191-35:32/1196] ReferencesTestCase/system.cc type: int TEXT=int  [35:27/1191-35:30/1194] init: null
+    VARIABLE i [35:27/1191-35:32/1196] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [35:27/1191-35:30/1194]  INIT: null  SCOPE: null
 ==============================================================
 'assert', tokenID=identifier, offset=1210 [36:5/1210-36:11/1216]
 --OWNER:
@@ -116,19 +116,19 @@
 --OWNER:
     STMT Expression text='assert(i >= 0 && (unsigned)i < moduleList.size())'
 --RESOLVED TO:
-    VARIABLE i [35:27/1191-35:32/1196] ReferencesTestCase/system.cc type: int TEXT=int  [35:27/1191-35:30/1194] init: null
+    VARIABLE i [35:27/1191-35:32/1196] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [35:27/1191-35:30/1194]  INIT: null  SCOPE: null
 ==============================================================
 'i', tokenID=identifier, offset=1237 [36:32/1237-36:33/1238]
 --OWNER:
     STMT Expression text='assert(i >= 0 && (unsigned)i < moduleList.size())'
 --RESOLVED TO:
-    VARIABLE i [35:27/1191-35:32/1196] ReferencesTestCase/system.cc type: int TEXT=int  [35:27/1191-35:30/1194] init: null
+    VARIABLE i [35:27/1191-35:32/1196] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [35:27/1191-35:30/1194]  INIT: null  SCOPE: null
 ==============================================================
 'moduleList', tokenID=identifier, offset=1241 [36:36/1241-36:46/1251]
 --OWNER:
     STMT Expression text='assert(i >= 0 && (unsigned)i < moduleList.size())'
 --RESOLVED TO:
-    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h type: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289] init: null
+    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289]  INIT: null  SCOPE: System 
 ==============================================================
 'size', tokenID=identifier, offset=1252 [36:47/1252-36:51/1256]
 --OWNER:
@@ -140,13 +140,13 @@
 --OWNER:
     STMT Return text='return (*moduleList[i]);'
 --RESOLVED TO:
-    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h type: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289] init: null
+    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289]  INIT: null  SCOPE: System 
 ==============================================================
 'i', tokenID=identifier, offset=1290 [38:25/1290-38:26/1291]
 --OWNER:
     STMT Return text='return (*moduleList[i]);'
 --RESOLVED TO:
-    VARIABLE i [35:27/1191-35:32/1196] ReferencesTestCase/system.cc type: int TEXT=int  [35:27/1191-35:30/1194] init: null
+    VARIABLE i [35:27/1191-35:32/1196] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [35:27/1191-35:30/1194]  INIT: null  SCOPE: null
 ==============================================================
 'System', tokenID=identifier, offset=1302 [41:5/1302-41:11/1308]
 --OWNER:
@@ -164,7 +164,7 @@
 --OWNER:
     STMT Return text='return moduleList.size();'
 --RESOLVED TO:
-    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h type: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289] init: null
+    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289]  INIT: null  SCOPE: System 
 ==============================================================
 'size', tokenID=identifier, offset=1357 [42:23/1357-42:27/1361]
 --OWNER:
@@ -188,7 +188,7 @@
 --OWNER:
     STMT Return text='return supportMetric;'
 --RESOLVED TO:
-    VARIABLE supportMetric [43:5/1306-43:23/1324] ReferencesTestCase/system.h type: int TEXT=int  [43:5/1306-43:8/1309] init: null
+    VARIABLE supportMetric [43:5/1306-43:23/1324] ReferencesTestCase/system.h  TYPE: int TEXT=int  [43:5/1306-43:8/1309]  INIT: null  SCOPE: System 
 ==============================================================
 'ostream', tokenID=identifier, offset=1437 [49:1/1437-49:8/1444]
 --OWNER:
@@ -204,9 +204,9 @@
 ==============================================================
 'output', tokenID=identifier, offset=1467 [49:31/1467-49:37/1473]
 --OWNER:
-    VARIABLE output [49:22/1458-49:37/1473] ReferencesTestCase/system.cc type: &$unresolved$::ostream TEXT=ostream&  [49:22/1458-49:30/1466] init: null
+    VARIABLE output [49:22/1458-49:37/1473] ReferencesTestCase/system.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [49:22/1458-49:30/1466]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE output [49:22/1458-49:37/1473] ReferencesTestCase/system.cc type: &$unresolved$::ostream TEXT=ostream&  [49:22/1458-49:30/1466] init: null
+    VARIABLE output [49:22/1458-49:37/1473] ReferencesTestCase/system.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [49:22/1458-49:30/1466]  INIT: null  SCOPE: null
 ==============================================================
 'System', tokenID=identifier, offset=1481 [49:45/1481-49:51/1487]
 --OWNER:
@@ -216,25 +216,25 @@
 ==============================================================
 'system', tokenID=identifier, offset=1489 [49:53/1489-49:59/1495]
 --OWNER:
-    VARIABLE system [49:39/1475-49:59/1495] ReferencesTestCase/system.cc type: const &System TEXT=const System&  [49:39/1475-49:52/1488] init: null
+    VARIABLE system [49:39/1475-49:59/1495] ReferencesTestCase/system.cc  TYPE: const &System TEXT=const System&  [49:39/1475-49:52/1488]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE system [49:39/1475-49:59/1495] ReferencesTestCase/system.cc type: const &System TEXT=const System&  [49:39/1475-49:52/1488] init: null
+    VARIABLE system [49:39/1475-49:59/1495] ReferencesTestCase/system.cc  TYPE: const &System TEXT=const System&  [49:39/1475-49:52/1488]  INIT: null  SCOPE: null
 ==============================================================
 'size', tokenID=identifier, offset=1507 [50:9/1507-50:13/1511]
 --OWNER:
-    VARIABLE size [50:5/1503-50:40/1538] ReferencesTestCase/system.cc type: int TEXT=int  [50:5/1503-50:8/1506] init: text='system'
+    VARIABLE size [50:5/1503-50:40/1538] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [50:5/1503-50:8/1506]  INIT: text='system'  SCOPE: null
 --RESOLVED TO:
-    VARIABLE size [50:5/1503-50:40/1538] ReferencesTestCase/system.cc type: int TEXT=int  [50:5/1503-50:8/1506] init: text='system'
+    VARIABLE size [50:5/1503-50:40/1538] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [50:5/1503-50:8/1506]  INIT: text='system'  SCOPE: null
 ==============================================================
 'system', tokenID=identifier, offset=1514 [50:16/1514-50:22/1520]
 --OWNER:
-    VARIABLE size [50:5/1503-50:40/1538] ReferencesTestCase/system.cc type: int TEXT=int  [50:5/1503-50:8/1506] init: text='system'
+    VARIABLE size [50:5/1503-50:40/1538] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [50:5/1503-50:8/1506]  INIT: text='system'  SCOPE: null
 --RESOLVED TO:
-    VARIABLE system [49:39/1475-49:59/1495] ReferencesTestCase/system.cc type: const &System TEXT=const System&  [49:39/1475-49:52/1488] init: null
+    VARIABLE system [49:39/1475-49:59/1495] ReferencesTestCase/system.cc  TYPE: const &System TEXT=const System&  [49:39/1475-49:52/1488]  INIT: null  SCOPE: null
 ==============================================================
 'GetModuleCount', tokenID=identifier, offset=1521 [50:23/1521-50:37/1535]
 --OWNER:
-    VARIABLE size [50:5/1503-50:40/1538] ReferencesTestCase/system.cc type: int TEXT=int  [50:5/1503-50:8/1506] init: text='system'
+    VARIABLE size [50:5/1503-50:40/1538] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [50:5/1503-50:8/1506]  INIT: text='system'  SCOPE: null
 --RESOLVED TO:
     FUNCTION GetModuleCount() const  [38:5/1197-38:32/1224] ReferencesTestCase/system.h
 ==============================================================
@@ -242,13 +242,13 @@
 --OWNER:
     STMT Expression text='output << "System consists of " << size << " module(s):" << endl << endl'
 --RESOLVED TO:
-    VARIABLE output [49:22/1458-49:37/1473] ReferencesTestCase/system.cc type: &$unresolved$::ostream TEXT=ostream&  [49:22/1458-49:30/1466] init: null
+    VARIABLE output [49:22/1458-49:37/1473] ReferencesTestCase/system.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [49:22/1458-49:30/1466]  INIT: null  SCOPE: null
 ==============================================================
 'size', tokenID=identifier, offset=1583 [52:40/1583-52:44/1587]
 --OWNER:
     STMT Expression text='output << "System consists of " << size << " module(s):" << endl << endl'
 --RESOLVED TO:
-    VARIABLE size [50:5/1503-50:40/1538] ReferencesTestCase/system.cc type: int TEXT=int  [50:5/1503-50:8/1506] init: text='system'
+    VARIABLE size [50:5/1503-50:40/1538] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [50:5/1503-50:8/1506]  INIT: text='system'  SCOPE: null
 ==============================================================
 'endl', tokenID=identifier, offset=1608 [52:65/1608-52:69/1612]
 --OWNER:
@@ -264,39 +264,39 @@
 ==============================================================
 'i', tokenID=identifier, offset=1640 [54:14/1640-54:15/1641]
 --OWNER:
-    VARIABLE i [54:10/1636-54:20/1646] ReferencesTestCase/system.cc type: int TEXT=int  [54:10/1636-54:13/1639] init: text='0'
+    VARIABLE i [54:10/1636-54:20/1646] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [54:10/1636-54:13/1639]  INIT: text='0'  SCOPE: null
 --RESOLVED TO:
-    VARIABLE i [54:10/1636-54:20/1646] ReferencesTestCase/system.cc type: int TEXT=int  [54:10/1636-54:13/1639] init: text='0'
+    VARIABLE i [54:10/1636-54:20/1646] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [54:10/1636-54:13/1639]  INIT: text='0'  SCOPE: null
 ==============================================================
 'i', tokenID=identifier, offset=1647 [54:21/1647-54:22/1648]
 --OWNER:
      [54:21/1647-54:29/1655] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    VARIABLE i [54:10/1636-54:20/1646] ReferencesTestCase/system.cc type: int TEXT=int  [54:10/1636-54:13/1639] init: text='0'
+    VARIABLE i [54:10/1636-54:20/1646] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [54:10/1636-54:13/1639]  INIT: text='0'  SCOPE: null
 ==============================================================
 'size', tokenID=identifier, offset=1651 [54:25/1651-54:29/1655]
 --OWNER:
      [54:21/1647-54:29/1655] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    VARIABLE size [50:5/1503-50:40/1538] ReferencesTestCase/system.cc type: int TEXT=int  [50:5/1503-50:8/1506] init: text='system'
+    VARIABLE size [50:5/1503-50:40/1538] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [50:5/1503-50:8/1506]  INIT: text='system'  SCOPE: null
 ==============================================================
 'i', tokenID=identifier, offset=1657 [54:31/1657-54:32/1658]
 --OWNER:
     EXPR null text='i++'
 --RESOLVED TO:
-    VARIABLE i [54:10/1636-54:20/1646] ReferencesTestCase/system.cc type: int TEXT=int  [54:10/1636-54:13/1639] init: text='0'
+    VARIABLE i [54:10/1636-54:20/1646] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [54:10/1636-54:13/1639]  INIT: text='0'  SCOPE: null
 ==============================================================
 'output', tokenID=identifier, offset=1672 [55:9/1672-55:15/1678]
 --OWNER:
     STMT Expression text='output << system.GetModule(i) << endl'
 --RESOLVED TO:
-    VARIABLE output [49:22/1458-49:37/1473] ReferencesTestCase/system.cc type: &$unresolved$::ostream TEXT=ostream&  [49:22/1458-49:30/1466] init: null
+    VARIABLE output [49:22/1458-49:37/1473] ReferencesTestCase/system.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [49:22/1458-49:30/1466]  INIT: null  SCOPE: null
 ==============================================================
 'system', tokenID=identifier, offset=1682 [55:19/1682-55:25/1688]
 --OWNER:
     STMT Expression text='output << system.GetModule(i) << endl'
 --RESOLVED TO:
-    VARIABLE system [49:39/1475-49:59/1495] ReferencesTestCase/system.cc type: const &System TEXT=const System&  [49:39/1475-49:52/1488] init: null
+    VARIABLE system [49:39/1475-49:59/1495] ReferencesTestCase/system.cc  TYPE: const &System TEXT=const System&  [49:39/1475-49:52/1488]  INIT: null  SCOPE: null
 ==============================================================
 'GetModule', tokenID=identifier, offset=1689 [55:26/1689-55:35/1698]
 --OWNER:
@@ -308,7 +308,7 @@
 --OWNER:
     STMT Expression text='output << system.GetModule(i) << endl'
 --RESOLVED TO:
-    VARIABLE i [54:10/1636-54:20/1646] ReferencesTestCase/system.cc type: int TEXT=int  [54:10/1636-54:13/1639] init: text='0'
+    VARIABLE i [54:10/1636-54:20/1646] ReferencesTestCase/system.cc  TYPE: int TEXT=int  [54:10/1636-54:13/1639]  INIT: text='0'  SCOPE: null
 ==============================================================
 'endl', tokenID=identifier, offset=1705 [55:42/1705-55:46/1709]
 --OWNER:
@@ -320,5 +320,5 @@
 --OWNER:
     STMT Return text='return output;'
 --RESOLVED TO:
-    VARIABLE output [49:22/1458-49:37/1473] ReferencesTestCase/system.cc type: &$unresolved$::ostream TEXT=ostream&  [49:22/1458-49:30/1466] init: null
+    VARIABLE output [49:22/1458-49:37/1473] ReferencesTestCase/system.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [49:22/1458-49:30/1466]  INIT: null  SCOPE: null
 ==============================================================

@@ -14,24 +14,24 @@ Includes:
 Macros:
 #define 'GLAPI' [2:1/76-2:55/130]
 #define 'GLAPIENTRY' [3:1/131-3:21/151]
-FUNCTION glFunction [5:7/159-5:66/218] FunctionImpl
+FUNCTION glFunction [5:7/159-5:66/218] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE glFunction(int,int,int)
     UNIQUE NAME F:glFunction(int,int,int)
     PARAMETERS:
-        red [5:35/187-5:42/194] type: int TEXT=int  [5:35/187-5:38/190] init: null
-        green [5:44/196-5:53/205] type: int TEXT=int  [5:44/196-5:47/199] init: null
-        blue [5:55/207-5:63/215] type: int TEXT=int  [5:55/207-5:58/210] init: null
+        red [5:35/187-5:42/194]  TYPE: int TEXT=int  [5:35/187-5:38/190]  INIT: null  SCOPE: null
+        green [5:44/196-5:53/205]  TYPE: int TEXT=int  [5:44/196-5:47/199]  INIT: null  SCOPE: null
+        blue [5:55/207-5:63/215]  TYPE: int TEXT=int  [5:55/207-5:58/210]  INIT: null  SCOPE: null
     RETURNS void TEXT=void  [5:7/159-5:11/163]
 
 ========== Dumping model of PROJECT DummyProject
-FUNCTION glFunction [5:7/159-5:66/218] FunctionImpl
+FUNCTION glFunction [5:7/159-5:66/218] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE glFunction(int,int,int)
     UNIQUE NAME F:glFunction(int,int,int)
     PARAMETERS:
-        red [5:35/187-5:42/194] type: int TEXT=int  [5:35/187-5:38/190] init: null
-        green [5:44/196-5:53/205] type: int TEXT=int  [5:44/196-5:47/199] init: null
-        blue [5:55/207-5:63/215] type: int TEXT=int  [5:55/207-5:58/210] init: null
+        red [5:35/187-5:42/194]  TYPE: int TEXT=int  [5:35/187-5:38/190]  INIT: null  SCOPE: null
+        green [5:44/196-5:53/205]  TYPE: int TEXT=int  [5:44/196-5:47/199]  INIT: null  SCOPE: null
+        blue [5:55/207-5:63/215]  TYPE: int TEXT=int  [5:55/207-5:58/210]  INIT: null  SCOPE: null
     RETURNS void TEXT=void  [5:7/159-5:11/163]
 

@@ -84,33 +84,33 @@
 ==============================================================
 'type', tokenID=identifier, offset=1098 [30:17/1098-30:21/1102]
 --OWNER:
-    VARIABLE type [30:13/1094-30:30/1111] ReferencesTestCase/cpu.h type: int TEXT=int  [30:13/1094-30:16/1097] init: text='MEDIUM'
+    VARIABLE type [30:13/1094-30:30/1111] ReferencesTestCase/cpu.h  TYPE: int TEXT=int  [30:13/1094-30:16/1097]  INIT: text='MEDIUM'  SCOPE: null
 --RESOLVED TO:
-    VARIABLE type [30:13/1094-30:30/1111] ReferencesTestCase/cpu.h type: int TEXT=int  [30:13/1094-30:16/1097] init: text='MEDIUM'
+    VARIABLE type [30:13/1094-30:30/1111] ReferencesTestCase/cpu.h  TYPE: int TEXT=int  [30:13/1094-30:16/1097]  INIT: text='MEDIUM'  SCOPE: null
 ==============================================================
 'MEDIUM', tokenID=identifier, offset=1105 [30:24/1105-30:30/1111]
 --OWNER:
-    VARIABLE type [30:13/1094-30:30/1111] ReferencesTestCase/cpu.h type: int TEXT=int  [30:13/1094-30:16/1097] init: text='MEDIUM'
+    VARIABLE type [30:13/1094-30:30/1111] ReferencesTestCase/cpu.h  TYPE: int TEXT=int  [30:13/1094-30:16/1097]  INIT: text='MEDIUM'  SCOPE: null
 --RESOLVED TO:
     ENUMERATOR Cpu::CpuType::MEDIUM [27:24/989-27:30/995] ReferencesTestCase/cpu.h
 ==============================================================
 'architecture', tokenID=identifier, offset=1117 [30:36/1117-30:48/1129]
 --OWNER:
-    VARIABLE architecture [30:32/1113-30:58/1139] ReferencesTestCase/cpu.h type: int TEXT=int  [30:32/1113-30:35/1116] init: text='OPTERON'
+    VARIABLE architecture [30:32/1113-30:58/1139] ReferencesTestCase/cpu.h  TYPE: int TEXT=int  [30:32/1113-30:35/1116]  INIT: text='OPTERON'  SCOPE: null
 --RESOLVED TO:
-    VARIABLE architecture [30:32/1113-30:58/1139] ReferencesTestCase/cpu.h type: int TEXT=int  [30:32/1113-30:35/1116] init: text='OPTERON'
+    VARIABLE architecture [30:32/1113-30:58/1139] ReferencesTestCase/cpu.h  TYPE: int TEXT=int  [30:32/1113-30:35/1116]  INIT: text='OPTERON'  SCOPE: null
 ==============================================================
 'OPTERON', tokenID=identifier, offset=1132 [30:51/1132-30:58/1139]
 --OWNER:
-    VARIABLE architecture [30:32/1113-30:58/1139] ReferencesTestCase/cpu.h type: int TEXT=int  [30:32/1113-30:35/1116] init: text='OPTERON'
+    VARIABLE architecture [30:32/1113-30:58/1139] ReferencesTestCase/cpu.h  TYPE: int TEXT=int  [30:32/1113-30:35/1116]  INIT: text='OPTERON'  SCOPE: null
 --RESOLVED TO:
     ENUMERATOR Cpu::CpuArch::OPTERON [28:24/1029-28:31/1036] ReferencesTestCase/cpu.h
 ==============================================================
 'units', tokenID=identifier, offset=1145 [30:64/1145-30:69/1150]
 --OWNER:
-    VARIABLE units [30:60/1141-30:73/1154] ReferencesTestCase/cpu.h type: int TEXT=int  [30:60/1141-30:63/1144] init: text='1'
+    VARIABLE units [30:60/1141-30:73/1154] ReferencesTestCase/cpu.h  TYPE: int TEXT=int  [30:60/1141-30:63/1144]  INIT: text='1'  SCOPE: null
 --RESOLVED TO:
-    VARIABLE units [30:60/1141-30:73/1154] ReferencesTestCase/cpu.h type: int TEXT=int  [30:60/1141-30:63/1144] init: text='1'
+    VARIABLE units [30:60/1141-30:73/1154] ReferencesTestCase/cpu.h  TYPE: int TEXT=int  [30:60/1141-30:63/1144]  INIT: text='1'  SCOPE: null
 ==============================================================
 'GetType', tokenID=identifier, offset=1194 [32:29/1194-32:36/1201]
 --OWNER:

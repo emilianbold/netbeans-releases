@@ -15,5 +15,5 @@ Macros:
     <no macros>
 
 ========== Dumping model of PROJECT DummyProject
-VARIABLE i [3:1/24-3:7/30] type: int TEXT=int  [3:1/24-3:4/27] init: null
+VARIABLE i [3:1/24-3:7/30]  TYPE: int TEXT=int  [3:1/24-3:4/27]  INIT: null  SCOPE: $Global$ 
 

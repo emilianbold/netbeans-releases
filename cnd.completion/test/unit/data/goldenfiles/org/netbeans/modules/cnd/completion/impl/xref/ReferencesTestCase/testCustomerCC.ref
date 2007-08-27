@@ -24,39 +24,39 @@
 ==============================================================
 'initName', tokenID=identifier, offset=926 [22:33/926-22:41/934]
 --OWNER:
-    VARIABLE initName [22:20/913-22:41/934] ReferencesTestCase/customer.cc type: const $unresolved$::string TEXT=const string  [22:20/913-22:32/925] init: null
+    VARIABLE initName [22:20/913-22:41/934] ReferencesTestCase/customer.cc  TYPE: const $unresolved$::string TEXT=const string  [22:20/913-22:32/925]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE initName [22:20/913-22:41/934] ReferencesTestCase/customer.cc type: const $unresolved$::string TEXT=const string  [22:20/913-22:32/925] init: null
+    VARIABLE initName [22:20/913-22:41/934] ReferencesTestCase/customer.cc  TYPE: const $unresolved$::string TEXT=const string  [22:20/913-22:32/925]  INIT: null  SCOPE: null
 ==============================================================
 'initDiscount', tokenID=identifier, offset=940 [22:47/940-22:59/952]
 --OWNER:
-    VARIABLE initDiscount [22:43/936-22:59/952] ReferencesTestCase/customer.cc type: int TEXT=int  [22:43/936-22:46/939] init: null
+    VARIABLE initDiscount [22:43/936-22:59/952] ReferencesTestCase/customer.cc  TYPE: int TEXT=int  [22:43/936-22:46/939]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE initDiscount [22:43/936-22:59/952] ReferencesTestCase/customer.cc type: int TEXT=int  [22:43/936-22:46/939] init: null
+    VARIABLE initDiscount [22:43/936-22:59/952] ReferencesTestCase/customer.cc  TYPE: int TEXT=int  [22:43/936-22:46/939]  INIT: null  SCOPE: null
 ==============================================================
 'name', tokenID=identifier, offset=960 [23:5/960-23:9/964]
 --OWNER:
     FUNCTION_DEFINITION Customer(const string,int)  [22:1/894-25:2/1006] ReferencesTestCase/customer.cc
 --RESOLVED TO:
-    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h type: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146] init: null
+    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h  TYPE: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146]  INIT: null  SCOPE: Customer 
 ==============================================================
 'initName', tokenID=identifier, offset=965 [23:10/965-23:18/973]
 --OWNER:
     FUNCTION_DEFINITION Customer(const string,int)  [22:1/894-25:2/1006] ReferencesTestCase/customer.cc
 --RESOLVED TO:
-    VARIABLE initName [22:20/913-22:41/934] ReferencesTestCase/customer.cc type: const $unresolved$::string TEXT=const string  [22:20/913-22:32/925] init: null
+    VARIABLE initName [22:20/913-22:41/934] ReferencesTestCase/customer.cc  TYPE: const $unresolved$::string TEXT=const string  [22:20/913-22:32/925]  INIT: null  SCOPE: null
 ==============================================================
 'discount', tokenID=identifier, offset=980 [24:5/980-24:13/988]
 --OWNER:
     FUNCTION_DEFINITION Customer(const string,int)  [22:1/894-25:2/1006] ReferencesTestCase/customer.cc
 --RESOLVED TO:
-    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h type: int TEXT=int  [35:9/1161-35:12/1164] init: null
+    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [35:9/1161-35:12/1164]  INIT: null  SCOPE: Customer 
 ==============================================================
 'initDiscount', tokenID=identifier, offset=989 [24:14/989-24:26/1001]
 --OWNER:
     FUNCTION_DEFINITION Customer(const string,int)  [22:1/894-25:2/1006] ReferencesTestCase/customer.cc
 --RESOLVED TO:
-    VARIABLE initDiscount [22:43/936-22:59/952] ReferencesTestCase/customer.cc type: int TEXT=int  [22:43/936-22:46/939] init: null
+    VARIABLE initDiscount [22:43/936-22:59/952] ReferencesTestCase/customer.cc  TYPE: int TEXT=int  [22:43/936-22:46/939]  INIT: null  SCOPE: null
 ==============================================================
 'Customer', tokenID=identifier, offset=1016 [27:5/1016-27:13/1024]
 --OWNER:
@@ -74,7 +74,7 @@
 --OWNER:
     STMT Return text='return discount;'
 --RESOLVED TO:
-    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h type: int TEXT=int  [35:9/1161-35:12/1164] init: null
+    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [35:9/1161-35:12/1164]  INIT: null  SCOPE: Customer 
 ==============================================================
 'string', tokenID=identifier, offset=1072 [31:1/1072-31:7/1078]
 --OWNER:
@@ -98,7 +98,7 @@
 --OWNER:
     STMT Return text='return name;'
 --RESOLVED TO:
-    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h type: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146] init: null
+    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h  TYPE: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146]  INIT: null  SCOPE: Customer 
 ==============================================================
 'ostream', tokenID=identifier, offset=1127 [35:1/1127-35:8/1134]
 --OWNER:
@@ -114,9 +114,9 @@
 ==============================================================
 'output', tokenID=identifier, offset=1157 [35:31/1157-35:37/1163]
 --OWNER:
-    VARIABLE output [35:22/1148-35:37/1163] ReferencesTestCase/customer.cc type: &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156] init: null
+    VARIABLE output [35:22/1148-35:37/1163] ReferencesTestCase/customer.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE output [35:22/1148-35:37/1163] ReferencesTestCase/customer.cc type: &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156] init: null
+    VARIABLE output [35:22/1148-35:37/1163] ReferencesTestCase/customer.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156]  INIT: null  SCOPE: null
 ==============================================================
 'Customer', tokenID=identifier, offset=1171 [35:45/1171-35:53/1179]
 --OWNER:
@@ -126,43 +126,43 @@
 ==============================================================
 'customer', tokenID=identifier, offset=1181 [35:55/1181-35:63/1189]
 --OWNER:
-    VARIABLE customer [35:39/1165-35:63/1189] ReferencesTestCase/customer.cc type: const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180] init: null
+    VARIABLE customer [35:39/1165-35:63/1189] ReferencesTestCase/customer.cc  TYPE: const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE customer [35:39/1165-35:63/1189] ReferencesTestCase/customer.cc type: const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180] init: null
+    VARIABLE customer [35:39/1165-35:63/1189] ReferencesTestCase/customer.cc  TYPE: const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180]  INIT: null  SCOPE: null
 ==============================================================
 'output', tokenID=identifier, offset=1197 [36:5/1197-36:11/1203]
 --OWNER:
     STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
 --RESOLVED TO:
-    VARIABLE output [35:22/1148-35:37/1163] ReferencesTestCase/customer.cc type: &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156] init: null
+    VARIABLE output [35:22/1148-35:37/1163] ReferencesTestCase/customer.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156]  INIT: null  SCOPE: null
 ==============================================================
 'customer', tokenID=identifier, offset=1207 [36:15/1207-36:23/1215]
 --OWNER:
     STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
 --RESOLVED TO:
-    VARIABLE customer [35:39/1165-35:63/1189] ReferencesTestCase/customer.cc type: const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180] init: null
+    VARIABLE customer [35:39/1165-35:63/1189] ReferencesTestCase/customer.cc  TYPE: const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180]  INIT: null  SCOPE: null
 ==============================================================
 'name', tokenID=identifier, offset=1216 [36:24/1216-36:28/1220]
 --OWNER:
     STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
 --RESOLVED TO:
-    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h type: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146] init: null
+    VARIABLE name [34:9/1140-34:21/1152] ReferencesTestCase/customer.h  TYPE: $unresolved$::string TEXT=string  [34:9/1140-34:15/1146]  INIT: null  SCOPE: Customer 
 ==============================================================
 'customer', tokenID=identifier, offset=1244 [36:52/1244-36:60/1252]
 --OWNER:
     STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
 --RESOLVED TO:
-    VARIABLE customer [35:39/1165-35:63/1189] ReferencesTestCase/customer.cc type: const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180] init: null
+    VARIABLE customer [35:39/1165-35:63/1189] ReferencesTestCase/customer.cc  TYPE: const &Customer TEXT=const Customer&  [35:39/1165-35:54/1180]  INIT: null  SCOPE: null
 ==============================================================
 'discount', tokenID=identifier, offset=1253 [36:61/1253-36:69/1261]
 --OWNER:
     STMT Expression text='output << customer.name << " has discount " << customer.discount << '%''
 --RESOLVED TO:
-    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h type: int TEXT=int  [35:9/1161-35:12/1164] init: null
+    VARIABLE discount [35:9/1161-35:22/1174] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [35:9/1161-35:12/1164]  INIT: null  SCOPE: Customer 
 ==============================================================
 'output', tokenID=identifier, offset=1281 [37:12/1281-37:18/1287]
 --OWNER:
     STMT Return text='return output;'
 --RESOLVED TO:
-    VARIABLE output [35:22/1148-35:37/1163] ReferencesTestCase/customer.cc type: &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156] init: null
+    VARIABLE output [35:22/1148-35:37/1163] ReferencesTestCase/customer.cc  TYPE: &$unresolved$::ostream TEXT=ostream&  [35:22/1148-35:30/1156]  INIT: null  SCOPE: null
 ==============================================================

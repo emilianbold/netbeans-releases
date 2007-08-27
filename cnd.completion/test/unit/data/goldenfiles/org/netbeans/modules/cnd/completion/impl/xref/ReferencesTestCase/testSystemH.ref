@@ -54,9 +54,9 @@
 ==============================================================
 'obj', tokenID=identifier, offset=1074 [33:26/1074-33:29/1077]
 --OWNER:
-    VARIABLE obj [33:12/1060-33:29/1077] ReferencesTestCase/system.h type: const &System TEXT=const System&  [33:12/1060-33:25/1073] init: null
+    VARIABLE obj [33:12/1060-33:29/1077] ReferencesTestCase/system.h  TYPE: const &System TEXT=const System&  [33:12/1060-33:25/1073]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE obj [33:12/1060-33:29/1077] ReferencesTestCase/system.h type: const &System TEXT=const System&  [33:12/1060-33:25/1073] init: null
+    VARIABLE obj [33:12/1060-33:29/1077] ReferencesTestCase/system.h  TYPE: const &System TEXT=const System&  [33:12/1060-33:25/1073]  INIT: null  SCOPE: null
 ==============================================================
 'Module', tokenID=identifier, offset=1112 [35:5/1112-35:11/1118]
 --OWNER:
@@ -72,9 +72,9 @@
 ==============================================================
 'index', tokenID=identifier, offset=1134 [35:27/1134-35:32/1139]
 --OWNER:
-    VARIABLE index [35:23/1130-35:32/1139] ReferencesTestCase/system.h type: int TEXT=int  [35:23/1130-35:26/1133] init: null
+    VARIABLE index [35:23/1130-35:32/1139] ReferencesTestCase/system.h  TYPE: int TEXT=int  [35:23/1130-35:26/1133]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE index [35:23/1130-35:32/1139] ReferencesTestCase/system.h type: int TEXT=int  [35:23/1130-35:26/1133] init: null
+    VARIABLE index [35:23/1130-35:32/1139] ReferencesTestCase/system.h  TYPE: int TEXT=int  [35:23/1130-35:26/1133]  INIT: null  SCOPE: null
 ==============================================================
 'AddModule', tokenID=identifier, offset=1157 [36:10/1157-36:19/1166]
 --OWNER:
@@ -90,9 +90,9 @@
 ==============================================================
 'module', tokenID=identifier, offset=1175 [36:28/1175-36:34/1181]
 --OWNER:
-    VARIABLE module [36:20/1167-36:34/1181] ReferencesTestCase/system.h type: *Module TEXT=Module*  [36:20/1167-36:27/1174] init: null
+    VARIABLE module [36:20/1167-36:34/1181] ReferencesTestCase/system.h  TYPE: *Module TEXT=Module*  [36:20/1167-36:27/1174]  INIT: null  SCOPE: null
 --RESOLVED TO:
-    VARIABLE module [36:20/1167-36:34/1181] ReferencesTestCase/system.h type: *Module TEXT=Module*  [36:20/1167-36:27/1174] init: null
+    VARIABLE module [36:20/1167-36:34/1181] ReferencesTestCase/system.h  TYPE: *Module TEXT=Module*  [36:20/1167-36:27/1174]  INIT: null  SCOPE: null
 ==============================================================
 'GetModuleCount', tokenID=identifier, offset=1201 [38:9/1201-38:23/1215]
 --OWNER:
@@ -120,15 +120,15 @@
 ==============================================================
 'moduleList', tokenID=identifier, offset=1290 [42:22/1290-42:32/1300]
 --OWNER:
-    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h type: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289] init: null
+    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289]  INIT: null  SCOPE: System 
 --RESOLVED TO:
-    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h type: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289] init: null
+    VARIABLE moduleList [42:5/1273-42:33/1301] ReferencesTestCase/system.h  TYPE: $unresolved$::vector TEXT=vector < Module * >  [42:5/1273-42:21/1289]  INIT: null  SCOPE: System 
 ==============================================================
 'supportMetric', tokenID=identifier, offset=1310 [43:9/1310-43:22/1323]
 --OWNER:
-    VARIABLE supportMetric [43:5/1306-43:23/1324] ReferencesTestCase/system.h type: int TEXT=int  [43:5/1306-43:8/1309] init: null
+    VARIABLE supportMetric [43:5/1306-43:23/1324] ReferencesTestCase/system.h  TYPE: int TEXT=int  [43:5/1306-43:8/1309]  INIT: null  SCOPE: System 
 --RESOLVED TO:
-    VARIABLE supportMetric [43:5/1306-43:23/1324] ReferencesTestCase/system.h type: int TEXT=int  [43:5/1306-43:8/1309] init: null
+    VARIABLE supportMetric [43:5/1306-43:23/1324] ReferencesTestCase/system.h  TYPE: int TEXT=int  [43:5/1306-43:8/1309]  INIT: null  SCOPE: System 
 ==============================================================
 'ostream', tokenID=identifier, offset=1333 [45:8/1333-45:15/1340]
 --OWNER:
@@ -144,7 +144,7 @@
 ==============================================================
 'System', tokenID=identifier, offset=1370 [45:45/1370-45:51/1376]
 --OWNER:
-    VARIABLE  [45:39/1364-45:52/1377] ReferencesTestCase/system.h type: const &System TEXT=const System&  [45:39/1364-45:44/1369] init: null
+    VARIABLE  [45:39/1364-45:52/1377] ReferencesTestCase/system.h  TYPE: const &System TEXT=const System&  [45:39/1364-45:44/1369]  INIT: null  SCOPE: null
 --RESOLVED TO:
     CLASS System [30:1/1012-46:3/1382] ReferencesTestCase/system.h
 ==============================================================

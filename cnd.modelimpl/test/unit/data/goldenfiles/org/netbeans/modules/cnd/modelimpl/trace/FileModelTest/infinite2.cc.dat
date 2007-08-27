@@ -11,32 +11,32 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS A (A ) [1:1/0-4:3/37] lcurly=12
+CLASS A (A ) [1:1/0-4:3/37] lcurly=12 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=A VISIBILITY==private virtual==false text='A'
     MEMBERS:
-        FUNCTION foo [2:5/18-2:16/29] MethodImpl
+        FUNCTION foo [2:5/18-2:16/29] MethodImpl SCOPE: A 
             DEFINITION: foo  [6:1/42-9:2/74]
             SIGNATURE foo()
             UNIQUE NAME F:A::foo()
             PARAMETERS:
             RETURNS void TEXT=void  [2:5/18-2:9/22]
-FUNCTION DEFINITION foo  [6:1/42-9:2/74] FunctionDefinitionImpl
+FUNCTION DEFINITION foo  [6:1/42-9:2/74] FunctionDefinitionImpl SCOPE: infinite2.cc
     SIGNATURE foo()
     UNIQUE NAME f:A::foo()
     DECLARATION: foo  [2:5/18-2:16/29]
     PARAMETERS:
     RETURNS void TEXT=void  [6:1/42-6:5/46]
-    STATEMENT Compound  [6:15/56-9:2/74]
-        STATEMENT Declaration  [7:5/62-7:9/66]
-            VARIABLE a [7:5/62-7:9/66] type: $unresolved$::C TEXT=C  [7:5/62-7:6/63] init: null
+    STATEMENT Compound  [6:15/56-9:2/74] SCOPE: null
+        STATEMENT Declaration  [7:5/62-7:9/66] SCOPE: null
+            VARIABLE a [7:5/62-7:9/66]  TYPE: $unresolved$::C TEXT=C  [7:5/62-7:6/63]  INIT: null  SCOPE: null
 
 ========== Dumping model of PROJECT DummyProject
-CLASS A (A ) [1:1/0-4:3/37] lcurly=12
+CLASS A (A ) [1:1/0-4:3/37] lcurly=12 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=A VISIBILITY==private virtual==false text='A'
     MEMBERS:
-        FUNCTION foo [2:5/18-2:16/29] MethodImpl
+        FUNCTION foo [2:5/18-2:16/29] MethodImpl SCOPE: A 
             DEFINITION: foo  [6:1/42-9:2/74]
             SIGNATURE foo()
             UNIQUE NAME F:A::foo()

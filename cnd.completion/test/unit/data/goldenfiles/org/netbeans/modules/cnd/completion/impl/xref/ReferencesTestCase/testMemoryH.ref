@@ -84,33 +84,33 @@
 ==============================================================
 'type', tokenID=identifier, offset=1086 [29:16/1086-29:20/1090]
 --OWNER:
-    VARIABLE type [29:12/1082-29:31/1101] ReferencesTestCase/memory.h type: int TEXT=int  [29:12/1082-29:15/1085] init: text='STANDARD'
+    VARIABLE type [29:12/1082-29:31/1101] ReferencesTestCase/memory.h  TYPE: int TEXT=int  [29:12/1082-29:15/1085]  INIT: text='STANDARD'  SCOPE: null
 --RESOLVED TO:
-    VARIABLE type [29:12/1082-29:31/1101] ReferencesTestCase/memory.h type: int TEXT=int  [29:12/1082-29:15/1085] init: text='STANDARD'
+    VARIABLE type [29:12/1082-29:31/1101] ReferencesTestCase/memory.h  TYPE: int TEXT=int  [29:12/1082-29:15/1085]  INIT: text='STANDARD'  SCOPE: null
 ==============================================================
 'STANDARD', tokenID=identifier, offset=1093 [29:23/1093-29:31/1101]
 --OWNER:
-    VARIABLE type [29:12/1082-29:31/1101] ReferencesTestCase/memory.h type: int TEXT=int  [29:12/1082-29:15/1085] init: text='STANDARD'
+    VARIABLE type [29:12/1082-29:31/1101] ReferencesTestCase/memory.h  TYPE: int TEXT=int  [29:12/1082-29:15/1085]  INIT: text='STANDARD'  SCOPE: null
 --RESOLVED TO:
     ENUMERATOR Memory::MemoryType::STANDARD [26:23/987-26:31/995] ReferencesTestCase/memory.h
 ==============================================================
 'size', tokenID=identifier, offset=1107 [29:37/1107-29:41/1111]
 --OWNER:
-    VARIABLE size [29:33/1103-29:50/1120] ReferencesTestCase/memory.h type: int TEXT=int  [29:33/1103-29:36/1106] init: text='MEDIUM'
+    VARIABLE size [29:33/1103-29:50/1120] ReferencesTestCase/memory.h  TYPE: int TEXT=int  [29:33/1103-29:36/1106]  INIT: text='MEDIUM'  SCOPE: null
 --RESOLVED TO:
-    VARIABLE size [29:33/1103-29:50/1120] ReferencesTestCase/memory.h type: int TEXT=int  [29:33/1103-29:36/1106] init: text='MEDIUM'
+    VARIABLE size [29:33/1103-29:50/1120] ReferencesTestCase/memory.h  TYPE: int TEXT=int  [29:33/1103-29:36/1106]  INIT: text='MEDIUM'  SCOPE: null
 ==============================================================
 'MEDIUM', tokenID=identifier, offset=1114 [29:44/1114-29:50/1120]
 --OWNER:
-    VARIABLE size [29:33/1103-29:50/1120] ReferencesTestCase/memory.h type: int TEXT=int  [29:33/1103-29:36/1106] init: text='MEDIUM'
+    VARIABLE size [29:33/1103-29:50/1120] ReferencesTestCase/memory.h  TYPE: int TEXT=int  [29:33/1103-29:36/1106]  INIT: text='MEDIUM'  SCOPE: null
 --RESOLVED TO:
     ENUMERATOR Memory::MemoryCategory::MEDIUM [27:35/1049-27:41/1055] ReferencesTestCase/memory.h
 ==============================================================
 'units', tokenID=identifier, offset=1127 [29:57/1127-29:62/1132]
 --OWNER:
-    VARIABLE units [29:53/1123-29:66/1136] ReferencesTestCase/memory.h type: int TEXT=int  [29:53/1123-29:56/1126] init: text='1'
+    VARIABLE units [29:53/1123-29:66/1136] ReferencesTestCase/memory.h  TYPE: int TEXT=int  [29:53/1123-29:56/1126]  INIT: text='1'  SCOPE: null
 --RESOLVED TO:
-    VARIABLE units [29:53/1123-29:66/1136] ReferencesTestCase/memory.h type: int TEXT=int  [29:53/1123-29:56/1126] init: text='1'
+    VARIABLE units [29:53/1123-29:66/1136] ReferencesTestCase/memory.h  TYPE: int TEXT=int  [29:53/1123-29:56/1126]  INIT: text='1'  SCOPE: null
 ==============================================================
 'GetType', tokenID=identifier, offset=1163 [30:25/1163-30:32/1170]
 --OWNER:

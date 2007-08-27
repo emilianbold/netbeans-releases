@@ -11,8 +11,8 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-VARIABLE a [1:1/0-1:7/6] type: int TEXT=int  [1:1/0-1:4/3] init: null
+VARIABLE a [1:1/0-1:7/6]  TYPE: int TEXT=int  [1:1/0-1:4/3]  INIT: null  SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
-VARIABLE a [1:1/0-1:7/6] type: int TEXT=int  [1:1/0-1:4/3] init: null
+VARIABLE a [1:1/0-1:7/6]  TYPE: int TEXT=int  [1:1/0-1:4/3]  INIT: null  SCOPE: $Global$ 
 

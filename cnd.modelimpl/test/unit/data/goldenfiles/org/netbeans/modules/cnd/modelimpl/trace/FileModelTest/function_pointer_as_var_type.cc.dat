@@ -11,50 +11,50 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-FUNCTION fun1 [1:1/0-1:20/19] FunctionImpl
+FUNCTION fun1 [1:1/0-1:20/19] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE fun1(int,int)
     UNIQUE NAME F:fun1(int,int)
     PARAMETERS:
-         [1:10/9-1:13/12] type: int TEXT=int  [1:10/9-1:13/12] init: null
-         [1:15/14-1:18/17] type: int TEXT=int  [1:15/14-1:18/17] init: null
+         [1:10/9-1:13/12]  TYPE: int TEXT=int  [1:10/9-1:13/12]  INIT: null  SCOPE: null
+         [1:15/14-1:18/17]  TYPE: int TEXT=int  [1:15/14-1:18/17]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [1:1/0-1:4/3]
-VARIABLE fp_fun1 [2:1/20-2:33/52] type: int TEXT=int(*)(int,int)  [2:1/20-2:7/26] init: text='fun1'
-VARIABLE fpp_fun1 [3:1/53-3:39/91] type: int TEXT=int(**)(int,int)  [3:1/53-3:8/60] init: text='&'
-VARIABLE fppp_fun1 [4:1/92-4:42/133] type: int TEXT=int(***)(int,int)  [4:1/92-4:9/100] init: text='&'
-FUNCTION fun2 [6:1/135-6:21/155] FunctionImpl
+VARIABLE fp_fun1 [2:1/20-2:33/52]  TYPE: int TEXT=int(*)(int,int)  [2:1/20-2:7/26]  INIT: text='fun1'  SCOPE: $Global$ 
+VARIABLE fpp_fun1 [3:1/53-3:39/91]  TYPE: int TEXT=int(**)(int,int)  [3:1/53-3:8/60]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE fppp_fun1 [4:1/92-4:42/133]  TYPE: int TEXT=int(***)(int,int)  [4:1/92-4:9/100]  INIT: text='&'  SCOPE: $Global$ 
+FUNCTION fun2 [6:1/135-6:21/155] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE fun2(int,int)
     UNIQUE NAME F:fun2(int,int)
     PARAMETERS:
-         [6:11/145-6:14/148] type: int TEXT=int  [6:11/145-6:14/148] init: null
-         [6:16/150-6:19/153] type: int TEXT=int  [6:16/150-6:19/153] init: null
+         [6:11/145-6:14/148]  TYPE: int TEXT=int  [6:11/145-6:14/148]  INIT: null  SCOPE: null
+         [6:16/150-6:19/153]  TYPE: int TEXT=int  [6:16/150-6:19/153]  INIT: null  SCOPE: null
     RETURNS *int TEXT=int*  [6:1/135-6:5/139]
-VARIABLE fp_fun2 [7:1/156-7:34/189] type: *int TEXT=int*(*)(int,int)  [7:1/156-7:8/163] init: text='fun2'
-VARIABLE fpp_fun2 [8:1/190-8:40/229] type: *int TEXT=int*(**)(int,int)  [8:1/190-8:9/198] init: text='&'
-VARIABLE fppp_fun2 [9:1/230-9:43/272] type: *int TEXT=int*(***)(int,int)  [9:1/230-9:10/239] init: text='&'
+VARIABLE fp_fun2 [7:1/156-7:34/189]  TYPE: *int TEXT=int*(*)(int,int)  [7:1/156-7:8/163]  INIT: text='fun2'  SCOPE: $Global$ 
+VARIABLE fpp_fun2 [8:1/190-8:40/229]  TYPE: *int TEXT=int*(**)(int,int)  [8:1/190-8:9/198]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE fppp_fun2 [9:1/230-9:43/272]  TYPE: *int TEXT=int*(***)(int,int)  [9:1/230-9:10/239]  INIT: text='&'  SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
-FUNCTION fun1 [1:1/0-1:20/19] FunctionImpl
+FUNCTION fun1 [1:1/0-1:20/19] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE fun1(int,int)
     UNIQUE NAME F:fun1(int,int)
     PARAMETERS:
-         [1:10/9-1:13/12] type: int TEXT=int  [1:10/9-1:13/12] init: null
-         [1:15/14-1:18/17] type: int TEXT=int  [1:15/14-1:18/17] init: null
+         [1:10/9-1:13/12]  TYPE: int TEXT=int  [1:10/9-1:13/12]  INIT: null  SCOPE: null
+         [1:15/14-1:18/17]  TYPE: int TEXT=int  [1:15/14-1:18/17]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [1:1/0-1:4/3]
-VARIABLE fp_fun1 [2:1/20-2:33/52] type: int TEXT=int(*)(int,int)  [2:1/20-2:7/26] init: text='fun1'
-VARIABLE fpp_fun1 [3:1/53-3:39/91] type: int TEXT=int(**)(int,int)  [3:1/53-3:8/60] init: text='&'
-VARIABLE fppp_fun1 [4:1/92-4:42/133] type: int TEXT=int(***)(int,int)  [4:1/92-4:9/100] init: text='&'
-FUNCTION fun2 [6:1/135-6:21/155] FunctionImpl
+VARIABLE fp_fun1 [2:1/20-2:33/52]  TYPE: int TEXT=int(*)(int,int)  [2:1/20-2:7/26]  INIT: text='fun1'  SCOPE: $Global$ 
+VARIABLE fpp_fun1 [3:1/53-3:39/91]  TYPE: int TEXT=int(**)(int,int)  [3:1/53-3:8/60]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE fppp_fun1 [4:1/92-4:42/133]  TYPE: int TEXT=int(***)(int,int)  [4:1/92-4:9/100]  INIT: text='&'  SCOPE: $Global$ 
+FUNCTION fun2 [6:1/135-6:21/155] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE fun2(int,int)
     UNIQUE NAME F:fun2(int,int)
     PARAMETERS:
-         [6:11/145-6:14/148] type: int TEXT=int  [6:11/145-6:14/148] init: null
-         [6:16/150-6:19/153] type: int TEXT=int  [6:16/150-6:19/153] init: null
+         [6:11/145-6:14/148]  TYPE: int TEXT=int  [6:11/145-6:14/148]  INIT: null  SCOPE: null
+         [6:16/150-6:19/153]  TYPE: int TEXT=int  [6:16/150-6:19/153]  INIT: null  SCOPE: null
     RETURNS *int TEXT=int*  [6:1/135-6:5/139]
-VARIABLE fp_fun2 [7:1/156-7:34/189] type: *int TEXT=int*(*)(int,int)  [7:1/156-7:8/163] init: text='fun2'
-VARIABLE fpp_fun2 [8:1/190-8:40/229] type: *int TEXT=int*(**)(int,int)  [8:1/190-8:9/198] init: text='&'
-VARIABLE fppp_fun2 [9:1/230-9:43/272] type: *int TEXT=int*(***)(int,int)  [9:1/230-9:10/239] init: text='&'
+VARIABLE fp_fun2 [7:1/156-7:34/189]  TYPE: *int TEXT=int*(*)(int,int)  [7:1/156-7:8/163]  INIT: text='fun2'  SCOPE: $Global$ 
+VARIABLE fpp_fun2 [8:1/190-8:40/229]  TYPE: *int TEXT=int*(**)(int,int)  [8:1/190-8:9/198]  INIT: text='&'  SCOPE: $Global$ 
+VARIABLE fppp_fun2 [9:1/230-9:43/272]  TYPE: *int TEXT=int*(***)(int,int)  [9:1/230-9:10/239]  INIT: text='&'  SCOPE: $Global$ 
 
