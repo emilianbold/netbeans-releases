@@ -99,9 +99,9 @@ public class SaveNotifierYesNo
 
             Object[] buttonOptions =
             {
-                discardButton,
-                DialogDescriptor.CANCEL_OPTION,
-                saveButton
+                saveButton,discardButton,
+                DialogDescriptor.CANCEL_OPTION
+                
                 
             };
             
