@@ -180,7 +180,7 @@
                     <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
                 </tocitem>
                 <tocitem text="Creating a JAX-WS Web Service from a Java Class" >
-                    <tocitem text="Generating a JAX-WS Web Service from a Java Class" target="create_ws_from_java" />
+                    <tocitem text="Creating a JAX-WS Web Service from a Java Class" target="create_ws_from_java" />
                     <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
                 </tocitem>
                 <tocitem text="Creating a JAX-WS Web Service from a WSDL File" >
