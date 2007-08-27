@@ -88,12 +88,10 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
             return;
         }
         
-        String suggestedName = saveValue(text);
-        customEditor.setText(suggestedName);
+        saveValue(text);
     }
 
-    private String saveValue(final String text) {
-        final String[] str = new String[1];
+    private void saveValue(final String text) {
         if (component != null && component.get() != null) {
             final DesignComponent _component = component.get();
             _component.getDocument().getTransactionManager().readAccess(new Runnable() {
@@ -101,11 +99,9 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
                 public void run() {
                     PropertyValue newInstanceName = InstanceNameResolver.createFromSuggested(_component, text);
                     PropertyEditorInstanceName.super.setValue(newInstanceName);
-                    str[0] = MidpTypes.getString(newInstanceName);
                 }
             });
         }
-        return str[0];
     }
 
     @Override
