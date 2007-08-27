@@ -59,7 +59,7 @@ public class CmpGenerator implements PersistenceGenerator {
                               final ProgressContributor handle) throws IOException {
         CmpFromDbGenerator.ProgressNotifier progressNotifier = new CmpFromDbGenerator.ProgressNotifier() {
             public void switchToDeterminate(int workunits) {
-//                handle.switchToDeterminate(workunits);
+                handle.start(workunits);
             }
             public void progress(int workunit) {
                 handle.progress(workunit);
