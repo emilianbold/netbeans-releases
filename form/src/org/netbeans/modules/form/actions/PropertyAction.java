@@ -118,9 +118,11 @@ public class PropertyAction extends AbstractAction {
         ResourceBundle bundle = NbBundle.getBundle(PropertyAction.class);
         JButton okButton = new JButton(); 
         Mnemonics.setLocalizedText(okButton, bundle.getString("CTL_OK")); // NOI18N
+        okButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_OK")); // NOI18N
         okButton.setActionCommand(OK_COMMAND);
         JButton cancelButton = new JButton();
         Mnemonics.setLocalizedText(cancelButton, bundle.getString("CTL_Cancel")); // NOI18N
+        cancelButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Cancel")); // NOI18N
         cancelButton.setActionCommand(CANCEL_COMMAND);
         if (property.isDefaultValue()) {
             if ("Aqua".equals(UIManager.getLookAndFeel().getID())) {
@@ -131,6 +133,7 @@ public class PropertyAction extends AbstractAction {
         } else {
             JButton restoreButton = new JButton();
             Mnemonics.setLocalizedText(restoreButton, bundle.getString("CTL_RestoreDefault")); // NOI18N
+            restoreButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_RestoreDefault")); // NOI18N
             restoreButton.setActionCommand(RESTORE_COMMAND);
             if ("Aqua".equals(UIManager.getLookAndFeel().getID())) {
                 return new Object[] { restoreButton, cancelButton, okButton };
