@@ -1821,6 +1821,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 handledRoots.add(root);
                 FileObject rootFO = URLMapper.findFileObject(root);
                 if (rootFO == null) {
+                    LOGGER.info("Root folder: " + root +" doesn't exist.");    //NOI18N
                     it.remove();
                     continue;
                 }
