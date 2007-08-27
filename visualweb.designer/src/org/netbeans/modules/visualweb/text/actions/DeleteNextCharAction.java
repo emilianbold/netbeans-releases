@@ -72,17 +72,28 @@ public class DeleteNextCharAction extends TextAction {
 
 //            DesignerCaret caret = target.getCaret();
 //            if (caret == null) {
-            if (!target.hasCaret()) {
-//                if (!webform.getSelection().isSelectionEmpty()) {
-                SelectionManager sm = webform.getSelection();
-                if (!sm.isSelectionEmpty()) {
-//                    webform.getTopComponent().deleteSelection();
-//                    webform.tcDeleteSelection();
-                    Element[] componentRootElements = sm.getSelectedComponentRootElements();
-                    sm.clearSelection(true);
-                    webform.getDomDocument().deleteComponents(componentRootElements);
-                }
+//            if (!target.hasCaret()) {
+////                if (!webform.getSelection().isSelectionEmpty()) {
+//                SelectionManager sm = webform.getSelection();
+//                if (!sm.isSelectionEmpty()) {
+////                    webform.getTopComponent().deleteSelection();
+////                    webform.tcDeleteSelection();
+//                    Element[] componentRootElements = sm.getSelectedComponentRootElements();
+//                    sm.clearSelection(true);
+//                    webform.getDomDocument().deleteComponents(componentRootElements);
+//                    return;
+//                }
 
+            // XXX #104464 First apply the delete to the selected components.
+            SelectionManager sm = webform.getSelection();
+            if (!sm.isSelectionEmpty() && !webform.isInlineEditing()) {
+                Element[] componentRootElements = sm.getSelectedComponentRootElements();
+                sm.clearSelection(true);
+                webform.getDomDocument().deleteComponents(componentRootElements);
+                return;
+            }
+            
+            if (!target.hasCaret()) {
                 return;
             }
 
