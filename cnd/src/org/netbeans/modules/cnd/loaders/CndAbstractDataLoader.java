@@ -34,6 +34,7 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.modules.InstalledFileLocator;
 
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.util.Utilities;
 
 /**
  * DataLoader for recognising C/C++/Fortran (C-C-F) source files.
@@ -46,6 +47,8 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975682L;
+    protected static final boolean CASE_INSENSITIVE =
+            (Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
 
     protected CndAbstractDataLoader(String representationClassName) {
 	super(representationClassName);
@@ -65,16 +68,19 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
         ExtensionList extensions = getExtensions();
         for (Enumeration e = extensions.extensions(); e != null &&  e.hasMoreElements();) {
             String ex = (String) e.nextElement();
-            if (ex != null && ex.equals(ext))
+            if (ex != null && (!CASE_INSENSITIVE && ex.equals(ext) || CASE_INSENSITIVE && ex.equalsIgnoreCase(ext))) {
                 return true;
+            }
         }
         return false;
     }
     
+    @Override
     protected String actionsContext () {
         return "Loaders/text/x-cnd-sourcefile/Actions/"; // NOI18N
     }
     
+    @Override
     protected FileObject findPrimaryFile(FileObject fo) {
 	// Never recognize folders...
 	if (fo.isFolder()) {
@@ -85,7 +91,8 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
         if (ext != null && ext.length() > 0) {
             Enumeration e = getExtensions().extensions();
             while (e.hasMoreElements()) {
-                if (ext.equals(e.nextElement())) {
+                String ex = (String) e.nextElement();
+                if (!CASE_INSENSITIVE && ext.equals(ex) || CASE_INSENSITIVE && ext.equalsIgnoreCase(ex)) {
                     return fo;
                 }
             }
@@ -111,6 +118,7 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
         return fb;
     }
  
+    @Override
     protected MultiDataObject.Entry createPrimaryEntry(
 			    MultiDataObject obj,
 			    FileObject primaryFile) {
@@ -119,6 +127,7 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
 	return new CndFormat(obj, primaryFile);
     }
     
+    @Override
     protected MultiDataObject.Entry createSecondaryEntry(
 					MultiDataObject obj,
 					FileObject secondaryFile) {
@@ -133,8 +142,7 @@ public abstract class CndAbstractDataLoader extends UniFileLoader {
 	}
 	protected java.text.Format createFormat(FileObject target, String name, String ext) {
 	    
-	    Map map = ((CppSettings)CppSettings.findObject(
-			   CppSettings.class, true)).getReplaceableStringsProps();
+	    Map map = (CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsProps();
 	    
 	    String packageName = target.getPath().replace('/', '_');
             // add an underscore to the package name if it is not an empty string

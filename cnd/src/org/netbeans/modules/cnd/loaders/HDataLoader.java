@@ -79,30 +79,23 @@ public final class HDataLoader extends CndAbstractDataLoader {
         putProperty(PROP_EXTENSIONS, newList, true);
     }
     
-    public boolean resolveMimeType(String ext){
-        ExtensionList extensions = getExtensions();
-        for (Enumeration e = extensions.extensions(); e != null &&  e.hasMoreElements();) {
-            String ex = (String) e.nextElement();
-            if (ex != null && ex.equals(ext))
-                return true;
-        }
-        return false;
-    }
-
     protected String getMimeType(){
         return MIMENames.CHEADER_MIME_TYPE;
     }
 
     /** set the default display name */
+    @Override
     protected String defaultDisplayName() {
 	return NbBundle.getMessage(HDataLoader.class, "PROP_HDataLoader_Name"); // NOI18N
     }
 
     /** Override because we don't have secondary files */
+    @Override
     protected FileObject findSecondaryFile(FileObject fo){
 	return null;
     }
     
+    @Override
     protected FileObject findPrimaryFile(FileObject fo) {
         if (fo.isFolder()) {
             return null;
@@ -182,6 +175,7 @@ public final class HDataLoader extends CndAbstractDataLoader {
 	return new HDataObject(primaryFile, this);
     }
   
+    @Override
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj,
 			    FileObject primaryFile) {
 	return new CndAbstractDataLoader.CndFormat(obj, primaryFile);
