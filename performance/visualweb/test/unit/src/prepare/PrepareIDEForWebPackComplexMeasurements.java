@@ -93,7 +93,8 @@ public class PrepareIDEForWebPackComplexMeasurements  extends org.netbeans.jelly
      */
     public void closeWelcome(){
         try {
-            TopComponentOperator tComponent = new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title"));
+            String TCOName = Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title");
+            TopComponentOperator tComponent = new TopComponentOperator("Welcome");
             new JCheckBoxOperator(tComponent,Bundle.getStringTrimmed("org.netbeans.modules.welcome.resources.Bundle","LBL_ShowOnStartup")).changeSelection(false);
             tComponent.close();
         }catch(Exception exc){

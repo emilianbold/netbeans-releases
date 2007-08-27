@@ -99,7 +99,8 @@ public class PrepareIDEForMobilityComplexMeasurements extends JellyTestCase {
      */
     public void closeWelcome(){
         try {
-            TopComponentOperator tComponent = new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title"));
+            Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title");
+            TopComponentOperator tComponent = new TopComponentOperator("Welcome");
             new JCheckBoxOperator(tComponent,Bundle.getStringTrimmed("org.netbeans.modules.welcome.resources.Bundle","LBL_ShowOnStartup")).changeSelection(false);
             tComponent.close();
         }catch(Exception exc){
