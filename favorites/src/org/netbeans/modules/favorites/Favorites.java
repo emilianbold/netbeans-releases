@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -204,7 +204,7 @@ final class Favorites extends FilterNode {
             if (Favorites.getNode().equals(this.getParentNode())) {
                 DataShadow ds = (DataShadow) getCookie(DataShadow.class);
                 if (ds != null) {
-                    String name = ds.getOriginal().getName();
+                    String name = ds.getName();
                     String path = FileUtil.getFileDisplayName(ds.getOriginal().getPrimaryFile());
                     return NbBundle.getMessage(Favorites.class, "CTL_DisplayNameTemplate", name, path);
                 } else {
@@ -213,13 +213,6 @@ final class Favorites extends FilterNode {
             } else {
                 return super.getDisplayName();
             }
-            /*String s = super.getDisplayName ();
-            for (;;) {
-                int indx = s.indexOf("(->)"); // NOI18N
-                if (indx == -1) return s;
-                
-                s = s.substring(0, indx) + s.substring (indx + 4);
-            }*/
         }
         
         // Must be overridden since getDisplayName is.
