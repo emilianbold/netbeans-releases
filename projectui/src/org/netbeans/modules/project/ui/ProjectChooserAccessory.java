@@ -52,10 +52,10 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -294,13 +294,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                                 jTextFieldProjectName.setEnabled(true);
                             }
                         } catch (IOException x) {
-                            String msg = x.toString();
-                            ErrorManager.Annotation[] anns = ErrorManager.getDefault().findAnnotations(x);
-                            for (int i = 0; i < anns.length; i++) {
-                                if (anns[i].getLocalizedMessage() != null) {
-                                    msg = anns[i].getLocalizedMessage();
-                                    break;
-                                }
+                            String msg = Exceptions.findLocalizedMessage(x);
+                            if (msg == null) {
+                                msg = x.toString();
                             }
                             jTextFieldProjectName.setText(msg);
                             jTextFieldProjectName.setCaretPosition(0);

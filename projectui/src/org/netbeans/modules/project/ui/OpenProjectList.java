@@ -582,7 +582,9 @@ public final class OpenProjectList {
                         
         }
         catch ( IOException e ) {
+            /* Ignore; will be reported e.g. by ProjectChooserAccessory:
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+             */
             return null;
         }
         
