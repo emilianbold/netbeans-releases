@@ -408,13 +408,15 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         final List<Product> toUninstall =
                 registry.getProducts(Status.TO_BE_UNINSTALLED);
         
-        if ((toInstall.size() == 0) && (toUninstall.size() == 0)) {
-            if (!isThereAnythingVisibleToInstall()) {
-                return panel.getProperty(panel.ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY);
-            }
-            if (!isThereAnythingVisibleToUninstall()) {
+            if ((toInstall.size() == 0) && (toUninstall.size() == 0)) {
+            if (isThereAnythingVisibleToInstall() &&
+                    Boolean.getBoolean(Registry.SUGGEST_INSTALL_PROPERTY)) {
                 return panel.getProperty(panel.ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
             }
+            if (isThereAnythingVisibleToUninstall() && 
+                    Boolean.getBoolean(Registry.SUGGEST_UNINSTALL_PROPERTY)) {
+                return panel.getProperty(panel.ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY);
+            }            
             return panel.getProperty(panel.ERROR_NO_CHANGES_PROPERTY);
         }
         
