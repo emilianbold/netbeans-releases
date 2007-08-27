@@ -75,7 +75,7 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
         Element data = Util.getPrimaryConfigurationData(helper);
         Element foldersEl = Util.findElement(data, "folders", Util.NAMESPACE); // NOI18N
         if (foldersEl == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.<FileObject,String>emptyMap();
         }
         for (Element sourceFolderEl : Util.findSubElements(foldersEl)) {
             if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
@@ -95,7 +95,7 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
             }
         }
         if (encodingsCache == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.<FileObject,String>emptyMap();
         }
         return encodingsCache;
     }

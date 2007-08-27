@@ -38,11 +38,11 @@ public class OutputCategoryProvider implements ProjectCustomizer.CompositeCatego
     }
     
     public Category createCategory(Lookup context) {
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration)context.lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration aux = context.lookup(AuxiliaryConfiguration.class);
         assert aux != null;
         if (LookupProviderImpl.isMyProject(aux)) {
             Category cat = ProjectCustomizer.Category.create("Output", //NOI18N
-                    NbBundle.getMessage(ClasspathPanel.class, "LBL_ProjectCustomizer_Category_Output"), null, null);
+                    NbBundle.getMessage(ClasspathPanel.class, "LBL_ProjectCustomizer_Category_Output"), null, new Category[] { null });
             return cat;
         }
         return null;

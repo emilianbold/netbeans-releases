@@ -48,20 +48,20 @@ public class ClasspathCategoryProvider implements ProjectCustomizer.CompositeCat
     }
     
     public Category createCategory(Lookup context) {
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration)context.lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration aux = context.lookup(AuxiliaryConfiguration.class);
         assert aux != null;
         if (LookupProviderImpl.isMyProject(aux)) {
             Category cat = ProjectCustomizer.Category.create("classpath", //NOI18N
-                    NbBundle.getMessage(ClasspathPanel.class, "LBL_ProjectCustomizer_Category_Classpath"), null, null);
+                    NbBundle.getMessage(ClasspathPanel.class, "LBL_ProjectCustomizer_Category_Classpath"), null, new Category[] { null });
             return cat;
         }
         return null;
     }
 
     public JComponent createComponent(Category category, Lookup context) {
-        Project project = (Project)context.lookup(Project.class);
-        ProjectAccessor acc = (ProjectAccessor)context.lookup(ProjectAccessor.class);
-        AuxiliaryConfiguration aux = (AuxiliaryConfiguration)context.lookup(AuxiliaryConfiguration.class);
+        Project project = context.lookup(Project.class);
+        ProjectAccessor acc = context.lookup(ProjectAccessor.class);
+        AuxiliaryConfiguration aux = context.lookup(AuxiliaryConfiguration.class);
         assert aux != null;
         assert acc != null;
         assert project != null;
