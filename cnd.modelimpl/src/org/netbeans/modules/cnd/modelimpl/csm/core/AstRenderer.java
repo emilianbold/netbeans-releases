@@ -775,7 +775,7 @@ public class AstRenderer {
                                 FileImpl file, boolean _static) {
         int arrayDepth = 0;
         String name = "";
-        AST qn = null;
+            AST qn = null;
 	int inParamsLevel = 0;
         for( AST token = varAst.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
@@ -790,6 +790,13 @@ public class AstRenderer {
 			arrayDepth++;
 		    }
                     break;
+                case CPPTokenTypes.LITERAL_struct:
+                case CPPTokenTypes.LITERAL_union:
+                case CPPTokenTypes.LITERAL_enum:
+                case CPPTokenTypes.LITERAL_class:
+		    // skip both this and next
+                    token = token.getNextSibling();
+                    continue;
                 case CPPTokenTypes.CSM_QUALIFIED_ID:
 		    if( inParamsLevel == 0 ) {
 			qn = token;
