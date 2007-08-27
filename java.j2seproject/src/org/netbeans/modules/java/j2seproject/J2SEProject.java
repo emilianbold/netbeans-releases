@@ -125,6 +125,12 @@ public final class J2SEProject implements Project, AntProjectListener {
         this.helper = helper;
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
+        for (int v = 4; v < 10; v++) {
+            if (aux.getConfigurationFragment("data", "http://www.netbeans.org/ns/j2se-project/" + v, true) != null) { // NOI18N
+                throw Exceptions.attachLocalizedMessage(new IOException("too new"), // NOI18N
+                        NbBundle.getMessage(J2SEProject.class, "J2SEProject.too_new", FileUtil.getFileDisplayName(helper.getProjectDirectory())));
+            }
+        }
         refHelper = new ReferenceHelper(helper, aux, eval);
         buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEExtenderImplementation());
     /// TODO replace this GeneratedFilesHelper with the default one when fixing #101710
