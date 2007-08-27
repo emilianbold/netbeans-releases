@@ -555,6 +555,13 @@ public class ClassData extends ElementDataObject
                 for (int i=0; i<superClasses.length; i++)
                 {
                     IClassifier classifier = superClasses[i];
+                    
+                    // somehow, relationships to null can be made, so
+                    // just avoid them until the root issue is solved
+                    // i.e. - not a web report generation issue
+                    if (classifier == null)
+                        continue;
+                    
                     out.write("<A HREF=\"" + getLinkTo(classifier) + // NOI18N
                             "\" title=\"" + getElementType() + " in" + getOwningPackageName() + // NOI18N
                             "\">" + classifier.getName() + "</A>"); // NOI18N
@@ -626,6 +633,13 @@ public class ClassData extends ElementDataObject
                 for (int i=0; i<superClasses.length; i++)
                 {
                     IClassifier classifier = superClasses[i];
+                    
+                    // somehow, relationships to null can be made, so
+                    // just avoid them until the root issue is solved
+                    // i.e. - not a web report generation issue
+                    if (classifier == null)
+                        continue;
+                    
                     out.write("<A HREF=\"" + getLinkTo(classifier) + // NOI18N
                             "\" title=\"" + getElementType() + " in" + getOwningPackageName() + // NOI18N
                             "\">" + classifier.getName() + "</A>"); // NOI18N
