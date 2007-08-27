@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.Reference;
@@ -31,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-//import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -52,19 +50,21 @@ public final class Unresolved implements Disposable {
 	}
     }
     
-    public static final class UnresolvedClass extends ClassEnumBase<CsmClass> implements CsmClass {
-        public UnresolvedClass(String name, NamespaceImpl namespace, CsmFile file) {
-            super(name, file, null);
-	    init(namespace, null);
+    public final class UnresolvedClass extends ClassEnumBase<CsmClass> implements CsmClass {
+	
+        public UnresolvedClass(String name) {
+            super(name, unresolvedFile, null);
+	    init(unresolvedNamespace, null);
+        }
+	
+	public void register() {
 	    // we don't need registering in project here.
 	    // so we just register in namespace and in repository
-            if (namespace != null) {
-                ((MutableDeclarationsContainer)namespace).addDeclaration(this);
+            if (unresolvedNamespace != null) {
+                unresolvedNamespace.addDeclaration(this);
             }
-//	    if (TraceFlags.USE_REPOSITORY) {
-//		RepositoryUtils.put(this);
-//	    }
-        }
+	}
+	
         public boolean isTemplate() {
             return false;
         }
@@ -213,7 +213,7 @@ public final class Unresolved implements Disposable {
     // doesn't need Repository Keys
     private final NamespaceImpl unresolvedNamespace;
     // doesn't need Repository Keys
-    private Map<String, Reference<CsmClass>> dummiesForUnresolved = new HashMap<String, Reference<CsmClass>>();
+    private Map<String, Reference<UnresolvedClass>> dummiesForUnresolved = new HashMap<String, Reference<UnresolvedClass>>();
     
     public Unresolved(ProjectBase project) {
         if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
@@ -225,15 +225,6 @@ public final class Unresolved implements Disposable {
         }
         unresolvedFile = new UnresolvedFile(project);
         unresolvedNamespace = new UnresolvedNamespace(project);
-        
-//        if (TraceFlags.USE_REPOSITORY) {
-//            // TODO: hang or put unresolvedFile?
-//            RepositoryUtils.put(unresolvedFile);
-//            assert (UIDCsmConverter.fileToUID(unresolvedFile) != null);
-//            assert (UIDCsmConverter.UIDtoFile(UIDCsmConverter.fileToUID(unresolvedFile)) != null);
-//            assert (UIDCsmConverter.namespaceToUID(unresolvedNamespace) != null);
-//            assert (UIDCsmConverter.UIDtoNamespace(UIDCsmConverter.namespaceToUID(unresolvedNamespace)) != null);
-//        }
     }
     
     public void dispose() {
@@ -268,11 +259,12 @@ public final class Unresolved implements Disposable {
     }
     
     public CsmClass getDummyForUnresolved(String name) {
-        Reference<CsmClass> ref = dummiesForUnresolved.get(name);
-        CsmClass cls = ref == null ? null : ref.get();
+        Reference<UnresolvedClass> ref = dummiesForUnresolved.get(name);
+        UnresolvedClass cls = ref == null ? null : ref.get();
         if( cls == null ) {
-            cls = new UnresolvedClass(name, unresolvedNamespace, unresolvedFile);
+            cls = new UnresolvedClass(name);
             dummiesForUnresolved.put(name, new SoftReference(cls));
+	    cls.register();
         }
         return cls;
     }
