@@ -377,7 +377,7 @@ public class CsmTracer {
                         sb.append("Stmt ");
                     }
                     if (CsmKindUtilities.isOffsetable(scope)) {
-                        sb.append(getOffsetString(el, false));
+                        sb.append(getOffsetString(scope, false));
                     }
 		}
             }
