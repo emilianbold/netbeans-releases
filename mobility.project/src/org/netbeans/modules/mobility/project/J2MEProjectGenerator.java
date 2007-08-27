@@ -72,8 +72,6 @@ import java.beans.PropertyVetoException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mobility.project.ui.customizer.MIDletScanner;
@@ -129,16 +127,55 @@ public class J2MEProjectGenerator {
         });
     }
     
+    public static void copyFolder(File source, File target, Pattern filter) throws IOException {
+        if (isParent (source, target))
+            return;
+        File[] files = source.listFiles();
+        if (files != null) for (int a = 0; a < files.length; a ++) {
+            File file = files[a];
+            if (filter.matcher(file.getAbsolutePath().replace('\\', '/')).matches())
+                continue;
+            if (file.isDirectory()) {
+                File subdir = new File(target, file.getName());
+                subdir.mkdirs();
+                copyFolder(file, subdir, filter);
+            } else {
+                FileInputStream fis = null;
+                FileOutputStream fos = null;
+                try {
+                    fis = new FileInputStream(file);
+                    fos = new FileOutputStream(new File(target, file.getName()));
+                    FileUtil.copy(fis, fos);
+                } finally {
+                    if (fis != null) try { fis.close(); } catch (IOException e) {}
+                    if (fos != null) try { fos.close(); } catch (IOException e) {}
+                }
+            }
+        }
+    }
+    
     public static AntProjectHelper createProjectFromWtkProject(final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform, final String appLocation) throws IOException {
         return createProject(projectLocation, name, platform, new ProjectGeneratorCallback() {
             public void doPostGeneration(Project project, AntProjectHelper helper, @SuppressWarnings("unused") FileObject projectLocation, File projectLocationFile, @SuppressWarnings("unused") ArrayList configurations) throws IOException {
                 final ReferenceHelper refHelper = getReferenceHelper(project);
-                setSourceRoot(helper, refHelper, new File(appLocation, SRC).getAbsolutePath()); //NOI18N
+                
+                FileObject src = projectLocation.createFolder("src");  //NOI18N
+                File srcFile = FileUtil.toFile(src);
+                FileObject lib = projectLocation.createFolder("lib");  //NOI18N
+                File libFile = FileUtil.toFile(lib);
+                FileObject res = projectLocation.createFolder("res");  //NOI18N
+                File resFile = FileUtil.toFile(res);
+                copyJavaFolder(new File(appLocation, "src"), srcFile, IMPORT_SRC_EXCLUDES);  //NOI18N
+                copyFolder(new File(appLocation, "res"), resFile, IMPORT_SRC_EXCLUDES);  //NOI18N
+                copyFolder(new File(appLocation, "lib"), libFile, IMPORT_EXCLUDES);  //NOI18N
+                
+                //setSourceRoot(helper, refHelper, new File(appLocation, SRC).getAbsolutePath()); //NOI18N
                 final File jad = findWtkJadFile(appLocation);
                 final File mf = findWtkManifestFile(appLocation);
                 loadJadAndManifest(helper, jad, mf);
                 loadWTKProperties(helper, projectLocationFile);
-                final File[] files = new File(appLocation, "lib").listFiles(); //NOI18N
+                
+                final File[] files = libFile.listFiles(); //NOI18N
                 File[] libs = null;
                 if (files == null) {
                     libs = new File[1];
@@ -146,7 +183,7 @@ public class J2MEProjectGenerator {
                     libs = new File[files.length + 1];
                     System.arraycopy(files, 0, libs, 1, files.length);
                 }
-                libs[0] = new File(appLocation, "res"); //NOI18N
+                libs[0] = resFile; //NOI18N
                 loadLibraries(helper, refHelper, libs);
                 fillMissingMIDlets(project, helper);
             }
@@ -828,7 +865,7 @@ public class J2MEProjectGenerator {
         return dirFO;
     }
     
-    private static void copyJavaFolder(final File source, final File target, final Pattern filter) throws IOException {
+    public static void copyJavaFolder(final File source, final File target, final Pattern filter) throws IOException {
         copyJavaFolder(source, target, target, filter);
     }
     

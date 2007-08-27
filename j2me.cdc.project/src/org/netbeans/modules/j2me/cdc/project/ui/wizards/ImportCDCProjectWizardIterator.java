@@ -47,6 +47,7 @@ import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Lookup;
@@ -182,13 +183,23 @@ public class ImportCDCProjectWizardIterator implements TemplateWizard.Iterator {
                         }
                     }
                 }
+                
+                FileObject src = projectLocation.createFolder("src");  //NOI18N
+                File srcFile = FileUtil.toFile(src);
+                FileObject lib = projectLocation.createFolder("lib");  //NOI18N
+                File libFile = FileUtil.toFile(lib);
+                FileObject res = projectLocation.createFolder("resources");  //NOI18N
+                File resFile = FileUtil.toFile(res);
+                J2MEProjectGenerator.copyJavaFolder(new File(location, "src"), srcFile, J2MEProjectGenerator.IMPORT_SRC_EXCLUDES);  //NOI18N
+                J2MEProjectGenerator.copyFolder(new File(location, "resources"), resFile, J2MEProjectGenerator.IMPORT_SRC_EXCLUDES);  //NOI18N
+                J2MEProjectGenerator.copyFolder(new File(location, "lib"), libFile, J2MEProjectGenerator.IMPORT_EXCLUDES);  //NOI18N
+                
                 String pa=oldep.getProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE);
                 if (pa!=null)
                     ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_ACTIVE_DESCRIPTION,pa.replace('_',' '));
                 ep.setProperty(DefaultPropertiesDescriptor.PLATFORM_TRIGGER,"CDC");
                 ep.setProperty(DefaultPropertiesDescriptor.LIBS_CLASSPATH,oldep.getProperty("javac.classpath"));
-                ep.setProperty(DefaultPropertiesDescriptor.SRC_DIR,location+File.separator+oldep.getProperty(DefaultPropertiesDescriptor.SRC_DIR));
-                ep.setProperty(CDCPropertiesDescriptor.DLL_DIR, location+File.separator+oldep.getProperty(CDCPropertiesDescriptor.DLL_DIR));                        
+                ep.setProperty(DefaultPropertiesDescriptor.SRC_DIR,oldep.getProperty(DefaultPropertiesDescriptor.SRC_DIR));
 
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }});

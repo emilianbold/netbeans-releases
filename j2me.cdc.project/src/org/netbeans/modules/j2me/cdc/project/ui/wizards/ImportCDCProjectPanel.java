@@ -65,6 +65,7 @@ public class ImportCDCProjectPanel extends javax.swing.JPanel implements Documen
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
     static final String PROJECT_LOCATION = "ImportProjectLocation"; // NOI18N
     private static String prjType;
+    private static String location;
     /**
      * Creates new form ImportCDCProjectPanel
      */
@@ -197,9 +198,12 @@ public class ImportCDCProjectPanel extends javax.swing.JPanel implements Documen
     }
         
     private void bBrowseActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bBrowseActionPerformed
-        String location = tLocation.getText();
+        if (location == null)
+            location = tLocation.getText();
         if (location == null  ||  "".equals(location)) // NOI18N
             location = System.getProperty("user.home", ""); // NOI18N
+        File origLoc = ProjectChooser.getProjectsFolder();
+        ProjectChooser.setProjectsFolder(new File(location));
         JFileChooser ch=createProjectChooser();
         if  (JFileChooser.APPROVE_OPTION == ch.showOpenDialog( WindowManager.getDefault().getMainWindow() ))
         {
@@ -207,9 +211,10 @@ public class ImportCDCProjectPanel extends javax.swing.JPanel implements Documen
             if (folder != null)
             {
                 tLocation.setText(folder);
-                ProjectChooser.setProjectsFolder(ch.getSelectedFile().getParentFile());
+                location = new File(folder).getParent();
             }
         }
+        ProjectChooser.setProjectsFolder(origLoc);
     }//GEN-LAST:event_bBrowseActionPerformed
 
     public void insertUpdate(DocumentEvent e)
