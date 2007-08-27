@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
         <title>Setting up a JMS Resource on the Sun Java System Application Server/GlassFish</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
-
+<body>
     <h2>Setting up a JMS Resource on the Sun Java System Application Server/GlassFish</h2>
     <p><small><a href="#seealso">See Also</a></small></p>
     <p>The JMS API allows loosely coupled, reliable, asynchronous interactions among Java EE components 
@@ -38,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
         <li><b>Connection Factories</b> (Connector Resource). These objects are used to create a connection to the JMS messaging system, 
         and encapsulate connection parameters.</li>
         <li><b>Destination Resources</b> (Admin Object Resource). These objects are specified as the targets and sources of messages.
-            When creating a destination resource, you create two objects:</p>    
+            When creating a destination resource, you create two objects:   
             <ul>
                 <li>A physical destination</li>
                 <li>A destination resource that refers to the physical destination using the JNDI name</li>
@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
 
             To create a connection factory, choose one of the following connector resource types:
             <ul>
-                <li><tt><b>javax.jms.QueueConnectionFactory</b><tt> - used for point-to-point communication</li>
+                <li><tt><b>javax.jms.QueueConnectionFactory</b></tt> - used for point-to-point communication</li>
                 <li><tt><b>javax.jms.TopicConnectionFactory</b></tt> - used for publish-subscribe communication</li>
                 <li><tt><b>javax.jms.ConnectionFactory</b></tt> - used for point-to-point communication</li>
             </ul>

@@ -5,12 +5,12 @@
  * Copyright 2006 Sun Microsystems, Inc.
  * All rights reserved. Use is subject to license terms.
 -->
-  <title>sun-web.xml/sun-ejb-jar.xml Visual Editor: Web Services</title>
+  <title>Deployment Descriptor Visual Editor: Web Services</title>
   
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2> <tt>sun-web.xml</tt>/<tt>sun-ejb-jar.xml</tt> Visual Editor: Web Services</h2>
+<h2>Deployment Descriptor Visual Editor: Web Services</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>The <tt>sun-web.xml</tt>/<tt>sun-ejb-jar.xml</tt> visual editor lets you edit the platform-specific 
     deployment descriptors for Sun Java System Application Server/GlassFish. 
@@ -21,32 +21,64 @@ deployment descriptors if the target server is the Sun Java System Application S
 
 <p>You get to this pane by expanding your project's Configuration Files node in the Projects window 
 and double-clicking <tt>sun-web.xml</tt> or <tt>sun-ejb-jar.xml</tt> and clicking the Web Services tab.</p>
-  
+
+<p>Depending on your application, the Web Services tab may have the following sections.</p>
+<ul>
+    <li><a href="#services">Web Services</a></li>
+    <li><a href="#sercli">Web Service Clients</a></li>
+    <li><a href="#endpointprops">Web Service Endpoints</a></li>
+</ul>
+<!-- TODO -- need to check if endpoints is moved here -->
+
+<a name="services"></a>
+<h3>Web Services</h3>
 <p>Click Add Web Service to add a descriptor properties for a web service.
 Each web service has the following properties.</p>
-
-
-
-<h3>Web Service Description Name</h3>
-<p>This is the web service description name as read from the corresponding entry for this service in your <tt>webservices.xml</tt> file.
-<h3>WSDL Publish Location</h3>
+<ul>
+<li><b>Web Service Description Name.</b>
+is the web service description name as read from the corresponding entry for this service in your <tt>webservices.xml</tt> file.</li>
+<li><b>WSDL Publish Location.</b>
 <p>Optionally enter a URL of a directory to which this web service's WSDL and any dependent
-  files are published during deployment.</p>
-
+  files are published during deployment.</li>
+</ul>
+  
   <ul class="note">
     <li>The Web Services node is visible when a <tt>webservices.xml</tt> also exists in the project.  
     In other words, this node only appears for web and enterprise bean projects that implement web services.</li>
 </ul>
   
-  <h3><a name="endpointprops">Web Service Endpoints</a></h3>
+<a name="sercli"></a><h3>Web Service Clients</h3>
+<p>Click Add Web Service Reference to add a descriptor properties for a web service.
+Each web service client has the following properties.</p>
+<ul>
+    <li><b>Service Reference Name.</b> The name of the Service reference.</li>
+    <li><b>WSDL override.</b> The URL to a WSDL document. This URL overrides the
+    WSDL document reference in the web-app.xml file.</li>
+    <li><b>Port Information.</b> Define and configure the port information and properties of a Service reference.
+        Add a new port for a Service reference by clicking Add Port Information, or expand an existing port node to
+    edit the properties of that port or to remove it. </li>
+    <li><b>Selected Port Information.</b> Supply or edit the following properties for the 
+        port selected in the Port Information combo box, 
+        <ul>
+            <li>Service Endpoint Interface</li>
+            <li>WSDL Port Namespace URI</li>
+            <li>WSDL Port Localpart. This is the local portion of the WSDL namespace.</li>
+            <li>Message Security. When selected you can edit the message security binding settings.</li>
+        </ul>
+    </li>
+</ul>
+
+<h3><a name="endpointprops">Web Service Endpoints</a></h3>
 <p>The Web Service Endpoints section enables you to edit the properties of any endpoints exposed by 
 a web service in the application.  
-    An endpoint identifies the final destination of a service or a message.
-  In the web service context, an endpoint is the URL at which the service can be reached.
-  The properties should automatically be prepopulated with entries corresponding to the ports
-  defined for this service in <tt>webservices.xml</tt>.</p>
+An endpoint identifies the final destination of a service or a message.
+In the web service context, an endpoint is the URL at which the service can be reached.
+The properties should automatically be prepopulated with entries corresponding to the ports
+defined for this service in <tt>webservices.xml</tt>.</p>
+<p>Click Add Endpoint to add a descriptor properties for a web service endpoint.
+Each web service client has the following properties.</p>
 <p>You can edit the following properties in the visual editor:</p>
-<ul></ul>  
+<ul>
 <li><b>Port Component Name.</b> The port component name for this endpoint.  
 Matches the corresponding port component name in <tt>webservices.xml</tt>.  
 You generally should not need to edit this field if the endpoint endpoint is already specified in <tt>webservices.xml</tt>.</li>
@@ -87,7 +119,7 @@ You generally should not need to edit this field if the endpoint endpoint is alr
     </li>
     <li><b>Debugging Enabled.</b></li>
     <li><b>Message Security.</b></li>
-    
+    </ul>
     <br>
     <p>For more information, see <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/build/about_build_ws.html">About Building Web Services</a>.</p>
 
@@ -106,9 +138,7 @@ You generally should not need to edit this field if the endpoint endpoint is alr
 
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
+<table border="0" cellpadding="50">
 <tr><td>&nbsp;</td></tr>
 </table>
 </body>

@@ -97,7 +97,6 @@
    <mapID target="AS_Wiz_DataSource_props" 		url="resourcewizards/DataSource_props.html"  />
    <mapID target="AS_Wiz_JMS_general" 		url="resourcewizards/JMS_general.html"  />
    <mapID target="AS_Wiz_JMS_props" 		url="resourcewizards/JMS_props.html"  />
-   <mapID target="AS_Wiz_PMF_general" 		url="resourcewizards/PMF_general.html"  />
    <mapID target="AS_Wiz_Mail_general" 		url="resourcewizards/Mail_general.html"  />
    <mapID target="AS_Wiz_Mail_props" 		url="resourcewizards/Mail_props.html"  />
 
