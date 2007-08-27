@@ -40,4 +40,15 @@ public class MethodParameter {
     public ClassData getType() {
         return type;
     }
+
+    public boolean equals(Object obj) {
+        return (obj instanceof MethodParameter) 
+                && ((MethodParameter)obj).getName().equals(name)
+                && ((MethodParameter)obj).getType().equals(type);
+    }
+
+    public int hashCode() {
+        return name.hashCode() + type.hashCode();
+    }
+    
 }

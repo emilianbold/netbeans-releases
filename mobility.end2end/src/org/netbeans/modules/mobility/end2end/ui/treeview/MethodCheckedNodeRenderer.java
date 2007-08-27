@@ -8,9 +8,12 @@ package org.netbeans.modules.mobility.end2end.ui.treeview;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.event.ItemListener;
 import java.beans.BeanInfo;
+import java.io.CharConversionException;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -20,6 +23,7 @@ import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -49,10 +53,10 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
         initComponents();
         Boolean booleanValue = (Boolean) UIManager.get("Tree.drawsFocusBorderAroundIcon"); //NOI18N
         setFocusPainted((booleanValue != null) && (booleanValue.booleanValue()));
-        jPanel2.setSize(jCheckBox1.getSize());
+        jPanel2.setPreferredSize(jCheckBox1.getSize());
         layout = (CardLayout) jPanel1.getLayout();
     }
-
+    
     public void setContentStorage(final MethodCheckedTreeBeanView storage) {
         this.storage = storage;
     }
@@ -88,10 +92,10 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
             }
 
             // Strikeout the line
-            if (node.getValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE) != null && !((Boolean) node.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE )).booleanValue()) {
-                setText("<html><s>" + node.getDisplayName() + "</s></html>");
+            if (node.getValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE) != null && !((Boolean) node.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE )).booleanValue()) try {
+                setText("<html><s>" + XMLUtil.toAttributeValue(node.getDisplayName()) + "</s></html>");
                 setEnabled(false);
-            } else {
+            } catch (CharConversionException cce) {} else {
                 setEnabled(true);
             }
 
@@ -174,14 +178,13 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
         jCheckBox1 = new org.netbeans.modules.mobility.end2end.ui.treeview.MultiStateCheckBox();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
 
-        setLayout(new java.awt.GridBagLayout());
+        setLayout(new java.awt.BorderLayout(5, 0));
 
         jPanel1.setLayout(new java.awt.CardLayout());
         jPanel1.add(jCheckBox1, "true");
@@ -190,23 +193,17 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 127, Short.MAX_VALUE)
+            .add(0, 620, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 23, Short.MAX_VALUE)
+            .add(0, 374, Short.MAX_VALUE)
         );
 
         jPanel1.add(jPanel2, "false");
 
-        add(jPanel1, new java.awt.GridBagConstraints());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        add(jLabel1, gridBagConstraints);
+        add(jPanel1, java.awt.BorderLayout.CENTER);
+        add(jLabel1, java.awt.BorderLayout.EAST);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.netbeans.modules.mobility.end2end.ui.treeview.MultiStateCheckBox jCheckBox1;

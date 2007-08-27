@@ -20,9 +20,7 @@
 package org.netbeans.modules.mobility.e2e.classdata;
 
 import java.util.*;
-import java.util.concurrent.Future;
 import javax.lang.model.element.*;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -189,10 +187,10 @@ public class ClassDataRegistry {
         updateClassDataTree();
 
         HashSet<ClassData> result = new HashSet<ClassData>();
-
+        int pLength = packageName.length() + 1;
         Set<String> fqClassNames = this.baseClasses.keySet();
         for (String fqClassName : fqClassNames)
-            if ( fqClassName.startsWith( packageName ))
+            if (fqClassName.startsWith( packageName ) && fqClassName.indexOf('.', pLength) < 0)
                 result.add( this.baseClasses.get( fqClassName));
 
         return result;
@@ -377,11 +375,11 @@ public class ClassDataRegistry {
                             }
                         }
                         if ( validReturnType && validParameters ) {
-                            methods.add( new MethodData(e.getSimpleName().toString(),returnClass,parameters));
+                            methods.add( new MethodData(clazz.getQualifiedName().toString(), e.getSimpleName().toString(),returnClass,parameters));
                         }
                     }
                 }
-
+                if (methods.size() == 0) return null;
                 // Process fields but do not add them to the type map as we do support direct access to fields
                 List<FieldData> fields=new ArrayList<FieldData>(0);
                 for (VariableElement ve: ElementFilter.fieldsIn( clazz.getEnclosedElements())) {

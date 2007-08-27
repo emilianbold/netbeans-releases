@@ -213,22 +213,27 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                 }                
             }
         }
-
-        //remove listeners while selecting
-        getExplorerManager().removePropertyChangeListener( this );
-
-        if( !wsdl && rootNode.getChildren().getNodesCount() == 0 ) {
-            waitNode.setDisplayName( NbBundle.getMessage( ServicesPanel.class, "MSG_NoMethodAvailable" ));
-            return;
-        } else {
-            checkedTreeView.setRootVisible(false);
-            checkedTreeView.setRoot(rootNode);
-            getExplorerManager().setRootContext(rootNode);
-            setSelectedMethods();
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    //remove listeners while selecting
+                    getExplorerManager().removePropertyChangeListener( ServicesPanel.this );
+                    if( !wsdl && rootNode.getChildren().getNodesCount() == 0 ) {
+                        waitNode.setDisplayName( NbBundle.getMessage( ServicesPanel.class, "MSG_NoMethodAvailable" ));
+                        return;
+                    } else {
+                        checkedTreeView.setRootVisible(false);
+                        checkedTreeView.setRoot(rootNode);
+                        getExplorerManager().setRootContext(rootNode);
+                        setSelectedMethods();
+                    }
+                    //add back after selection
+                    getExplorerManager().addPropertyChangeListener( ServicesPanel.this );
+                }
+            });
+        } catch (Exception ite) {
+            ErrorManager.getDefault().notify(ite);
         }
-
-        //add back after selection
-        getExplorerManager().addPropertyChangeListener( this );
     }
     
     private void setSelectedMethods() {

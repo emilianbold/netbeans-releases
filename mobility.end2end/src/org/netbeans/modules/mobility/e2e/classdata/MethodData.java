@@ -28,14 +28,15 @@ import java.util.List;
  */
 public class MethodData {
     
-    private String name;
-    private ClassData returnType;
-    private List<MethodParameter> parameters;
+    private final String name, parentClassName;
+    private final ClassData returnType;
+    private final List<MethodParameter> parameters;
     
     private int requestID;
 
-    public MethodData( String name, ClassData returnType, List<MethodParameter> parameters ) {
+    public MethodData( String parentClassName, String name, ClassData returnType, List<MethodParameter> parameters ) {
         this.name = name;
+        this.parentClassName = parentClassName;
         this.returnType = returnType;
         this.parameters = parameters;
     }
@@ -44,6 +45,10 @@ public class MethodData {
         return name;
     }
 
+    public String getParentClassName() {
+        return parentClassName;
+    }
+    
     public ClassData getReturnType() {
         return returnType;
     }
@@ -64,17 +69,18 @@ public class MethodData {
     public boolean equals( Object o ) {
         if(!( o instanceof MethodData )) return false;
         MethodData md = (MethodData) o;
-        if( md.getName() != name ) return false;
-        if( !md.getReturnType().equals( returnType )) return false;
-        if( md.getParameters().size() != parameters.size()) return false;
-        for( int i = 0; i < parameters.size(); i++ ) {
-            if( !md.getParameters().get( i ).equals( parameters.get( i ))) return false;
+        if (!md.getParentClassName().equals(parentClassName)) return false;
+        if (!md.getName().equals(name)) return false;
+        if (!md.getReturnType().equals( returnType )) return false;
+        if (md.getParameters().size() != parameters.size()) return false;
+        for (int i = 0; i < parameters.size(); i++ ) {
+            if (!md.getParameters().get( i ).equals( parameters.get( i ))) return false;
         }
         return true;
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode() + returnType.hashCode() + parameters.hashCode();
+        return parentClassName.hashCode() + name.hashCode() + returnType.hashCode() + parameters.hashCode();
     }
 }

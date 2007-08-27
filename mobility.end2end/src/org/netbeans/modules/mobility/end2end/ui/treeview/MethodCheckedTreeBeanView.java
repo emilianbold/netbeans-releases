@@ -29,6 +29,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.UIManager;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
