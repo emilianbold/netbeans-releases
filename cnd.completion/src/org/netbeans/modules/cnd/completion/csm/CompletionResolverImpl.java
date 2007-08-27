@@ -512,28 +512,28 @@ public class CompletionResolverImpl implements CompletionResolver {
         return out;
     }
     
-    private List getLibClassesEnums(CsmProject prj, String strPrefix, boolean match) {
-        List res = contResolver.getLibClassesEnums(strPrefix, match);
+    private Collection getLibClassesEnums(CsmProject prj, String strPrefix, boolean match) {
+        Collection res = contResolver.getLibClassesEnums(strPrefix, match);
         return res;
     }
     
-    private List getLibVariables(CsmProject prj, String strPrefix, boolean match) {
-        List res = contResolver.getLibVariables(strPrefix, match);
+    private Collection getLibVariables(CsmProject prj, String strPrefix, boolean match) {
+        Collection res = contResolver.getLibVariables(strPrefix, match);
         return res;
     }
     
-    private List getLibEnumerators(CsmProject prj, String strPrefix, boolean match) {
-        List res = contResolver.getLibEnumerators(strPrefix, match, true);
+    private Collection getLibEnumerators(CsmProject prj, String strPrefix, boolean match) {
+        Collection res = contResolver.getLibEnumerators(strPrefix, match, true);
         return res;
     }
     
-    private List getLibFunctions(CsmProject prj, String strPrefix, boolean match) {
-        List res = contResolver.getLibFunctions(strPrefix, match);
+    private Collection getLibFunctions(CsmProject prj, String strPrefix, boolean match) {
+        Collection res = contResolver.getLibFunctions(strPrefix, match);
         return res;
     }
     
-    private List getLibNamespaces(CsmProject prj, String strPrefix, boolean match) {
-        List res = contResolver.getLibNamespaces(strPrefix, match);
+    private Collection getLibNamespaces(CsmProject prj, String strPrefix, boolean match) {
+        Collection res = contResolver.getLibNamespaces(strPrefix, match);
         return res;
     }
     

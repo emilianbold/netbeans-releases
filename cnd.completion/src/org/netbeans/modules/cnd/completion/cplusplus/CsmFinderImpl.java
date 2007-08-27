@@ -241,7 +241,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         if (csmFile != null && csmFile.getProject() != null) {
             CsmProject prj = csmFile.getProject();
             CsmNamespace ns = nmsp == null ? prj.getGlobalNamespace() : nmsp;
-            List classes = contResolver.getNamespaceClassesEnums(ns, name, exactMatch, searchNested);
+            Collection classes = contResolver.getNamespaceClassesEnums(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
             }
@@ -284,7 +284,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         if (csmFile != null && csmFile.getProject() != null) {
             CsmProject prj = csmFile.getProject();
             CsmNamespace ns = nmsp == null ? prj.getGlobalNamespace() : nmsp;
-            List classes = contResolver.getNamespaceClassesEnums(ns, name, exactMatch, searchNested);
+            Collection  classes = contResolver.getNamespaceClassesEnums(ns, name, exactMatch, searchNested);
             if (classes != null) {
                 ret.addAll(classes);
             }
