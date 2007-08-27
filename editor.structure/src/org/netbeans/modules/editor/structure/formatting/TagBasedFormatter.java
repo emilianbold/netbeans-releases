@@ -286,7 +286,7 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
                              * <t>|optional text</t>
                              */
                             Position closingTagPos = doc.createPosition(getOpeningSymbolOffset(tknClosingTag));
-                            changeRowIndent(doc, dotPos, initialIndent + getShiftWidth());
+                            changeRowIndent(doc, dotPos, initialIndent + doc.getShiftWidth());
                             doc.insertString(closingTagPos.getOffset(), "\n", null); //NOI18N
                             int newCaretPos = closingTagPos.getOffset() - 1;
                             changeRowIndent(doc, closingTagPos.getOffset() + 1, initialIndent);
@@ -305,7 +305,7 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
                 int indent = initialIndent;
                 
                 if (isClosingTagRequired(doc, extractTagName(tknOpeningTag))){
-                    indent += getShiftWidth();
+                    indent += doc.getShiftWidth();
                 }
                 
                 changeRowIndent(doc, dotPos, indent);
@@ -314,7 +314,7 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
             int indent = initialIndent;
             
             if (isJustBeforeClosingTag(doc, dotPos)){
-                indent -= getShiftWidth();
+                indent -= doc.getShiftWidth();
                 indent = indent < 0 ? 0 : indent;
             }
             
@@ -473,15 +473,16 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
         private final int indentBias;
         private final int indentLevels[];
         private final int indentsWithinTags[];
+        private BaseDocument doc;
         
         public InitialIndentData(BaseDocument doc, int indentLevels[], int indentsWithinTags[],
                 int firstRefBlockLine, int lastRefBlockLine) throws BadLocationException{
             
             int initialIndent = getInitialIndentFromPreviousLine(doc, firstRefBlockLine);
-            int indentLevelBiasFromTheTop = initialIndent / getShiftWidth() - (firstRefBlockLine > 0 ? indentLevels[firstRefBlockLine - 1] : 0);
+            int indentLevelBiasFromTheTop = initialIndent / doc.getShiftWidth() - (firstRefBlockLine > 0 ? indentLevels[firstRefBlockLine - 1] : 0);
             
             int initialIndentFromTheBottom = getInitialIndentFromNextLine(doc, lastRefBlockLine);
-            int indentLevelBiasFromTheBottom = initialIndentFromTheBottom / getShiftWidth() - (lastRefBlockLine < getNumberOfLines(doc) - 1 ? indentLevels[lastRefBlockLine + 1] : 0);
+            int indentLevelBiasFromTheBottom = initialIndentFromTheBottom / doc.getShiftWidth() - (lastRefBlockLine < getNumberOfLines(doc) - 1 ? indentLevels[lastRefBlockLine + 1] : 0);
             
             if (indentLevelBiasFromTheBottom > indentLevelBiasFromTheTop){
                 indentLevelBias = indentLevelBiasFromTheBottom;
@@ -491,9 +492,10 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
                 indentLevelBias = indentLevelBiasFromTheTop;
             }
             
-            indentBias = initialIndent % getShiftWidth();
+            indentBias = initialIndent % doc.getShiftWidth();
             this.indentLevels = indentLevels;
             this.indentsWithinTags = indentsWithinTags;
+            this.doc = doc;
         }
         
         public boolean isEligibleToIndent(int line){
@@ -501,7 +503,7 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
         }
         
         public int getIndent(int line){
-            return indentBias + indentsWithinTags[line] + getActualIndentLevel(line) * getShiftWidth();
+            return indentBias + indentsWithinTags[line] + getActualIndentLevel(line) * doc.getShiftWidth();
         }
         
         private int getActualIndentLevel(int line){

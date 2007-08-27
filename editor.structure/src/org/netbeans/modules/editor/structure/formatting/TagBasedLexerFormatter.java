@@ -97,7 +97,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
         }
         
         
-        return getShiftWidth(); // default;
+        return doc.getShiftWidth(); // default;
     }
     
     @Override public Writer reformat(BaseDocument doc, int startOffset, int endOffset,
@@ -289,7 +289,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
                              * <t>|optional text</t>
                              */
                             Position closingTagPos = doc.createPosition(getOpeningSymbolOffset(tokenHierarchy, closingTagOffset));
-                            changeRowIndent(doc, dotPos, initialIndent + getShiftWidth());
+                            changeRowIndent(doc, dotPos, initialIndent + doc.getShiftWidth());
                             doc.insertString(closingTagPos.getOffset(), "\n", null); //NOI18N
                             int newCaretPos = closingTagPos.getOffset() - 1;
                             changeRowIndent(doc, closingTagPos.getOffset() + 1, initialIndent);
@@ -308,7 +308,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
                 int indent = initialIndent;
                 
                 if (isClosingTagRequired(doc, extractTagName(tokenHierarchy, openingTagOffset))){
-                    indent += getShiftWidth();
+                    indent += doc.getShiftWidth();
                 }
                 
                 changeRowIndent(doc, dotPos, indent);
@@ -317,7 +317,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
             int indent = initialIndent;
             
             if (isJustBeforeClosingTag(tokenHierarchy, dotPos)){
-                indent -= getShiftWidth();
+                indent -= doc.getShiftWidth();
                 indent = indent < 0 ? 0 : indent;
             }
             
@@ -475,15 +475,16 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
         private final int indentBias;
         private final int indentLevels[];
         private final int indentsWithinTags[];
+        private BaseDocument doc;
         
         public InitialIndentData(BaseDocument doc, int indentLevels[], int indentsWithinTags[],
                 int firstRefBlockLine, int lastRefBlockLine) throws BadLocationException{
             
             int initialIndent = getInitialIndentFromPreviousLine(doc, firstRefBlockLine);
-            int indentLevelBiasFromTheTop = initialIndent / getShiftWidth() - (firstRefBlockLine > 0 ? indentLevels[firstRefBlockLine - 1] : 0);
+            int indentLevelBiasFromTheTop = initialIndent / doc.getShiftWidth() - (firstRefBlockLine > 0 ? indentLevels[firstRefBlockLine - 1] : 0);
             
             int initialIndentFromTheBottom = getInitialIndentFromNextLine(doc, lastRefBlockLine);
-            int indentLevelBiasFromTheBottom = initialIndentFromTheBottom / getShiftWidth() - (lastRefBlockLine < getNumberOfLines(doc) - 1 ? indentLevels[lastRefBlockLine + 1] : 0);
+            int indentLevelBiasFromTheBottom = initialIndentFromTheBottom / doc.getShiftWidth() - (lastRefBlockLine < getNumberOfLines(doc) - 1 ? indentLevels[lastRefBlockLine + 1] : 0);
             
             if (indentLevelBiasFromTheBottom > indentLevelBiasFromTheTop){
                 indentLevelBias = indentLevelBiasFromTheBottom;
@@ -493,9 +494,10 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
                 indentLevelBias = indentLevelBiasFromTheTop;
             }
             
-            indentBias = initialIndent % getShiftWidth();
+            indentBias = initialIndent % doc.getShiftWidth();
             this.indentLevels = indentLevels;
             this.indentsWithinTags = indentsWithinTags;
+            this.doc = doc;
         }
         
         public boolean isEligibleToIndent(int line){
@@ -503,7 +505,7 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
         }
         
         public int getIndent(int line){
-            return indentBias + indentsWithinTags[line] + getActualIndentLevel(line) * getShiftWidth();
+            return indentBias + indentsWithinTags[line] + getActualIndentLevel(line) * doc.getShiftWidth();
         }
         
         private int getActualIndentLevel(int line){
