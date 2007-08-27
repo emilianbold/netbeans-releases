@@ -384,11 +384,10 @@ Microsystems, Inc. All Rights Reserved.
         <depend srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}" cache="${build.test.unit.dir}/depcache">
             <classpath refid="test.unit.cp"/>
         </depend>
-        <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
+        <property name="test.excludes" value=""/> <!-- # 113770 -->
+        <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}" excludes="${test.excludes}"
                debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
-               <exclude name="**/jars/**"/><!-- XXX for core only; fix in core, not here -->
-               <exclude name="**/data/**"/><!-- XXX for openide/util and co. -->
             <classpath refid="test.unit.cp"/>
             <compilerarg line="${javac.compilerargs}"/>
         </javac>
