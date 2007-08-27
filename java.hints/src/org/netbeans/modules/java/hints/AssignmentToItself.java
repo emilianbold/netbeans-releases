@@ -18,7 +18,9 @@ package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -152,23 +154,27 @@ public class AssignmentToItself extends AbstractHint {
         public MethodCallScanner( Trees trees ) {
             this.trees = trees;
         }
-        
+
+                
         @Override
-        public Boolean scan(Tree tree, List<Element> l) {
-            // System.out.println("    -> tree " + tree);
-            if ( tree != null ) {
-                if ( tree.getKind() == Tree.Kind.METHOD_INVOCATION ) {
-                    return true;
-                }
-                else if ( tree.getKind() == Tree.Kind.MEMBER_SELECT ||
-                          tree.getKind() == Tree.Kind.IDENTIFIER ) {
-                    l.add( trees.getElement(getCurrentPath()));
-                    // System.out.println("   " + trees.getElement(getCurrentPath()) );
-                }
-            }
-            return super.scan(tree, l);
+        public Boolean visitMemberSelect(MemberSelectTree t, List<Element> l) {
+            l.add(trees.getElement(getCurrentPath()));
+            return super.visitMemberSelect(t, l);
         }
-               
+
+        @Override
+        public Boolean visitIdentifier(IdentifierTree t, List<Element> l) {
+            if ( !"this".equals(t.getName().toString())) { // NOI18N
+                l.add(trees.getElement(getCurrentPath()));
+            }
+            return super.visitIdentifier(t, l);
+        }
+
+        @Override
+        public Boolean visitMethodInvocation(MethodInvocationTree arg0, List<Element> arg1) {
+            return true;
+        }                       
+        
     }
 
 
