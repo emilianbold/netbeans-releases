@@ -215,16 +215,18 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(NbBundle.getMessage(FragmentPanel.class, "JspPageDesc"));
+        jLabel1.setText(NbBundle.getMessage(FragmentPanel.class, "JspPageDesc")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/xhtml/Bundle").getString("PF_LBL_ACCESS_DESC"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/xhtml/Bundle"); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(bundle.getString("PF_LBL_ACCESS_DESC")); // NOI18N
 
+        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/xhtml/Bundle").getString("JspPageMnemonic").charAt(0));
         jLabel2.setLabelFor(comboBox);
-        jLabel2.setText(NbBundle.getMessage(FragmentPanel.class, "JspPage"));
+        jLabel2.setText(NbBundle.getMessage(FragmentPanel.class, "JspPage")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 6);
@@ -236,17 +238,17 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(comboBox, gridBagConstraints);
-        comboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FragmentPanel.class, "PF_COMBOBOX_ACCESS_NAME"));
-        comboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FragmentPanel.class, "PF_COMBOBOX_ACCESS_DESC"));
+        comboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FragmentPanel.class, "PF_COMBOBOX_ACCESS_NAME")); // NOI18N
+        comboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FragmentPanel.class, "PF_COMBOBOX_ACCESS_DESC")); // NOI18N
 
         createButton.setMnemonic(org.openide.util.NbBundle.getMessage(FragmentPanel.class, "CREATE_NEW_PF_BUTTON_MNEMONIC").charAt(0));
-        createButton.setText(NbBundle.getMessage(FragmentPanel.class, "CreateNew"));
+        createButton.setText(NbBundle.getMessage(FragmentPanel.class, "CreateNew")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 11);
         add(createButton, gridBagConstraints);
-        createButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FragmentPanel.class, "CREATE_NEW_PF_BUTTON_ACCESS_DESC"));
+        createButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FragmentPanel.class, "CREATE_NEW_PF_BUTTON_ACCESS_DESC")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -255,7 +257,6 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     // Implements ActionListener
