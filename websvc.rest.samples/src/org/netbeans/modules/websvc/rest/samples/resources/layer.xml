@@ -26,7 +26,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/category.html"/>
                     <!-- HelloWorld Sample -->
-                    <attr name="position" intvalue="600"/>
+                    <attr name="position" intvalue="275"/>
                     <file name="HelloWorldSampleProject" url="HelloWorld.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/projectIcon.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle"/>
