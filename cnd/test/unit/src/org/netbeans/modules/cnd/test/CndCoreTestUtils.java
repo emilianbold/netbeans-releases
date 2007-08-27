@@ -136,8 +136,8 @@ public class CndCoreTestUtils {
     }         
     
     public static void copyDirToWorkDir(File sourceDir, File toDir) throws IOException {
-        assert (sourceDir.isDirectory());
-        assert (sourceDir.exists());
+        assert (sourceDir.isDirectory()) : sourceDir.getAbsolutePath() + " is not a directory" ;// NOI18N;
+        assert (sourceDir.exists()) : sourceDir.getAbsolutePath() + " does not exist" ;// NOI18N;
         toDir.mkdirs();
         assert (toDir.isDirectory());
         File files[] = sourceDir.listFiles();
