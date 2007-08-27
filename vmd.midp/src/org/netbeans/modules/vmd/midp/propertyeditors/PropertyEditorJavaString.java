@@ -24,11 +24,18 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.lang.ref.WeakReference;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ui.DialogBinding;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
@@ -38,6 +45,7 @@ import org.netbeans.modules.vmd.midp.components.points.IfPointCD;
 import org.netbeans.modules.vmd.midp.components.points.MethodPointCD;
 import org.netbeans.modules.vmd.midp.components.points.SwitchPointCD;
 import org.netbeans.modules.vmd.midp.components.sources.SwitchCaseEventSourceCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.usercode.CodeUtils;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
 import org.openide.util.NbBundle;
 
@@ -53,8 +61,7 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
     private static final String SWITCH_OPERAND = NbBundle.getMessage(PropertyEditorJavaString.class, "LBL_SWITCH_OPERAND_STR"); // NOI18N
     private static final String CASE_OPERAND = NbBundle.getMessage(PropertyEditorJavaString.class, "LBL_CASE_OPERAND_STR"); // NOI18N
     private static final String JAVA_EXPRESSION = NbBundle.getMessage(PropertyEditorJavaString.class, "LBL_JAVA_EXPRESSION_STR"); // NOI18N
-
-    
+    protected WeakReference<DesignComponent> component;
     private TypeID typeID;
     private final CustomEditor customEditor;
 
@@ -69,9 +76,12 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
 
     @Override
     public Component getCustomEditor() {
-        PropertyValue value = (PropertyValue) super.getValue();
-        if (value != null) {
-            customEditor.setText(MidpTypes.getJavaCode(value));
+        if (!customEditor.isShowing()) {
+            PropertyValue value = (PropertyValue) super.getValue();
+            if (value != null) {
+                customEditor.setText(MidpTypes.getJavaCode(value));
+            }
+            customEditor.init();
         }
         return customEditor;
     }
@@ -120,6 +130,13 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
         return getLabelName();
     }
 
+    @Override
+    public void init(DesignComponent component) {
+        if (component != null) {
+            this.component = new WeakReference<DesignComponent>(component);
+        }
+    }
+
     private String getLabelName() {
         if (typeID.equals(CallPointCD.TYPEID)) {
             return JAVA_CODE;
@@ -143,7 +160,6 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
             initComponents();
         }
 
-        // TODO bind retouche dialog
         private void initComponents() {
             setLayout(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();
@@ -184,6 +200,21 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
 
         public String getText() {
             return textPane.getText();
+        }
+
+        public void init() {
+            if (component == null || component.get() == null) {
+                return;
+            }
+            DesignComponent _component = component.get();
+
+            javax.swing.text.Document swingDoc = textPane.getDocument();
+            if (swingDoc.getProperty(JavaSource.class) == null) {
+                DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(_component.getDocument());
+                swingDoc.putProperty(Document.StreamDescriptionProperty, context.getDataObject());
+                int offset = CodeUtils.getMethodOffset(context);
+                DialogBinding.bindComponentToFile(context.getDataObject().getPrimaryFile(), offset, 0, textPane);
+            }
         }
     }
 }
