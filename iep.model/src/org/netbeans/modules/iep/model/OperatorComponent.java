@@ -48,7 +48,13 @@ public interface OperatorComponent extends Component {
 	
 	public static String PROP_INCLUDE_TIMESTAMP_KEY = "includeTimestamp";
     
-	
+	//This property is not persisten in operator xml configuration but is global to all
+	//operators
+	public static String PROP_NON_PERSIST_INPUT_MAX_COUNT_KEY = "inputMaxCount";
+    
+	//This property is not persisten in operator xml configuration but is global to all
+	//operators
+	public static String PROP_NON_PERSIST_STATIC_INPUT_MAX_COUNT_KEY = "staticInputMaxCount";
 	
 	int getX();
 	

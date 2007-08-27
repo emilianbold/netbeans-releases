@@ -152,6 +152,11 @@ public class ComponentImpl extends IEPComponentBase implements Component {
     		} else {
     			addAfter(COMPONENT_CHILD, doc, TypeCollection.FOR_COMPONENT.types());
     		}
+    	} else {
+    		Documentation oldDoc = getDocumentation();
+    		if(oldDoc != null) {
+    			removeChild(oldDoc);
+    		}
     	}
     }
     
