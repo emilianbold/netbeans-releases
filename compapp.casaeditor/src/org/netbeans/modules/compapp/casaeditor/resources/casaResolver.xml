@@ -24,9 +24,9 @@
     <file>
         <ext name="casa"/>
         <resolver mime="text/x-casa+xml">
-            <xml-rule>
+            <!--<xml-rule>
                 <element name="casa"/>
-            </xml-rule>
+            </xml-rule>-->
         </resolver>
     </file>
 </MIME-resolver>
