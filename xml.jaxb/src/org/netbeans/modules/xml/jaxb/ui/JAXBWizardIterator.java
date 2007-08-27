@@ -29,12 +29,12 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
-import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
@@ -174,7 +174,9 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
         }
         String[] steps = createSteps(beforeSteps, panels);
         String name = ProjectUtils.getInformation(project).getName();
-         wiz.putProperty(JAXBWizModuleConstants.PROJECT_NAME, name);
+        wiz.putProperty(JAXBWizModuleConstants.PROJECT_NAME, name);
+        wiz.putProperty(JAXBWizModuleConstants.PROJECT_DIR, 
+                FileUtil.toFile(project.getProjectDirectory()));
         // Make sure list of steps is accurate.
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();

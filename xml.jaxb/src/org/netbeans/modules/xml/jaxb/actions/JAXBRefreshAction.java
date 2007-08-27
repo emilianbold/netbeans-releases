@@ -21,11 +21,14 @@ package org.netbeans.modules.xml.jaxb.actions;
 
 import java.io.File;
 import java.net.URL;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.jaxb.util.FileSysUtil;
 import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -44,6 +47,7 @@ public class JAXBRefreshAction extends NodeAction  {
     protected void performAction(Node[] nodes) {
         Node node = nodes[ 0 ];
         FileObject fo = node.getLookup().lookup( FileObject.class );
+        Project proj = node.getLookup().lookup(Project.class);
         String origLoc = (String) node.getValue(
                 JAXBWizModuleConstants.ORIG_LOCATION);
         Boolean origLocIsURL = (Boolean) node.getValue(
@@ -60,7 +64,11 @@ public class JAXBRefreshAction extends NodeAction  {
                          ProjectHelper.retrieveResource(locSchemaRoot, 
                                  url.toURI());                        
                      } else {
-                         File srcFile = new File(origLoc);
+                         File projDir = FileUtil.toFile(
+                                 proj.getProjectDirectory());
+                         //File srcFile = new File(origLoc);
+                         File srcFile = FileSysUtil.Relative2AbsolutePath(
+                                 projDir, origLoc);
                          ProjectHelper.retrieveResource(fo.getParent(), 
                                  srcFile.toURI());
                      }

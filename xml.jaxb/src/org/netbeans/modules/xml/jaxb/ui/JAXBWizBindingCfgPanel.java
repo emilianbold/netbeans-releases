@@ -19,6 +19,7 @@
 package org.netbeans.modules.xml.jaxb.ui;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -250,7 +251,12 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
             this.bindingInfoPnl.setProjectName((String) 
                     wd.getProperty(JAXBWizModuleConstants.PROJECT_NAME));    
         }
-        
+ 
+        if (wd.getProperty(JAXBWizModuleConstants.PROJECT_DIR) != null) {
+            this.bindingInfoPnl.setProjectDir((File) 
+                    wd.getProperty(JAXBWizModuleConstants.PROJECT_DIR));    
+        }
+ 
         if (wd.getProperty(JAXBWizModuleConstants.PACKAGE_NAME) != null) {
             this.bindingInfoPnl.setPackageName((String) 
                     wd.getProperty(JAXBWizModuleConstants.PACKAGE_NAME));    

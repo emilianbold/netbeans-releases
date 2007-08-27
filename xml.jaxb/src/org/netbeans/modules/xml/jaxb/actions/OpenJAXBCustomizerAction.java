@@ -43,6 +43,7 @@ import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -64,6 +65,8 @@ public class OpenJAXBCustomizerAction extends NodeAction  {
         String name = ProjectUtils.getInformation(prj).getName();
         wiz.putProperty(JAXBWizModuleConstants.SCHEMA_NAME, schema.getName());
         wiz.putProperty(JAXBWizModuleConstants.PROJECT_NAME, name);
+        wiz.putProperty(JAXBWizModuleConstants.PROJECT_DIR, 
+                FileUtil.toFile(prj.getProjectDirectory()));
         wiz.putProperty(JAXBWizModuleConstants.PACKAGE_NAME, schema.getPackage());
         wiz.putProperty(JAXBWizModuleConstants.SCHEMA_TYPE, schema.getType());
         

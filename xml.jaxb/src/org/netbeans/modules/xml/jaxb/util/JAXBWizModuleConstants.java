@@ -49,6 +49,7 @@ public class JAXBWizModuleConstants {
     public static final String SRC_LOC_TYPE_URL = "url" ; //NOI18N
     public static final String SCHEMA_NAME = "schema.name"; //NOI18N
     public static final String PROJECT_NAME = "project.name"; //NOI18N
+    public static final String PROJECT_DIR = "project.dir"; //NOI18N
     public static final String XSD_FILE_LIST = "xsd.file.list"; //NOI18N
     public static final String SOURCE_LOCATION_TYPE = "xsd.locatiom.type"; //NOI18N
     public static final String PACKAGE_NAME = "xsd.package.name"; //NOI18N

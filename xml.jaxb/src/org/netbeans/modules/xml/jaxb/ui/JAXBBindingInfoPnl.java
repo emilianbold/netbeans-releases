@@ -31,6 +31,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import org.netbeans.modules.xml.jaxb.util.FileSysUtil;
 import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -560,6 +561,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
 
         if (evt.getSource() == this.btnBrowseFile){
             String filePath = selectFileFromFileSystem(this,
+                    this.projDir,
                     JAXBWizModuleConstants.LAST_BROWSED_SCHEMA_DIR);
             if (filePath != null){
                 this.txtFilePath.setText(filePath);
@@ -593,6 +595,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
 
         if (evt.getSource() == this.btnBrowseCatalogFile){
             String filePath = selectFileFromFileSystem(this,
+                    this.projDir,
                     JAXBWizModuleConstants.LAST_BROWSED_SCHEMA_DIR);
             if (filePath != null){
                 this.txtCatalogFile.setText(filePath);
@@ -690,7 +693,8 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     private Vector<String> origBindingFiles = new Vector<String>();
     private String prevSchemaPath = null;
     private String prevSchemaURL = null;    
-    
+    private File projDir = null;
+            
     private static String getMessage(String key){
         return org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, key);
     }
@@ -716,7 +720,9 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         LAST_BROWSED_DIRS.put(type, dir);
     }
 
-    protected static String selectFileFromFileSystem(JPanel panel, String type){
+    protected static String selectFileFromFileSystem(JPanel panel,
+            File projDir,
+            String type){
         File file = null;
         String ret = null;
         String lastBrowsed = getLastBrowsedDir(type);
@@ -737,7 +743,9 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         }
 
         if (file != null){
-            ret = file.getAbsolutePath();
+            //ret = file.getAbsolutePath();
+            ret = FileSysUtil.Absolute2RelativePathStr(projDir, 
+                    file.getAbsoluteFile());
         }
 
         return ret;
@@ -764,6 +772,10 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         this.txtPrjName.setText(pn);
     }
 
+    public void setProjectDir(File pdir){
+        this.projDir = pdir;
+    }
+    
     public void setLocalSchemaFile(String fileLoc){
         this.txtFilePath.setText(fileLoc);
     }

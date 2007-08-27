@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.jaxb.ui;
 
+import java.io.File;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultListModel;
@@ -107,6 +108,7 @@ public class FileListPanel extends javax.swing.JPanel {
 private void btnPressedEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPressedEvent
     if (evt.getSource() == this.btnAdd){
         String fileSelected = JAXBBindingInfoPnl.selectFileFromFileSystem(this,
+                this.projDir,
                 JAXBWizModuleConstants.LAST_BROWSED_SCHEMA_DIR);
         DefaultListModel model = (DefaultListModel) this.listFiles.getModel();        
         if ((fileSelected != null) && (!model.contains(fileSelected))){
@@ -140,6 +142,10 @@ private void btnPressedEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         }
     }
 
+    public void setProjDir(File pdir){
+        this.projDir = pdir;
+    }
+    
     public List<String> getFiles(){
         Vector<String> files = new Vector<String>();
         ListModel lm = this.listFiles.getModel();
@@ -160,4 +166,5 @@ private void btnPressedEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     // End of variables declaration//GEN-END:variables
 
     private Vector<String> origFiles = new Vector<String>();
+    private File projDir = null;
 }

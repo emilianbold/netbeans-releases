@@ -462,7 +462,8 @@ public class ProjectHelper {
         FileObject projFO = project.getProjectDirectory();
         FileObject projectSchemaDir = getFOProjectSchemaDir(project);        
         File projSchemasDir = FileUtil.toFile(projectSchemaDir);       
-
+        File projDir = FileUtil.toFile(projFO);       
+        
         Schema schema = new Schema();
         SchemaSources sss = new SchemaSources();
         SchemaSource ss = null;        
@@ -573,7 +574,9 @@ public class ProjectHelper {
                     sss.addSchemaSource(ss);                        
                     tobeRemoved.remove(xsdFileList.get(i));
                     if (res2Skip.get(xsdFileList.get(i)) == null){
-                        srcFile = new File(xsdFileList.get(i));
+                        //srcFile = new File(xsdFileList.get(i));
+                        srcFile = FileSysUtil.Relative2AbsolutePath(projDir, 
+                                xsdFileList.get(i));                        
                         targetFile = new File(schemaDir, srcFile.getName());
                         if (targetFile.exists()) {
                             targetFile.delete();
@@ -601,7 +604,9 @@ public class ProjectHelper {
                 tobeRemoved.remove(bindingFileList.get(i));
 
                 if (res2Skip.get(bindingFileList.get(i)) == null){
-                    srcFile = new File(bindingFileList.get(i));
+                    //srcFile = new File(bindingFileList.get(i));
+                    srcFile = FileSysUtil.Relative2AbsolutePath(projDir,
+                            bindingFileList.get(i));
                     targetFile = new File(schemaDir, srcFile.getName());
                     if (targetFile.exists()) {
                         targetFile.delete();
@@ -623,7 +628,9 @@ public class ProjectHelper {
             tobeRemoved.remove(catlogFile);
 
             if (res2Skip.get(catlogFile) == null){
-                srcFile = new File(catlogFile);
+                //srcFile = new File(catlogFile);
+                srcFile = FileSysUtil.Relative2AbsolutePath(projDir, 
+                        catlogFile);
                 targetFile = new File(schemaDir, srcFile.getName());
                 if (targetFile.exists()) {
                     targetFile.delete();
