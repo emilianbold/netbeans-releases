@@ -40,6 +40,7 @@ public class CCCompletionTest extends BaseTestSuite {
         this.addTestSuite(StaticMembersTestCase.class);
         this.addTestSuite(FriendTestCase.class);
         this.addTestSuite(EnumTestCase.class);
+        this.addTestSuite(LibrariesContentTestCase.class);
     }
 
     public static Test suite() {
