@@ -472,6 +472,11 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             if (el != null && el.getKind().isField()) {
                 handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.READ));
             }
+	    
+	    if (el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
+		handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.CLASS_USE));
+	    }
+	    
 //            System.err.println("XXXX=" + tree.toString());
 //            System.err.println("YYYY=" + info.getElement(tree));
             
