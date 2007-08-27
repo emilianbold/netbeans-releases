@@ -172,7 +172,7 @@ public class SimplifiedJSPServlet {
         PageInfo pi = getPageInfo();
         if (pi == null) {
             //report error but do not break the entire CC
-            logger.log(Level.WARNING, null, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null!"));
+            logger.log(Level.INFO, null, "PageInfo obtained from JspParserAPI.ParseResult is null");
             return null;
         }
         List<String> imports = pi.getImports();
