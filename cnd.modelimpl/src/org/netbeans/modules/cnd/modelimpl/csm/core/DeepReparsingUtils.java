@@ -28,6 +28,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.utils.APTHandlersSupport;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -94,7 +95,7 @@ public final class DeepReparsingUtils {
     /**
      * Reparse including/included files at file properties changed.
      */
-    public static void reparseOnPropertyChanged(List<NativeFileItem> items, ProjectBase project) {
+    public static void reparseOnPropertyChanged(List<NativeFileItem> items, ProjectImpl project) {
         try {
             ParserQueue.instance().onStartAddingProjectFiles(project);
             if (TraceFlags.USE_DEEP_REPARSING) {
@@ -102,11 +103,13 @@ public final class DeepReparsingUtils {
                 Set<CsmFile> top = new HashSet<CsmFile>();
                 Set<CsmFile> coherence = new HashSet<CsmFile>();
                 for(NativeFileItem item : items) {
-                    FileImpl file = project.getFile(item.getFile());
-                    if( file != null ) {
-                        pairs.put(file,item);
-                        top.addAll(project.getGraph().getTopParentFiles(file));
-                        coherence.addAll(project.getGraph().getIncludedFiles(file));
+                    if (project.acceptNativeItem(item)) {
+                        FileImpl file = project.getFile(item.getFile());
+                        if (file != null) {
+                            pairs.put(file, item);
+                            top.addAll(project.getGraph().getTopParentFiles(file));
+                            coherence.addAll(project.getGraph().getIncludedFiles(file));
+                        }
                     }
                 }
                 for(CsmFile parent : coherence){
@@ -298,6 +301,8 @@ public final class DeepReparsingUtils {
         APTPreprocHandler.State state;
         //if (file.isSourceFile()) {
             state = project.createPreprocHandler(nativeFile).getState();
+            APTPreprocHandler.State copy = APTHandlersSupport.copyPreprocState(state);
+            project.putPreprocState(file.getFile(), copy);
         //} else {
         //    state = project.getPreprocHandler(nativeFile.getFile()).getState();
         //}
