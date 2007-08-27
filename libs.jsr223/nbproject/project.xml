@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>javax.script</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/jsr223-api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/script-api.jar</runtime-relative-path>
                 <binary-origin>external/jsr223-api.jar</binary-origin>
             </class-path-extension>
         </data>
