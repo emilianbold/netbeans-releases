@@ -180,14 +180,16 @@ public class CompletionProviderImpl implements CompletionProvider {
                     component.getCaret ().getDot ()
                 );
                 Token token = tokenSequence.token ();
-                String start = token.text ().toString ();
-                
-                Iterator<CompletionItem> it = items.iterator ();
-                while (it.hasNext ()) {
-                    CompletionItem completionItem = it.next ();
-                    String text = completionItem.getInsertPrefix ().toString ();
-                    if (text.startsWith (start))
-                        resultSet.addItem (completionItem);
+                if (token != null) {
+                    String start = token.text ().toString ();
+
+                    Iterator<CompletionItem> it = items.iterator ();
+                    while (it.hasNext ()) {
+                        CompletionItem completionItem = it.next ();
+                        String text = completionItem.getInsertPrefix ().toString ();
+                        if (text.startsWith (start))
+                            resultSet.addItem (completionItem);
+                    }
                 }
                 resultSet.finish ();
             } finally {

@@ -303,7 +303,10 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
             }
             try {
                 TokenSequence sequence = tokenHierarchy.tokenSequence ();
-
+                if (sequence.isEmpty()) {
+                    return ""; // NOI18N
+                }
+                
                 //find most embedded token sequence on the specified offset
                 while(true) {
                     sequence.move (offset - 1);
