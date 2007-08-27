@@ -1146,13 +1146,20 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-                <j2seproject3:debug classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}">
+                <property name="test.report.file" location="${{build.test.results.dir}}/TEST-${{test.class}}.xml"/>
+                <delete file="${{test.report.file}}"/>
+                <mkdir dir="${{build.test.results.dir}}"/>
+                <!--Ugly, puts ant and ant-junit to the test classpath, but there is probably no other solution how to run the XML formatter -->
+                <j2seproject3:debug classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}">
                     <customize>                        
                         <syspropertyset>
                             <propertyref prefix="test-sys-prop."/>
                             <mapper type="glob" from="test-sys-prop.*" to="*"/>
                         </syspropertyset>                        
-                        <arg line="${{test.class}}"/>                        
+                        <arg value="${{test.class}}"/>
+                        <arg value="showoutput=true"/>
+                        <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+                        <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${{test.report.file}}"/>
                     </customize>
                 </j2seproject3:debug>
             </target>
