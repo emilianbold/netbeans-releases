@@ -18,15 +18,12 @@
 <p>Usually, you have some entity beans and a session bean with remote interfaces 
   that provides clients access to the entity beans. You have to generate tests 
   for the session bean's bean class and modify the test file to reference the 
-  session bean and test each of its business methods. 
+session bean and test each of its business methods. </p>
 <p><b>To generate tests for an EJB module:</b> 
 <ol>
   <li>Create a service locator file somewhere in the test package source root.</li>
   <li>Open the enterprise bean's bean class in the Source Editor and choose Tools 
-    &gt; JUnit 
-    Tests &gt; Create 
-    Tests (Ctrl-Alt-J). Accept the default options in the dialog box and click 
-    OK.</li>
+    &gt; JUnit Tests &gt; Create Tests (Ctrl-Alt-J). Accept the default options in the dialog box and click OK.</li>
   <li>In the test class, delete the test methods that just test EJB infrastructure 
     methods such as <tt>testEjbCreate</tt> and <tt>testEjbRemove</tt>.</li>
   <li>Declare a variable for the remote home interface.</li>
@@ -57,9 +54,9 @@ catch (Exception e) {
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     
-  <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/java/helpset/docs/junit/junit_about.html">About JUnit</a></dd>
-  <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/java/helpset/docs/junit/junit_runningtests.html">Running JUnit Tests</a></dd>
-  <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/java/helpset/docs/junit/junit_configuring.html">Configuring JUnit</a> </dd>
+  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/junit/junit_about.html">About JUnit</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/junit/junit_runningtests.html">Running JUnit Tests</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/junit/junit_configuring.html">Configuring JUnit</a> </dd>
   <dd><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/debug/about_debug.html">About Debugging and Testing Web Applications</a> </dd>
   <dd><a href="../../enterprise/general/service_locator.html">Using a Service Locator</a></dd>
 </dl>
