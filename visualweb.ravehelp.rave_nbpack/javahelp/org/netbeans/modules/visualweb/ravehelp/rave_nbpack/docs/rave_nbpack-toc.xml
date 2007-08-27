@@ -14,7 +14,6 @@
 		<tocitem text="Creating Web Applications">
 			<tocitem text="About Creating Web Applications" target="about_create_webapps" />
 			<tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
-			<tocitem text="Creating a Web Application with Visual Web JSF " target="projrave_projects_howtoprojects_create_sample_app" />
 			<tocitem text="Adding a Theme" target="projrave_projects_howtoprojects_add_theme" />
 			<tocitem text="Importing a Legacy Project" target="projrave_projects_howtoprojects_import_creator_project" />
 			<tocitem text="Web Application Frameworks">
@@ -92,26 +91,6 @@
 					<tocitem text="Binding a Table Component to a Web Service Method" target="projrave_web_svc_howtowebservices_ws_bind_table" />
 				</tocitem>
 			</tocitem>
-			<tocitem text="Creating Multiple Pages" expand="false">
-				<tocitem text="About the Page Flow Editor" target="projrave_ui_elements_editors_about_navigation_editor" />
-				<tocitem text="About Multiple Pages and Navigation" target="projrave_multiple_forms_aboutmultiforms" />
-				<tocitem text="Working With Multiple Pages" target="projrave_multiple_forms_multiform_process" />
-				<tocitem text="Page Navigation Tasks: Quick Reference" target="projrave_multiple_forms_howtomultiforms_howtomultiforms" />
-				<tocitem text=" Connecting Multiple Pages">
-					<tocitem text="Deleting a Page Navigation Connector" target="projrave_multiple_forms_howtomultiforms_delete_connector" />
-					<tocitem text="Renaming a Page Navigation Connector" target="projrave_multiple_forms_howtomultiforms_rename_connector" />
-					<tocitem text="Setting Up Dynamic Page Navigation" target="projrave_multiple_forms_howtomultiforms_dynamic_form_navigation" />
-					<tocitem text="Setting Up Static Page Navigation" target="projrave_multiple_forms_howtomultiforms_set_form_navigation" />
-					<tocitem text="Page Navigation Editor Keyboard Shortcuts" target="projrave_a11y_navigation_editor_shortcuts" />
-				</tocitem>
-				<tocitem text="Creating Pages and Components">
-					<tocitem text="Adding Components in the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_add_comp_nav_editor" />
-					<tocitem text="Creating a Page in a Visual Web Project" target="projrave_multiple_forms_howtomultiforms_create_form" />
-					<tocitem text="Deleting a Page in a Visual Web Project" target="projrave_multiple_forms_howtomultiforms_delete_page" />
-					<tocitem text="Opening Pages From the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_open_page_nav_editor" />
-					<tocitem text="Viewing Page Contents in the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_preview_nav_page" />
-				</tocitem>
-			</tocitem>
 		</tocitem>
 		<tocitem text="Creating and Editing Web Components">
 			<tocitem text="About Creating Web Components" target="about_create_webcomps" />
@@ -152,6 +131,26 @@
 					<tocitem text="Importing Components" target="projrave_components_howtocomponents_import_complib" />
 					<tocitem text="Removing a Component Library" target="projrave_components_howtocomponents_remove_comp_lib" />
 					<tocitem text="Updating a Component Library" target="projrave_components_howtocomponents_update_comp_lib" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Pages" expand="false">
+				<tocitem text="About the Page Flow Editor" target="projrave_ui_elements_editors_about_navigation_editor" />
+				<tocitem text="About Multiple Pages and Navigation" target="projrave_multiple_forms_aboutmultiforms" />
+				<tocitem text="Working With Multiple Pages" target="projrave_multiple_forms_multiform_process" />
+				<tocitem text="Page Navigation Tasks: Quick Reference" target="projrave_multiple_forms_howtomultiforms_howtomultiforms" />
+				<tocitem text=" Connecting Multiple Pages">
+					<tocitem text="Deleting a Page Navigation Connector" target="projrave_multiple_forms_howtomultiforms_delete_connector" />
+					<tocitem text="Renaming a Page Navigation Connector" target="projrave_multiple_forms_howtomultiforms_rename_connector" />
+					<tocitem text="Setting Up Dynamic Page Navigation" target="projrave_multiple_forms_howtomultiforms_dynamic_form_navigation" />
+					<tocitem text="Setting Up Static Page Navigation" target="projrave_multiple_forms_howtomultiforms_set_form_navigation" />
+					<tocitem text="Page Navigation Editor Keyboard Shortcuts" target="projrave_a11y_navigation_editor_shortcuts" />
+				</tocitem>
+				<tocitem text="Creating Pages and Components">
+					<tocitem text="Adding Components in the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_add_comp_nav_editor" />
+					<tocitem text="Creating a Page in a Visual Web Project" target="projrave_multiple_forms_howtomultiforms_create_form" />
+					<tocitem text="Deleting a Page in a Visual Web Project" target="projrave_multiple_forms_howtomultiforms_delete_page" />
+					<tocitem text="Opening Pages From the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_open_page_nav_editor" />
+					<tocitem text="Viewing Page Contents in the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_preview_nav_page" />
 				</tocitem>
 			</tocitem>
 			<tocitem text="JSP and HTML Files">
