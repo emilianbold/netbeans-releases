@@ -99,6 +99,8 @@ public class JUnitSettings {
     public static final String PROP_GENERATE_CLASS_TEARDOWN   = "generateClassTearDown";
     public static final String PROP_GENERATOR = "generator";
     public static final String PROP_ROOT_SUITE_CLASSNAME = "rootSuiteClassName";                
+
+    public static final String PROP_RESULTS_SPLITPANE_DIVIDER = "resultsSplitDivider";
     
     public String displayName () {
         return NbBundle.getMessage (JUnitSettings.class, "LBL_junit_settings");
@@ -268,6 +270,14 @@ public class JUnitSettings {
 
     public void setRootSuiteClassName(String newVal) {
         getPreferences().put(PROP_ROOT_SUITE_CLASSNAME,newVal);
+    }    
+
+    public double getResultsSplitPaneDivider() {        
+        return getPreferences().getDouble(PROP_RESULTS_SPLITPANE_DIVIDER, 0.5);
+    }
+
+    public void setResultsSplitPaneDivider(double newVal) {
+        getPreferences().putDouble(PROP_RESULTS_SPLITPANE_DIVIDER, newVal);
     }    
     
     private static BeanNode createViewNode() throws java.beans.IntrospectionException {

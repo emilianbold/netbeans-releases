@@ -27,8 +27,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JSplitPane;
+import javax.swing.*;
+
 import org.openide.ErrorManager;
+import org.netbeans.modules.junit.JUnitSettings;
 
 /**
  *
@@ -68,7 +70,26 @@ final class ResultDisplayHandler {
         Component left = new StatisticsPanel(this);
         Component right = new ResultPanelOutput(this);
         JSplitPane splitPane
-                = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, right);
+                = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, right) {
+
+            public void addNotify() {
+                super.addNotify();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        setDividerLocation(JUnitSettings.getDefault().getResultsSplitPaneDivider());
+                    }
+                });
+            }
+
+            public void removeNotify() {
+                double proportionalLocation = (double)getDividerLocation() / (getWidth() - getDividerSize());
+                if (proportionalLocation >= 0.0 && proportionalLocation <= 1.0) {
+                    JUnitSettings.getDefault().setResultsSplitPaneDivider(proportionalLocation);
+                }
+                super.removeNotify();
+            }
+        };
+
         return splitPane;
     }
     
