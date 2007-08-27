@@ -569,7 +569,6 @@ public final class JavadocHintProvider extends AbstractHint {
             // resolve existing and missing tags
             int index = 0;
             for (ExpressionTree throwTree : throwz) {
-                ++index;
                 TreePath path = new TreePath(currentPath, throwTree);
                 Element el = javac.getTrees().getElement(path);
                 String fqn;
@@ -599,6 +598,7 @@ public final class JavadocHintProvider extends AbstractHint {
                         Logger.getLogger(JavadocHintProvider.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
+                ++index;
             }
             
             TypeMirror rtException = javac.getElements().getTypeElement("java.lang.RuntimeException").asType(); // NOI18N
@@ -1348,7 +1348,6 @@ public final class JavadocHintProvider extends AbstractHint {
             Tag where = null;
             boolean insertBefore = true;
             if (tags.length > 0) {
-                int index = this.index;
                 where = index < tags.length? tags[index]: tags[tags.length - 1];
                 insertBefore = index < tags.length;
             } else {
@@ -1364,7 +1363,7 @@ public final class JavadocHintProvider extends AbstractHint {
                     insertBefore = false;
                 }
                 if (tags.length > 0) {
-                    where = tags[0];
+                    where = tags[tags.length - 1];
                 }
             }
             return getTagInsertPosition(wc, doc, jdoc, where, insertBefore, isLastTag);
