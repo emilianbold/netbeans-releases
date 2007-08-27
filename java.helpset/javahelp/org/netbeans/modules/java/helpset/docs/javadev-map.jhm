@@ -347,7 +347,6 @@
 <mapID target="NetbeansDebuggerPackageNode" url="debug/CSH/classes_view.html"/>
 
 <mapID target="NetbeansDebuggerSessionsPropertiesSheet" url="debug/CSH/session_properties.html"/>
-<mapID target="NetbeansDebuggerThreadsPropertiesSheet" url="debug/CSH/threads_properties.html"/>
 <mapID target="NetbeansDebuggerOutputWindow" url="debug/CSH/debug_output.html"/>
 
 <mapID target="debug.add.breakpoint.java.class" url="debug/CSH/breakpoint_class.html" />
