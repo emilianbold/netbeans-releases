@@ -4,32 +4,31 @@ Inc.  All rights reserved.
 Use is subject to license terms.  *--> 
 <html> 
     <head> 
-        <title>Marshalling Java Classes to XML Elements</title>
+        <title>Unmarshalling XML Elements to Java Classes</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head> 
     <body>
-        <h2>Marshalling Java Classes to XML Elements</h2>
+        <h2>Unmarshalling XML Elements to Java Classes</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-       <p>The <a href="about_jaxb.html">Java Architecture for XML Binding API (JAXB)</a> provides a client application 
-        the ability to convert Java classes into a
-        hierarchy of XML elements. The IDE provides a code template
+        
+        <p>The <a href="about_jaxb.html">Java Architecture for XML Binding API (JAXB)</a> provides a client application 
+        the ability to convert XML data into a tree of 
+        Java classes. The IDE provides a code template
         that you can use to generate a code
         snippet as the basis for this task.
         
-        <p><b>To marshall Java classes to XML elements:</b>
+        <p><b>To unmarshall XML element to Java classes:</b>
         
-       <ol>
+        <ol>
              
-            <li>Type <tt>jaxbm</tt> in
+            <li>Type <tt>jaxbu</tt> in
             the Source Editor for Java files
             and then press Tab. The snippet is
             created, as follows:
-<pre>try {    
-    javax.xml.bind.JAXBContext jaxbCtx= javax.xml.bind.JAXBContext.newInstance( Object.class.getClass().getPackage().getName());
-    javax.xml.bind.Marshaller marshaller = jaxbCtx.createMarshaller();
-    marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_ENCODING, "UTF-8"); //NOI18N
-    marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-    marshaller.marshal(Object.class , System.out);
+<pre>try {
+    javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(Object.class.getClass().getPackage().getName());
+    javax.xml.bind.Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
+    Object.class =  unmarshaller.unmarshal(new java.io.File("File path")); //NOI18N
 } catch (javax.xml.bind.JAXBException ex) {
     // XXXTODO Handle exception
     java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, null, ex); //NOI18N
@@ -38,7 +37,7 @@ Use is subject to license terms.  *-->
             incorporate it in the rest of your code.
             
         </ol>
-         
+        
         
         <dl>
             <dt><a name="seealso">See Also</a></dt>
