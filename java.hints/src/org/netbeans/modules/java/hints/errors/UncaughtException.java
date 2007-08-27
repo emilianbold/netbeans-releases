@@ -199,9 +199,10 @@ public final class UncaughtException implements ErrorRule<Void> {
 	while(path.getLeaf().getKind() != Kind.CLASS && path.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
 	    if (path.getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION) {
 		MethodInvocationTree mi = (MethodInvocationTree) path.getParentPath().getLeaf();
-		String id = ((IdentifierTree) mi.getMethodSelect()).getName().toString();
-		if ("super".equals(id) || "this".equals(id)) {
-		    return true;
+		if(mi.getMethodSelect().getKind() == Kind.IDENTIFIER) {
+		    String id = ((IdentifierTree) mi.getMethodSelect()).getName().toString();
+		    if ("super".equals(id) || "this".equals(id))
+			return true;
 		}
 	    }
 	    path = path.getParentPath();

@@ -26,7 +26,10 @@ public class Test {
         });
     }
     
-    Test(double d) {}
+    Test(double d) {
+	java.io.BufferedInputStream bi = null;
+        bi.read(new byte[bi.read()]);
+    }
 }
 
 class aa {

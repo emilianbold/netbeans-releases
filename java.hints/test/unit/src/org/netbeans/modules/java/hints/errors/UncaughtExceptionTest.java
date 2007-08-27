@@ -61,6 +61,13 @@ public class UncaughtExceptionTest extends HintsTestBase {
 	performTestDoNotPerform("Test", 19, 33);
     }
     
+    /**
+     * Field access inside ctor
+     */
+    public void testBug113812() throws Exception {
+	performTestDoNotPerform("Test", 31, 23);
+    }
+    
     /** Surround with try catch inside ctor */
     public void testInsideCtor() throws Exception {
 	performTestDoNotPerform("Test", 16, 21);
