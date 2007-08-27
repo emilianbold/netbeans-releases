@@ -103,6 +103,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         DeclarationLocation loc = gotoTest.findTest(getProjFile("app/models/whatever.rb"), -1);
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("spec/models/whatever_spec.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
     }
 
     public void testGotoTestRails() {
@@ -111,6 +112,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         DeclarationLocation loc = gotoTest.findTest(getProjFile("app/models/mymodel.rb"), -1);
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("test/unit/mymodel_test.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
     }
     
     public void testEnsureDirection1() {
@@ -133,6 +135,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         DeclarationLocation loc = gotoTest.findTested(getProjFile("test/test_foo.rb"), -1);
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("lib/foo.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
     }
 
     public void testGotoTestedUnit2() {
@@ -141,6 +144,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         DeclarationLocation loc = gotoTest.findTested(getProjFile("test/tc_bar.rb"), -1);
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("lib/bar.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
     }
 
     // The ZenTest patterns are only checked if the ZenTest gem is installed
@@ -158,6 +162,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         DeclarationLocation loc = gotoTest.findTested(getProjFile("spec/models/whatever_spec.rb"), -1);
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("app/models/whatever.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
     }
 
     public void testGotoTestedRails() {
@@ -166,6 +171,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         DeclarationLocation loc = gotoTest.findTested(getProjFile("test/unit/mymodel_test.rb"), -1);
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("app/models/mymodel.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
     }
 
     // The code index doesn't yet work at test time so the index search for HelloTest won't work
@@ -208,8 +214,10 @@ public class GotoTestTest extends RubyProjectTestBase {
             
             loc = gotoTest.findOpposite(test, -1);
             assertEquals(source, loc.getFileObject());
+            assertEquals(-1, loc.getOffset());
             loc = gotoTest.findOpposite(source, -1);
             assertEquals(test, loc.getFileObject());
+            assertEquals(-1, loc.getOffset());
         }
     }
     
@@ -219,6 +227,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         DeclarationLocation loc = gotoTest.findTest(getProjFile("app/views/user/create.mab"), -1);
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("spec/views/user/create_spec.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
     }
 
     public void testGoto112812b() {
@@ -227,6 +236,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         DeclarationLocation loc = gotoTest.findTest(getProjFile("app/views/user/_partial.mab"), -1);
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("spec/views/user/_partial_spec.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
     }
 
     public void testGoto112812c() {
@@ -235,6 +245,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         DeclarationLocation loc = gotoTest.findTested(getProjFile("spec/views/user/create_spec.rb"), -1);
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("app/views/user/create.mab", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
     }
 
     public void testGoto112812d() {
@@ -243,6 +254,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         DeclarationLocation loc = gotoTest.findTested(getProjFile("spec/views/user/_partial_spec.rb"), -1);
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("app/views/user/_partial.mab", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
     }
 
     public void testNegative() {
@@ -250,6 +262,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         
         DeclarationLocation loc = gotoTest.findTest(getProjFile("app/controllers/lonely_controller.rb"), -1);
         assertSame(DeclarationLocation.NONE, loc);
+        assertEquals(-1, loc.getOffset());
     }
 
     public void testNegative2() {
@@ -257,6 +270,7 @@ public class GotoTestTest extends RubyProjectTestBase {
         
         DeclarationLocation loc = gotoTest.findTest(getProjFile("test/unit/lonesometest.rb"), -1);
         assertSame(DeclarationLocation.NONE, loc);
+        assertEquals(-1, loc.getOffset());
     }
 
     public void testNegative3() {
