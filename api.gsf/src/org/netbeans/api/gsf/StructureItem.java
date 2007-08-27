@@ -35,6 +35,7 @@ public interface StructureItem {
     boolean isLeaf();
     List<? extends StructureItem> getNestedItems(); 
     long getPosition();
+    long getEndPosition();
 
     public abstract boolean equals(Object o);
     public abstract int hashCode();

@@ -847,6 +847,10 @@ public class StructureAnalyzer implements StructureScanner {
             return node.getNode().getPosition().getStartOffset();
         }
 
+        public long getEndPosition() {
+            return node.getNode().getPosition().getEndOffset();
+        }
+
         @Override
         public boolean equals(Object o) {
             if (o == null) {
