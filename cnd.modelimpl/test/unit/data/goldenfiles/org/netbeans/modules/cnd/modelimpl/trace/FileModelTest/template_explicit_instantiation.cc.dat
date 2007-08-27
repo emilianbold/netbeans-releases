@@ -19,11 +19,11 @@ FUNCTION DEFINITION min  [6:1/60-8:2/119] FunctionDDImpl SCOPE: $Global$
     UNIQUE NAME f:min<class T>(T,T)
     DECLARATION: min  [6:1/60-8:2/119]
     PARAMETERS:
-        x [6:25/84-6:28/87]  TYPE: $unresolved$::T TEXT=T  [6:25/84-6:26/85]  INIT: null  SCOPE: null
-        y [6:30/89-6:33/92]  TYPE: $unresolved$::T TEXT=T  [6:30/89-6:31/90]  INIT: null  SCOPE: null
+        x [6:25/84-6:28/87]  TYPE: $unresolved$::T TEXT=T  [6:25/84-6:26/85]  INIT: null  SCOPE: min 
+        y [6:30/89-6:33/92]  TYPE: $unresolved$::T TEXT=T  [6:30/89-6:31/90]  INIT: null  SCOPE: min 
     RETURNS $unresolved$::T TEXT=T  [6:19/78-6:20/79]
-    STATEMENT Compound  [6:35/94-8:2/119] SCOPE: null
-        STATEMENT Return  [7:1/96-7:22/117] SCOPE: null text: 'return x < y ? x : y;'
+    STATEMENT Compound  [6:35/94-8:2/119] SCOPE: min 
+        STATEMENT Return  [7:1/96-7:22/117] SCOPE: Stmt  [6:35/94-8:2/119] text: 'return x < y ? x : y;'
 
 ========== Dumping model of PROJECT DummyProject
 CLASS Cls<> (Cls ) [1:1/0-2:3/32] lcurly=28 SCOPE: $Global$ 
@@ -34,9 +34,9 @@ FUNCTION DEFINITION min  [6:1/60-8:2/119] FunctionDDImpl SCOPE: $Global$
     UNIQUE NAME f:min<class T>(T,T)
     DECLARATION: min  [6:1/60-8:2/119]
     PARAMETERS:
-        x [6:25/84-6:28/87]  TYPE: $unresolved$::T TEXT=T  [6:25/84-6:26/85]  INIT: null  SCOPE: null
-        y [6:30/89-6:33/92]  TYPE: $unresolved$::T TEXT=T  [6:30/89-6:31/90]  INIT: null  SCOPE: null
+        x [6:25/84-6:28/87]  TYPE: $unresolved$::T TEXT=T  [6:25/84-6:26/85]  INIT: null  SCOPE: min 
+        y [6:30/89-6:33/92]  TYPE: $unresolved$::T TEXT=T  [6:30/89-6:31/90]  INIT: null  SCOPE: min 
     RETURNS $unresolved$::T TEXT=T  [6:19/78-6:20/79]
-    STATEMENT Compound  [6:35/94-8:2/119] SCOPE: null
-        STATEMENT Return  [7:1/96-7:22/117] SCOPE: null text: 'return x < y ? x : y;'
+    STATEMENT Compound  [6:35/94-8:2/119] SCOPE: min 
+        STATEMENT Return  [7:1/96-7:22/117] SCOPE: Stmt  [6:35/94-8:2/119] text: 'return x < y ? x : y;'
 

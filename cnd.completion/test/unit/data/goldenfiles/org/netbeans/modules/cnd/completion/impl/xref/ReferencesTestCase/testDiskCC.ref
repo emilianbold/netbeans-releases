@@ -18,21 +18,21 @@
 ==============================================================
 'type', tokenID=identifier, offset=944 [24:16/944-24:20/948]
 --OWNER:
-    VARIABLE type [24:12/940-24:20/948] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:12/940-24:15/943]  INIT: null  SCOPE: null
+    VARIABLE type [24:12/940-24:20/948] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:12/940-24:15/943]  INIT: null  SCOPE: Disk 
 --RESOLVED TO:
-    VARIABLE type [24:12/940-24:20/948] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:12/940-24:15/943]  INIT: null  SCOPE: null
+    VARIABLE type [24:12/940-24:20/948] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:12/940-24:15/943]  INIT: null  SCOPE: Disk 
 ==============================================================
 'size', tokenID=identifier, offset=968 [24:40/968-24:44/972]
 --OWNER:
-    VARIABLE size [24:36/964-24:44/972] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:36/964-24:39/967]  INIT: null  SCOPE: null
+    VARIABLE size [24:36/964-24:44/972] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:36/964-24:39/967]  INIT: null  SCOPE: Disk 
 --RESOLVED TO:
-    VARIABLE size [24:36/964-24:44/972] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:36/964-24:39/967]  INIT: null  SCOPE: null
+    VARIABLE size [24:36/964-24:44/972] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:36/964-24:39/967]  INIT: null  SCOPE: Disk 
 ==============================================================
 'units', tokenID=identifier, offset=990 [24:62/990-24:67/995]
 --OWNER:
-    VARIABLE units [24:58/986-24:67/995] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:58/986-24:61/989]  INIT: null  SCOPE: null
+    VARIABLE units [24:58/986-24:67/995] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:58/986-24:61/989]  INIT: null  SCOPE: Disk 
 --RESOLVED TO:
-    VARIABLE units [24:58/986-24:67/995] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:58/986-24:61/989]  INIT: null  SCOPE: null
+    VARIABLE units [24:58/986-24:67/995] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:58/986-24:61/989]  INIT: null  SCOPE: Disk 
 ==============================================================
 'Module', tokenID=identifier, offset=1012 [25:5/1012-25:11/1018]
 --OWNER:
@@ -44,19 +44,19 @@
 --OWNER:
     FUNCTION_DEFINITION Disk(int,int,int)  [24:1/929-27:2/1100] ReferencesTestCase/disk.cc
 --RESOLVED TO:
-    VARIABLE type [24:12/940-24:20/948] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:12/940-24:15/943]  INIT: null  SCOPE: null
+    VARIABLE type [24:12/940-24:20/948] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:12/940-24:15/943]  INIT: null  SCOPE: Disk 
 ==============================================================
 'size', tokenID=identifier, offset=1052 [25:45/1052-25:49/1056]
 --OWNER:
     FUNCTION_DEFINITION Disk(int,int,int)  [24:1/929-27:2/1100] ReferencesTestCase/disk.cc
 --RESOLVED TO:
-    VARIABLE size [24:36/964-24:44/972] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:36/964-24:39/967]  INIT: null  SCOPE: null
+    VARIABLE size [24:36/964-24:44/972] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:36/964-24:39/967]  INIT: null  SCOPE: Disk 
 ==============================================================
 'units', tokenID=identifier, offset=1058 [25:51/1058-25:56/1063]
 --OWNER:
     FUNCTION_DEFINITION Disk(int,int,int)  [24:1/929-27:2/1100] ReferencesTestCase/disk.cc
 --RESOLVED TO:
-    VARIABLE units [24:58/986-24:67/995] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:58/986-24:61/989]  INIT: null  SCOPE: null
+    VARIABLE units [24:58/986-24:67/995] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [24:58/986-24:61/989]  INIT: null  SCOPE: Disk 
 ==============================================================
 'ComputeSupportMetric', tokenID=identifier, offset=1075 [26:9/1075-26:29/1095]
 --OWNER:
@@ -78,13 +78,13 @@
 ==============================================================
 'metric', tokenID=identifier, offset=1316 [35:9/1316-35:15/1322]
 --OWNER:
-    VARIABLE metric [35:5/1312-35:35/1342] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [35:5/1312-35:8/1315]  INIT: text='200'  SCOPE: null
+    VARIABLE metric [35:5/1312-35:35/1342] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [35:5/1312-35:8/1315]  INIT: text='200'  SCOPE: Stmt  [34:35/1305-42:2/1449]
 --RESOLVED TO:
-    VARIABLE metric [35:5/1312-35:35/1342] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [35:5/1312-35:8/1315]  INIT: text='200'  SCOPE: null
+    VARIABLE metric [35:5/1312-35:35/1342] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [35:5/1312-35:8/1315]  INIT: text='200'  SCOPE: Stmt  [34:35/1305-42:2/1449]
 ==============================================================
 'GetUnits', tokenID=identifier, offset=1331 [35:24/1331-35:32/1339]
 --OWNER:
-    VARIABLE metric [35:5/1312-35:35/1342] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [35:5/1312-35:8/1315]  INIT: text='200'  SCOPE: null
+    VARIABLE metric [35:5/1312-35:35/1342] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [35:5/1312-35:8/1315]  INIT: text='200'  SCOPE: Stmt  [34:35/1305-42:2/1449]
 --RESOLVED TO:
     FUNCTION GetUnits() const  [53:5/1741-53:26/1762] ReferencesTestCase/module.h
 ==============================================================
@@ -104,7 +104,7 @@
 --OWNER:
     STMT Expression text='metric += 500'
 --RESOLVED TO:
-    VARIABLE metric [35:5/1312-35:35/1342] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [35:5/1312-35:8/1315]  INIT: text='200'  SCOPE: null
+    VARIABLE metric [35:5/1312-35:35/1342] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [35:5/1312-35:8/1315]  INIT: text='200'  SCOPE: Stmt  [34:35/1305-42:2/1449]
 ==============================================================
 'SetSupportMetric', tokenID=identifier, offset=1422 [41:5/1422-41:21/1438]
 --OWNER:
@@ -116,7 +116,7 @@
 --OWNER:
     STMT Expression text='SetSupportMetric(metric)'
 --RESOLVED TO:
-    VARIABLE metric [35:5/1312-35:35/1342] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [35:5/1312-35:8/1315]  INIT: text='200'  SCOPE: null
+    VARIABLE metric [35:5/1312-35:35/1342] ReferencesTestCase/disk.cc  TYPE: int TEXT=int  [35:5/1312-35:8/1315]  INIT: text='200'  SCOPE: Stmt  [34:35/1305-42:2/1449]
 ==============================================================
 'Disk', tokenID=identifier, offset=1467 [44:13/1467-44:17/1471]
 --OWNER:

@@ -18,21 +18,21 @@
 ==============================================================
 'type', tokenID=identifier, offset=941 [24:14/941-24:18/945]
 --OWNER:
-    VARIABLE type [24:10/937-24:18/945] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:10/937-24:13/940]  INIT: null  SCOPE: null
+    VARIABLE type [24:10/937-24:18/945] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:10/937-24:13/940]  INIT: null  SCOPE: Cpu 
 --RESOLVED TO:
-    VARIABLE type [24:10/937-24:18/945] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:10/937-24:13/940]  INIT: null  SCOPE: null
+    VARIABLE type [24:10/937-24:18/945] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:10/937-24:13/940]  INIT: null  SCOPE: Cpu 
 ==============================================================
 'architecture', tokenID=identifier, offset=965 [24:38/965-24:50/977]
 --OWNER:
-    VARIABLE architecture [24:34/961-24:50/977] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:34/961-24:37/964]  INIT: null  SCOPE: null
+    VARIABLE architecture [24:34/961-24:50/977] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:34/961-24:37/964]  INIT: null  SCOPE: Cpu 
 --RESOLVED TO:
-    VARIABLE architecture [24:34/961-24:50/977] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:34/961-24:37/964]  INIT: null  SCOPE: null
+    VARIABLE architecture [24:34/961-24:50/977] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:34/961-24:37/964]  INIT: null  SCOPE: Cpu 
 ==============================================================
 'units', tokenID=identifier, offset=998 [24:71/998-24:76/1003]
 --OWNER:
-    VARIABLE units [24:67/994-24:76/1003] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:67/994-24:70/997]  INIT: null  SCOPE: null
+    VARIABLE units [24:67/994-24:76/1003] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:67/994-24:70/997]  INIT: null  SCOPE: Cpu 
 --RESOLVED TO:
-    VARIABLE units [24:67/994-24:76/1003] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:67/994-24:70/997]  INIT: null  SCOPE: null
+    VARIABLE units [24:67/994-24:76/1003] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:67/994-24:70/997]  INIT: null  SCOPE: Cpu 
 ==============================================================
 'Module', tokenID=identifier, offset=1019 [25:5/1019-25:11/1025]
 --OWNER:
@@ -44,19 +44,19 @@
 --OWNER:
     FUNCTION_DEFINITION Cpu(int,int,int)  [24:1/928-27:2/1106] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    VARIABLE type [24:10/937-24:18/945] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:10/937-24:13/940]  INIT: null  SCOPE: null
+    VARIABLE type [24:10/937-24:18/945] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:10/937-24:13/940]  INIT: null  SCOPE: Cpu 
 ==============================================================
 'architecture', tokenID=identifier, offset=1050 [25:36/1050-25:48/1062]
 --OWNER:
     FUNCTION_DEFINITION Cpu(int,int,int)  [24:1/928-27:2/1106] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    VARIABLE architecture [24:34/961-24:50/977] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:34/961-24:37/964]  INIT: null  SCOPE: null
+    VARIABLE architecture [24:34/961-24:50/977] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:34/961-24:37/964]  INIT: null  SCOPE: Cpu 
 ==============================================================
 'units', tokenID=identifier, offset=1064 [25:50/1064-25:55/1069]
 --OWNER:
     FUNCTION_DEFINITION Cpu(int,int,int)  [24:1/928-27:2/1106] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    VARIABLE units [24:67/994-24:76/1003] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:67/994-24:70/997]  INIT: null  SCOPE: null
+    VARIABLE units [24:67/994-24:76/1003] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [24:67/994-24:70/997]  INIT: null  SCOPE: Cpu 
 ==============================================================
 'ComputeSupportMetric', tokenID=identifier, offset=1081 [26:9/1081-26:29/1101]
 --OWNER:
@@ -78,13 +78,13 @@
 ==============================================================
 'metric', tokenID=identifier, offset=1321 [36:9/1321-36:15/1327]
 --OWNER:
-    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: null
+    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: Stmt  [35:34/1311-49:2/1547]
 --RESOLVED TO:
-    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: null
+    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: Stmt  [35:34/1311-49:2/1547]
 ==============================================================
 'GetUnits', tokenID=identifier, offset=1336 [36:24/1336-36:32/1344]
 --OWNER:
-    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: null
+    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: Stmt  [35:34/1311-49:2/1547]
 --RESOLVED TO:
     FUNCTION GetUnits() const  [53:5/1741-53:26/1762] ReferencesTestCase/module.h
 ==============================================================
@@ -104,7 +104,7 @@
 --OWNER:
     STMT Expression text='metric += 100'
 --RESOLVED TO:
-    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: null
+    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: Stmt  [35:34/1311-49:2/1547]
 ==============================================================
 'HIGH', tokenID=identifier, offset=1457 [43:14/1457-43:18/1461]
 --OWNER:
@@ -116,7 +116,7 @@
 --OWNER:
     STMT Expression text='metric += 400'
 --RESOLVED TO:
-    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: null
+    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: Stmt  [35:34/1311-49:2/1547]
 ==============================================================
 'SetSupportMetric', tokenID=identifier, offset=1520 [48:5/1520-48:21/1536]
 --OWNER:
@@ -128,7 +128,7 @@
 --OWNER:
     STMT Expression text='SetSupportMetric(metric)'
 --RESOLVED TO:
-    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: null
+    VARIABLE metric [36:5/1317-36:35/1347] ReferencesTestCase/cpu.cc  TYPE: int TEXT=int  [36:5/1317-36:8/1320]  INIT: text='100'  SCOPE: Stmt  [35:34/1311-49:2/1547]
 ==============================================================
 'Cpu', tokenID=identifier, offset=1561 [51:13/1561-51:16/1564]
 --OWNER:

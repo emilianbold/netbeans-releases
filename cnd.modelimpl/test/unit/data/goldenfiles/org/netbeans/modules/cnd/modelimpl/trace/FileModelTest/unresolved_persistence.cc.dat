@@ -23,7 +23,7 @@ FUNCTION DEFINITION foo  [3:1/16-5:2/34] FunctionDefinitionImpl SCOPE: unresolve
     DECLARATION: null
     PARAMETERS:
     RETURNS void TEXT=void  [3:1/16-3:5/20]
-    STATEMENT Compound  [3:15/30-5:2/34] SCOPE: null
+    STATEMENT Compound  [3:15/30-5:2/34] SCOPE: foo 
 CLASS D (D ) [7:1/36-11:3/78] lcurly=48 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=$unresolved$::C VISIBILITY==private virtual==false text='C'
@@ -34,7 +34,7 @@ CLASS D (D ) [7:1/36-11:3/78] lcurly=48 SCOPE: $Global$
             DECLARATION: foo_2  [8:5/54-10:6/75]
             PARAMETERS:
             RETURNS void TEXT=void  [8:5/54-8:9/58]
-            STATEMENT Compound  [8:18/67-10:6/75] SCOPE: null
+            STATEMENT Compound  [8:18/67-10:6/75] SCOPE: foo_2 
 
 ========== Dumping model of PROJECT DummyProject
 FUNCTION foo [1:1/0-1:15/14] FunctionImpl SCOPE: $Global$ 
@@ -53,5 +53,5 @@ CLASS D (D ) [7:1/36-11:3/78] lcurly=48 SCOPE: $Global$
             DECLARATION: foo_2  [8:5/54-10:6/75]
             PARAMETERS:
             RETURNS void TEXT=void  [8:5/54-8:9/58]
-            STATEMENT Compound  [8:18/67-10:6/75] SCOPE: null
+            STATEMENT Compound  [8:18/67-10:6/75] SCOPE: foo_2 
 

@@ -78,33 +78,33 @@
 ==============================================================
 'type', tokenID=identifier, offset=1106 [29:14/1106-29:18/1110]
 --OWNER:
-    VARIABLE type [29:10/1102-29:27/1119] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:10/1102-29:13/1105]  INIT: text='SINGLE'  SCOPE: null
+    VARIABLE type [29:10/1102-29:27/1119] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:10/1102-29:13/1105]  INIT: text='SINGLE'  SCOPE: Disk 
 --RESOLVED TO:
-    VARIABLE type [29:10/1102-29:27/1119] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:10/1102-29:13/1105]  INIT: text='SINGLE'  SCOPE: null
+    VARIABLE type [29:10/1102-29:27/1119] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:10/1102-29:13/1105]  INIT: text='SINGLE'  SCOPE: Disk 
 ==============================================================
 'SINGLE', tokenID=identifier, offset=1113 [29:21/1113-29:27/1119]
 --OWNER:
-    VARIABLE type [29:10/1102-29:27/1119] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:10/1102-29:13/1105]  INIT: text='SINGLE'  SCOPE: null
+    VARIABLE type [29:10/1102-29:27/1119] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:10/1102-29:13/1105]  INIT: text='SINGLE'  SCOPE: Disk 
 --RESOLVED TO:
     ENUMERATOR Disk::DiskType::SINGLE [26:21/979-26:27/985] ReferencesTestCase/disk.h
 ==============================================================
 'size', tokenID=identifier, offset=1125 [29:33/1125-29:37/1129]
 --OWNER:
-    VARIABLE size [29:29/1121-29:44/1136] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:29/1121-29:32/1124]  INIT: text='T100'  SCOPE: null
+    VARIABLE size [29:29/1121-29:44/1136] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:29/1121-29:32/1124]  INIT: text='T100'  SCOPE: Disk 
 --RESOLVED TO:
-    VARIABLE size [29:29/1121-29:44/1136] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:29/1121-29:32/1124]  INIT: text='T100'  SCOPE: null
+    VARIABLE size [29:29/1121-29:44/1136] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:29/1121-29:32/1124]  INIT: text='T100'  SCOPE: Disk 
 ==============================================================
 'T100', tokenID=identifier, offset=1132 [29:40/1132-29:44/1136]
 --OWNER:
-    VARIABLE size [29:29/1121-29:44/1136] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:29/1121-29:32/1124]  INIT: text='T100'  SCOPE: null
+    VARIABLE size [29:29/1121-29:44/1136] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:29/1121-29:32/1124]  INIT: text='T100'  SCOPE: Disk 
 --RESOLVED TO:
     ENUMERATOR Disk::DiskCapacity::T100 [27:25/1021-27:29/1025] ReferencesTestCase/disk.h
 ==============================================================
 'units', tokenID=identifier, offset=1142 [29:50/1142-29:55/1147]
 --OWNER:
-    VARIABLE units [29:46/1138-29:58/1150] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:46/1138-29:49/1141]  INIT: text='1'  SCOPE: null
+    VARIABLE units [29:46/1138-29:58/1150] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:46/1138-29:49/1141]  INIT: text='1'  SCOPE: Disk 
 --RESOLVED TO:
-    VARIABLE units [29:46/1138-29:58/1150] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:46/1138-29:49/1141]  INIT: text='1'  SCOPE: null
+    VARIABLE units [29:46/1138-29:58/1150] ReferencesTestCase/disk.h  TYPE: int TEXT=int  [29:46/1138-29:49/1141]  INIT: text='1'  SCOPE: Disk 
 ==============================================================
 'GetType', tokenID=identifier, offset=1177 [30:25/1177-30:32/1184]
 --OWNER:

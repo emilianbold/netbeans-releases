@@ -36,15 +36,15 @@
 ==============================================================
 'initName', tokenID=identifier, offset=1016 [29:31/1016-29:39/1024]
 --OWNER:
-    VARIABLE initName [29:18/1003-29:39/1024] ReferencesTestCase/customer.h  TYPE: const $unresolved$::string TEXT=const string  [29:18/1003-29:30/1015]  INIT: null  SCOPE: null
+    VARIABLE initName [29:18/1003-29:39/1024] ReferencesTestCase/customer.h  TYPE: const $unresolved$::string TEXT=const string  [29:18/1003-29:30/1015]  INIT: null  SCOPE: Customer 
 --RESOLVED TO:
-    VARIABLE initName [29:18/1003-29:39/1024] ReferencesTestCase/customer.h  TYPE: const $unresolved$::string TEXT=const string  [29:18/1003-29:30/1015]  INIT: null  SCOPE: null
+    VARIABLE initName [29:18/1003-29:39/1024] ReferencesTestCase/customer.h  TYPE: const $unresolved$::string TEXT=const string  [29:18/1003-29:30/1015]  INIT: null  SCOPE: Customer 
 ==============================================================
 'initDiscount', tokenID=identifier, offset=1030 [29:45/1030-29:57/1042]
 --OWNER:
-    VARIABLE initDiscount [29:41/1026-29:57/1042] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [29:41/1026-29:44/1029]  INIT: null  SCOPE: null
+    VARIABLE initDiscount [29:41/1026-29:57/1042] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [29:41/1026-29:44/1029]  INIT: null  SCOPE: Customer 
 --RESOLVED TO:
-    VARIABLE initDiscount [29:41/1026-29:57/1042] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [29:41/1026-29:44/1029]  INIT: null  SCOPE: null
+    VARIABLE initDiscount [29:41/1026-29:57/1042] ReferencesTestCase/customer.h  TYPE: int TEXT=int  [29:41/1026-29:44/1029]  INIT: null  SCOPE: Customer 
 ==============================================================
 'string', tokenID=identifier, offset=1053 [30:9/1053-30:15/1059]
 --OWNER:
@@ -96,7 +96,7 @@
 ==============================================================
 'Customer', tokenID=identifier, offset=1228 [37:53/1228-37:61/1236]
 --OWNER:
-    VARIABLE  [37:47/1222-37:62/1237] ReferencesTestCase/customer.h  TYPE: const &Customer TEXT=const Customer&  [37:47/1222-37:52/1227]  INIT: null  SCOPE: null
+    VARIABLE  [37:47/1222-37:62/1237] ReferencesTestCase/customer.h  TYPE: const &Customer TEXT=const Customer&  [37:47/1222-37:52/1227]  INIT: null  SCOPE: operator << 
 --RESOLVED TO:
     CLASS Customer [27:1/957-38:3/1242] ReferencesTestCase/customer.h
 ==============================================================

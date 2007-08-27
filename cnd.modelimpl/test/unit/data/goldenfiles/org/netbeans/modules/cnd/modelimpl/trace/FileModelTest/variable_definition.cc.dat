@@ -23,13 +23,13 @@ FUNCTION DEFINITION main  [8:1/58-12:2/116] FunctionDDImpl SCOPE: $Global$
     UNIQUE NAME f:main(int)
     DECLARATION: main  [8:1/58-12:2/116]
     PARAMETERS:
-        argv [8:10/67-8:18/75]  TYPE: int TEXT=int  [8:10/67-8:13/70]  INIT: null  SCOPE: null
+        argv [8:10/67-8:18/75]  TYPE: int TEXT=int  [8:10/67-8:13/70]  INIT: null  SCOPE: main 
     RETURNS int TEXT=int  [8:1/58-8:4/61]
-    STATEMENT Compound  [8:20/77-12:2/116] SCOPE: null
-        STATEMENT Declaration  [9:5/83-9:9/87] SCOPE: null
-            VARIABLE a [9:5/83-9:9/87]  TYPE: A TEXT=A  [9:5/83-9:6/84]  INIT: null  SCOPE: null
-        STATEMENT Expression  [10:5/92-10:12/99] SCOPE: null text: 'a.var=4'
-        STATEMENT Return  [11:5/105-11:14/114] SCOPE: null text: 'return 1;'
+    STATEMENT Compound  [8:20/77-12:2/116] SCOPE: main 
+        STATEMENT Declaration  [9:5/83-9:9/87] SCOPE: Stmt  [8:20/77-12:2/116]
+            VARIABLE a [9:5/83-9:9/87]  TYPE: A TEXT=A  [9:5/83-9:6/84]  INIT: null  SCOPE: Stmt  [8:20/77-12:2/116]
+        STATEMENT Expression  [10:5/92-10:12/99] SCOPE: Stmt  [8:20/77-12:2/116] text: 'a.var=4'
+        STATEMENT Return  [11:5/105-11:14/114] SCOPE: Stmt  [8:20/77-12:2/116] text: 'return 1;'
 
 ========== Dumping model of PROJECT DummyProject
 CLASS A (A ) [1:1/0-4:3/40] lcurly=8 SCOPE: $Global$ 
@@ -42,11 +42,11 @@ FUNCTION DEFINITION main  [8:1/58-12:2/116] FunctionDDImpl SCOPE: $Global$
     UNIQUE NAME f:main(int)
     DECLARATION: main  [8:1/58-12:2/116]
     PARAMETERS:
-        argv [8:10/67-8:18/75]  TYPE: int TEXT=int  [8:10/67-8:13/70]  INIT: null  SCOPE: null
+        argv [8:10/67-8:18/75]  TYPE: int TEXT=int  [8:10/67-8:13/70]  INIT: null  SCOPE: main 
     RETURNS int TEXT=int  [8:1/58-8:4/61]
-    STATEMENT Compound  [8:20/77-12:2/116] SCOPE: null
-        STATEMENT Declaration  [9:5/83-9:9/87] SCOPE: null
-            VARIABLE a [9:5/83-9:9/87]  TYPE: A TEXT=A  [9:5/83-9:6/84]  INIT: null  SCOPE: null
-        STATEMENT Expression  [10:5/92-10:12/99] SCOPE: null text: 'a.var=4'
-        STATEMENT Return  [11:5/105-11:14/114] SCOPE: null text: 'return 1;'
+    STATEMENT Compound  [8:20/77-12:2/116] SCOPE: main 
+        STATEMENT Declaration  [9:5/83-9:9/87] SCOPE: Stmt  [8:20/77-12:2/116]
+            VARIABLE a [9:5/83-9:9/87]  TYPE: A TEXT=A  [9:5/83-9:6/84]  INIT: null  SCOPE: Stmt  [8:20/77-12:2/116]
+        STATEMENT Expression  [10:5/92-10:12/99] SCOPE: Stmt  [8:20/77-12:2/116] text: 'a.var=4'
+        STATEMENT Return  [11:5/105-11:14/114] SCOPE: Stmt  [8:20/77-12:2/116] text: 'return 1;'
 

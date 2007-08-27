@@ -39,9 +39,9 @@ FUNCTION DEFINITION foo  [18:1/126-20:2/152] FunctionDefinitionImpl SCOPE: infin
     DECLARATION: foo  [15:5/110-15:16/121]
     PARAMETERS:
     RETURNS void TEXT=void  [18:1/126-18:5/130]
-    STATEMENT Compound  [18:15/140-20:2/152] SCOPE: null
-        STATEMENT Declaration  [19:5/146-19:9/150] SCOPE: null
-            VARIABLE a [19:5/146-19:9/150]  TYPE: $unresolved$::C TEXT=C  [19:5/146-19:6/147]  INIT: null  SCOPE: null
+    STATEMENT Compound  [18:15/140-20:2/152] SCOPE: foo 
+        STATEMENT Declaration  [19:5/146-19:9/150] SCOPE: Stmt  [18:15/140-20:2/152]
+            VARIABLE a [19:5/146-19:9/150]  TYPE: $unresolved$::C TEXT=C  [19:5/146-19:6/147]  INIT: null  SCOPE: Stmt  [18:15/140-20:2/152]
 
 ========== Dumping model of PROJECT DummyProject
 CLASS B (B ) [2:1/1-6:3/47] lcurly=13 SCOPE: $Global$ 

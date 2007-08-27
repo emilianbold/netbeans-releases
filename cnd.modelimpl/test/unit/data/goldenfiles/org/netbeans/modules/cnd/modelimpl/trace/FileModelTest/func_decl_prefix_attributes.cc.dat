@@ -19,9 +19,9 @@ FUNCTION glFunction [5:7/159-5:66/218] FunctionImpl SCOPE: $Global$
     SIGNATURE glFunction(int,int,int)
     UNIQUE NAME F:glFunction(int,int,int)
     PARAMETERS:
-        red [5:35/187-5:42/194]  TYPE: int TEXT=int  [5:35/187-5:38/190]  INIT: null  SCOPE: null
-        green [5:44/196-5:53/205]  TYPE: int TEXT=int  [5:44/196-5:47/199]  INIT: null  SCOPE: null
-        blue [5:55/207-5:63/215]  TYPE: int TEXT=int  [5:55/207-5:58/210]  INIT: null  SCOPE: null
+        red [5:35/187-5:42/194]  TYPE: int TEXT=int  [5:35/187-5:38/190]  INIT: null  SCOPE: glFunction 
+        green [5:44/196-5:53/205]  TYPE: int TEXT=int  [5:44/196-5:47/199]  INIT: null  SCOPE: glFunction 
+        blue [5:55/207-5:63/215]  TYPE: int TEXT=int  [5:55/207-5:58/210]  INIT: null  SCOPE: glFunction 
     RETURNS void TEXT=void  [5:7/159-5:11/163]
 
 ========== Dumping model of PROJECT DummyProject
@@ -30,8 +30,8 @@ FUNCTION glFunction [5:7/159-5:66/218] FunctionImpl SCOPE: $Global$
     SIGNATURE glFunction(int,int,int)
     UNIQUE NAME F:glFunction(int,int,int)
     PARAMETERS:
-        red [5:35/187-5:42/194]  TYPE: int TEXT=int  [5:35/187-5:38/190]  INIT: null  SCOPE: null
-        green [5:44/196-5:53/205]  TYPE: int TEXT=int  [5:44/196-5:47/199]  INIT: null  SCOPE: null
-        blue [5:55/207-5:63/215]  TYPE: int TEXT=int  [5:55/207-5:58/210]  INIT: null  SCOPE: null
+        red [5:35/187-5:42/194]  TYPE: int TEXT=int  [5:35/187-5:38/190]  INIT: null  SCOPE: glFunction 
+        green [5:44/196-5:53/205]  TYPE: int TEXT=int  [5:44/196-5:47/199]  INIT: null  SCOPE: glFunction 
+        blue [5:55/207-5:63/215]  TYPE: int TEXT=int  [5:55/207-5:58/210]  INIT: null  SCOPE: glFunction 
     RETURNS void TEXT=void  [5:7/159-5:11/163]
 

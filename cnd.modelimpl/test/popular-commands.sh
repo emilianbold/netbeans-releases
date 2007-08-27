@@ -9,5 +9,8 @@ golden_dir="${unit}/data/goldenfiles/org/netbeans/modules/cnd/modelimpl/trace/Fi
 log=/tmp/log
 new_golden_files=`grep "Difference between" ${log} | grep "AssertionFailedError" |  awk '{print $5}' `
 
+# total diff
+for F in ${new_golden_files}; do BASE=`basename $F`; GOLD=${golden_dir}/${BASE}; echo "==================== ${BASE} ===================="; diff $F ${GOLD}; done 
+
 # moving ALL golden files from the work directory to the reference directory
 mv ${new_golden_files} ${golden_dir}
