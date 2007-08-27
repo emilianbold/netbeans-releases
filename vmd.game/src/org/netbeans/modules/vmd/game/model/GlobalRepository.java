@@ -272,20 +272,38 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 			}
 		}
 	}
+		
+	public boolean isComponentNameAvailable(String fieldName) {
+		if (this.isNameAvailable(CodeUtils.decapitalize(fieldName))
+		 && this.isNameAvailable(CodeUtils.capitalize(fieldName))
+		 && this.isNameAvailable(CodeUtils.createGetterMethodName(fieldName))
+		 && this.isNameAvailable(CodeUtils.createSetterMethodName(fieldName))) {
+            return true;
+		}
+		return false;
+	}
 	
-	public boolean isComponentNameAvailable(String name) {
-		if (this.getLayerByName(name) != null)
+	private boolean isNameAvailable(String name) {		
+		if (this.getLayerByName(name) != null) {
 			return false;
-		if (this.getSceneByName(name) != null) 
+		}
+		if (this.getSceneByName(name) != null) {
 			return false;
+		}
 		for (ImageResource imgRes : this.getImageResources()) {
-			if (imgRes.getSequenceByName(name) != null)
+			if (imgRes.getName(false).equals(name)) {
 				return false;
-			if (imgRes.getAnimatedTileByName(name) != null)
+			}
+			if (imgRes.getSequenceByName(name) != null) {
 				return false;
+			}
+			if (imgRes.getAnimatedTileByName(name) != null) {
+				return false;
+			}
 		}
 		return true;
 	}
+	
 	
 	public String getNextAvailableComponentName(String name) {
 		String next = name;

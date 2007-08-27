@@ -82,31 +82,31 @@ public class DemoGameCanvas extends GameCanvas implements Runnable {
 		this.gameDesign = new GameDesign();
 		
 		
-		this.spriteKarel = gameDesign.get_Karel();
+		this.spriteKarel = gameDesign.getKarel();
 		//define the reference in the midle of sprites frame so that transformations work well
 		this.spriteKarel.defineReferencePixel(8, 8);
 		this.spriteKarelAnimator = new SpriteAnimationTask(this.spriteKarel, false);
-		this.timer.scheduleAtFixedRate(this.spriteKarelAnimator, 0, gameDesign.KarelSeqWalkDown_delay);
+		this.timer.scheduleAtFixedRate(this.spriteKarelAnimator, 0, gameDesign.KarelSeqWalkDownDelay);
 		
 		
-		this.waterAnimator = new TileAnimationTask(gameDesign.get_Water(), gameDesign.AnimWater_Water, gameDesign.AnimWaterSeq001, true);
-		this.timer.scheduleAtFixedRate(this.waterAnimator, 0, gameDesign.AnimWaterSeq001_delay);
+		this.waterAnimator = new TileAnimationTask(gameDesign.getWater(), gameDesign.AnimWaterWater, gameDesign.AnimWaterSeq001, true);
+		this.timer.scheduleAtFixedRate(this.waterAnimator, 0, gameDesign.AnimWaterSeq001Delay);
 		
 		
-		this.tlThings = this.gameDesign.get_Things();
-		this.tlTrees = this.gameDesign.get_Trees();
-		this.tlWater = this.gameDesign.get_Water();
-		this.tlBase = this.gameDesign.get_Base();
+		this.tlThings = this.gameDesign.getThings();
+		this.tlTrees = this.gameDesign.getTrees();
+		this.tlWater = this.gameDesign.getWater();
+		this.tlBase = this.gameDesign.getBase();
 		
 		this.lm = new LayerManager();
 		gameDesign.updateLayerManagerForForest(lm);
 		
-		this.spriteThomas = gameDesign.get_Thomas();
+		this.spriteThomas = gameDesign.getThomas();
 		//define the reference in the midle of sprites frame so that transformations work well
 		this.spriteThomas.defineReferencePixel(8, 8);
 		this.spriteThomasAnimator = new SpriteAnimationTask(this.spriteThomas, true);
 		this.spriteThomasAnimator.setMoving(true);
-		this.timer.scheduleAtFixedRate(this.spriteThomasAnimator, 0, gameDesign.ThomasSeqWalkHoriz_delay);
+		this.timer.scheduleAtFixedRate(this.spriteThomasAnimator, 0, gameDesign.ThomasSeqWalkHorizDelay);
 		this.spriteThomasRandomMovement = new SpriteRandomMovement(this, spriteThomas);
 		this.spriteThomasRandomMovement.setSequences(
 				gameDesign.ThomasSeqWalkVert, Sprite.TRANS_NONE,

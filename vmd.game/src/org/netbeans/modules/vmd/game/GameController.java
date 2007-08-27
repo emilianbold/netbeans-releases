@@ -416,6 +416,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		URL imgResUrl = null;
 		
 		final String imgResPath = (String) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_IMAGE_PATH).getPrimitiveValue();
+		final String imgResName = (String) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_NAME).getPrimitiveValue();
 		ImageResource imgRes = this.getGameDesign().getImageResource(imgResPath);
 		if (imgRes != null) {
 			return imgRes;
@@ -437,7 +438,9 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		//if at this point imgResUrl is null then we need to resolve image name conflicts or missing
 		//images after the design document is loaded by running method validateImageResource() on
 		//all imageResources that have null imageURL
-		return this.getGameDesign().getImageResource(imgResUrl, imgResPath);
+		ImageResource imageResource = this.getGameDesign().getImageResource(imgResUrl, imgResPath);
+		imageResource.setName(imgResName);
+		return imageResource;
 	}
 		
 	private void validateImageResource(ImageResource imageResource, final DesignComponent imageResourceDC) {
@@ -724,7 +727,8 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			return dcImgRes;
 		}
 		dcImgRes = document.createComponent(ImageResourceCD.TYPEID);
-		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_IMAGE_PATH, MidpTypes.createStringValue(imageResource.getRelativeResourcePath()));		
+		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_IMAGE_PATH, MidpTypes.createStringValue(imageResource.getRelativeResourcePath()));
+		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_NAME, MidpTypes.createStringValue(imageResource.getName(true)));
 		this.writeAnimatedTilesToImageResourceDC(dcImgRes, imageResource);
 		return dcImgRes;
 	}
@@ -738,7 +742,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 				dcImgRes.addComponent(dcAnimTile);
 				designIdMap.put(at, dcAnimTile);
 			}
-		}		
+		}
 	}
 
 	

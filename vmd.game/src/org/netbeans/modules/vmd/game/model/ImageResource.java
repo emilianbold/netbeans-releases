@@ -44,6 +44,7 @@ public class ImageResource {
 	
 	private URL imageURL;
 	private String relativeResourcePath;
+	private String name;
 	
 	private Map<Key, StaticTile> emptyTiles = new HashMap<Key, StaticTile>();
 	private Map<Key, StaticTile[][]> staticTileGrids = new HashMap<Key, StaticTile[][]>();
@@ -75,6 +76,7 @@ public class ImageResource {
 		this.gameDesign = gameDesign;
 		this.imageURL = imageURL;
 		this.relativeResourcePath = relativeResourcePath;
+		this.name = gameDesign.getNextAvailableComponentName(CodeUtils.getIdealImageName(relativeResourcePath));
 	}
 	
 	public void addImageResourceListener(ImageResourceListener l) {
@@ -226,7 +228,7 @@ public class ImageResource {
 		}
 		return null;
 	}
-	
+
 	private StaticTile getEmptyTile(int cellWidth, int cellHeight) {
 		StaticTile emptyTile = this.emptyTiles.get(getGridKey(cellWidth, cellHeight, false));
 		if (emptyTile == null) {
@@ -400,19 +402,19 @@ public class ImageResource {
 		this.imageURL = imageURL;
 	}
 	
-	public String getName() {
-		String path = this.getURL().getPath();
-		int index = path.lastIndexOf("/");
-		String name = path.substring(index + 1);
-		return name;
+	public void setName(String imgResName) {
+		this.name = imgResName;
 	}
 	
-	public String getNameNoExt() {
-		String name = this.getName();
-		name = name.substring(0, name.lastIndexOf("."));
-		return name;
+	
+	public String getName(boolean createIfNull) {
+		if (this.name == null && createIfNull) {
+			String ideal = CodeUtils.getIdealImageName(this.getRelativeResourcePath());
+            this.name = this.gameDesign.getNextAvailableComponentName(ideal);
+		}
+		return this.name;
 	}
-
+	
 	private static class Key {
 		private int tileWidth;
 		private int tileHeight;
