@@ -180,7 +180,7 @@ public class CssBox implements Box {
     int effectiveBottomMargin = UNINITIALIZED;
     boolean hidden;
 
-    private final boolean initialFocus;
+    private final boolean elementFocused;
     
     //this field is used by in inline layout by
     //LineBox and LineBoxGrouh classes to store an inline container 
@@ -231,7 +231,7 @@ public class CssBox implements Box {
 //        this.initialFocus = DesignerActions.isFocus(getDesignBean());
 //        this.initialFocus = isFocus(getDesignBean());
 //        this.initialFocus = isFocus(getMarkupDesignBeanForCssBox(this));
-        this.initialFocus = WebForm.getDomProviderService().isFocusedElement(CssBox.getElementForComponentRootCssBox(this));
+        this.elementFocused = WebForm.getDomProviderService().isFocusedElement(element);
     }
     
 
@@ -1186,7 +1186,23 @@ public class CssBox implements Box {
     }
 
     protected final boolean hasInitialFocus() {
-        return initialFocus;
+        return elementFocused && isComponentTopBoxInLayoutHierarchy();
+    }
+    
+    private final boolean isComponentTopBoxInLayoutHierarchy() {
+        Element element = getElement();
+        if (element == null) {
+            return false;
+        }
+        CssBox parentBox = getParent();
+        if (parentBox == null) {
+            return false;
+        }
+        CssBox grandParent = parentBox.getParent();
+        if (grandParent == null) {
+            return true;
+        }
+        return element != parentBox.getElement();
     }
     
     protected final void paintFocusWaterMark(Graphics g, int x, int y) {

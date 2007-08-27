@@ -1155,7 +1155,7 @@ public class FormComponentBox extends ContainerBox {
         if (getComponent() == null) {
             return null;
         }
-
+        
         attempted = true;
 
         JComponent comp = getComponent();
