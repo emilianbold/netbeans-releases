@@ -387,7 +387,8 @@ public final class JavadocHintProvider extends AbstractHint {
             switch (leaf.getKind()) {
                 case METHOD:
                     MethodTree mt = (MethodTree) leaf;
-                    if (mt.getReturnType().getKind() == Kind.ERRONEOUS) {
+                    Tree rt = mt.getReturnType();
+                    if (rt != null && rt.getKind() == Kind.ERRONEOUS) {
                         return true;
                     }
                     for (VariableTree vt : mt.getParameters()) {
