@@ -1,6 +1,10 @@
 Name: JUnit
 Version: 3.8.2
 License: CPL-1.0
+OSR: 1221
+Origin: http://www.junit.org/index.htm
+Description: JUnit is a regression testing framework
+Files: junit-3.8.2-api.zip, junit-3.8.2.jar
 
 THE ACCOMPANYING PROGRAM IS PROVIDED UNDER THE TERMS OF THIS COMMON PUBLIC
 LICENSE ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THE PROGRAM

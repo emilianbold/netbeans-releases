@@ -2,6 +2,9 @@ Name: Apache Struts
 Version: 1.2.9
 License: Apache-2.0
 Files: struts-1.2.9-lib.zip struts-1.2.9-javadoc.zip
+OSR: 2970
+Description: Framework for creating Java web applications
+Origin: http://struts.apache.org/
 
                                  Apache License
                            Version 2.0, January 2004

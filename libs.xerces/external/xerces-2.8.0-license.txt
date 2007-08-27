@@ -2,6 +2,8 @@ Name: Apache Xerces
 Description: Xerces XML parser.
 Version: 2.8.0
 License: Apache-2.0
+OSR: 4250
+Origin: http://xerces.apache.org/xerces-j/
 
                                  Apache License
                            Version 2.0, January 2004
