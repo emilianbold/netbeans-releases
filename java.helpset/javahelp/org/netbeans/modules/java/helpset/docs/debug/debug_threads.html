@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 *
 -->
@@ -11,8 +11,8 @@
 </head>
 <body>
 <h2>Debugging Threads in the IDE</h2>
-<small><a href="#seealso">See Also</a></small></p>
-<p> All the threads created in the current session are displayed in the Threads window.
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>All the threads created in the current session are displayed in the Threads window.
   You can open the Threads window by choosing Window  &gt; Debugging &gt; Threads (Alt-Shift-7).</p>
   
 <h3>Changing the Current Thread</h3>
@@ -31,13 +31,28 @@
 <p> You can suspend execution of a thread if you think it is causing problems
   and then later resume the thread once the problem is solved. </p>
 <p>In the Threads window, the icon to the left of the thread name indicates whether the thread
-is suspended or waiting to be resumed.<img src="images/CurrentThread.gif" alt="Current thread"> indicates
-the current thread. <img src="images/RunningThread.gif" alt="Running thread"> indicates
-a thread that is running and is not current, and <img src="images/SuspendedThread.gif" alt="Suspended thread">indicates
-a thread that is suspended and is not current. You can  also display the Suspend
-property as a boolean flag (True or False) in the Threads window by clicking
-the columns button (<img src="images/ChangeColumn.gif" alt="Change Column" hspace="2">)
-and select the Suspend checkbox. </p>
+is suspended or waiting to be resumed.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+	<tr align="left" valign="top">
+		<th scope="col">Icon</th>
+		<th scope="col">Description</th>
+	</tr>
+        <tr valign="top">
+		<td><img src="images/CurrentThread.gif" alt="Current thread"></td>
+		<td>Indicates the current thread</td>
+	</tr>
+        <tr valign="top">
+		<td><img src="images/RunningThread.gif" alt="Running thread"></td>
+		<td>Indicates a thread that is running and is not current</td>
+	</tr>
+        <tr valign="top">
+		<td><img src="images/SuspendedThread.gif" alt="Suspended thread"></td>
+		<td>Indicates a thread that is suspended and is not current</td>
+	</tr>
+        </table>
+        <p>You can display the Suspend property as a boolean flag (True or False) 
+        in the Threads window by clicking the columns button 
+        (<img src="images/ChangeColumn.gif" alt="Change Column">) and select the Suspend checkbox. </p>
 <ul class="note">
   <li>  The state of the Thread is independent of whether the thread is suspended
   	or waiting to be resumed. A thread's state may be Running while the Suspend
@@ -48,6 +63,20 @@ and select the Suspend checkbox. </p>
   <li>Right-click the thread in the Threads window and choose the Resume or Suspend command. </li>
 </ul>
 
+<h3>Multi-threaded Applications</h3>
+<p>Depending on the properties of the breakpoint, all threads are suspended when a breakpoint is hit 
+in a multi-threaded application.
+When you then proceed to step through the application, all threads are resumed.</p>
+<ul class="note">
+<li>If you are stepping through an application and a breakpoint is hit in a different thread, the step through operation
+is stopped. A dialog box appears asking if you want to ignore the other breakpoint so that you can continue with the step through operation.</li>
+</ul>
+<!-- TODO -->
+<!-- 
+nee to add more when further definition of scope is complete. also add to session window
+In some cases this may cause a deadlock which can be resolved by resuming other threads.
+If this happens, a dialog box appears that asks if you want to resume the suspended threads.</p>
+-->
 <h3>Viewing Source Code for a Thread</h3>
 <p>You can view the source code of a thread in the IDE's Source Editor if you
 think it is causing problems and want to examine it further.</p> 
