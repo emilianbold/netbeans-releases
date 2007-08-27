@@ -169,21 +169,21 @@
             </tocitem>
             <tocitem text="Creating Web Services" >
                 <tocitem text="About Creating Web Services" target="about_implement_ws" />
-                 <tocitem text="Creating a RESTful Web Service from Scratch" >
+                 <tocitem text="RESTful Web Service Creation" >
                     <tocitem text="Generating a RESTful Web Service from Scratch" target="create_rest_from_scratch" />
                     <tocitem text="Using the Preregistered RESTful Web Service Clients" target="wsc_rest" />
                     <tocitem text="Generating RESTful Web Service Client Stubs" target="wsc_stubs" />
                     <tocitem text="Testing a RESTful Web Service" target="test_rest" />
                 </tocitem>
-                <tocitem text="Creating a JAX-WS Web Service from Scratch" >
+                <tocitem text="Empty JAX-WS Web Service Creation" >
                     <tocitem text="Generating a JAX-WS Web Service from Scratch" target="create_ws_from_scratch" />
                     <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
                 </tocitem>
-                <tocitem text="Creating a JAX-WS Web Service from a Java Class" >
+                <tocitem text="Java-Based JAX-WS Web Service Creation" >
                     <tocitem text="Creating a JAX-WS Web Service from a Java Class" target="create_ws_from_java" />
                     <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
                 </tocitem>
-                <tocitem text="Creating a JAX-WS Web Service from a WSDL File" >
+                <tocitem text="WSDL-Based JAX-WS Web Service Creation" >
                     <tocitem text="Generating a WSDL File" target="create_wsdl_file" />
                     <tocitem text="Generating a JAX-WS Web Service from a WSDL File" target="create_ws_from_wsdl" />
                     <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
