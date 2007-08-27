@@ -22,8 +22,6 @@ package org.netbeans.modules.project.ui.actions;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -38,19 +36,18 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 public class OpenProject extends BasicAction {
     
-    private static final String NAME = NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Name" ); // NOI18N
+    private static final String DISPLAY_NAME = NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Name" ); // NOI18N
     private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( OpenProject.class, "LBL_OpenProjectAction_Tooltip" ); // NOI18N
         
     /** Creates a new instance of BrowserAction */
     public OpenProject() {
-        super( NAME, new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.png" ) ) );
+        super( DISPLAY_NAME, new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.png" ) ) );
         putValue("iconBase","org/netbeans/modules/project/ui/resources/openProject.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
     }
@@ -61,10 +58,8 @@ public class OpenProject extends BasicAction {
         
         // Check to see if the current selection matches a file/folder owned by a non-open project;
         // if so, use that as the starting directory, as a convenience in case that is what should be opened.
-        Iterator it = Utilities.actionsGlobalContext().lookupAll(DataObject.class).iterator();
-        while (it.hasNext()) {
-            // XXX may also want to check lookup for FileObject
-            DataObject d = (DataObject) it.next();
+        // XXX may also want to check lookup for FileObject
+        for (DataObject d : Utilities.actionsGlobalContext().lookupAll(DataObject.class)) {
             Project selected = FileOwnerQuery.getOwner(d.getPrimaryFile());
             if (selected != null && !OpenProjectList.getDefault().isOpen(selected)) {
                 File dir = FileUtil.toFile(selected.getProjectDirectory());
@@ -95,8 +90,8 @@ public class OpenProject extends BasicAction {
                 
                 // Project project = OpenProjectList.fileToProject( projectDir ); 
                 ArrayList<Project> projects = new ArrayList<Project>( projectDirs.length );
-                for( int i = 0; i < projectDirs.length; i++ ) {
-                    Project p = OpenProjectList.fileToProject( FileUtil.normalizeFile( projectDirs[i] ) );
+                for (File d : projectDirs) {
+                    Project p = OpenProjectList.fileToProject(FileUtil.normalizeFile(d));
                     if ( p != null ) {
                         projects.add( p );
                     }
