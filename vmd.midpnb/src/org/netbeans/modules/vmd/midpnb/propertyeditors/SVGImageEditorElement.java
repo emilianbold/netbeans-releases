@@ -88,11 +88,8 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
-            Project oldProject = project;
             project = ProjectUtils.getProject(document);
-            if (!project.equals(oldProject)) {
-                updateModel();
-            }
+            updateModel();
         }
 
         if (wrapper == null) {
@@ -165,7 +162,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         for (int i = 0; i < size; i++) {
             list.add(pathTextComboBox.getItemAt(i));
         }
-        Collections.sort(list);
+        Collections.sort(list, StringComparator.instance);
         pathTextComboBox.removeAllItems();
         for (Object object : list) {
             pathTextComboBox.addItem(object);
