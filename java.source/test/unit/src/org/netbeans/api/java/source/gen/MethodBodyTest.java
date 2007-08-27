@@ -21,6 +21,8 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import java.io.File;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.Task;
@@ -198,6 +200,64 @@ public class MethodBodyTest extends GeneratorTest {
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 workingCopy.rewrite(method.getBody(), treeMaker.addBlockStatement(method.getBody(), vt));
+            }
+            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * diff switch statement
+     */
+    public void XtestSwitchStatement() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        int i = 3;\n" +
+            "        switch (i) {\n" +
+            "            case 1: System.err.println(); break;\n" +
+            "            default: break;\n" +
+            "        }\n" + 
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void method() {\n" +
+            "        int i = 3;\n" +
+            "        switch (i) {\n" +
+            "            case 1: System.err.println(); break;\n" +
+            "            case 2: System.err.println(); break;\n" +
+            "            default:  break;\n" +
+            "        }\n" + 
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker treeMaker = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                SwitchTree switchStatement = (SwitchTree) method.getBody().getStatements().get(1);
+                
+                List<CaseTree> cases = new LinkedList<CaseTree>();
+                
+                cases.add(treeMaker.Case(treeMaker.Literal(1), switchStatement.getCases().get(0).getStatements()));
+                cases.add(treeMaker.Case(treeMaker.Literal(2), switchStatement.getCases().get(0).getStatements()));
+                cases.add(treeMaker.Case(null, Collections.singletonList(treeMaker.Break(null))));
+                
+                workingCopy.rewrite(switchStatement, treeMaker.Switch(switchStatement.getExpression(), cases));
             }
             
         };
