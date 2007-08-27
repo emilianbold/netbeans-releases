@@ -7,7 +7,7 @@
 -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Options: Visual Designer</title>
+<title>Options: Visual Web Tab</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
@@ -30,10 +30,10 @@ You can also change the way data providers and RowSets appear in the IDE by chan
   <li><b>Suffix for Data Providers.</b> The IDE names a newly created data provider by adding the value of this option to the database table name. You can change the default suffix, <code>DataProvider</code>.</li>
   <li><b>Suffix for RowSets. </b>The IDE names a newly created rowset by adding the value of this option to the database table name. You can change the default suffix, <code>RowSet</code>. </li>
 </ul>
-<p>When you drag and drop a database element onto a page, the IDE creates a cached rowset data provider. The following properties control the rowset to which the IDE binds the data provider:</p>
+<p>When you drag and drop a database element onto a Visual Web JSF page, the IDE creates a cached rowset data provider. The following properties control the rowset to which the IDE binds the data provider:</p>
 <ul>
   <li><b>Create RowSets in Session.</b> This option is selected by default. If selected, when you drag and drop a database table on a page or a request bean, the IDE creates a rowset in the project's <code>SessionBean</code>, making the table available for an entire user session, which is usually the desired behavior. If this setting is not selected, the IDE creates the rowset where you drop the table, such as the page bean for the page on which you drop the table.</li>
-  <li><b>Check for Duplicate RowSets</b>. This option is selected by default. If selected, when you drag and drop a database table onto a page or a request bean, the IDE checks for other rowsets that are based on the same table. If a matching rowset exists, the IDE displays a message asking if the new cached rowset data provider should reuse the existing rowset or create a new rowset. If this setting is not selected, the IDE automatically creates a new rowset.</li>
+  <li><b>Check for Duplicate RowSets</b>. This option is selected by default. If selected, when you drag and drop a database table onto a Visual Web JSF page or a request bean, the IDE checks for other rowsets that are based on the same table. If a matching rowset exists, the IDE displays a message asking if the new cached rowset data provider should reuse the existing rowset or create a new rowset. If this setting is not selected, the IDE automatically creates a new rowset.</li>
 </ul>
 <dl>
   <dt><a name="seealso">See Also</a></dt>

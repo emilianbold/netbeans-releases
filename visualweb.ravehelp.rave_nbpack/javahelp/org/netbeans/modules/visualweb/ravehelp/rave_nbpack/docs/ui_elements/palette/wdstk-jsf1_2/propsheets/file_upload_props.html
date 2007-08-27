@@ -146,7 +146,7 @@ A simpler way of getting this functionality is to associate the component with a
   <li><b>preservePath.</b><code> Type: boolean</code><br> 
 	  The default value, not selected (false), means that full path information is not preserved for the component, and the default browser behavior will prevail. 
       <p> If <code>preservePath</code> is selected (true), the component preserves the literal value of the file input element  set by the user on the client. The reason this property is provided is that browsers handle the value of an HTML input element of type <code>file</code> differently. Some browsers submit the literal value of the input element in the multipart/form-data file portion of the request, and others submit only the file name portion and not the directory portion. </p>
-<ul style="warning">
+<ul class="warning">
     <li>It is not clear if it is a security risk to transmit the full file path in clear text to the server.</li>
 </ul>
     <p>If this property is selected, the literal value (typically the full path name either entered explicitly by the user or set by choosing from a file selection dialogue) is stored and submitted in a hidden field. The <code>UploadRenderer</code>  preserves the full file path in the corresponding <code>UploadFilterFileItem</code> instance, which is encapsulated by the <code>UploadedFile</code> instance. You can retrieve the saved path by using the <code>UploadedFile</code> object's <code>getClientFilePath</code> method. </p>
