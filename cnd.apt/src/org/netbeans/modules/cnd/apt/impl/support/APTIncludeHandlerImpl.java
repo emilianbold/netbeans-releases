@@ -68,8 +68,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         this.userIncludePaths = userIncludePaths;        
     }
 
-    public boolean pushInclude(String path, int directiveLine, int resolvedDirIndex) {
-        return pushIncludeImpl(path, directiveLine, resolvedDirIndex);
+    public boolean pushInclude(String path, int directiveLine) {
+        return pushIncludeImpl(path, directiveLine);
     }
 
     public String popInclude() {
@@ -77,8 +77,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
     
     public APTIncludeResolver getResolver(String path) {
-        return new APTIncludeResolverImpl(path, getCurDirIndex(),
-                systemIncludePaths, userIncludePaths);
+        return new APTIncludeResolverImpl(path, systemIncludePaths, userIncludePaths);
     }
     
     public StartEntry getStartEntry() {
@@ -91,14 +90,6 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         return info.getIncludedPath();
     }
     
-    private int getCurDirIndex() {
-        if (inclStack != null && !inclStack.empty()) {
-            IncludeInfo info = inclStack.peek();
-            return info.getIncludedDirIndex();
-        } else {
-            return 0;
-        }
-    }    
     ////////////////////////////////////////////////////////////////////////////
     // manage state (save/restore)
     
@@ -234,9 +225,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                     assert inclInfo != null;
                     
                     final IncludeInfoImpl inclInfoImpl = new IncludeInfoImpl(
-                            inclInfo.getIncludedPath(), 
-                            inclInfo.getIncludeDirectiveLine(), 
-                            inclInfo.getIncludedDirIndex());
+                            inclInfo.getIncludedPath(), inclInfo.getIncludeDirectiveLine());
                     assert inclInfoImpl != null;
                     
                     inclInfoImpl.write(output);
@@ -343,7 +332,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
 
-    private boolean pushIncludeImpl(String path, int directiveLine, int resolvedDirIndex) {
+    private boolean pushIncludeImpl(String path, int directiveLine) {
         if (recurseIncludes == null) {
             assert (inclStack == null): inclStack.toString() + " started on " + startFile;
             inclStack = new Stack<IncludeInfo>();
@@ -353,7 +342,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         counter = (counter == null) ? new Integer(1) : new Integer(counter.intValue()+1);
         if (counter.intValue() < MAX_INCLUDE_DEEP) {
             recurseIncludes.put(path, counter);
-            inclStack.push(new IncludeInfoImpl(path, directiveLine, resolvedDirIndex));
+            inclStack.push(new IncludeInfoImpl(path, directiveLine));
             return true;
         } else {
             assert (recurseIncludes.get(path) != null) : "included file must be in map"; // NOI18N
@@ -365,14 +354,11 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private static final class IncludeInfoImpl implements IncludeInfo, SelfPersistent, Persistent {
         private final String path;
         private final int directiveLine;
-        private final int resolvedDirIndex;
-        
-        public IncludeInfoImpl(String path, int directiveLine, int resolvedDirIndex) {
+        public IncludeInfoImpl(String path, int directiveLine) {
             assert path != null;
             this.path = path;
             assert directiveLine >= 0;
             this.directiveLine = directiveLine;
-            this.resolvedDirIndex = resolvedDirIndex;
         }
         
         public IncludeInfoImpl(final DataInput input) throws IOException {
@@ -383,8 +369,6 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             this.path = (pathManager == null)? path: pathManager.getString(path);
             
             directiveLine = input.readInt();
-            
-            resolvedDirIndex = input.readInt();
         }
 
         public String getIncludedPath() {
@@ -398,8 +382,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         public String toString() {
             String retValue;
             
-            retValue = "(" + getIncludeDirectiveLine() + ": " + // NOI18N
-                    getIncludedPath() + ":" + getIncludedDirIndex() + ")"; // NOI18N
+            retValue = "(" + getIncludeDirectiveLine() + ": " + getIncludedPath() + ")"; // NOI18N
             return retValue;
         }
 
@@ -417,11 +400,6 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             
             output.writeUTF(path);
             output.writeInt(directiveLine);
-            output.writeInt(resolvedDirIndex);
-        }
-
-        public int getIncludedDirIndex() {
-            return this.resolvedDirIndex;
         }
     }
       

@@ -33,7 +33,7 @@ public final class ResolvedPath {
         this.folder = folder;
         this.path = path;
         this.isDefaultSearchPath = isDefaultSearchPath;
-        this.index = index;
+        this.index = 0;
     }
     /**
      * Resolved file path
