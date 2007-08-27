@@ -82,6 +82,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rakefile.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
+                <!-- Pending attribute, not yet supported - see #91580 -->
+                <attr name="templateNamePrefix" stringvalue=""/>
             </file>
             <file name="class.rb" url="class.rb">
                 <attr name="position" intvalue="200"/>
