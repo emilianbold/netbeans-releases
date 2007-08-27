@@ -33,7 +33,7 @@
   </object>.</p>
   
   
-  <p>If you are deploying to the Sun Java System Application Server, the CMP mappings 
+  <p>If you are deploying to the Sun Java System Application Server/GlassFish, the CMP mappings 
   for your EJB module are specified in the <tt>sun-cmp-mappings.xml</tt> descriptor file in the 
   module's <tt>src/conf</tt> directory.
   If you generate CMP entity beans from a datasource, the IDE generates <tt>sun-cmp-mappings.xml</tt> for you when 
@@ -83,14 +83,22 @@
     <tt>sun-cmp-mapping.xml</tt> to map more complicated fields
     like relationships and CMP fields that map to multiple columns.</li>
 </ul>
+
+<p>For a detailed description of CMP entity bean specifications, see the Enterprise JavaBeans Specification, v2.1.</p>
+    <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://java.sun.com/products/ejb/docs.html">
+        <param name="text" value="<html><u>http://java.sun.com/products/ejb/docs.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object></p>
+    
 <dl> 
   <dt>See Also<a name="seealso"></a></dt>
   <dd><a href="../editing/define_cmp_field.html">Defining a CMP Field</a></dd>
   <dd><a href="../editing/generate_cmp_beans.html">Generating CMP Entity Beans from a Database</a></dd>
+  <dd><a href="../configuring/about_ejb_relationship.html">Managing Container-Managed Relationships</a></dd>
   <dd><a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema.html">Obtaining a Database Schema</a></dd>
   <dd><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/cmp/map_bean_to_db.html">Configuring CMP Mappings</a></dd>
-  <dd><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/cmp/fields_mult_cols.html">Mapping CMP Fields to Multiple Columns</a> </dd>
-  <dd><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/cmp/prim_sec_tables.html">Specifying Primary and Secondary Tables</a> </dd>
   <dd><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/cmp/map_rel_fields.html">Mapping Relationship Fields</a> </dd>
   <dd><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/cmp/gen_tables.html">Generating Database Tables at Deployment</a></dd>
 </dl>

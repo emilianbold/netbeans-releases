@@ -13,9 +13,8 @@
 <body>
 <h2>Managing Container-Managed Relationships</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>CMP relationships are managed by the container based on the how the relationships are described
-in <tt>ejb-jar.xml</tt>. When you edit the relationship in <tt>ejb-jar.xml</tt>, you may also need 
-to make corresponding changes in your source code.</p>
+    <p>CMP relationships are managed by the container based on how the relationships are described
+    in the <tt>ejb-jar.xml</tt> general deployment descriptor. </p>    
 
 <p><b>To modify CMP relationships in <tt>ejb-jar.xml</tt>:</b></p>
 <ol>
@@ -26,9 +25,33 @@ to make corresponding changes in your source code.</p>
   </li>
   <li>Double-click the name of the relationship in the table to open the Edit CMP Relationship dialog box.</li>
   <li>Edit the relationship description properties in the dialog box.</li>
-  <li>Specify whether to add getter and setter methods for the field to the entity 
-    bean's local interface. </li>
-    <li>Click OK.</li>
+  <li>Click OK.</li>
+</ol>
+<ul class="note">
+    <li>When you edit the relationship in <tt>ejb-jar.xml</tt>, you may also need 
+    to make corresponding changes in your source code.</li>
+</ul>
+
+<p><b>To remove a CMP relationship in <tt>ejb-jar.xml</tt>:</b></p>
+<ol>
+  <li>In the Projects window, expand the Configuration Files node for the EJB 
+    module project and double-click <tt>ejb-jar.xml</tt>.</li>
+  <li>In the top of the graphical editor, click CMP Relationships. 
+  <p>The visual editor displays a table of the existing container-managed relationships for the EJB module. 
+  </li>
+  <li>Select the name of the relationship in the table and click Remove</li>
+</ol>
+
+<h3>Creating a CMP Relationship</h3>
+<p>If you are you are generating CMP entity beans from scratch and need to specify the CMP relationships for 
+    your application, you need to edit the deployment descriptor file in the XML editor.
+    You also need to make the corresponding changes in your source code. 
+    When working with CMP entity beans, the IDE does not update your source code based on changes you make in <tt>ejb-jar.xml</tt>.</p>
+<p><b>To create new CMP relationships in <tt>ejb-jar.xml</tt>:</b></p>
+<ol>
+  <li>In the Projects window, expand the Configuration Files node for the EJB 
+    module project and double-click <tt>ejb-jar.xml</tt>.</li>
+    <li>Click the XML tab and edit the deployment descriptor file in the XML editor.</li>
 </ol>
 
 <p>Each CMP relationship requires the following.</p> 
@@ -58,16 +81,6 @@ to make corresponding changes in your source code.</p>
     </li>
 </ul>
 
-
-<p><b>To remove a CMP relationship in <tt>ejb-jar.xml</tt>:</b></p>
-<ol>
-  <li>In the Projects window, expand the Configuration Files node for the EJB 
-    module project and double-click <tt>ejb-jar.xml</tt>.</li>
-  <li>In the top of the graphical editor, click CMP Relationships. 
-  <p>The visual editor displays a table of the existing container-managed relationships for the EJB module. 
-  </li>
-  <li>Select the name of the relationship in the table and click Remove</li>
-</ol>
   
   <b>Notes:</b> 
   <ul>
@@ -78,10 +91,32 @@ to make corresponding changes in your source code.</p>
     automatic or necessary changes in the corresponding application server-specific 
     deployment descriptors. For example, when you add a relationship in <tt>ejb-jar.xml</tt>, 
     you have to map it to a real database in the server-specific deployment descriptor.</li>
+  <li>You should exercise caution when editing deployment descriptors in XML and always validate your XML file to avoid errors.</li>
+
 </ul>
-<dl>
+
+<p>For a complete list of configurable properties for
+    all J2EE module types, see "Appendix A
+    Deployment Descriptor Files" in
+    the Sun Java System Application Server Developer's
+    Guide. </p>
+    <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://docs.sun.com/source/819-0079/dgdesc.html">
+        <param name="text" value="<html><u>http://docs.sun.com/source/819-0079/dgdesc.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object></p>
+    
+    <p>For a detailed description of CMP entity bean specifications, see the Enterprise JavaBeans Specification, v2.1.</p>
+    <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://java.sun.com/products/ejb/docs.html">
+        <param name="text" value="<html><u>http://java.sun.com/products/ejb/docs.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object></p>
+    
+    <dl>
     <dt><a name="seealso">See Also</a></dt>
-  <dd><a href="about_ejb_relationship.html">About Container-Managed Relationships</a></dd>
   <dd><a href="../general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>
   <dd><a href="config_ejb_dd.html">Configuring EJB Deployment Descriptors</a></dd>
   <dd><a href="config_ejb_about.html">About Configuring EJB Modules</a></dd>

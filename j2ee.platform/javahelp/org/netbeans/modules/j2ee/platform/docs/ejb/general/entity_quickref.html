@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright Â© 2007 Sun Microsystems, Inc.
+ * Copyright © 2007 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -73,16 +73,18 @@ entity beans. For more detailed information, click the links in the right column
     </td>
   </tr>
   <tr valign="top"> 
-    <td>Set up container-managed relationships between entity beans.</td>
+    <td>Modify container-managed relationships between entity beans.</td>
     <td> 
       <ol>
         <li>Expand the Configuration Files node for the project and double-click 
           <tt>ejb-jar.xml</tt>. </li>
         <li>Click <a href="../configuring/ejb_relationship.html">CMP Relationships</a> 
           in the top of the visual editor.</li>
-        <li>Add, edit, or remove CMP relationships in the table.</li>
-        <li>Update any CMP mappings in the server-specific deployment descriptor<tt></tt>.</li>
-      </ol>
+        <li>Double-click the relationship name in the table to edit the relationship or select the name and click
+        Remove to remove the relationship.</li>
+        <li>Update any CMP mappings in the server-specific deployment descriptor.</li>
+        <li>Update your source code where necessary.</li>
+        </ol>
     </td>
   </tr>
   <tr valign="top"> 
@@ -91,11 +93,10 @@ entity beans. For more detailed information, click the links in the right column
       <ol>
         <li>Expand the Configuration Files node for an EJB module project and 
           double-click <tt>sun-ejb-jar.xml</tt>.</li>
-        <li>Select a bean in the left column and click Advanced Settings in the 
-          Cmp Mapping tab.</li>
-        <li>Select the database schema in the Database Schema drop-down menu. 
-          The list contains all of the <tt>.dbschema</tt> files in your project's 
-          <tt>src/conf</tt> folder. </li>
+        <li>Click the XML tab to open the file in the XML editor.</li>
+        <li>Edit the XML to specify the schema properties.
+        You can use the IDE's XML code completion to help you edit the XML.</li>
+        <li>Validate your XML and save the file.</li>
       </ol>
     </td>
   </tr>
@@ -103,14 +104,13 @@ entity beans. For more detailed information, click the links in the right column
     <td>Specify the primary and secondary tables for an entity bean.</td>
     <td> 
       <ol>
-        <li>Double-click <tt>sun-ejb-jar.xml</tt> and select the entity bean in 
-          the left panel.</li>
+        <li>Expand the Configuration Files node for an EJB module project and 
+          double-click <tt>sun-cmp-mappings.xml</tt>.</li>
         <li>Make sure you have specified a database schema for the entity bean 
           as described above.</li>
-        <li>In the Cmp Mapping tab, <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/cmp/prim_sec_tables.html">select the 
-          primary table</a> in the Primary Table drop-down menu.</li>
-        <li>Click Advanced Settings and specify any secondary tables in the Advanced 
-          Settings dialog box.</li>
+        <li>Edit the XML to specify the table properties.
+        You can use the IDE's XML code completion to help you edit the XML.</li>
+        <li>Validate your XML and save the file.</li>
       </ol>
     </td>
   </tr>
@@ -120,53 +120,36 @@ entity beans. For more detailed information, click the links in the right column
       <ol>
         <li>Create new entity beans in your project using the <a href="../csh/ejb_new_entity.html">New 
           Entity Bean template</a>. Do not generate CMP entity beans from a database.</li>
-        <li>Double-click <tt>sun-ejb-jar.xml</tt> and select the Sun Configuration 
-          node in the left panel.</li>
-        <li>Set Create Table at Deploy to True. For more information, see <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/cmp/gen_tables.html">Generating 
-          Database Tables at Deployment</a>.</li>
+        <li>Expand the Configuration Files node for an EJB module project and 
+          double-click <tt>sun-ejb-jar.xml</tt>.</li>
+        <li>Click the XML tab to open the file in the XML editor.</li>
+        <li>Edit the XML to set the <tt>create-tables-at-deploy</tt> to True.
+        You can use the IDE's XML code completion to help you edit the XML.
+        For more information, see <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/cmp/gen_tables.html">Generating 
+        Database Tables at Deployment</a>.</li>
+        <li>Validate your XML and save the file.</li>
       </ol>
     </td>
   </tr>
   <tr valign="top"> 
-    <td>Configure the CMP mapping for a CMP field.</td>
+    <td>Configure the mappings for CMP fields or CMR fields.</td>
     <td> 
       <ol>
-        <li>Double-click <tt>sun-ejb-jar.xml</tt> and select the entity bean in 
-          the left panel.</li>
-        <li>Make sure that the database schema and primary table is specified 
+          <li>Make sure that the data source and primary table are specified 
           for the entity bean as described above.</li>
-        <li>In the Cmp Mapping tab, <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/cmp/map_bean_to_db.html">specify the 
-          mapping for each field</a> in the Mapped Column column of the table.</li>
-      </ol>
+          <li>Expand the Configuration Files node for an EJB module project and 
+          double-click <tt>sun-cmp-mappings.xml</tt>.</li>
+          <li>Edit the XML to map the CMP fields and CMR fields.
+          You can use the IDE's XML code completion to help you edit the XML.
+          For more information, see <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/cmp/map_bean_to_db.html">
+          Configuring CMP Mappings</a>.</li>
+          <li>Validate your XML and save the file.</li>
+          <li>Update your source code where necessary.</li>
+        </ol>
     </td>
   </tr>
-  <tr valign="top"> 
-    <td>Map a CMP field to multiple database columns.</td>
-    <td> 
-      <ol>
-        <li>Double-click <tt>sun-ejb-jar.xml</tt> and select the entity bean in 
-          the left panel.</li>
-        <li>Make sure that the database schema and primary table is specified 
-          for the entity bean as described above.</li>
-        <li>In the Cmp Mapping tab, <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/cmp/fields_mult_cols.html">select <tt>&lt;map 
-          multiple columns&gt;</tt></a> in the Mapped Column column for the field.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Map a container-managed relationship field.</td>
-    <td> 
-      <ol>
-        <li>Make sure you have <a href="../configuring/ejb_relationship.html">configured 
-          the container-managed relationship</a> in the general deployment descriptor.</li>
-        <li>Double-click <tt>sun-ejb-jar.xml</tt> and select an entity bean in 
-          the left panel.</li>
-        <li>In the Cmp Mapping tab, <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/com/sun/jdo/modules/persistence/docs/mapping/ejb/RelationshipMappingWizard.html">select 
-          <tt>&lt;map relationship field&gt;</tt></a> in the Mapped Column column 
-          for the field.</li>
-      </ol>
-    </td>
-  </tr>
+
+
 </table>
 
         <hr>
