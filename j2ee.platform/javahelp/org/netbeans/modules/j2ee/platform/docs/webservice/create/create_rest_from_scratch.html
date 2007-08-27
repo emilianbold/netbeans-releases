@@ -11,7 +11,7 @@ Use is subject to license terms.  *-->
 <h2>Generating a RESTful Web Service from Scratch</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
 
-<p>Some JAX-WS web services can be described as being RESTful. 
+<p>Some web services can be described as being RESTful. 
 REpresentational State Transfer (REST) REST is an architectural style. 
 Elements of the REST archictectural style are its stateless client-server
 architecture and the fact that web services are viewed as resources that 
@@ -36,12 +36,11 @@ service makes it a RESTful web service.
         
 <ol>
 <li>Use the Plugin Manager under the Tools menu
-    to install the following modules:
-    <ul>
-        <li>RESTful Web Services</li>
-        <li>RESTful Web Service Libraries</li>
-        <li>RESTful Web Service Support</li>
-    </ul>
+    to install the <b>RESTful Web Services</b>
+    module, which will also install the
+    <b>RESTful Web Service Libraries</b> module
+    and the <b>RESTful Web Service Support</b>
+    module.
 </li>
 <li><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/create/about/create_webapps_proj.html">Create a web application project</a>.
 <li>In the Projects window or Files window, right-click the web application project node
@@ -56,8 +55,7 @@ and choose New. Then choose one of the following:
             </ul>
  
     <li><b>RESTful Web Services from Patterns.</b>
-        Creates generic RESTful web services, stand-alone web services,
-      or web services that are part of the Container pattern.</li>
+        Creates RESTful web services using one of the following patterns:</li>
       <ul>
           <li><b>Singleton.</b> Creates a singleton RESTful resource
           class with GET and PUT methods, using Java API for RESTful 
