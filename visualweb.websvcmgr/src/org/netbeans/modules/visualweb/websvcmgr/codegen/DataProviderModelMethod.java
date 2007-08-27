@@ -32,10 +32,12 @@ public class DataProviderModelMethod implements DataProviderMethod {
     private String returnType;
     private List<DataProviderParameter> parameters;
     private List<String> exceptions;
+    private JavaMethod javaMethod;
     
     public DataProviderModelMethod(JavaMethod method) {
         this.methodName = method.getName();
         this.returnType = toString(method.getReturnType());
+        this.javaMethod = method;
         
         List<JavaParameter> params = method.getParametersList();
         parameters = new ArrayList<DataProviderParameter>();
@@ -55,6 +57,10 @@ public class DataProviderModelMethod implements DataProviderMethod {
         }
     }
 
+    public JavaMethod getJavaMethod() {
+        return javaMethod;
+    }
+    
     public String getMethodName() {
         return methodName;
     }

@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.visualweb.websvcmgr.codegen;
 
+import com.sun.tools.ws.processor.model.java.JavaParameter;
+import java.util.List;
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 
 
@@ -163,7 +165,7 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println();
         
         // Implement abstract method from super class - getDataMethodArguments()
-        if (!isPrimitiveReturnType) {
+        if (!isPrimitiveReturnType && dataProviderInfo.getOutputHolderIndex() < 0) {
             println( "    public Object[] getDataMethodArguments() {" );
         }else {
             println( "    private Object[] getOriginalDataMethodArguments() {" );
@@ -233,7 +235,27 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println( "        return (FieldKey[])finalKeys.toArray( new FieldKey[0] ); " );
         println( "    } " );
         
-        if (!isPrimitiveReturnType) {
+        int outputHolderIndex = dataProviderInfo.getOutputHolderIndex();
+        if (outputHolderIndex >= 0) {            
+            List<JavaParameter> args = ((DataProviderModelMethod) dataProviderInfo.getMethod()).getJavaMethod().getParametersList();
+            String holderValueType = args.get(outputHolderIndex).getType().getRealName();
+            
+            println( "    private void setDataProviderProperties() throws NoSuchMethodException { " );
+            for (DataProviderParameter param : dataProviderInfo.getMethod().getParameters()) {
+                if (param.getType().startsWith("javax.xml.ws.Holder")) {
+                    String paramName = param.getName();
+                    String paramType = param.getType();
+                    println( "        " + paramName + " = new " + paramType + "();" );
+                }
+            }
+            println( "        super.setDataClassInstance( this );" );
+            println( "        originalDataMethod = " + clientWrapperClassName + ".class.getMethod(" );
+            println( "            \"" + dataProviderInfo.getMethod().getMethodName() + "\", new Class[] {" + getMethodParamTypes() + "} );" );
+            println( "        super.setDataMethod( getWrapperMethod() ); ");
+            println( "    }" );
+            
+            writeOutputHolderMethodWrapper(clientWrapperClassVar, holderValueType);
+        }else if (!isPrimitiveReturnType) {
             println( "    private void setDataProviderProperties() throws NoSuchMethodException { " );
             println( "        super.setDataClassInstance( " + clientWrapperClassVar + ");" );
             println( "        java.lang.reflect.Method dataMethod = " + clientWrapperClassName + ".class.getMethod(" );
@@ -252,6 +274,30 @@ public class DataProviderWriter extends java.io.PrintWriter {
         
         // End of client bean class
         println( "}" );
+    }
+    
+    private void writeOutputHolderMethodWrapper(String clientVar, String holderValueType) {
+        int outputHolderIndex = dataProviderInfo.getOutputHolderIndex();
+        String getter = "get" + Util.upperCaseFirstChar(dataProviderInfo.getMethod().getParameters().get(outputHolderIndex).getName()) + "()";
+        
+        println( "" );
+        println( "    private Method originalDataMethod; " );
+        println( "" );
+        println( "    public " + holderValueType + " invokeMethod() {" );
+        println( "        try { ");
+        println( "            originalDataMethod.invoke(" + clientVar + ", getOriginalDataMethodArguments()); ");
+        println( "            " + holderValueType + " methodResult = this." + getter + ".value;");
+        println( "            return methodResult; ");
+        println( "        }catch (Exception ex) { ");
+        println( "            ex.printStackTrace(); ");
+        println( "            return null; ");
+        println( "        }");
+        println( "    } ");
+        println( "" );
+        println( "    private Method getWrapperMethod() throws NoSuchMethodException {");
+        println( "        return this.getClass().getMethod(\"invokeMethod\", new Class[0]); ");
+        println( "    } ");
+        println( "" );
     }
     
     private void writePrimitiveMethodWrapper(String clientVar) {
@@ -301,17 +347,43 @@ public class DataProviderWriter extends java.io.PrintWriter {
         boolean first = true;
         
         for (DataProviderParameter param : dataProviderInfo.getMethod().getParameters()) {
-            if( first )
-                    first = false;
-                else
-                    buf.append( ", " );
-
-                // TODO need to handle primitive type
-                buf.append( param.getType() );
-                buf.append( ".class" ); // NOI18N
+            if (first) {
+                first = false;
+            } else {
+                buf.append(", ");
+            }
             
+            int len = separateGenericType(param.getType());
+            String typeClass = param.getType().substring(0, len);
+            
+            buf.append(typeClass);
+            buf.append(".class"); // NOI18N
         }
         return buf.toString();
+    }
+    
+    // TODO - merge this with ReflectionHelper.separateGenericType
+    private int separateGenericType(String typeName) {
+        int length = typeName.length();
+        
+        if (length < 2 || typeName.charAt(length-1) != '>') { // NOI18N
+            return length;
+        }else {
+            int depth = 1;
+            for (int i = length - 2; i >= 0; i--) {
+                if (typeName.charAt(i) == '>') {
+                    depth += 1;
+                }else if (typeName.charAt(i) == '<') {
+                    depth -= 1;
+                }
+                
+                if (depth == 0) {
+                    return i;
+                }
+            }
+            
+            return length;
+        }
     }
     
     private static final String[] PRIMITIVE_WRAPPER_CLASSES = 

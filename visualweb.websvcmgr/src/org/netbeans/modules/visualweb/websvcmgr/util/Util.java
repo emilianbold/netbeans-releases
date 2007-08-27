@@ -20,6 +20,7 @@
 package org.netbeans.modules.visualweb.websvcmgr.util;
 
 
+import com.sun.tools.ws.processor.model.java.JavaMethod;
 import java.io.FileInputStream;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
@@ -35,6 +36,7 @@ import org.w3c.dom.*;
 import com.sun.tools.ws.processor.model.java.JavaParameter;
 
 // import com.sun.tools.ws.wscompile.JavaCompilerHelper;
+import com.sun.tools.ws.processor.model.java.JavaType;
 // import com.sun.tools.ws.processor.util.ClientProcessorEnvironment;
 
 /*
@@ -75,6 +77,32 @@ public class Util {
     public static final int BUFFER_SIZE = 4096;
     public static final String xsdNamespace = "xsd";
     final static public String WSDL_FILE_EXTENSION = "wsdl";
+    
+    public static boolean hasOutput(JavaMethod m) {
+        JavaType type = m.getReturnType();
+        
+        if (!"void".equals(type.getRealName())) {
+            return true;
+        }else {
+            // check for output Holders
+            return getOutputHolderIndex(m) >= 0;
+        }
+    }
+    
+    public static int getOutputHolderIndex(JavaMethod m) {
+        List<JavaParameter> params = m.getParametersList();
+        if (params == null) return -1;
+        
+        for (int i = 0; i < params.size(); i++) {
+            JavaParameter nextParam = params.get(i);
+            if (nextParam.isHolder() && 
+                    (nextParam.getParameter().isOUT() || nextParam.getParameter().isINOUT())) {
+                return i;
+            }
+        }
+        
+        return -1;
+    }
     
     public static String typeToString(Type type) {
         if (type instanceof ParameterizedType) {

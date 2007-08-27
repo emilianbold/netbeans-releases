@@ -20,6 +20,9 @@
 package org.netbeans.modules.visualweb.websvcmgr.codegen;
 
 import com.sun.tools.ws.processor.model.Operation;
+import com.sun.tools.ws.processor.model.java.JavaMethod;
+import com.sun.tools.ws.processor.model.java.JavaParameter;
+import com.sun.tools.ws.processor.model.java.JavaType;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -370,8 +373,8 @@ public class WrapperClientWriter extends java.io.PrintWriter {
 
             // If this method return non-void, we'll need to generate DataProvider (readonly for now) for it
             // For overloaded method, we'll index method names
-            if(!"void".equals(methodReturnTypeName))
-            {
+            if ( (!isJaxRpc && Util.hasOutput(((DataProviderModelMethod)method).getJavaMethod())) ||
+                 (isJaxRpc && !"void".equals(method.getMethodReturnType()))) { // NOI18N
                 String dpClassName = method.getMethodName();
 
                 Integer occurrence = methodNames.get( method.getMethodName() );
@@ -385,8 +388,14 @@ public class WrapperClientWriter extends java.io.PrintWriter {
                     dpClassName = method.getMethodName() + occurrence;
                 }
                 methodNames.put( method.getMethodName(), occurrence ); 
-
-                dataProviders.add( new DataProviderInfo( packageName, className, method , dpClassName ) );
+                
+                DataProviderInfo info = new DataProviderInfo( packageName, className, method , dpClassName );
+                dataProviders.add(info);
+                
+                if (!isJaxRpc) {
+                    int index = Util.getOutputHolderIndex(((DataProviderModelMethod)method).getJavaMethod());
+                    info.setOutputHolderIndex(index);
+                }
             }
         }
 

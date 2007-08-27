@@ -34,12 +34,21 @@ public class DataProviderInfo {
     private DataProviderMethod method;
     
     private String methodName4DPClass;
+    private int outputHolderIndex = -1;
     
     public DataProviderInfo( String packageName, String clientWrapperClassName, DataProviderMethod method, String methodName4DPClass ) {
         this.packageName = packageName;
         this.clientWrapperClassName = clientWrapperClassName;
         this.method = method;
         this.methodName4DPClass = methodName4DPClass;
+    }
+    
+    public int getOutputHolderIndex() {
+        return outputHolderIndex;
+    }
+    
+    public void setOutputHolderIndex(int outputHolderIndex) {
+        this.outputHolderIndex = outputHolderIndex;
     }
     
     public String getPackageName()
