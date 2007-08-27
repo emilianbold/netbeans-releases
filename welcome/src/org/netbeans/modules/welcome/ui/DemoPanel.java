@@ -171,7 +171,7 @@ class DemoPanel extends RSSFeedReaderPanel {
                 try {
                     input = new ObjectInputStream( new FileInputStream( getCacheFilePath() ) );
                     image = (ImageIcon)input.readObject();
-                    Logger.getLogger( DemoPanel.class.getName() ).log( Level.INFO, 
+                    Logger.getLogger( DemoPanel.class.getName() ).log( Level.FINE, 
                             "Demo image loaded from: " + getCacheFilePath() ); //NOI18N
                 }catch( Exception e ) {
                     image = null;
