@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   XXX no answer for arch-overall
+    <api name="JavaRefactoringAPI" category="devel" type="export" group="java"/>
   </p>
  </answer>
 
