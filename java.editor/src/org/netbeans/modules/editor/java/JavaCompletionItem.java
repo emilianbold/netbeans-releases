@@ -643,9 +643,21 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.RESOLVED);
-                        TreePath path = controller.getTreeUtilities().pathFor(offset);
-                        boolean insideNew = path.getLeaf().getKind() == Tree.Kind.NEW_CLASS ||
-                                path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT && path.getParentPath().getLeaf().getKind() == Tree.Kind.NEW_CLASS && ((NewClassTree)path.getParentPath().getLeaf()).getIdentifier() == path.getLeaf();
+                        TreePath path = controller.getTreeUtilities().pathFor(offset);                        
+                        boolean insideNew = false;
+                        boolean inImport = false;
+                        switch (path.getLeaf().getKind()) {
+                        case NEW_CLASS:
+                            insideNew = true;
+                            break;
+                        case MEMBER_SELECT:
+                            if (path.getParentPath().getLeaf().getKind() == Tree.Kind.NEW_CLASS &&
+                                    ((NewClassTree)path.getParentPath().getLeaf()).getIdentifier() == path.getLeaf())
+                                insideNew = true;
+                            else if (path.getParentPath().getLeaf().getKind() == Tree.Kind.IMPORT)
+                                inImport = true;
+                            break;
+                        }
                         DeclaredType type = typeHandle.resolve(controller);
                         TypeElement elem = elementHandle != null ? elementHandle.resolve(controller) : (TypeElement)type.asElement();
                         boolean asTemplate = false;
@@ -740,7 +752,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             try {
                                 Position semiPosition = semiPos > -1 && !insideNew ? doc.createPosition(semiPos) : null;
                                 TreePath tp = controller.getTreeUtilities().pathFor(offset);
-                                CharSequence cs = AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)); 
+                                CharSequence cs = inImport ? elem.getSimpleName() : AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)); 
                                 if (!insideNew)
                                     cs = text.insert(0, cs);
                                 String textToReplace = doc.getText(offset, finalLen);
