@@ -27,13 +27,14 @@
     <data>j2ee-toc.xml</data> 
   </view>
 
+<!--
   <view>
     <name>Index</name>
     <label>Index</label>
     <type>javax.help.IndexView</type>
     <data>j2ee-idx.xml</data>
   </view>
-
+-->
   <view>
     <name>Search</name>
     <label>Search</label>
