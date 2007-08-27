@@ -30,8 +30,38 @@ import org.openide.util.NbBundle;
  */
 class ToplinkProvider extends Provider{
     
-    protected ToplinkProvider(){
-        super("oracle.toplink.essentials.PersistenceProvider"); //NO18N
+    /**
+     * There are two valid provider classes for TopLink, i.e. 
+     * <code>oracle.toplink.essentials.PersistenceProvider</code> and 
+     * <code>oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider</code>. 
+     * The former is preferred, whereas the latter is needed for compatibility reasons since
+     * it was used in 5.5.
+     */ 
+    private static final String PREFERRED_PROVIDER_CLASS = "oracle.toplink.essentials.PersistenceProvider"; //NO18N
+    private static final String ALTERNATIVE_PROVIDER_CLASS = "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider";//NO18N
+
+    /**
+     * Creates a new instance using the preferred provider class.
+     * 
+     * @see #PREFERRED_PROVIDER_CLASS
+     */ 
+    static ToplinkProvider create(){
+        return new ToplinkProvider(PREFERRED_PROVIDER_CLASS);
+    }
+    
+    /**
+     * Creates a new instance using the provider class used in NetBeans 5.5. Note
+     * that this is just for compatiblity, otherwise it is recommended to use 
+     * {@link #create()} instead.
+     * 
+     * @see #ALTERNATIVE_PROVIDER_CLASS
+     */ 
+    static ToplinkProvider create55Compatible(){
+        return new ToplinkProvider(ALTERNATIVE_PROVIDER_CLASS);
+    }
+    
+    private ToplinkProvider(String providerClass){
+        super(providerClass); //NO18N
     }
     
     public String getDisplayName() {

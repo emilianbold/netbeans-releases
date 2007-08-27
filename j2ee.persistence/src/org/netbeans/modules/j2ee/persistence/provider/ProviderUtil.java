@@ -55,11 +55,17 @@ public class ProviderUtil {
     
     // known providers
     public static final Provider HIBERNATE_PROVIDER = new HibernateProvider();
-    public static final Provider TOPLINK_PROVIDER = new ToplinkProvider();
+    public static final Provider TOPLINK_PROVIDER = ToplinkProvider.create();
     public static final Provider KODO_PROVIDER = new KodoProvider();
     public static final Provider OPENJPA_PROVIDER = new OpenJPAProvider();
     public static final Provider DEFAULT_PROVIDER = new DefaultProvider();
     
+    /**
+     * TopLink provider using the provider class that was used in NetBeans 5.5. Needed
+     * for maintaining backwards compatibility with persistence units created in 5.5.
+     */ 
+    private static final Provider TOPLINK_PROVIDER_55_COMPATIBLE = ToplinkProvider.create55Compatible();
+
     private ProviderUtil() {
     }
     
@@ -606,7 +612,9 @@ public class ProviderUtil {
      * @return array of providers known to the IDE.
      */
     public static Provider[] getAllProviders() {
-        return new Provider[]{TOPLINK_PROVIDER, HIBERNATE_PROVIDER, KODO_PROVIDER, OPENJPA_PROVIDER};
+        return new Provider[]{
+            TOPLINK_PROVIDER, HIBERNATE_PROVIDER, 
+            KODO_PROVIDER, OPENJPA_PROVIDER, TOPLINK_PROVIDER_55_COMPATIBLE};
     }
     
     /**
