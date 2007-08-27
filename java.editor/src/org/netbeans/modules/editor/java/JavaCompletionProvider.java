@@ -4015,8 +4015,33 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             
             public Set<? extends TypeMirror> getSmartTypes() throws IOException {
-                if (smartTypes == null)
+                if (smartTypes == null) {
                     smartTypes = JavaCompletionQuery.this.getSmartTypes(this);
+                    if(smartTypes != null) {
+                        Iterator<? extends TypeMirror> it = smartTypes.iterator();
+                        TypeMirror err = null;
+                        if (it.hasNext()) {
+                            err = it.next();
+                            if (it.hasNext() || err.getKind() != TypeKind.ERROR) {
+                                err = null;
+                            }
+                        }
+                        if (err != null) {
+                            HashSet<TypeMirror> st = new HashSet<TypeMirror>();
+                            TypeElement te = (TypeElement) ((ErrorType)err).asElement();
+                            if (te.getQualifiedName() == te.getSimpleName()) {
+                                ClassIndex ci = controller.getClasspathInfo().getClassIndex();
+                                for (ElementHandle<TypeElement> eh : ci.getDeclaredTypes(te.getSimpleName().toString(), ClassIndex.NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                                    te = eh.resolve(controller);
+                                    if (te != null) {
+                                        st.add(te.asType());
+                                    }
+                                }
+                            }
+                            smartTypes = st;
+                        }
+                    }
+                }
                 return smartTypes;
             }
         }
