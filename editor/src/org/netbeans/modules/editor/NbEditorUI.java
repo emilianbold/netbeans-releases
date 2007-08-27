@@ -24,6 +24,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -266,13 +268,19 @@ public class NbEditorUI extends ExtEditorUI {
                 comp.removeMouseMotionListener(mouse);
             }
             if (comp instanceof Container) {
-                infiltrateContainer((Container) comp, mouse, add);
+                Container cont = (Container) comp;
+                if (add) {
+                    cont.addContainerListener(mouse);
+                } else {
+                    cont.removeContainerListener(mouse);
+                }
+                infiltrateContainer(cont, mouse,add);
             }
         }
 
     }
     
-    private static final class MouseDispatcher implements MouseListener, MouseMotionListener {
+    private static final class MouseDispatcher implements MouseListener, MouseMotionListener, ContainerListener {
         
         private final Component target;
 
@@ -315,6 +323,26 @@ public class NbEditorUI extends ExtEditorUI {
 
         public void mouseExited(MouseEvent e) {
             redispatch(e);
+        }
+
+        public void componentAdded(ContainerEvent e) {
+            Component comp = e.getChild();
+            if (comp instanceof Container) {
+                infiltrateContainer((Container) comp, this, true);
+            } else {
+                comp.addMouseListener(this);
+                comp.addMouseMotionListener(this);
+            }
+        }
+
+        public void componentRemoved(ContainerEvent e) {
+            Component comp = e.getChild();
+            if (comp instanceof Container) {
+                infiltrateContainer((Container) comp, this, false);
+            } else {
+                comp.removeMouseListener(this);
+                comp.removeMouseMotionListener(this);
+            }
         }
         
     }
