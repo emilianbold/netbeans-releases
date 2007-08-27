@@ -18,22 +18,17 @@
         <tocitem text="Viewing File Status Information" target="cvs-lite_status" />
         <tocitem text="Working with Version Histories" target="cvs-lite_histories" />
         <tocitem text="Setting Up CVS" target="cvs-lite_setup" />
-              
         <tocitem text="Checking Out Files from a Remote Repository" target="cvs-lite_checkout" />
         <tocitem text="Placing Projects Under Version Control" target="cvs-lite_import" />                
         <tocitem text="Updating Files in a Local Working Directory" target="cvs-lite_updating" />
         <tocitem text="Comparing File Revisions in CVS" target="cvs-lite_diff" /> 
         <tocitem text="Committing Local Changes to a Remote Repository" target="cvs-lite_commit" /> 
         <tocitem text="Reverting CVS Modifications" target="cvs-lite_revert" />
-
         <tocitem text="Working with Tags" target="cvs-lite_tagging" />  
         <tocitem text="Working with Branches" target="cvs-lite_branches" />  
         <tocitem text="Merging File Revisions from a Branch" target="cvs-lite_merge" /> 
         <tocitem text="Resolving Merge Conflicts" target="cvs-lite_mergeresolve" /> 
         <tocitem text="Creating and Applying a Patch" target="cvs-lite_patch" />
-  
-<!--    <tocitem text="Working with Other Version Control Systems" target="cvs-lite_non-cvs" />    -->
-
       </tocitem>
     </tocitem>
   </tocitem>

@@ -1,86 +1,143 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
+
 <!--
 *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
+
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
          "http://java.sun.com/products/javahelp/map_2_0.dtd">
 
 <map version="2.0">
 
-	<mapID target="credits" url="credits.html" />
+    <!-- About CVS -->
+    <mapID target="cvs-lite_about" url="cvsmodule/cvs-lite_about.html" />
 
-	<mapID target="cvs-lite_about" url="cvsmodule/cvs-lite_about.html" />
-	<mapID target="cvs-lite_overview" url="cvsmodule/cvs-lite_overview.html" />
-	<mapID target="cvs-lite_quickref" url="cvsmodule/cvs-lite_quickref.html" />        
-	<mapID target="cvs-lite_using" url="cvsmodule/cvs-lite_using.html" />
-	<mapID target="cvs-lite_status" url="cvsmodule/cvs-lite_status.html" />
-	<mapID target="cvs-lite_histories" url="cvsmodule/cvs-lite_histories.html" />        
-	<mapID target="cvs-lite_setup" url="cvsmodule/cvs-lite_setup.html" />        
+    <!-- Working with CVS -->
+    <mapID target="cvs-lite_overview" url="cvsmodule/cvs-lite_overview.html" />
 
-	<mapID target="cvs-lite_checkout" url="cvsmodule/cvs-lite_checkout.html" />
-	<mapID target="cvs-lite_updating" url="cvsmodule/cvs-lite_updating.html" />
-	<mapID target="cvs-lite_diff" url="cvsmodule/cvs-lite_diff.html" />
-	<mapID target="cvs-lite_commit" url="cvsmodule/cvs-lite_commit.html" />
-	<mapID target="cvs-lite_revert" url="cvsmodule/cvs-lite_reverting.html" />        
-	<mapID target="cvs-lite_projects" url="cvsmodule/cvs-lite_project-system.html" />
+    <!-- CVS Tasks: Quick Reference -->
+    <mapID target="cvs-lite_quickref" url="cvsmodule/cvs-lite_quickref.html" />        
 
-        <mapID target="cvs-lite_import" url="cvsmodule/cvs-lite_import.html" />
+    <!-- Using CVS with the IDE -->
+    <mapID target="cvs-lite_using" url="cvsmodule/cvs-lite_using.html" />
 
-	<mapID target="cvs-lite_tagging" url="cvsmodule/cvs-lite_tagging.html" /> 
-	<mapID target="cvs-lite_branches" url="cvsmodule/cvs-lite_branches.html" />        
-	<mapID target="cvs-lite_merge" url="cvsmodule/cvs-lite_merge.html" />
-	<mapID target="cvs-lite_mergeresolve" url="cvsmodule/cvs-lite_mergeresolve.html" />
-	<mapID target="cvs-lite_patch" url="cvsmodule/cvs-lite_patch.html" />
+    <!-- Viewing File Status Information -->
+    <mapID target="cvs-lite_status" url="cvsmodule/cvs-lite_status.html" />
+
+    <!-- Working with Version Histories -->
+    <mapID target="cvs-lite_histories" url="cvsmodule/cvs-lite_histories.html" />
+
+    <!-- Setting Up CVS -->
+    <mapID target="cvs-lite_setup" url="cvsmodule/cvs-lite_setup.html" />        
+
+    <!-- Checking Out Files from a Remote Repository -->
+    <mapID target="cvs-lite_checkout" url="cvsmodule/cvs-lite_checkout.html" />
+
+    <!-- Updating Files in a Local Working Directory -->
+    <mapID target="cvs-lite_updating" url="cvsmodule/cvs-lite_updating.html" />
+
+    <!-- Comparing File Revisions in CVS -->
+    <mapID target="cvs-lite_diff" url="cvsmodule/cvs-lite_diff.html" />
+
+    <!-- Committing Local Changes to a Remote Repository -->
+    <mapID target="cvs-lite_commit" url="cvsmodule/cvs-lite_commit.html" />
+
+    <!-- Reverting CVS Modifications -->
+    <mapID target="cvs-lite_revert" url="cvsmodule/cvs-lite_reverting.html" />        
+	
+    <!-- Placing Projects Under Version Control -->
+    <mapID target="cvs-lite_import" url="cvsmodule/cvs-lite_import.html" />
+
+    <!-- Working with Tags -->
+    <mapID target="cvs-lite_tagging" url="cvsmodule/cvs-lite_tagging.html" /> 
+	
+    <!-- Working with Branches -->
+    <mapID target="cvs-lite_branches" url="cvsmodule/cvs-lite_branches.html" />        
+	
+    <!-- Merging File Revisions from a Branch -->
+    <mapID target="cvs-lite_merge" url="cvsmodule/cvs-lite_merge.html" />
+	
+    <!-- Resolving Merge Conflicts -->
+    <mapID target="cvs-lite_mergeresolve" url="cvsmodule/cvs-lite_mergeresolve.html" />
+	
+    <!-- Creating and Applying a Patch -->
+    <mapID target="cvs-lite_patch" url="cvsmodule/cvs-lite_patch.html" />
         
-	<mapID target="cvs-lite_non-cvs" url="cvsmodule/cvs-lite_non-cvs.html" />        
+
+    <!-- Legal Notices -->
+    <mapID target="credits" url="credits.html" />
+
+
+<!-- ======================================================================= -->
+
 
 <!-- CSH topics -->
 
-	<!-- CSH topics for wizards -->
-	<!-- CSH for 1st panel of Checkout wizard -->
-	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.checkout" url="cvsmodule/csh/cvs-lite_chkout_wizard_p1.html" />
-	<!-- CSH for 2nd panel of Checkout wizard -->
-	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.CheckoutWizard$ModuleStep" url="cvsmodule/csh/cvs-lite_chkout_wizard_p2.html" />
+    <!-- Checkout wizard, panel 1 -->	
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.checkout" url="cvsmodule/csh/cvs-lite_chkout_wizard_p1.html" />
 
-        <!-- CSH for 1st panel of Import wizard -->        
-        <mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.import" url="cvsmodule/csh/cvs-lite_import_wizard_p1.html" />
+    <!-- Checkout wizard, panel 2 -->	
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.CheckoutWizard$ModuleStep" url="cvsmodule/csh/cvs-lite_chkout_wizard_p2.html" />
 
-        <!-- CSH for 2nd panel of Import wizard -->
-        <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction$ImportStep" url="cvsmodule/csh/cvs-lite_import_wizard_p2.html" />
+    <!-- Import wizard, panel 1 -->        
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.import" url="cvsmodule/csh/cvs-lite_import_wizard_p1.html" />
 
-	<!-- CSH topics for dialogs in wizards -->
-	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.CvsRootPanel" url="cvsmodule/csh/cvs-lite_editroot_dialog.html" />
-	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxySelector" url="cvsmodule/csh/cvs-lite_proxy_dialog.html" />
-	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.selectors.ModuleSelector" url="cvsmodule/csh/cvs-lite_chkoutmodules_dialog.html" />
-	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector" url="cvsmodule/csh/cvs-lite_browsetags_dialog.html" />
-	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutCompletedPanel" url="cvsmodule/csh/cvs-lite_chkoutcomplete_dialog.html" />
-        <mapID target="org.netbeans.modules.diff.PatchAction" url="cvsmodule/cvs-lite_patch.html" />
+    <!-- Import wizard, panel 2 -->        
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction$ImportStep" url="cvsmodule/csh/cvs-lite_import_wizard_p2.html" />
 
-	<!-- CSH topics for CVS UI - Diff viewer window and versioning window -->
+    <!-- Edit CVS Root dialog -->
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.CvsRootPanel" url="cvsmodule/csh/cvs-lite_editroot_dialog.html" />
+
+    <!-- Proxy dialog -->
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxySelector" url="cvsmodule/csh/cvs-lite_proxy_dialog.html" />
+
+    <!-- Browse Modules dialog -->
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.selectors.ModuleSelector" url="cvsmodule/csh/cvs-lite_chkoutmodules_dialog.html" />
+
+    <!-- Browse Tags dialog -->
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector" url="cvsmodule/csh/cvs-lite_browsetags_dialog.html" />
+
+    <!-- Checkout Complete dialog -->
+    <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutCompletedPanel" url="cvsmodule/csh/cvs-lite_chkoutcomplete_dialog.html" />
+
+    <!-- Select Diff Patch dialog (currently set to help topic: Creating and Applying a Patch) -->
+    <mapID target="org.netbeans.modules.diff.PatchAction" url="cvsmodule/cvs-lite_patch.html" />
+
+
+    <!-- CSH topics for CVS UI -->
+
+        <!-- Versioning window -->
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent" url="cvsmodule/csh/cvs-lite_versioning_window.html" />
+ 
+        <!-- Diff Viewer -->
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor$DiffTopComponent" url="cvsmodule/csh/cvs-lite_diff_viewer.html" />
+
+        <!-- History Viewer -->
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.history.SearchHistoryTopComponent" url="cvsmodule/csh/cvs-lite_history_viewer.html" />
 
-	<!-- CSH topics for pop-up dialogs -->
-	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitSettings" url="cvsmodule/csh/cvs-lite_commit_dialog.html" />
+        <!-- Merge Conflicts Resolver -->
+        <mapID target="org.netbeans.modules.merge.builtin.visualizer.MergeDialogComponent" url="cvsmodule/csh/cvs-lite_merge_resolver.html" />
+
+        <!-- Versioning Panel in Options Window -->
+        <mapID target="org.netbeans.modules.versioning.system.cvss.options.CvsOptionsController" url="cvsmodule/csh/cvs-lite_options_window.html" />
+
+    
+    <!-- CSH topics for pop-up dialogs -->
+
+        <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitSettings" url="cvsmodule/csh/cvs-lite_commit_dialog.html" />
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchAction" url="cvsmodule/csh/cvs-lite_branch_dialog.html" />
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.SwitchBranchAction" url="cvsmodule/csh/cvs-lite_switchbranch_dialog.html" />
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.MergeBranchAction" url="cvsmodule/csh/cvs-lite_mergebranch_dialog.html" />
-	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction" url="cvsmodule/csh/cvs-lite_tag_dialog.html" />
+        <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction" url="cvsmodule/csh/cvs-lite_tag_dialog.html" />
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.ChangeCVSRootAction" url="cvsmodule/csh/cvs-lite_change_root.html" />
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.history.ViewRevisionAction" url="cvsmodule/csh/cvs-lite_view_revision_dialog.html" />
 
+ 
+    <!-- <mapID target="netbeans.optionsDialog.advanced.ant" url="cvsmodule/cvs/cvs-lite_add_var_dialog.html" /> -->
 
-	<!-- CSH topics for merge conflicts resolver -->
-	<mapID target="org.netbeans.modules.merge.builtin.visualizer.MergeDialogComponent" url="cvsmodule/csh/cvs-lite_merge_resolver.html" />
+    <!-- TODO: where is this one -->
+    <mapID target="cvs-lite_importfolder_dialog" url="cvsmodule/csh/cvs-lite_importfolder_dialog.html" />
 
-        <!-- CSH topics for Versioning Panel in Options Window -->
-        <mapID target="org.netbeans.modules.versioning.system.cvss.options.CvsOptionsController" url="cvsmodule/csh/cvs-lite_options_window.html" />
-
-        <!-- <mapID target="netbeans.optionsDialog.advanced.ant" url="cvsmodule/cvs/cvs-lite_add_var_dialog.html" /> -->
-
-	<!-- TODO: where is this one -->
-	<mapID target="cvs-lite_importfolder_dialog" url="cvsmodule/csh/cvs-lite_importfolder_dialog.html" />
 </map>
 

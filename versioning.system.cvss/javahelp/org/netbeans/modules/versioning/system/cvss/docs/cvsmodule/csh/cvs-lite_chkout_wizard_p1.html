@@ -27,38 +27,43 @@
         <h4>To specify the CVS root, do the following:</h4>
 	
 	<ul>
-	    <li><strong>CVS root.</strong> Select a CVS root type and location from the drop-down list. 
-		The drop-down list contains a list of previous CVS root locations used in the IDE.
-		<br>If no CVS root locations are provided from the drop-down list, you need to supply the 
-                CVS root type. You can enter the information directly into the text field, or click 
-                the Edit button to open the <a href="cvs-lite_editroot_dialog.html">Edit CVS Root 
-                dialog box</a>.</li>
-            <li>The IDE directly supports the following CVS root types:
-		<ul>
-		    <li><strong>pserver.</strong> For connecting to pserver repositories.<br> 
-                        <tt>:pserver:username@hostname:/repository_path</tt></li>
-		    <li><strong>ext.</strong> For connecting to CVS repositories using SSH, etc.<br> 
-                        <tt>:pserver:username@hostname:/repository_path</tt></li>
-		</ul>
-                <br>
-		The following root types require an external CVS executable:
-		<ul>
-		    <li><strong>fork.</strong> For protocol access to local CVS repository<br> 
-                        <tt>:fork:/repository_path</tt></li>    
-		    <li><strong>local.</strong> For direct access to local CVS repository<br> 
-                        <tt>:local:/repository_path</tt></li> 
-		</ul></li>
-	    <li><strong>Password.</strong> Enter the password for the user to access the repository.</li>
-	    <li><strong>Proxy configuration.</strong> Click the Proxy configuration button to specify details 
-                of your proxy configuration to connect to the CVS repository.</li>
+            <li><strong>CVS root</strong>. Select a <a href="#rootTypes">CVS root type</a> and 
+                location from the drop-down list. The drop-down list contains a list of previous 
+                CVS root locations used in the IDE. If no CVS root locations are provided from 
+                the drop-down list, you need to supply the CVS root type. You can enter the 
+                information directly into the text field, or click the Edit button to open the 
+                <a href="cvs-lite_editroot_dialog.html">Edit CVS Root dialog box</a>.</li>
+	    <li><strong>Password.</strong> Enter the password for the user to access the 
+                repository.</li>
+	    <li><strong>Proxy configuration.</strong> Click the Proxy configuration button to 
+                specify details of your proxy configuration to connect to the CVS repository.</li>
+	</ul>
+        
+        <h4><a name="rootTypes">The IDE directly supports the following CVS root types:</a></h4>
+	
+        <ul>
+            <li><strong>pserver</strong>. For connecting to pserver repositories.<br> 
+                <tt>:pserver:username@hostname:/repository_path</tt></li>
+            <li><strong>ext</strong>. For connecting to CVS repositories using SSH, etc.<br> 
+                <tt>:pserver:username@hostname:/repository_path</tt></li>
+        </ul>
+        
+        <p>The following root types require an external CVS executable:</p>
+        
+	<ul>
+            <li><strong>fork</strong>. For protocol access to local CVS repository<br> 
+                <tt>:fork:/repository_path</tt></li>    
+            <li><strong>local</strong>. For direct access to local CVS repository<br> 
+                <tt>:local:/repository_path</tt></li> 
 	</ul>
 	
 	<dl>
 	    <dt>
 	    <a name="seealso">See Also</a></dt>
-	    <dd> <a href="../cvs-lite_checkout.html">Checking Out Files from a Remote Repository</a></dd> 
-	    <dd> <a href="../cvs-lite_setup.html">Setting Up CVS</a></dd>
+	    <dd><a href="../cvs-lite_checkout.html">Checking Out Files from a Remote Repository</a></dd> 
+	    <dd><a href="../cvs-lite_setup.html">Setting Up CVS</a></dd>
 	</dl>
+        
 	<hr>
 	<small><a href="../../credits.html">Legal Notices</a></small>
         <br><br><br>

@@ -4,31 +4,31 @@
 *     Use is subject to license terms.
 -->
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
-"http://java.sun.com/products/javahelp/toc_2_0.dtd">
+        "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
     
-    <tocitem text="IDE Basics">
-        <tocitem text="Version Control and File History"> 
-            <tocitem text="Working with Subversion">
-                <tocitem text="About the IDE's Subversion Support" target="svn_about" />
-                <tocitem text="Working with Subversion" target="svn_overview" /> 
-                <tocitem text="Subversion Tasks: Quick Reference" target="svn_quickref" /> 
-                <tocitem text="Viewing File Status Information" target="svn_status" />
-                <tocitem text="Working with Version Histories" target="svn_histories" />
-                <tocitem text="Setting Up Subversion" target="svn_setup" />
-                <tocitem text="Checking Out Files from a Subversion Repository" target="svn_checkout" /> 
-                <tocitem text="Placing Projects Under Version Control" target="svn_import" />                
-                <tocitem text="Updating Files in a Subversion Working Directory" target="svn_updating" />
-                <tocitem text="Comparing File Revisions in Subversion" target="svn_diff" /> 
-                <tocitem text="Committing Local Changes to a Remote Repository" target="svn_commit" />
-                <tocitem text="Working with Branches" target="svn_branches" />
-                <tocitem text="Reverting Modifications" target="svn_revert" />
-                <tocitem text="Merging File Revisions in Subversion" target="svn_merge" /> 
-                <tocitem text="Resolving Merge Conflicts" target="svn_mergeresolve" /> 
-                <tocitem text="Creating and Applying a Patch" target="svn_patch" />
-            </tocitem>
-        </tocitem>
+  <tocitem text="IDE Basics">
+    <tocitem text="Version Control and File History"> 
+      <tocitem text="Working with Subversion">
+        <tocitem text="About Subversion" target="svn_about" />
+        <tocitem text="Working with Subversion" target="svn_overview" /> 
+        <tocitem text="Subversion Tasks: Quick Reference" target="svn_quickref" /> 
+        <tocitem text="Viewing File Status Information" target="svn_status" />
+        <tocitem text="Working with Version Histories" target="svn_histories" />
+        <tocitem text="Setting Up Subversion" target="svn_setup" />
+        <tocitem text="Checking Out Files from a Subversion Repository" target="svn_checkout" /> 
+        <tocitem text="Placing Projects Under Version Control" target="svn_import" />                
+        <tocitem text="Updating Files in a Subversion Working Directory" target="svn_updating" />
+        <tocitem text="Comparing File Revisions in Subversion" target="svn_diff" /> 
+        <tocitem text="Committing Local Changes to a Remote Repository" target="svn_commit" />
+        <tocitem text="Working with Branches" target="svn_branches" />
+        <tocitem text="Reverting Modifications" target="svn_revert" />
+        <tocitem text="Merging File Revisions in Subversion" target="svn_merge" /> 
+        <tocitem text="Resolving Merge Conflicts" target="svn_mergeresolve" /> 
+        <tocitem text="Creating and Applying a Patch" target="svn_patch" />
+      </tocitem>
     </tocitem>
+  </tocitem>
 
 </toc>
