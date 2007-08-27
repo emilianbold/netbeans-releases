@@ -19,21 +19,21 @@ Use is subject to license terms.  *-->
         in different programming languages. This can only work if vendors can
         agree on common standards. 
         
-        <p>There are two distinct web service programming models, both of which
-        are supported by the IDE, the first is specific to the Java EE 5 specification,
-        while the second is specific to the J2EE 1.4 specification:
-        <ul><li><b>Java API for XML Web Services (JAX-WS).</b> This programming model
+        <p>The following web service programming models are supported
+         by the IDE:
+        <ul>
+            
+            <li><b>REpresentational State Transfer (REST).</b> Some JAX-WS web services can be described as being RESTful.
+            REST is an architectural style. Elements of the REST archictectural style are its stateless client-server architecture
+            and the fact that web services are viewed as resources that can be identified by their URLs. 
+            The application of some or all of the constraints specified by the REST architectural style to 
+            a JAX-WS web service makes it a RESTful web service. 
+            
+            <li><b>Java API for XML Web Services (JAX-WS).</b> This programming model
             relates specifically to Java EE 5. A follow-on release of Java API for XML-based RPC 1.1 (JAX-RPC), JAX-WS 
             simplifies the task of developing web services using Java technology. It addresses some of 
             the issues in JAX-RPC 1.1 by providing, for example, annotations to simplify web service 
             development and reduce the size of runtime JAR files.
-            
-            <p>Some JAX-WS web services can be described as being RESTful.
-            REpresentational State Transfer (REST) REST is an architectural style.
-            Elements of the REST archictectural style are its stateless client-server architecture
-            and the fact that web services are viewed as resources that can be identified by their URLs. 
-            The application of some or all of the constraints specified by the REST architectural style to 
-            a JAX-WS web service makes it a RESTful web service. 
             
             <li><b>Java API for XML-based RPC (JAX-RPC).</b> JAX-RPC is the 
             programming model for creating web services and
@@ -51,22 +51,27 @@ Use is subject to license terms.  *-->
         </ul> 
         
         <p>Both programming models are based on
-        the following three specifications:</P>
+        the following specifications:</P>
         <UL>
             <LI><P><B>SOAP (Simple Object Access Protocol).</B> Defines the
                 mechanism by which a web service is called and how data is returned.
-                For detailed information, refer to the SOAP 1.1 Specification. 
+                For detailed information, refer to the SOAP 1.2 Specification. 
             </P>
             <LI><P><B>WSDL (Web Service Definition Language).</B> Describes the
                 external interface of a web service. For detailed information, refer
                 to the WSDL 1.1 Specification. 
             </P>
-            <LI><P><B>UDDI (Universal Discovery, Description, and Integration)</B>
+            <LI><P><B>UDDI (Universal Discovery, Description, and Integration).</B>
                 Registries contain information about web services, including the
                 location of WSDL files and the location of the running services. The
                 IDE does not let you publish web services to or
                 browse from a UDDI registry, although the WSDL files that you
             use can come from a variety of sources, including a UDDI registry.</P>
+            <LI><P><B>JAXB (Java Architecture for XML Binding).</B>
+                In contrast to JAX-RPC, that uses its own data binding
+                facilities, JAX-WS delegates data binding related tasks
+                to JAXB. The JAXB 2.0/2.1 specification is developed
+                in parallel with JAX-WS 2.0/2.1.</P>
         </UL>
         
         <dl>
