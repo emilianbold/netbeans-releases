@@ -4,7 +4,7 @@
     <folder name="UI">
         <folder name="Runtime">
             <file name="org-netbeans-modules-websvc-manager-nodes-WebServicesRootNode.instance">
-                <attr name="position" intvalue="200"/>
+                <attr name="position" intvalue="210"/>
             </file>
             </folder>
     </folder>
