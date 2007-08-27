@@ -352,7 +352,7 @@
                 property="current.packaged.data.properties.file" 
                 value="${product.packaged.data.properties.file}"/>
             
-            <condition property="do.package.data" value="true">
+            <condition property="do.package.data.{i}" value="true">
                 <or>
                     <equals arg1="${package.data}" arg2="true"/>
                     <and>
@@ -370,7 +370,7 @@
                     </and>
                 </or>
             </condition>
-            <condition property="do.package.data" value="false">
+            <condition property="do.package.data.{i}" value="false">
                 <or>
                     <equals arg1="${package.data}" arg2="false"/>
                     <and>
@@ -386,7 +386,7 @@
             </condition>
             
             <!-- if the data needs to be packaged -->
-            <if property="do.package.data" value="true">
+            <if property="do.package.data.{i}" value="true">
                 <dirname 
                     property="current.download.${i}.dir" 
                     file="${current.download}"/>
@@ -456,7 +456,7 @@
             </if>
             
             <!-- if the data does not need to be packaged -->
-            <if property="do.package.data" value="false">
+            <if property="do.package.data.{i}" value="false">
                 <copy 
                     file="${current.packaged.data.file}" 
                     tofile="${current.file}"/>                              
