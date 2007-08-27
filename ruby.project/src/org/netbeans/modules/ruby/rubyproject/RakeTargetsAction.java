@@ -642,7 +642,7 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
         }
 
         public void run() {
-            if (!RubyInstallation.getInstance().isValidRake(true)) {
+            if (!RubyInstallation.getInstance().isValidRuby(true) || !RubyInstallation.getInstance().isValidRake(true)) {
                 return;
             }
 
