@@ -122,16 +122,16 @@ public class MethodsSelectionDialog extends JCenterDialog
             ImageUtil iUtil = ImageUtil.instance() ;
         
             JPanel topPanelRight = new JPanel();
-            selectAllBtn = new JToggleButton(iUtil.getIcon("selectall.gif"));
+            selectAllBtn = new JToggleButton(iUtil.getIcon("select-all.gif"));
                         
             // fix a11y issue: CR#6394777. 
             // Need to set the button border for it to be hilighted when it gains the focus
             selectAllBtn.setBorder(emptyBorder);
                         
-            JToggleButton unSelectAllBtn = new JToggleButton(iUtil.getIcon("clearall.gif"));
+            JToggleButton unSelectAllBtn = new JToggleButton(iUtil.getIcon("clear-all.gif"));
             unSelectAllBtn.setBorder(emptyBorder);
                     
-            JToggleButton showAbstractMethodsBtn = new JToggleButton(iUtil.getIcon("abstractonly.gif"));
+            JToggleButton showAbstractMethodsBtn = new JToggleButton(iUtil.getIcon("abstract-only.gif"));
             showAbstractMethodsBtn.setBorder(emptyBorder);
 
             topPanelRight.setLayout(new FlowLayout());
