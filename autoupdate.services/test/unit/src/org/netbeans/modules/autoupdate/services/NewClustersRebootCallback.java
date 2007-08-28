@@ -56,10 +56,6 @@ public class NewClustersRebootCallback {
         }
     }
     
-    public static boolean isOK(File udir) {
-        return new File(udir, NAME_OF_NEW_CLUSTER+"/modules/com-sun-testmodule-cluster.jar").exists();
-    }
-
     private static void createAtLeastOneNbm(File newCluster, File udir) throws FileNotFoundException, FileNotFoundException, IOException, IOException {
         File nbm = new File(newCluster, "/update/download/whatever.nbm");
         nbm.getParentFile().mkdirs();
