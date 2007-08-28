@@ -293,12 +293,19 @@ public class FindChildSchemaVisitor extends DefaultSchemaVisitor {
     
     private void checkComponent(SchemaComponent sc) {
         if (sc instanceof Named) {
-            String namspace = sc.getModel().getEffectiveNamespace(sc);
+            String namespace = sc.getModel().getEffectiveNamespace(sc);
             String name = ((Named)sc).getName();
-            if (mySoughtName.equals(name) &&
-                    mySoughtNamespace.equals(namspace)) {
-                myFound = sc;
-            }
+            if (mySoughtName.equals(name)) {
+                //
+                // Compare namespace as well if it is specified
+                if (mySoughtNamespace != null) {
+                    if (mySoughtNamespace.equals(namespace)) {
+                        myFound = sc;
+                    }
+                } else {
+                    myFound = sc;
+                }
+            } 
         }
     }
 }

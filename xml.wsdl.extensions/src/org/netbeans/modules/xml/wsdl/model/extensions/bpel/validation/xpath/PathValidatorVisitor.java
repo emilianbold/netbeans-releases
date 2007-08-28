@@ -211,15 +211,18 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
                 //
                 // If the prefix isn't specified then the step component can
                 // be considered as an unqualified schema object.
-                // So the effective namespace can be taken from the parent component
+                // 
+                // If the prefix isn't specified then the step component can
+                // be considered as an unqualified schema object.
+                // ATTENTION! The namaspace is indefinite in such case. 
+                // It doesn't related to the namespace of the parent component 
+                // because the child component can be defined in other schema 
+                // with other target namespace! It can't be considered as 
+                // default namespace as for global elements in such case. 
+                // The child element has to be found among all children 
+                // by name only. 
                 if (parentComponent != null) {
-                    nsUri = parentComponent.getModel().
-                            getEffectiveNamespace(parentComponent);
-                }
-                //
-                // If the namespace is still unknown then use empty namespace
-                if (nsUri == null) {
-                    nsUri = XMLConstants.DEFAULT_NS_PREFIX;
+                    nsUri = null; 
                 }
             } else {
                 WSDLComponent contentElement = myContext.getXpathContentElement();
@@ -255,6 +258,7 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
                     return;
                 }
                 //
+                assert nsUri != null : "it can be null for local components only.";  // NOI18N
                 if (nsUri.equals(namespace) && nodeName.equals(name)) {
                     foundComponent = rootComp;
                 } else {
