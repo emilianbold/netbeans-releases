@@ -517,7 +517,7 @@ public final class PaletteUtils {
                 return false;
 
             if (item.getComponentClassSource().getCPRootCount() > 0
-                || "chooseBean".equals(item.getExplicitComponentType()) // NOI18N
+                || PaletteItem.TYPE_CHOOSE_BEAN.equals(item.getExplicitComponentType())
                 || "org.netbeans.modules.form.layoutsupport.delegates.NullLayoutSupport".equals(item.getComponentClassName())) // NOI18N
                 return true; // this is not a platform component
 

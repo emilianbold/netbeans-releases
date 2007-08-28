@@ -672,7 +672,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         if (mode == MODE_ADD) {
             PaletteItem pitem = PaletteUtils.getSelectedItem();
-            if ((pitem != null) && "chooseBean".equals(pitem.getExplicitComponentType())) { // NOI18N
+            if ((pitem != null) && PaletteItem.TYPE_CHOOSE_BEAN.equals(pitem.getExplicitComponentType())) {
                 NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
                     FormUtils.getBundleString("MSG_Choose_Bean"), // NOI18N
                     FormUtils.getBundleString("TITLE_Choose_Bean")); // NOI18N

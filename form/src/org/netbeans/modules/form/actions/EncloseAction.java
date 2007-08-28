@@ -93,6 +93,9 @@ public class EncloseAction extends NodeAction {
     private static PaletteItem[] getAllContainers() {
         ArrayList list = new ArrayList();
         for (PaletteItem item : PaletteUtils.getAllItems()) {
+            if (PaletteItem.TYPE_CHOOSE_BEAN.equals(item.getExplicitComponentType())) {
+                continue;
+            }
             Class cls = item.getComponentClass();
             if (cls != null
                   && JComponent.class.isAssignableFrom(cls)
