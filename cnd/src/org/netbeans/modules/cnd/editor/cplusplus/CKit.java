@@ -35,6 +35,7 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 
 public class CKit extends CCKit {
 
+    @Override
     public String getContentType() {
         return MIMENames.C_MIME_TYPE;
     }
@@ -44,29 +45,44 @@ public class CKit extends CCKit {
      *
      * @param doc document to operate on
      */
+    @Override
     public Syntax createSyntax(Document doc) {
         return new CSyntax();
     }
     
+    @Override
     protected Action getCommentAction() {
         return new CCommentAction(); 
     }
     
+    @Override
     protected Action getUncommentAction() {
         return new CUncommentAction(); 
     }
     
+    @Override
+    protected Action getToggleCommentAction() {
+        return new CToggleCommentAction(); 
+    }
+    
     private static String START_BLOCK_COMMENT = "/*"; // NOI18N
     private static String END_BLOCK_COMMENT = "*/"; // NOI18N
+
+    private static String insertStartCommentString = START_BLOCK_COMMENT + "\n"; // NOI18N
+    private static String insertEndCommentString = END_BLOCK_COMMENT + "\n"; // NOI18N
     
     private static final class CCommentAction extends CommentAction {
-        private static String insertStartCommentString = START_BLOCK_COMMENT + "\n"; // NOI18N
-        private static String insertEndCommentString = END_BLOCK_COMMENT + "\n"; // NOI18N
         private CCommentAction() {
-            super("//");
+            // fake string 
+            super("//"); // NOI18N 
         }
         
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            doCStyleComment(target);
+        }
+        
+        private static void doCStyleComment(JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
                     target.getToolkit().beep();
@@ -108,15 +124,22 @@ public class CKit extends CCKit {
                 } catch (BadLocationException e) {
                     target.getToolkit().beep();
                 }
-            }
-        }
+            }        
+        }        
     }
-
+    
     private static final class CUncommentAction extends UncommentAction {
         private CUncommentAction() {
-            super("//");
+            // fake string 
+            super("//"); // NOI18N 
         }
+        
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            doCStyleUncomment(target);
+        }
+        
+        private static void doCStyleUncomment(JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
                     target.getToolkit().beep();
@@ -176,7 +199,7 @@ public class CKit extends CCKit {
                             // remove start line
                             doc.remove(startLineStartPos, startLineEndPos-startLineStartPos);
                         }
-                        
+
                     } finally {
                         doc.atomicUnlock();
                     }                    
@@ -184,6 +207,58 @@ public class CKit extends CCKit {
                     target.getToolkit().beep();
                 }
             }
+        }        
+    }
+    
+    private static final class CToggleCommentAction extends ToggleCommentAction {
+        private CToggleCommentAction() {
+            // fake string 
+            super("//"); // NOI18N 
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (allComments(target)) {
+                CUncommentAction.doCStyleUncomment(target);
+            } else {
+                CCommentAction.doCStyleComment(target);
+            }
+        }
+
+        private boolean allComments(JTextComponent target) {
+            Caret caret = target.getCaret();
+            BaseDocument doc = (BaseDocument)target.getDocument();
+            TokenItem item = null;
+            try {
+                doc.atomicLock();
+                try {
+                    int startPos;
+                    int endPos;
+                    if (caret.isSelectionVisible()) {
+                        startPos = target.getSelectionStart();
+                        endPos = target.getSelectionEnd();
+                        if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
+                            endPos--;
+                        }
+                    } else { 
+                        // selection not visible
+                        endPos = startPos = target.getSelectionStart();
+                    }
+                    // get token inside selection
+                    CCSyntaxSupport sup = (CCSyntaxSupport)Utilities.getSyntaxSupport(target);
+                    item = sup.getTokenChain(startPos, endPos);
+                    while (item != null && item.getOffset() < endPos && 
+                            (item.getTokenID() == CCTokenContext.WHITESPACE)) {
+                        // all in comment means only whitespaces or block commens
+                        item = item.getNext();
+                    }
+                } finally {
+                    doc.atomicUnlock();
+                }                    
+            } catch (BadLocationException e) {
+                target.getToolkit().beep();
+            }
+            return (item != null) && (item.getTokenID() == CCTokenContext.BLOCK_COMMENT);
         }
     }
 

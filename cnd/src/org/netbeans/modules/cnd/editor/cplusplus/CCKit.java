@@ -115,6 +115,10 @@ public class CCKit extends NbEditorKit {
         return new UncommentAction("//"); // NOI18N
     }
     
+    protected Action getToggleCommentAction() {
+        return new ToggleCommentAction("//"); // NOI18N
+    }
+    
     protected Action[] createActions() {
         Action[] ccActions = new Action[] {
 	    new CCDefaultKeyTypedAction(),
@@ -123,11 +127,12 @@ public class CCKit extends NbEditorKit {
             new CCInsertBreakAction(),
             new CCDeleteCharAction(deletePrevCharAction, false),
 //            new CCGenerateGoToPopupAction(),
+            getToggleCommentAction(),
             getCommentAction(),
             getUncommentAction()
 	};
         ccActions = TextAction.augmentList(super.createActions(), ccActions);
-        GotoDeclarationProvider gotoDeclaration = (GotoDeclarationProvider) Lookup.getDefault().lookup(GotoDeclarationProvider.class);
+        GotoDeclarationProvider gotoDeclaration = Lookup.getDefault().lookup(GotoDeclarationProvider.class);
         if (gotoDeclaration == null)  {
             return ccActions;
         } else {

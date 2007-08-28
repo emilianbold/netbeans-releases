@@ -109,7 +109,11 @@ Microsystems, Inc. All Rights Reserved.
 		</folder>
                 <folder name="Popup">
                     <folder name="goto">
+                        <attr name="position" intvalue="100"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                        <file name="goto-declaration">
+                            <attr name="position" intvalue="200"/>
+                        </file>                        
                     </folder>
 
                     <file name="SeparatorBeforeFormat.instance">
@@ -131,6 +135,22 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="position" intvalue="4200"/>
                     </file>
                 </folder>
+                
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="Separator-before-comment.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="19100"/>
+                        </file>
+                        <file name="comment">
+                            <attr name="position" intvalue="19200"/>
+                        </file>
+                        <file name="uncomment">
+                            <attr name="position" intvalue="19300"/>
+                        </file>
+                    </folder>
+                </folder>
+                
 	    </folder>
 
 	    <folder name="x-c">
@@ -181,7 +201,11 @@ Microsystems, Inc. All Rights Reserved.
 		</folder>
                 <folder name="Popup">
                     <folder name="goto">
+                        <attr name="position" intvalue="100"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                        <file name="goto-declaration">
+                            <attr name="position" intvalue="200"/>
+                        </file>
                     </folder>
 
                     <file name="SeparatorBeforeFormat.instance">
@@ -203,6 +227,21 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="position" intvalue="4200"/>
                     </file>
                 </folder>
+                
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="Separator-before-comment.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="19100"/>
+                        </file>
+                        <file name="comment">
+                            <attr name="position" intvalue="19200"/>
+                        </file>
+                        <file name="uncomment">
+                            <attr name="position" intvalue="19300"/>
+                        </file>
+                    </folder>
+                </folder>                
 	    </folder>
 
 	    <folder name="x-fortran">
