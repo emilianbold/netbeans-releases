@@ -126,6 +126,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -354,6 +355,17 @@ public final class JavaSource {
             return null;
         }
 
+        try {
+            if (   fileObject.getFileSystem().isDefault()
+                && fileObject.getAttribute("javax.script.ScriptEngine") != null
+                && fileObject.getAttribute("template") == Boolean.TRUE) {
+                return null;
+            }
+        } catch (FileStateInvalidException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+            return null;
+        }
+        
         Reference<JavaSource> ref = file2JavaSource.get(fileObject);
         JavaSource js = ref != null ? ref.get() : null;
         if (js == null) {
