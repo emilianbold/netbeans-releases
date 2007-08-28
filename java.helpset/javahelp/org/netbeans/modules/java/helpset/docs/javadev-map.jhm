@@ -349,19 +349,23 @@
 <mapID target="NetbeansDebuggerSessionsPropertiesSheet" url="debug/CSH/session_properties.html"/>
 <mapID target="NetbeansDebuggerOutputWindow" url="debug/CSH/debug_output.html"/>
 
+<!-- New breakpoint and breakpoint customizer dialog  are mapped to same topics -->
+<!-- Mappings for new breakpoint dialog topics -->
 <mapID target="debug.add.breakpoint.java.class" url="debug/CSH/breakpoint_class.html" />
 <mapID target="debug.add.breakpoint.java.exception" url="debug/CSH/breakpoint_exception.html" />
 <mapID target="debug.add.breakpoint.java.field" url="debug/CSH/breakpoint_variable.html" />
 <mapID target="debug.add.breakpoint.java.method" url="debug/CSH/breakpoint_method.html" />
 <mapID target="debug.add.breakpoint.java.thread" url="debug/CSH/breakpoint_thread.html" />
-<mapID target="debug.add.watch" url="debug/CSH/watch_window.html" />
-<mapID target="NetbeansDebuggerBreakpointExceptionJPDA" url="debug/CSH/brkpt_exception.html" />
-<mapID target="NetbeansDebuggerBreakpointLineJPDA" url="debug/CSH/brkpt_line.html" />
-<mapID target="NetbeansDebuggerBreakpointFieldJPDA" url="debug/CSH/brkpt_variable.html" />
-<mapID target="NetbeansDebuggerBreakpointMethodJPDA" url="debug/CSH/brkpt_method.html" />
-<mapID target="NetbeansDebuggerBreakpointThreadJPDA" url="debug/CSH/brkpt_thread.html" />
-<mapID target="NetbeansDebuggerBreakpointClassJPDA" url="debug/CSH/brkpt_class.html" />
 
+<!-- Mappings for breakpoint customizer dialog topics -->
+<mapID target="NetbeansDebuggerBreakpointExceptionJPDA" url="debug/CSH/breakpoint_exception.html" />
+<mapID target="NetbeansDebuggerBreakpointLineJPDA" url="debug/CSH/breakpoint_line.html" />
+<mapID target="NetbeansDebuggerBreakpointFieldJPDA" url="debug/CSH/breakpoint_variable.html" />
+<mapID target="NetbeansDebuggerBreakpointMethodJPDA" url="debug/CSH/breakpoint_method.html" />
+<mapID target="NetbeansDebuggerBreakpointThreadJPDA" url="debug/CSH/breakpoint_thread.html" />
+<mapID target="NetbeansDebuggerBreakpointClassJPDA" url="debug/CSH/breakpoint_class.html" />
+
+<mapID target="debug.add.watch" url="debug/CSH/watch_window.html" />
 <mapID target="NetbeansDebuggerJPDAPopOldFrame" url="debug/CSH/old_stack_call.html"/>
 
 <!--evaluate expression dialog box-->	
@@ -373,7 +377,7 @@
 <mapID target="NetbeansDebuggerGoToCallingMethodAction" url="debug/debug_callstack.html"/>
 <mapID target="NetbeansDebuggerPopTopmostFrameAction" url="debug/debug_pop.html"/>
 
-<!--TODO - add mappings for debug dialog topics-->
+
 
 <!-- Profiling topic -->
     <mapID target="profiling_javaapp" url="profiling/profile_about.html" />
