@@ -138,9 +138,13 @@ public class ItemCD extends ComponentDescriptor {
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label"), // NOI18N
                         PropertyEditorString.createInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Label")), PROP_LABEL) // NOI18N
-                    .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Default_Command"), PropertyEditorDefaultCommand.createInstance(), PROP_DEFAULT_COMMAND) // NOI18N
+                    .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Default_Command"), // NOI18N
+                        PropertyEditorDefaultCommand.createInstance(), PROP_DEFAULT_COMMAND)
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Layout"), PropertyEditorLayout.createInstance(), PROP_LAYOUT) // NOI18N
-                    .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Size"), PropertyEditorArrayInteger.create(), PROP_PREFERRED_WIDTH, PROP_PREFERRED_HEIGHT); // NOI18N
+                    .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Width"), // NOI18N
+                        PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Preferred_Width")), ItemCD.PROP_PREFERRED_WIDTH) // NOI18N
+                    .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Height"), // NOI18N
+                        PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Preferred_Height")), ItemCD.PROP_PREFERRED_HEIGHT); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {

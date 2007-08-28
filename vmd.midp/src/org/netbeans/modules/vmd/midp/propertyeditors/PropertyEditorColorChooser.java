@@ -48,8 +48,8 @@ import org.openide.util.NbBundle;
  */
 public class PropertyEditorColorChooser extends PropertyEditorUserCode implements PropertyEditorElement {
 
-    private static final String ERROR_WARNING = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_ARRAY_INTEGER_DIALOG"); // NOI18N
-    private static final String BUTTON_NAME = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_BUTTON_NAME"); // NOI18N
+    private static final String ERROR_WARNING = NbBundle.getMessage(PropertyEditorColorChooser.class, "MSG_ILLEGAL_FORMATING"); // NOI18N
+    private static final String BUTTON_NAME = NbBundle.getMessage(PropertyEditorColorChooser.class, "LBL_BUTTON_NAME"); // NOI18N
     
     private JColorChooser customEditorElement;
     private JRadioButton radioButton;

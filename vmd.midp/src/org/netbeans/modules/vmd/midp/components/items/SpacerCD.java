@@ -37,7 +37,6 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.displayables.FormCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorArrayInteger;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorLayout;
 import org.netbeans.modules.vmd.midp.screen.display.SpacerDisplayPresenter;
 import org.openide.util.NbBundle;
@@ -45,6 +44,7 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 
 /**
  *
@@ -77,8 +77,10 @@ public class SpacerCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Layout"), PropertyEditorLayout.createInstance(), ItemCD.PROP_LAYOUT) // NOI18N
-                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Preferred_Size"), PropertyEditorArrayInteger.create(), ItemCD.PROP_PREFERRED_WIDTH, ItemCD.PROP_PREFERRED_HEIGHT) // NOI18N
-                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Minimum_size"), PropertyEditorArrayInteger.create(), PROP_MIN_WIDTH, PROP_MIN_HEIGHT); // NOI18N
+                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Preferred_Width"), PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Preferred_Width")), ItemCD.PROP_PREFERRED_WIDTH) // NOI18N
+                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Preferred_Height"), PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Preferred_Height")), ItemCD.PROP_PREFERRED_HEIGHT) // NOI18N
+                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Minimum_Width"), PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Minimum_Width")), PROP_MIN_WIDTH) // NOI18N
+                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Minimum_Height"), PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Minimum_Height")), PROP_MIN_HEIGHT); // NOI18N
     }
    
     private static Presenter createSetterPresenter() {

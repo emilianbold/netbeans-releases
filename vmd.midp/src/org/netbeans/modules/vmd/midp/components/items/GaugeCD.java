@@ -124,17 +124,19 @@ public class GaugeCD extends ComponentDescriptor {
                             PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(GaugeCD.class, "LBL_Gauge_Value")), PROP_VALUE ) // NOI18N
                         .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label"), // NOI18N
                             PropertyEditorString.createInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Label"), // NOI18N
-                                AlertCD.TYPEID), ItemCD.PROP_LABEL) // NOI18N
-                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Default_Command"),
+                                AlertCD.TYPEID), ItemCD.PROP_LABEL)
+                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Default_Command"), // NOI18N
                             PropertyEditorDefaultCommand.createInstance(AlertCD.TYPEID), ItemCD.PROP_DEFAULT_COMMAND) // NOI18N
-                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Layout"),
-                            PropertyEditorLayout.createInstance(), ItemCD.PROP_LAYOUT) // NOI18N
-                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Size"),
-                            PropertyEditorArrayInteger.create(AlertCD.TYPEID), ItemCD.PROP_PREFERRED_WIDTH, ItemCD.PROP_PREFERRED_HEIGHT) // NOI18N
+                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Layout"), // NOI18N
+                            PropertyEditorLayout.createInstance(), ItemCD.PROP_LAYOUT)
+                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Width"), // NOI18N
+                            PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Preferred_Width")), ItemCD.PROP_PREFERRED_WIDTH) // NOI18N
+                        .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Height"), // NOI18N
+                            PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Preferred_Height")), ItemCD.PROP_PREFERRED_HEIGHT) // NOI18N
                      .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                        .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Instance_Name"),
-                            PropertyEditorInstanceName.createInstance(ClassCD.TYPEID), ClassCD.PROP_INSTANCE_NAME) // NOI18N
-                        .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Is_Lazy_Initialized"),
+                        .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Instance_Name"), // NOI18N
+                            PropertyEditorInstanceName.createInstance(ClassCD.TYPEID), ClassCD.PROP_INSTANCE_NAME)
+                        .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Is_Lazy_Initialized"), // NOI18N
                             PropertyEditorBooleanUC.createInstance(), ClassCD.PROP_LAZY_INIT); // NOI18N
                         
     }

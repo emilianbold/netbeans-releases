@@ -41,7 +41,7 @@ import org.openide.util.NbBundle;
  */
 public class PropertyEditorArrayInteger extends GroupPropertyEditor implements ExPropertyEditor {
 
-    private static String ERROR_WARNING = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_ARRAY_INTEGER_DIALOG"); // NOI18N
+    private static String ERROR_WARNING = NbBundle.getMessage(PropertyEditorArrayInteger.class, "MSG_ILLEGAL_FORMATING"); // NOI18N
     private WeakReference<DesignComponent> component;
     private Object parentTypeID;
     
