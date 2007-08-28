@@ -46,6 +46,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -149,9 +150,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
                         } finally {
                             model.endTransaction();
                         }
-                        if (portType != null) {
-                            ActionHelper.selectNode(portType);
-                        }
+                        ActionHelper.selectNode(portType);
                     }
                 } else {
                     if (!getWSDLComponent().getName().equals(text)) {
@@ -381,7 +380,6 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         nameHolderWidget.addChild(showComboBoxBtnWidget);
         
         addChild(nameHolderWidget);
-        getScene().validate();
         mHotSpotLayer = new LayerWidget(getScene());
         addChild(mHotSpotLayer);
         setMinimumSize(new Dimension(0, 250));
@@ -742,6 +740,14 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
         }
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+    	super.propertyChange(evt);
+    	if (evt.getSource() == getWSDLComponent() && evt.getPropertyName().equals(PortType.OPERATION_PROPERTY)) {
+    		revalidate();
+    		getScene().validate();
+    	}
+    }
     
     // DnDHandler implementation BEGIN 
     

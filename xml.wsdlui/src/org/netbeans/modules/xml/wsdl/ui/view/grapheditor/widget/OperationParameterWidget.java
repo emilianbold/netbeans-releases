@@ -134,9 +134,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
                 return mParameter.getName();
             }
 
-        }, 
-        EnumSet.<InplaceEditorProvider.ExpansionDirection>of (InplaceEditorProvider.ExpansionDirection.LEFT, 
-                InplaceEditorProvider.ExpansionDirection.RIGHT));
+        }, null);
         mParameterMessage.getActions().addAction(ActionFactory.createInplaceEditorAction(new ComboBoxInplaceEditorProvider(new ComboBoxInplaceEditor() {
             public boolean isEnabled(Widget widget) {
                 if (getWSDLComponent() != null) {
@@ -222,25 +220,25 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
             mNameLabel.setAlignment(Alignment.CENTER);
             widget.addChild (mNameLabel);
             widget.addChild(mParameterMessage);
-            getActions().addAction(new WidgetAction.Adapter() {
-                
-                @Override
-                public State keyPressed (Widget widget, WidgetKeyEvent event) {
-                    if (event.getKeyCode() == KeyEvent.VK_F2) {
-                        if (editorAction == null || mNameLabel == null) return State.REJECTED;
-                        InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
-                        if (inplaceEditorController.openEditor (mNameLabel)) {
-                            return State.createLocked (widget, this);
-                        }
-                        return State.CONSUMED;
-                    }
-                    return State.REJECTED;
-                }
-            
-            });
         } else {
             addChild(mParameterMessage);
         }
+        getActions().addAction(new WidgetAction.Adapter() {
+            
+            @Override
+            public State keyPressed (Widget widget, WidgetKeyEvent event) {
+                if (event.getKeyCode() == KeyEvent.VK_F2) {
+                    if (editorAction == null || mNameLabel == null) return State.CONSUMED;
+                    InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                    if (inplaceEditorController.openEditor (mNameLabel)) {
+                        return State.createLocked (widget, this);
+                    }
+                    return State.CONSUMED;
+                }
+                return State.REJECTED;
+            }
+        
+        });
         getActions().addAction(((PartnerScene) getScene()).getDnDAction());
     }
     

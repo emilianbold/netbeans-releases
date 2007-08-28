@@ -67,7 +67,7 @@ public class PartnerLinkTypeContentWidget extends Widget {
     private void refreshRoles() {
         removeChildren();
         Scene scene = getScene();
-        setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(2, 0, 2, 0, Color.LIGHT_GRAY), BorderFactory.createEmptyBorder(10, 14, 0, 14)));
+        setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(2, 0, 0, 0, Color.LIGHT_GRAY), BorderFactory.createEmptyBorder(10, 14, 0, 14)));
         
         setLayout(new PartnerLinkTypeContentLayout(90));
         

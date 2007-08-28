@@ -125,6 +125,7 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
             public void run() {
                 removeChildren();
                 mOuterWidget.getRightRoleWidget().showHotSpot(false);
+                mOuterWidget.revalidate();
                 renderOperations(true);
                 mOuterWidget.getLeftRoleWidget().showHotSpot(false);
                 renderOperations(false);
@@ -203,7 +204,9 @@ public class OperationSceneLayer extends Widget implements ComponentListener, Pr
             if (isRight || isLeft) {
                 mOuterWidget.getRightRoleWidget().showHotSpot(false);
                 mOuterWidget.getLeftRoleWidget().showHotSpot(false);
-                
+                mOuterWidget.revalidate();
+                mOuterWidget.getRightRoleWidget().revalidate();
+                mOuterWidget.getLeftRoleWidget().revalidate();
                 Object value = null;
                 if ((value = evt.getNewValue()) != null) {
                     if (value instanceof Operation) {

@@ -78,8 +78,7 @@ public abstract class OperationWidget<T extends Operation>
                 return mOperationConstruct.getName();
             }
             
-        },
-                EnumSet.<InplaceEditorProvider.ExpansionDirection>of(InplaceEditorProvider.ExpansionDirection.LEFT,
+        },  EnumSet.<InplaceEditorProvider.ExpansionDirection>of(InplaceEditorProvider.ExpansionDirection.LEFT,
                 InplaceEditorProvider.ExpansionDirection.RIGHT));
         mOperationNameLabelWidget.getActions().addAction(editorAction);
         getActions().addAction(new WidgetAction.Adapter() {
