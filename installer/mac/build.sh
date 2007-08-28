@@ -38,7 +38,7 @@ ant -f $progdir/build.xml distclean
 # build GF package.  The GF dir image must already exists as $progdir/glassfish/glassfish
 # ie after running java -Xmx256m -jar glassfish-installer.jar but before running ant -f setup.xml
 
-ant -f $progdir/glassfish/build.xml distclean build-pkg
+#ant -f $progdir/glassfish/build.xml distclean build-pkg
 
 # full download
 
@@ -50,8 +50,8 @@ rm -rf $progdir/build/netbeans/uml*
 # remove mobility, there is no WTK on Mac
 rm -rf $progdir/build/netbeans/mobility*
 # copy over GlassFish.pkg
-mkdir -p $progdir build/pkg
-rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
+#mkdir -p $progdir build/pkg
+#rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
 # build dmg
 ant -f $progdir/build.xml -Ddmgname=$basename.dmg -Dnb.dir=$progdir/build/netbeans build-dmg
 
@@ -61,8 +61,8 @@ ant -f $progdir/build.xml clean
 mkdir $progdir/build
 unzip -d $progdir/build $zipdir/$basename-javaee.zip
 # copy over GlassFish.pkg
-mkdir -p $progdir build/pkg
-rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
+#mkdir -p $progdir build/pkg
+#rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
 ant -f $progdir/build.xml -Ddmgname=$basename-javaee.dmg -Dnb.dir=$progdir/build/netbeans build-dmg 
 
 # all others
@@ -73,3 +73,4 @@ for pkg in java ruby cnd ; do
     unzip -d $progdir/build $zipdir/$basename-$pkg.zip
     ant -f $progdir/build.xml -Ddmgname=$basename-$pkg.dmg -Dnb.dir=$progdir/build/netbeans build-dmg 
 done
+
