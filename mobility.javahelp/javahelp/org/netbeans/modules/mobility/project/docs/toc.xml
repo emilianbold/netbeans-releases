@@ -3,6 +3,13 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
+        <tocitem text="Web Services" expand="false">
+            <tocitem text="Using Mobile Applications" expand="false">
+                <tocitem text="Connecting MIDP Applications to Web Services" target="me.wcw_creating" />
+		<tocitem text="Creating a Java ME Web Services (JSR-172) Client" target="me.wcw_jsr172" />
+		<tocitem text="Updating Java ME Web Services Client Files" target="me.wcw_updatingjsr172" />
+            </tocitem>    
+        </tocitem>    
 	<tocitem text="Mobility Applications" expand="false">
 		<tocitem text="Importing Java ME Projects" target="me.importprojects" />
 		<tocitem text="Installing Mobility Sample Applications" target="me.installingexamples" />
