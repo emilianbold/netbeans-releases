@@ -100,13 +100,16 @@ public class BMnotPartOfRBIandLBI extends EJBVerificationRule {
         
         Collection<ExecutableElement> methods = new LinkedList<ExecutableElement>();
         
-        for (String className : classNames){
-            TypeElement clazz = cinfo.getElements().getTypeElement(className);
-            
-            if (clazz != null){
-                methods.addAll(ElementFilter.methodsIn(clazz.getEnclosedElements()));
+        if (classNames != null) {
+            for (String className : classNames) {
+                TypeElement clazz = cinfo.getElements().getTypeElement(className);
+
+                if (clazz != null) {
+                    methods.addAll(ElementFilter.methodsIn(clazz.getEnclosedElements()));
+                }
             }
         }
+
         
         return methods;
     }
