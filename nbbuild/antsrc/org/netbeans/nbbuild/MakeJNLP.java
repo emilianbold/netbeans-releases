@@ -77,9 +77,9 @@ public class MakeJNLP extends Task {
         return signTask;
     }
     
-    private File target;
+    private File targetFile;
     public void setDir(File t) {
-        target = t;
+        targetFile = t;
     }
     
     public void setAlias(String a) {
@@ -165,8 +165,9 @@ public class MakeJNLP extends Task {
         }
     }
     
+    @Override
     public void execute() throws BuildException {
-        if (target == null) throw new BuildException("Output dir must be provided");
+        if (targetFile == null) throw new BuildException("Output dir must be provided");
         if (files == null) throw new BuildException("modules must be provided");
         
         try {
@@ -230,10 +231,10 @@ public class MakeJNLP extends Task {
             
             Map<String,List<File>> localizedFiles = verifyExtensions(jar, theJar.getManifest(), dashcnb, codenamebase, verify, indirectJarPaths);
             
-            new File(target, dashcnb).mkdir();
+            new File(targetFile, dashcnb).mkdir();
 
-            File signed = new File(new File(target, dashcnb), jar.getName());
-            File jnlp = new File(target, dashcnb + ".jnlp");
+            File signed = new File(new File(targetFile, dashcnb), jar.getName());
+            File jnlp = new File(targetFile, dashcnb + ".jnlp");
             
             StringWriter writeJNLP = new StringWriter();
             writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
@@ -257,11 +258,11 @@ public class MakeJNLP extends Task {
                 // write down locales
                 for (Map.Entry<String,List<File>> e : localizedFiles.entrySet()) {
                     String locale = e.getKey();
-                    List<File> files = e.getValue();
+                    List<File> allFiles = e.getValue();
                     
                     writeJNLP.write("  <resources locale='" + locale + "'>\n");
 
-                    for (File n : files) {
+                    for (File n : allFiles) {
                         log("generating locale " + locale + " for " + n, Project.MSG_VERBOSE);
                         String name = n.getName();
                         String clusterRootPrefix = jar.getParent() + File.separatorChar;
@@ -269,7 +270,7 @@ public class MakeJNLP extends Task {
                         if (absname.startsWith(clusterRootPrefix)) {
                             name = absname.substring(clusterRootPrefix.length()).replace('/', '-');
                         }
-                        File t = new File(new File(target, dashcnb), name);
+                        File t = new File(new File(targetFile, dashcnb), name);
 
                         signOrCopy(n, t);
                         writeJNLP.write("    <jar href='" + dashcnb + '/' + name + "'/>\n");
@@ -415,7 +416,7 @@ public class MakeJNLP extends Task {
 
         File nblibJar = new File(new File(new File(f.getParentFile().getParentFile(), "ant"), "nblib"), dashcnb + ".jar");
         if (nblibJar.isFile()) {
-            File ext = new File(new File(target, dashcnb), "ant-nblib-" + nblibJar.getName());
+            File ext = new File(new File(targetFile, dashcnb), "ant-nblib-" + nblibJar.getName());
             fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
             getSignTask().setJar(nblibJar);
             getSignTask().setSignedjar(ext);
@@ -443,12 +444,12 @@ public class MakeJNLP extends Task {
             if (isSigned(e) != null) {
                 Copy copy = (Copy)getProject().createTask("copy");
                 copy.setFile(e);
-                File t = new File(new File(target, dashcnb), s.replace('/', '-'));
+                File t = new File(new File(targetFile, dashcnb), s.replace('/', '-'));
                 copy.setTofile(t);
                 copy.execute();
                 
                 String extJnlpName = t.getName().replaceFirst("\\.jar$", "") + ".jnlp";
-                File jnlp = new File(new File(target, dashcnb), extJnlpName);
+                File jnlp = new File(new File(targetFile, dashcnb), extJnlpName);
 
                 FileWriter writeJNLP = new FileWriter(jnlp);
                 writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
@@ -467,7 +468,7 @@ public class MakeJNLP extends Task {
                 
                 fileWriter.write("    <extension name='" + e.getName().replaceFirst("\\.jar$", "") + "' href='" + dashcnb + '/' + extJnlpName + "'/>\n");
             } else {
-                File ext = new File(new File(target, dashcnb), s.replace('/', '-'));
+                File ext = new File(new File(targetFile, dashcnb), s.replace('/', '-'));
                 
                 fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
 
@@ -487,7 +488,7 @@ public class MakeJNLP extends Task {
             String sig = isSigned(jar);
             // javaws will reject .zip files even with signatures.
             String rel2 = rel.endsWith(".jar") ? rel : rel.replaceFirst("(\\.zip)?$", ".jar");
-            File ext = new File(new File(target, dashcnb), rel2.replace('/', '-').replaceFirst("^modules-", ""));
+            File ext = new File(new File(targetFile, dashcnb), rel2.replace('/', '-').replaceFirst("^modules-", ""));
             Zip jartask = (Zip) getProject().createTask("jar");
             jartask.setDestFile(ext);
             ZipFileSet zfs = new ZipFileSet();
