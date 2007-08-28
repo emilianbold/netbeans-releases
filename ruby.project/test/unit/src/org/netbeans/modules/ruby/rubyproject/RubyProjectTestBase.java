@@ -26,11 +26,12 @@ import java.io.Writer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
  * @author Tor Norbye
  */
 public abstract class RubyProjectTestBase extends RubyTestBase {
@@ -91,47 +92,8 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
     }
 
     protected RubyProject createTestProject(String projectName) throws Exception {
-        File dataDir = getWorkDir();
-        if (!dataDir.exists()) {
-            dataDir.mkdirs();
-        }
-                
-        File projectFile = new File(dataDir, projectName);
-        if (projectFile.exists()) {
-            FileObject fo = FileUtil.toFileObject(projectFile);
-            
-            Project p = FileOwnerQuery.getOwner(fo);
-            assertNotNull(p);
-            assertTrue(p instanceof RubyProject);
-            
-            return (RubyProject)p;
-        }
-        
-        // Build the Rails project
-        FileObject parentDir = FileUtil.toFileObject(dataDir);
-        assertNotNull(parentDir);
-        FileObject dir = parentDir.createFolder(projectName);
-        assertNotNull(dir);
-        String xml =
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n" +
-"    <type>org.netbeans.modules.ruby.rubyproject</type>\n" +
-"    <configuration>\n" +
-"        <data xmlns=\"http://www.netbeans.org/ns/ruby-project/1\">\n" +
-"            <name>" + projectName + "</name>\n" +
-"        </data>\n" +
-"    </configuration>\n" +
-"</project>\n";
-        createFile(dir, "nbproject/project.xml", xml);
-
-        // Create the source folders
-        FileUtil.createFolder(dir, "lib");
-        FileUtil.createFolder(dir, "test");
-
-        Project p = FileOwnerQuery.getOwner(dir);
-        assertNotNull(p);
-        assertTrue(p instanceof RubyProject);
-        
-        return (RubyProject)p;
+        File prjDirF = new File(getWorkDir(), projectName);
+        RakeProjectHelper h = RubyProjectGenerator.createProject(prjDirF, projectName, null, null);
+        return (RubyProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
     }
 }
