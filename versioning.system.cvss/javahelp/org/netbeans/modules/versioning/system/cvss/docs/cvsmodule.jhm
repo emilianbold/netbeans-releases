@@ -44,7 +44,10 @@
     <mapID target="cvs-lite_commit" url="cvsmodule/cvs-lite_commit.html" />
 
     <!-- Reverting CVS Modifications -->
-    <mapID target="cvs-lite_revert" url="cvsmodule/cvs-lite_reverting.html" />        
+    <mapID target="cvs-lite_revert" url="cvsmodule/cvs-lite_reverting.html" />
+
+    <!-- Recovering Deleted Files -->
+    <mapID target="cvs-lite_recover_deleted" url="cvsmodule/cvs-lite_recover_deleted.html" />       
 	
     <!-- Placing Projects Under Version Control -->
     <mapID target="cvs-lite_import" url="cvsmodule/cvs-lite_import.html" />

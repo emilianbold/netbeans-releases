@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Recovering Deleted Files</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Recovering Deleted Files</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>When working with version-controlled sources, you may sometimes find it useful 
+            to be able to recover locally deleted files from the repository. The IDE's 
+            CVS support enables you to recover versioned files by performing a 
+            revert delete action on files maintained in your local working copy.</p>
+        
+        <h4>To revert deletes made to files in your local working copy:</h4>
+        
+        <ul>
+            <li>Select the project or folder that previously contained the deleted files 
+                (e.g. from the Projects, Files or Favorites window) and choose CVS &gt; Show
+                Changes from the right-click menu. The Versioning window opens in the bottom
+                panel of the IDE displaying file changes.</li>
+            <li>Note that the file names of recently deleted files display in grey text with
+                with status listed as Locally Deleted. Select the file(s) you want to recover
+                then choose Revert Delete from the right-click menu.</li> 
+            <li>In the Confirm Overwrite dialog that displays, click Yes to enable the IDE to
+                recover the file from the repository. The file disappears from
+                the Versioning window and is relisted in the project directory within your
+                local working copy.</li>
+        </ul>
+ 
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="csh/cvs-lite_versioning_window.html">CVS: Versioning Window</a></dd>            
+        </dl>
+        
+        <hr> 
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

@@ -21,9 +21,10 @@
         <tocitem text="Checking Out Files from a Remote Repository" target="cvs-lite_checkout" />
         <tocitem text="Placing Projects Under Version Control" target="cvs-lite_import" />                
         <tocitem text="Updating Files in a Local Working Directory" target="cvs-lite_updating" />
-        <tocitem text="Comparing File Revisions in CVS" target="cvs-lite_diff" /> 
+        <tocitem text="Comparing File Revisions" target="cvs-lite_diff" /> 
         <tocitem text="Committing Local Changes to a Remote Repository" target="cvs-lite_commit" /> 
-        <tocitem text="Reverting CVS Modifications" target="cvs-lite_revert" />
+        <tocitem text="Reverting Modifications" target="cvs-lite_revert" />
+        <tocitem text="Recovering Deleted Files" target="cvs-lite_recover_deleted" />
         <tocitem text="Working with Tags" target="cvs-lite_tagging" />  
         <tocitem text="Working with Branches" target="cvs-lite_branches" />  
         <tocitem text="Merging File Revisions from a Branch" target="cvs-lite_merge" /> 
