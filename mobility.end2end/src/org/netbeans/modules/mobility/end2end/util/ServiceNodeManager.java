@@ -19,7 +19,9 @@
 
 package org.netbeans.modules.mobility.end2end.util;
 
+import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
+import java.util.Collections;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -31,16 +33,30 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
 import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
 import org.netbeans.modules.mobility.e2e.classdata.MethodData;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-
 import java.awt.*;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -64,22 +80,100 @@ public class ServiceNodeManager {
     }
 
 
-    private static class ProjectChildren extends Children.Keys<String> implements ChangeListener {
+    private static class ProjectChildren extends Children.Keys<String> implements ChangeListener, PropertyChangeListener, FileChangeListener, Runnable {
 
         private final Sources s;
         private ClassDataRegistry activeProfileRegistry, allRegistry;
+        private ChangeListener ref1;
+        private final HashMap<Object, Object> hookedListeners = new HashMap(); // FileObject or SourceGroup -> listener
+        private final Task refreshTask = RequestProcessor.getDefault().create(this);
        
         public ProjectChildren(Project p) {
             s = ProjectUtils.getSources(p);
-            stateChanged(null);
+            run();
+        }
+
+        protected void addNotify() {
+            ref1 = WeakListeners.change(this, s);
+            s.addChangeListener(ref1);
+        }
+
+        protected synchronized void removeNotify() {
+            s.removeChangeListener(ref1);
+            synchronized (hookedListeners) {
+                removeListeners();
+            }
+        }
+
+        private void removeListeners() {
+            for (java.util.Map.Entry en : hookedListeners.entrySet()) {
+                Object o = en.getKey();
+                if (o instanceof SourceGroup) ((SourceGroup)o).removePropertyChangeListener((PropertyChangeListener)en.getValue());
+                else ((FileObject)o).removeFileChangeListener((FileChangeListener)en.getValue());
+            }
+            hookedListeners.clear();
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            refreshTask.schedule(200);
         }
 
         public void stateChanged(ChangeEvent e) {
+            refreshTask.schedule(200);
+        }
+        public void fileFolderCreated(FileEvent fe) {
+            refreshTask.schedule(200);
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            refreshTask.schedule(200);
+        }
+
+        public void fileChanged(FileEvent fe) {
+            refreshTask.schedule(200);
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            refreshTask.schedule(200);
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            refreshTask.schedule(200);
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+            
+        public void run() {
             SourceGroup[] groups = s.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA );
             // Add all paths to the ClasspathInfo structure
             List<ClasspathInfo> classpaths = new ArrayList();
+            HashMap<Object, Object> newHooks = new HashMap();
             for (SourceGroup sg : s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (!sg.getName().equals("${test.src.dir}")) classpaths.add(ClasspathInfo.create(sg.getRootFolder())); //NOI18N
+                if (!sg.getName().equals("${test.src.dir}")) {
+                    classpaths.add(ClasspathInfo.create(sg.getRootFolder())); //NOI18N
+                    synchronized (hookedListeners) {
+                        PropertyChangeListener l = (PropertyChangeListener)hookedListeners.get(sg);
+                        if (l == null) {
+                            l = WeakListeners.propertyChange(this, sg);
+                            sg.addPropertyChangeListener(l);
+                            hookedListeners.put(sg, l);
+                        }
+                        newHooks.put(sg, l);
+                    }
+                    FileObject root = sg.getRootFolder();
+                    addFCListener(root, newHooks);
+                    Enumeration<? extends FileObject> en = root.getChildren(true);
+                    while(en.hasMoreElements()) {
+                        FileObject fo = en.nextElement();
+                        if (fo.isFolder() || fo.getExt().equals("java")) addFCListener(fo, newHooks); //NOI18N
+                    }
+                }
+            }
+            synchronized (hookedListeners) {
+                hookedListeners.keySet().removeAll(newHooks.keySet());
+                removeListeners();
+                hookedListeners.putAll(newHooks);
             }
             // Get the registry for all available classes
             allRegistry = ClassDataRegistry.getRegistry( ClassDataRegistry.ALL_JAVA_PROFILE, classpaths );
@@ -87,6 +181,19 @@ public class ServiceNodeManager {
             String packages[] = allRegistry.getBasePackages().toArray(new String[0]);
             Arrays.sort(packages);
             setKeys(packages);
+            for (Node n : getNodes()) ((PackageChildren)n.getChildren()).notifyChange();
+        }
+        
+        private void addFCListener(FileObject fo, HashMap<Object, Object> newHooks) {
+            synchronized (hookedListeners) {
+                FileChangeListener l = (FileChangeListener)hookedListeners.get(fo); 
+                if (l == null) {
+                    l = FileUtil.weakFileChangeListener(this, fo);
+                    fo.addFileChangeListener(l);
+                    hookedListeners.put(fo, l);
+                }
+                newHooks.put(fo, l);
+            }
         }
         
         protected Node[] createNodes(String packageName) {
@@ -100,7 +207,14 @@ public class ServiceNodeManager {
   
         private class PackageChildren extends Children.Keys<ClassData> {
 
+            private final String packageName;
+            
             public PackageChildren(String packageName) {
+                this.packageName = packageName;
+                notifyChange();
+            }
+            
+            public void notifyChange() {
                 ClassData cd[] = allRegistry.getBaseClassesForPackage(packageName).toArray(new ClassData[0]);
                 Arrays.sort(cd, new Comparator<ClassData>() {
                     public int compare(ClassData o1, ClassData o2) {
@@ -108,6 +222,7 @@ public class ServiceNodeManager {
                     }
                 });
                 setKeys(cd);
+                for (Node n : getNodes()) ((ClassChildren)n.getChildren()).notifyChange();
             }
             
             protected Node[] createNodes(ClassData classData) {
@@ -122,8 +237,16 @@ public class ServiceNodeManager {
         
         private class ClassChildren extends Children.Keys<MethodData> {
 
+            private ClassData classData;
+            
             public ClassChildren(ClassData classData) {
-                setKeys(classData.getMethods());
+                this.classData = classData;
+                notifyChange();
+            }
+            
+            public void notifyChange() {
+                classData = allRegistry.getClassData(classData.getFullyQualifiedName());
+                setKeys(classData == null ? Collections.EMPTY_LIST : classData.getMethods());
             }
             
             protected Node[] createNodes(MethodData methodData) {
@@ -140,5 +263,6 @@ public class ServiceNodeManager {
                 return new Node[] {n};
             }
         }
+
     }
 }
