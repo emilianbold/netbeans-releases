@@ -25,6 +25,7 @@ package org.netbeans.test.installer;
 
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +35,6 @@ import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -76,7 +76,7 @@ public class Utils {
         data.setBuildNumber(determineBuildNumber(data, NB_DOWNLOAD_PAGE));
         data.getLogger().log(Level.INFO, "Build number => " + data.getBuildNumber());
         
-        //File sourceBandle = new File(data.getInstallerFileName());
+  //      File sourceBandle = new File(data.getInstallerFileName());
         File destBundle = new File(data.getTestWorkDir() + File.separator + "installer" + "." + data.getPlatformExt());
 
         InputStream in = null;
@@ -89,6 +89,7 @@ public class Utils {
             proxy = data.getProxy();
 
             in = sourceBandeleURL.openConnection(proxy).getInputStream();
+//            in = new FileInputStream(sourceBandle);
             out = new FileOutputStream(destBundle);
 
             byte[] buffer = new byte[10240];
@@ -176,10 +177,83 @@ public class Utils {
 
             if (runningTime >= MAX_EXECUTION_TIME) {
                 process.destroy();
-                data.getLogger().log(Level.SEVERE, "Timeout. Extract process destroyed");
-                return "Timeout. Extract process destroyed";
+                data.getLogger().log(Level.SEVERE, "Timeout. Installer extract process destroyed");
+                return "Timeout. Installer extract process destroyed";
             } else if (errorLevel == 0) {
                 data.setBundleFile(new File(pathToExtract + java.io.File.separator + "bundle.jar"));
+                data.getInstallerFile().deleteOnExit();
+                return OK;
+            } else {
+                return "ErrorLevel=>" + errorLevel;
+            }
+        } catch (IOException ex) {
+            data.getLogger().log(Level.SEVERE, null, ex);
+            return toString(ex);
+        }
+    }
+    
+    public static String extractUninstallerJar(TestData data) {
+        
+        data.setUninstallerFile(new File(data.getTestWorkDir() + 
+                           File.separator + NB_DIR_NAME + 
+                           File.separator + "uninstall." + data.getPlatformExt()));
+        int errorLevel = 0;
+
+        try {
+            java.lang.String command = null;
+            command = data.getUninstallerFile().getCanonicalPath();
+
+            java.lang.ProcessBuilder builder;
+            java.lang.Process process;
+
+            if (0 != data.getPaltformName().compareTo("windows")) {
+                if (data.getPaltformName().contains("linux") || data.getPaltformName().contains("solaris")) {
+                    builder = new java.lang.ProcessBuilder("chmod", "+x", command);
+                    process = builder.start();
+
+                    long runningTime;
+                    for (runningTime = 0; runningTime < MAX_EXECUTION_TIME; runningTime += DELAY) {
+                        try {
+                            errorLevel = process.exitValue();
+                            break;
+                        } catch (IllegalThreadStateException e) {
+                            ; // do nothing - the process is still running
+                        }
+                        wait(data, 1);
+                    }
+
+                    if (runningTime >= MAX_EXECUTION_TIME) {
+                        process.destroy();
+                        data.getLogger().log(Level.SEVERE, "Timeout. Chmod process destroyed");
+                        return "Timeout. Chmod process destroyed";
+                    } else if (errorLevel != 0) {
+                        return "ErrorLevel=>" + errorLevel;
+                    }
+                }
+            }
+
+            String pathToExtract = data.getTestWorkDir() + java.io.File.separator + "uninstall";
+
+            builder = new java.lang.ProcessBuilder(command, "--verbose", "--userdir", data.getTestWorkDir().getCanonicalPath(), "--extract", pathToExtract, "--output", data.getTestWorkDir().getCanonicalPath() + File.separator + "uninst_" + data.getInstallerType() + ".log");
+            process = builder.start();
+
+            long runningTime;
+            for (runningTime = 0; runningTime < MAX_EXECUTION_TIME; runningTime += DELAY) {
+                try {
+                    errorLevel = process.exitValue();
+                    break;
+                } catch (IllegalThreadStateException e) {
+                    ; // do nothing - the process is still running
+                }
+                wait(data, 1);
+            }
+
+            if (runningTime >= MAX_EXECUTION_TIME) {
+                process.destroy();
+                data.getLogger().log(Level.SEVERE, "Timeout. Uninstaller extract process destroyed");
+                return "Timeout. Uninstaller extract process destroyed";
+            } else if (errorLevel == 0) {
+                data.setUninstallerBundleFile(new File(pathToExtract + java.io.File.separator + "uninstall.jar"));
                 data.getInstallerFile().deleteOnExit();
                 return OK;
             } else {
@@ -223,7 +297,7 @@ public class Utils {
             public void run() {
                 try {
                     //dirty hack --ignore-lock
-                    data.getUninstallerMainClass().getMethod("main", java.lang.String[].class).invoke(null, (java.lang.Object) (new String[] {"--force-uninstall", "--ignore-lock"}));
+                    data.getUninstallerMainClass().getMethod("main", java.lang.String[].class).invoke(null, (java.lang.Object) (new String[] {"--force-uninstall", "--ignore-lock", "--verbose", "--output ./uninst.log"}));
                 } catch (Exception ex) {
                     data.getLogger().log(Level.SEVERE, null, ex);
                 }
@@ -234,9 +308,7 @@ public class Utils {
 
     public static String loadEngineClasses(TestData data) {
         try {
-            String jarFileName = data.getWorkDirCanonicalPath() + File.separator + ".nbi" + File.separator + "nbi-engine.jar";
-
-            data.setEngineClassLoader(new URLClassLoader(new URL[]{new File(jarFileName).toURI().toURL()}, data.getClass().getClassLoader()));
+            data.setEngineClassLoader(new URLClassLoader(new URL[]{data.getUninstallerBundleFile().toURI().toURL()}, data.getClass().getClassLoader()));
             data.setUninstallerMainClass(Class.forName(data.getUninstallerMainClassName(), true, data.getEngineClassLoader()));
         } catch (Exception ex) {
             data.getLogger().log(Level.SEVERE, null, ex);
@@ -324,6 +396,7 @@ public class Utils {
 
         NbTestCase.assertEquals("Installer Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
 
+        NbTestCase.assertEquals("Extract uninstaller jar", OK, Utils.extractUninstallerJar(data));
         NbTestCase.assertEquals("Load engine classes", OK, Utils.loadEngineClasses(data));
         NbTestCase.assertEquals("Run uninstaller main class", OK, Utils.runUninstaller(data));
 

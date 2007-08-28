@@ -38,8 +38,10 @@ import java.util.logging.Logger;
 public class TestData implements Serializable {
 
     private File installerFile = null;
+    private File uninstallerFile = null;
     private File workDir = null;
     private File bundleFile = null;
+    private File uninstallerBundleFile = null;
     private Logger logger = null;
     private ClassLoader loader = null;
     private ClassLoader engineLoader = null;
@@ -58,7 +60,7 @@ public class TestData implements Serializable {
     }
 
     public String getInstallerFileName() {
-        return "E:/pub/Netbeans/6.0/netbeans-6.0-nightly-200707221200-standard-windows.exe";
+        return "E:/pub/Netbeans/6.0/installer.exe";
 //        return "C:/work/test/TestInstaller/netbeans-6.0-nightly-200707100000-basic-windows.exe";
     }
 
@@ -106,7 +108,6 @@ public class TestData implements Serializable {
         }
     }
 
-
     public String getPlatformExt() {
         return platformExt;
     }
@@ -133,7 +134,6 @@ public class TestData implements Serializable {
         workDirCanonicalPath = workDir.getCanonicalPath();
     }
 
-
     public File getTestWorkDir() {
         assert workDir != null;
         return workDir;
@@ -152,6 +152,16 @@ public class TestData implements Serializable {
             this.installerFile = installerFile;
         }
     }
+    
+    public File getUninstallerFile() {
+        return uninstallerFile;
+    }
+
+    public void setUninstallerFile(File uninstallerFile) {
+        if (canRead(uninstallerFile)) {
+            this.uninstallerFile = uninstallerFile;
+        }
+    }
 
     public void setBundleFile(File bundleFile) {
         if (canRead(bundleFile)) {
@@ -160,6 +170,16 @@ public class TestData implements Serializable {
     }
 
     public File getBundleFile() {
+        return bundleFile;
+    }
+    
+    public void setUninstallerBundleFile(File bundleFile) {
+        if (canRead(bundleFile)) {
+            this.bundleFile = bundleFile;
+        }
+    }
+
+    public File getUninstallerBundleFile() {
         return bundleFile;
     }
 
