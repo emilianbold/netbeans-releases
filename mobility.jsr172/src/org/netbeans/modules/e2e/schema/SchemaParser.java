@@ -221,6 +221,7 @@ public class SchemaParser extends DefaultHandler {
                 String namespace = attributes.getValue( "namespace" );
                 String schemaLocation = attributes.getValue( "schemaLocation" );
 //                System.err.println("<import namespace='" + namespace + "' schemaLocation='" + schemaLocation + "'/>" );
+                if( schemaLocation == null ) return;
                 SchemaParser sp = new SchemaParser( false );
                     
                 try {
