@@ -50,6 +50,9 @@
     <!-- Reverting Modifications -->
     <mapID target="svn_revert" url="svnmodule/svn_revert.html" />
 
+    <!-- Recovering Deleted Files -->
+    <mapID target="svn_recover_deleted" url="svnmodule/svn_recover_deleted.html" />
+
     <!-- Merging File Revisions in Subversion -->
     <mapID target="svn_merge" url="svnmodule/svn_merge.html" />
 

@@ -17,14 +17,15 @@
         <tocitem text="Viewing File Status Information" target="svn_status" />
         <tocitem text="Working with Version Histories" target="svn_histories" />
         <tocitem text="Setting Up Subversion" target="svn_setup" />
-        <tocitem text="Checking Out Files from a Subversion Repository" target="svn_checkout" /> 
+        <tocitem text="Checking Out Files from a Repository" target="svn_checkout" /> 
         <tocitem text="Placing Projects Under Version Control" target="svn_import" />                
-        <tocitem text="Updating Files in a Subversion Working Directory" target="svn_updating" />
-        <tocitem text="Comparing File Revisions in Subversion" target="svn_diff" /> 
+        <tocitem text="Updating Files in a Working Directory" target="svn_updating" />
+        <tocitem text="Comparing File Revisions" target="svn_diff" /> 
         <tocitem text="Committing Local Changes to a Remote Repository" target="svn_commit" />
         <tocitem text="Working with Branches" target="svn_branches" />
         <tocitem text="Reverting Modifications" target="svn_revert" />
-        <tocitem text="Merging File Revisions in Subversion" target="svn_merge" /> 
+        <tocitem text="Recovering Deleted Files" target="svn_recover_deleted" />
+        <tocitem text="Merging File Revisions" target="svn_merge" /> 
         <tocitem text="Resolving Merge Conflicts" target="svn_mergeresolve" /> 
         <tocitem text="Creating and Applying a Patch" target="svn_patch" />
       </tocitem>
