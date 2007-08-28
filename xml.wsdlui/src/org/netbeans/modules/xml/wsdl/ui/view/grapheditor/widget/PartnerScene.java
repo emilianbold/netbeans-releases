@@ -292,8 +292,11 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
                 boolean invertSelection) 
         {
             Object object = findObject(widget);
-            
+
             if (object != null) {
+                if (!findWidgets(object).contains(widget)) {
+                	return;
+                }
                 if (getSelectedObjects().contains(object)) {
                     return;
                 }

@@ -243,16 +243,18 @@ public class ButtonWidget extends Widget implements FocusableWidget {
      * Changed method name so that it doesnt clash with Widget.setEnabled.
      */
     public void setButtonEnabled(boolean v) {
-        enabled = v;
-        
-        if (labelWidget != null) {
-            labelWidget.setForeground((v) 
-                    ? ENABLED_TEXT_COLOR 
-                    : DISABLED_TEXT_COLOR);
-        }
- 
-        revalidate(true);
-        getScene().validate();
+    	if (!rollover) {
+    		enabled = v;
+
+    		if (labelWidget != null) {
+    			labelWidget.setForeground((v) 
+    					? ENABLED_TEXT_COLOR 
+    							: DISABLED_TEXT_COLOR);
+    		}
+
+    		revalidate(true);
+    		getScene().validate();
+    	}
     }
     
     /*
