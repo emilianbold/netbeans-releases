@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="tomcat" basedir="." default="build-pkg">
+
+  <property name="appname" value="apache-tomcat-6.0.13"/>
+  <property name="appdir" value="build/app"/>
+  <property name="zipname" value="tomcat-macosx.zip"/>
+  <property name="appversion" value="6.0.13"/>
+  <property name="version" value="6.0.13"/>
+  <property name="exename" value=""/>
+  <property name="icon" value=""/>
+  <property name="pmproj" value="pkg/tomcat.pmproj"/>
+
+  <import file="${basedir}/../template_mac.xml"/>
+
+  <target name="clean-impl">
+    <delete dir="tomcat"/>
+    <delete file="tomcat_image.zip"/>
+    <delete file="pkg/scripts/add_tc.sh"/>
+    <delete file="pkg/scripts/unpack200.sh"/>
+  </target>
+
+  <target name="get-bits">
+    <echo message="Downloading Tomcat from ${tc_source}" />
+    <get src="${tc_source}" dest="tomcat_image.zip" usetimestamp="true"/>
+  </target>
+
+  <target name="unzip">
+    <echo message="Unzipping Tomcat" />
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value="cd ${basedir} ; unzip tomcat_image.zip -d ${appdir}"/>
+    </exec>
+    <!-- move stuff one level up -->
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value="cd ${appdir} ; mv apache-tomcat-*/* . ; rmdir apache-tomcat-*"/>
+    </exec>
+  </target>
+
+  <target name="pre-build-pkg">
+    <copy file="${basedir}/../pkg/scripts/add_tc.sh" tofile="${basedir}/pkg/scripts/add_tc.sh"/>
+    <copy file="${basedir}/../pkg/scripts/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
+  </target>
+</project>
