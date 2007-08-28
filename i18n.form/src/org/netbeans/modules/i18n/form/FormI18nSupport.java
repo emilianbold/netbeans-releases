@@ -121,6 +121,9 @@ public class FormI18nSupport extends JavaI18nSupport {
     
     /** Helper method. */
     static String toAscii(String str) {
+        if (str == null) {
+            return null;
+        }
         // Note: All this code is copied from org.netbeans.core.editors.StringEditor.
         StringBuffer buf = new StringBuffer(str.length() * 6); // x -> \u1234
         char[] chars = str.toCharArray();

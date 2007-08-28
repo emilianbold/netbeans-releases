@@ -143,7 +143,12 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
      * <b>java.text.MessageFormat.format(<identifier name>getString("<key name>"), new Object[] {<code set in Parameters and Comments panel>})</b>
      */
     public String getJavaInitializationString() {
-        FormI18nString i18nString = (FormI18nString) getValue();
+        Object value = getValue();
+        // the value should always be FormI18nString, but for the case it is not...
+        if (!(value instanceof FormI18nString)) {
+            return "\"" + FormI18nSupport.toAscii((String)value) + "\""; // NOI18N
+        }
+        FormI18nString i18nString = (FormI18nString) value;
         String javaString = i18nString.getReplaceString();
         if (javaString == null) { // some problem, return plain string (better than null)
             return "\"" + FormI18nSupport.toAscii(i18nString.getValue()) + "\""; // NOI18N
@@ -430,40 +435,47 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
      * @return the XML DOM element representing a subtree of XML from which the value should be loaded
      */
     public Node storeToXML(Document doc) {
-        FormI18nString formI18nString = (FormI18nString) getValue();
-        Element element;
-        element = doc.createElement (XML_RESOURCESTRING);
-
-        String bundleName;
-        if (formI18nString.getSupport().getResourceHolder().getResource() == null) {
-            bundleName = formI18nString.bundleName;
-        } else {
-            bundleName = org.netbeans.modules.i18n.Util.
-                getResourceName(formI18nString.getSupport().getSourceDataObject().getPrimaryFile(),
-                                formI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile(),'/', true);
-            if (bundleName == null) bundleName = ""; // NOI18N
+        Object value = getValue();
+        if (value == null) {
+            return null;
         }
+        Element element = doc.createElement(XML_RESOURCESTRING);
+        if (value instanceof FormI18nString) {
+            FormI18nString formI18nString = (FormI18nString) value;
+            String bundleName;
+            if (formI18nString.getSupport().getResourceHolder().getResource() == null) {
+                bundleName = formI18nString.bundleName;
+            } else {
+                bundleName = org.netbeans.modules.i18n.Util.
+                    getResourceName(formI18nString.getSupport().getSourceDataObject().getPrimaryFile(),
+                                    formI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile(),'/', true);
+                if (bundleName == null) bundleName = ""; // NOI18N
+            }
 
-        // Set bundle and key property.    
-        element.setAttribute(ATTR_BUNDLE, bundleName);
-        element.setAttribute(ATTR_KEY, (formI18nString.getKey() == null) ? "" : formI18nString.getKey()); // NOI18N
-        // Don't save identifier, replace the identifier argument with actual value in format.
-        JavaI18nSupport support = (JavaI18nSupport)formI18nString.getSupport();
-        if(support.getIdentifier() == null)
-            support.createIdentifier();
-        Map map = new HashMap(1);
-        map.put("identifier", support.getIdentifier()); // NOI18N
-        element.setAttribute(ATTR_REPLACE_FORMAT, formI18nString.getReplaceFormat() == null ? "" : MapFormat.format(formI18nString.getReplaceFormat(), map) ); // NOI18N
+            // Set bundle and key property.    
+            element.setAttribute(ATTR_BUNDLE, bundleName);
+            element.setAttribute(ATTR_KEY, (formI18nString.getKey() == null) ? "" : formI18nString.getKey()); // NOI18N
+            // Don't save identifier, replace the identifier argument with actual value in format.
+            JavaI18nSupport support = (JavaI18nSupport)formI18nString.getSupport();
+            if(support.getIdentifier() == null)
+                support.createIdentifier();
+            Map map = new HashMap(1);
+            map.put("identifier", support.getIdentifier()); // NOI18N
+            element.setAttribute(ATTR_REPLACE_FORMAT, formI18nString.getReplaceFormat() == null ? "" : MapFormat.format(formI18nString.getReplaceFormat(), map) ); // NOI18N
 
-        // Append subelements corresponding to parameters.
-        String[] arguments = formI18nString.getArguments();
-        for (int i = 0; i < arguments.length; i++) {
-            Element childElement = doc.createElement (XML_ARGUMENT);
-            childElement.setAttribute (ATTR_INDEX, "" + i); // NOI18N
-            childElement.setAttribute (ATTR_JAVACODE, arguments[i]);
-            try {
-                element.appendChild(childElement);
-            } catch (DOMException de) {}
+            // Append subelements corresponding to parameters.
+            String[] arguments = formI18nString.getArguments();
+            for (int i = 0; i < arguments.length; i++) {
+                Element childElement = doc.createElement (XML_ARGUMENT);
+                childElement.setAttribute (ATTR_INDEX, "" + i); // NOI18N
+                childElement.setAttribute (ATTR_JAVACODE, arguments[i]);
+                try {
+                    element.appendChild(childElement);
+                } catch (DOMException de) {}
+            }
+        } else { // save as not internationalized
+            element = doc.createElement(XML_PLAINSTRING);
+            element.setAttribute(ATTR_VALUE, (String)value);
         }
 
         return element;
