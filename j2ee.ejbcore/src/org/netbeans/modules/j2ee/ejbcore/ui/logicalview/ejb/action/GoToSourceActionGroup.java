@@ -81,11 +81,11 @@ public class GoToSourceActionGroup extends EJBActionGroup {
             model.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) {
                     EntityAndSession ejb = (EntityAndSession) metadata.findByEjbClass(ejbClass[0]);
-                    results[EJB_CLASS] = metadata.findResource(Utils.toResourceName(ejb.getEjbClass()));
-                    results[REMOTE] = metadata.findResource(Utils.toResourceName(ejb.getRemote()));
-                    results[LOCAL] = metadata.findResource(Utils.toResourceName(ejb.getLocal()));
-                    results[HOME] = metadata.findResource(Utils.toResourceName(ejb.getHome()));
-                    results[LOCAL_HOME] = metadata.findResource(Utils.toResourceName(ejb.getLocalHome()));
+                    results[EJB_CLASS] = ejb.getEjbClass() ==null ? null : metadata.findResource(Utils.toResourceName(ejb.getEjbClass()));
+                    results[REMOTE] = ejb.getRemote() ==null ? null : metadata.findResource(Utils.toResourceName(ejb.getRemote()));
+                    results[LOCAL] = ejb.getLocal() ==null ? null : metadata.findResource(Utils.toResourceName(ejb.getLocal()));
+                    results[HOME] = ejb.getHome() ==null ? null : metadata.findResource(Utils.toResourceName(ejb.getHome()));
+                    results[LOCAL_HOME] = ejb.getLocalHome() ==null ? null : metadata.findResource(Utils.toResourceName(ejb.getLocalHome()));
                     return null;
                 }
             });
