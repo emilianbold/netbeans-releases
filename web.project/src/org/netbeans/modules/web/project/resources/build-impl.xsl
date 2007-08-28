@@ -175,17 +175,29 @@ introduced by support for multiple source roots. -jglick
                 <available file="${{conf.dir}}/persistence.xml" property="has.persistence.xml"/>
 
                 <condition property="do.war.package.with.custom.manifest">
-                    <and>
-                        <istrue value="${{war.package}}"/>
-                        <isset property="has.custom.manifest"/>
-                    </and>
+                    <isset property="has.custom.manifest"/>
                 </condition>
                 <condition property="do.war.package.without.custom.manifest">
+                    <not>
+                        <isset property="has.custom.manifest"/>
+                    </not>
+                </condition>
+                <!--
+                    #97118
+                    used to determine the build strategy for run
+                -->
+                <condition property="do.tmp.war.package.with.custom.manifest">
                     <and>
-                        <istrue value="${{war.package}}"/>
+                        <isset property="has.custom.manifest"/>
+                        <isfalse value="${{directory.deployment.supported}}"/>
+                    </and>
+                </condition>
+                <condition property="do.tmp.war.package.without.custom.manifest">
+                    <and>
                         <not>
                             <isset property="has.custom.manifest"/>
                         </not>
+                        <isfalse value="${{directory.deployment.supported}}"/>
                     </and>
                 </condition>
                 
@@ -211,26 +223,6 @@ introduced by support for multiple source roots. -jglick
                     </and>
                 </condition>
                 <property name="javadoc.encoding.used" value="${{source.encoding}}"/>
-                <!--
-                    #97118
-                    used to determine the build strategy for run
-                -->
-                <condition property="package.tmp.war.with.custom.manifest">
-                    <and>
-                        <isfalse value="${{war.package}}"/>
-                        <isset property="has.custom.manifest"/>
-                        <isfalse value="${{directory.deployment.supported}}"/>
-                    </and>
-                </condition>
-                <condition property="package.tmp.war.without.custom.manifest">
-                    <and>
-                        <isfalse value="${{war.package}}"/>
-                        <not>
-                            <isset property="has.custom.manifest"/>
-                        </not>
-                        <isfalse value="${{directory.deployment.supported}}"/>
-                    </and>
-                </condition>
             </target>
             
             <target name="-post-init">
@@ -956,7 +948,7 @@ introduced by support for multiple source roots. -jglick
             
             <!-- "real" jar building, in any case -->
             <target name="-dist-without-custom-manifest" unless="has.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
@@ -964,7 +956,7 @@ introduced by support for multiple source roots. -jglick
                 </jar>
             </target>
             <target name="-dist-with-custom-manifest" if="has.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar manifest="${{build.meta.inf.dir}}/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
@@ -988,12 +980,12 @@ introduced by support for multiple source roots. -jglick
                 target to do war build, if the project is not going to be
                 directory deployed. used by run-deploy as part of 'run'
             -->
-            <target name="-package-tmp-war-with-manifest" if="package.tmp.war.with.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps</xsl:attribute>
+            <target name="-do-tmp-dist-with-manifest" if="do.tmp.war.package.with.custom.manifest">
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
                 <antcall target="-dist-with-custom-manifest" />
             </target>
-            <target name="-package-tmp-war-without-manifest" if="package.tmp.war.without.custom.manifest">
-                <xsl:attribute name="depends">init,compile,compile-jsps</xsl:attribute>
+            <target name="-do-tmp-dist-without-manifest" if="do.tmp.war.package.without.custom.manifest">
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
                 <antcall target="-dist-without-custom-manifest" />
             </target>
 
@@ -1247,7 +1239,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="run-deploy">
-                <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,dist,-package-tmp-war-without-manifest,-package-tmp-war-with-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy</xsl:attribute>
             </target>
             
             <target name="-run-deploy-nb" if="netbeans.home">
@@ -1270,7 +1262,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="verify">
-                <xsl:attribute name="depends">init,-pre-dist,-dist-without-custom-manifest,-dist-with-custom-manifest,-post-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,-pre-dist,dist,-post-dist</xsl:attribute>
                 <nbverify file="${{dist.war}}"/>
             </target>
             
@@ -1359,7 +1351,7 @@ introduced by support for multiple source roots. -jglick
             
             <target name="debug">
                 <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
-                <xsl:attribute name ="depends">init,compile,compile-jsps,-do-compile-single-jsp,dist,-package-tmp-war-without-manifest,-package-tmp-war-with-manifest</xsl:attribute>
+                <xsl:attribute name ="depends">init,compile,compile-jsps,-do-compile-single-jsp,-pre-dist,-do-tmp-dist-with-manifest,-do-tmp-dist-without-manifest</xsl:attribute>
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
                 <antcall target="connect-debugger"/>

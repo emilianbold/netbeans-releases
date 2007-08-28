@@ -802,8 +802,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             WSUtils.setJaxWsEndorsedDirProperty(ep);
 
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-            if (props.getProperty(WebProjectProperties.WAR_PACKAGE) == null)
-                props.setProperty(WebProjectProperties.WAR_PACKAGE, "true"); //NOI18N
             //update lib references in private properties
             ArrayList l = new ArrayList();
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));

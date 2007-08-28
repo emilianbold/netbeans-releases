@@ -104,7 +104,6 @@ public class WebProjectProperties {
     public static final String WAR_NAME = "war.name"; //NOI18N
     public static final String WAR_EAR_NAME = "war.ear.name"; //NOI18N
     public static final String WAR_COMPRESS = "jar.compress"; //NOI18N
-    public static final String WAR_PACKAGE = "war.package"; //NOI18N
     public static final String WAR_CONTENT_ADDITIONAL = "war.content.additional"; //NOI18N
 
     public static final String LAUNCH_URL_RELATIVE = "client.urlPart"; //NOI18N
@@ -217,7 +216,6 @@ public class WebProjectProperties {
     Document WAR_NAME_MODEL; 
     Document BUILD_CLASSES_EXCLUDES_MODEL;
     ButtonModel WAR_COMPRESS_MODEL;
-    ButtonModel WAR_PACKAGE_MODEL;
     WarIncludesUiSupport.ClasspathTableModel WAR_CONTENT_ADDITIONAL_MODEL;
 
     // CustomizerJavadoc
@@ -322,7 +320,6 @@ public class WebProjectProperties {
         WAR_NAME_MODEL = projectGroup.createStringDocument( evaluator, WAR_NAME );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
         WAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, WAR_COMPRESS );
-        WAR_PACKAGE_MODEL = projectGroup.createToggleButtonModel( evaluator, WAR_PACKAGE );
         WAR_CONTENT_ADDITIONAL_MODEL = WarIncludesUiSupport.createTableModel( cs.itemsList( (String)projectProperties.get( WAR_CONTENT_ADDITIONAL ), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
 
         // CustomizerJavadoc
