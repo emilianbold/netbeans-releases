@@ -138,6 +138,21 @@
                         </folder>
                     </folder>
                 </folder>
+                <folder name="Popup">
+                    <file name="format">
+                        <attr name="position" intvalue="1480"/>
+                    </file>
+                
+                    <file name="SeparatorAfterGoToHelp.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1240"/>
+                    </file>
+                    
+                    <file name="SeparatorBeforeCut.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1960"/>
+                    </file>                    
+                </folder>
             </folder>
         </folder>
     </folder>
