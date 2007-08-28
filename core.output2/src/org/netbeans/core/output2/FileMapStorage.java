@@ -275,7 +275,8 @@ class FileMapStorage implements Storage {
                 long offset = start + byteCount;
                 mappedStart = Math.max((long)0, (long)(start - (MAX_MAP_RANGE /2)));
                 long prevMappedRange = mappedRange;
-                mappedRange = Math.min(ch.size(), start + (MAX_MAP_RANGE / 2));
+                long map = byteCount > (MAX_MAP_RANGE / 2) ? (byteCount + byteCount / 10) : (MAX_MAP_RANGE / 2);
+                mappedRange = Math.min(ch.size(), start + map);
                 try {
                     try {
                         cont = ch.map(FileChannel.MapMode.READ_ONLY,
