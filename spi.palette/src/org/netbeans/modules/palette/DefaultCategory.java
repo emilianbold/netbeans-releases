@@ -91,10 +91,11 @@ public class DefaultCategory implements Category, NodeListener {
     public Item[] getItems() {
         if( null == items ) {
             Node[] children = categoryNode.getChildren().getNodes( DefaultModel.canBlock() );
-            items = new Item[children.length];
+            Item[] newItems = new Item[children.length];
             for( int i=0; i<children.length; i++ ) {
-                items[i] = new DefaultItem( children[i] );
+                newItems[i] = new DefaultItem( children[i] );
             }
+            items = newItems;
         }
         return items;
     }
