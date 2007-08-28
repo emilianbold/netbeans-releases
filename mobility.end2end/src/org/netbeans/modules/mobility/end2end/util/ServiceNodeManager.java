@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.mobility.end2end.util;
 
+import java.util.Arrays;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -37,6 +38,7 @@ import org.openide.nodes.Node;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -82,7 +84,9 @@ public class ServiceNodeManager {
             // Get the registry for all available classes
             allRegistry = ClassDataRegistry.getRegistry( ClassDataRegistry.ALL_JAVA_PROFILE, classpaths );
             activeProfileRegistry = ClassDataRegistry.getRegistry( getActiveProfile(), classpaths);
-            setKeys(allRegistry.getBasePackages());
+            String packages[] = allRegistry.getBasePackages().toArray(new String[0]);
+            Arrays.sort(packages);
+            setKeys(packages);
         }
         
         protected Node[] createNodes(String packageName) {
@@ -97,7 +101,13 @@ public class ServiceNodeManager {
         private class PackageChildren extends Children.Keys<ClassData> {
 
             public PackageChildren(String packageName) {
-                setKeys(allRegistry.getBaseClassesForPackage(packageName));
+                ClassData cd[] = allRegistry.getBaseClassesForPackage(packageName).toArray(new ClassData[0]);
+                Arrays.sort(cd, new Comparator<ClassData>() {
+                    public int compare(ClassData o1, ClassData o2) {
+                        return o1.getClassName().compareTo(o2.getClassName());
+                    }
+                });
+                setKeys(cd);
             }
             
             protected Node[] createNodes(ClassData classData) {

@@ -187,17 +187,19 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
         setLayout(new java.awt.BorderLayout(5, 0));
 
         jPanel1.setLayout(new java.awt.CardLayout());
+
+        jCheckBox1.setBorder(null);
         jPanel1.add(jCheckBox1, "true");
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 620, Short.MAX_VALUE)
+            .add(0, 395, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 374, Short.MAX_VALUE)
+            .add(0, 300, Short.MAX_VALUE)
         );
 
         jPanel1.add(jPanel2, "false");
