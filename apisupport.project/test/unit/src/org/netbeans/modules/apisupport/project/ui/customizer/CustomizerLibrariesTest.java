@@ -25,6 +25,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 
 /**
  * Tests {@link CustomizerLibraries}.
@@ -40,7 +41,9 @@ public class CustomizerLibrariesTest extends TestBase {
     public void testCustomizerLibrariesCanBeGCedAfterProjectIsClosed() throws Exception {
         NbModuleProject p = generateStandaloneModule("module1");
         SingleModuleProperties props = SingleModulePropertiesTest.loadProperties(p);
-        CustomizerLibraries panel = new CustomizerLibraries(props);
+        ProjectCustomizer.Category cat = ProjectCustomizer.Category.create("XX", "xx", null);
+                
+        CustomizerLibraries panel = new CustomizerLibraries(props, cat);
         panel.refresh();
         Reference<?> ref = new WeakReference<Object>(panel);
         OpenProjects.getDefault().close(new Project[] { p });
