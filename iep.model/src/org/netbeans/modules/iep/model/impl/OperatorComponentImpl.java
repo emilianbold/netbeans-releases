@@ -176,7 +176,7 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 
 	public OperatorType getOutputType() {
 		if(mAllowedOutputType == null) {
-			Property p = getProperty(PROP_INPUTTYPE);
+			Property p = getProperty(PROP_OUTPUTTYPE);
 			if(p != null) {
 				String value = p.getValue();
 				if(value != null) {
