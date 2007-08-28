@@ -41,6 +41,9 @@ public class RailsFileLocator extends RubyFileLocator {
      */
     protected @Override FileObject[] findSources(List<FileObject> roots) {
         FileObject[] files = super.findSources(roots);
+        if (files != null) {
+            return files;
+        }
         for (FileObject root : roots) {
             files = RailsActionProvider.findSelectedFiles(context, root,
                     RhtmlTokenId.MIME_TYPE, true);
