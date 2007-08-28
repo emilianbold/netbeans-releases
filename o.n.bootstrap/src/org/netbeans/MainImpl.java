@@ -304,13 +304,6 @@ final class MainImpl extends Object {
             }
             return handlers;
         }
-
-        protected boolean isSpecialResource (String pkg) {
-            boolean retValue = super.isSpecialResource (pkg);
-            if (retValue) return true;
-
-            return false;
-        }
     } // end of BootClassLoader
 
     private static void append_jars_to_cp (File dir, Collection<Union2<File,JarFile>> toAdd) throws IOException {
