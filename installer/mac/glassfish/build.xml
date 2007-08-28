@@ -21,20 +21,41 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="glassfish" basedir="." default="build-pkg">
 
-  <target name="build-pkg">
-    <mkdir dir="build/pkg"/>
-    <delete dir="build/pkg/GlassFish.pkg"/>
+  <property name="gf_source" value="http://javaweb.sfbay.sun.com/java/re/glassfish/9.1/archive/fcs/b58c/images/mac/glassfish-image-v2-b58c.jar"/>
+  <property name="appname" value="glassfish-v2b58a"/>
+  <property name="appdir" value="build/app"/>
+  <property name="zipname" value="glassfish-macosx.zip"/>
+  <property name="appversion" value="2b58a"/>
+  <property name="version" value="2b58a"/>
+  <property name="exename" value=""/>
+  <property name="icon" value=""/>
+  <property name="pmproj" value="pkg/glassfish.pmproj"/>
+
+  <import file="${basedir}/../template_mac.xml"/>
+
+  <target name="clean-impl">
+    <delete dir="glassfish"/>
+    <delete file="glassfish_image.zip"/>
+    <delete file="pkg/scripts/add_gf.sh"/>
+    <delete file="pkg/scripts/unpack200.sh"/>
+  </target>
+
+  <target name="get-bits">
+    <echo message="Downloading GlassFish from ${gf_source}" />
+    <get src="${gf_source}" dest="glassfish_image.zip" usetimestamp="true"/>
+  </target>
+
+  <target name="unzip">
+    <mkdir dir="build"/>
+    <mkdir dir="build/app"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value="/Developer/Tools/packagemaker -build -v -p build/pkg/GlassFish.pkg -proj pkg/glassfish.pmproj"/>
+      <arg value="cd ${basedir} ; unzip glassfish_image.zip -d ${appdir}"/>
     </exec>
   </target>
 
-  <target name="clean">
-    <delete dir="build"/>
-  </target>
-
-  <target name="distclean" depends="clean">
-    <delete dir="dist"/>
+  <target name="pre-build-pkg">
+    <copy file="${basedir}/../pkg/scripts/add_gf.sh" tofile="${basedir}/pkg/scripts/add_gf.sh"/>
+    <copy file="${basedir}/../pkg/scripts/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
   </target>
 </project>
