@@ -55,7 +55,7 @@ public final class HLFactory implements HighlightsLayerFactory {
             ComposedTextHighlighting.LAYER_TYPE_ID, 
             ZOrder.TOP_RACK, 
             true,  // fixedSize
-            new ComposedTextHighlighting(d, mimeType)
+            new ComposedTextHighlighting(c, d, mimeType)
         ));
         
         if (TokenHierarchy.get(context.getDocument()) == null) {
