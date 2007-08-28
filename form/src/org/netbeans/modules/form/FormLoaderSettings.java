@@ -20,9 +20,6 @@
 package org.netbeans.modules.form;
 
 import java.awt.Color;
-import java.lang.String;
-import java.lang.String;
-import java.lang.String;
 import java.util.*;
 import java.util.prefs.Preferences;
 import org.openide.util.HelpCtx;

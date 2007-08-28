@@ -51,10 +51,12 @@ public class EncloseAction extends NodeAction {
     protected void performAction(Node[] nodes) {
     }
 
+    @Override
     public JMenuItem getMenuPresenter() {
         return getPopupPresenter();
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenu menu = new ContainersMenu(getName(), getComponents(getActivatedNodes()));
         menu.setEnabled(isEnabled());
@@ -62,13 +64,14 @@ public class EncloseAction extends NodeAction {
         return menu;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
     // -------
 
-    private static List getComponents(Node[] nodes) {
+    private static List<RADComponent> getComponents(Node[] nodes) {
         return FormUtils.getSelectedLayoutComponents(nodes);
     }
 
@@ -91,7 +94,7 @@ public class EncloseAction extends NodeAction {
     }
 
     private static PaletteItem[] getAllContainers() {
-        ArrayList list = new ArrayList();
+        List<PaletteItem> list = new ArrayList<PaletteItem>();
         for (PaletteItem item : PaletteUtils.getAllItems()) {
             if (PaletteItem.TYPE_CHOOSE_BEAN.equals(item.getExplicitComponentType())) {
                 continue;
@@ -104,7 +107,7 @@ public class EncloseAction extends NodeAction {
                 list.add(item);
             }
         }
-        return (PaletteItem[]) list.toArray(new PaletteItem[list.size()]);
+        return list.toArray(new PaletteItem[list.size()]);
     }
 
     private static class ContainersMenu extends JMenu {
@@ -116,6 +119,7 @@ public class EncloseAction extends NodeAction {
             this.components = components;
         }
 
+        @Override
         public JPopupMenu getPopupMenu() {
             JPopupMenu popup = super.getPopupMenu();
             if (!initialized) {

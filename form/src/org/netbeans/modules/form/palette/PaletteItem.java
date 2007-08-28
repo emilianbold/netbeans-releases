@@ -174,6 +174,7 @@ public final class PaletteItem implements Node.Cookie {
 //        return componentIsContainer.booleanValue();
 //    }
 
+    @Override
     public String toString() {
         return PaletteUtils.getItemComponentDescription(this);
     }

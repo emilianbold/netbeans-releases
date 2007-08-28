@@ -206,7 +206,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         formModel = formEditor.getFormModel();
 
-        FormLoaderSettings settings = FormLoaderSettings.getInstance();
         updateAssistant();
         settingsListener = new PreferenceChangeListener() {
             public void preferenceChange(PreferenceChangeEvent evt) {
@@ -216,7 +215,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             }
 
         };
-        settings.getPreferences().addPreferenceChangeListener(settingsListener);
+        FormLoaderSettings.getPreferences().addPreferenceChangeListener(settingsListener);
 
         JScrollPane scrollPane = new JScrollPane(layeredPane);
         scrollPane.setBorder(null); // disable border, winsys will handle borders itself
@@ -316,7 +315,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 formModel.removeFormModelListener(formModelListener);                
             }                
             if (settingsListener != null) {
-                FormLoaderSettings.getInstance().getPreferences().removePreferenceChangeListener(settingsListener);
+                FormLoaderSettings.getPreferences().removePreferenceChangeListener(settingsListener);
             }
             topDesignComponent = null;
             formModel = null;
@@ -1691,7 +1690,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 formModel.removeFormModelListener(formModelListener);
             }
             if (settingsListener != null) {
-                FormLoaderSettings.getInstance().getPreferences().removePreferenceChangeListener(settingsListener);
+                FormLoaderSettings.getPreferences().removePreferenceChangeListener(settingsListener);
             }
             topDesignComponent = null;
             formModel = null;

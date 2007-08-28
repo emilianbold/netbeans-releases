@@ -56,7 +56,7 @@ public final class PaletteUtils {
     private static DataFolder paletteDataFolder;
 
     private static FileObject context;
-    private static Map<Project, ProjectPaletteInfo> palettes = new WeakHashMap();
+    private static Map<Project,ProjectPaletteInfo> palettes = new WeakHashMap<Project,ProjectPaletteInfo>();
 
     private static class ProjectPaletteInfo {
         PaletteLookup paletteLookup;
@@ -64,7 +64,7 @@ public final class PaletteUtils {
         List<PropertyChangeListener> paletteListeners;
 
         PaletteController getPalette() {
-            return (PaletteController)paletteLookup.lookup(PaletteController.class);
+            return paletteLookup.lookup(PaletteController.class);
         }
     }
 
@@ -159,7 +159,7 @@ public final class PaletteUtils {
         ProjectPaletteInfo pInfo = preparePalette(context);
         if (pInfo != null) {
             if (pInfo.paletteListeners == null) {
-                pInfo.paletteListeners = new LinkedList();
+                pInfo.paletteListeners = new LinkedList<PropertyChangeListener>();
             }
             pInfo.paletteListeners.add(listener);
             pInfo.getPalette().addPropertyChangeListener(listener);
@@ -288,7 +288,7 @@ public final class PaletteUtils {
         }
         Lookup lkp = palette.getSelectedItem();
         
-        return (PaletteItem)lkp.lookup( PaletteItem.class );
+        return lkp.lookup(PaletteItem.class);
     }
     
     public static void selectItem( PaletteItem item ) {
@@ -296,12 +296,12 @@ public final class PaletteUtils {
             getPalette().clearSelection();
         } else {
             // This is not the node returned by getPaletteNode()!
-            Node paletteNode = (Node)getPalette().getRoot().lookup(Node.class);
+            Node paletteNode = getPalette().getRoot().lookup(Node.class);
             Node[] categories = getCategoryNodes(paletteNode, true, true, true);
             for( int i=0; i<categories.length; i++ ) {
                 Node[] items = getItemNodes( categories[i], true );
                 for( int j=0; j<items.length; j++ ) {
-                    PaletteItem formItem = (PaletteItem)items[j].getLookup().lookup( PaletteItem.class );
+                    PaletteItem formItem = items[j].getLookup().lookup( PaletteItem.class );
                     if( item.equals( formItem ) ) {
                         getPalette().setSelectedItem( categories[i].getLookup(), items[j].getLookup() );
                     }
@@ -311,16 +311,16 @@ public final class PaletteUtils {
     }
     
     public static PaletteItem[] getAllItems() {
-        HashSet uniqueItems = null;
+        HashSet<PaletteItem> uniqueItems = null;
         // collect valid items from all categories (including invisible)
         Node[] categories = getCategoryNodes(getPaletteNode(), false, true, false);
         for( int i=0; i<categories.length; i++ ) {
             Node[] items = getItemNodes( categories[i], true );
             for( int j=0; j<items.length; j++ ) {
-                PaletteItem formItem = (PaletteItem)items[j].getLookup().lookup( PaletteItem.class );
+                PaletteItem formItem = items[j].getLookup().lookup( PaletteItem.class );
                 if( null != formItem ) {
                     if( null == uniqueItems ) {
-                        uniqueItems = new HashSet();
+                        uniqueItems = new HashSet<PaletteItem>();
                     }
                     uniqueItems.add( formItem );
                 }
@@ -328,7 +328,7 @@ public final class PaletteUtils {
         }
         PaletteItem[] res;
         if( null != uniqueItems ) {
-            res = (PaletteItem[]) uniqueItems.toArray( new PaletteItem[uniqueItems.size()] );
+            res = uniqueItems.toArray( new PaletteItem[uniqueItems.size()] );
         } else {
             res = new PaletteItem[0];
         }
@@ -355,22 +355,22 @@ public final class PaletteUtils {
         if (filter == null)
             return nodes;
 
-        List validList = null;
+        List<Node> validList = null;
         for (int i=0; i < nodes.length; i++) {
-            PaletteItem item = (PaletteItem) nodes[i].getCookie(PaletteItem.class);
+            PaletteItem item = nodes[i].getCookie(PaletteItem.class);
             if (filter.isValidItem(item)) {
                 if (validList != null)
                     validList.add(nodes[i]);
             }
             else if (validList == null) {
-                validList = new ArrayList(nodes.length);
+                validList = new ArrayList<Node>(nodes.length);
                 for (int j=0; j < i; j++) {
                     validList.add(nodes[j]);
                 }
             }
         }
         if (validList != null)
-            nodes = (Node[]) validList.toArray(new Node[validList.size()]);
+            nodes = validList.toArray(new Node[validList.size()]);
 
         return nodes;
     }
@@ -410,7 +410,7 @@ public final class PaletteUtils {
         Node[] nodes = paletteNode.getChildren().getNodes(true);
 
         ClassPathFilter filter = mustBeValid ? getPaletteFilter() : null;
-        java.util.List list = null; // don't create until needed
+        java.util.List<Node> list = null; // don't create until needed
         for( int i=0; i<nodes.length; i++ ) {
             if ((!mustBeVisible || isVisibleCategoryNode(nodes[i]))
                 && (!mustBeValid || filter == null || filter.isValidCategory(nodes[i]))
@@ -420,7 +420,7 @@ public final class PaletteUtils {
                     list.add(nodes[i]);
                 }
             } else if( list == null ) {
-                list = new ArrayList( nodes.length );
+                list = new ArrayList<Node>(nodes.length);
                 for( int j=0; j < i; j++ ) {
                     list.add(nodes[j]);
                 }
@@ -437,7 +437,7 @@ public final class PaletteUtils {
      * @return True if the given node is a DataFolder and does not have Hidden flag set.
      */
     private static boolean isVisibleCategoryNode(Node node) {
-        DataFolder df = (DataFolder) node.getCookie(DataFolder.class);
+        DataFolder df = node.getCookie(DataFolder.class);
         if (df != null) {
             Object value = node.getValue("psa_" + PaletteController.ATTR_IS_VISIBLE); // NOI18N
             if (null == value || "null".equals(value)) { // NOI18N
@@ -452,7 +452,7 @@ public final class PaletteUtils {
     }
 
     private static boolean representsShowableCategory(Node node) {
-        DataFolder df = (DataFolder) node.getCookie(DataFolder.class);
+        DataFolder df = node.getCookie(DataFolder.class);
         return (df != null) && !Boolean.TRUE.equals(df.getPrimaryFile().getAttribute("isNoPaletteCategory")); // NOI18N
     }
     
@@ -471,14 +471,14 @@ public final class PaletteUtils {
 
         ClassPathFilter(ClassPath cp) {
             if (cp != null) {
-                validItems = new WeakSet();
-                invalidItems = new WeakSet();
+                validItems = new WeakSet<PaletteItem>();
+                invalidItems = new WeakSet<PaletteItem>();
             }
             classPath = cp;
         }
 
         public boolean isValidCategory(Lookup lkp) {
-            Node categoryNode = (Node)lkp.lookup(Node.class);
+            Node categoryNode = lkp.lookup(Node.class);
             if (!representsShowableCategory(categoryNode))
                 return false; // filter out categories that should never be visible (e.g. Layouts)
 
@@ -492,13 +492,13 @@ public final class PaletteUtils {
             // check if there is some valid item in this category
             // [ideally we should listen on the category for adding/removing items,
             //  practically we just need to hide Swing categories on some mobile platforms]
-            DataFolder folder = (DataFolder) node.getCookie(DataFolder.class);
+            DataFolder folder = node.getCookie(DataFolder.class);
             if (folder == null)
                 return false;
 
             DataObject[] dobjs = folder.getChildren();
             for (int i=0; i < dobjs.length; i++) {
-                PaletteItem item = (PaletteItem) dobjs[i].getCookie(PaletteItem.class);
+                PaletteItem item = dobjs[i].getCookie(PaletteItem.class);
                 if (item == null || isValidItem(item))
                     return true;
             }
@@ -506,7 +506,7 @@ public final class PaletteUtils {
         }
 
         public boolean isValidItem(Lookup lkp) {
-            return isValidItem((PaletteItem) lkp.lookup(PaletteItem.class));
+            return isValidItem(lkp.lookup(PaletteItem.class));
         }
 
         boolean isValidItem(PaletteItem item) {
@@ -547,16 +547,16 @@ public final class PaletteUtils {
      */
     private static class ClassPathListener implements PropertyChangeListener {
         private ClassPath classPath;
-        private WeakReference projRef;
+        private WeakReference<Project> projRef;
 
         ClassPathListener(ClassPath cp, Project p) {
             classPath = cp;
-            projRef = new WeakReference(p);
+            projRef = new WeakReference<Project>(p);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
-                Project p = (Project) projRef.get();
+                Project p = projRef.get();
                 if (p != null)
                     PaletteUtils.bootClassPathChanged(p, classPath);
                 else
