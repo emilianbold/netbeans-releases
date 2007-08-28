@@ -32,6 +32,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ui.OpenProjects;
 //import org.netbeans.jmi.javamodel.JavaClass;
 //import org.netbeans.jmi.javamodel.Resource;
@@ -49,6 +51,7 @@ import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -57,6 +60,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
@@ -294,4 +298,25 @@ public final class Util {
         }
         return port;
     }    
+    
+    /**
+     * Appends DataBinding library to the libraries
+     * 
+     */
+    public static boolean registerDataBindingLibrary( Project p ) {
+        ProjectClassPathExtender pcpe = p.getLookup().lookup( ProjectClassPathExtender.class );
+        Library[] libraries = LibraryManager.getDefault().getLibraries();
+        for( Library library : libraries ) {
+            if( library.getName().equals( "DataBindingME" )) {
+                try {
+                    pcpe.addLibrary( library );
+                    return true;
+                } catch( IOException ex ) {
+                    Exceptions.printStackTrace( ex );
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
 }

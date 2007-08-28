@@ -50,6 +50,7 @@ import org.netbeans.modules.mobility.end2end.classdata.WSDLService;
 import org.netbeans.modules.mobility.end2end.client.config.ClassDescriptor;
 import org.netbeans.modules.mobility.end2end.client.config.ClientConfiguration;
 //import org.netbeans.modules.mobility.jsr172.validator.WSIValidator;
+import org.netbeans.modules.mobility.end2end.util.Util;
 import org.netbeans.spi.mobility.end2end.ServiceGeneratorResult;
 //import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.DialogDisplayer;
@@ -113,8 +114,14 @@ public class Jsr172Generator {
                 config.setGenerateDataBinding( properties.getProperty( "DataBinding" ).equals( "true" ));
             }
             
-            if( wsdl2java.generate()) {
-                StatusDisplayer.getDefault().setStatusText( NbBundle.getMessage( Jsr172Generator.class,"MSG_Success" )); //NOI18N
+            boolean generationResult = wsdl2java.generate();
+            if( generationResult ) {
+                StatusDisplayer.getDefault().setStatusText( NbBundle.getMessage( Jsr172Generator.class,"MSG_Success" )); //NOI18N                
+                
+                // Append DataBinding library whether the data binding is enabled
+                if( config.getGenerateDataBinding()) {
+                    Util.registerDataBindingLibrary(e2EDataObject.getClientProject());
+                }
             } else {
                 StatusDisplayer.getDefault().setStatusText( NbBundle.getMessage( Jsr172Generator.class,"MSG_Failure" )); //NOI18N
             }
