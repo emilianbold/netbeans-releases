@@ -20,20 +20,20 @@
 package org.netbeans.modules.ruby.railsprojects;
 
 import java.io.File;
-import org.netbeans.api.project.FileOwnerQuery;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
  * @author Tor Norbye
  */
-public class MigrateActionTest extends RubyProjectTestBase {
+public class MigrateActionTest extends RailsProjectTestBase {
+    
+    private final String TAB = "        ";
     
     public MigrateActionTest(String testName) {
         super(testName);
@@ -49,14 +49,6 @@ public class MigrateActionTest extends RubyProjectTestBase {
         super.tearDown();
     }
 
-    protected RailsProject getRailsProject(String path) {
-        Project p = getTestProject(path);
-        assertNotNull(p);
-        assertTrue(p instanceof RailsProject);
-        
-        return (RailsProject)p;
-    }
-    
     private String annotate(JMenu menu) {
         StringBuilder sb = new StringBuilder();
         
@@ -64,9 +56,6 @@ public class MigrateActionTest extends RubyProjectTestBase {
         
         return sb.toString();
     }
-    
-    
-    private final String TAB = "        ";
     
     private void writeMenu(JMenu menu, int indent, StringBuilder sb) {
         for (int i = 0; i < menu.getItemCount(); i++) {
@@ -92,46 +81,12 @@ public class MigrateActionTest extends RubyProjectTestBase {
             }
         }
     }
-    
-    private RailsProject constructRailsProject(String dbtaskFile) throws Exception {
-        String projectName = "RailsProject_" + getName();
-                
-        File projectFile = new File(getDataDir(), projectName);
-        if (projectFile.exists()) {
-            FileObject fo = FileUtil.toFileObject(projectFile);
-            
-            Project p = FileOwnerQuery.getOwner(fo);
-            assertNotNull(p);
-            assertTrue(p instanceof RailsProject);
-            
-            return (RailsProject)p;
-        }
-        
-        // Build the Rails project
-        FileObject parentDir = FileUtil.toFileObject(getDataDir());
-        assertNotNull(parentDir);
-        FileObject dir = parentDir.createFolder(projectName);
-        assertNotNull(dir);
-        String xml =
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n" +
-"    <type>org.netbeans.modules.ruby.railsprojects</type>\n" +
-"    <configuration>\n" +
-"        <data xmlns=\"http://www.netbeans.org/ns/rails-project/1\">\n" +
-"            <name>" + projectName + "</name>\n" +
-"        </data>\n" +
-"    </configuration>\n" +
-"</project>\n";
-        createFile(dir, "nbproject/project.xml", xml);
-        
-        // Create the db folders!
-        createFilesFromDesc(dir, dbtaskFile);
-        
-        Project p = FileOwnerQuery.getOwner(dir);
-        assertNotNull(p);
-        assertTrue(p instanceof RailsProject);
-        
-        return (RailsProject)p;
+
+    private RailsProject constructRailsProject(String dataFile) throws Exception {
+        RailsProject project = createTestProject();
+        // Create file from data folder
+        createFilesFromDesc(project.getProjectDirectory(), dataFile);
+        return project;
     }
     
     private void checkMenu(NbTestCase test, String relFilePath, RailsProject project) throws Exception {
@@ -146,6 +101,10 @@ public class MigrateActionTest extends RubyProjectTestBase {
         String annotatedSource = annotate(menu);
 
         assertDescriptionMatches(relFilePath, annotatedSource, true, ".menu");
+    }
+
+    private RailsProject constructRailsProject(String... files) throws Exception {
+        return createTestProject("RubyProject_" + getName(), files);
     }
     
     public void testMigrations109892() throws Exception {

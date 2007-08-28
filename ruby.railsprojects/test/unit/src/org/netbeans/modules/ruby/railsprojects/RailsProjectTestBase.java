@@ -32,10 +32,17 @@ public class RailsProjectTestBase extends RubyTestBase {
         clearWorkDir();
     }
 
-    protected RailsProject createTestProject(String projectName) throws Exception {
+    protected RailsProject createTestProject() throws Exception {
+        return createTestProject("RubyProject_" + getName());
+    }
+    
+    protected RailsProject createTestProject(String projectName, String... paths) throws Exception {
         File prjDirF = new File(getWorkDir(), projectName);
         RailsProjectGenerator.createProject(prjDirF, projectName, false, null, false, false);
-        return (RailsProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
+        RubyTestBase.createFiles(prjDirF, paths);
+        RailsProject project = (RailsProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
+        assertNotNull(project);
+        return project;
     }
 
 }

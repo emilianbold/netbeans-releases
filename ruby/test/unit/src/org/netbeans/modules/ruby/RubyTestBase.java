@@ -27,6 +27,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +60,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbPreferences;
 
 /**
- *
  * @author Tor Norbye
  */
 public abstract class RubyTestBase extends NbTestCase {
@@ -411,5 +413,40 @@ public abstract class RubyTestBase extends NbTestCase {
         Formatter formatter = new Formatter(codeStyle, 80);
         
         return formatter;
+    }
+
+    protected void createFilesFromDesc(FileObject folder, String descFile) throws Exception {
+        File taskFile = new File(getDataDir(), descFile);
+        assertTrue(taskFile.exists());
+        BufferedReader br = new BufferedReader(new FileReader(taskFile));
+        while (true) {
+            String line = br.readLine();
+            if (line == null || line.trim().length() == 0) {
+                break;
+            }
+
+            String path = line;
+            FileObject f = FileUtil.createData(folder, path);
+            assertNotNull(f);
+        }
+    }
+
+   public static void createFiles(File baseDir, String... paths) throws IOException {
+        assertNotNull(baseDir);
+        for (String path : paths) {
+            File file = new File(path);
+            File dir = new File(baseDir, file.getParent());
+            dir.mkdirs();
+            File testFile = new File(dir, file.getName());
+            testFile.createNewFile();
+        }
+    }
+
+    public static void createFile(FileObject dir, String relative, String contents) throws IOException {
+        FileObject datafile = FileUtil.createData(dir, relative);
+        OutputStream os = datafile.getOutputStream();
+        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+        writer.write(contents);
+        writer.close();
     }
 }

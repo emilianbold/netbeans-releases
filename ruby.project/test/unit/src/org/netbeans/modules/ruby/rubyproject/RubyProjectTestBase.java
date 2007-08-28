@@ -16,13 +16,7 @@
  */
 package org.netbeans.modules.ruby.rubyproject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.api.project.Project;
@@ -60,39 +54,17 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         return (RubyProject)p;
     }
     
-    protected void createFilesFromDesc(FileObject folder, String descFile) throws Exception {
-        File taskFile = new File(getDataDir(), descFile);
-        assertTrue(taskFile.exists());
-        BufferedReader br = new BufferedReader(new FileReader(taskFile));
-        while (true) {
-            String line = br.readLine();
-            if (line == null || line.trim().length() == 0) {
-                break;
-            }
-            
-            String path = line;
-            FileObject f = FileUtil.createData(folder, path);
-            assertNotNull(f);
-        }
+    protected RubyProject createTestProject(String projectName, String... paths) throws Exception {
+        File prjDirF = new File(getWorkDir(), projectName);
+        RubyProjectGenerator.createProject(prjDirF, projectName, null, null);
+        createFiles(prjDirF, paths);
+        RubyProject project = (RubyProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
+        assertNotNull(project);
+        return project;
     }
 
     protected RubyProject createTestProject() throws Exception {
-        String projectName = "RubyProject_" + getName();
-        
-        return createTestProject(projectName);
-    }
-    
-    protected void createFile(FileObject dir, String relative, String contents) throws Exception {
-        FileObject datafile = FileUtil.createData(dir, relative);
-        OutputStream os = datafile.getOutputStream();
-        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-        writer.write(contents);
-        writer.close();
+        return createTestProject("RubyProject_" + getName());
     }
 
-    protected RubyProject createTestProject(String projectName) throws Exception {
-        File prjDirF = new File(getWorkDir(), projectName);
-        RubyProjectGenerator.createProject(prjDirF, projectName, null, null);
-        return (RubyProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
-    }
 }

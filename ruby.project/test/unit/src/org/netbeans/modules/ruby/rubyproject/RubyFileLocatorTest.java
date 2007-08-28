@@ -19,10 +19,6 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
-import java.io.File;
-import org.netbeans.api.project.ProjectManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.Lookups;
 
 public class RubyFileLocatorTest extends RubyProjectTestBase {
@@ -31,20 +27,9 @@ public class RubyFileLocatorTest extends RubyProjectTestBase {
         super(testName);
     }
 
-    private RubyFileLocator generateProject(String... paths) throws Exception {
-        RubyProject project = createTestProject("RubyProject1");
-        ProjectManager.getDefault().findProject(project.getProjectDirectory());
-        assertNotNull(project);
-        FileObject dirFO = project.getProjectDirectory();
-        assertNotNull(dirFO);
-        for (String path : paths) {
-            File file = new File(path);
-            File dir = new File(FileUtil.toFile(dirFO), file.getParent());
-            dir.mkdirs();
-            File testFile = new File(dir, file.getName());
-            testFile.createNewFile();
-        }
-        return new RubyFileLocator(Lookups.singleton(new Object()), project);
+    public RubyFileLocator generateProject(String path) throws Exception {
+        return new RubyFileLocator(Lookups.singleton(new Object()),
+                createTestProject("LocatorTestProject", path));
     }
 
     public void testRelativeToProjectDir() throws Exception { // # 112254
