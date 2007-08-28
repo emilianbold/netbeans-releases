@@ -41,6 +41,7 @@ import org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade;
 import org.netbeans.modules.uml.core.metamodel.core.primitivetypes.IMessageKind;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
@@ -659,6 +660,7 @@ public class CommonResourceManager implements ICommonResourceManager
             {
                 searchStr = "Class"; // NOI18N
                 ETList stereotypes = ((IClassifier)pDisp).getAppliedStereotypesAsString();
+                ETList tparams = ((IClassifier)pDisp).getTemplateParameters();
 
                 if (stereotypes.isInList("boundary")) // NOI18N
                     searchStr = "BoundaryClass"; // NOI18N
@@ -669,19 +671,24 @@ public class CommonResourceManager implements ICommonResourceManager
                 else if (stereotypes.isInList("entity")) // NOI18N
                     searchStr = "EntityClass"; // NOI18N
 
-                else if (stereotypes.isInList("role")) // NOI18N
-                    searchStr = "RoleClass"; // NOI18N
-
-                else if (stereotypes.isInList("template")) // NOI18N
-                    searchStr = "TemplateClass"; // NOI18N
-
                 else if (stereotypes.isInList("utility")) // NOI18N
                     searchStr = "UtilityClass"; // NOI18N
+                
+                else if ((stereotypes.isInList("template")) || 
+                    (tparams != null && tparams.getCount() > 0))
+                {
+                    searchStr = "TemplateClass"; // NOI18N
+                }
             }
-
+            
             else if (pDisp instanceof IForkNode)
             {
                 searchStr = "ForkNode"; // NOI18N
+            }
+            
+            else if (pDisp instanceof ICollaboration) // NOI18N
+            {
+                searchStr = "DesignPattern"; // NOI18N
             }
          }
 
