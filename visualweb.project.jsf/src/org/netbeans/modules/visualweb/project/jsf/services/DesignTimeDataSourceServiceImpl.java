@@ -141,7 +141,9 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         while (it.hasNext()) {
             Datasource ds = (Datasource) it.next();
             try {
-                jmp.getConfigSupport().bindDatasourceReference(req.getResourceName(), ds.getJndiName());
+                if ((req.getUrl().equals(ds.getUrl())) && (req.getUsername().equals(ds.getUsername()))) {
+                    jmp.getConfigSupport().bindDatasourceReference(req.getResourceName(), ds.getJndiName());
+                }
             } catch (ConfigurationException e) {
                 return false;
             }
