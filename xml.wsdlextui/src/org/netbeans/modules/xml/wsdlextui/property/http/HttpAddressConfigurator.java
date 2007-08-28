@@ -31,6 +31,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.http.HTTPAddress;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ExtensibilityElementPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.api.property.StringAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfigurator;
@@ -67,7 +68,8 @@ public class HttpAddressConfigurator extends ExtensibilityElementConfigurator {
                 ExtensibilityElementPropertyAdapter adapter = new ExtensibilityElementPropertyAdapter(extensibilityElement, attributeName, generateAddressLocation(extensibilityElement));
                 try {
                     property = new StringAttributeProperty(adapter, String.class, "getValue", "setValue");
-                    property.setName(NbBundle.getMessage(HttpAddressConfigurator.class, "PROP_NAME_ADDRESS_LOCATION"));
+                    property.setName(HTTPAddress.LOCATION_PROPERTY);
+                    property.setDisplayName(NbBundle.getMessage(HttpAddressConfigurator.class, "PROP_NAME_ADDRESS_LOCATION"));
                 } catch (NoSuchMethodException e) {
                     ErrorManager.getDefault().notify(e);
                 }

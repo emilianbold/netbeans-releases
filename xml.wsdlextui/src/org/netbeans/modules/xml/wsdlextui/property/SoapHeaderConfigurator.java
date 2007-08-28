@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeader;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ExtensibilityElementPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.api.property.MessageAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.api.property.MessageProvider;
@@ -63,7 +64,8 @@ public class SoapHeaderConfigurator extends ExtensibilityElementConfigurator {
             if ("message".equals(attributeName)) {
                 try {
                     property = new MessageAttributeProperty(new ExtensibilityElementPropertyAdapter(extensibilityElement, attributeName), extensibilityElement, String.class, "getValue", "setValue");
-                    property.setName(NbBundle.getMessage(SoapAddressConfigurator.class, "PROP_NAME_HEADER_MESSAGE"));
+                    property.setName(SOAPHeader.MESSAGE_PROPERTY);
+                    property.setDisplayName(NbBundle.getMessage(SoapAddressConfigurator.class, "PROP_NAME_HEADER_MESSAGE"));
                 } catch (NoSuchMethodException e) {
                     ErrorManager.getDefault().notify(e);
                 }
@@ -71,7 +73,8 @@ public class SoapHeaderConfigurator extends ExtensibilityElementConfigurator {
                 MessageProvider prov = new SoapHeaderMessageProvider(extensibilityElement);
                 try {
                     property = new PartAttributeProperty(prov, extensibilityElement.getModel(), new ExtensibilityElementPropertyAdapter(extensibilityElement, attributeName), String.class, "getValue", "setValue", false);
-                    property.setName(NbBundle.getMessage(SoapAddressConfigurator.class, "PROP_NAME_HEADER_PART"));
+                    property.setName(SOAPHeader.PART_PROPERTY);
+                    property.setDisplayName(NbBundle.getMessage(SoapAddressConfigurator.class, "PROP_NAME_HEADER_PART"));
                 } catch (NoSuchMethodException e) {
                     ErrorManager.getDefault().notify(e);
                 }

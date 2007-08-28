@@ -28,6 +28,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ExtensibilityElementPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.api.property.PortTypeAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
@@ -57,7 +58,8 @@ public class PartnerLinkTypeRoleConfigurator extends
                 ExtensibilityElementPropertyAdapter adapter = new ExtensibilityElementPropertyAdapter(extensibilityElement, attributeName);
                 try {
                     Node.Property attrValueProperty = new PortTypeAttributeProperty(adapter, String.class, "getValue", "setValue");
-                    attrValueProperty.setName(NbBundle.getMessage(PartnerLinkTypeRoleConfigurator.class, "PROPERTY_NAME_PORTTYPE"));
+                    attrValueProperty.setName(Role.PORT_TYPE_PROPERTY);
+                    attrValueProperty.setDisplayName(NbBundle.getMessage(PartnerLinkTypeRoleConfigurator.class, "PROPERTY_NAME_PORTTYPE"));
                     return attrValueProperty;
                 } catch (NoSuchMethodException e) {
                     ErrorManager.getDefault().notify(e);

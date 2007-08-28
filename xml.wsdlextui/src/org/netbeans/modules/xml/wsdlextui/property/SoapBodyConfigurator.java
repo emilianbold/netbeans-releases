@@ -32,6 +32,7 @@ import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ExtensibilityElementPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.api.property.MessageProvider;
 import org.netbeans.modules.xml.wsdl.ui.api.property.PartAttributeProperty;
@@ -66,7 +67,8 @@ public class SoapBodyConfigurator extends ExtensibilityElementConfigurator {
             if ("parts".equals(attributeName)) {
                 try {
                     property = new PartAttributeProperty(new SoapBodyMessageProvider(extensibilityElement), extensibilityElement.getModel(), new ExtensibilityElementPropertyAdapter(extensibilityElement, attributeName), String.class, "getValue", "setValue", true);
-                    property.setName(NbBundle.getMessage(SoapAddressConfigurator.class, "PROP_NAME_BODY_PARTS"));
+                    property.setName(SOAPBody.PARTS_PROPERTY);
+                    property.setDisplayName(NbBundle.getMessage(SoapAddressConfigurator.class, "PROP_NAME_BODY_PARTS"));
                 } catch (NoSuchMethodException e) {
                     ErrorManager.getDefault().notify(e);
                 }

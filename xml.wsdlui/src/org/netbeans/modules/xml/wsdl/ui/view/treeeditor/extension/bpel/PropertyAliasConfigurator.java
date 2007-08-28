@@ -32,6 +32,7 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ComboBoxPropertyEditor;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ExtensibilityElementPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.api.property.MessageAttributeProperty;
@@ -68,7 +69,8 @@ public class PropertyAliasConfigurator extends
             if ("messageType".equals(attributeName)) {//NOI18N
                 try {
                     property = new MessageAttributeProperty(new ExtensibilityElementPropertyAdapter(extensibilityElement, attributeName), extensibilityElement, String.class, "getValue", "setValue");
-                    property.setName(NbBundle.getMessage(PropertyConfigurator.class, "PROPERTY_NAME_PA_MESSAGETYPE"));
+                    property.setName(PropertyAlias.MESSAGE_TYPE_PROPERTY);
+                    property.setDisplayName(NbBundle.getMessage(PropertyConfigurator.class, "PROPERTY_NAME_PA_MESSAGETYPE"));
                 } catch (NoSuchMethodException e) {
                     ErrorManager.getDefault().notify(e);
                 }
@@ -76,17 +78,19 @@ public class PropertyAliasConfigurator extends
                 MessageProvider prov = new MessageProviderImpl(extensibilityElement);
                 try {
                     property = new PartAttributeProperty(prov, extensibilityElement.getModel(), new ExtensibilityElementPropertyAdapter(extensibilityElement, attributeName), String.class, "getValue", "setValue", false);
-                    property.setName(NbBundle.getMessage(PropertyConfigurator.class, "PROPERTY_NAME_PA_PART"));
+                    property.setName(PropertyAlias.PART_PROPERTY);
+                    property.setDisplayName(NbBundle.getMessage(PropertyConfigurator.class, "PROPERTY_NAME_PA_PART"));
                 } catch (NoSuchMethodException e) {
                     ErrorManager.getDefault().notify(e);
                 }
             } else if ("propertyName".equals(attributeName)) {//NOI18N
                 try {
                     property = new PropertyNameProperty(new ExtensibilityElementPropertyAdapter(extensibilityElement, attributeName), String.class, "getValue", "setValue");
+                    property.setName(PropertyAlias.PROPERTY_NAME_PROPERTY);
+                    property.setDisplayName(NbBundle.getMessage(PropertyConfigurator.class, "PROPERTY_NAME_PROPERTY_NAME"));
                 } catch (NoSuchMethodException e) {
                     ErrorManager.getDefault().notify(e);
                 }
-                property.setName(NbBundle.getMessage(PropertyConfigurator.class, "PROPERTY_NAME_PROPERTY_NAME"));
             }
         }
         return property;

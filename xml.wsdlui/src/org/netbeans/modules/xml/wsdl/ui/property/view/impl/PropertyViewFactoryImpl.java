@@ -48,6 +48,7 @@ import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.schema.model.SimpleType;
 import org.netbeans.modules.xml.schema.model.SimpleTypeRestriction;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ExtensibilityElementPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.api.property.PropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.api.property.StringAttributeProperty;
@@ -194,7 +195,7 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
                     nodeProps = new TreeMap<Integer, Node.Property>();
                     map.put(groupedProp.getGroupName(), nodeProps);
                 }
-                setNameAndDescription(prop, groupedProp.getDisplayName(), groupedProp.getDisplayName(), "TODO: Set documentation for Grouped Property.");
+                setNameAndDescription(prop, groupedProp.getDisplayName(), groupedProp.getDisplayName(), "");
                 nodeProps.put(new Integer(groupedProp.getPropertyOrder() - 1), prop);
             }
             
@@ -405,7 +406,8 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
             Node.Property attrValueProperty;
             try {
                 attrValueProperty = new BaseAttributeProperty(new AnyElementPropertyAdapter(exElement, elementQName), String.class, "value");
-                attrValueProperty.setName(NbBundle.getMessage(PropertyViewFactoryImpl.class, "PROP_NAME_ANY_CONTENT"));
+                attrValueProperty.setName(WSDLComponent.TEXT_CONTENT_PROPERTY);
+                attrValueProperty.setDisplayName(NbBundle.getMessage(PropertyViewFactoryImpl.class, "PROP_NAME_ANY_CONTENT"));
                 propertySet.put(attrValueProperty);
             } catch (NoSuchMethodException e) {
                 ErrorManager.getDefault().notify(e);

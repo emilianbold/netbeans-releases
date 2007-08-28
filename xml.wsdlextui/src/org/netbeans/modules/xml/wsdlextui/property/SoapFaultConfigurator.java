@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPFault;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ExtensibilityElementPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ReadOnlyProperty;
 import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfigurator;
@@ -57,8 +58,8 @@ public class SoapFaultConfigurator extends ExtensibilityElementConfigurator {
         Node.Property property = null;
         if (faultQName.equals(qname)) {
             if ("name".equals(attributeName)) {
-                String name = NbBundle.getMessage(SoapFaultConfigurator.class, "PROP_NAME_FAULT_NAME");
-                property = new ReadOnlyProperty(new ExtensibilityElementPropertyAdapter(extensibilityElement, "name"), name, String.class, name, null);
+                String displayName = NbBundle.getMessage(SoapFaultConfigurator.class, "PROP_NAME_FAULT_NAME");
+                property = new ReadOnlyProperty(new ExtensibilityElementPropertyAdapter(extensibilityElement, "name"), SOAPFault.NAME_PROPERTY, String.class, displayName, null);
             }
         }
         return property;

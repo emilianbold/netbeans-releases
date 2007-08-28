@@ -26,6 +26,7 @@ import java.util.Collection;
 import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ExtensibilityElementPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.api.property.StringAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfigurator;
@@ -64,7 +65,8 @@ public class SoapBindingConfigurator extends ExtensibilityElementConfigurator {
                 ExtensibilityElementPropertyAdapter adapter = new ExtensibilityElementPropertyAdapter(extensibilityElement, attributeName, transport);
                 try {
                     property = new StringAttributeProperty(adapter, String.class, "getValue", "setValue");
-                    property.setName(NbBundle.getMessage(SoapAddressConfigurator.class, "PROP_NAME_BINDING_TRANSPORT"));
+                    property.setName(SOAPBinding.TRANSPORT_URI_PROPERTY);
+                    property.setDisplayName(NbBundle.getMessage(SoapAddressConfigurator.class, "PROP_NAME_BINDING_TRANSPORT"));
                 } catch (NoSuchMethodException e) {
                     ErrorManager.getDefault().notify(e);
                 }
