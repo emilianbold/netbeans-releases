@@ -46,7 +46,7 @@ public class APTIncludeUtils {
      * caller must check that resolved path is not the same as base file
      * to prevent recursive inclusions 
      */
-    public static ResolvedPath resolveFilePath(String file, String baseFile) {
+    public static ResolvedPath resolveFilePath(String file, String baseFile) {           
         if (baseFile != null) {
             String folder = new File(baseFile).getParent();
             File fileFromBasePath = new File(folder, file);
@@ -58,76 +58,29 @@ public class APTIncludeUtils {
         return null;
     }
     
-//    /** 
-//     * finds file in a list of paths 
-//     * if next param is true look for the file itself, skip it and use next match
-//     * caller must check that resolved path is not the same as base file
-//     * to prevent recursive inclusions 
-//     */
-//    public static String resolveFilePath(String file, Collection paths, String baseFile, boolean next) {
-//        boolean stopOnResolved = !next;
-//        for (Iterator it = paths.iterator(); it.hasNext();) {
-//            String sysPrefix = (String) it.next();
-//            File fileFromPath = new File(new File(sysPrefix), file);
-//            if (exists(fileFromPath)) {
-//                String path = fileFromPath.getAbsolutePath();
-//                if (stopOnResolved) {
-//                    return path;
-//                } else {
-//                    if (path.equalsIgnoreCase(baseFile)) {
-//                        stopOnResolved = true;
-//                    }
-//                }
-//            }
-//        }
-//        return null;
-//    }  
-    
-    /** 
-     * finds file in a list of paths 
-     * if next param is true look for the file itself, skip it and use next match
-     * caller must check that resolved path is not the same as base file
-     * to prevent recursive inclusions 
-     */
-    public static ResolvedPath resolveFilePath(String file, Collection<String> paths, String baseFile, boolean next) {
-        Iterator<String> it = paths.iterator();
-        if( next ) {
-            String baseFilePath = baseFile;
-            StringTokenizer st = new StringTokenizer(file,"/"); // NOI18N
-            while (st.hasMoreTokens()) {
-                st.nextToken();
-                if (baseFilePath != null) {
-                    baseFilePath = new File(baseFilePath).getParent();
-                }
+    public static ResolvedPath resolveAbsFilePath(String file) {
+        if (APTTraceFlags.APT_ABSOLUTE_INCLUDES) {
+            File absFile = new File(file);
+            if (absFile.isAbsolute() && !isDirectory(absFile) && exists(absFile)) {
+                return new ResolvedPath(absFile.getParent(), file, false, 0);
             }
-            while( it.hasNext() ) {
-                String sysPrefix = it.next();
-                if( sysPrefix.equals(baseFilePath) ) {
-                    break;
-                }
-            }
-        }
-        return resolveFilePath(it, file);
-    }  
+        }   
+        return null;
+    }
     
     public static void clearFileExistenceCache() {
         mapRef.clear();
         mapFoldersRef.clear();
     }
     
-    private static ResolvedPath resolveFilePath(Iterator<String> it, String file) {
-        if (APTTraceFlags.APT_ABSOLUTE_INCLUDES) {
-            File absFile = new File(file);
-            if (absFile.isAbsolute() && !isDirectory(absFile) && exists(absFile)) {
-                return new ResolvedPath(absFile.getParent(), file, false, 0);
-            }
-        }
+    public static ResolvedPath resolveFilePath(Iterator<String> it, String file, int dirOffset) {
         while( it.hasNext() ) {
             String sysPrefix = it.next();
             File fileFromPath = new File(new File(sysPrefix), file);
             if (!isDirectory(fileFromPath) && exists(fileFromPath)) {
-                return new ResolvedPath(sysPrefix, fileFromPath.getAbsolutePath(), false, 0);
+                return new ResolvedPath(sysPrefix, fileFromPath.getAbsolutePath(), false, dirOffset);
             }
+            dirOffset++;
         }
         return null;
     }

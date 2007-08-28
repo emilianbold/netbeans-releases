@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
@@ -62,7 +61,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
             if (path.indexOf("..") > 0) { // NOI18N
                 path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
             }
-            if (getIncludeHandler().pushInclude(path, apt.getToken().getLine())) {
+            if (getIncludeHandler().pushInclude(path, apt.getToken().getLine(), resolvedPath.getIndex())) {
                 ProjectBase startProject = this.getStartProject();
                 if (startProject != null) {
                     ProjectBase inclFileOwner = LibraryManager.getInsatnce().resolveFileProjectOnInclude(startProject, getFile(), resolvedPath);

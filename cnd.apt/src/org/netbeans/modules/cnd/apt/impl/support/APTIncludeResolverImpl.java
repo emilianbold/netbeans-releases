@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import java.util.List;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
@@ -32,23 +33,18 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
  * @author Vladimir Voskresensky
  */
 public class APTIncludeResolverImpl implements APTIncludeResolver {
-    private final String baseFileIncludeDir;
+    private final int baseFileIncludeDirIndex;
     private final String baseFile;
     private final List<String> systemIncludePaths;
     private final List<String> userIncludePaths;  
     
-    public APTIncludeResolverImpl(String path, List<String> systemIncludePaths,
-                                    List<String> userIncludePaths) {
-        this(path, null, systemIncludePaths, userIncludePaths);
-    }
-    
-    public APTIncludeResolverImpl(String path, String baseFileIncludeDir, 
+    public APTIncludeResolverImpl(String path, int baseFileIncludeDirIndex, 
                                     List<String> systemIncludePaths,
                                     List<String> userIncludePaths) {
         this.baseFile = path;
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
-        this.baseFileIncludeDir = baseFileIncludeDir;
+        this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;
     }       
 
     public ResolvedPath resolveInclude(APTInclude apt, APTMacroCallback callback) {
@@ -68,19 +64,21 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         
     private ResolvedPath resolveFilePath(String file, boolean system, boolean includeNext) {
         ResolvedPath result = null;
-        if (file != null && (file.length() > 0)) {
-            if (!system) {
-                // for system current dir has lowest priority
+        if (file != null && (file.length() > 0)) {  
+            result = APTIncludeUtils.resolveAbsFilePath(file);
+            if (result == null && !system && !includeNext) {
+                // for <system> "current dir" has lowest priority
+                // for #include_next should start from another dir
                 result = APTIncludeUtils.resolveFilePath(file, baseFile);
             }
-            if (result == null) {
-                result = APTIncludeUtils.resolveFilePath(file, userIncludePaths, baseFile, includeNext);
+            if ( result == null) {
+                int startOffset = includeNext ? baseFileIncludeDirIndex+1 : 0;
+                PathsCollectionIterator paths = 
+                        new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
+                result = APTIncludeUtils.resolveFilePath(paths, file, startOffset);
             }
-            if (result == null) {
-                result = APTIncludeUtils.resolveFilePath(file, systemIncludePaths, baseFile, includeNext);
-            }
-            if ( result == null && system) {
-                // system was skipped above
+            if ( result == null && system && !includeNext) {
+                // <system> was skipped above, check now, but not for #include_next
                 result = APTIncludeUtils.resolveFilePath(file, baseFile);
             }
         }
