@@ -296,7 +296,12 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         if ((jdbcResourceUrl != null) && (dsInfoUrl != null)){
             char[] jdbcResourceUrlChars = jdbcResourceUrl.toCharArray();
             char[] dsInfoUrlChars = dsInfoUrl.toCharArray();
-            for(int i = 0; i < jdbcResourceUrlChars.length - 1; i++){
+            // determine the shortest of the two arrays
+            int length = jdbcResourceUrlChars.length;
+            if (length > dsInfoUrlChars.length) {
+                length = dsInfoUrlChars.length;
+            }
+            for(int i = 0; i < length-1; i++){
                 if ((jdbcResourceUrlChars[i] != dsInfoUrlChars[i]) && jdbcResourceUrlChars[i] == ':'){
                     nextIndex = 1;
                 } else if (jdbcResourceUrlChars[i + nextIndex] != dsInfoUrlChars[i]){
