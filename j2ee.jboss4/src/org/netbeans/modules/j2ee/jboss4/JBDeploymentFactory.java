@@ -100,7 +100,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
        }         
     }
 
-    public static URLClassLoader getJBClassLoader(String serverRoot, String domainRoot){
+    public static URLClassLoader getJBClassLoader(String serverRoot, String domainRoot) {
         try {
             // dom4j.jar library for JBoss Application Server 4.0.4 and lower and JBoss Application Server 5.0
             File dom404 = new File(serverRoot + "/lib/dom4j.jar"); // NOI18N
