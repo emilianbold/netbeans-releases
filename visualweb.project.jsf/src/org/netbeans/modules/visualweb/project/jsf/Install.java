@@ -124,6 +124,8 @@ public class Install extends ModuleInstall {
                 }
 
                 if (projs.length() > 0) {
+                    String RI = (needJSF && needRowset) ? NbBundle.getMessage(Install.class, "LBL_MissingTwo")
+                                                        : NbBundle.getMessage(Install.class, "LBL_MissingOne");
                     String nbms = "";
                     if (needJSF) {
                         nbms = NbBundle.getMessage(Install.class, "LBL_MissingJSF");
@@ -132,7 +134,7 @@ public class Install extends ModuleInstall {
                         nbms += NbBundle.getMessage(Install.class, "LBL_MissingRowset");
                     }
 
-                    final String mesg = NbBundle.getMessage(Install.class, "LBL_MissingNBM", projs, nbms);
+                    final String mesg = NbBundle.getMessage(Install.class, "LBL_MissingNBM", projs, RI, nbms);
                     SwingUtilities.invokeLater(new Runnable () {
                         public void run() {
                             NotifyDescriptor d = new NotifyDescriptor.Message(mesg, NotifyDescriptor.WARNING_MESSAGE);
