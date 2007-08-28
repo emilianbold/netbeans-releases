@@ -138,6 +138,8 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
     
     /** cached so that during destroy all listeners can be cleaned up, nullified in destroy*/
     private WeakReference<WSDLModel> wsdlmodel;
+
+	private Children children;
     
     private static final SystemAction[] ACTIONS = new SystemAction[] {
         SystemAction.get(CutAction.class),
@@ -182,10 +184,17 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
      */
     private WSDLElementNode(Children children, T element,
             InstanceContent contents) {
-        super(children, createLookup(element.getModel(), contents));
+        //Start with leaf children, 
+        // this solves IZ 84741
+        //set children depending on hasChildren method below,
+        //and update when childrenAdded and childrenRemoved
+        super(Children.LEAF, createLookup(element.getModel(), contents));
+        this.children = children;
         mElement = element;
         mLookupContents = contents;
-
+        if (hasChildren()) {
+        	setChildren(children);
+        }
         // Add various objects to the lookup.
         // Keep this node and its cookie implementation at the top of the
         // lookup, as they provide cookies needed elsewhere, and we want
@@ -421,24 +430,22 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         return false;
     }
 
+    public boolean hasChildren() {
+    	return getWSDLComponent().getChildren().size() > 0;
+    }
+    
     public void childrenAdded(ComponentEvent evt) {
         if (!isSameAsMyWSDLElement((Component) evt.getSource())) {
             return;
         }
-        Children children = getChildren();
-        if (children instanceof RefreshableChildren) {
-            ((RefreshableChildren) getChildren()).refreshChildren();
-        }
+        updateChildren();
     }
 
     public void childrenDeleted(ComponentEvent evt) {
         if (!isSameAsMyWSDLElement((Component) evt.getSource())) {
             return;
         }
-        Children children = getChildren();
-        if (children instanceof RefreshableChildren) {
-            ((RefreshableChildren) getChildren()).refreshChildren();
-        }
+        updateChildren();
     }
 
     public void valueChanged(ComponentEvent evt) {
@@ -920,5 +927,16 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
        return mElement.getClass();
    }
 
-   
+   private void updateChildren() {
+	   boolean hasChildren = hasChildren();
+       if (getChildren() == Children.LEAF) {
+    	   if (hasChildren) setChildren(children);
+       } else {
+    	   if (!hasChildren) setChildren(Children.LEAF);
+       }
+       Children children = getChildren();
+       if (children instanceof RefreshableChildren) {
+           ((RefreshableChildren) getChildren()).refreshChildren();
+       }
+   }
 }

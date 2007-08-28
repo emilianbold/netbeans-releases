@@ -155,5 +155,17 @@ public class WSDLImportNode extends ImportNode {
     
     }
      
+    @Override
+    public boolean hasChildren() {
+         List<WSDLModel> models = getWSDLComponent().getModel().findWSDLModel(getWSDLComponent().getNamespace());
+         //getImportedObject();
+         for (WSDLModel model : models) {
+             if(model != null && model.getDefinitions() != null) {
+                 return true;
+             }
+         }
+         return super.hasChildren();
+    }
+     
 }
 

@@ -125,4 +125,17 @@ public class XSDImportNode extends ImportNode {
             return keys;
         }
     }
+    
+    @Override
+    public boolean hasChildren() {
+        ArrayList keys = new ArrayList();
+        List list = getWSDLComponent().getModel().findSchemas(getWSDLComponent().getNamespace());
+        if (list != null && list.size() > 0) {
+            Schema schema = (Schema) list.get(0);
+            if (schema != null) {
+                return true;
+            }
+        }
+        return super.hasChildren();
+    }
 }

@@ -534,5 +534,9 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
         return NbBundle.getMessage(DefinitionsNode.class, "LBL_DefinitionsNode_TypeDisplayName");
     }
     
+    @Override
+    public boolean hasChildren() {
+    	return true;
+    }
     
 }
