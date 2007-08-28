@@ -990,9 +990,6 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 timeStampCheckingRunning = current;
                 
                 try {
-                    if (secureStatusHasBeenChecked&& (maybeRunningButWrongUserName==true)){
-                        testCredentials() ;//that will prompt again the dialog for user/password
-                    }
                     ThrowExceptionIfSuspended();
                     
                     Target[] t= getTargets();
@@ -1299,6 +1296,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     
     public void  refreshDeploymentManager(){
         try{
+            secureStatusHasBeenChecked=false;
             resetInnerDeploymentManager();
         }catch(Exception ex)   {
             return;//nothing much

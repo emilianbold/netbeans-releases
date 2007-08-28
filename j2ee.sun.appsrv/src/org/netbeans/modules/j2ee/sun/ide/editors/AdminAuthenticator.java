@@ -41,6 +41,7 @@ import org.openide.util.NbBundle;
 
 public class AdminAuthenticator extends java.net.Authenticator {
     private  SunDeploymentManagerInterface preferredSunDeploymentManagerInterface;
+    private boolean displayed = false;
     
     public AdminAuthenticator( ) {
         preferredSunDeploymentManagerInterface=null ;
@@ -51,64 +52,70 @@ public class AdminAuthenticator extends java.net.Authenticator {
     }
 
     protected java.net.PasswordAuthentication getPasswordAuthentication() {
-        java.net.InetAddress site = getRequestingSite();
-        ResourceBundle bundle = NbBundle.getBundle( AdminAuthenticator.class );
-        String host = site == null ? bundle.getString( "CTL_PasswordProtected" ) : site.getHostName(); // NOI18N
-        String title = getRequestingPrompt();
-        InstanceProperties ip = null;
-        String keyURI;
-        String name=""; // NOI18N
-        if (title.equals("admin-realm")){ // NOI18N so this is a request from the sun server
-        if (preferredSunDeploymentManagerInterface!=null){
-            //Make sure this is really the admin port and not the app port (see bug 85605
-            if ( preferredSunDeploymentManagerInterface.getPort()==getRequestingPort()){ 
-                ip =SunURIManager.getInstanceProperties(
-                        preferredSunDeploymentManagerInterface.getPlatformRoot(),
-                        preferredSunDeploymentManagerInterface.getHost(),
-                        preferredSunDeploymentManagerInterface.getPort());
-            }
-        }
-//            else {
-//            keyURI=SunURIManager.SUNSERVERSURI+site.getHostName()+":"+getRequestingPort();
-//            ip= InstanceProperties.getInstanceProperties(keyURI);
-//
-//        }
-        }
-        if (ip!=null){
-            title =ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-            name = ip.getProperty(InstanceProperties.USERNAME_ATTR);
-
-        }
-        
-        
-        
-        PasswordPanel passwordPanel = new PasswordPanel(name);
-        
-        DialogDescriptor dd = new DialogDescriptor( passwordPanel, host );
-        passwordPanel.setPrompt(title  );
-        java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog( dd );
-        dialog.setVisible(true);
-        
-        if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ){
+        if (!displayed) {
+            displayed = true;
             
-            if (ip!=null){
-                String oldpass = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
-                ip.setProperty(InstanceProperties.USERNAME_ATTR, passwordPanel.getUsername());
-                ip.setProperty(InstanceProperties.PASSWORD_ATTR, passwordPanel.getTPassword());
+            java.net.InetAddress site = getRequestingSite();
+            ResourceBundle bundle = NbBundle.getBundle( AdminAuthenticator.class );
+            String host = site == null ? bundle.getString( "CTL_PasswordProtected" ) : site.getHostName(); // NOI18N
+            String title = getRequestingPrompt();
+            InstanceProperties ip = null;
+            String keyURI;
+            String name=""; // NOI18N
+            if (title.equals("admin-realm")){ // NOI18N so this is a request from the sun server
                 if (preferredSunDeploymentManagerInterface!=null){
-                    preferredSunDeploymentManagerInterface.setUserName(passwordPanel.getUsername());
-                    preferredSunDeploymentManagerInterface.setPassword(passwordPanel.getTPassword());
+                    //Make sure this is really the admin port and not the app port (see bug 85605
+                    if ( preferredSunDeploymentManagerInterface.getPort()==getRequestingPort()){
+                        ip =SunURIManager.getInstanceProperties(
+                                preferredSunDeploymentManagerInterface.getPlatformRoot(),
+                                preferredSunDeploymentManagerInterface.getHost(),
+                                preferredSunDeploymentManagerInterface.getPort());
+                    }
                 }
-                ip.refreshServerInstance();
+                //            else {
+                //            keyURI=SunURIManager.SUNSERVERSURI+site.getHostName()+":"+getRequestingPort();
+                //            ip= InstanceProperties.getInstanceProperties(keyURI);
+                //
+                //        }
+            }
+            if (ip!=null){
+                title =ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+                name = ip.getProperty(InstanceProperties.USERNAME_ATTR);
                 
-                if ("".equals(oldpass)){
-                    ip.setProperty(InstanceProperties.PASSWORD_ATTR ,oldpass);
-                    
-                }
             }
             
-            return new java.net.PasswordAuthentication( passwordPanel.getUsername(), passwordPanel.getPassword() );
-        } else{
+            
+            
+            PasswordPanel passwordPanel = new PasswordPanel(name);
+            
+            DialogDescriptor dd = new DialogDescriptor( passwordPanel, host );
+            passwordPanel.setPrompt(title  );
+            java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog( dd );
+            dialog.setVisible(true);
+            
+            if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ){
+                
+                if (ip!=null){
+                    String oldpass = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
+                    ip.setProperty(InstanceProperties.USERNAME_ATTR, passwordPanel.getUsername());
+                    ip.setProperty(InstanceProperties.PASSWORD_ATTR, passwordPanel.getTPassword());
+                    if (preferredSunDeploymentManagerInterface!=null){
+                        preferredSunDeploymentManagerInterface.setUserName(passwordPanel.getUsername());
+                        preferredSunDeploymentManagerInterface.setPassword(passwordPanel.getTPassword());
+                    }
+                    ip.refreshServerInstance();
+                    
+                    if ("".equals(oldpass)){
+                        ip.setProperty(InstanceProperties.PASSWORD_ATTR ,oldpass);
+                        
+                    }
+                }
+                
+                return new java.net.PasswordAuthentication( passwordPanel.getUsername(), passwordPanel.getPassword() );
+            } else{
+                return null;
+            }
+        } else {
             return null;
         }
     }

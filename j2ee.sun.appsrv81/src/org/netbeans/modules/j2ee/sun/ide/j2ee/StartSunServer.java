@@ -800,6 +800,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     public boolean isDebuggable(Target target) {
         try {
             SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)this.dm;
+            sunDm.refreshDeploymentManager();
             if (!sunDm.isRunning()){ //not running? Then not debuggable
                 return false;
             }
