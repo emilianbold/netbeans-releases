@@ -685,7 +685,7 @@ public class Util {
                 }
             }
             
-            ClassLoader urlClassLoader = new URLClassLoader(urlList.toArray(new URL[urlList.size()]));
+            ClassLoader urlClassLoader = new URLClassLoader(urlList.toArray(new URL[urlList.size()]), Util.class.getClassLoader());
             WsdlPort port = wsData.getWsdlService().getPortByName(portName);
             
             DesignerWebServiceExtData data =

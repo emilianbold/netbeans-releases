@@ -227,7 +227,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 File tmpProxy = createTempCopy(proxyJar);
                 tmpProxy.deleteOnExit();
                 
-                URLClassLoader classLoader = new URLClassLoader(Util.buildClasspath(tmpProxy, libProperty).toArray(new URL[0]));
+                URLClassLoader classLoader = new URLClassLoader(Util.buildClasspath(tmpProxy, libProperty).toArray(new URL[0]), this.getClass().getClassLoader());
                 
                 
                 // Verify that the port getter method exists in the Service class, otherwise
