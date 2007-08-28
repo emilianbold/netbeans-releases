@@ -110,5 +110,5 @@ public class DataObjectContextImpl implements DataObjectContext {
     public void forceSave () {
         IOSupport.getDocumentSerializer (dataObject).saveDocument ();
     }
-
+    
 }

@@ -128,6 +128,11 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
     @Override
     public void open() {
         useEditPriority = false;
+        
+        String projectType = IOSupport.resolveProjectType (IOSupport.getDataObjectContext (dataObject));
+        if (projectType == null)
+            return;
+        
         super.open();
 
         TopComponent mvtc = this.mvtc;
@@ -145,6 +150,10 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
     @Override
     public void edit() {
         useEditPriority = true;
+        
+        String projectType = IOSupport.resolveProjectType (IOSupport.getDataObjectContext (dataObject));
+        if (projectType == null)
+            return;
         super.open();
 
         TopComponent mvtc = this.mvtc;
@@ -185,6 +194,9 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
 
     @Override
     protected Pane createPane() {
+        String projectType = IOSupport.resolveProjectType (IOSupport.getDataObjectContext (dataObject));
+        if (projectType == null)
+            return super.createPane();
         descriptions = IOSupport.createEditorSupportPane (IOSupport.getDataObjectContext (dataObject));
         int index = getIndex ();
         return (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView (descriptions, index >= 0 ? descriptions[index] : null, closeHandler);

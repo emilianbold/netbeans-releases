@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 
 /**
  * @author David Kaspar
@@ -45,10 +46,10 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
 
     public static final String VERSION_1 = "1"; // NOI18N
 
-    public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, final Collection<ComponentElement> componentElements) {
+    public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, final Collection<ComponentElement> componentElements, DocumentErrorHandler errorHandler) {
         final DescriptorRegistry registry = loadingDocument.getDescriptorRegistry ();
         final Collection<String> unresolved = new HashSet<String> ();
-        registry.readAccess (new Runnable() {
+        registry.readAccess(new Runnable() {
             public void run () {
                 for (ComponentElement element : componentElements) {
                     String string = element.getTypeID ().getString ();
@@ -70,7 +71,7 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
         }
     }
 
-    public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements) {
+    public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements, DocumentErrorHandler errorHandler) {
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! VERSION_1.equals (documentVersion))
             return;
         if (loadingDocument.getDescriptorRegistry ().isInHierarchy (ItemCD.TYPEID, component.getType ())) {
@@ -88,7 +89,7 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
         }
     }
 
-    public void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument, String documentVersion) {
+    public void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DocumentErrorHandler errorHandler) {
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! VERSION_1.equals (documentVersion))
             return;
         DesignComponent rootComponent = loadingDocument.getRootComponent ();

@@ -36,6 +36,7 @@ import org.netbeans.modules.vmd.midpnb.components.displayables.SMSComposerCD;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 
 /**
  * @author David Kaspar
@@ -46,7 +47,7 @@ public class MidpCustomDocumentSerializationController extends DocumentSerializa
     private static TypeID TYPEID_OLD_PIM_BROWSER = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.PIMBrowser"); // NOI18N
     private static TypeID TYPEID_OLD_SMS_COMPOSER = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.SMSComposer"); // NOI18N
 
-    public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, Collection<ComponentElement> componentElements) {
+    public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, Collection<ComponentElement> componentElements, DocumentErrorHandler errorHandler) {
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! MidpDocumentSerializationController.VERSION_1.equals (documentVersion))
             return;
         ArrayList<ComponentElement> elementsToRemove = new ArrayList<ComponentElement> ();
@@ -70,7 +71,7 @@ public class MidpCustomDocumentSerializationController extends DocumentSerializa
         componentElements.addAll (elementsToAdd);
     }
 
-    public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements) {
+    public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements, DocumentErrorHandler errorHandler) {
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! MidpDocumentSerializationController.VERSION_1.equals (documentVersion))
             return;
         if (loadingDocument.getDescriptorRegistry ().isInHierarchy (SVGPlayerCD.TYPEID, component.getType ())) {
@@ -88,7 +89,7 @@ public class MidpCustomDocumentSerializationController extends DocumentSerializa
         }
     }
 
-    public void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument, String documentVersion) {
+    public void postValidateDocument (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DocumentErrorHandler errorHandler) {
     }
 
 }

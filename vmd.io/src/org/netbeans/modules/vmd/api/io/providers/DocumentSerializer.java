@@ -32,6 +32,7 @@ import org.openide.util.RequestProcessor;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.ArrayList;
 import java.lang.ref.WeakReference;
+import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 
 /**
  * @author David Kaspar
@@ -55,8 +56,16 @@ public final class DocumentSerializer {
             DocumentInterfaceImpl loadingDocumentInterface = new DocumentInterfaceImpl (context, undoRedoManager);
             documentInterfaces.add (new WeakReference<DocumentInterface> (loadingDocumentInterface));
             final DesignDocument loadingDocument = new DesignDocument (loadingDocumentInterface);
-            DocumentLoad.load (context, loadingDocument);
-            IOSupport.resetCodeResolver (context.getDataObject (), loadingDocument); // HINT - if a new document is created which should update source code then do not call this method 
+            DocumentErrorHandler errorHandler = new DocumentErrorHandler();
+            DocumentLoad.load (context, loadingDocument, errorHandler);
+            if (! errorHandler.getErrors().isEmpty()) {
+                IOSupport.showDocumentErrorHandlerDialog(errorHandler, context.getDataObject().getPrimaryFile().getName());
+                IOSupport.getCloneableEditorSupport (context.getDataObject()).close();
+                return;
+            } else if (! errorHandler.getWarnings().isEmpty())
+                IOSupport.showDocumentErrorHandlerDialog(errorHandler, context.getDataObject().getPrimaryFile().getName());
+            
+            IOSupport.resetCodeResolver(context.getDataObject(), loadingDocument); // HINT - if a new document is created which should update source code then do not call this method
             loadingDocumentInterface.enable ();
             synchronized (DocumentSerializer.this) {
                 document = loadingDocument;

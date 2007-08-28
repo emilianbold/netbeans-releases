@@ -34,11 +34,14 @@ import org.netbeans.modules.vmd.io.editor.EditorViewElement;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.NbBundle;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.WeakHashMap;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -53,21 +56,20 @@ import java.util.WeakHashMap;
  * @author David Kaspar
  */
 public final class IOSupport {
-    
+
     private IOSupport() {
     }
-    
-    private static final WeakHashMap<DataObject, DataObjectContext> contexts = new WeakHashMap<DataObject, DataObjectContext> ();
-    private static final WeakHashMap<DataObject, DocumentSerializer> serializers = new WeakHashMap<DataObject, DocumentSerializer> ();
-    private static final WeakHashMap<DataObject, CodeResolver> resolvers = new WeakHashMap<DataObject, CodeResolver> ();
-    private static final WeakHashMap<DataObject, Boolean> documentUpdating = new WeakHashMap<DataObject, Boolean> ();
-    
+    private static final WeakHashMap<DataObject, DataObjectContext> contexts = new WeakHashMap<DataObject, DataObjectContext>();
+    private static final WeakHashMap<DataObject, DocumentSerializer> serializers = new WeakHashMap<DataObject, DocumentSerializer>();
+    private static final WeakHashMap<DataObject, CodeResolver> resolvers = new WeakHashMap<DataObject, CodeResolver>();
+    private static final WeakHashMap<DataObject, Boolean> documentUpdating = new WeakHashMap<DataObject, Boolean>();
+
     /**
      * Returns a data object context representing specified data object.
      * @param dataObject the data object
      * @return the data object context
      */
-    public synchronized static DataObjectContext getDataObjectContext(DataObject dataObject) {
+    public static synchronized DataObjectContext getDataObjectContext(DataObject dataObject) {
         DataObjectContext context = contexts.get(dataObject);
         if (context == null) {
             getDataObjectInteface(dataObject);
@@ -76,14 +78,13 @@ public final class IOSupport {
         }
         return context;
     }
-    
-   
+
     /**
      * Returns a document serializer related to specified data object.
      * @param dataObject the data object
      * @return the related document serializer
      */
-    public synchronized static DocumentSerializer getDocumentSerializer(DataObject dataObject) {
+    public static synchronized DocumentSerializer getDocumentSerializer(DataObject dataObject) {
         DocumentSerializer serializer = serializers.get(dataObject);
         if (serializer == null) {
             DataObjectContext context = getDataObjectContext(dataObject);
@@ -93,7 +94,7 @@ public final class IOSupport {
         }
         return serializer;
     }
-    
+
     /**
      * Force update of code. This is usually invoked immediately after a document is loaded and immediately a document is saved
      * to keep the generated code synchronized with related design document.
@@ -101,25 +102,28 @@ public final class IOSupport {
      */
     public static void forceUpdateCode(DataObject dataObject) {
         CodeResolver resolver = resolvers.get(dataObject);
-        if (resolver != null)
+        if (resolver != null) {
             resolver.forceUpdateCode();
+        }
     }
-    
+
     /**
      * Call this method to free all objects related to the data object that very assigned by the class.
      * @param dataObject the data object
      */
-    public synchronized static void notifyDataObjectClosed(DataObject dataObject) {
-        documentUpdating.remove (dataObject);
+    public static synchronized void notifyDataObjectClosed(DataObject dataObject) {
+        documentUpdating.remove(dataObject);
         CodeResolver resolver = resolvers.remove(dataObject);
-        if (resolver != null)
+        if (resolver != null) {
             resolver.notifyDataObjectClosed();
+        }
         DocumentSerializer serializer = serializers.remove(dataObject);
-        if (serializer != null)
+        if (serializer != null) {
             serializer.notifyDataObjectClosed();
+        }
         contexts.remove(dataObject);
     }
-    
+
     /**
      * Returns data object interface for specified data object.
      * DataObject must implement DataObjectInterface.
@@ -127,11 +131,12 @@ public final class IOSupport {
      * @return the data object interface
      */
     public static DataObjectInterface getDataObjectInteface(DataObject dataObject) {
-        if (! (dataObject instanceof DataObjectInterface))
+        if (!(dataObject instanceof DataObjectInterface)) {
             throw Debug.illegalArgument("DataObject does not implement DataObjectInterface", dataObject); // NOI18N
+        }
         return (DataObjectInterface) dataObject;
     }
-    
+
     /**
      * Returns a cloneable editor lookup for specified data object.
      * The CloneableEditorSupport has to be in data object lookup.
@@ -140,11 +145,12 @@ public final class IOSupport {
      */
     public static CloneableEditorSupport getCloneableEditorSupport(DataObject dataObject) {
         CloneableEditorSupport editorSupport = dataObject.getLookup().lookup(CloneableEditorSupport.class);
-        if (editorSupport == null)
+        if (editorSupport == null) {
             throw Debug.illegalArgument("Missing CloneableEditorSupport in DataObject lookup", dataObject); // NOI18N
+        }
         return editorSupport;
     }
-    
+
     /**
      * Returns the design file of specified data object context.
      * @param context the data object context
@@ -153,7 +159,7 @@ public final class IOSupport {
     public static FileObject getDesignFile(DataObjectContext context) {
         return getDataObjectInteface(context.getDataObject()).getDesignFile();
     }
-    
+
     /**
      * Creates an array of multi view descriptions for editor support for a specified context.
      * @param context the data object context
@@ -161,12 +167,13 @@ public final class IOSupport {
      */
     public static MultiViewDescription[] createEditorSupportPane(DataObjectContext context) {
         Collection<DataEditorView> views = EditorViewFactorySupport.createEditorViews(context);
-        ArrayList<EditorViewDescription> descriptions = new ArrayList<EditorViewDescription> ();
-        for (DataEditorView view : views)
+        ArrayList<EditorViewDescription> descriptions = new ArrayList<EditorViewDescription>();
+        for (DataEditorView view : views) {
             descriptions.add(new EditorViewDescription(context, view));
+        }
         return descriptions.toArray(new MultiViewDescription[descriptions.size()]);
     }
-    
+
     /**
      * Returns data editor view instance assigned to a multi view description.
      * @param description the description
@@ -175,31 +182,34 @@ public final class IOSupport {
     public static DataEditorView getDataEditorView(MultiViewDescription description) {
         return description instanceof EditorViewDescription ? ((EditorViewDescription) description).getView() : null;
     }
-    
+
     /**
      * Returns a data object context for specified document
      * @param document the design document
      * @return the data object context
      */
     // TODO - should be hidden - used by ProjectUtils.getDataObjectContextForDocument method only
-    public synchronized static DataObjectContext getDataObjectContextForDocumentInterface(DesignDocument document) {
-        assert Debug.isFriend (ProjectUtils.class, "getDataObjectContextForDocument"); // NOI18N
-        DocumentInterface documentInterface = document.getDocumentInterface ();
+    public static synchronized DataObjectContext getDataObjectContextForDocumentInterface(DesignDocument document) {
+        assert Debug.isFriend(ProjectUtils.class, "getDataObjectContextForDocument"); // NOI18N
+        DocumentInterface documentInterface = document.getDocumentInterface();
         for (DataObject dataObject : serializers.keySet()) {
-            if (dataObject == null)
+            if (dataObject == null) {
                 continue;
+            }
             DocumentSerializer documentSerializer = getDocumentSerializer(dataObject); // TODO - use direct access to serializers field
-            if (documentSerializer.hasDocumentInterface (documentInterface))
+            if (documentSerializer.hasDocumentInterface(documentInterface)) {
                 return getDataObjectContext(dataObject);
+            }
         }
         return null;
     }
 
     // TODO - should be hidden - used by EditorViewElement.componentActivated method only
     public static void notifyDataEditorViewActivated(DataEditorView activatedView) {
-        assert Debug.isFriend (EditorViewElement.class, "componentActivated"); // NOI18N
-        if (activatedView == null)
+        assert Debug.isFriend(EditorViewElement.class, "componentActivated"); // NOI18N
+        if (activatedView == null) {
             return;
+        }
         CodeResolver resolver = resolvers.get(activatedView.getContext().getDataObject());
         resolver.viewActivated(activatedView);
     }
@@ -209,13 +219,13 @@ public final class IOSupport {
      * @param context the context
      * @return the project type
      */
-    public static String resolveProjectType (DataObjectContext context) {
-        return DocumentLoad.loadProjectType (context);
+    public static String resolveProjectType(DataObjectContext context) {
+        return DocumentLoad.loadProjectType(context);
     }
 
-    static void resetCodeResolver (DataObject dataObject, DesignDocument document) {
-        CodeResolver resolver = resolvers.get (dataObject);
-        resolver.resetModelModifiedStatus (document);
+    static void resetCodeResolver(DataObject dataObject, DesignDocument document) {
+        CodeResolver resolver = resolvers.get(dataObject);
+        resolver.resetModelModifiedStatus(document);
     }
 
     /**
@@ -223,9 +233,9 @@ public final class IOSupport {
      * @param dataObject the data object
      * @return true, if enabled
      */
-    public static boolean isDocumentUpdatingEnabled (DataObject dataObject) {
-        Boolean enabled = documentUpdating.get (dataObject);
-        return enabled != null  &&  enabled;
+    public static boolean isDocumentUpdatingEnabled(DataObject dataObject) {
+        Boolean enabled = documentUpdating.get(dataObject);
+        return enabled != null && enabled;
     }
 
     /**
@@ -233,8 +243,45 @@ public final class IOSupport {
      * @param dataObject the data object
      * @param enabled if true, then enabled
      */
-    public static void setDocumentUpdatingEnabled (DataObject dataObject, boolean enabled) {
-        documentUpdating.put (dataObject, enabled);
+    public static void setDocumentUpdatingEnabled(DataObject dataObject, boolean enabled) {
+        documentUpdating.put(dataObject, enabled);
     }
 
+    /**
+     * Visuals content of DocumentErrorHandler. All messages (wrning and errors) are displayed in 
+     * informational dialog window.
+     * @param errorHandler 
+     * @param fileName
+     */
+    public static void showDocumentErrorHandlerDialog(final DocumentErrorHandler errorHandler, final String fileName) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (errorHandler.getErrors().isEmpty() && errorHandler.getWarnings().isEmpty()) {
+                    return;
+                }
+                StringBuffer warnings = new StringBuffer();
+                if (!errorHandler.getWarnings().isEmpty()) {
+                    warnings.append("<HTML><FONT COLOR=BLUE> <STRONG>" + NbBundle.getMessage(IOSupport.class, "LBL_DialogWarning") + "</STRONG></FONT><UL>"); //NOI18N
+                    for (String warning : errorHandler.getWarnings()) {
+                        warnings.append("<LI>"); //NOI18N
+                        warnings.append(warning);
+                        warnings.append("</LI>"); //NOI18N
+                    }
+                    warnings.append("</UL>"); //NOI18N
+                }
+                StringBuffer errors = new StringBuffer();
+                if (!errorHandler.getErrors().isEmpty()) {
+                    errors.append("<HTML><FONT COLOR=RED> <STRONG>" + NbBundle.getMessage(IOSupport.class, "LBL_DialogError") + "</STRONG></FONT><UL>"); //NOI18N
+                    for (String error : errorHandler.getErrors()) {
+                        errors.append("<LI>"); //NOI18N
+                        errors.append(error);
+                        errors.append("</LI>"); //NOI18N
+                    }
+                    errors.append("</UL>"); //NOI18N
+                }
+                DialogDescriptor descriptor = new DialogDescriptor(errors.toString() + warnings.toString(), NbBundle.getMessage(IOSupport.class, "LBL_DialogTitle") + " " + fileName); //NOI18N
+                DialogDisplayer.getDefault().notify(descriptor);
+            }
+        });
+    }
 }

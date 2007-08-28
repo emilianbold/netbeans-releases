@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.io.DataEditorViewFactory;
 import org.openide.util.Lookup;
 
 import java.util.*;
+import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 
 /**
  * @author David Kaspar
@@ -33,6 +34,9 @@ public class EditorViewFactorySupport {
     private static final Lookup.Result factoriesLookupResult = Lookup.getDefault ().lookupResult (DataEditorViewFactory.class);
 
     public static Collection<DataEditorView> createEditorViews (DataObjectContext context) {
+        String projectType = IOSupport.resolveProjectType (context);
+        if (projectType == null)
+            return Collections.EMPTY_LIST;
         ArrayList<DataEditorView> list = new ArrayList<DataEditorView> ();
         for (Object factory : factoriesLookupResult.allInstances ()) {
             DataEditorView desc = ((DataEditorViewFactory) factory).createEditorView (context);
