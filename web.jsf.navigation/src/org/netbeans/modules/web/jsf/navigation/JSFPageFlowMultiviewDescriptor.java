@@ -28,9 +28,11 @@
 package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -41,6 +43,7 @@ import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
+import org.openide.awt.Actions;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -48,6 +51,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -139,14 +143,27 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         }
 
         public Action[] getActions() {
-            try {
-                final DataObject dataObject = org.openide.loaders.DataObject.find(context.getFacesConfigFile());
+            Action[] a = tc.getActions();
 
-                return dataObject.getNodeDelegate().getActions(false);
-            } catch (DataObjectNotFoundException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, ex.getMessage(), ex);
+            try {
+                ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+
+                if (l == null) {
+                    l = getClass().getClassLoader();
+                }
+
+                Class<? extends SystemAction> c = Class.forName("org.openide.actions.FileSystemAction", true, l).asSubclass(SystemAction.class); // NOI18N
+                SystemAction ra = SystemAction.findObject(c, true);
+
+                Action[] a2 = new Action[a.length + 1];
+                System.arraycopy(a, 0, a2, 0, a.length);
+                a2[a.length] = ra;
+                return a2;
+            } catch (Exception ex) {
+                // ok, we no action like this I guess
             }
-            return null;
+            return new Action[]{};
+
         }
 
         public Lookup getLookup() {
