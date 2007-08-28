@@ -168,21 +168,23 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="commons-logging-1-0-4.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/commons-logging-1-0-4.xml"/>
+            <file name="jsf12-support.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsf12-support.xml"/>
+            <file name="webui.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/webui.xml"/>
+            <file name="woodstock-components.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/woodstock-components.xml"/>
+            <file name="exceptionhandler-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/exceptionhandler-runtime.xml"/>
+            <file name="theme-default.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default.xml"/>
+            <file name="theme-default-green.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default-green.xml"/>
+            <file name="theme-default-gray.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default-gray.xml"/>
+            <file name="woodstock-theme-default.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/woodstock-theme-default.xml"/>
+            <file name="ejbsupport-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/ejbsupport-designtime.xml"/>
+            <!-- Deprecated libraries below for backward compatible -->
             <file name="jsfsupport-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsfsupport-designtime.xml"/>
             <file name="jsfsupport-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsfsupport-runtime.xml"/>
             <file name="webui-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/webui-designtime.xml"/>
             <file name="webui-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/webui-runtime.xml"/>
             <file name="jdbcsupport-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jdbcsupport-designtime.xml"/>
             <file name="jdbcsupport-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jdbcsupport-runtime.xml"/>
-            <file name="exceptionhandler-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/exceptionhandler-runtime.xml"/>
-            <file name="theme-default.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default.xml"/>
-            <file name="theme-default-green.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default-green.xml"/>
-            <file name="theme-default-gray.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default-gray.xml"/>
-            <file name="woodstock-components.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/woodstock-components.xml"/>
-            <file name="woodstock-theme-default.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/woodstock-theme-default.xml"/>
-            <file name="jsf12-support.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsf12-support.xml"/>
-            <file name="ejbsupport-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/ejbsupport-designtime.xml"/>
+            <file name="commons-logging-1-0-4.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/commons-logging-1-0-4.xml"/>
         </folder>
         <folder name="LibraryTypeProviders">
             <file name="component_library_provider.instance">

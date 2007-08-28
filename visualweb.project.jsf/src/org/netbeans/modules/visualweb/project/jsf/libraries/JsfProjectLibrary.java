@@ -46,18 +46,16 @@ public class JsfProjectLibrary {
 
     // JSF 1.1 support libraries for both Compile and Deploy
     public static final String[] ALLTIME_LIBS_JSF11 = {
+        "jsf12-support",
+        "webui",
     };
 
     // JSF 1.1 support libraries for Compile only
     public static final String[] DESIGNTIME_LIBS_JSF11 = {
-        "jsfsupport-designtime",
-        "webui-designtime",
     };
 
     // JSF 1.1 support libraries for Deploy only
     public static final String[] RUNTIME_LIBS_JSF11 = {
-        "jsfsupport-runtime",
-        "webui-runtime",
         "exceptionhandler-runtime",
     };
 
