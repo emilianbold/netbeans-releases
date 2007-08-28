@@ -19,6 +19,12 @@
 
 package org.netbeans.modules.xml.wsdl.model.impl;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 
 /**
@@ -63,4 +69,32 @@ public enum WSDLAttribute implements Attribute {
     public String getName() { return name; }
 
     public Class getMemberType() { return subtype; }
+
+    private QName qname() {
+        return new QName(name);
+    }
+    
+    private static Map<QName,List<QName>> qnameValuedAttributes = null;
+    private static void initAttributeMap() {
+        qnameValuedAttributes = new HashMap<QName,List<QName>>();
+        qnameValuedAttributes.put(
+                WSDLQNames.BINDING.getQName(), Arrays.asList(new QName[] { PORT_TYPE.qname()}));
+        qnameValuedAttributes.put(
+                WSDLQNames.PART.getQName(), Arrays.asList(new QName[] { ELEMENT.qname(), TYPE.qname() }));
+        qnameValuedAttributes.put(
+                WSDLQNames.INPUT.getQName(), Arrays.asList(new QName[] { MESSAGE.qname() }));
+        qnameValuedAttributes.put(
+                WSDLQNames.OUTPUT.getQName(), Arrays.asList(new QName[] { MESSAGE.qname() }));
+        qnameValuedAttributes.put(
+                WSDLQNames.FAULT.getQName(), Arrays.asList(new QName[] { MESSAGE.qname() }));
+        qnameValuedAttributes.put(
+                WSDLQNames.PORT.getQName(), Arrays.asList(new QName[] { BINDING.qname() }));
+    }
+    
+    static Map<QName,List<QName>> getQNameValuedAttributes() {
+        if (qnameValuedAttributes == null) {
+            initAttributeMap();
+        }
+        return Collections.unmodifiableMap(qnameValuedAttributes);
+    }
 }

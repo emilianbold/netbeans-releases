@@ -507,5 +507,12 @@ public class XDMAccess extends DocumentModelAccess {
     @Override
     public String getCurrentDocumentText() {
         return xdmModel.getCurrentDocumentText();
-}
+    }
+
+    @Override
+    public void addQNameValuedAttributes(Map<QName, List<QName>> attributesMap) {
+        Map<QName, List<QName>> map = new HashMap<QName, List<QName>>(xdmModel.getQNameValuedAttributes());
+        map.putAll(attributesMap);
+        xdmModel.setQNameValuedAttributes(map);
+    }
 }

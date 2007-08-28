@@ -70,7 +70,7 @@ public class WSDLSchemaValidatorTest extends TestCase {
     
     
     public void testValidateImportMultiLocation() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/importWSDLtests/importMultiLocation_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/importWSDLTests/importMultiLocation_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -78,7 +78,7 @@ public class WSDLSchemaValidatorTest extends TestCase {
     }
     
     public void testValidateImportMultiNamespace() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/importWSDLtests/importMultiNamespace_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/importWSDLTests/importMultiNamespace_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -86,7 +86,7 @@ public class WSDLSchemaValidatorTest extends TestCase {
     }
     
     public void testValidateImportNoLocation() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/importWSDLtests/importNoLocation_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/importWSDLTests/importNoLocation_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         
@@ -95,7 +95,7 @@ public class WSDLSchemaValidatorTest extends TestCase {
     
     
     public void testValidateImportNoNamespace() throws Exception {
-        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/importWSDLtests/importNoNamespace_error.wsdl";
+        String fileName = "/org/netbeans/modules/xml/wsdl/validator/resources/importWSDLTests/importNoNamespace_error.wsdl";
         URL url = getClass().getResource(fileName);
         URI uri = url.toURI();
         

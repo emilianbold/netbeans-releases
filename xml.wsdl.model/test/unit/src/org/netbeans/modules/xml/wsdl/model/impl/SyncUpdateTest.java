@@ -375,11 +375,11 @@ public class SyncUpdateTest extends TestCase {
      }
      
      public void testDocumentationChangeEvents() throws Exception {
-        WSDLModel model = Util.loadWSDLModel("resources/TestDocumentation.wsdl");
+        WSDLModel model = Util.loadWSDLModel("resources/testDocumentation.wsdl");
         setup(model);
         Documentation doc = Util.find(Documentation.class, model, "/definitions/portType/operation/documentation");
 
-        Util.setDocumentContentTo(model, "resources/TestDocumentation_after.wsdl");
+        Util.setDocumentContentTo(model, "resources/testDocumentation_after.wsdl");
         model.sync();
 
         listener.assertChangeEvent(doc);

@@ -592,6 +592,14 @@ public abstract class NodeImpl implements Node, Cloneable {
         return namespace;
     }
 
+    public static String lookupNamespace(Node current, List<Node> ancestors) {
+        String namespace = current.getNamespaceURI();
+        if (namespace == null) {
+            namespace = lookupNamespace(current.getPrefix(), ancestors);
+        }
+        return namespace;
+    }
+    
     public static String lookupNamespace(String prefix, List<Node> path) {
         if (path == null) return null;
         if(prefix == null) prefix = "";

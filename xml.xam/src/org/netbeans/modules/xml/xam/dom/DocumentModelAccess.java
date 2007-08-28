@@ -263,4 +263,13 @@ public abstract class DocumentModelAccess extends ModelAccess {
     public void unsetDirty() {
         dirtyTimeMillis = 0;
     }
+
+    /**
+     * A chance for extensible model to register attributes from extension that have
+     * QName values.  This will help with refactoring of namespace prefixes that happen
+     * during namespace consolidation when a new component is added to model.
+     * Note: should be overridden by implementation as necessary.
+     */
+    public void addQNameValuedAttributes(Map<QName, List<QName>> attributesMap) {
+    }
 }

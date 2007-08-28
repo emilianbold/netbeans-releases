@@ -405,8 +405,8 @@ public class XDMModel {
         }
         
         // use parent node prefix
-        String parentNS = parent.getNamespaceURI();
         String parentPrefix = parent.getPrefix();
+        String parentNS = NodeImpl.lookupNamespace(parent, ancestors);
         if (parentNS != null && ! parentNS.equals(XMLConstants.NULL_NS_URI)) {
             new NamespaceRefactorVisitor(this).refactor(
                         newNode, parentNS, parentPrefix, parentAndAncestors);
@@ -445,7 +445,7 @@ public class XDMModel {
             assert (namespace != null);
             
             Node parent = parentAndAncestors.get(0);
-            String parentNS = parent.getNamespaceURI();
+            String parentNS = NodeImpl.lookupNamespace(parent, parentAndAncestors);
             
             String existingNS = NodeImpl.lookupNamespace(prefix, parentAndAncestors);
             String existingPrefix = NodeImpl.lookupPrefix(namespace, parentAndAncestors);

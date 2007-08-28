@@ -5,10 +5,13 @@ import java.util.List;
 import javax.swing.text.Document;
 import junit.framework.*;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.schema.model.SimpleTypeRestriction;
 import org.netbeans.modules.xml.wsdl.model.impl.WSDLModelImpl;
 import org.netbeans.modules.xml.wsdl.model.visitor.FindWSDLComponent;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
@@ -126,5 +129,20 @@ public class ImportTest extends TestCase {
         GlobalElement e = new ArrayList<GlobalElement>(schema.getElements()).get(1);
         assertTrue(e.getType().getRefString().equals("tns1:Operacion"));
         assertTrue(e.getType().get().getName().equals("Operacion"));
+    }
+    
+    public void testEmbeddedSchemaWithNonDefaultXsdPrefix() throws Exception {
+        WSDLModelImpl model = (WSDLModelImpl)Util.loadWSDLModel("resources/empty_non_default_xsd_prefix.wsdl");
+        assertNotNull(model.getDefinitions().getTypes());
+        Schema schema = model.getDefinitions().getTypes().getSchemas().iterator().next();
+        GlobalSimpleType simpleType = schema.getModel().getFactory().createGlobalSimpleType();
+        SimpleTypeRestriction str = schema.getModel().getFactory().createSimpleTypeRestriction();
+        simpleType.setName("test");
+        str.setBase(str.createReferenceTo(Util.getPrimitiveType("string"), GlobalSimpleType.class));
+        simpleType.setDefinition(str);
+        model.startTransaction();
+        schema.addSimpleType(simpleType);
+        model.endTransaction();
+        assertEquals("s:string", ((AbstractDocumentComponent)str).getPeer().getAttribute("base"));
     }
 }

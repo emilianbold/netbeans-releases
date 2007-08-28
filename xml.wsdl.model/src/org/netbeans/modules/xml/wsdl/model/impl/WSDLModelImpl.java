@@ -22,7 +22,9 @@ package org.netbeans.modules.xml.wsdl.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,6 +49,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.dom.ChangeInfo;
+import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xml.xam.dom.SyncUnit;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -286,4 +289,10 @@ public class WSDLModelImpl extends WSDLModel {
             return super.findComponent(current, pathFromRoot, iCurrent);
         }
     }
+
+    @Override
+    public Map<QName, List<QName>> getQNameValuedAttributes() {
+        return WSDLAttribute.getQNameValuedAttributes();
+    }
+
 }

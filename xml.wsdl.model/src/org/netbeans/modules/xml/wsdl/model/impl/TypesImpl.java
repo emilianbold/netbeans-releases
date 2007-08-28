@@ -30,6 +30,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.xsd.impl.WSDLSchemaImpl;
 import org.netbeans.modules.xml.wsdl.model.spi.WSDLComponentBase;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.netbeans.modules.xml.xam.EmbeddableRoot;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -38,6 +39,7 @@ import org.w3c.dom.Node;
  * @author Nam Nguyen
  */
 public class TypesImpl extends WSDLComponentBase implements Types {
+    private boolean registeredSchemaQNameAttributes;
     
     /** Creates a new instance of TypesImpl */
     public TypesImpl(WSDLModel model, Element e) {
@@ -58,6 +60,11 @@ public class TypesImpl extends WSDLComponentBase implements Types {
         
         for(WSDLSchema wsdlSchema : wsdlSchemas){
             schemas.add(wsdlSchema.getSchemaModel().getSchema());
+            if (! registeredSchemaQNameAttributes) {
+                AbstractDocumentModel schemaModel = (AbstractDocumentModel) wsdlSchema.getSchemaModel();
+                getModel().getAccess().addQNameValuedAttributes(schemaModel.getQNameValuedAttributes());
+                registeredSchemaQNameAttributes = true;
+            }
         }
         return schemas;
     }

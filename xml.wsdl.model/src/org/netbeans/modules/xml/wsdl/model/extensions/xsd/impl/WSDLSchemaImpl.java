@@ -19,16 +19,22 @@
 
 package org.netbeans.modules.xml.wsdl.model.extensions.xsd.impl;
 
+import java.util.HashMap;
 import java.util.List;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
+import org.netbeans.modules.xml.wsdl.model.impl.WSDLAttribute;
+import org.netbeans.modules.xml.wsdl.model.impl.WSDLModelImpl;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.w3c.dom.Element;
 
@@ -70,5 +76,5 @@ public class WSDLSchemaImpl extends GenericExtensibilityElement implements WSDLS
     protected void populateChildren(List<WSDLComponent> children) {
         // just dummy node, make sure empty children
     }
-    
+
 }
