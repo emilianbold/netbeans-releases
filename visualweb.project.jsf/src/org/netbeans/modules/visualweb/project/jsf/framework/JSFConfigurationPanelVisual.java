@@ -59,6 +59,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private boolean addJSF = false;
 
     // <RAVE> Default Bean Package
+    private boolean addRowset = false;
     private boolean beanPackageModified = false;
     // </RAVE>
     
@@ -500,18 +501,38 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                 if (!currentServerInstanceID.equals(serverInstanceID) || currentWebModule25Version != webModule25Version) {
                     webModule25Version = currentWebModule25Version;
                     serverInstanceID = currentServerInstanceID;
-                    initLibSettings(webModule25Version, serverInstanceID);
+                    // <RAVE>
+                    initLibSettings(wizardDescriptor, webModule25Version, serverInstanceID);
+                    // </RAVE>
                 }
             }
         }
         
+        // <RAVE>
+        boolean addJSF11 = false;
         if (addJSF) {
             if ((rbNewLibrary.isSelected() && (jtFolder.getText().trim().length() <= 0 || jtVersion.getText().trim().length() <= 0))
-                    || (rbRegisteredLibrary.isSelected() && cbLibraries.getItemCount() <= 0)) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF")); //NOI18N
-                return false;
+                || (rbRegisteredLibrary.isSelected() && cbLibraries.getItemCount() <= 0)) {
+                addJSF11 = true;
             }
         }
+
+        if (addJSF11 || addRowset) {
+            String RI = (addJSF11 && addRowset) ? NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingTwo")
+                                                : NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingOne");
+            String nbms = "";
+            if (addJSF11) {
+                nbms = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF");
+            }
+            if (addRowset) {
+                nbms += NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingRowset");
+            }
+
+            final String mesg = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingNBM", RI, nbms);
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", mesg); //NOI18N
+            return false;
+        }
+        // </RAVE>
         
         if (rbNewLibrary.isSelected()) {
             String folder = jtFolder.getText().trim();
@@ -587,13 +608,15 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             webModule25Version = false;
         
         serverInstanceID = (String) d.getProperty("serverInstanceID"); //NOI18N
-        initLibSettings(webModule25Version, serverInstanceID);
+        // <RAVE>
+        initLibSettings(d, webModule25Version, serverInstanceID);
+        // </RAVE>
                 
 //        projectLocationPanel.read(d);
 //        optionsPanel.read(d);
     }
     
-    private void initLibSettings(boolean webModule25Version, String serverInstanceID) {
+    private void initLibSettings(WizardDescriptor wizardDescriptor, boolean webModule25Version, String serverInstanceID) {
         try {
             addJSF = false;
             // <RAVE> fix issue#112245, java.lang.NullPointerException
@@ -632,6 +655,18 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                     rbNewLibrary.setSelected(true);
                     addJSF = true;
             }
+
+            // <RAVE>
+            addRowset = false;
+            String setSrcLevel = (String) wizardDescriptor.getProperty("setSourceLevel"); //NOI18N
+            if ("1.4".equals(setSrcLevel)) { // NOI18N
+                // It's a J2SE 1.4 project
+                Library libRowset = LibraryManager.getDefault().getLibrary("rowset-ri"); // NOI18N
+                if (libRowset == null) {
+                    addRowset = true;
+                }
+            }
+            // </RAVE>
         } catch (IOException exc) {
         }
     }

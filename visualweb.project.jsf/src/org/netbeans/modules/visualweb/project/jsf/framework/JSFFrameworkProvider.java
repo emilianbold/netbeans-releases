@@ -131,26 +131,43 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             if (!isMyFaces && (cp.findResource("javax/faces/FacesException.class") == null)) { //NOI18N
                 try {
                     if (JsfProjectUtils.isJavaEE5Project(project)) {
-                        Library jsfLib = LibraryManager.getDefault().getLibrary("jsf12");
+                        Library jsfLib = LibraryManager.getDefault().getLibrary("jsf12"); // NOI18N
                         if (jsfLib != null) {
                             JsfProjectUtils.addLibraryReferences(project, new Library[] {
                                 jsfLib,
-                                LibraryManager.getDefault().getLibrary("jstl11"),
+                                LibraryManager.getDefault().getLibrary("jstl11"), // NOI18N
                             });
                         }
                     } else {
-                        Library jsfDesignLib = LibraryManager.getDefault().getLibrary("jsf-designtime");
-                        Library jsfRuntimeLib = LibraryManager.getDefault().getLibrary("jsf-runtime");
+                        Library jsfDesignLib = LibraryManager.getDefault().getLibrary("jsf-designtime"); // NOI18N
+                        Library jsfRuntimeLib = LibraryManager.getDefault().getLibrary("jsf-runtime"); // NOI18N
                         if (jsfDesignLib != null && jsfRuntimeLib != null) {
                             JsfProjectUtils.addLibraryReferences(project, new Library[] { jsfDesignLib }, ClassPath.COMPILE);
                             JsfProjectUtils.addLibraryReferences(project, new Library[] { jsfRuntimeLib }, ClassPath.EXECUTE);
-                            JsfProjectUtils.addLibraryReferences(project, new Library[] { LibraryManager.getDefault().getLibrary("jstl11") });
+                            JsfProjectUtils.addLibraryReferences(project, new Library[] { LibraryManager.getDefault().getLibrary("jstl11") }); // NOI18N
                         }
                     }
                 } catch (IOException ioExceptoin) {
                     LOGGER.log(Level.WARNING, "Exception during extending an web project", ioExceptoin); //NOI18N
                 }
             }
+
+            
+            String srcLevel = JsfProjectUtils.getSourceLevel(project);
+            if ("1.3".equals(srcLevel) || "1.4".equals(srcLevel)) { // NOI18N
+                if (cp.findResource("javax/sql/rowset/BaseRowSet.class") == null) { //NOI18N
+                    // IDE doesn't have the Rowset RI support
+                    Library libRowset = LibraryManager.getDefault().getLibrary("rowset-ri"); // NOI18N
+                    if (libRowset != null) {
+                        try {
+                            JsfProjectUtils.addLibraryReferences(project, new Library[] { libRowset });
+                        } catch (IOException ioExceptoin) {
+                            LOGGER.log(Level.WARNING, "Exception during extending an web project", ioExceptoin); //NOI18N
+                        }
+                    }
+                }
+            }
+
             template.addLibrary(project);
 
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
