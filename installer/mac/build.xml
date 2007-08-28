@@ -19,7 +19,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="Mac App" basedir="." default="build-app">
+<project name="Mac App" basedir="." default="build-dmg">
+
+  <!-- define these: -->
+  <property name="glassfish_location" value=""/>
+  <property name="tomcat_location" value=""/>
+  <property name="openesb_location" value=""/>
 
   <property name="nb.dir" value="../../nbbuild/netbeans"/>
   <property name="appname" value="NetBeans 6.0"/>
@@ -98,15 +103,27 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="build-dmg" depends="build-pkg">
+    <ant dir="glassfish" target="build-pkg" inheritAll="false">
+      <property name="gf_source" value="${glassfish_location}"/>
+    </ant>
+    <ant dir="tomcat" target="build-pkg" inheritAll="false">
+      <property name="tc_source" value="${tomcat_location}"/>
+    </ant>
+    <ant dir="openesb" target="build-pkg" inheritAll="false">
+      <property name="os_source" value="${openesb_location}"/>
+    </ant>
     <mkdir dir="dist"/>
     <mkdir dir="build/dmg"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value="sh dmg/createdmg.sh build/pkg dist/${dmgname} build/dmg"/>
+      <arg value="sh dmg/createdmg.sh dist/${dmgname} build/dmg build/pkg/ glassfish/build/pkg/ tomcat/build/pkg/ openesb/build/pkg/"/>
     </exec>
   </target>
 
   <target name="clean">
+    <ant dir="glassfish" target="clean" inheritAll="false"/>
+    <ant dir="tomcat" target="clean" inheritAll="false"/>
+    <ant dir="openesb" target="clean" inheritAll="false"/>
     <delete dir="build"/>
   </target>
 

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="mac build template" basedir="." default="build-pkg">
+
+<!--
+variables to be set
+appname - application name
+zipname - name of a temporary archive
+appversion, version, exename, icon - values for the pkg
+pmproj - project file
+appdir
+-->
+
+  <target name="clean-impl">
+    <!-- dummy - to be redefined in the using xml-->
+  </target>
+
+  <target name="clean" depends="clean-impl">
+    <delete dir="build"/>
+    <delete file="${zipname}"/>
+  </target>
+
+  <target name="distclean" depends="clean">
+    <delete dir="dist"/>
+  </target>
+
+  <target name="get-bits"> 
+    <!-- dummy - to be redefined in the using xml-->
+  </target>
+
+  <target name="unzip">
+    <!-- dummy - to be redefined in the using xml-->
+  </target>
+
+  <target name="mkdirs">
+    <!-- dummy - to be redefined in the using xml-->
+  </target>
+
+  <target name="build-app" depends="get-bits">
+    <delete dir="${appdir}"/>
+    
+    <ant target="mkdirs"/>
+    <!--mkdir dir="${appdir}/Contents"/>
+    <mkdir dir="${appdir}/Contents/MacOS"/>
+    <mkdir dir="${appdir}/Contents/Resources"/-->
+
+    <echo message="Unzipping ${appname}" />
+    <mkdir dir="${appdir}"/>
+    <ant target="unzip"/>
+
+    <!--echo message="Generating Info.plist" />
+    <copy file="Info.plist" filtering="true" tofile="${appdir}/Contents/Info.plist">
+      <filterset>
+        <filter token="APPNAME" value="${appname}"/>
+        <filter token="APPVERSION" value="${appversion}"/>
+        <filter token="VERSION" value="${version}"/>
+        <filter token="EXENAME" value="${exename}"/>
+        <filter token="ICONFILENAME" value="${icon}"/>
+      </filterset>
+    </copy-->
+
+  </target>
+  <target name="build-app-zip" depends="build-app" description="Builds zipfile containing ${appname}.app">
+    <echo message="Creating ${zipname}"/>
+    <mkdir dir="dist"/>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value="cd ${basedir}/build/app/${zipdir}; zip -r ${basedir}/dist/${zipname} *"/>
+    </exec>
+  </target>
+
+  <target name="pre-build-pkg">
+    <!-- dummy - to be redefined in the using xml-->
+  </target>
+
+  <target name="build-pkg" depends="build-app">
+    <mkdir dir="build/pkg"/>
+    <delete dir="build/pkg/${appname}.pkg"/>
+    <echo message="Executing pack200 in ${appdir}"/>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value='cd "${appdir}"; find . -name \*.jar -exec pack200 -g {}.pack {} \;'/>
+    </exec>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value='cd "${appdir}"; find . -name \*.jar -exec rm {} \;'/>
+    </exec>
+    <ant target="pre-build-pkg"/>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p build/pkg/${appname}.pkg -proj ${pmproj}"/>
+    </exec>
+  </target>
+</project>

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 # The contents of this file are subject to the terms of the Common Development
 # and Distribution License (the License). You may not use this file except in
@@ -19,12 +19,11 @@
 
 set -e
 
-chown -R root:admin "/Applications/NetBeans/NetBeans 6.0.app"
+dirname=`dirname "$0"`
 
-cd "/Applications/NetBeans/NetBeans 6.0.app/Contents/Resources/NetBeans"
-for x in `find . -name \*.jar.pack` ; do
-    jar=`echo $x | sed 's/jar.pack/jar/'`
-    unpack200 -r $x $jar
-done
+"$dirname"/unpack200.sh "$2/NetBeans 6.0.app" "$2/NetBeans 6.0.app/Contents/Resources/NetBeans"
 
-exit 0
+"$dirname"/add_gf.sh "$2/NetBeans 6.0.app" "/Applications/NetBeans/glassfish-v2b58c"
+
+"$dirname"/add_tc.sh "$2/NetBeans 6.0.app" "/Applications/NetBeans/apache-tomcat-6.0.13"
+

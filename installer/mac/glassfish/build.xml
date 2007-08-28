@@ -21,12 +21,11 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="glassfish" basedir="." default="build-pkg">
 
-  <property name="gf_source" value="http://javaweb.sfbay.sun.com/java/re/glassfish/9.1/archive/fcs/b58c/images/mac/glassfish-image-v2-b58c.jar"/>
-  <property name="appname" value="glassfish-v2b58a"/>
+  <property name="appname" value="glassfish-v2b58c"/>
   <property name="appdir" value="build/app"/>
   <property name="zipname" value="glassfish-macosx.zip"/>
-  <property name="appversion" value="2b58a"/>
-  <property name="version" value="2b58a"/>
+  <property name="appversion" value="2b58c"/>
+  <property name="version" value="2b58c"/>
   <property name="exename" value=""/>
   <property name="icon" value=""/>
   <property name="pmproj" value="pkg/glassfish.pmproj"/>

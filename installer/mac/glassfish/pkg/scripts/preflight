@@ -19,7 +19,7 @@
 
 set -e
 
-instdir="/Applications/NetBeans/glassfish-v2b58a"
+instdir="/Applications/NetBeans/glassfish-v2b58c"
 
 if [ -d "$instdir" ] ; then
     rm -rf "$instdir"

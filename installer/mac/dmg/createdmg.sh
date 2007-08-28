@@ -24,18 +24,19 @@ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
     exit 1
 fi
 
-srcdir=$1
-dmg=$2
-tmpdir=$3
+dmg=$1
+tmpdir=$2
+shift 2
+srcdirs=$*
 
 volname="NetBeans 6.0"
 
 rm -f $tmpdir/template.sparseimage
 bunzip2 -d -c `dirname $0`/template.sparseimage.bz2 > $tmpdir/template.sparseimage
-rm -f $tmpdir/mountpoint
+rm -rf $tmpdir/mountpoint
 mkdir $tmpdir/mountpoint
 hdiutil mount -mountpoint $tmpdir/mountpoint $tmpdir/template.sparseimage
-rsync -a "$srcdir/" --exclude .DS_Store $tmpdir/mountpoint/
+rsync -a $srcdirs --exclude .DS_Store $tmpdir/mountpoint/
 diskutil rename $tmpdir/mountpoint "$volname"
 hdiutil unmount $tmpdir/mountpoint
 rm -f "$dmg"
