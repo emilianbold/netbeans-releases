@@ -25,6 +25,7 @@ if [ -z "$1" ] || [ -z "$2" ] ; then
     echo "zipdir is the dir which contains the zip distros, e.g. nbbuild/dist"
     echo "basename is the distro filename prefix, e.g. netbeans-hudson-trunk-2464"
     echo "zipdir should contain <basename>.zip, <basename>-java.zip, <basename>-ruby.zip,..."
+    echo Requires GLASSFISH_LOCATION, TOMCAT_LOCATION, OPENESB_LOCATION to be set. 
     exit 1
 fi
 
@@ -53,7 +54,7 @@ rm -rf $progdir/build/netbeans/mobility*
 #mkdir -p $progdir build/pkg
 #rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
 # build dmg
-ant -f $progdir/build.xml -Ddmgname=$basename.dmg -Dnb.dir=$progdir/build/netbeans build-dmg
+ant -f $progdir/build.xml -Ddmgname=$basename.dmg -Dnb.dir=$progdir/build/netbeans build-dmg -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dopenesb_location="$OPENESB_LOCATION"
 
 # javaee
 
@@ -63,7 +64,7 @@ unzip -d $progdir/build $zipdir/$basename-javaee.zip
 # copy over GlassFish.pkg
 #mkdir -p $progdir build/pkg
 #rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
-ant -f $progdir/build.xml -Ddmgname=$basename-javaee.dmg -Dnb.dir=$progdir/build/netbeans build-dmg 
+ant -f $progdir/build.xml -Ddmgname=$basename-javaee.dmg -Dnb.dir=$progdir/build/netbeans build-dmg  -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dopenesb_location="$OPENESB_LOCATION"
 
 # all others
 
@@ -71,6 +72,6 @@ for pkg in java ruby cnd ; do
     ant -f $progdir/build.xml clean
     mkdir $progdir/build
     unzip -d $progdir/build $zipdir/$basename-$pkg.zip
-    ant -f $progdir/build.xml -Ddmgname=$basename-$pkg.dmg -Dnb.dir=$progdir/build/netbeans build-dmg 
+    ant -f $progdir/build.xml -Ddmgname=$basename-$pkg.dmg -Dnb.dir=$progdir/build/netbeans build-dmg  -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dopenesb_location="$OPENESB_LOCATION"
 done
 
