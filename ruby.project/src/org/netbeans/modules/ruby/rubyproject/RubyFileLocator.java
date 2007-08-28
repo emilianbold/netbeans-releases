@@ -39,8 +39,8 @@ import org.openide.util.Lookup;
  */
 public class RubyFileLocator implements FileLocator {
     
-    private Lookup context;
-    private Project project;
+    protected Lookup context;
+    protected Project project;
 
     public RubyFileLocator(Lookup context, Project project) {
         assert project != null;
@@ -139,7 +139,7 @@ public class RubyFileLocator implements FileLocator {
      *
      * @param context the lookup in which files should be found
      */
-    private FileObject[] findSources(List<FileObject> roots) {
+    protected FileObject[] findSources(List<FileObject> roots) {
         for (FileObject root : roots) {
             FileObject[] files = RubyActionProvider.findSelectedFiles(context, root,
                     RubyInstallation.RUBY_MIME_TYPE, true);

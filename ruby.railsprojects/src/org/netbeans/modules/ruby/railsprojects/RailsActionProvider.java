@@ -45,7 +45,6 @@ import org.netbeans.modules.ruby.rubyproject.GotoTest;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
-import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -57,7 +56,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -203,7 +201,7 @@ public class RailsActionProvider implements ActionProvider {
             rake.setTest(true);
             File pwd = FileUtil.toFile(project.getProjectDirectory());
             String displayName = NbBundle.getMessage(RailsActionProvider.class, "Tests");
-            rake.runRake(pwd, null, displayName, new RubyFileLocator(context), true, "test"); // NOI18N
+            rake.runRake(pwd, null, displayName, new RailsFileLocator(context, project), true, "test"); // NOI18N
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
             if (!RubyInstallation.getInstance().isValidRuby(true)) {
@@ -234,7 +232,7 @@ public class RailsActionProvider implements ActionProvider {
                     project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
             if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
                 rspec.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
-                rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context), true, isDebug);
+                rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, isDebug);
                 return;
             }
             
@@ -258,7 +256,7 @@ public class RailsActionProvider implements ActionProvider {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
                 RakeSupport rake = new RakeSupport(project);
-                rake.runRake(null, file, file.getName(), new RubyFileLocator(context), true);
+                rake.runRake(null, file, file.getName(), new RailsFileLocator(context, project), true);
                 return;
             }
             
@@ -268,7 +266,7 @@ public class RailsActionProvider implements ActionProvider {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
                 rspec.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
-                rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context), true, debugSingleCommand);
+                rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand);
                 return;
             }
             
@@ -278,7 +276,7 @@ public class RailsActionProvider implements ActionProvider {
                 String name = file.getName();
                 String version = Integer.toString(Integer.parseInt(name.substring(0, 3)));
                 RakeSupport rake = new RakeSupport(project);
-                rake.runRake(null, file, file.getName(), new RubyFileLocator(context), true, "db:migrate", "VERSION=" + version); // NOI18N
+                rake.runRake(null, file, file.getName(), new RailsFileLocator(context, project), true, "db:migrate", "VERSION=" + version); // NOI18N
                 return;
             }
             
@@ -388,7 +386,7 @@ public class RailsActionProvider implements ActionProvider {
 
             // TODO - use RakeSupport
 
-            RubyFileLocator fileLocator = new RubyFileLocator(context);
+            RailsFileLocator fileLocator = new RailsFileLocator(context, project);
             String displayName = NbBundle.getMessage(RailsActionProvider.class, "Rake");
 
             ProjectInformation info = ProjectUtils.getInformation(project);
@@ -445,7 +443,7 @@ public class RailsActionProvider implements ActionProvider {
                 }
             };
             
-            RubyFileLocator fileLocator = new RubyFileLocator(context);
+            RailsFileLocator fileLocator = new RailsFileLocator(context, project);
             String displayName = NbBundle.getMessage(RailsActionProvider.class, "RakeDoc");
  
             new RubyExecution(new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getRake()).
@@ -515,7 +513,7 @@ public class RailsActionProvider implements ActionProvider {
                 allowInput().
                 //initialArgs(options).
                 //additionalArgs(getApplicationArguments()).
-                fileLocator(new RubyFileLocator(context)).
+                fileLocator(new RailsFileLocator(context, project)).
                 addStandardRecognizers(),
                 project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
                 ).
@@ -707,81 +705,6 @@ public class RailsActionProvider implements ActionProvider {
             return null;
         }
         return files.toArray(new FileObject[files.size()]);
-    }
-    
-
-    // TODO - nuke me soon - replace by RailsFileLocator
-    private class RubyFileLocator implements FileLocator {
-        private Lookup context;
-
-        RubyFileLocator(Lookup context) {
-            this.context = context;
-        }
-        
-        public FileObject find(String file) {
-            FileObject[] fos = null;
-            if (context != Lookup.EMPTY) {
-        
-                // First check roots and search by relative path.
-                FileObject[] srcPath = project.getSourceRoots().getRoots();
-                if (srcPath != null) {
-                    for (FileObject root : srcPath) {
-                        FileObject f = root.getFileObject(file);
-                        if (f != null) {
-                            return f;
-                        }
-                    }
-                }
-
-                // Next try searching the set of source files
-                fos = findSources(context);
-                if (fos != null) {
-                    for (FileObject fo : fos) {
-                        if (fo.getNameExt().equals(file)) {
-                            return fo;
-                        }
-                    }
-                }
-            }
-
-            // Manual search
-            FileObject[] srcPath = project.getSourceRoots().getRoots();
-            for (FileObject root : srcPath) {
-                // First see if this path is relative to the root
-                try {
-                    File f = new File(FileUtil.toFile(root), file);
-                    if (f.exists()) {
-                        f = f.getCanonicalFile();
-                        return FileUtil.toFileObject(f);
-                    }
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-                
-                // Search recursively for the given file below the path 
-                FileObject fo = findFile(root, file);
-                if (fo != null) {
-                    return fo;
-                }
-            }
-            
-            return null;
-        }
-        
-        private FileObject findFile(FileObject fo, String name) {
-            if (name.equals(fo.getNameExt())) {
-                return fo;
-            }
-            
-            for (FileObject child : fo.getChildren()) {
-                FileObject found = findFile(child, name);
-                if (found != null) {
-                    return found;
-                }
-            }
-            
-            return null;
-        }
     }
     
     private String[] getApplicationArguments() {

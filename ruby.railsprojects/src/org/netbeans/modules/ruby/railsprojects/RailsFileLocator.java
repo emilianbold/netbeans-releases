@@ -18,28 +18,23 @@
  */
 package org.netbeans.modules.ruby.railsprojects;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
-import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
- * TODO - I should just use RubyFileLocator!
  * @author Tor Norbye
  */
-public class RailsFileLocator implements FileLocator {
-    private Lookup context;
-    private RailsProject project;
+public class RailsFileLocator extends RubyFileLocator {
+    
     private static final String RAILS_ROOT = "#{RAILS_ROOT}/"; // NOI18N
 
-    public RailsFileLocator(Lookup context, RailsProject project) {
-        this.context = context;
-        this.project = project;
+    public RailsFileLocator(Lookup context, Project project) {
+        super(context, project);
     }
 
     public FileObject find(String file) {
@@ -60,74 +55,8 @@ public class RailsFileLocator implements FileLocator {
                 return fo;
             }
         }
-        
-        
-        FileObject[] fos = null;
-
-        if (context != Lookup.EMPTY) {
-            // First check roots and search by relative path.
-            FileObject[] srcPath = project.getSourceRoots().getRoots();
-
-            if (srcPath != null) {
-                for (FileObject root : srcPath) {
-                    FileObject f = root.getFileObject(file);
-
-                    if (f != null) {
-                        return f;
-                    }
-                }
-            }
-
-            // Next try searching the set of source files
-            fos = findSources(context);
-
-            if (fos != null) {
-                for (FileObject fo : fos) {
-                    if (fo.getNameExt().equals(file)) {
-                        return fo;
-                    }
-                }
-            }
-        }
-
-        // Manual search
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-
-        for (FileObject root : srcPath) {
-            // First see if this path is relative to the root
-            try {
-                File f = new File(FileUtil.toFile(root), file);
-
-                if (f.exists()) {
-                    f = f.getCanonicalFile();
-
-                    return FileUtil.toFileObject(f);
-                }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-
-            // Search recursively for the given file below the path 
-            FileObject fo = findFile(root, file);
-
-            if (fo != null) {
-                return fo;
-            }
-        }
-
-        // Try to resolve relatively to project directory (see e.g. #112254)
-        File f = new File(FileUtil.toFile(project.getProjectDirectory()), file);
-        if (f.exists()) {
-            try {
-                f = f.getCanonicalFile();
-                return FileUtil.toFileObject(f);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        return null;
-    }
+        return super.find(file);
+   }
 
     private FileObject findFile(FileObject fo, String name) {
         if (name.equals(fo.getNameExt())) {
@@ -136,28 +65,31 @@ public class RailsFileLocator implements FileLocator {
 
         for (FileObject child : fo.getChildren()) {
             FileObject found = findFile(child, name);
-
             if (found != null) {
                 return found;
             }
         }
-
         return null;
     }
 
-    private FileObject[] findSources(Lookup context) {
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        for (int i=0; i< srcPath.length; i++) {
-            FileObject[] files = RailsActionProvider.findSelectedFiles(context, srcPath[i], RubyInstallation.RUBY_MIME_TYPE, true); // NOI18N
+    /**
+     * Find selected sources, the sources has to be under single source root.
+     *
+     * @param context the lookup in which files should be found
+     */
+    protected FileObject[] findSources(List<FileObject> roots) {
+        for (FileObject root : roots) {
+            FileObject[] files = RailsActionProvider.findSelectedFiles(context, root,
+                    RubyInstallation.RUBY_MIME_TYPE, true); // NOI18N
             if (files != null) {
                 return files;
             }
-            files = RailsActionProvider.findSelectedFiles(context, srcPath[i], RhtmlTokenId.MIME_TYPE, true); // NOI18N
+            files = RailsActionProvider.findSelectedFiles(context, root,
+                    RhtmlTokenId.MIME_TYPE, true); // NOI18N
             if (files != null) {
                 return files;
             }
         }
         return null;
     }
-
 }
