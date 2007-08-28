@@ -249,7 +249,7 @@ public final class ProjectManager {
                                 dir2Proj.put(projectDirectory, LoadStatus.NO_SUCH_PROJECT.wrap());
                                 resetLP = true;
                                 if (wasSomeSuchProject) {
-                                    LOG.log(Level.WARNING, "Directory {0} was initially claimed to be a project folder but really was not", FileUtil.getFileDisplayName(projectDirectory));
+                                    LOG.log(Level.FINE, "Directory {0} was initially claimed to be a project folder but really was not", FileUtil.getFileDisplayName(projectDirectory));
                                 }
                                 return null;
                             }

@@ -284,6 +284,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 if (projectDirs.length == 1 && projectDirs[0] != null) {
                     File dir = FileUtil.normalizeFile(projectDirs[0]);
                     FileObject fo = FileUtil.toFileObject(dir);
+                    ProjectManager.getDefault().clearNonProjectCache(); // #113976: otherwise isProject will be false
                     if (fo != null && fo.isFolder() && ProjectManager.getDefault().isProject(fo)) {
                         try {
                             Project prj = ProjectManager.getDefault().findProject(fo);
