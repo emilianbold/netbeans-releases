@@ -138,9 +138,9 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <file name="Separator-before-comment.instance">
+                        <file name="Separator-before-comment-c++.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="19100"/>
+                            <attr name="position" intvalue="19110"/>
                         </file>
                         <file name="comment">
                             <attr name="position" intvalue="19200"/>
@@ -230,9 +230,9 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <file name="Separator-before-comment.instance">
+                        <file name="Separator-before-comment-c.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                            <attr name="position" intvalue="19100"/>
+                            <attr name="position" intvalue="19110"/>
                         </file>
                         <file name="comment">
                             <attr name="position" intvalue="19200"/>
