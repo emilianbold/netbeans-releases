@@ -167,22 +167,26 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             reusableSubrange = new char[length];
         }
         try {
-            int linesOffset = Math.min(getLines().getCharCount(), offset);
-            int linesEnd = Math.min(getLines().getCharCount(), offset + length);
-            char[] chars = getLines().getText(linesOffset, linesEnd, reusableSubrange);
-            if (offset + length >= getLines().getCharCount()) {
-                int inEnd = offset - getLines().getCharCount() + length;
-                int inStart = Math.max(0, offset - getLines().getCharCount());
-                // calling Math.min to prevent nasty AOOBE wich seem to come out of nowhere..
-                inBuffer.getChars(Math.min(inStart, inBuffer.length()), Math.min(inEnd, inBuffer.length()), 
-                        chars, linesEnd - linesOffset);
+            synchronized (getLines().readLock()) {
+                int charCount = getLines().getCharCount();
+                int linesOffset = Math.min(charCount, offset);
+                int linesEnd = Math.min(charCount, offset + length);
+                char[] chars = getLines().getText(linesOffset, linesEnd, reusableSubrange);
+                if (offset + length >= charCount) {
+                    int inEnd = offset - charCount + length;
+                    int inStart = Math.max(0, offset - charCount);
+                    // calling Math.min to prevent nasty AOOBE wich seem to come out of nowhere..
+                    inBuffer.getChars(Math.min(inStart, inBuffer.length()), Math.min(inEnd, inBuffer.length()), 
+                            chars, linesEnd - linesOffset);
+                }
+                txt.array = chars;
+                txt.offset = 0;
+                txt.count = Math.min(length, chars.length);
             }
-            txt.array = chars;
-            txt.offset = 0;
-            txt.count = Math.min(length, chars.length);
         } catch (OutOfMemoryError error) {
             //#50189 - try to salvage what we can
             OutWriter.lowDiskSpace = true;
+            //mkleint: is not necessary low disk space, can also mean too many mapped buffers were requirested too fast..
             //Sets the error flag and releases the storage
             writer.dispose();
             Logger.getAnonymousLogger().log(Level.WARNING,
