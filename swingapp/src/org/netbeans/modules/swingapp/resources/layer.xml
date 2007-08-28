@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Standard">
                 <file name="desktopApp.xml">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.swingapp.resources.Bundle"/>
-                    <attr name="position" intvalue="500"/>
+                    <attr name="position" intvalue="110"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/swingapp/resources/JavaDesktopApp.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png"/>
