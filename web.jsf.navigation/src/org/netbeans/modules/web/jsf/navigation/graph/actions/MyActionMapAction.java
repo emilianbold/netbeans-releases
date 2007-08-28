@@ -78,13 +78,6 @@ public class MyActionMapAction extends WidgetAction.Adapter {
         return State.REJECTED;
     }
 
-    /*
-    @Override
-    protected void finalize() throws Throwable {
-        System.out.println("Destroy MyActionMapAction");
-        printKeys();
-        super.finalize();
-    }*/
     
     
 
