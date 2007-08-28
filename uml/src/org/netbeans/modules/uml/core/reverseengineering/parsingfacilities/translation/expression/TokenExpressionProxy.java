@@ -184,7 +184,7 @@ public class TokenExpressionProxy implements IExpressionProxy
          		pInfo.setPrimitiveType(null);
          		retVal = pInfo;
       		}
-      		else if("Boolean Constant".equals(type))
+      		else if("Boolean Constant".equals(type) || "Boolean".equals(type))
       		{
          		pInfo.setPrimitiveType("boolean");
          		retVal = pInfo;

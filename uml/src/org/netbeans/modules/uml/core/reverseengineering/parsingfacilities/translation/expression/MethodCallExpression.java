@@ -25,6 +25,7 @@
  */
 package org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression;
 
+import java.util.ArrayList;
 import org.dom4j.Node;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
@@ -37,6 +38,7 @@ import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.REClas
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.SymbolTable;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.ExpressionStateHandler;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.StateHandler;
+import org.netbeans.modules.uml.core.reverseengineering.reframework.IDependencyEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IREClass;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.ScopeKind;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ITokenDescriptor;
@@ -233,10 +235,13 @@ public class MethodCallExpression extends ExpressionStateHandler
       
       if(instRef == null)
       {
+          String sImport = null ;
+          
           if (isStringConstant()) {
-              //IREClass emptyStringClass = pClassLoader.loadClass("java::lang::String") ;              
               instRef = getStringInstance(pClassLoader);
               
+          } else if ((sImport = isStaticImport(pClassLoader, pThisPtr)) != null) {
+              instRef = getStaticImportInstance (sImport, pClassLoader) ;
           }
           else
               instRef = getThisInstance(pThisPtr);
@@ -294,6 +299,43 @@ public class MethodCallExpression extends ExpressionStateHandler
        return false ;
    }
    
+   private String isStaticImport(IREClassLoader classLoader, IREClass contextClass) {
+       String queryName = this.m_MethodName.getValue() ;
+       
+       ArrayList < IDependencyEvent > dependencies = (ArrayList < IDependencyEvent >) classLoader.getDependencies(contextClass);
+       if (dependencies != null)
+            for (IDependencyEvent dependency : dependencies) {
+                if (dependency == null) continue;
+                
+                if(dependency.isStaticDependency() == true) {
+                    String name = dependency.getSupplier();
+                    
+                    if (name != null && name.length() > 0) {
+                        //because it is a static import, the last section of the name
+                        //needs to be removed to get the class
+                        
+                        String methodName = name.substring(name.lastIndexOf("::")+2);
+                        if (queryName.equals(methodName)) {
+                            return name.substring(0,name.lastIndexOf("::"));
+                        }
+                    }
+                }
+            }
+       
+   return null;    
+   }
+   
+   private InstanceInformation getStaticImportInstance(String clazz, IREClassLoader pClassLoader)
+   {
+      ObjectInstanceInformation retVal = new ObjectInstanceInformation();
+      retVal.setInstanceName(""); 
+      
+      retVal.setInstantiatedType(clazz, pClassLoader);
+      retVal.setIsStatic(true);
+      
+      return retVal;
+      
+   }
         /* (non-Javadoc)
          * @see org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression.IMethodCallExpression#stateComplete(java.lang.String)
          */

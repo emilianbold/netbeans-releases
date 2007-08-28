@@ -686,7 +686,8 @@ public class OperationRE implements IOperationRE
          IREClass cpREClass = pEvent.getREClass();
          if (cpREClass != null)
          {
-             String classifierName = pEvent.getFullQNameOfOwner();
+//             String classifierName = pEvent.getFullQNameOfOwner();
+             String classifierName = pEvent.getDeclaringClassName();
             cpClassifier = getClassifier(classifierName);
          }
          else

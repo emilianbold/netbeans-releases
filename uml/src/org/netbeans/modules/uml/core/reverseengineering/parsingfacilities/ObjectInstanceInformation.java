@@ -173,7 +173,12 @@ public class ObjectInstanceInformation extends InstanceInformation
         if(instanceType == null)
             instanceType = getInstantiatedType();
         
-        if (instanceType != null)
+        //kris added
+        if (instanceType == null) {
+            instanceType = classLoader.loadClass(m_InstantiatedTypeName);
+        }
+        
+        if (instanceType != null || isStatic())
         {
             decl = new MethodDeclaration();
             decl.setInstanceName(getInstanceName());
