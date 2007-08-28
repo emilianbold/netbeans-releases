@@ -38,7 +38,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -49,7 +48,6 @@ import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
 import org.netbeans.modules.mobility.e2e.mapping.JavonMappingImpl;
 import org.netbeans.modules.mobility.end2end.classdata.AbstractService;
 import org.netbeans.modules.mobility.end2end.classdata.ClassData;
-import org.netbeans.modules.mobility.end2end.classdata.MethodData;
 import org.netbeans.modules.mobility.end2end.classdata.OperationData;
 import org.netbeans.modules.mobility.end2end.classdata.WSDLService;
 import org.netbeans.modules.mobility.end2end.client.config.ClientConfiguration;
@@ -390,6 +388,12 @@ public class E2EDataObject extends XmlMultiViewDataObject {
     
     public synchronized void generate(){
         generating = true;
+        // Save document before generation of files
+        try {
+            getEditorSupport().saveDocument();
+        } catch( IOException ex ) {
+            ex.printStackTrace();
+        }
         firePropertyChange( PROP_GENERATING, Boolean.FALSE, Boolean.TRUE );
         SwingUtilities.invokeLater( new Runnable() {
             @SuppressWarnings("synthetic-access")
