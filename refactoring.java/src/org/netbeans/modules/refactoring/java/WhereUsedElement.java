@@ -101,6 +101,10 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             start = start + t.toString().indexOf(((MethodTree)t).getName().toString())+1;
             end = start + ((MethodTree)t).getName().toString().length();
         }
+        if (t.getKind() == Tree.Kind.NEW_CLASS) {
+            start = (int)sp.getStartPosition(unit, ((NewClassTree) t).getIdentifier());
+            end = (int)sp.getEndPosition(unit, ((NewClassTree) t).getIdentifier());
+        }
         if (t.getKind() == Tree.Kind.MEMBER_SELECT) {
             //XXX: must be improved
             start = (int)sp.getEndPosition(unit, ((MemberSelectTree) t).getExpression());
