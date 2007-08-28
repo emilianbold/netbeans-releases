@@ -46,6 +46,7 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
@@ -85,7 +86,19 @@ public class Utilities {
      */
     public static void closeWelcome(){
         String TCOName = Bundle.getStringTrimmed("org.netbeans.modules.welcome.Bundle","LBL_Tab_Title");
-        TopComponentOperator tComponent = new TopComponentOperator("Welcome");
+        TopComponentOperator tComponent = null;
+        try {
+            tComponent = new TopComponentOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.welcome.Bundle", "LBL_Tab_Title"));
+        } catch(TimeoutExpiredException tex) {
+            // Do nothing
+            try {
+                    tComponent = new TopComponentOperator("Welcome");
+                } catch(TimeoutExpiredException tex2) {
+                    // Do nothing
+                }            
+        }        
+
+        if(tComponent == null) { return; }
         new JCheckBoxOperator(tComponent,Bundle.getStringTrimmed("org.netbeans.modules.welcome.resources.Bundle","LBL_ShowOnStartup")).changeSelection(false);
         tComponent.close();
     }
