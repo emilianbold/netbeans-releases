@@ -20,12 +20,15 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EjbRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceEnvRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationRefGroupNode;
+import org.netbeans.modules.j2ee.sun.share.configbean.J2EEBaseVersion;
+import org.netbeans.modules.j2ee.sun.share.configbean.J2EEVersion;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
@@ -47,9 +50,15 @@ public class ReferencesNode extends BaseSectionNode {
         addChild(new ResourceRefGroupNode(sectionNodeView, ejb, version));
         addChild(new ResourceEnvRefGroupNode(sectionNodeView, ejb, version));
         if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(version) <= 0) {
-            addChild(new ServiceRefGroupNode(sectionNodeView, ejb, version));
-            if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
-                addChild(new MessageDestinationRefGroupNode(sectionNodeView, ejb, version));
+            SunDescriptorDataObject dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
+            J2EEBaseVersion j2eeVersion = dataObject.getJ2eeModuleVersion();
+            if(j2eeVersion == null || j2eeVersion.compareSpecification(J2EEVersion.J2EE_1_4) >= 0) {
+                addChild(new ServiceRefGroupNode(sectionNodeView, ejb, version));
+                if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
+                    if(j2eeVersion == null || j2eeVersion.compareSpecification(J2EEVersion.JAVAEE_5_0) >= 0) {
+                        addChild(new MessageDestinationRefGroupNode(sectionNodeView, ejb, version));
+                    }
+                }
             }
         }
     }

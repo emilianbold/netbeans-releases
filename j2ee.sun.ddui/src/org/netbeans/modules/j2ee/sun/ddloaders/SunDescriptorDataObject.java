@@ -63,6 +63,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,6 +79,8 @@ import org.netbeans.modules.j2ee.sun.dd.impl.ejb.SunEjbJarProxy;
 import org.netbeans.modules.j2ee.sun.ddloaders.editor.ErrorAnnotation;
 import org.netbeans.modules.j2ee.sun.ddloaders.DDMultiViewDataObject;
 //import org.openide.awt.HtmlBrowser;
+import org.netbeans.modules.j2ee.sun.share.configbean.J2EEBaseVersion;
+import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.schema2beans.Schema2BeansRuntimeException;
 import org.openide.awt.HtmlBrowser;
@@ -215,6 +218,21 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
         // !PW FIXME default version ought to be current project server version,
         // if any, otherwise, current installed server, if any.
         return DDProvider.getASDDVersion(getDDModel(), ASDDVersion.SUN_APPSERVER_8_1);
+    }
+    
+    /** Ask the configuration (if we have one) what the J2EE/JavaEE version of
+     *  this project is.
+     * 
+     * @return J2EE version object for this project or null if it cannot be determined.
+     *   (ie no configuration for some reason or bad module type, etc.)
+     */
+    public J2EEBaseVersion getJ2eeModuleVersion() {
+        File fileKey = FileUtil.toFile(getPrimaryFile());
+        if("sun-cmp-mappings.xml".equals(fileKey.getName())) {
+            fileKey = new File(fileKey.getParentFile(), "sun-ejb-jar.xml");
+        }
+        SunONEDeploymentConfiguration config = SunONEDeploymentConfiguration.getConfiguration(fileKey);
+        return (config != null) ? config.getJ2eeVersion() : null;
     }
     
     public RootInterface getDDRoot() {

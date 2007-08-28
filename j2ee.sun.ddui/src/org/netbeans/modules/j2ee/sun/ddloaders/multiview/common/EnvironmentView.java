@@ -25,6 +25,8 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationRefGroupNode;
+import org.netbeans.modules.j2ee.sun.share.configbean.J2EEBaseVersion;
+import org.netbeans.modules.j2ee.sun.share.configbean.J2EEVersion;
 import org.netbeans.modules.xml.multiview.SectionNode;
 
 
@@ -37,7 +39,7 @@ public class EnvironmentView extends DDSectionNodeView {
         super(dataObject);
         
         if(!(rootDD instanceof SunWebApp || rootDD instanceof SunApplicationClient)) {
-            throw new IllegalArgumentException("Data object is not a root that contains service-ref elements (" + rootDD + ")");
+            throw new IllegalArgumentException("Data object is not a root that contains top level reference elements (" + rootDD + ")");
         }
 
         LinkedList<SectionNode> children = new LinkedList<SectionNode>();
@@ -45,7 +47,10 @@ public class EnvironmentView extends DDSectionNodeView {
         children.add(new ResourceRefGroupNode(this, rootDD, version));
         children.add(new ResourceEnvRefGroupNode(this, rootDD, version));
         if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
-            children.add(new MessageDestinationRefGroupNode(this, rootDD, version));
+            J2EEBaseVersion j2eeVersion = dataObject.getJ2eeModuleVersion();
+            if(j2eeVersion == null || j2eeVersion.compareSpecification(J2EEVersion.JAVAEE_5_0) >= 0) {
+                children.add(new MessageDestinationRefGroupNode(this, rootDD, version));
+            }
         }
         setChildren(children);
     }

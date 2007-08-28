@@ -30,13 +30,14 @@ import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.appclient.SunAppClientOverviewMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EnvironmentMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingMultiViewElement;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebOverviewMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbOverviewMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceMultiViewElement;
+import org.netbeans.modules.j2ee.sun.share.configbean.J2EEBaseVersion;
+import org.netbeans.modules.j2ee.sun.share.configbean.J2EEVersion;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -50,12 +51,11 @@ public abstract class DDViewFactory implements Serializable {
     
     private static final long serialVersionUID = -8759598009819101743L;
     
-    // View names (TODO not parameterized or separated by type yet)
+    // View names
     public static final String OVERVIEW = "Overview"; // NOI18N
     public static final String SERVLET = "Servlet"; // NOI18N
     public static final String EJB = "EJB"; // NOI18N
     public static final String SECURITY = "Security"; // NOI18N
-//    public static final String WSCLIENT = "WSClient"; // NOI18N
     public static final String WSSERVICE = "WSService"; // NOI18N
     public static final String JMS = "JMS"; // NOI18N
     public static final String ENVIRONMENT = "Environment"; // NOI18N
@@ -83,8 +83,6 @@ public abstract class DDViewFactory implements Serializable {
             return new SecurityRoleMappingMultiViewElement(dataObject);
         } else if(name.equals(ENVIRONMENT)) {
             return new EnvironmentMultiViewElement(dataObject);
-//        } else if(name.equals(WSCLIENT)) {
-//            return new ServiceRefMultiViewElement(dataObject);
         } else if(name.equals(WSSERVICE)) {
             return new WebServiceMultiViewElement(dataObject);
         } else if(name.equals(JMS)) {
@@ -101,7 +99,6 @@ public abstract class DDViewFactory implements Serializable {
         in.defaultReadObject();
     }
     
-    
     /** View factory for sun-web.xml specific views
      */
     public static class SunWebDDViewFactory extends DDViewFactory {
@@ -109,16 +106,18 @@ public abstract class DDViewFactory implements Serializable {
         private static final long serialVersionUID = -8759598009819101745L;
         
         public DesignMultiViewDesc[] getMultiViewDesc(SunDescriptorDataObject dataObject) {
-            // TODO complete set of sun-web.xml multiview panels.
-            ASDDVersion version = dataObject.getASDDVersion();
+            ASDDVersion asDDVersion = dataObject.getASDDVersion();
+            
             List<DDView> views = new ArrayList<DDView>(8);
             views.add(new DDView(dataObject, OVERVIEW));
             views.add(new DDView(dataObject, SERVLET));
             views.add(new DDView(dataObject, SECURITY));
-            if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(version) <= 0) {
-                views.add(new DDView(dataObject, WSSERVICE));
-//                views.add(new DDView(dataObject, WSCLIENT));
-                views.add(new DDView(dataObject, JMS));
+            if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(asDDVersion) <= 0) {
+                J2EEBaseVersion j2eeVersion = dataObject.getJ2eeModuleVersion();
+                if(j2eeVersion == null || j2eeVersion.compareSpecification(J2EEVersion.J2EE_1_4) >= 0) {
+                    views.add(new DDView(dataObject, WSSERVICE));
+                    views.add(new DDView(dataObject, JMS));
+                }
             }
             views.add(new DDView(dataObject, ENVIRONMENT));
             return views.toArray(new DDView[views.size()]);
@@ -146,14 +145,18 @@ public abstract class DDViewFactory implements Serializable {
         
         public DesignMultiViewDesc[] getMultiViewDesc(SunDescriptorDataObject dataObject) {
             // TODO complete set of sun-ejb-jar.xml multiview panels.
-            ASDDVersion version = dataObject.getASDDVersion();
+            ASDDVersion asDDVersion = dataObject.getASDDVersion();
+            
             List<DDView> views = new ArrayList<DDView>(6);
             views.add(new DDView(dataObject, OVERVIEW));
             views.add(new DDView(dataObject, EJB));
             views.add(new DDView(dataObject, SECURITY));
-            if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(version) <= 0) {
-                views.add(new DDView(dataObject, WSSERVICE));
-                views.add(new DDView(dataObject, JMS));
+            if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(asDDVersion) <= 0) {
+                J2EEBaseVersion j2eeVersion = dataObject.getJ2eeModuleVersion();
+                if(j2eeVersion == null || j2eeVersion.compareSpecification(J2EEVersion.J2EE_1_4) >= 0) {
+                    views.add(new DDView(dataObject, WSSERVICE));
+                    views.add(new DDView(dataObject, JMS));
+                }
             }
             return views.toArray(new DDView[views.size()]);
         }
@@ -204,16 +207,19 @@ public abstract class DDViewFactory implements Serializable {
         private static final long serialVersionUID = -8759598009819101751L;
         
         public DesignMultiViewDesc[] getMultiViewDesc(SunDescriptorDataObject dataObject) {
-            // TODO complete set of sun-application-client.xml multiview panels.
-            ASDDVersion version = dataObject.getASDDVersion();
+            ASDDVersion asDDVersion = dataObject.getASDDVersion();
+            
             List<DDView> views = new ArrayList<DDView>();
-            if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
+            if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(asDDVersion) <= 0) {
                 views.add(new DDView(dataObject, OVERVIEW));
             }
             views.add(new DDView(dataObject, ENVIRONMENT));
-            if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(version) <= 0) {
-                views.add(new DDView(dataObject, WSSERVICE));
-                views.add(new DDView(dataObject, JMS));
+            if(ASDDVersion.SUN_APPSERVER_8_0.compareTo(asDDVersion) <= 0) {
+                J2EEBaseVersion j2eeVersion = dataObject.getJ2eeModuleVersion();
+                if(j2eeVersion == null || j2eeVersion.compareSpecification(J2EEVersion.J2EE_1_4) >= 0) {
+                    views.add(new DDView(dataObject, WSSERVICE));
+                    views.add(new DDView(dataObject, JMS));
+                }
             }
             return views.toArray(new DDView[views.size()]);
         }
