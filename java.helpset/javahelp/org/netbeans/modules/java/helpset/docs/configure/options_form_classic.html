@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright � 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+        <title>Options Window: Advanced Options: GUI Builder Settings</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Options Window: Advanced Options: GUI Builder Settings</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>GUI Builder settings enable you to adjust how the IDE's GUI Builder displays form information,
+        to adjust the layout grid size, and to assign specific editors for certain property types.</p>
+        <p>You can access the GUI Builder settings in Advanced Options by choosing Tools &gt; Options from the main menu and clicking Advanced Options in the Options window. 
+        In the left pane, expand the Editing node and select GUI Builder.</p>
+        
+        <ul class="note">
+            <li>Some of the following properties are only available in Advanced Options.
+            To switch between views, click the Advanced Options or Basic Options
+            buttons in the Options window.</li>
+        </ul>
+        <p><b>General GUI Builder Properties</b></p>
+        <ul>
+            <li><b>Assistant in Designer.</b> If selected, the GUI Builder Assistant is displayed in design view.</li>
+            <li><b>Connection Border Color.</b> Color of component selection
+            border during connection mode. </li>
+            <li><b>Drag Feedback Color.</b> Color of target container during
+            dragging. </li>
+            <li><b>Form Designer Background.</b> Background color of the Form
+            Designer pane. </li>
+            <li><b>Form Designer Border Color.</b> Color of the boxes around a
+            designed component. </li>
+            <li><b>Guiding Line Color.</b> Color of the placement guidelines
+            displayed when moving a component.</li>
+            <li><b>Automatic Resource Management.</b> Determines whether properties files for internationalization
+            strings are generated automatically.</li>
+            <li><b>Selection Border Color.</b> Color of the boxes around a
+            component that mark it as selected.</li>
+            <li><b>Selection Border Size.</b> Size (in pixels) of the boxes
+            around a component that mark it as selected. </li>
+            <li><b>Palette in Toolbar.</b> If selected, the Add Mode button <img
+            src="../gui/images/addmode.gif" alt="image of Add Mode button">&nbsp;appears
+            in the GUI Builder toolbar. You can click this button to select any of
+            the Palette window's components from the menu that is displayed. </li>
+            <li><b>Use Indentation Engine.</b> If selected, the Java Source
+            Editor's indentation engine is used when generating Java code. If
+            unselected, the GUI Builder's simpler (but faster) indentation is used.
+            Regenerating code for large forms can be slow using the Java Source
+            Editor's indentation engine. </li>
+        </ul>
+        <p><b>Expert GUI Builder Properties</b></p>
+        <ul>
+            <li><b>Apply Grid to Position.</b> If selected, the position of
+            components is snapped to the grid if a grid is used. The grid is used
+            for forms that use AbsoluteLayout or Null Layout, and for JLayeredPane
+            and JDesktopPane components. </li>
+            <li><b>Apply Grid to Size.</b> If selected, the size of components
+            is snapped to the grid if a grid is used. </li>
+            <li><b>Property Editor Search Path.</b> List of packages used
+            to search the property editor to use in the GUI Builder. For example,
+            to use an alternate Color property editor, create <tt>ColorEditor</tt>
+            and add its full package name to the beginning of the Property Editor
+            Search Path. ColorEditor is then used when the Color property is
+            edited. </li>
+            <li><b>Event Variable Name.</b> The name of the variable
+            generated in the signature of the event handler method for the event
+            object. For example, <tt>evt</tt> is the variable name in <tt>private
+            void button1ActionPerformed (java.awt.event.ActionEvent evt).</tt> </li>
+            <li><b>Fold Generated Code.</b> If selected, the generated code is folded in 
+            the Source Editor.</li>            
+            <li><b>Generate Mnemonics Code.</b> If selected, the IDE generates
+                special mnemonics code using <tt>org.openide.awt.Mnemonics</tt>. This
+                option enables you to define labels and button mnemonics using the <tt>&amp;</tt>
+                character in the text property instead of setting the text and
+                mnemonics properties separately.
+                <ul class="note">
+                    <li>The generate mnemonics code property is only useful for forms
+                    being developed for use in the IDE.
+                    To avoid problems with uncompilable code, activating this option should
+                    be avoided.</li>
+                </ul>
+            </li>
+            <li><b>Grid X.</b> Size of the grid in the x axis for AbsoluteLayout,
+            Null Layout, JLayeredPane, and JDesktopPane.</li>
+            <li><b>Grid Y.</b> Size of the grid in the y axis for AbsoluteLayout,
+            Null Layout, JLayeredPane, and JDesktopPane. </li>
+            <li><b>Layout Generation Style.</b> Determines the type of code generated.
+            Advanced layout features may require additional libraries. </li>
+            <li><b>Listener Generation Style.</b> Determines how the code
+                for component events and their handlers is generated. All of the
+                options produce functionally equivalent code, but each option has
+                different performance qualities. There are three options:
+                <ul>
+                    <li><b>Anonymous Innerclasses.</b> One anonymous innerclass
+                    is generated for each event. This option might have negative impact on
+                    performance and memory of the application, since a lot of classes that
+                    must be loaded and kept when the form is executed.</li>
+                    <li><b>One Innerclass.</b> One common innerclass is
+                    generated for the whole form. This innerclass implements all necessary
+                    listeners and dispatches all events to the attached event handlers. The
+                    resulting code is less compact and slightly less efficient, but the
+                    anonymous innerclasses are eliminated. This option is particularly
+                    suitable for large forms with many components and event handlers.</li>
+                    <li><b>Main Class.</b> The form's main class implements the
+                    listeners. No special innerclass for events is generated. This is the
+                    most efficient option, but it does not work well with all types of
+                    forms. This option should only be used if the form class does not
+                    declare any listener implementation that could interact with events
+                    that are generated by components in the form.</li>
+                </ul>
+            </li>
+            <!--<li><b>Property Editors.</b> String pairs that explicitly list the
+            property type and the fully qualified class name of the property editor
+            to use for that type. </li>-->
+            <!--<li><b>Show Mnemonics Info Dialog.</b> If selected, an information dialog
+            about Mnenomics functionality is displayed whenever a component's Text
+            property is set.</li>-->
+            <li><b>Local Variables.</b> If selected, the variables generated for the
+            components on the form are declared as local variables in the
+            <tt>initComponents()</tt> method. If unselected, the variables are declared as member
+            fields of the class. </li>
+            <li><b>Variables Modifier.</b> The access modifier for variables
+            generated for components on the form. </li>
+        </ul>
+
+        <dl>
+            <dt>
+            <a name="seealso">See Also</a></dt>
+             <dd><a href="../gui/gui_about.html">About Java GUIs</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/configure/configure_options.html">Using the Options Window</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

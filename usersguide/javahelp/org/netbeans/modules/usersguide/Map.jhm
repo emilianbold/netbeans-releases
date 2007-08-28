@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -166,7 +166,7 @@
 <mapID target="navigator.java" url="editing/csh/nav_window.html" />
 
 <!--Task List window -->
-<mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView" url="tasklist-csh.html" />
+<mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView" url="files/tasklist-csh.html" />
 
 
 
@@ -230,7 +230,7 @@
 
 
 <!-- Common palette ID-->
-<mapID target="CommonPalette" url="gui/csh/gui_palette_window.html" />
+<mapID target="CommonPalette" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/gui/csh/gui_palette_window.html" />
 
 
 <!-- Add Libraries dialog box (from Project Properties -> Compiling Classes:-->
@@ -325,10 +325,6 @@
 <!--CSH ID for Options | Misc | Profiler :-->
   <mapID target="ProfilerOptions.Help" url="configure/options_profiler.html"/>
 
-<!--CSH ID for Options | Editing | Form Editor Settings :-->
-    <mapID target="gui.configuring" url="configure/options_form_classic.html" />
-<!--ID for CSH in Options | Basic Options - Advanced-Form Editor Settings : --> 
-    <mapID target="netbeans.optionsDialog.advanced.formEditor" url="configure/options_form.html" />
 
 
 

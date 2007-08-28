@@ -446,7 +446,11 @@ right now the IDs don't seem towork:-->
    <mapID target="javax.swing.JDesktopPane" url="pending.html" />
    <mapID target="javax.swing.JOptionPane" url="pending.html" />
 
-    
+<!--CSH ID for Options | Editing | Form Editor Settings :-->
+    <mapID target="gui.configuring" url="configure/options_form_classic.html" />
+<!--ID for CSH in Options | Basic Options - Advanced-Form Editor Settings : --> 
+    <mapID target="netbeans.optionsDialog.advanced.formEditor" url="configure/options_form.html" />
+
 
     <!-- End of "CSH" section -->
 
