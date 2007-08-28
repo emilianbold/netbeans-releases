@@ -214,7 +214,8 @@ public class AXIUtils {
         XslComponent xsl_parent = xslc.getParent();
         
         if (xslc instanceof org.netbeans.modules.xslt.model.Element ||
-            xslc instanceof org.netbeans.modules.xslt.model.Attribute ) {
+            xslc instanceof org.netbeans.modules.xslt.model.Attribute ||
+            xslc instanceof org.netbeans.modules.xslt.model.LiteralResultElement) {
             AXIComponent axi_parent = getType(xsl_parent, mapper);
             if (axi_parent != null){
                 for (AXIComponent type: axi_parent.getChildElements()){
