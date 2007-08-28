@@ -343,11 +343,8 @@ public class MapActionUtility {
                         CONNECT_DECORATOR_DEFAULT = ActionFactory.createDefaultConnectDecorator();
                         CONNECT_DECORATOR_DEFAULT.createTargetAnchor(selWidget);
                         CONNECT_WIDGET = CONNECT_DECORATOR_DEFAULT.createConnectionWidget(scene);
-                        //System.out.println("Connection Widget: " + CONNECT_WIDGET);
                         CONNECT_WIDGET.setSourceAnchor(CONNECT_DECORATOR_DEFAULT.createSourceAnchor(selWidget));
-                        //System.out.println("Source Anchor: " + CONNECT_WIDGET.getSourceAnchor());
                         CONNECT_WIDGET.setTargetAnchor(CONNECT_DECORATOR_DEFAULT.createSourceAnchor(selWidget));
-                        //System.out.println("Target Anchor: " + CONNECT_WIDGET.getTargetAnchor());
                         scene.getConnectionLayer().addChild(CONNECT_WIDGET);
                         scene.validate();
                     }
