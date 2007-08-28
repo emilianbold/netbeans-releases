@@ -7,34 +7,88 @@
 <html>
     <head>
 	<title>CVS: History Viewer</title>
-	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-    </head>
+	<link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" 
+            rel="StyleSheet" type="text/css">
+    </head>     
     <body>
 	<h2>CVS: History Viewer</h2>
+        
 	<p><small><a href="#seealso">See Also</a></small></p>
-	<p>The IDE's Search
-	History window enables you to view a summary of a file's evolution
-	over time by revision number. You can open the Search History window by
-	choosing CVS &gt; Search History. </p>        
-	<p>This window enables you to see the history of committed changes for the selected file or folder.
-	You can use the following criteria to search for files or folders:</p>
+         
+	<p>The IDE's Search History window enables you to view a summary of a file's evolution
+            over time based on revision number. The Search History window also allows you to 
+            <a href="#revert">revert</a> (i.e. rollback) changes to a previous revision.
+            
+        <p>You open the Search History window by choosing:</p>
+            
+        <ul>
+            <li>Versioning &gt; CVS &gt; Search History from the main menu.</li>
+            <li>CVS &gt; Search History from the right-click menu of a versioned 
+                file or folder (e.g. in the Projects, Files, or Favorites windows).</li>
+            <li>Search History from the right-click menu of a file in the 
+                <a href="cvs-lite_versioning_window.html">Versioning window</a>.</li>
+        </ul>
+            
+	<p>This window enables you to see the history of committed changes for the selected file 
+            or folder. You can use the following criteria to search for files or folders:</p>
+            
 	<ul>
-	    <li><b>Message.</b> Enter the name of a message to search for the revisions of files or folders committed with that message.</li>
-	    <li><b>Username.</b> Enter a username to search for the revisions of files or folders committed by that user.</li>
-	    <li><b>From.</b> Enter a tag, branch, revision or date of a message to search for the revisions of files or folders committed after that tag, branch, revision or date.
-	    Click the Browse button to search for a branch or tag.</li>
-	    <li><b>To.</b>  Enter a tag, branch, revision or date of a message to search for the revisions of files or folders committed before that tag, branch, revision or date.
-	    Click the Browse button to search for a branch or tag.</li>
+	    <li><strong>Message</strong>. Enter the name of a message to search for the revisions of 
+                files or folders committed with that message.</li>
+	    <li><strong>Username</strong>. Enter a username to search for the revisions of files 
+                or folders committed by that user.</li>
+	    <li><strong>From</strong>. Enter a tag, branch, revision or date of a message to search 
+                for the revisions of files or folders committed after that tag, branch, revision or 
+                date. Click the Browse button to search for a branch or tag.</li>
+	    <li><strong>To</strong>. Enter a tag, branch, revision or date of a message to search 
+                for the revisions of files or folders committed before that tag, branch, revision 
+                or date. Click the Browse button to search for a branch or tag.</li>
 	</ul>
-        <p>When you click the Search button, files and folders meeting the specified criteria are displayed in the lower pane of the the Search History window.
-	Click the Summary or Diff buttons to do the following with the search results:</p>
+        
+        <p>When you click the Search button, files and folders meeting the specified criteria are 
+            displayed in the lower pane of the the Search History window. You can view search results 
+            in two unique views: Summary view and Diff view:</p>
+            
 	<ul>
-	    <li><b>Summary.</b> Click this button to see a single list of the details of the commit results matching the specified search criteria.</li>
-	    <li><b>Diff.</b>  Click this button to see a tree view of the commit results matching the specified search criteria. 
-	    Expand the tree and click on a revision to compare the changes between selected revision and the previous revision.
-	    Ctrl-click two revisions to compare the two revisions.</li>
+	    <li><strong>Summary</strong>. Displays a list containing the details of the results matching 
+                the specified search criteria. Each row corresponds to a revision obtained from the 
+                repository. If your search criteria specified a folder, all files contained therein are 
+                displayed beneath the revision heading.</li>
+	    <li><strong>Diff</strong>. Displays the IDE's graphical Diff Viewer enabling you to compare two 
+                revisions side by side. A tree view of the commit results displays above the diff viewer 
+                allowing you to arbitrarily select revisions to compare. Expand the tree and click on a 
+                revision to compare the changes between the selected revision and the previous revision.</li>
 	</ul>
-	
+        
+        <ul class="note">
+            <li>When working in the Diff view, you can format the table display of the upper tree view.
+                To do so, choose List Options &gt; Change Visible Columns from the right-click menu of 
+                any selected row. A dialog appears allowing you to specify which columns to display.
+                Listed columns include: 
+                
+                <ul>
+                    <li><strong>File Revision:</strong> Revision and Name of the File (mandatory)</li>
+                    <li><strong>Message:</strong> Commit Message (optional)</li>
+                    <li><strong>Time: </strong>Time of Message (optional)</li>
+                    <li><strong>User: </strong>Author of the Change (optional)</li>
+                </ul>
+                <br>
+                You can also change the order in which columns are displayed in the table. To do so, 
+                click on a column heading in the table and drag it to the desired location.</li>
+        </ul>
+        
+        <h4><a name="revert"></a>To revert changes made in a selected revision:</h4>
+
+        <ul>
+            <li>If you are working in the Summary view, select revision row and either:
+                <ul>
+                    <li>right-click the row and choose Rollback Changes</li>
+                    <li>click Revert in the lower right corner of that row.</li>
+                </ul></li>
+            <li>If you are working in the Diff view, select a file revision from the tree 
+                view and choose Rollback Changes from the right-click menu.</li>
+        </ul>
+        
 	<dl>
 	    <dt>
 	    <a name="seealso">See Also</a></dt>
@@ -42,10 +96,6 @@
 	</dl>
 	<hr>
 	<small><a href="../../credits.html">Legal Notices</a></small>
-	<table cellpadding="50" border="0">
-	    <tr>
-		<td>&nbsp;</td>
-	    </tr>
-	</table> 
+        <br><br><br>
     </body>
 </html>

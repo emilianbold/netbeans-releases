@@ -1,38 +1,44 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
             "http://www.w3.org/TR/html4/loose.dtd">
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
     <head>
-	<title>CVS: Versioning Window</title>
-	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <title>CVS: Versioning Window</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" 
+            rel="StyleSheet" type="text/css">
     </head>
+    
     <body>
-	<h2>CVS: Versioning Window</h2>
-	<p><small><a href="#seealso">See Also</a></small></p>
-	<p>The Versioning window presents a real-time view of the changes in
-	selected directories. It opens at the bottom of the IDE whenever you
-	view changes made in version-controlled files.</p>
-	<p>To open the Versioning window, choose Window &gt; Versioning (Ctrl-8) from the main menu.
-	The Versioning window opens automatically when you choose CVS &gt; Show
-	All Changes from the main menu. Alternately, you can right-click any project, directory,
-	or file that is in a CVS working directory and choose CVS &gt; Show
-	Changes.</p>
-
-	<p>By default, the
-	Versioning window displays a list of all modified files within the
-	selected package or folder. Using the buttons in the toolbar, you can choose to display all changes or
-	limit the list of displayed files to either locally or remotely modified files. 
-	You can click the column headings above the listed files to sort the files by name, status or location.</p>
-	<p>The Versioning window toolbar also includes buttons that enable you to invoke the most common CVS tasks on all files displayed in the list.
-	The following table lists the CVS commands available in the toolbar of the Versioning window: </p>
+        <h2>CVS: Versioning Window</h2>
         
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The CVS Versioning window presents a real-time view of the changes made in 
+            your local working copy for selected version-controlled directories. It opens by 
+            default in the bottom panel of the IDE, listing added, deleted or modified files.</p>
+            
+        <p>To open the Versioning window, choose Window &gt; Versioning &gt; CVS from the 
+            main menu. Alternately, you can select a versioned file or folder (e.g. from the Projects,
+            Files, or Favorites window) and either choose CVS &gt; Show Changes from the 
+            right-click menu, or choose Versioning &gt; Show Changes from the main menu.</p>
+        
+        <p>By default, the Versioning window displays a list of all modified files within the selected 
+            package or folder. Using the buttons in the toolbar, you can choose to display all changes 
+            or limit the list of displayed files to either locally or remotely modified files. 
+            You can click the column headings above the listed files to sort the files by name, status 
+            or location.</p>
+            
+        <p>The Versioning window toolbar also includes buttons that enable you to invoke the most common 
+            CVS tasks on all files displayed in the list. The following table lists the CVS 
+            commands available in the toolbar of the Versioning window:</p>
+            
         <table border="1" cellpadding="5">
             <tr>
                 <th>Icon</th>
-                <th width="100px">Name</th>
+                <th style="width:100px">Name</th>
                 <th>Function</th>
             </tr>
             <tr>
@@ -59,29 +65,41 @@
                 <td>Enables you to commit local changes to the repository.</td>
             </tr>            
         </table>
+        
+        <br>
+        <p>You can access other CVS commands in the Versioning window by selecting a table 
+            row that corresponds to a modified file, and choosing a command from the right-click menu.
+            You can, for example, perform the following actions on a file:</p>
+            
+        <ul>
+            <li><strong>Show Annotations</strong>. Displays commit message, author, date, and revision
+                number information in the left margin of files open in the Source Editor.</li>
+            <li><strong>Search History</strong>. Enables you to search for and compare multiple revisions
+                of the selected file in the IDE's <a href="cvs-lite_history_viewer.html">history viewer</a>.</li>
+            <li><strong>Exclude from Commit</strong>. Allows you to mark the file to be excluded when 
+                performing a commit.</li>
+            <li><strong>Revert Modifications</strong>. Enables you to revert any changes to the copy 
+                in your local working directory back to the current version maintained in the repository.</li>
+        </ul>
 
-	<p>You can access CVS commands in the Versioning window by right-clicking the file and choosing a command in the pop-up window.
-	You can also specify files that you want to exclude from a commit or to ignore altogether by right-clicking the file and then choosing Exclude from Commit or Ignore.
-	<p><b>Notes:</b></p>
-	<ul class="note">
-	    <li>You can also exclude files from a commit in the Commit dialog box.</li>
-	    <li>You can select multiple files in the Versioning window by holding down the Ctrl key when you select the files.</li>
-	</ul>
-
-	<dl>
-	    <dt> <a name="seealso">See Also</a></dt>
-	    <dd> <a href="../cvs-lite_status.html">Viewing File Status information</a></dd>
-	    <dd> <a href="../cvs-lite_diff.html">Comparing File Revisions in CVS</a></dd>
-	    <dd> <a href="../cvs-lite_updating.html">Updating Files in a Local Working Directory</a></dd>
-	    <dd> <a href="../cvs-lite_commit.html">Committing Local Changes to a Remote Repository</a></dd>
-	    
-	</dl>
-	<hr>
-	<small><a href="../../credits.html">Legal Notices</a></small>
-	<table border="0" cellpadding="50">
-	    <tr><td>&nbsp;</td></tr>
-	</table>
-
+        <h4>Notes:</h4>
+        <ul class="note">
+            <li>You can also exclude files from a commit in the <a href="cvs-lite_commit_dialog.html">Commit 
+                dialog box</a>.</li>
+            <li>You can select multiple files in the Versioning window by holding down the Ctrl key 
+                when you select files.</li>
+        </ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../cvs-lite_commit.html">Committing Local Changes to a Remote Repository</a></dd>
+            <dd><a href="../cvs-lite_diff.html">Comparing File Revisions in CVS</a></dd>
+            <dd><a href="../cvs-lite_updating.html">Updating Files in a Local Working Directory</a></dd>
+            <dd><a href="../cvs-lite_using.html">Using CVS with the IDE</a></dd>            
+        </dl>
+        
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <br><br><br>
     </body>
-
 </html>
