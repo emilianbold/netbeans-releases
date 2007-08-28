@@ -177,7 +177,10 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     public J2eeModule getJ2eeModule() {
         return module;
     }
-
+    
+    public J2EEBaseVersion getJ2eeVersion() {
+        return J2EEBaseVersion.getVersion(module.getModuleType(), module.getModuleVersion());
+    }
 
     /**
      * SunONEDeploymentConfiguration initialization. This method should be called before

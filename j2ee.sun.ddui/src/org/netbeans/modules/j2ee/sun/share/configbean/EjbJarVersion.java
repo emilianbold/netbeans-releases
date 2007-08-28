@@ -16,13 +16,8 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * EjbJarVersion.java
- *
- * Created on February 25, 2004, 2:36 PM
- */
-
 package org.netbeans.modules.j2ee.sun.share.configbean;
+
 
 /**
  *  Enumerated types for EjbJar Version
@@ -30,64 +25,61 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
  * @author Peter Williams
  */
 public final class EjbJarVersion extends J2EEBaseVersion {
-	
-	/** Represents ejbjar version 2.0
-	 */
-	public static final EjbJarVersion EJBJAR_2_0 = new EjbJarVersion(
-		"2.0", 2000,	// NOI18N
-        "1.3", 1300,    // NOI18N
-		DTDRegistryLink.SUN_EJBJAR_200_DTD_PUBLIC_ID, 
-		DTDRegistryLink.SUN_EJBJAR_200_DTD_SYSTEM_ID);
-	
-	/** Represents ejbjar version 2.1
-	 */
-	public static final EjbJarVersion EJBJAR_2_1 = new EjbJarVersion(
-		"2.1", 2101,	// NOI18N
-        "1.4", 1400,    // NOI18N
-		DTDRegistryLink.SUN_EJBJAR_211_DTD_PUBLIC_ID, 
-		DTDRegistryLink.SUN_EJBJAR_211_DTD_SYSTEM_ID);
-	
-	/** Represents ejbjar version 3.0
-	 */
-	public static final EjbJarVersion EJBJAR_3_0 = new EjbJarVersion(
-		"3.0", 3000,	// NOI18N
-        "5.0", 5000,    // NOI18N
-		DTDRegistryLink.SUN_EJBJAR_300_DTD_PUBLIC_ID, 
-		DTDRegistryLink.SUN_EJBJAR_300_DTD_SYSTEM_ID);
-    
-	/** -----------------------------------------------------------------------
-	 *  Implementation
-	 */
-	
-	/** Creates a new instance of EjbJarVersion 
-	 */
-	private EjbJarVersion(String moduleVersion, int nv, String specVersion, int nsv, String pubId, String sysId) {
-		super(moduleVersion, nv, specVersion, nsv, pubId, sysId);
-	}
 
-	/** Comparator implementation that works only on EjbJarVersion objects
-	 *
-	 *  @param obj EjbJarVersion to compare with.
-	 *  @return -1, 0, or 1 if this version is less than, equal to, or greater
-	 *     than the version passed in as an argument.
-	 *  @throws ClassCastException if obj is not a EjbJarVersion object.
-	 */
-	public int compareTo(Object obj) {
-		EjbJarVersion target = (EjbJarVersion) obj;
-		return numericCompare(target);
-	}
-	
-	public static EjbJarVersion getEjbJarVersion(String version) {
-		EjbJarVersion result = null;
-		
-		if(EJBJAR_2_0.toString().equals(version)) {
-			result = EJBJAR_2_0;
-		} else if(EJBJAR_2_1.toString().equals(version)) {
-			result = EJBJAR_2_1;
-		} else if(EJBJAR_3_0.toString().equals(version)) {
-			result = EJBJAR_3_0;
+    /** Represents ejbjar version 2.0
+     */
+    public static final EjbJarVersion EJBJAR_2_0 = new EjbJarVersion(
+        "2.0", 2000,	// NOI18N
+        "1.3", 1300    // NOI18N
+        );
+
+    /** Represents ejbjar version 2.1
+     */
+    public static final EjbJarVersion EJBJAR_2_1 = new EjbJarVersion(
+        "2.1", 2101,	// NOI18N
+        "1.4", 1400    // NOI18N
+        );
+
+    /** Represents ejbjar version 3.0
+     */
+    public static final EjbJarVersion EJBJAR_3_0 = new EjbJarVersion(
+        "3.0", 3000,	// NOI18N
+        "5.0", 5000    // NOI18N
+        );
+
+    /** -----------------------------------------------------------------------
+     *  Implementation
+     */
+
+    /** Creates a new instance of EjbJarVersion 
+     */
+    private EjbJarVersion(String moduleVersion, int nv, String specVersion, int nsv) {
+        super(moduleVersion, nv, specVersion, nsv);
+    }
+
+    /** Comparator implementation that works only on EjbJarVersion objects
+     *
+     *  @param obj EjbJarVersion to compare with.
+     *  @return -1, 0, or 1 if this version is less than, equal to, or greater
+     *     than the version passed in as an argument.
+     *  @throws ClassCastException if obj is not a EjbJarVersion object.
+     */
+    public int compareTo(Object obj) {
+        EjbJarVersion target = (EjbJarVersion) obj;
+        return numericCompare(target);
+    }
+
+    public static EjbJarVersion getEjbJarVersion(String version) {
+        EjbJarVersion result = null;
+
+        if(EJBJAR_2_0.toString().equals(version)) {
+            result = EJBJAR_2_0;
+        } else if(EJBJAR_2_1.toString().equals(version)) {
+            result = EJBJAR_2_1;
+        } else if(EJBJAR_3_0.toString().equals(version)) {
+            result = EJBJAR_3_0;
         }
-		
-		return result;
-	}
+
+        return result;
+    }
 }

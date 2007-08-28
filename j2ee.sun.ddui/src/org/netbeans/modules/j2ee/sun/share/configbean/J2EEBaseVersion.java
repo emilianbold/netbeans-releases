@@ -16,107 +16,83 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * J2EEBaseVersion.java
- *
- * Created on February 25, 2004, 2:36 PM
- */
-
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
+
 /**
- *  Base class to relate enumerated types of various J2EE versions.
+ *  Base class to relate enumerated types of various J2EE/JavaEE versions.
  *
  * @author Peter Williams
  */
 public abstract class J2EEBaseVersion implements Comparable {	
 
-	/** -----------------------------------------------------------------------
-	 *  Implementation
-	 */
+    /** -----------------------------------------------------------------------
+     *  Implementation
+     */
     // This is the module version id, string and numeric form.
-	private final String j2eeModuleVersion; // e.g. "2.5" (servlet 2.5), "3.0" (ejb 3.0), etc.
-	private final int numericModuleVersion;
-    
-    // this is the j2ee/javaee spec version, string and numeric form.
+    private final String j2eeModuleVersion; // e.g. "2.5" (servlet 2.5), "3.0" (ejb 3.0), etc.
+    private final int numericModuleVersion;
+
+    // This is the j2ee/javaee spec version, string and numeric form.
     private final String j2eeSpecVersion; // e.g. "1.4" (j2ee 1.4), "5.0" (javaee 5)
     private final int numericSpecVersion;
-	
-	private final String publicId;
-	private final String systemId;
-	
-	/** Creates a new instance of J2EEBaseVersion 
-	 */
-	protected J2EEBaseVersion(String moduleVersion, int nv, 
-            String specVersion, int nsv, String pubId, String sysId) {
-		j2eeModuleVersion = moduleVersion;
-		numericModuleVersion = nv;
+
+    
+    /** Creates a new instance of J2EEBaseVersion 
+     */
+    protected J2EEBaseVersion(String moduleVersion, int nv, String specVersion, int nsv) {
+        j2eeModuleVersion = moduleVersion;
+        numericModuleVersion = nv;
         j2eeSpecVersion = specVersion;
         numericSpecVersion = nsv;
-		publicId = pubId;
-		systemId = sysId;
-	}
-	
-	/** The string representation of this version.
-	 *
-	 * @return String representing the numeric version, e.g. "1.4"
-	 */
-	public String toString() {
-		return j2eeModuleVersion;
-	}
-    
-	/** The Sun public id for this J2EE module type
-	 *
-	 * @return String representing the Sun public id for this J2EE module type.
-	 */
-	public String getSunPublicId() {
-		return publicId;
-	}
+    }
 
-	/** The Sun system id for this J2EE module type
-	 *
-	 * @return String representing the Sun system id for this J2EE module type.
-	 */
-	public String getSunSystemId() {
-		return systemId;
-	}
-    
+    /** The string representation of this version.
+     *
+     * @return String representing the module specification version, e.g. servlet 2.x
+     *   ejb-jar 2.x, etc.
+     */
+    @Override
+    public String toString() {
+        return j2eeModuleVersion;
+    }
+
     /** Compare the j2ee/javaee spec version of this instance with another (as
      *  opposed to comparing the module type version.
      *
-	 * @param target Version object to compare with
-	 * @return -1, 0, 1 if this spec version is less than, equal to, or greater than
-	 *   the target version.
+     * @param target Version object to compare with
+     * @return -1, 0, 1 if this spec version is less than, equal to, or greater than
+     *   the target version.
      */
     public int compareSpecification(J2EEBaseVersion target) {
-		if(numericSpecVersion < target.numericSpecVersion) {
-			return -1;
-		} else if(numericSpecVersion > target.numericSpecVersion) {
-			return 1;
-		} else {
-			return 0;
-		}
+        if(numericSpecVersion < target.numericSpecVersion) {
+            return -1;
+        } else if(numericSpecVersion > target.numericSpecVersion) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
-	/** For use by derived class to compare numeric versions.  Derived class
-	 *  should ensure target is the appropriate type before invoking this method
-	 *  to compare the version numbers themselves.
-	 *
-	 * @param target Version object to compare with
-	 * @return -1, 0, 1 if this module version is less than, equal to, or greater than
-	 *   the target version.
-	 */
-	protected int numericCompare(J2EEBaseVersion target) {
-		if(numericModuleVersion < target.numericModuleVersion) {
-			return -1;
-		} else if(numericModuleVersion > target.numericModuleVersion) {
-			return 1;
-		} else {
-			return 0;
-		}
-	}
+    /** For use by derived class to compare numeric versions.  Derived class
+     *  should ensure target is the appropriate type before invoking this method
+     *  to compare the version numbers themselves.
+     *
+     * @param target Version object to compare with
+     * @return -1, 0, 1 if this module version is less than, equal to, or greater than
+     *   the target version.
+     */
+    protected int numericCompare(J2EEBaseVersion target) {
+        if(numericModuleVersion < target.numericModuleVersion) {
+            return -1;
+        } else if(numericModuleVersion > target.numericModuleVersion) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 
     public static J2EEBaseVersion getVersion(Object/*ModuleType*/ moduleType, String moduleVersion) {
         J2EEBaseVersion version = null;
@@ -131,19 +107,19 @@ public abstract class J2EEBaseVersion implements Comparable {
         }
         return version;
     }
-    
-/*
-	public static J2EEBaseVersion getJ2EEVersion(String version) {
-		J2EEBaseVersion result = null;
-		
-		
-		if(J2EE_1_3.toString().equals(version)) {
-			result = J2EE_1_3;
-		} else if(J2EE_1_4.toString().equals(version)) {
-			result = J2EE_1_4;
-		}
-		
-		return result;
-	}
- */
+
+    /*
+    public static J2EEBaseVersion getJ2EEVersion(String version) {
+        J2EEBaseVersion result = null;
+
+
+        if(J2EE_1_3.toString().equals(version)) {
+            result = J2EE_1_3;
+        } else if(J2EE_1_4.toString().equals(version)) {
+            result = J2EE_1_4;
+        }
+
+        return result;
+    }
+    */
 }

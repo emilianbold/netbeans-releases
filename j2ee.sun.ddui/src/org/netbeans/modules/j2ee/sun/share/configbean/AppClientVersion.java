@@ -18,46 +18,44 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+
 /**
  *  Enumerated types for Application Client Version
  *
  * @author Peter Williams
  */
 public final class AppClientVersion extends J2EEBaseVersion {
-	
+
     /** Represents application-client version 1.3
      */
     public static final AppClientVersion APP_CLIENT_1_3 = new AppClientVersion(
         "1.3", 1300,	// NOI18N
-        "1.3", 1300,	// NOI18N
-        DTDRegistryLink.SUN_APPCLIENT_130_DTD_PUBLIC_ID, 
-        DTDRegistryLink.SUN_APPCLIENT_130_DTD_SYSTEM_ID);
+        "1.3", 1300	// NOI18N
+        );
 
     /** Represents application-client version 1.4
      */
     public static final AppClientVersion APP_CLIENT_1_4 = new AppClientVersion(
         "1.4", 1400,	// NOI18N
-        "1.4", 1400,	// NOI18N
-        DTDRegistryLink.SUN_APPCLIENT_140_DTD_PUBLIC_ID, 
-        DTDRegistryLink.SUN_APPCLIENT_140_DTD_SYSTEM_ID);
-	
+        "1.4", 1400	// NOI18N
+        );
+
     /** Represents application-client version 5.0
      */
     public static final AppClientVersion APP_CLIENT_5_0 = new AppClientVersion(
         "5.0", 5000,	// NOI18N
-        "5.0", 5000,	// NOI18N
-        DTDRegistryLink.SUN_APPCLIENT_500_DTD_PUBLIC_ID,
-        DTDRegistryLink.SUN_APPCLIENT_500_DTD_SYSTEM_ID);
-        
-        
+        "5.0", 5000	// NOI18N
+        );
+
+
     /** -----------------------------------------------------------------------
      *  Implementation
      */
 
     /** Creates a new instance of AppClientVersion 
      */
-    private AppClientVersion(String version, int nv, String specVersion, int nsv, String pubId, String sysId) {
-        super(version, nv, specVersion, nsv, pubId, sysId);
+    private AppClientVersion(String version, int nv, String specVersion, int nsv) {
+        super(version, nv, specVersion, nsv);
     }
 
     /** Comparator implementation that works only on AppClientVersion objects
