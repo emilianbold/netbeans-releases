@@ -305,6 +305,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.ruby.refactoring</friend>
+                <friend>org.netbeans.modules.spellchecker.bindings.ruby</friend>
                 <package>org.netbeans.modules.ruby.rhtml.lexer.api</package>
                 <package>org.netbeans.modules.ruby.rhtml.editor.completion</package>
             </friend-packages>
