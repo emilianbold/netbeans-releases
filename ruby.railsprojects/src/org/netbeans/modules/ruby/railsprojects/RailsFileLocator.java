@@ -20,7 +20,6 @@ package org.netbeans.modules.ruby.railsprojects;
 
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.openide.filesystems.FileObject;
@@ -31,45 +30,8 @@ import org.openide.util.Lookup;
  */
 public class RailsFileLocator extends RubyFileLocator {
     
-    private static final String RAILS_ROOT = "#{RAILS_ROOT}/"; // NOI18N
-
     public RailsFileLocator(Lookup context, Project project) {
         super(context, project);
-    }
-
-    public FileObject find(String file) {
-        if (file.startsWith(RAILS_ROOT)) {
-            file = file.substring(RAILS_ROOT.length());
-            FileObject dir = project.getProjectDirectory();
-            FileObject fo = dir.getFileObject(file);
-
-            if (fo != null) {
-                return fo;
-            }
-
-            if (file.indexOf('\\') == -1) {
-                fo = dir.getFileObject(file.replace('\\', '/')); // getFileObject only accepts /
-            }
-            
-            if (fo != null) {
-                return fo;
-            }
-        }
-        return super.find(file);
-   }
-
-    private FileObject findFile(FileObject fo, String name) {
-        if (name.equals(fo.getNameExt())) {
-            return fo;
-        }
-
-        for (FileObject child : fo.getChildren()) {
-            FileObject found = findFile(child, name);
-            if (found != null) {
-                return found;
-            }
-        }
-        return null;
     }
 
     /**
@@ -77,15 +39,11 @@ public class RailsFileLocator extends RubyFileLocator {
      *
      * @param context the lookup in which files should be found
      */
-    protected FileObject[] findSources(List<FileObject> roots) {
+    protected @Override FileObject[] findSources(List<FileObject> roots) {
+        FileObject[] files = super.findSources(roots);
         for (FileObject root : roots) {
-            FileObject[] files = RailsActionProvider.findSelectedFiles(context, root,
-                    RubyInstallation.RUBY_MIME_TYPE, true); // NOI18N
-            if (files != null) {
-                return files;
-            }
             files = RailsActionProvider.findSelectedFiles(context, root,
-                    RhtmlTokenId.MIME_TYPE, true); // NOI18N
+                    RhtmlTokenId.MIME_TYPE, true);
             if (files != null) {
                 return files;
             }
