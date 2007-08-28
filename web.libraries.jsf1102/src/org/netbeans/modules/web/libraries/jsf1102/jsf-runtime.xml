@@ -27,9 +27,9 @@ Microsystems, Inc. All Rights Reserved.
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/jsf-1_1_02/jsf-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jsf-1_1_02/jsf-impl.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/commons-beanutils.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/commons-collections.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/commons-digester.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/commons-logging-1.0.4.jar!/</resource>        
+        <resource>jar:nbinst:///modules/ext/jsf-1_1_02/commons-beanutils.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jsf-1_1_02/commons-collections.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jsf-1_1_02/commons-digester.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jsf-1_1_02/commons-logging.jar!/</resource>
     </volume>
 </library>
