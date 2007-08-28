@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -66,9 +66,12 @@ public class RailsProjectGenerator {
     private RailsProjectGenerator() {}
     
     /**
-     * Create a new empty Ruby project.
+     * Create a new empty Rails project.
+     * 
      * @param dir the top-level directory (need not yet exist but if it does it must be empty)
      * @param name the name for the project
+     * @param create whether to generate base directory structure or not (use
+     *        false for existing application)
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
