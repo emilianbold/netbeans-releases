@@ -179,6 +179,62 @@ public class MakeJNLPTest extends NbTestCase {
         }
         
     }
+
+    public void testGenerateOSOnlySimpleModule() throws Exception {
+        Manifest m;
+        
+        m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.my.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Requires", "org.openide.modules.os.MacOSX, pepa.z.bota");
+        File simpleJar = generateJar (new String[0], m);
+
+        File parent = simpleJar.getParentFile ();
+        File output = new File(parent, "output");
+        File ks = generateKeystore("jnlp", "netbeans-test");
+        
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' />" + 
+            "  <jnlp dir='" + output + "' alias='jnlp' storepass='netbeans-test' keystore='" + ks + "' signjars='false' >" +
+            "    <modules dir='" + parent + "' >" +
+            "      <include name='" + simpleJar.getName() + "' />" +
+            "    </modules>" +
+            "  </jnlp>" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        
+        assertFilenames(output, "org-my-module.jnlp", "org-my-module/s0.jar");
+        
+        File jnlp = new File(output, "org-my-module.jnlp");
+        String res = ModuleDependenciesTest.readFile (jnlp);
+        
+        assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
+        assertTrue ("Resource is os dependant: " + res, res.indexOf ("<resources os='Mac OS X'>") >= 0);
+        assertTrue ("We support all permitions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
+        
+        Matcher match = Pattern.compile(".*codebase=['\\\"]([^'\\\"]*)['\\\"]").matcher(res);
+        assertTrue("codebase is there", match.find());
+        assertEquals("one group found", 1, match.groupCount());
+        String base = match.group(1);
+        
+        assertEquals("By default the dest directory is $$codebase: ", "$$codebase", base);
+
+        File jar = new File(output, "org-my-module/s0.jar");
+        JarFile signed = new JarFile(jar);
+        Enumeration it = signed.entries();
+        while (it.hasMoreElements()) {
+            JarEntry entry = (JarEntry)it.nextElement();
+            if (entry.getName().endsWith(".SF")) {
+                fail ("File should not be signed: " + jar);
+            }
+        }
+        
+    }
     
     public void testTheLocalizedAutoupdateProblem() throws Exception {
         String UTfile =   

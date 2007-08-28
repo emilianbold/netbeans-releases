@@ -211,6 +211,7 @@ public class MakeJNLP extends Task {
             String title;
             String oneline;
             String shrt;
+            String osDep = null;
             
             {
                 String bundle = theJar.getManifest().getMainAttributes().getValue("OpenIDE-Module-Localizing-Bundle");
@@ -227,6 +228,13 @@ public class MakeJNLP extends Task {
                 title = prop.getProperty("OpenIDE-Module-Name", codenamebase);
                 oneline = prop.getProperty("OpenIDE-Module-Short-Description", title);
                 shrt = prop.getProperty("OpenIDE-Module-Long-Description", oneline);
+            }
+            
+            {
+                String osMan = theJar.getManifest().getMainAttributes().getValue("OpenIDE-Module-Requires");
+                if (osMan != null && osMan.indexOf("org.openide.modules.os.MacOSX") >= 0) { // NOI18N
+                    osDep = "Mac OS X"; // NOI18N
+                }
             }
             
             Map<String,List<File>> localizedFiles = verifyExtensions(jar, theJar.getManifest(), dashcnb, codenamebase, verify, indirectJarPaths);
@@ -246,7 +254,11 @@ public class MakeJNLP extends Task {
             writeJNLP.write("   <description kind='short'>" + shrt + "</description>\n");
             writeJNLP.write("  </information>\n");
             writeJNLP.write(permissions +"\n");
-            writeJNLP.write("  <resources>\n");
+            if (osDep == null) {
+                writeJNLP.write("  <resources>\n");
+            } else {
+                writeJNLP.write("  <resources os='" + osDep + "'>\n");
+            }
             writeJNLP.write("     <jar href='" + dashcnb + '/' + jar.getName() + "'/>\n");
             
             processExtensions(jar, theJar.getManifest(), writeJNLP, dashcnb, codebase);
