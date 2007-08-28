@@ -104,7 +104,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
         // enabled in the context menu of the widgets, which are based
         // on the underlying nodes. In addition, the ExplorerUtils.
         // createLookup() call below is required.
-    explorerManager = new ExplorerManager();
+        explorerManager = new ExplorerManager();
         ActionMap map = getActionMap();
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(explorerManager));
         map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(explorerManager));
@@ -135,21 +135,19 @@ public class WSDLDesignMultiViewElement extends TopComponent
         nodesMediator.setExplorerManager(this);
         CookieProxyLookup cpl = new CookieProxyLookup(new Lookup[] {
             Lookups.fixed(new Object[] {
-                // Need the data object registered in the lookup so that the
-                // projectui code will close our open editor windows when the
-                // project is closed.
-                wsdlDataObject,
-                // The Show Cookie in lookup to show the component
-                showCookie,
-                // Provides the PrintProvider for printing
-                //new DesignViewPrintProvider(),
-                // Component palette for the partner view.
-                WSDLPaletteFactory.getPalette(),
-                // This is unusal, not sure why this is here.
-                this,
+                    //For the explorer actions to be enabled.
+                    map,
+                    // Need the data object registered in the lookup so that the
+                    // projectui code will close our open editor windows when the
+                    // project is closed.
+                    wsdlDataObject,
+                    // The Show Cookie in lookup to show the component
+                    showCookie,
+                    // Provides the PrintProvider for printing
+                    //new DesignViewPrintProvider(),
+                    // Component palette for the partner view.
+                    WSDLPaletteFactory.getPalette(),
             }),
-            // For the explorer actions to be enabled.
-            ExplorerUtils.createLookup(explorerManager, map),
             nodesMediator.getLookup(),
             // The Node delegate Lookup must be the last one in the list
             // for the CookieProxyLookup to work properly.
@@ -163,7 +161,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
     }
 
     public ExplorerManager getExplorerManager() {
-    return explorerManager;
+        return explorerManager;
     }
 
     @Override
@@ -190,7 +188,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
 
     @Override
     public UndoRedo getUndoRedo() {
-    return wsdlDataObject.getWSDLEditorSupport().getUndoManager();
+        return wsdlDataObject.getWSDLEditorSupport().getUndoManager();
     }
 
 
@@ -247,23 +245,22 @@ public class WSDLDesignMultiViewElement extends TopComponent
         WSDLEditorSupport editor = wsdlDataObject.getWSDLEditorSupport();
         WSDLModel wsdlModel = editor.getModel();
         if (wsdlModel != null &&
-        		wsdlModel.getState() == WSDLModel.State.VALID) {
-        	// Construct the standard editor interface.
-        	if (graphComponent == null) {
-        		graphComponent = new GraphView(wsdlModel);
-        	}
-        	removeAll();
-        	add(graphComponent, BorderLayout.CENTER);
-        	return;
+                wsdlModel.getState() == WSDLModel.State.VALID) {
+            // Construct the standard editor interface.
+            if (graphComponent == null) {
+                graphComponent = new GraphView(wsdlModel);
+            }
+            removeAll();
+            add(graphComponent, BorderLayout.CENTER);
+            return;
         }
 
         String errorMessage = null;
         // If it comes here, either the model is not well-formed or invalid.
         if (wsdlModel == null ||
-        		wsdlModel.getState() == WSDLModel.State.NOT_WELL_FORMED) {
-        	errorMessage = NbBundle.getMessage(
-        			WSDLTreeViewMultiViewElement.class,
-        			"MSG_NotWellformedWsdl");
+                wsdlModel.getState() == WSDLModel.State.NOT_WELL_FORMED) {
+            errorMessage = NbBundle.getMessage(
+               WSDLTreeViewMultiViewElement.class, "MSG_NotWellformedWsdl");
         }
 
         // Clear the interface and show the error message.
@@ -281,20 +278,20 @@ public class WSDLDesignMultiViewElement extends TopComponent
 
     public javax.swing.JComponent getToolbarRepresentation() {
         if (mToolbar == null) {
-        	WSDLModel model = wsdlDataObject.getWSDLEditorSupport().getModel();
-        	if (model != null && model.getState() == WSDLModel.State.VALID) {
-        		mToolbar = new JToolBar();
-        		mToolbar.setFloatable(false);
-        		mToolbar.addSeparator();
-        		graphComponent.addToolbarActions(mToolbar);
+            WSDLModel model = wsdlDataObject.getWSDLEditorSupport().getModel();
+            if (model != null && model.getState() == WSDLModel.State.VALID) {
+                mToolbar = new JToolBar();
+                mToolbar.setFloatable(false);
+                mToolbar.addSeparator();
+                graphComponent.addToolbarActions(mToolbar);
 
-        		// vlv: print
-/*        		mToolbar.addSeparator();
-        		mToolbar.add(PrintManagerAccess.getManager().getPreviewAction());*/
+                // vlv: print
+/*                mToolbar.addSeparator();
+                mToolbar.add(PrintManagerAccess.getManager().getPreviewAction());*/
 
-        		mToolbar.addSeparator();
-        		mToolbar.add(new ValidateAction(model));
-        	}
+                mToolbar.addSeparator();
+                mToolbar.add(new ValidateAction(model));
+            }
         }
         return mToolbar;
     }

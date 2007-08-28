@@ -42,10 +42,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
@@ -240,9 +238,6 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
             TopComponent tc = findTopComponent();
             Lookup lookup;
             if (tc != null) {
-                // Activate the node just as any explorer view would do.
-                tc.setActivatedNodes(new Node[] { node });
-                // To get the explorer actions enabled, must have the
                 // lookup from the parent TopComponent.
                 lookup = tc.getLookup();
             } else {
@@ -273,16 +268,18 @@ public abstract class AbstractWidget<T extends WSDLComponent> extends Widget
         super.notifyStateChanged(previousState, state);
         //add delete action only if the widget is selected.
         if (state.isSelected()) {
-            TopComponent tc = findTopComponent();
-            if (tc != null) {
-                Node node = getNode();
-                tc.setActivatedNodes(new Node[] { node });
-            }
-            if (currentBorder == null) {
-                currentBorder = getBorder();
-                Insets insets = currentBorder.getInsets();
-                setBorder(BorderFactory.createEmptyBorder(insets.top, insets.left, insets.bottom, insets.right));
-            }
+        	if (!previousState.isSelected()) {
+        		TopComponent tc = findTopComponent();
+        		if (tc != null) {
+        			Node node = getNode();
+        			tc.setActivatedNodes(new Node[] { node });
+        		}
+        		if (currentBorder == null) {
+        			currentBorder = getBorder();
+        			Insets insets = currentBorder.getInsets();
+        			setBorder(BorderFactory.createEmptyBorder(insets.top, insets.left, insets.bottom, insets.right));
+        		}
+        	}
         } else {
             if (currentBorder != null) {
                 setBorder(currentBorder);

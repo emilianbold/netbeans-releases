@@ -65,6 +65,7 @@ public class WSDLNavigatorPanel implements LookupListener, NavigatorPanel {
     }
 
     public void panelActivated(Lookup context) {
+        TopComponent.getRegistry().removePropertyChangeListener(WSDLNavigatorContent.getDefault());
         TopComponent.getRegistry().addPropertyChangeListener(WSDLNavigatorContent.getDefault());
         selection = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
         selection.addLookupListener(this);
