@@ -4,28 +4,29 @@ Inc.  All rights reserved.
 Use is subject to license terms.  *--> 
 <html> 
     <head> 
-        <title>Generating Java Classes from XML Documents</title>
+        <title>Generating Java Classes from XML Schema Documents</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head> 
     <body>
-        <h2>Generating Java Classes from XML Documents</h2>
+        <h2>Generating Java Classes from XML Schema Documents</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-
-        <p>You can use the JAXB Wizard to generate Java classes from an XML file.
-         Once you have the classes, you can use them in a variety of scenarios
-         to traverse the elements and attributes of the XML file.
         
-         <p><b>To generate Java classes from an XML document:</b> 
-         
+        <p>You can use the JAXB Wizard to generate Java classes from an XML schema file.
+        Once you have the classes, you can use them in a variety of scenarios
+        to traverse the elements and attributes of the XML schema file.
+        
+        <p><b>To generate Java classes from an XML schema document:</b> 
+        
         <ol>
-            <li>Make sure that you have installed the Full distribution of the IDE, not
-            Basic, and not Standard, since the JAXB Wizard is only provided
-            with the Full distribution.
-            <li>Depending on the <a href="../create/about_implement_ws.html">implementation form</a>, create a
-                project type for the code that you will generate from the XML file. Typically, you would
-            create a standard Java application for this purpose.</li>
+            <li>Make sure that you have installed the full distribution of the IDE,
+            since the JAXB Wizard is only provided
+            with the full distribution.
+            <li>Create a
+                project type to store the code that you will generate from the XML file. 
+                The JAXB Wizard can be used with the 'Java Application', 'Java Class Library',
+                'Web Application' and 'EJB Module' project types.</li>
             <li>In the Projects window or Files window, right-click the project node
-                and choose New &gt; Other. In the New File wizard, choose JAXB Binding
+            and choose New &gt; Other. In the New File wizard, choose JAXB Binding
             from the XML category. Click Next.
             <p>In the wizard, fill in the fields as described below:
             <ul><li><b>Binding Name.</b> Specifies the name of the new JAXB binding, which will be used to identify it.
@@ -49,8 +50,8 @@ Use is subject to license terms.  *-->
                     In the default (strict) mode, you are also limited to using only the 
                     binding customizations defined in the specification. By using this option,
                 you will be allowed to use the JAXB Vendor Extensions.</ul> 
-                <li><b>Use Binding File.</b> to come
-            <li><b>Use Catalog File.</b> to come</ul> 
+                <li><b>Use Binding File.</b> Lets you import and edit one or more JAXB binding customization files.
+            <li><b>Use Catalog File.</b> Lets you import and edit OASIS catalog files.</ul> 
             <li>Click Finish.
             <li>Open the Files window, and notice that the Java classes have been
             generated in the <tt>build</tt> folder.

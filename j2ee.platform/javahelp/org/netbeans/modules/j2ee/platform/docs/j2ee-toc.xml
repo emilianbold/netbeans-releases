@@ -222,9 +222,9 @@
                 <tocitem text="Configuring a Handler" target="configure_ws_soap_message" />
                 <tocitem text="Testing and Using a Handler" target="test_and_use_ws_soap_message" />
             </tocitem>
-             <tocitem text="Mapping XML to Java" >
-                <tocitem text="About Mapping XML to Java" target="about_jaxb" />
-                <tocitem text="Generating Java Classes from XML Documents" target="jaxb_wizard" />
+             <tocitem text="Using JAXB for Java-XML Binding" >
+                <tocitem text="About Using JAXB for Java-XML Binding" target="about_jaxb" />
+                <tocitem text="Generating Java Classes from XML Schema Documents" target="jaxb_wizard" />
                 <tocitem text="Marshalling Java Classes to XML Elements" target="marshall_unmarshall" />
                 <tocitem text="Unmarshalling XML Elements to Java Classes" target="unmarshall_marshall" />
            </tocitem>
