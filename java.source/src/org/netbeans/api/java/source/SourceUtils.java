@@ -524,11 +524,11 @@ public class SourceUtils {
                     sourceRoot = Index.getSourceRootForClassFolder(url);
                     if (sourceRoot == null) {
                         binaries.add(url);
+                    } else {
+                        // sourceRoot may be a class root in reality
+                        binaries.add(sourceRoot);
                     }
                 }
-            }
-            if (sourceRoot == null && binaries.isEmpty() && clsSym.sourcefile != null) {
-                sourceRoot = clsSym.sourcefile.toUri().toURL();
             }
             if (sourceRoot != null) {
                 FileObject sourceFo = URLMapper.findFileObject(sourceRoot);
