@@ -25,15 +25,15 @@ content = (ruby | html)*;
 html = <HTML>;
 ruby = <DELIMITER> <RUBY> (<DELIMITER, "%>">);
 
-# AST generator
-#AST {
-#    process:org.netbeans.modules.web.core.syntax.JSP.process;
-#}
+COMMENT_LINE {
+    prefix:"<%# ";
+    suffix:" %>";
+}
 
 ######### navigator
 
 NAVIGATOR:ruby: {
-    display_name: "<% $RUBY$ %>";
+    display_name: org.netbeans.modules.ruby.rhtml.RhtmlHelper.navigatorName;
     tooltip: "$$";
     icon: "/org/netbeans/modules/ruby/rhtml/resources/jruby.png";
 }

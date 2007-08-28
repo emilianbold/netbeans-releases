@@ -62,6 +62,10 @@ public enum RhtmlTokenId implements TokenId {
     public static final String MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     
     private final String primaryCategory;
+    
+    public static boolean isRuby(TokenId id) {
+        return id == RUBY || id == RUBY_EXPR || id == RUBYCOMMENT;
+    }
 
     RhtmlTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
