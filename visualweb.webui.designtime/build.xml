@@ -4,5 +4,18 @@
     
     <description>Builds and tests the project org.netbeans.modules.visualweb.webui.designtime.</description>
     <import file="../../../nbbuild/templates/projectized.xml"/>
+ 
+    <target name="jar" depends="init,compile,pre-jar,projectized-common.jar"/>
+    
+    <!-- Copy faces-config files to build area, so that they are packaged into the module JAR. 
+         This is necessary, because the design-time module contains JSF plugins, like a design-time
+         render kit, which must be picked up by the faces configurator in the JSF reference
+         implementation. -->
+    <target name="pre-jar">
+        <mkdir dir="${build.classes.dir}/META-INF"/>
+        <copy todir="${build.classes.dir}/META-INF">
+            <fileset dir="conf" includes="**/*.xml"/>
+        </copy>
+    </target>
     
 </project>
