@@ -125,7 +125,7 @@ public final class CreateElement implements ErrorRule<Void> {
             if (lookupMethodInvocation && leafKind == Kind.METHOD_INVOCATION) {
                 methodInvocation = path;
             }
-            
+	    
             if (lookupNCT && leafKind == Kind.NEW_CLASS) {
                 newClass = path;
             }
@@ -205,7 +205,7 @@ public final class CreateElement implements ErrorRule<Void> {
             
             wasMemberSelect = true;
         } else {
-            if (errorPath.getLeaf().getKind() == Kind.IDENTIFIER) {
+            if (errorPath.getLeaf().getKind() == Kind.IDENTIFIER) { //TODO: Handle Annotations
                 target = source;
                 
                 if (firstMethod != null) {
@@ -277,16 +277,16 @@ public final class CreateElement implements ErrorRule<Void> {
         List<Fix> result = new ArrayList<Fix>();
 
         Set<ElementKind> fixTypes = EnumSet.noneOf(ElementKind.class);
-        TypeMirror[] typeParameterBound = new TypeMirror[1];
+        TypeMirror[] superType = new TypeMirror[1];
         int[] numTypeParameters = new int[1];
-        List<? extends TypeMirror> types = resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset, typeParameterBound, numTypeParameters);
+        List<? extends TypeMirror> types = resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset, superType, numTypeParameters);
         ElementKind classType = getClassType(fixTypes);
         
         if (classType != null) {
             if (wasMemberSelect) {
-                result.addAll(prepareCreateInnerClassFix(info, null, target, modifiers, simpleName, null, typeParameterBound[0], classType, numTypeParameters[0]));
+                result.addAll(prepareCreateInnerClassFix(info, null, target, modifiers, simpleName, null, superType[0], classType, numTypeParameters[0]));
             } else {
-                result.addAll(prepareCreateOuterClassFix(info, null, source, EnumSet.noneOf(Modifier.class), simpleName, null, typeParameterBound[0], classType, numTypeParameters[0]));
+                result.addAll(prepareCreateOuterClassFix(info, null, source, EnumSet.noneOf(Modifier.class), simpleName, null, superType[0], classType, numTypeParameters[0]));
             }
         }
         

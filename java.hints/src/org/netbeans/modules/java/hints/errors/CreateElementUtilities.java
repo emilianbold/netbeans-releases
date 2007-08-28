@@ -80,7 +80,7 @@ public final class CreateElementUtilities {
     public static List<? extends TypeMirror> resolveType(Set<ElementKind> types, CompilationInfo info, TreePath currentPath, Tree unresolved, int offset, TypeMirror[] typeParameterBound, int[] numTypeParameters) {
         switch (currentPath.getLeaf().getKind()) {
             case METHOD:
-                return computeMethod(types, info, currentPath, unresolved, offset);
+                return computeMethod(types, info, currentPath, typeParameterBound ,unresolved, offset);
             case MEMBER_SELECT:
                 return computeMemberSelect(types, info, currentPath, unresolved, offset);
             case ASSIGNMENT:
@@ -236,7 +236,7 @@ public final class CreateElementUtilities {
         return typeToResolve != null ? Collections.singletonList(info.getTrees().getTypeMirror(typeToResolve)) : null;
     }
     
-    private static List<? extends TypeMirror> computeMethod(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
+    private static List<? extends TypeMirror> computeMethod(Set<ElementKind> types, CompilationInfo info, TreePath parent, TypeMirror[] typeParameterBound, Tree error, int offset) {
         //class or field:
         //check the error is in the body:
         //#92419: check for abstract method/method without body:
@@ -269,6 +269,12 @@ public final class CreateElementUtilities {
             types.add(ElementKind.INTERFACE);
             types.add(ElementKind.ENUM);
         }
+	
+	if (mt.getThrows() != null && !mt.getThrows().isEmpty() && mt.getThrows().get(0) == error) {
+	    types.add(ElementKind.CLASS);
+	    typeParameterBound[0] = info.getElements().getTypeElement("java.lang.Exception").asType();
+	    System.out.println("");
+	}
         
         return null;
     }

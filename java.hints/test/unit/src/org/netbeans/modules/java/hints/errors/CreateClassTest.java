@@ -180,6 +180,16 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "CreateClass:test.DDD:[]:CLASS");
     }
     
+    /**
+     * Test offering creation of a new Exception type
+     */ 
+    public void testCreate113905() throws Exception {
+	performAnalysisTest("test/Test.java",
+                       "package test; public class Test {public void g() throws FooException{}}", 
+		       84 - 25, 
+		       "CreateClass:test.FooException:[]:CLASS");
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();
