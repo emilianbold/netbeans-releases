@@ -187,8 +187,7 @@ public abstract class CommonBeanReader
             implements MetadataModelAction<AppClientMetadata, Map<String, Object>> {
 
         public Map<String, Object> run(AppClientMetadata metadata) throws Exception {
-            CommonDDBean newParent = normalizeParent(metadata.getRoot());
-            return genCommonProperties(newParent);
+            return genCommonProperties(metadata.getRoot());
         }
         
     }
@@ -197,8 +196,7 @@ public abstract class CommonBeanReader
             implements MetadataModelAction<EjbJarMetadata, Map<String, Object>> {
 
         public Map<String, Object> run(EjbJarMetadata metadata) throws Exception {
-            CommonDDBean newParent = normalizeParent(metadata.getRoot());
-            return genCommonProperties(newParent);
+            return genCommonProperties(metadata.getRoot());
         }
         
     }
@@ -207,8 +205,7 @@ public abstract class CommonBeanReader
             implements MetadataModelAction<WebservicesMetadata, Map<String, Object>> {
 
         public Map<String, Object> run(WebservicesMetadata metadata) throws Exception {
-            CommonDDBean newParent = normalizeParent(metadata.getRoot());
-            return genCommonProperties(newParent);
+            return genCommonProperties(metadata.getRoot());
         }
         
     }
@@ -217,8 +214,9 @@ public abstract class CommonBeanReader
         
         public Map<String, Object> genCommonProperties(CommonDDBean parentDD) {
             Map<String, Object> result = null;
-            if(parentDD != null) {
-                Object value = getChild(parentDD, propertyName);
+            CommonDDBean relativeParentDD = normalizeParent(parentDD);
+            if(relativeParentDD != null) {
+                Object value = getChild(relativeParentDD, propertyName);
                 if(value != null && value.getClass().isArray() && value instanceof CommonDDBean []) {
                     result = genProperties((CommonDDBean []) value);
                 }
