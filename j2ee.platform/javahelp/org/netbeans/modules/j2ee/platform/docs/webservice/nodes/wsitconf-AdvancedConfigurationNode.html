@@ -14,10 +14,24 @@
         <p>When you expand the Advanced Configuration section, you find the following
             fields:
             <ul>
-                <li><b>RM Resend Interval (ms).</b> 
-                <li><b>RM Resend Interval (ms).</b> 
-                <li><b>RM Close Timeout (ms).</b> 
-                <li><b>RM Ack Request Interval (ms).</b> 
+                <li><b>RM Resend Interval (ms).</b> The time in millisconds
+                after which the sender (RMSource) resends unacknowledged messages
+                to the receiver (RM Destination) . By default, resends happen every
+                2000ms. 
+                <li><b>RM Close Timeout (ms).</b> By default, the call to 
+                <tt>proxy.close()</tt> will not return until all messages 
+                have been acknowledged. RM close timeout is the interval 
+                (in milliseconds) that the client runtime will block waiting 
+                for a call to <tt>close()</tt> to return.
+                If there are still unacknowledged messages after this interval
+                is reached, and the call to close has returned, 
+                an error will be logged about messages being lost. 
+                <li><b>RM Ack Request Interval (ms).</b> The time in milliseconds
+                after which the sender (RMSource) asks the receiver (RMDestination) 
+                to  acknowledge the messages it has received. By default, the 
+                sender asks for acknowledgements with every application message.
+                However, if a positive value is given, then the sender will wait
+                for this interval before which it will request an acknowledgement.
                 <li><b>Secure Session Token Lifetime (ms).</b> 
                 <li><b>Renew Expired Secure Session Tokens.</b> 
                 <li><b>Require Cancel of Secure Session.</b> 
