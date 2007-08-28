@@ -179,15 +179,15 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     /********** non public stuff **********/
     
     private void setNewContent(final DataObject cdo) {
+        final NavigatorPanelUI ui = getPanelUI();
 	CsmModelAccessor.getModel().enqueue(new Runnable() {
 	    public void run() {
-		setNewContentImpl(cdo);
+		setNewContentImpl(cdo, ui);
 	    }
 	}, "Updating QuickNavigator Content"); //NOI18N
     }
     
-    private void setNewContentImpl(DataObject cdo) {
-        NavigatorPanelUI ui = getPanelUI();
+    private void setNewContentImpl(DataObject cdo, NavigatorPanelUI ui) {
         curModel = new NavigatorModel(cdo, ui, this);
         CsmModelAccessor.getModel().addProgressListener(curModel);
         CsmModelAccessor.getModel().addModelListener(curModel);
