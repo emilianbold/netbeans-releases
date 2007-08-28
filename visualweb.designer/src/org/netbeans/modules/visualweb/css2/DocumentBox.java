@@ -927,7 +927,7 @@ public abstract class DocumentBox extends ContainerBox {
             }
         }
 //        if (!parentBox.removeBox(target)) {
-        if (removed) {
+        if (!removed) {
             // XXX Suspicious (presumably not working attemt) to the recovery.
             // Internal error, but try to gracefully recover
             redoLayout(true);
