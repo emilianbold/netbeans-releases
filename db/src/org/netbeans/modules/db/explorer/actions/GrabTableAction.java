@@ -84,15 +84,6 @@ public class GrabTableAction extends DatabaseAction {
             GrabTableWorker run = new GrabTableWorker(nfo);
             Enumeration enu = run.execute();
             
-            while (enu.hasMoreElements()) {
-                Object element = enu.nextElement();
-                if (element instanceof ColumnNodeInfo) {
-                    cmd.getColumns().add(((ColumnNodeInfo)element).getColumnSpecification());
-                }
-            }
-
-            //			System.out.println(cmd.getCommand());
-
             // Get filename
 
             JFileChooser chooser = new JFileChooser();
@@ -137,12 +128,8 @@ public class GrabTableAction extends DatabaseAction {
                     }
                 } else return;
             }
-            FileOutputStream fstream = new FileOutputStream(file);
-            ObjectOutputStream ostream = new ObjectOutputStream(fstream);
-            cmd.setSpecification(null);
-            ostream.writeObject(cmd);
-            ostream.flush();
-            ostream.close();
+            
+            new GrabTableHelper().execute(spec, tablename, enu, file);
 
         } catch(Exception exc) {
             DbUtilities.reportError(bundle().getString("ERR_UnableToGrabTable"), exc.getMessage()); // NOI18N
