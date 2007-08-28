@@ -32,24 +32,23 @@ import org.netbeans.modules.welcome.content.Logo;
  */
 class BottomBar extends JPanel {
 
-    public BottomBar( boolean showNextTime ) {
+    public BottomBar() {
         setLayout( new GridBagLayout() );
         setOpaque( false );
         
         add( Logo.createSunLogo(), new GridBagConstraints(0,0,1,1,0.0,0.0,
-                GridBagConstraints.WEST,GridBagConstraints.VERTICAL,new Insets(0,25,13,5),0,0 ) );
+                GridBagConstraints.WEST,GridBagConstraints.VERTICAL,new Insets(0,12,6,5),0,0 ) );
         
         add( new JLabel(), new GridBagConstraints(1,0,1,1,1.0,0.0,
                 GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0 ) );
         
-        if( showNextTime ) {
-            add( new ShowNextTime(), new GridBagConstraints(2,0,1,1,0.0,0.0,
-                    GridBagConstraints.CENTER,GridBagConstraints.VERTICAL,new Insets(0,0,13,0),0,0 ) );
-        }
-        add( new JLabel(), new GridBagConstraints(3,0,1,1,1.0,0.0,
+        add( new ShowNextTime(), new GridBagConstraints(2,0,1,1,0.0,0.0,
+                GridBagConstraints.CENTER,GridBagConstraints.VERTICAL,new Insets(0,0,6,0),0,0 ) );
+        
+            add( new JLabel(), new GridBagConstraints(3,0,1,1,1.0,0.0,
                 GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0 ) );
         add( Logo.createJavaLogo(), new GridBagConstraints(4,0,1,1,0.0,0.0,
-                GridBagConstraints.EAST,GridBagConstraints.VERTICAL,new Insets(0,5,13,25),0,0 ) );
+                GridBagConstraints.EAST,GridBagConstraints.VERTICAL,new Insets(0,5,6,12),0,0 ) );
     }
 
 }

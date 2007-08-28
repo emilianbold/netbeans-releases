@@ -52,21 +52,18 @@ Microsystems, Inc. All Rights Reserved.
             <file name="quickstart.url" url="nbresloc:/org/netbeans/modules/welcome/resources/quickstart.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="100"/>
-                <attr name="descriptionKey" stringvalue="DSC_QuickStart"/>
                 <attr name="imageKey" stringvalue="IMG_QuickStart"/>
             </file>
 
             <file name="whatsnew.url" url="nbresloc:/org/netbeans/modules/welcome/resources/whatsnew.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="300"/>
-                <attr name="descriptionKey" stringvalue="DSC_WhatsNew"/>
                 <attr name="imageKey" stringvalue="IMG_WhatsNew"/>
             </file>
 
             <file name="tour.url" url="nbresloc:/org/netbeans/modules/welcome/resources/tour.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="400"/>
-                <attr name="descriptionKey" stringvalue="DSC_Tour"/>
                 <attr name="imageKey" stringvalue="IMG_Tour"/>
             </file>
         </folder>

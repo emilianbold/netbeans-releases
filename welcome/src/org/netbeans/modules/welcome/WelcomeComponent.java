@@ -59,6 +59,7 @@ public class WelcomeComponent extends TopComponent {
         initAccessibility();
         
         if( null == content ) {
+            WelcomeOptions.getDefault().incrementStartCounter();
             content = new StartPageContent();
 
             add( content, BorderLayout.CENTER );

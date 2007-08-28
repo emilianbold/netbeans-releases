@@ -41,7 +41,7 @@ class TopBar extends JComponent implements Constants {
         imgLeft = Utilities.loadImage(IMAGE_TOPBAR_LEFT, true);
         imgRight = Utilities.loadImage(IMAGE_TOPBAR_RIGHT, true);
         
-        setPreferredSize( new Dimension( imgCenter.getWidth(null), imgCenter.getHeight(null)) );
+        setPreferredSize( new Dimension( imgCenter.getWidth(null), imgCenter.getHeight(null)-14) );
     }
 
     @Override

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.welcome.content;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
@@ -59,13 +58,13 @@ public class ContentSection extends JPanel implements Constants {
         lblTitle.setFont( SECTION_HEADER_FONT );
         
         lblTitle.setHorizontalAlignment( JLabel.RIGHT );
-        lblTitle.setBorder( BorderFactory.createEmptyBorder(0, 0, 17, 0) );
+        lblTitle.setBorder( BorderFactory.createEmptyBorder(0, 0, 8, 0) );
         lblTitle.setForeground( Utils.getColor( COLOR_SECTION_HEADER ) );
         add( lblTitle, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.EAST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
         
         add( content, new GridBagConstraints(0,1,1,1,1.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
         
-        setBorder( BorderFactory.createEmptyBorder(17,25,13,25) );
+        setBorder( BorderFactory.createEmptyBorder(8,12,6,12) );
         
         String centerImageName = null;
         String verticalImageName = null;

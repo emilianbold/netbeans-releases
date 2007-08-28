@@ -268,7 +268,7 @@ class DemoPanel extends RSSFeedReaderPanel {
     }
     
     private static class MaxSizeImageIcon implements Icon {
-        private static final int MAX_IMAGE_WIDTH = 300;
+        private static final int MAX_IMAGE_WIDTH = 200;
         private static final int MAX_IMAGE_HEIGHT = 400;
         
         ImageIcon orig;

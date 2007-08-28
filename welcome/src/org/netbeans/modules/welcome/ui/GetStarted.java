@@ -97,7 +97,10 @@ class GetStarted extends JPanel implements Constants {
             
             LinkAction la = new LinkAction( dob );
             ActionButton lb = new ActionButton( la, false, Utils.getUrlString( dob ) );
-            panel.add( lb, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
+            panel.add( lb, new GridBagConstraints(1,0,1,3,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
+            
+            panel.add( new JLabel(), 
+                    new GridBagConstraints(2,0,GridBagConstraints.REMAINDER,1,1.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
             
             //TODO remove when the 'tour' link is actually available on the web
             lb.setEnabled( !("tour".equals( dob.getName() )) );
@@ -112,16 +115,7 @@ class GetStarted extends JPanel implements Constants {
                     JLabel lbl = new JLabel( new ImageIcon(img) );
                     lbl.setVerticalAlignment( SwingConstants.TOP );
                     panel.add( lbl, 
-                            new GridBagConstraints(0,0,1,3,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,new Insets(0,0,0,18),0,0) );
-                }
-                String descriptionKey = (String) dob.getPrimaryFile().getAttribute("descriptionKey"); //NOI18N
-                if( null != descriptionKey ) {
-                    String description = bundle.getString( descriptionKey );
-                    JLabel lbl = new JLabel( "<html>"+description ); //NOI18N
-                    panel.add( lbl, 
-                            new GridBagConstraints(1,1,2,1,1.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
-                    panel.add( new JLabel(), 
-                            new GridBagConstraints(1,2,2,1,0.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.VERTICAL,new Insets(0,0,0,0),0,0) );
+                            new GridBagConstraints(0,0,1,3,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.BOTH,new Insets(0,0,0,18),0,0) );
                 }
             }
                 
@@ -130,7 +124,7 @@ class GetStarted extends JPanel implements Constants {
                     BundleSupport.getAccessibilityDescription( "GettingStarted", lb.getText() ) ); //NOI18N
             add( panel, new GridBagConstraints( 0,row++,1,1,1.0,0.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
-                new Insets(0,0,15,0), 0, 0 ) );
+                new Insets(0,0,7,0), 0, 0 ) );
         }
         return row;
     }

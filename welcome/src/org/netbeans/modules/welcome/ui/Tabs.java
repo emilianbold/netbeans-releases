@@ -78,6 +78,7 @@ class Tabs extends JPanel implements Constants {
                 leftButton.setSelected( isLeftTabSelected );
                 rightButton.setSelected( !isLeftTabSelected );
                 switchTab( isLeftTabSelected );
+                WelcomeOptions.getDefault().setLastActiveTab( isLeftTabSelected ? 0 : 1 );
             }
         };
         
@@ -97,7 +98,12 @@ class Tabs extends JPanel implements Constants {
         tabContent.setOpaque( false );
 
         add( tabContent, BorderLayout.CENTER );
-        boolean selectLeftTab = WelcomeOptions.getDefault().getLastActiveTab() == 0;
+        int activeTabIndex = WelcomeOptions.getDefault().getLastActiveTab();
+        boolean selectLeftTab = activeTabIndex <= 0;
+        if( WelcomeOptions.getDefault().isSecondStart() && activeTabIndex < 0 ) {
+            selectLeftTab = false;
+            WelcomeOptions.getDefault().setLastActiveTab( 1 );
+        }
         leftButton.setSelected( selectLeftTab );
         rightButton.setSelected( !selectLeftTab );
         switchTab( selectLeftTab );
@@ -131,8 +137,6 @@ class Tabs extends JPanel implements Constants {
         invalidate();
         revalidate();
         repaint();
-
-        WelcomeOptions.getDefault().setLastActiveTab( showLeftTab ? 0 : 1 );
     }
     
     private static class Tab extends JPanel {

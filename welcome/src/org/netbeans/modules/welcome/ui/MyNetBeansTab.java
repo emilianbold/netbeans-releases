@@ -78,7 +78,7 @@ class MyNetBeansTab extends AbstractTab {
                 new GridBagConstraints(0,2,2,1,0.0,1.0,GridBagConstraints.CENTER,
                 GridBagConstraints.VERTICAL,new Insets(0,0,0,0),0,0) );
         
-        main.add( new BottomBar(true),
+        main.add( new BottomBar(),
                 new GridBagConstraints(0,3,2,1,1.0,0.0,GridBagConstraints.CENTER,
                 GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
     }

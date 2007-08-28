@@ -25,7 +25,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -33,7 +32,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentSection;
-import org.netbeans.modules.welcome.content.Utils;
 
 /**
  * 'Welcome' tab of the Start Page
@@ -46,13 +44,6 @@ class WelcomeTab extends AbstractTab {
     private ContentSection learnMoreSection;
 
     protected void buildContent() {
-        JLabel lbl = new JLabel( BundleSupport.getLabel("WelcomeToNetBeans") ); //NOI18N
-        lbl.setFont( WELCOME_LABEL_FONT );
-        lbl.setForeground( Utils.getColor( COLOR_WELCOME_LABEL ) );
-        lbl.setHorizontalAlignment( JLabel.CENTER );
-        lbl.setBorder( BorderFactory.createEmptyBorder(15, 0, 0, 0));
-        add( lbl, BorderLayout.NORTH );
-        
         JPanel main = new JPanel( new GridBagLayout() );
         main.setOpaque( false );
         add( main, BorderLayout.CENTER );
@@ -86,7 +77,7 @@ class WelcomeTab extends AbstractTab {
         main.add( new JLabel(),
                 new GridBagConstraints(0,2,2,1,0.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.VERTICAL,new Insets(0,0,0,0),0,0) );
         
-        main.add( new BottomBar(false),
+        main.add( new BottomBar(),
                 new GridBagConstraints(0,3,2,1,1.0,0.0,GridBagConstraints.CENTER,
                 GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
     }
