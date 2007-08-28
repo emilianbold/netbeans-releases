@@ -60,7 +60,7 @@ public class JsfJspDataLoader extends UniFileLoader {
     
     public JsfJspDataLoader() {
         // Use String representation instead of JsfJspDataObject.class.getName() for classloading performance
-        super("org.netbeans.modules.visualweb.JsfJspDataObject"); // NOI18N
+        super("org.netbeans.modules.visualweb.project.jsfloader.JsfJspDataObject"); // NOI18N
     }
 
     protected void initialize() {
