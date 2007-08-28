@@ -27,6 +27,6 @@ public class TestFacade implements TestFacadeLocal, TestFacadeRemote {
     }
 
     public List findAll() {
-        return em.createQuery("select object(o) from null as o").getResultList();
+        return em.createQuery("select object(o) from Test as o").getResultList();
     }
 }

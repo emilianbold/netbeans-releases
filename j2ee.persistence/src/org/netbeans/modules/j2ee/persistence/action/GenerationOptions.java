@@ -29,14 +29,16 @@ public final class GenerationOptions {
     
     public enum Operation {
         // {0} the name of the entity manager instance
-        // {1} the name of the given parameter
-        // {2} the class of the given parameter
-        // {3} the return type of the method
+        // {1} the name of the given parameter, i.e. <code>parameterName</code>.
+        // {2} the class of the given parameter, i.e. <code>parameterType</code>.
+        // {3} the return type of the method, i.e. <code>returnType</code>.
+        // {4} a query attribute for the query, i.e. <code>queryAttribute</code>.
         PERSIST("{0}.persist({1});"),
         MERGE("{0}.merge({1});"),
         REMOVE("{0}.remove({0}.merge({1}));"),
         FIND("return {0}.find({3}.class, {1});"),
-        FIND_ALL("return {0}.createQuery(\"select object(o) from {2} as o\").getResultList();");
+        // here the query attribute represents the name of the entity class
+        FIND_ALL("return {0}.createQuery(\"select object(o) from {4} as o\").getResultList();");
     
         private String body;
         

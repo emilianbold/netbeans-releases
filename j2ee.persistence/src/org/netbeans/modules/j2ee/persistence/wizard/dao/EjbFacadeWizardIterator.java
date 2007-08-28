@@ -32,10 +32,14 @@ import java.awt.Component;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
@@ -47,10 +51,15 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.util.AbstractTask;
 import org.netbeans.modules.j2ee.persistence.util.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.action.EntityManagerGenerator;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -63,6 +72,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -87,6 +97,12 @@ import org.openide.util.NbBundle;
     private WizardDescriptor.Panel[] panels;
     private String[] steps;
     private int stepsStartPos;
+    private Project project;
+    /**
+     * Contains the names of the entities. Key the FQN class name, 
+     * value the name of the entity.
+     */ 
+    private final Map<String, String> entityNames = new HashMap<String, String>();
     
     private static final String EJB30_STATELESS_EJBCLASS = "Templates/J2EE/EJB30/StatelessEjbClass.java"; // NOI18N
     
@@ -95,8 +111,11 @@ import org.openide.util.NbBundle;
     }
     
     public Set instantiate() throws IOException {
+        this.project = Templates.getProject(wizard);
+        initEntityNames();
         @SuppressWarnings("unchecked")
         List<String> entities = (List<String>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
+
         final FileObject targetFolder = Templates.getTargetFolder(wizard);
         final Set<FileObject> createdFiles = new HashSet<FileObject>();
         final EjbFacadeWizardPanel2 panel = (EjbFacadeWizardPanel2) panels[1];
@@ -105,7 +124,7 @@ import org.openide.util.NbBundle;
         PersistenceUnit persistenceUnit = (PersistenceUnit) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT);
         if (persistenceUnit != null) {
             try {
-                ProviderUtil.addPersistenceUnit(persistenceUnit, Templates.getProject(wizard));
+                ProviderUtil.addPersistenceUnit(persistenceUnit, project);
             } catch (InvalidPersistenceXmlException ipx) {
                 // just log for debugging purposes, at this point the user has
                 // already been warned about an invalid persistence.xml
@@ -248,8 +267,46 @@ import org.openide.util.NbBundle;
         findAllOptions.setMethodName("findAll");//NO18N
         findAllOptions.setOperation(GenerationOptions.Operation.FIND_ALL);
         findAllOptions.setReturnType("java.util.List");//NO18N
+        findAllOptions.setQueryAttribute(getEntityName(entityFQN));
         
         return Arrays.<GenerationOptions>asList(createOptions, editOptions, destroyOptions, findOptions, findAllOptions);
+    }
+
+    /**
+     *@return the name for the given <code>entityFQN</code>.
+     */ 
+    private String getEntityName(String entityFQN){
+        String result = entityNames.get(entityFQN);
+        return result != null ? result : Util.simpleClassName(entityFQN);
+    }
+    
+    /**
+     * Initializes the {@link #entityNames} map.
+     */ 
+    private void initEntityNames() throws IOException{
+        if (project == null){
+            // just to facilitate testing, avoids the need to provide a project (together with the getEntityName method)
+            return;
+        }
+        //XXX should probably be using MetadataModelReadHelper. needs a progress indicator as well (#113874).
+        try {
+            EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
+            MetadataModel<EntityMappingsMetadata> entityMappingsModel = entityClassScope.getEntityMappingsModel(true);
+            Future<Void> result = entityMappingsModel.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, Void>() {
+
+                public Void run(EntityMappingsMetadata metadata) throws Exception {
+                    for (Entity entity : metadata.getRoot().getEntity()) {
+                        entityNames.put(entity.getClass2(), entity.getName());
+                    }
+                    return null;
+                }
+            });
+            result.get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     String getUniqueClassName(String candidateName, FileObject targetFolder){

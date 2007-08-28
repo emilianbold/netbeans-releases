@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.persistence.wizard.dao;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;

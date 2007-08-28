@@ -219,7 +219,8 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
             emName,
             getGenerationOptions().getParameterName(),
             getGenerationOptions().getParameterType(),
-            getGenerationOptions().getReturnType()});
+            getGenerationOptions().getReturnType(),
+            getGenerationOptions().getQueryAttribute()});
     }
     
     protected VariableTree createUserTransaction(){
