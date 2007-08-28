@@ -3,6 +3,9 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
+	<tocitem text="Getting Started">
+		<tocitem text="Web Applications" target="webapps_process_top" />
+	</tocitem>
 	<tocitem text="Web Applications" expand="false">
 		<tocitem text="About Web Applications">
 			<tocitem text="About Web Applications" target="about_webapps" />
