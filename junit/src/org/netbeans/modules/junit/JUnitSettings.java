@@ -272,12 +272,12 @@ public class JUnitSettings {
         getPreferences().put(PROP_ROOT_SUITE_CLASSNAME,newVal);
     }    
 
-    public double getResultsSplitPaneDivider() {        
-        return getPreferences().getDouble(PROP_RESULTS_SPLITPANE_DIVIDER, 0.5);
+    public int getResultsSplitPaneDivider() {        
+        return getPreferences().getInt(PROP_RESULTS_SPLITPANE_DIVIDER, -1);
     }
 
-    public void setResultsSplitPaneDivider(double newVal) {
-        getPreferences().putDouble(PROP_RESULTS_SPLITPANE_DIVIDER, newVal);
+    public void setResultsSplitPaneDivider(int newVal) {
+        getPreferences().putInt(PROP_RESULTS_SPLITPANE_DIVIDER, newVal);
     }    
     
     private static BeanNode createViewNode() throws java.beans.IntrospectionException {

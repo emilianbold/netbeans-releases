@@ -76,16 +76,16 @@ final class ResultDisplayHandler {
                 super.addNotify();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        setDividerLocation(JUnitSettings.getDefault().getResultsSplitPaneDivider());
+                        int loc = JUnitSettings.getDefault().getResultsSplitPaneDivider();
+                        if (loc != -1) {
+                            setDividerLocation(loc);
+                        }
                     }
                 });
             }
 
             public void removeNotify() {
-                double proportionalLocation = (double)getDividerLocation() / (getWidth() - getDividerSize());
-                if (proportionalLocation >= 0.0 && proportionalLocation <= 1.0) {
-                    JUnitSettings.getDefault().setResultsSplitPaneDivider(proportionalLocation);
-                }
+                JUnitSettings.getDefault().setResultsSplitPaneDivider(getDividerLocation());
                 super.removeNotify();
             }
         };
