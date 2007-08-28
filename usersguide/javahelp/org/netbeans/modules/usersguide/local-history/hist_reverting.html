@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Reverting a File to a Previous Version</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Reverting a File to a Previous Version</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The IDE's local history functionality enables you to revert your current file 
+            to a previous version.</p>
+        
+        <p>There are two ways to revert a file's current version to any previously stored 
+            version:</p>
+        
+        <ul>
+            <li>If you already know the version you want to revert to, select your file 
+                (e.g. from the Projects, Files, or Favorites window) and choose Local 
+                History &gt; Revert to. The <a href="csh/hist_revert_dialog.html">Revert 
+                To dialog</a> opens, enabling you to select a version from the provided table.</li>
+            <li>If you want to view a version prior to selecting it, open the IDE's graphical 
+                Diff Viewer:
+                
+                <ol>
+                    <li>Choose Local History &gt; Show Local History from a file's right-click 
+                        menu. The graphical <a href="csh/hist_diff_viewer.html">Diff Viewer</a> 
+                        opens.</li>
+                    <li>Select a version from the table displayed in the upper area of the viewer.
+                        The selected version displays on the left side in the Diff Viewer below 
+                        and is compared against your current version.</li>
+                    <li>After examining differences between the two versions, you can use the icons 
+                        displayed in the Diff Viewer to make changes:
+                        
+                        <ul>
+                            <li><img src="images/insert.png" alt="insert icon">: Inserts the highlighted 
+                                text from the previous revision into the current revision.</li>
+                            <li><img src="images/remove.png" alt="remove icon">: Removes the highlighted 
+                                text from the current version so that it mirrors the previous version.</li>
+                            <li><img src="images/arrow.png" alt="move all icon">: Reverts the file's 
+                                current version to the state of the selected previous version.</li>
+                        </ul></li>
+                </ol>
+            </li>
+        </ul>
+        
+        <ul class="note">
+            <li>You can make changes to your current version directly in the graphical Diff Viewer. To do
+                so, place the cursor directly in the Current Version pane and edit where appropriate. The
+                current version is instantaneously updated to reflect changes.</li>
+        </ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="hist_about.html">About Local File History</a></dd>
+            <dd><a href="hist_settings.html">Adjusting Local File History Settings</a></dd>            
+        </dl>
+        
+        <hr> 
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>
