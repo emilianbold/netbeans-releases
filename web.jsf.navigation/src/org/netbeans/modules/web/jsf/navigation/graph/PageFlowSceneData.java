@@ -22,6 +22,7 @@ import java.awt.Point;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities;
 import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities.Scope;
@@ -50,6 +51,7 @@ public class PageFlowSceneData {
         //        this.scene = scene;
     }
     
+    private static Logger LOG = Logger.getLogger(PageFlowSceneData.class.getName());
     /**
      * Saves the Scene Data for the Current Scene Scope
      **/
@@ -68,7 +70,7 @@ public class PageFlowSceneData {
             allFacesConfigSceneData.putAll(createSceneInfo(scene));
             break;
         default:
-            System.out.println("PageFlowSceneData: Unknown State");
+            LOG.fine("PageFlowSceneData: Unknown State");
             
         }
         //

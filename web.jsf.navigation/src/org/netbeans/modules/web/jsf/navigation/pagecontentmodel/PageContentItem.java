@@ -156,8 +156,6 @@ public class PageContentItem {
     private Image toBufferedImage(Image img) {
         // load the image
         if( img == null ){
-            
-            System.out.println("Image is null for Bean: " + toString());
             LOG.fine("Page Content Item does not have Image: " + toString());
             img = UNKONWN_ICON;
         }

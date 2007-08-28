@@ -141,7 +141,7 @@ public class WebFolderListener extends FileChangeAdapter {
 
                     //DataObject dobj = DataObject.find(jspFileObject);
                     //DISPLAYNAME:
-                    System.out.println("webFolder: " + webFolder);
+                    //System.out.println("webFolder: " + webFolder);
                     String pageDisplayName = Page.getFolderDisplayName(webFolder, jspFileObject);
 
                     Page relevantPage = pfc.getPageName2Page(pageDisplayName); /* I can't remember if this*/

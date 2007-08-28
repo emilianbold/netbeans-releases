@@ -111,7 +111,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 }
             });
         } else {
-            //                System.out.println("Did not catch this event.: " + ev.getPropertyName());
+            // System.out.println("Did not catch this event.: " + ev.getPropertyName());
             setupGraphInAWTThread(ev);
         }
     }

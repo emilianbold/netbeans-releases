@@ -31,7 +31,7 @@ public class JSFConfigMimeResovler extends MIMEResolver{
     }
 
     public String findMIMEType(FileObject fo) {
-        System.out.println("Trying to find FileObject MIME Type." + fo);
+        //System.out.println("Trying to find FileObject MIME Type." + fo);
         
         if( fo.getExt().equals("xml")){
             return "text/x-jsf+xml";
