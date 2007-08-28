@@ -1,0 +1,20 @@
+# 
+# createdspec.rb
+# 
+# Created on <date and time removed to make test stable...>
+# 
+# To change this template, choose Tools | Templates
+# and open the template in the editor.
+ 
+require 'fire_fly'
+
+describe FireFly do
+  before(:each) do
+    @fire_fly = FireFly.new
+  end
+
+  it "should desc" do
+    # TODO
+  end
+end
+

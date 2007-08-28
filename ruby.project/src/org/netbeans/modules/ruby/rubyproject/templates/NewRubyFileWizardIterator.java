@@ -55,6 +55,7 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
     public static final int TYPE_CLASS = 1;
     public static final int TYPE_MODULE = 2;
     public static final int TYPE_TEST = 3;
+    public static final int TYPE_SPEC = 4;
     
     private int type = TYPE_FILE;
     
@@ -76,6 +77,10 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
 
     public static NewRubyFileWizardIterator testWizard() {
         return new NewRubyFileWizardIterator( TYPE_TEST );
+    }
+    
+    public static NewRubyFileWizardIterator specWizard() {
+        return new NewRubyFileWizardIterator( TYPE_SPEC );
     }
     
     private WizardDescriptor.Panel[] createPanels (WizardDescriptor wizardDescriptor) {

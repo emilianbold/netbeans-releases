@@ -459,6 +459,7 @@ public final class RubyProject implements Project, RakeProjectListener {
             "Templates/Ruby/module.rb", // NOI18N
             "Templates/Ruby/rakefile.rb", // NOI18N
             "Templates/Ruby/suite.rb", // NOI18N
+            "Templates/Ruby/rspec.rb", // NOI18N
         };
         
         public String[] getRecommendedTypes() {

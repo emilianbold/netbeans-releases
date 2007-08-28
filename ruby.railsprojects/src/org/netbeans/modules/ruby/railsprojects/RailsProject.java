@@ -449,6 +449,7 @@ public class RailsProject implements Project, RakeProjectListener {
             "Templates/Ruby/class.rb", // NOI18N
             "Templates/Ruby/module.rb", // NOI18N
             "Templates/Ruby/rakefile.rb", // NOI18N
+            "Templates/Ruby/rspec.rb", // NOI18N
             "Templates/Ruby/empty.rjs", // NOI18N
         };
         

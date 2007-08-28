@@ -94,9 +94,19 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
            setErrorMessage( null );
            return false;
         }        
+
         setLocalizedErrorMessage(null);
         
-        if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE ||
+        if (type == NewRubyFileWizardIterator.TYPE_SPEC) {
+            if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
+                setErrorMessage("ERR_RubyTargetChooser_InvalidClass"); // NOI18N
+                return false;
+            }
+            String msg = RubyUtils.getIdentifierWarning(gui.getClassName(), 0);
+            if (msg != null) {
+                setLocalizedErrorMessage(msg); // warning only, don't return false
+            }
+        } else if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE ||
             type == NewRubyFileWizardIterator.TYPE_TEST) {
             if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_TEST) {
                 if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
@@ -230,7 +240,12 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
             Templates.setTargetFolder( (WizardDescriptor)settings, getTargetFolderFromGUI ((WizardDescriptor)settings));
             Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
             
-            if (type == NewRubyFileWizardIterator.TYPE_CLASS || 
+            if (type == NewRubyFileWizardIterator.TYPE_SPEC) {
+                wizard.putProperty("classname", gui.getClassName()); // NOI18N
+                String name = RubyUtils.camelToUnderlinedName(gui.getClassName());
+                wizard.putProperty("classfile", name); // NOI18N
+                wizard.putProperty("classfield", name); // NOI18N
+            } else if (type == NewRubyFileWizardIterator.TYPE_CLASS || 
                     type == NewRubyFileWizardIterator.TYPE_TEST) {
                 wizard.putProperty("class", gui.getClassName()); // NOI18N
                 wizard.putProperty("module", gui.getModuleName()); // NOI18N

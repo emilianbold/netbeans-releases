@@ -106,7 +106,15 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             }
             moduleText.getDocument().addDocumentListener(this);
             classText.getDocument().addDocumentListener(this);
+        } else if (type == NewRubyFileWizardIterator.TYPE_SPEC) {
+            Mnemonics.setLocalizedText(classLabel, NbBundle.getMessage(RubyTargetChooserPanelGUI.class, "LBL_RubyTargetChooserPanelGUI_Spec_Class")); // NOI18N
+            moduleLabel.setVisible(false);
+            moduleText.setVisible(false);
+            extendsLabel.setVisible(false);
+            extendsText.setVisible(false);
+            classText.getDocument().addDocumentListener(this);
         } else {
+            // TYPE_FILE
             classLabel.setVisible(false);
             classText.setVisible(false);
             moduleLabel.setVisible(false);
@@ -180,7 +188,9 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                     prefix = customPrefix.toString();
                 }
 
-                documentNameTextField.setText (prefix + template.getName ());
+                if (type != NewRubyFileWizardIterator.TYPE_SPEC) {
+                    documentNameTextField.setText (prefix + template.getName ());
+                }
                 documentNameTextField.selectAll ();
             }
         }
@@ -584,7 +594,13 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                 if (text.length() == 0) {
                     fileEdited = false;
                 }
-                if ((type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE) && (!classEdited ||
+                if (type == NewRubyFileWizardIterator.TYPE_SPEC && (!classEdited ||
+                        classText.getText().length() == 0)) {
+                    classEdited = false;
+                    if (text.endsWith("_spec")) { // NOI18N
+                        syncFields(classText, text.substring(0, text.length()-"_spec".length())); // NOI18N
+                    }
+                } else if ((type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE) && (!classEdited ||
                         classText.getText().length() == 0)) {
                     classEdited = false;
                     syncFields(classText, RubyUtils.underlinedNameToCamel(text));
@@ -598,7 +614,11 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                 if (!fileEdited || documentNameTextField.getText().trim().length() == 0) {
                     fileEdited = false;
                     String text = classText.getText().trim();
-                    syncFields(documentNameTextField, RubyUtils.camelToUnderlinedName(text));
+                    if (type == NewRubyFileWizardIterator.TYPE_SPEC && text.length() > 0) {
+                        syncFields(documentNameTextField, RubyUtils.camelToUnderlinedName(text) + "_spec"); // NOI18N
+                    } else {
+                        syncFields(documentNameTextField, RubyUtils.camelToUnderlinedName(text));
+                    }
                 }
             } else if (doc == extendsText.getDocument()) {
                 capitalizeFirstChar(extendsText, e);
@@ -635,22 +655,22 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         return groups[0];
     }
     
-    private String getRelativeNativeName( FileObject root, FileObject folder ) {
-        if (root == null) {
-            throw new NullPointerException("null root passed to getRelativeNativeName"); // NOI18N
-        }
-        
-        String path;
-        
-        if (folder == null) {
-            path = ""; // NOI18N
-        }
-        else {
-            path = FileUtil.getRelativePath( root, folder );            
-        }
-        
-        return path == null ? "" : path.replace( '/', File.separatorChar ); // NOI18N
-    }
+    //    private String getRelativeNativeName( FileObject root, FileObject folder ) {
+    //        if (root == null) {
+    //            throw new NullPointerException("null root passed to getRelativeNativeName"); // NOI18N
+    //        }
+    //        
+    //        String path;
+    //        
+    //        if (folder == null) {
+    //            path = ""; // NOI18N
+    //        }
+    //        else {
+    //            path = FileUtil.getRelativePath( root, folder );            
+    //        }
+    //        
+    //        return path == null ? "" : path.replace( '/', File.separatorChar ); // NOI18N
+    //    }
     
     // Private innerclasses ----------------------------------------------------
 

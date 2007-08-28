@@ -53,4 +53,8 @@ public class RubyTemplates {
     public static WizardDescriptor.InstantiatingIterator createRubyTestTemplateIterator() {
         return NewRubyFileWizardIterator.testWizard();
     }
+
+    public static WizardDescriptor.InstantiatingIterator createRubySpecTemplateIterator() {
+        return NewRubyFileWizardIterator.specWizard();
+    }
 }

@@ -177,4 +177,12 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
         map.put("extend", "Test::Unit::TestCase");
         createTemplate("createdtest", "test.rb", NewRubyFileWizardIterator.TYPE_TEST, map);
     }
+
+    public void testNewSpec() throws Exception {
+        Map<String,String> map = new HashMap<String,String>();
+        map.put("classname", "FireFly");
+        map.put("classfile", "fire_fly");
+        map.put("classfield", "fire_fly");
+        createTemplate("createdspec", "rspec.rb", NewRubyFileWizardIterator.TYPE_SPEC, map);
+    }
 }
