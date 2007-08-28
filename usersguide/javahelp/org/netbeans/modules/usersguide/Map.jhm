@@ -322,8 +322,8 @@
    <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
    <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
 
-
-  
+<!--CSH ID for Options | Misc | Profiler :-->
+  <mapID target="ProfilerOptions.Help" url="configure/options_profiler.html"/>
 
 <!--CSH ID for Options | Editing | Form Editor Settings :-->
     <mapID target="gui.configuring" url="configure/options_form_classic.html" />
