@@ -20,13 +20,13 @@
 package org.netbeans.modules.visualweb.websvcmgr.codegen;
 
 import com.sun.tools.ws.processor.model.Operation;
-import com.sun.tools.ws.processor.model.java.JavaMethod;
-import com.sun.tools.ws.processor.model.java.JavaParameter;
-import com.sun.tools.ws.processor.model.java.JavaType;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
+import javax.xml.bind.annotation.XmlType;
 import org.netbeans.modules.visualweb.websvcmgr.WebServiceDescriptor;
 
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
@@ -56,6 +56,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     private WebServiceDescriptor wsData;
     private WsdlPort port;
     private final List<WsdlOperation> operations;
+    private ClassLoader wsClassLoader;
     
     int indent = 0;
     
@@ -79,6 +80,10 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         this.serviceName = serviceName;
         serviceVariable = serviceName.substring(serviceName.lastIndexOf('.') + 1, serviceName.length());
         serviceVariable = serviceVariable.toLowerCase() + "1";
+    }
+    
+    public void setClassLoader(ClassLoader loader) {
+        this.wsClassLoader = loader;
     }
     
     public Set getDataProviders() {
@@ -395,6 +400,22 @@ public class WrapperClientWriter extends java.io.PrintWriter {
                 if (!isJaxRpc) {
                     int index = Util.getOutputHolderIndex(((DataProviderModelMethod)method).getJavaMethod());
                     info.setOutputHolderIndex(index);
+                    
+                    String returnTypeClass = method.getMethodReturnType();
+                    returnTypeClass = returnTypeClass.substring(0, separateGenericType(returnTypeClass));
+                    
+                    if (isWrappedClass(returnTypeClass)) {
+                        DataProviderParameter returnType = getSingleProperty(returnTypeClass);
+                        
+                        if (returnType != null) {
+                            String propertyType = returnType.getType();
+                            propertyType = propertyType.substring(0, separateGenericType(propertyType));
+
+                            if (!Util.isPrimitiveType(propertyType)) {
+                                info.setWrappedProperty(returnType);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -446,8 +467,93 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             println();
         }
     }
-        
+
+    // XXX taken from ReflectionHelper helper methods
+    private boolean isWrappedClass(String typeClass) {
+        try {
+            Class type = Class.forName(typeClass, true, wsClassLoader);
+            Class xmlType = Class.forName(XmlType.class.getName(), true, wsClassLoader);
+
+            Annotation xmlAnnotation = type.getAnnotation(xmlType);
+            boolean isEnumeration = Enum.class.isAssignableFrom(type);
+            
+            return xmlAnnotation != null && !isEnumeration;
+        } catch (ClassNotFoundException cnfe) {
+            return false;
+        }
+    }
     
+    private DataProviderParameter getSingleProperty(String typeClass) {
+        List<String> properties = getPropertyNames(typeClass, wsClassLoader);
+        if (properties == null || properties.size() != 1) {
+            return null;
+        } else {
+            String name = properties.get(0);
+            Method getter = Util.getPropertyGetter(typeClass, name, wsClassLoader);
+            if (getter != null) {
+                String type = Util.typeToString(getter.getGenericReturnType());
+                return new DataProviderParameter(type, name);
+            }else {
+                return null;
+            }
+        }
+    }
+    
+    // TODO - merge this with ReflectionHelper.separateGenericType
+    private int separateGenericType(String typeName) {
+        int length = typeName.length();
+        
+        if (length < 2 || typeName.charAt(length-1) != '>') { // NOI18N
+            return length;
+        }else {
+            int depth = 1;
+            for (int i = length - 2; i >= 0; i--) {
+                if (typeName.charAt(i) == '>') {
+                    depth += 1;
+                }else if (typeName.charAt(i) == '<') {
+                    depth -= 1;
+                }
+                
+                if (depth == 0) {
+                    return i;
+                }
+            }
+            
+            return length;
+        }
+    }
+    
+    private List<String> getPropertyNames(String complexType, ClassLoader loader) {
+        try {
+            List<String> properties = new java.util.ArrayList<String>();
+            
+            Class nextClass = Class.forName(complexType, true, loader);
+            Class xmlTypeClass = Class.forName(XmlType.class.getName(), true, loader);
+            
+            for ( ; nextClass != null; nextClass = nextClass.getSuperclass()) {
+                Annotation annotation = nextClass.getAnnotation(xmlTypeClass);
+                if (annotation == null) {
+                    break;
+                }
+                
+                try {
+                    Method m = annotation.getClass().getMethod("propOrder", new Class[0]); // NOI18N
+                    String[] props = (String[])m.invoke(annotation, null);
+                    
+                    for (int i = 0; props != null && i < props.length; i++) {
+                        if (props[i] != null && props[i].length() > 0)
+                            properties.add(props[i]);
+                    }
+                }catch (Exception ex) {
+                }
+            }
+            
+            return properties;
+        }catch (Exception ex) {
+            return new java.util.ArrayList<String>();
+        }
+    }
+        
     private String designTimeReturnValue( String returnType ) {
         
         String fakeReturn = "null";

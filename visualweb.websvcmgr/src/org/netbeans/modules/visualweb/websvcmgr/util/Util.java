@@ -85,6 +85,91 @@ public class Util {
     public static final int BUFFER_SIZE = 4096;
     public static final String xsdNamespace = "xsd";
     final static public String WSDL_FILE_EXTENSION = "wsdl";
+
+    
+    public static Method getPropertyGetter(String type, String propName, ClassLoader loader) {
+        try {
+            Class typeClass = Class.forName(type, true, loader);
+            
+            char[] name = propName.toCharArray();
+            String propCaps = null;
+            
+            Method method = null;
+            
+            for (int i = 0; i < propName.length() && method == null; i++ ) {
+                name[i] = Character.toUpperCase(name[i]);
+                propCaps = new String(name);
+                try {
+                    method = typeClass.getMethod("get" + propCaps, new Class[0]); // NOI18N
+                } catch (NoSuchMethodException ex) {
+                    try {
+                        method = typeClass.getMethod("is" + propCaps, new Class[0]); // NOI18N
+                    } catch (NoSuchMethodException nsme) {
+                        continue;
+                    }
+                }
+            }
+            
+            return method;
+        }catch (Exception ex) {
+            return null;
+        }
+    }
+    
+    private static final String[] PRIMITIVE_WRAPPER_CLASSES = 
+    { "java.lang.Boolean", 
+      "java.lang.Byte", 
+      "java.lang.Double", 
+      "java.lang.Float", 
+      "java.lang.Integer", 
+      "java.lang.Long", 
+      "java.lang.Short", 
+      "java.lang.Character", 
+      "java.lang.String" };
+    
+    private static final String[] PRIMITIVE_TYPES = 
+    { "boolean",
+      "byte",
+      "double",
+      "float",
+      "int",
+      "long",
+      "short",
+      "char" };
+    
+    public static boolean isPrimitiveType(String typeName) {
+        for (int i = 0; i < PRIMITIVE_WRAPPER_CLASSES.length; i++) {
+            if (PRIMITIVE_WRAPPER_CLASSES[i].equals(typeName)) {
+                return true;
+            }
+        }
+        
+        return isJavaPrimitive(typeName);
+    }
+    
+    public static boolean isJavaPrimitive(String typeName) {
+        for (int i = 0; i < PRIMITIVE_TYPES.length; i++) {
+            if (PRIMITIVE_TYPES[i].equals(typeName)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+
+    
+    public static String getWrapperForPrimitive(String javaPrimitive) {
+        for (int i = 0; i < PRIMITIVE_TYPES.length; i++) {
+            if (PRIMITIVE_TYPES[i].equals(javaPrimitive)) {
+                return PRIMITIVE_WRAPPER_CLASSES[i];
+            }     
+        }
+        
+        return null;
+    }
+
+    
     
     public static boolean hasOutput(JavaMethod m) {
         JavaType type = m.getReturnType();

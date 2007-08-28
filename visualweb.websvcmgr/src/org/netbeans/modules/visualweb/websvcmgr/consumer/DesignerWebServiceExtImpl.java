@@ -261,6 +261,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 
                 beanInfoWriter = new WrapperClientBeanInfoWriter(new FileWriter(webserviceClientBeanInfo));
                 
+                beanWriter.setClassLoader(classLoader);
                 beanWriter.setPackage(wsMetadataDesc.getPackageName());
                 beanWriter.setClassName(className);
                 beanWriter.setContainedClassInfo(serviceClassName);
@@ -289,6 +290,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                         // DataProvider.java
                         File dataProviderFile = new File(sourceDir, dp.getClassName() + ".java" ); // NOI18N
                         DataProviderWriter dpWriter = new DataProviderWriter( new FileWriter(dataProviderFile), dp, !isJaxRpc );
+                        dpWriter.setClassLoader(classLoader);
                         dpWriter.addImport( wsMetadataDesc.getPackageName() + ".*" );
                         dpWriter.writeClass();
                         dpWriter.flush();

@@ -35,6 +35,7 @@ public class DataProviderInfo {
     
     private String methodName4DPClass;
     private int outputHolderIndex = -1;
+    private DataProviderParameter wrappedProperty = null;
     
     public DataProviderInfo( String packageName, String clientWrapperClassName, DataProviderMethod method, String methodName4DPClass ) {
         this.packageName = packageName;
@@ -49,6 +50,14 @@ public class DataProviderInfo {
     
     public void setOutputHolderIndex(int outputHolderIndex) {
         this.outputHolderIndex = outputHolderIndex;
+    }
+    
+    public void setWrappedProperty(DataProviderParameter wrappedProperty) {
+        this.wrappedProperty = wrappedProperty;
+    }
+    
+    public DataProviderParameter getWrappedProperty() {
+        return wrappedProperty;
     }
     
     public String getPackageName()

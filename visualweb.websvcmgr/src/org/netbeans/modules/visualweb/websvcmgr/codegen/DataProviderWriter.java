@@ -39,6 +39,7 @@ public class DataProviderWriter extends java.io.PrintWriter {
     private DataProviderInfo dataProviderInfo;
     private Set imports = new HashSet();
     private boolean isJ2EE_15;
+    private ClassLoader classLoader;
     
     public DataProviderWriter(Writer writer, DataProviderInfo dataProviderInfo, boolean isJ2EE_15 ){
         super(writer);
@@ -50,8 +51,12 @@ public class DataProviderWriter extends java.io.PrintWriter {
         imports.add(importLine);
     }
     
+    public void setClassLoader(ClassLoader loader) {
+        this.classLoader = loader;
+    }
+    
     public void writeClass(){
-        boolean isPrimitiveReturnType = isPrimitiveType(dataProviderInfo.getMethod().getMethodReturnType());
+        boolean isPrimitiveReturnType = Util.isPrimitiveType(dataProviderInfo.getMethod().getMethodReturnType());
         
         // package
         println( "package " + dataProviderInfo.getPackageName() + ";" );
@@ -165,7 +170,7 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println();
         
         // Implement abstract method from super class - getDataMethodArguments()
-        if (!isPrimitiveReturnType && dataProviderInfo.getOutputHolderIndex() < 0) {
+        if (!isPrimitiveReturnType && dataProviderInfo.getOutputHolderIndex() < 0 && dataProviderInfo.getWrappedProperty() == null) {
             println( "    public Object[] getDataMethodArguments() {" );
         }else {
             println( "    private Object[] getOriginalDataMethodArguments() {" );
@@ -236,7 +241,17 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println( "    } " );
         
         int outputHolderIndex = dataProviderInfo.getOutputHolderIndex();
-        if (outputHolderIndex >= 0) {            
+        
+        if (dataProviderInfo.getWrappedProperty() != null) {
+            println( "    private void setDataProviderProperties() throws NoSuchMethodException { " );
+            println( "        super.setDataClassInstance( this );" );
+            println( "        originalDataMethod = " + clientWrapperClassName + ".class.getMethod(" );
+            println( "            \"" + dataProviderInfo.getMethod().getMethodName() + "\", new Class[] {" + getMethodParamTypes() + "} );" );
+            println( "        super.setDataMethod( getWrapperMethod() ); ");
+            println( "    }" );
+            writeUnwrapMethod(clientWrapperClassVar, dataProviderInfo.getMethod().getMethodReturnType(),
+                    dataProviderInfo.getWrappedProperty().getName(), dataProviderInfo.getWrappedProperty().getType());
+        }else if (outputHolderIndex >= 0) {            
             List<JavaParameter> args = ((DataProviderModelMethod) dataProviderInfo.getMethod()).getJavaMethod().getParametersList();
             String holderValueType = args.get(outputHolderIndex).getType().getRealName();
             
@@ -279,6 +294,12 @@ public class DataProviderWriter extends java.io.PrintWriter {
     private void writeOutputHolderMethodWrapper(String clientVar, String holderValueType) {
         int outputHolderIndex = dataProviderInfo.getOutputHolderIndex();
         String getter = "get" + Util.upperCaseFirstChar(dataProviderInfo.getMethod().getParameters().get(outputHolderIndex).getName()) + "()";
+
+        String exceptionReturnValue = "null";
+        
+        if (Util.isJavaPrimitive(holderValueType)) {
+            exceptionReturnValue = getDefaultPrimitiveRepresentation(holderValueType);
+        }
         
         println( "" );
         println( "    private Method originalDataMethod; " );
@@ -290,7 +311,7 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println( "            return methodResult; ");
         println( "        }catch (Exception ex) { ");
         println( "            ex.printStackTrace(); ");
-        println( "            return null; ");
+        println( "            return " + exceptionReturnValue + "; ");
         println( "        }");
         println( "    } ");
         println( "" );
@@ -300,10 +321,39 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println( "" );
     }
     
+    private void writeUnwrapMethod(String clientVar, String wrappedType, String propertyName, String propertyType) {
+        java.lang.reflect.Method getMethod = Util.getPropertyGetter(wrappedType, propertyName, classLoader);
+        String getter = getMethod.getName() + "()";
+        String exceptionReturnValue = "null";
+        
+        if (Util.isJavaPrimitive(propertyType)) {
+            exceptionReturnValue = getDefaultPrimitiveRepresentation(propertyType);
+        }
+        
+        println( "" );
+        println( "    private Method originalDataMethod; " );
+        println( "" );
+        println( "    public " + propertyType + " invokeMethod() {" );
+        println( "        try { ");
+        println( "            " + wrappedType + " result = (" + wrappedType + ") originalDataMethod.invoke(" + clientVar + ", getOriginalDataMethodArguments()); ");
+        println( "            " + propertyType + " methodResult = result." + getter + ";");
+        println( "            return methodResult; ");
+        println( "        }catch (Exception ex) { ");
+        println( "            ex.printStackTrace(); ");
+        println( "            return " + exceptionReturnValue + "; ");
+        println( "        }");
+        println( "    } ");
+        println( "" );
+        println( "    private Method getWrapperMethod() throws NoSuchMethodException {");
+        println( "        return this.getClass().getMethod(\"invokeMethod\", new Class[0]); ");
+        println( "    } ");
+        println( "" );        
+    }
+    
     private void writePrimitiveMethodWrapper(String clientVar) {
         String mrt = dataProviderInfo.getMethod().getMethodReturnType();
-        if (isJavaPrimitive(mrt)) {
-            mrt = getWrapperForPrimitive(mrt);
+        if (Util.isJavaPrimitive(mrt)) {
+            mrt = Util.getWrapperForPrimitive(mrt);
         }
         
         println( "" );
@@ -385,56 +435,13 @@ public class DataProviderWriter extends java.io.PrintWriter {
             return length;
         }
     }
-    
-    private static final String[] PRIMITIVE_WRAPPER_CLASSES = 
-    { "java.lang.Boolean", 
-      "java.lang.Byte", 
-      "java.lang.Double", 
-      "java.lang.Float", 
-      "java.lang.Integer", 
-      "java.lang.Long", 
-      "java.lang.Short", 
-      "java.lang.Character", 
-      "java.lang.String" };
-    
-    private static final String[] PRIMITIVE_TYPES = 
-    { "boolean",
-      "byte",
-      "double",
-      "float",
-      "int",
-      "long",
-      "short",
-      "char" };
-    
-    private boolean isPrimitiveType(String typeName) {
-        for (int i = 0; i < PRIMITIVE_WRAPPER_CLASSES.length; i++) {
-            if (PRIMITIVE_WRAPPER_CLASSES[i].equals(typeName)) {
-                return true;
-            }
+
+    private String getDefaultPrimitiveRepresentation(String typeName) {
+        if (typeName.equals("boolean")) {
+            return "false";
+        } else {
+            return "0";
         }
-        
-        return isJavaPrimitive(typeName);
-    }
-    
-    private boolean isJavaPrimitive(String typeName) {
-        for (int i = 0; i < PRIMITIVE_TYPES.length; i++) {
-            if (PRIMITIVE_TYPES[i].equals(typeName)) {
-                return true;
-            }
-        }
-        
-        return false;        
-    }
-    
-    private String getWrapperForPrimitive(String javaPrimitive) {
-        for (int i = 0; i < PRIMITIVE_TYPES.length; i++) {
-            if (PRIMITIVE_TYPES[i].equals(javaPrimitive)) {
-                return PRIMITIVE_WRAPPER_CLASSES[i];
-            }     
-        }
-        
-        return null;
     }
     
 }
