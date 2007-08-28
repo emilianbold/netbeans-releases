@@ -33,11 +33,11 @@ import org.netbeans.modules.form.ViewConverter;
 public class ViewConverterImpl implements ViewConverter {
 
     public boolean canVisualize(Class componentClass) {
-        return application.View.class.isAssignableFrom(componentClass);
+        return org.jdesktop.application.View.class.isAssignableFrom(componentClass);
     }
 
     public Convert convert(Object component, boolean root, boolean designRestrictions) {
-        if (root && component instanceof application.View) {
+        if (root && component instanceof org.jdesktop.application.View) {
             return new ConvertResult(
                     designRestrictions ? new AppDesignView() : new AppPreview(),
                     null);

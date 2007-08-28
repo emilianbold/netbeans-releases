@@ -79,8 +79,9 @@ public class FormSettings {
         boolean autoName;
         if (setting != null) {
             autoName = setting.booleanValue();
-        } else {
-            autoName = getDefaultAutoSetComponentName();
+        } else { // no setting - detect for newly created form, false otherwise
+            autoName = FormEditor.getFormEditor(formModel).needPostCreationUpdate()
+                    ? getDefaultAutoSetComponentName() : false;
             setAutoSetComponentName(autoName);
         }
         return autoName;

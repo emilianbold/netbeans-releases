@@ -393,7 +393,7 @@ public class ActionManager {
             buf.append("\n"); // NOI18N
             buf.append(indent);
             buf.append("public "); // NOI18N
-            buf.append(taskName != null ? "application.Task " : "void "); // NOI18N
+            buf.append(taskName != null ? "org.jdesktop.application.Task " : "void "); // NOI18N
             buf.append(action.getId());
             buf.append("() {\n"); // NOI18N
             buf.append(indent).append(indent);
@@ -448,14 +448,14 @@ public class ActionManager {
                     // create new method tree
                     TreeMaker make = workingCopy.getTreeMaker();
                     AnnotationTree annotation = make.Annotation(
-                            make.QualIdent(workingCopy.getElements().getTypeElement("application.Action")), // NOI18N
+                            make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Action")), // NOI18N
                                            Collections.<ExpressionTree>emptyList());
                     // TODO annotation attributes
                     ModifiersTree methodModifiers = make.Modifiers(
                         Collections.<Modifier>singleton(Modifier.PUBLIC),
                         Collections.<AnnotationTree>singletonList(annotation));
                     Tree returnType = action.isTaskEnabled()
-                            ? make.QualIdent(workingCopy.getElements().getTypeElement("application.Task")) // NOI18N
+                            ? make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Task")) // NOI18N
                             : make.PrimitiveType(TypeKind.VOID);
                     MethodTree methodTree = make.Method(
                             methodModifiers,
@@ -510,7 +510,7 @@ public class ActionManager {
     }
 
     private static final String TASK_CLASS_TEMPLATE =
-            "    private class MyTask extends application.Task<Object, Void> {\n" // NOI18N
+            "    private class MyTask extends org.jdesktop.application.Task<Object, Void> {\n" // NOI18N
           + "        MyTask() {\n" // NOI18N
           + "            // Runs on the EDT.  Copy GUI state that\n" // NOI18N
           + "            // doInBackground() depends on from parameters\n" // NOI18N
@@ -747,7 +747,7 @@ public class ActionManager {
                                         for (AnnotationTree at : method.getModifiers().getAnnotations()) {
                                             TypeElement annEl = (TypeElement) trees.getElement(
                                                     trees.getPath(cut, at.getAnnotationType()));
-                                            if (annEl.getQualifiedName().toString().equals("application.Action")) { // NOI18N
+                                            if (annEl.getQualifiedName().toString().equals("org.jdesktop.application.Action")) { // NOI18N
                                                 annotation = at;
                                                 break;
                                             }
@@ -768,7 +768,7 @@ public class ActionManager {
                                                     expTree = make.Literal(value);
                                                 } else if (value instanceof ProxyAction.BlockingType) {
                                                     expTree = make.MemberSelect(
-                                                            make.MemberSelect(make.QualIdent(workingCopy.getElements().getTypeElement("application.Task")), // NOI18N
+                                                            make.MemberSelect(make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Task")), // NOI18N
                                                                               "BlockingScope"), // NOI18N
                                                             value.toString());
                                                 } else {
@@ -779,7 +779,7 @@ public class ActionManager {
                                                 annAttrs.add(attrTree);
                                             }
                                         }
-                                        AnnotationTree newAnnotation = make.Annotation(make.QualIdent(workingCopy.getElements().getTypeElement("application.Action")), annAttrs); // NOI18N
+                                        AnnotationTree newAnnotation = make.Annotation(make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Action")), annAttrs); // NOI18N
                                         workingCopy.rewrite(annotation, newAnnotation);
 
                                         // update the method return type (task)
@@ -803,7 +803,7 @@ public class ActionManager {
                                                 newMethod = make.Method(
                                                         method.getModifiers(),
                                                         method.getName(),
-                                                        make.QualIdent(workingCopy.getElements().getTypeElement("application.Task")), // NOI18N
+                                                        make.QualIdent(workingCopy.getElements().getTypeElement("org.jdesktop.application.Task")), // NOI18N
                                                         method.getTypeParameters(),
                                                         method.getParameters(),
                                                         method.getThrows(),
@@ -1016,7 +1016,7 @@ public class ActionManager {
                 for (AnnotationTree at : modifiers.getAnnotations()) {
                     TypeElement annEl = (TypeElement) trees.getElement(
                             trees.getPath(cut, at.getAnnotationType()));
-                    if (annEl.getQualifiedName().toString().equals("application.Action")) { // NOI18N
+                    if (annEl.getQualifiedName().toString().equals("org.jdesktop.application.Action")) { // NOI18N
                         SourcePositions positions = trees.getSourcePositions();
                         return new int[] {
                                 (int) positions.getStartPosition(cut, at),
@@ -1031,7 +1031,7 @@ public class ActionManager {
 
     private static String getAnnotationCode(ProxyAction action) {
         StringBuilder buf = new StringBuilder();
-        buf.append("@application.Action"); // NOI18N
+        buf.append("@org.jdesktop.application.Action"); // NOI18N
         boolean anyAttr = false;
         for (String attrName : ProxyAction.getAnnotationAttributeNames()) {
             if (action.isAnnotationAttributeSet(attrName)) {
@@ -1045,7 +1045,7 @@ public class ActionManager {
                 buf.append(attrName);
                 buf.append("="); // NOI18N
                 if (value instanceof ProxyAction.BlockingType) {
-                    buf.append(application.Task.BlockingScope.class.getCanonicalName());
+                    buf.append(org.jdesktop.application.Task.BlockingScope.class.getCanonicalName());
                     buf.append(".").append(value); // NOI18N
                 } else {
                     buf.append("\""); // NOI18N
@@ -1166,7 +1166,7 @@ public class ActionManager {
                                         for (AnnotationTree at : modifiers.getAnnotations()) {
                                             TypeElement annEl = (TypeElement) workingCopy.getTrees().getElement(
                                                     workingCopy.getTrees().getPath(cut, at.getAnnotationType()));
-                                            if (annEl.getQualifiedName().toString().equals("application.Action")) { // NOI18N
+                                            if (annEl.getQualifiedName().toString().equals("org.jdesktop.application.Action")) { // NOI18N
                                                 TreeMaker make = workingCopy.getTreeMaker();
                                                 ModifiersTree newModif = make.removeModifiersAnnotation(modifiers, at);
                                                 workingCopy.rewrite(modifiers, newModif);
@@ -1256,7 +1256,7 @@ public class ActionManager {
                     for (TypeElement cls : classList) {
                         for (ExecutableElement el : ElementFilter.methodsIn(cls.getEnclosedElements())) {
                             if (el.getModifiers().contains(Modifier.PUBLIC)) {
-                                application.Action ann = el.getAnnotation(application.Action.class);
+                                org.jdesktop.application.Action ann = el.getAnnotation(org.jdesktop.application.Action.class);
                                 if (ann != null) {
                                     ProxyAction action = new ProxyAction(cls.getQualifiedName().toString(),
                                             el.getSimpleName().toString());
@@ -1315,7 +1315,7 @@ public class ActionManager {
         try {
             new ActionMethodTask(sourceFile, action.getId()) {
                 Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
-                    application.Action ann = methodElement.getAnnotation(application.Action.class);
+                    org.jdesktop.application.Action ann = methodElement.getAnnotation(org.jdesktop.application.Action.class);
                     if (ann != null) {
                         initActionFromAnnotation(action, methodElement, ann);
                     }
@@ -1327,7 +1327,7 @@ public class ActionManager {
         }
     }
     
-    static void initActionFromAnnotation(ProxyAction action, ExecutableElement methodElement, application.Action annotation) {
+    static void initActionFromAnnotation(ProxyAction action, ExecutableElement methodElement, org.jdesktop.application.Action annotation) {
         boolean returnsTask = isAsyncActionMethod(methodElement);
         action.setTaskEnabled(returnsTask);
         action.setEnabledName(annotation.enabledProperty());
@@ -1344,7 +1344,7 @@ public class ActionManager {
         //        if (retType.getKind() == TypeKind.DECLARED) {
         //            Element retEl = ((DeclaredType)retType).asElement();
         //            if (retEl.getKind() == ElementKind.CLASS
-        //                    && "application.Task".equals(((TypeElement)retEl).getQualifiedName())) { // NOI18N
+        //                    && "org.jdesktop.application.Task".equals(((TypeElement)retEl).getQualifiedName())) { // NOI18N
         //                returnsTask = true; // [does not cover if Task implementation is used as return type]
         //            }
         //        }

@@ -4,11 +4,11 @@
 
 package applicationpackage;
 
-import application.Action;
-import application.ResourceMap;
-import application.SingleFrameApplication;
-import application.FrameView;
-import application.TaskMonitor;
+import org.jdesktop.application.Action;
+import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.application.FrameView;
+import org.jdesktop.application.TaskMonitor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Timer;
@@ -111,6 +111,8 @@ public class ShellView extends FrameView {
         statusAnimationLabel = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
 
+        mainPanel.setName("mainPanel"); // NOI18N
+
         org.jdesktop.layout.GroupLayout mainPanelLayout = new org.jdesktop.layout.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
@@ -122,23 +124,36 @@ public class ShellView extends FrameView {
             .add(0, 252, Short.MAX_VALUE)
         );
 
-        application.ResourceMap resourceMap = application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellView.class);
-        fileMenu.setText(resourceMap.getString("fileMenu.text")); // NOI18N
+        menuBar.setName("menuBar"); // NOI18N
 
-        javax.swing.ActionMap actionMap = application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getActionMap(ShellView.class, this);
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellView.class);
+        fileMenu.setText(resourceMap.getString("fileMenu.text")); // NOI18N
+        fileMenu.setName("fileMenu"); // NOI18N
+
+        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getActionMap(ShellView.class, this);
         exitMenuItem.setAction(actionMap.get("quit")); // NOI18N
+        exitMenuItem.setName("exitMenuItem"); // NOI18N
         fileMenu.add(exitMenuItem);
 
         menuBar.add(fileMenu);
 
         helpMenu.setText(resourceMap.getString("helpMenu.text")); // NOI18N
+        helpMenu.setName("helpMenu"); // NOI18N
 
         aboutMenuItem.setAction(actionMap.get("showAboutBox")); // NOI18N
+        aboutMenuItem.setName("aboutMenuItem"); // NOI18N
         helpMenu.add(aboutMenuItem);
 
         menuBar.add(helpMenu);
 
+        statusPanel.setName("statusPanel"); // NOI18N
+
+        statusMessageLabel.setName("statusMessageLabel"); // NOI18N
+
         statusAnimationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        statusAnimationLabel.setName("statusAnimationLabel"); // NOI18N
+
+        progressBar.setName("progressBar"); // NOI18N
 
         org.jdesktop.layout.GroupLayout statusPanelLayout = new org.jdesktop.layout.GroupLayout(statusPanel);
         statusPanel.setLayout(statusPanelLayout);

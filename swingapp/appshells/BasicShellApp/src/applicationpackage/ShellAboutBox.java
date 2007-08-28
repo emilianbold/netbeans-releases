@@ -4,9 +4,7 @@
 
 package applicationpackage;
 
-import application.Action;
-import application.Application;
-import application.ResourceMap;
+import org.jdesktop.application.Action;
 
 public class ShellAboutBox extends javax.swing.JDialog {
 
@@ -40,33 +38,35 @@ public class ShellAboutBox extends javax.swing.JDialog {
         javax.swing.JLabel imageLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellAboutBox.class).getString("title")); // NOI18N
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellAboutBox.class);
+        setTitle(resourceMap.getString("title")); // NOI18N
         setName("aboutBox"); // NOI18N
         setResizable(false);
 
-        closeButton.setAction(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getActionMap(ShellAboutBox.class, this).get("closeAboutBox"));
+        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getActionMap(ShellAboutBox.class, this);
+        closeButton.setAction(actionMap.get("closeAboutBox")); // NOI18N
 
         appTitleLabel.setFont(appTitleLabel.getFont().deriveFont(appTitleLabel.getFont().getStyle() | java.awt.Font.BOLD, appTitleLabel.getFont().getSize()+4));
-        appTitleLabel.setText(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellAboutBox.class).getString("Application.title")); // NOI18N
+        appTitleLabel.setText(resourceMap.getString("Application.title")); // NOI18N
 
         versionLabel.setFont(versionLabel.getFont().deriveFont(versionLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        versionLabel.setText(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellAboutBox.class).getString("versionLabel.text")); // NOI18N
+        versionLabel.setText(resourceMap.getString("versionLabel.text")); // NOI18N
 
-        appVersionLabel.setText(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellAboutBox.class).getString("Application.version")); // NOI18N
+        appVersionLabel.setText(resourceMap.getString("Application.version")); // NOI18N
 
         vendorLabel.setFont(vendorLabel.getFont().deriveFont(vendorLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        vendorLabel.setText(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellAboutBox.class).getString("vendorLabel.text")); // NOI18N
+        vendorLabel.setText(resourceMap.getString("vendorLabel.text")); // NOI18N
 
-        appVendorLabel.setText(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellAboutBox.class).getString("Application.vendor")); // NOI18N
+        appVendorLabel.setText(resourceMap.getString("Application.vendor")); // NOI18N
 
         homepageLabel.setFont(homepageLabel.getFont().deriveFont(homepageLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        homepageLabel.setText(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellAboutBox.class).getString("homepageLabel.text")); // NOI18N
+        homepageLabel.setText(resourceMap.getString("homepageLabel.text")); // NOI18N
 
-        appHomepageLabel.setText(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellAboutBox.class).getString("Application.homepage")); // NOI18N
+        appHomepageLabel.setText(resourceMap.getString("Application.homepage")); // NOI18N
 
-        appDescLabel.setText(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellAboutBox.class).getString("appDescLabel.text")); // NOI18N
+        appDescLabel.setText(resourceMap.getString("appDescLabel.text")); // NOI18N
 
-        imageLabel.setIcon(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellAboutBox.class).getIcon("imageLabel.icon")); // NOI18N
+        imageLabel.setIcon(resourceMap.getIcon("imageLabel.icon")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

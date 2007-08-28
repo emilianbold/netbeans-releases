@@ -34,18 +34,18 @@ public class ComponentConverterImpl implements ComponentConverter {
     }
 
     public Class getDesignClass(Class componentClass) {
-        if (application.View.class.isAssignableFrom(componentClass)) {
+        if (org.jdesktop.application.View.class.isAssignableFrom(componentClass)) {
             return FrameView.class;
         } else {
             return null;
         }
     }
 
-    public static class FrameView extends application.FrameView {
+    public static class FrameView extends org.jdesktop.application.FrameView {
         private JRootPane rootPane;
 
         public FrameView() {
-            super(new application.Application() { protected void startup() {} });
+            super(new org.jdesktop.application.Application() { protected void startup() {} });
         }
 
         public JRootPane getRootPane() {

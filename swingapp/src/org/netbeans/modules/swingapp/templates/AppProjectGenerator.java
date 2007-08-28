@@ -145,6 +145,8 @@ class AppProjectGenerator {
                         } else if (ext.endsWith("properties")) { // NOI18N
                             encoding = "ISO-8859-1"; // NOI18N
                             propertiesEncoding = true;
+                        } else if (fileName.startsWith("src/META-INF/")) { // NOI18N
+                            encoding = FileEncodingQuery.getDefaultEncoding().name();
                         }
                         if (encoding != null || propertiesEncoding) {
                             replacer.setOutput(output, encoding, propertiesEncoding);

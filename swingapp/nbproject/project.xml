@@ -231,8 +231,8 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <public-packages/>
             <class-path-extension>
-                <runtime-relative-path>ext/appframework-0.50.jar</runtime-relative-path>
-                <binary-origin>external/appframework-0.50.jar</binary-origin>
+                <runtime-relative-path>ext/appframework-1.0.jar</runtime-relative-path>
+                <binary-origin>external/appframework-1.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/swing-worker.jar</runtime-relative-path>

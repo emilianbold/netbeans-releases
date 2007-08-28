@@ -134,7 +134,7 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
                 if (cpResourceName == null && resourceValue.getClassPathResourceName() != null) {
                     cpResourceName = resMap.getResourcesDir() + stringValue; // [it's a hack - stringValue may not be usable this way]
                 }
-            } catch (application.ResourceMap.LookupException ex) { // don't understand it
+            } catch (org.jdesktop.application.ResourceMap.LookupException ex) { // don't understand it
                 value = ResourceValue.IGNORED_VALUE;
 //                stringValue = null;
                 cpResourceName = null;

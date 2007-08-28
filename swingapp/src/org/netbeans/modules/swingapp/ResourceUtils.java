@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.swingapp;
 
-import application.ResourceMap;
+import org.jdesktop.application.ResourceMap;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.IOException;
@@ -115,7 +115,7 @@ class ResourceUtils {
         FileObject appFO = AppFrameworkSupport.getFileForClass(srcFile, appClassName);
         // TBD this is provisional code - we should go through all subclasses of
         // the current user's application
-        appClassName = application.Application.class.getName();
+        appClassName = org.jdesktop.application.Application.class.getName();
         String[] bundleNames = new String[] { getBundleName(appClassName) };
         return new ResourceMap(null,
                 ClassPath.getClassPath(srcFile, ClassPath.EXECUTE).getClassLoader(true),
@@ -158,18 +158,18 @@ class ResourceUtils {
         // - suggested variable name
         String appCode = AppFrameworkSupport.getApplicationCode(srcFile);
         if (appCode != null) { // generate ResourceMap getter code for given class using Application
-            // application.Application.getInstance(pkg.MyApp.class).getContext().getResourceMap(MyGUIClass.class)
+            // org.jdesktop.application.Application.getInstance(pkg.MyApp.class).getContext().getResourceMap(MyGUIClass.class)
             return CODE_MARK_VARIABLE_SUBST
                        + appCode + ".getContext().getResourceMap(" + srcFile.getName() + ".class)" // NOI18N
-                   + CODE_MARK_VARIABLE_SUBST + application.ResourceMap.class.getName()
+                   + CODE_MARK_VARIABLE_SUBST + org.jdesktop.application.ResourceMap.class.getName()
                    + CODE_MARK_VARIABLE_SUBST + "resourceMap"; // NOI18N
         } else { // no application - return code creating the ResourceMap directly
-            // new application.ResourceMap(null, getClass().getClassLoader(), "pkg.resources.MyGUIClass")
+            // new org.jdesktop.application.ResourceMap(null, getClass().getClassLoader(), "pkg.resources.MyGUIClass")
             return CODE_MARK_LINE_COMMENT + "NOI18N" // NOI18N
                    + CODE_MARK_VARIABLE_SUBST
-                       + "new application.ResourceMap(null, getClass().getClassLoader(), \"" // NOI18N
+                       + "new org.jdesktop.application.ResourceMap(null, getClass().getClassLoader(), \"" // NOI18N
                        + getBundleName(AppFrameworkSupport.getClassNameForFile(srcFile)) +"\")" // NOI18N
-                   + CODE_MARK_VARIABLE_SUBST + application.ResourceMap.class.getName()
+                   + CODE_MARK_VARIABLE_SUBST + org.jdesktop.application.ResourceMap.class.getName()
                    + CODE_MARK_VARIABLE_SUBST + "resourceMap"; // NOI18N
         }
     }

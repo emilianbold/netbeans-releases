@@ -4,11 +4,8 @@
 
 package applicationpackage;
 
-import application.Application;
-import application.ApplicationContext;
-import application.SingleFrameApplication;
-import application.View;
-import java.awt.Window;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.SingleFrameApplication;
 
 /**
  * The main class of the application.
@@ -27,7 +24,7 @@ public class ShellApp extends SingleFrameApplication {
      * Windows shown in our application come fully initialized from the GUI
      * builder, so this additional configuration is not needed.
      */
-    @Override protected void configureWindow(Window root) {
+    @Override protected void configureWindow(java.awt.Window root) {
     }
 
     /**

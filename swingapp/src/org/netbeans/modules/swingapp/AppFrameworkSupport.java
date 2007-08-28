@@ -59,7 +59,7 @@ import org.openide.xml.XMLUtil;
  */
 class AppFrameworkSupport {
 
-    private static final String APPLICATION_RESOURCE_NAME = "application/Application.class"; // NOI18N
+    private static final String APPLICATION_RESOURCE_NAME = "org/jdesktop/application/Application.class"; // NOI18N
 
     private static final String SWINGAPP_ELEMENT = "swingapp"; // NOI18N
     private static final String SWINGAPP_NS = "http://www.netbeans.org/ns/form-swingapp/1"; // NOI18N
@@ -132,7 +132,7 @@ class AppFrameworkSupport {
     static String getApplicationCode(FileObject srcFile) {
         String appClsName = getApplicationClassName(srcFile);
         return appClsName != null
-            ? application.Application.class.getName() + ".getInstance(" + appClsName + ".class)" // NOI18N
+            ? org.jdesktop.application.Application.class.getName() + ".getInstance(" + appClsName + ".class)" // NOI18N
             : null;
     }
 
@@ -343,8 +343,8 @@ class AppFrameworkSupport {
     private static List<String> getKnownAppClassNames() {
         if (knownAppClassNames == null) {
             knownAppClassNames = new LinkedList<String>();
-            knownAppClassNames.add(application.Application.class.getName());
-            knownAppClassNames.add(application.SingleFrameApplication.class.getName());
+            knownAppClassNames.add(org.jdesktop.application.Application.class.getName());
+            knownAppClassNames.add(org.jdesktop.application.SingleFrameApplication.class.getName());
         }
         return knownAppClassNames;
     }

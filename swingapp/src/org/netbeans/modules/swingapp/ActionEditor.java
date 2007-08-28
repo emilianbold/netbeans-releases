@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.swingapp;
 
-import application.ResourceConverter;
+import org.jdesktop.application.ResourceConverter;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

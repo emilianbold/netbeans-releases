@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.swingapp;
 
-import application.ResourceMap;
+import org.jdesktop.application.ResourceMap;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;

@@ -26,11 +26,11 @@ Microsystems, Inc. All Rights Reserved.
     <localizing-bundle>org.netbeans.modules.swingapp.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.swingapp/modules/ext/appframework-0.50.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.swingapp/modules/ext/appframework-1.0.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.swingapp/modules/ext/swing-worker.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.modules.swingapp/docs/appframework-0.50-doc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.swingapp/docs/appframework-1.0-doc.zip!/</resource>
     </volume>
 </library>
