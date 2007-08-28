@@ -143,8 +143,8 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         assertNotNull (cp);
         cpRoots = PropertyUtils.tokenizePath (cp);
         assertNotNull (cpRoots);
-        assertEquals(4,cpRoots.length);
-        assertEquals(this.helper.resolveFileObject(cpRoots[3]),jarFile);
+        assertEquals(5,cpRoots.length);
+        assertEquals(this.helper.resolveFileObject(cpRoots[4]),jarFile);
     }
     
     public void testAddRemoveArtifact () throws Exception {
