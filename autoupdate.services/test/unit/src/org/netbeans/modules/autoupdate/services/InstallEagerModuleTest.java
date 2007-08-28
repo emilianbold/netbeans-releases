@@ -90,7 +90,7 @@ public class InstallEagerModuleTest extends NbmAdvancedTestCase {
                 );
 
         UpdateUnitProviderFactory.getDefault ().create ("test-update-provider", "test-update-provider", generateFile (catalog));
-        UpdateUnitProviderFactory.getDefault ().refreshProviders (null, false);
+        UpdateUnitProviderFactory.getDefault ().refreshProviders (null, true);
         
         Set<UpdateElement> eagerElements = UpdateManagerImpl.getInstance ().getAvailableEagers ();
         assertFalse ("Some available eagers are found.", eagerElements.isEmpty ());
@@ -130,7 +130,7 @@ public class InstallEagerModuleTest extends NbmAdvancedTestCase {
         
         // acquire UpdateUnits for test modules
         UpdateUnitProviderFactory.getDefault ().create ("test-update-provider", "test-update-provider", generateFile (catalog));
-        UpdateUnitProviderFactory.getDefault ().refreshProviders (null, false);
+        UpdateUnitProviderFactory.getDefault ().refreshProviders (null, true);
         UpdateUnit u1 = UpdateManagerImpl.getInstance ().getUpdateUnit (regularModule1);
         assertTrue (UpdateManager.TYPE.KIT_MODULE.equals (u1.getType ()));
         UpdateUnit u2 = UpdateManagerImpl.getInstance ().getUpdateUnit (regularModule2);

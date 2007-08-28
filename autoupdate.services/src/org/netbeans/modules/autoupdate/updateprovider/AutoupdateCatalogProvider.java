@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.autoupdate.services.AutoupdateCheckScheduler;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 
@@ -39,7 +38,6 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     private String displayName;
     private AutoupdateCatalogCache cache = AutoupdateCatalogCache.getDefault ();
     private Logger log = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog");
-    private boolean firstRefreshDone;
     private String description = null;
     
     /**
@@ -94,12 +92,7 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
             res = cache.writeCatalogToCache (codeName, getUpdateCenterURL ()) != null;
             description = null;
         } else {
-            if (AutoupdateCheckScheduler.timeToCheck ()) {
-                res = cache.writeCatalogToCache (codeName, getUpdateCenterURL ()) != null;
-                description = null;
-            } else {
-                res = true;
-            }
+            res = true;
         }
         return res;
     }

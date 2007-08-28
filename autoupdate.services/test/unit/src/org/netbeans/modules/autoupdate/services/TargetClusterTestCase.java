@@ -74,7 +74,7 @@ public class TargetClusterTestCase extends NbmAdvancedTestCase {
         assertTrue (module + " found in parsed items.", updates.keySet ().contains (module + "_1.1"));
 
         UpdateUnitProviderFactory.getDefault ().create ("test-update-provider", "test-update-provider", generateFile (catalog));
-        UpdateUnitProviderFactory.getDefault ().refreshProviders (null, false);
+        UpdateUnitProviderFactory.getDefault ().refreshProviders (null, true);
 
         UpdateUnit uu = UpdateManagerImpl.getInstance ().getUpdateUnit (module);
         assertNotNull (module + " - UpdateUnit found.", uu);
@@ -101,7 +101,7 @@ public class TargetClusterTestCase extends NbmAdvancedTestCase {
         assertTrue (codeName + " found in parsed items.", updates.keySet ().contains (codeName + "_1.0"));
 
         UpdateUnitProviderFactory.getDefault ().create ("test-update-provider", "test-update-provider", generateFile (catalog));
-        UpdateUnitProviderFactory.getDefault ().refreshProviders (null, false);
+        UpdateUnitProviderFactory.getDefault ().refreshProviders (null, true);
 
         UpdateUnit uu = UpdateManagerImpl.getInstance ().getUpdateUnit (codeName);
         assertNotNull (codeName + " - UpdateUnit found.", uu);
