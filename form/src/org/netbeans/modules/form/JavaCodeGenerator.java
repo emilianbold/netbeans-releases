@@ -879,8 +879,6 @@ class JavaCodeGenerator extends CodeGenerator {
             }
 
             generateFormSizeCode(writer);
-            bindingGroupVariable = null;
-            bindingVariables = null;
 
             writer.write("}"); // no new line because of fold footer // NOI18N
 
@@ -940,6 +938,7 @@ class JavaCodeGenerator extends CodeGenerator {
         formModel.getCodeStructure().clearExternalVariableNames();
         repeatedCodeVariables = null;
         // preventive cleanup
+        bindingVariables = null;
         if (bindingGroupVariable != null) { // we need to keep this variable registered
             bindingGroupVariable = formModel.getCodeStructure().getExternalVariableName(
                     bindingGroupClass, bindingGroupVariable, true);
@@ -1487,6 +1486,10 @@ class JavaCodeGenerator extends CodeGenerator {
                 if (!anyBinding) {
                     initCodeWriter.write("\n"); // NOI18N
                     anyBinding = true;
+                    if (bindingGroupVariable == null) { // Should happen only for Code Customizer
+                        bindingGroupVariable = formModel.getCodeStructure().getExternalVariableName(
+                            bindingGroupClass, "bindingGroup", true); // NOI18N
+                    }
                 }
                 StringBuilder buf = new StringBuilder();
                 String variable = BindingDesignSupport.generateBinding(prop, buf);
@@ -2368,13 +2371,20 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         // is there any binding?
+        boolean anyBinding = false;
         for (RADComponent metacomp : formModel.getAllComponents()) {
             if (metacomp.hasBindings()) {
-                bindingGroupVariable = formModel.getCodeStructure().getExternalVariableName(
-                        bindingGroupClass, "bindingGroup", true); // NOI18N
+                anyBinding = true;
+                if (bindingGroupVariable == null) {
+                    bindingGroupVariable = formModel.getCodeStructure().getExternalVariableName(
+                            bindingGroupClass, "bindingGroup", true); // NOI18N
+                }
                 variablesWriter.write("private " + bindingGroupClass.getName() + " " + bindingGroupVariable + ";\n"); // NOI18N
                 break;
             }
+        }
+        if (!anyBinding) {
+            bindingGroupVariable = null;
         }
     }
 
