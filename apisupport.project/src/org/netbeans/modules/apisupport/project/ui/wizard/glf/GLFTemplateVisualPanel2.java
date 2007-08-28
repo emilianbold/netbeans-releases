@@ -76,12 +76,12 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
         jLabel1 = new javax.swing.JLabel();
 
         lMimeType.setLabelFor(tfMimeType);
-        org.openide.awt.Mnemonics.setLocalizedText(lMimeType, "&Mime Type:");
+        org.openide.awt.Mnemonics.setLocalizedText(lMimeType, org.openide.util.NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Mime_Type")); // NOI18N
 
         lExtensions.setLabelFor(tfExtensions);
-        org.openide.awt.Mnemonics.setLocalizedText(lExtensions, "&Extensions:");
+        org.openide.awt.Mnemonics.setLocalizedText(lExtensions, org.openide.util.NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Extensions")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "(write space separated list of extensions here)");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Extensions_Comment")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
