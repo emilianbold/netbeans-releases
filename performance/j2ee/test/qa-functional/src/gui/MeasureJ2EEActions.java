@@ -72,13 +72,13 @@ public class MeasureJ2EEActions  {
 	        suite.addTest(new MeasureCallEjbAction("measureTime", "Call EJB in session bean"));
 	        
 	        //suite.addTest(new Deploy("measureTime", "Deploy Enterprise Application"));
-	
+/* Unstable
 	        suite.addTest(new CreateNewFile("testCreateNewSessionBean", "Create new session bean"));
 	        suite.addTest(new CreateNewFile("testCreateNewEntityBean", "Create new entity bean"));
             
 	        
 	        suite.addTest(new CreateNewFile("testCreateNewWebService", "Create new web service"));
-	
+*/	
 	        suite.addTest(new CreateJ2EEProject("testCreateEnterpriseApplicationProject", "Create Enterprise Application projects"));
 	        suite.addTest(new CreateJ2EEProject("testCreateStandaloneEnterpriseApplicationProject", "Create standalone Enterprise Application project"));
 	        suite.addTest(new CreateJ2EEProject("testCreateEJBModuleProject", "Create EJB Module project"));
