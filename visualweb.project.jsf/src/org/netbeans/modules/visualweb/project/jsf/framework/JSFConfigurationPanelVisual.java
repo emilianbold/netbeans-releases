@@ -637,7 +637,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                     rbNewLibrary.setSelected(true);
             } else {
                 // <RAVE>
-                Library lib = LibraryManager.getDefault().getLibrary("jsf-designtime");
+                Library lib = LibraryManager.getDefault().getLibrary("jsf1102");
                 /*
                 Library[] libs = LibraryManager.getDefault().getLibraries();
                 Library lib = null;

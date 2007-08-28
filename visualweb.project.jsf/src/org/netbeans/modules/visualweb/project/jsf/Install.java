@@ -81,7 +81,7 @@ public class Install extends ModuleInstall {
                 }
 
                 // Visual Web project found in the just opened project list
-                Library libJSF = LibraryManager.getDefault().getLibrary("jsf-designtime"); // NOI18N
+                Library libJSF = LibraryManager.getDefault().getLibrary("jsf1102"); // NOI18N
                 Library libRowset = LibraryManager.getDefault().getLibrary("rowset-ri"); // NOI18N
                 String projs = ""; // NOI18N
                 boolean needJSF = false;
