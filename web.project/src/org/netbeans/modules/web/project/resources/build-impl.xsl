@@ -479,6 +479,10 @@ introduced by support for multiple source roots. -jglick
                         <xsl:attribute name="name">args</xsl:attribute>
                         <xsl:attribute name="default">${application.args.param}</xsl:attribute>
                     </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
                     <sequential>
                         <java fork="true" classname="@{{classname}}">
                             <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
@@ -495,6 +499,7 @@ introduced by support for multiple source roots. -jglick
                                 <mapper type="glob" from="run-sys-prop.*" to="*"/>
                             </syspropertyset>
                             <arg line="@{{args}}"/>
+                            <customize/>
                         </java>
                     </sequential>
                 </macrodef>
@@ -1643,7 +1648,19 @@ introduced by support for multiple source roots. -jglick
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-                <webproject1:debug classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}" args="${{test.class}}"/>
+                <property name="test.report.file" location="${{build.test.results.dir}}/TEST-${{test.class}}.xml"/>
+                <delete file="${{test.report.file}}"/>
+                <xsl:comment> must exist, otherwise the XML formatter would fail </xsl:comment>
+                <mkdir dir="${{build.test.results.dir}}"/>
+                <webproject1:debug args="${{test.class}}"
+                        classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner"
+                        classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}">
+                    <customize>
+                        <arg value="showoutput=true"/>
+                        <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+                        <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${{test.report.file}}"/>
+                    </customize>
+                </webproject1:debug>
             </target>
             
             <target name="-debug-start-debugger-test">
