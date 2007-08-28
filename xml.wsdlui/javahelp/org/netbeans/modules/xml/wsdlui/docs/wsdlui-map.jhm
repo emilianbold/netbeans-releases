@@ -43,7 +43,7 @@
 
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLColumnsView" url="wsdl_editor.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLTreeViewMultiViewDesc" url="wsdl_editor_views.html"/>
-	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLSourceMultiviewDesc" url="nbdocs:/org/netbeans/modules/usersguide/editing/csh/about_source_editor.html"/>
+	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLSourceMultiviewDesc" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/csh/about_source_editor.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDesignMultiViewDesc" url="wsdl_editor_partner.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.TreeEditorView" url="wsdl_editor.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.BindingFolderNode" url="wsdl_editor_bindings.html"/>
@@ -57,7 +57,7 @@
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortTypeNode" url="wsdl_editor_port_types.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.ServiceNode" url="wsdl_editor_services.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.BindingNode" url="wsdl_editor_bindings.html"/>
-	<mapID target="nbdocs_org_netbeans_modules_usersguide_editing_csh_about_source_editor" url="nbdocs:/org/netbeans/modules/usersguide/editing/csh/about_source_editor.html"/>
+	<mapID target="nbdocs_org_netbeans_modules_usersguide_editing_csh_about_source_editor" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/csh/about_source_editor.html"/>
 
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.wizard.WsdlPanel" url="CSH/new_wsdl_wizard_name_location.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.wizard.WizardPortTypeConfigurationStep" url="CSH/new_wsdl_wizard_define_abstract.html"/>
