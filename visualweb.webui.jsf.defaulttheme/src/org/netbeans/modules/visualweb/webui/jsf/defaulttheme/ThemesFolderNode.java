@@ -60,7 +60,7 @@ import org.openide.util.Utilities;
  * @author Po-Ting Wu, Mark Dey, Winston Prakash
  */
 final class ThemesFolderNode extends AbstractNode {
-    static final String WoodStock_ThemeVersion = "4.0"; // NOI18N
+    static final String WoodStock_ThemeVersion = "4.1"; // NOI18N
     static final RequestProcessor rp = new RequestProcessor();
     private final String displayName;
     private final Action[] themesNodeActions;
