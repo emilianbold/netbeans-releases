@@ -18,8 +18,8 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="subresourceLabel" alignment="0" pref="410" max="32767" attributes="0"/>
-                  <Component id="subresourceLocatorLabel" alignment="0" pref="410" max="32767" attributes="0"/>
+                  <Component id="subresourceLabel" alignment="0" pref="515" max="32767" attributes="0"/>
+                  <Component id="subresourceLocatorLabel" alignment="0" pref="515" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="10" pref="10" max="10" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -28,21 +28,21 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="uriTemplateTF" alignment="0" pref="311" max="32767" attributes="0"/>
-                          <Component id="methodNameTF" alignment="0" pref="311" max="32767" attributes="0"/>
+                          <Component id="uriTemplateTF" alignment="0" pref="416" max="32767" attributes="0"/>
+                          <Component id="methodNameTF" alignment="0" pref="416" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="10" pref="10" max="10" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="paramLabel" alignment="0" pref="400" max="32767" attributes="0"/>
+                          <Component id="paramLabel" alignment="0" pref="505" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="resourceNameLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="resourceNameTF" pref="348" max="32767" attributes="0"/>
+                              <Component id="resourceNameTF" pref="462" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="paramScrollPane" alignment="0" pref="400" max="32767" attributes="0"/>
-                          <Component id="messageLabel" alignment="0" pref="400" max="32767" attributes="0"/>
+                          <Component id="paramScrollPane" alignment="0" pref="505" max="32767" attributes="0"/>
+                          <Component id="messageLabel" alignment="0" pref="505" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -75,7 +75,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="paramLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="paramScrollPane" pref="172" max="32767" attributes="0"/>
+              <Component id="paramScrollPane" pref="199" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="messageLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>

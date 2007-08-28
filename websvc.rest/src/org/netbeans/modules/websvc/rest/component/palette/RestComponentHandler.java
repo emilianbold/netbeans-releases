@@ -18,7 +18,6 @@ package org.netbeans.modules.websvc.rest.component.palette;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
@@ -28,7 +27,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.rest.codegen.WsdlComponentGenerator;
 import org.netbeans.modules.websvc.rest.codegen.RestComponentGenerator;
 import org.netbeans.modules.websvc.rest.codegen.WadlComponentGenerator;
-import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.model.RestComponentBean;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.modules.websvc.rest.wizard.ProgressDialog;
 import org.openide.DialogDescriptor;
@@ -85,21 +84,23 @@ public class RestComponentHandler implements ActiveEditorDrop {
                         codegen = new WadlComponentGenerator(targetFO, data);
                     }
                 
+                    RestComponentBean bean = codegen.getBean();
+                    
                     RestComponentSetupPanel panel = new RestComponentSetupPanel(
                             codegen.getSubresourceLocatorUriTemplate(),
-                            codegen.getResourceBean().getQualifiedClassName(), 
-                            codegen.getInputParameterTypes(), 
-                            project, 
+                            bean.getQualifiedClassName(), 
+                            bean.getInputParameters(),
                             codegen.wrapperResourceExists());
 
-                    DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(RestComponentHandler.class, 
+                    DialogDescriptor desc = new DialogDescriptor(panel, 
+                            NbBundle.getMessage(RestComponentHandler.class,
                             "LBL_CustomizeComponent", n.getName()));
                     Object response = DialogDisplayer.getDefault().notify(desc);
                     
                     if (response.equals(NotifyDescriptor.YES_OPTION)) {
                         codegen.setSubresourceLocatorUriTemplate(panel.getUriTemplate());
                         codegen.setSubresourceLocatorName(panel.getMethodName());
-                        codegen.setConstantInputValues(panel.getInputParamValues());
+                        bean.setInputParameters(panel.getInputParameters());
                     } else {
                         // cancel
                         return;

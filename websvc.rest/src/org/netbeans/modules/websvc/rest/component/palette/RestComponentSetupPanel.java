@@ -7,29 +7,21 @@
 package org.netbeans.modules.websvc.rest.component.palette;
 
 import java.awt.Component;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JTable;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.rest.support.Inflector;
-import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
-import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.util.NbBundle;
 
 /**
@@ -38,25 +30,21 @@ import org.openide.util.NbBundle;
  */
 public class RestComponentSetupPanel extends javax.swing.JPanel {
 
-    private Project project;
     private ParamTableModel tableModel;
-    private Map<String, String> paramTypeMap;
-    private Map<String, Object> paramValueMap;
+    private List<ParameterInfo> inputParams;
     private boolean methodNameModified = false;
 
     /** Creates new form InputValuesJPanel */
-    public RestComponentSetupPanel(String uriTemplate, String resourceName, Map<String, String> paramsTypes, Project project, boolean resourceExists) {
+    public RestComponentSetupPanel(String uriTemplate, String resourceName, List<ParameterInfo> inputParams, boolean resourceExists) {
         initComponents();
 
         uriTemplateTF.setText(uriTemplate);
         updateMethodName();
         resourceNameTF.setText(resourceName);
 
-        paramTypeMap = paramsTypes;
-        this.project = project;
+        this.inputParams = inputParams;
         tableModel = new ParamTableModel();
         paramTable.setModel(tableModel);
-        tableModel.init();
 
         if (resourceExists) {
             paramLabel.setVisible(false);
@@ -79,85 +67,53 @@ public class RestComponentSetupPanel extends javax.swing.JPanel {
         return resourceNameTF.getText().trim();
     }
 
-    public Map<String, Object> getInputParamValues() {
-        if (paramValueMap == null) {
-            paramValueMap = new HashMap<String, Object>();
-            for (int row = 0; row < tableModel.getRowCount(); row++) {
-                Object value = tableModel.getValueAt(row, 2);
-                if (value != null) {
-                    String param = (String) tableModel.getValueAt(row, 0);
-                    paramValueMap.put(param, value);
-                }
-            }
-        }
-        return paramValueMap;
+    public List<ParameterInfo> getInputParameters() {
+        return inputParams;
     }
 
     private class ParamTable extends JTable {
 
         @Override
         public TableCellEditor getCellEditor(int row, int column) {
-            if (column == 2) {
-                String paramName = (String) tableModel.getValueAt(row, 0);
-                String typeName = paramTypeMap.get(paramName);
-                Class type = getType(typeName);
-                if (Enum.class.isAssignableFrom(type)) {
-                    JComboBox combo = new JComboBox(type.getEnumConstants());
-                    return new DefaultCellEditor(combo);
-                } else if ("boolean".equals(typeName) || Boolean.class.getName().equals(typeName)) {
-                    JCheckBox cb = new JCheckBox();
-                    cb.setHorizontalAlignment(JLabel.CENTER);
-                    cb.setBorderPainted(true);
-                    return new DefaultCellEditor(cb);
-                } else if (paramName.toLowerCase().contains(Constants.PASSWORD)) {
-                    return new DefaultCellEditor(new JPasswordField());
-                }
+            String paramName = (String) tableModel.getValueAt(row, 0);
+            Class type = (column == 2) ? (Class) tableModel.getValueAt(row, 1) : Boolean.class;
+
+            if (Enum.class.isAssignableFrom(type)) {
+                JComboBox combo = new JComboBox(type.getEnumConstants());
+                return new DefaultCellEditor(combo);
+            } else if (type == Boolean.class || type == Boolean.TYPE) {
+                JCheckBox cb = new JCheckBox();
+                cb.setHorizontalAlignment(JLabel.CENTER);
+                cb.setBorderPainted(true);
+                return new DefaultCellEditor(cb);
+            } else if (paramName.toLowerCase().contains(Constants.PASSWORD)) {
+                return new DefaultCellEditor(new JPasswordField());
             }
+
             return super.getCellEditor(row, column);
         }
 
         @Override
         public TableCellRenderer getCellRenderer(int row, int column) {
-            if (column == 2) {
+            if (column != 0) {
                 return new ParamCellRenderer();
             }
             return super.getCellRenderer(row, column);
         }
     }
 
-    public Class getType(String typeName) {
-
-        List<ClassPath> classPaths = SourceGroupSupport.gerClassPath(project);
-        for (ClassPath cp : classPaths) {
-            try {
-                Class ret = Util.getPrimitiveType(typeName);
-                if (ret != null) {
-                    return ret;
-                }
-                ClassLoader cl = cp.getClassLoader(true);
-                if (cl != null) {
-                    return cl.loadClass(typeName);
-                }
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(RestComponentSetupPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-            }
-        }
-        return String.class;
-    }
-
     private class ParamCellRenderer extends DefaultTableCellRenderer {
 
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (column != 2) {
-                throw new IllegalArgumentException("Wrong column number"); //NOI18N
-            }
-
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, 
+                boolean hasFocus, int row, int column) {
             Component ret = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             String paramName = (String) tableModel.getValueAt(row, 0);
-            String typeName = paramTypeMap.get(paramName);
+
             if (value == null) {
                 return new JLabel(NbBundle.getMessage(RestComponentSetupPanel.class, "LBL_NotSet"));
+            } else if (value instanceof Class) {
+                return new JLabel(((Class) value).getName());
             } else if (value instanceof Boolean) {
                 JCheckBox cb = new JCheckBox();
                 cb.setHorizontalAlignment(JLabel.CENTER);
@@ -166,18 +122,57 @@ public class RestComponentSetupPanel extends javax.swing.JPanel {
                 return cb;
             } else if (paramName.contains(Constants.PASSWORD)) {
                 return new JPasswordField((String) value);
-            }
+            } 
             return ret;
         }
     }
 
-    private class ParamTableModel extends DefaultTableModel {
+    private class ParamTableModel extends AbstractTableModel {
 
-        ParamTableModel() {
-            super(new Object[][]{{null, null, null}, {null, null, null}, {null, null, null}, {null, null, null}}, new String[]{NbBundle.getMessage(RestComponentSetupPanel.class, "LBL_Name"), NbBundle.getMessage(RestComponentSetupPanel.class, "LBL_Type"), NbBundle.getMessage(RestComponentSetupPanel.class, "LBL_ConstantValue")});
+        public ParamTableModel() {
         }
-        Class[] types = new Class[]{java.lang.String.class, java.lang.String.class, java.lang.Object.class};
-        boolean[] canEdit = new boolean[]{false, false, true};
+        String[] columnNames = new String[]{NbBundle.getMessage(RestComponentSetupPanel.class, "LBL_Name"), NbBundle.getMessage(RestComponentSetupPanel.class, "LBL_Type"), NbBundle.getMessage(RestComponentSetupPanel.class, "LBL_DefaultValue"), NbBundle.getMessage(RestComponentSetupPanel.class, "LBL_MapToQueryParam")};
+        Class[] types = new Class[]{String.class, Class.class, Object.class, Boolean.class};
+        boolean[] canEdit = new boolean[]{false, false, true, true};
+
+        public String getColumnName(int index) {
+            return columnNames[index];
+        }
+
+        public int getColumnCount() {
+            return columnNames.length;
+        }
+
+        public int getRowCount() {
+            return inputParams.size();
+        }
+
+        public Object getValueAt(int row, int column) {
+            ParameterInfo info = inputParams.get(row);
+
+            switch (column) {
+                case 0:
+                    return info.getName();
+                case 1:
+                    return info.getType();
+                case 2:
+                    return info.getDefaultValue();
+                case 3:
+                    return info.isQueryParam();
+            }
+
+            return null;
+        }
+
+        public void setValueAt(Object value, int row, int column) {
+            ParameterInfo info = inputParams.get(row);
+
+            if (column == 2) {
+                info.setDefaultValue(value);
+            } else if (column == 3) {
+                info.setIsQueryParam((Boolean) value);
+            }
+        }
 
         public Class getColumnClass(int columnIndex) {
             return types[columnIndex];
@@ -185,41 +180,6 @@ public class RestComponentSetupPanel extends javax.swing.JPanel {
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return canEdit[columnIndex];
-        }
-
-        public void init() {
-            List<String> params = new ArrayList(paramTypeMap.keySet());
-            String userParam = null;
-            String passwordParam = null;
-            String licenseParam = null;
-            for (String key : paramTypeMap.keySet()) {
-                if (userParam == null && key.toLowerCase().indexOf("user") > -1) {
-                    userParam = key;
-                    params.remove(key);
-                } else if (passwordParam == null && key.toLowerCase().contains(Constants.PASSWORD)) {
-                    passwordParam = key;
-                    params.remove(key);
-                } else if (licenseParam == null && key.toLowerCase().indexOf("license") > -1) {
-                    licenseParam = key;
-                    params.remove(key);
-                }
-            }
-            if (licenseParam != null) {
-                params.add(0, licenseParam);
-            }
-            if (passwordParam != null) {
-                params.add(0, passwordParam);
-            }
-            if (userParam != null) {
-                params.add(0, userParam);
-            }
-
-            setRowCount(params.size());
-            for (int row = 0; row < params.size(); row++) {
-                String param = params.get(row);
-                setValueAt(param, row, 0);
-                setValueAt(paramTypeMap.get(param), row, 1);
-            }
         }
     }
 
@@ -299,8 +259,8 @@ public class RestComponentSetupPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(subresourceLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
-                    .add(subresourceLocatorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
+                    .add(subresourceLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE)
+                    .add(subresourceLocatorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(10, 10, 10)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -308,18 +268,18 @@ public class RestComponentSetupPanel extends javax.swing.JPanel {
                             .add(uriTemplateLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(uriTemplateTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE)
-                            .add(methodNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE)))
+                            .add(uriTemplateTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
+                            .add(methodNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(10, 10, 10)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(paramLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                            .add(paramLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(resourceNameLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(resourceNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE))
-                            .add(paramScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                            .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE))))
+                                .add(resourceNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE))
+                            .add(paramScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE)
+                            .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -344,7 +304,7 @@ public class RestComponentSetupPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(paramLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(paramScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
+                .add(paramScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(messageLabel)
                 .addContainerGap())

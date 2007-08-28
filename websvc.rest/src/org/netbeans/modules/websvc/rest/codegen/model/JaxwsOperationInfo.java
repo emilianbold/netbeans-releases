@@ -55,7 +55,8 @@ public class JaxwsOperationInfo {
     WsdlOperation operation;
     WsdlPort port;
     
-    public JaxwsOperationInfo(String serviceName, String portName, String operationName, String wsdlURL, Project project) {
+    public JaxwsOperationInfo(String serviceName, String portName, String operationName, 
+            String wsdlURL, Project project) {
         this.serviceName = serviceName;
         this.portName = portName;
         this.operationName = operationName;
@@ -236,14 +237,15 @@ public class JaxwsOperationInfo {
     }
     
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
-    public String[] getInputParameterTypes() {
-        ArrayList<String> types = new ArrayList<String>();
+    public Class[] getInputParameterTypes() {
+        ArrayList<Class> types = new ArrayList<Class>();
+        
         for (WsdlParameter p : getOperation().getParameters()) {
             if (! p.isHolder()) {
-                types.add(p.getTypeName());
+                types.add(Util.getType(project, p.getTypeName()));
             }
         }
         
-        return types.toArray(new String[types.size()]);
+        return types.toArray(new Class[types.size()]);
     }
 }

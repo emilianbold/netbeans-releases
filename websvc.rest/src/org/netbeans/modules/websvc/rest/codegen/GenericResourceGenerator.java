@@ -22,7 +22,6 @@ import com.sun.source.tree.ClassTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,10 +30,10 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
+import org.netbeans.modules.websvc.rest.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.ErrorManager;
@@ -87,61 +86,55 @@ public class GenericResourceGenerator extends AbstractGenerator {
         
         JavaSource source = JavaSourceHelper.createJavaSource(
                 getTemplate(), getDestDir(), bean.getPackageName(), bean.getName());
-        
-        if (bean.isPrivateFieldForQueryParam()) {
-            addConstants(source);
-            addFields(source);
-            addConstructor(source);
+      
+        if (bean.getInputParameters().size() > 0) {
+            addInputParamFields(source);
+            addConstructorWithInputParams(source);
         }
         
         modifyResourceClass(source);
         return new HashSet<FileObject>(source.getFileObjects());
     }
-    
-    private void addConstants(JavaSource source) throws IOException {
+  
+    private void addInputParamFields(JavaSource source) throws IOException {
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                JavaSourceHelper.addConstants(copy, 
-                        toConstantNames(bean.getConstantParams()), 
-                        bean.getConstantParamTypes(), bean.getConstantParamValues());
+                List<ParameterInfo> params = bean.getInputParameters();
+                
+                JavaSourceHelper.addFields(copy, getParamNames(params),
+                        getParamTypeNames(params), getParamValues(params));
             }
         });
         result.commit();
     }
     
-    public static String[] toConstantNames(String[] names) {
-        String[] ret = new String[names.length];
-        for (int i=0; i<names.length; i++) {
-            ret[i] = toConstantName(names[i]);
-        }
-        return ret;
-    }
-    
-    public static String toConstantName(String name) {
-        return "DEFAULT_" + name.toUpperCase();
-    }
-    
-    private void addFields(JavaSource source) throws IOException {
+     private void addConstructorWithInputParams(JavaSource source) throws IOException {
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                JavaSourceHelper.addFields(copy, bean.getQueryParams(), bean.getQueryParamTypes());
+                ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
+                List<ParameterInfo> params = bean.getInputParameters();
+                String body = "{";      //NOI18N
+                
+                for (ParameterInfo param : params) {
+                    String name = param.getName();
+                    body += "if (" + name + " != null) {" +
+                            "this." + name + " = " + name + ";" +
+                            "}\n";    //NOI18N
+                }
+                
+                ClassTree modifiedTree = JavaSourceHelper.addConstructor(copy, tree,
+                        Constants.PUBLIC,
+                        getParamNames(params), getParamTypeNames(params),
+                        body, null);
+                
+                copy.rewrite(tree, modifiedTree);
             }
         });
         result.commit();
     }
-    
-    private void addConstructor(JavaSource source) throws IOException {
-        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                JavaSourceHelper.addConstructor(copy, bean.getQueryParams(), bean.getQueryParamTypes());
-            }
-        });
-        result.commit();
-    }
-    
+      
     private void modifyResourceClass(JavaSource source) {
         try {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -212,10 +205,11 @@ public class GenericResourceGenerator extends AbstractGenerator {
         String bodyText = "{ //"+COMMENT_END_OF_GET+"\n";
         bodyText += "throw new UnsupportedOperationException(); }";
         
-        String[] parameters = getGetParams();
-        Object[] paramTypes = getGetParamTypes();
-        String[] paramAnnotations = getGetParamAnnotations();
-        Object[] paramAnnotationAttrs = getGetParams();
+        List<ParameterInfo> queryParams = bean.getQueryParameters();
+        String[] parameters = getGetParamNames(queryParams);
+        Object[] paramTypes = getGetParamTypes(queryParams);
+        String[][] paramAnnotations = getGetParamAnnotations(queryParams);
+        Object[][] paramAnnotationAttrs = getGetParamAnnotationAttrs(queryParams);
         
         String comment = "Retrieves representation of an instance of " + bean.getQualifiedClassName() + "\n";
         for (String param : parameters) {
@@ -372,17 +366,17 @@ public class GenericResourceGenerator extends AbstractGenerator {
         return types;
     }
     
-    private String[] getGetParams() {
+    private String[] getGetParamNames(List<ParameterInfo> queryParams) {
         ArrayList<String> params = new ArrayList<String>();
         params.addAll(Arrays.asList(bean.getUriParams()));
-        params.addAll(Arrays.asList(bean.getQueryParams()));
+        params.addAll(Arrays.asList(getParamNames(queryParams)));
         return params.toArray(new String[params.size()]);
     }
     
-    private String[] getGetParamTypes() {
+    private String[] getGetParamTypes(List<ParameterInfo> queryParams) {
         ArrayList<String> types = new ArrayList<String>();
         types.addAll(Arrays.asList(getUriParamTypes()));
-        types.addAll(Arrays.asList(bean.getQueryParamTypes()));
+        types.addAll(Arrays.asList(getParamTypeNames(queryParams)));
         return types.toArray(new String[types.size()]);
     }
     
@@ -397,20 +391,50 @@ public class GenericResourceGenerator extends AbstractGenerator {
         }
         return annos;
     }
-    
-    private String[] getQueryParamAnnotations() {
-        String[] annos = new String [bean.getQueryParams().length];
-        for (int i=0; i<annos.length; i++) {
-            annos[i] = Constants.QUERY_PARAM_ANNOTATION;
+   
+    private String[][] getGetParamAnnotations(List<ParameterInfo> queryParams) {
+        ArrayList<String[]> annos = new ArrayList<String[]>();
+     
+        for (String uriParam : bean.getUriParams()) {
+            annos.add(new String[] {Constants.URI_PARAM_ANNOTATION});
         }
-        return annos;
+        
+        String[] annotations = null;
+        for (ParameterInfo param : queryParams) {
+            if (param.getDefaultValue() != null) {
+                annotations = new String[] {
+                    Constants.QUERY_PARAM_ANNOTATION,
+                       Constants.DEFAULT_VALUE_ANNOTATION
+                };
+            } else {
+                annotations = new String[] {Constants.QUERY_PARAM_ANNOTATION};
+            }
+            annos.add(annotations);
+        }
+    
+        return annos.toArray(new String[annos.size()][]);
     }
     
-    private String[] getGetParamAnnotations() {
-        ArrayList<String> annos = new ArrayList<String>();
-        annos.addAll(Arrays.asList(getUriParamAnnotations()));
-        annos.addAll(Arrays.asList(getQueryParamAnnotations()));
-        return annos.toArray(new String[annos.size()]);
+    private Object[][] getGetParamAnnotationAttrs(List<ParameterInfo> queryParams) {
+        ArrayList<Object[]> attrs = new ArrayList<Object[]>();
+        
+        for (String uriParam : bean.getUriParams()) {
+            attrs.add(new Object[] {uriParam});
+        }
+      
+        Object[] annotationAttrs = null;
+        for (ParameterInfo param : queryParams) {
+            if (param.getDefaultValue() != null) {
+                annotationAttrs = new Object[] {
+                    param.getName(), param.getDefaultValue().toString()
+                };
+            } else {
+                annotationAttrs = new Object[] {param.getName()};
+            }
+            attrs.add(annotationAttrs);
+        }
+    
+        return attrs.toArray(new Object[attrs.size()][]);
     }
     
     private String[] getPostPutParams() {
@@ -439,6 +463,36 @@ public class GenericResourceGenerator extends AbstractGenerator {
         StringBuilder sb = new StringBuilder(name);
         sb.setCharAt(0, Character.toUpperCase(name.charAt(0)));
         return sb.toString();
+    }
+    
+      private String[] getParamNames(List<ParameterInfo> params) {
+        List<String> results = new ArrayList<String>();
+        
+        for (ParameterInfo param : params) {
+            results.add(param.getName());
+        }
+        
+        return results.toArray(new String[results.size()]);
+    }
+    
+    private String[] getParamTypeNames(List<ParameterInfo> params) {
+        List<String> results = new ArrayList<String>();
+        
+        for (ParameterInfo param : params) {
+            results.add(param.getType().getName());
+        }
+        
+        return results.toArray(new String[results.size()]);
+    }
+    
+    private Object[] getParamValues(List<ParameterInfo> params) {
+        List<Object> results = new ArrayList<Object>();
+        
+        for (ParameterInfo param : params) {
+            results.add(param.getDefaultValue());
+        }
+        
+        return results.toArray(new Object[results.size()]);
     }
     
 }

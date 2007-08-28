@@ -23,7 +23,6 @@ import java.util.List;
 import javax.xml.parsers.*;
 import javax.xml.xpath.XPathExpressionException;
 import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.support.Utils;
 import org.openide.filesystems.*;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Attr;

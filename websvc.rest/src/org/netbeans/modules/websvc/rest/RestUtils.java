@@ -49,10 +49,7 @@ import org.w3c.dom.NodeList;
  * @author Nam Nguyen
  */
 public class RestUtils {
-    
-    public static final String REST_CONNECTION = "RestConnection"; //NOI18N
-    public static final String REST_CONNECTION_TEMPLATE = "Templates/WebServices/RestConnection.java"; //NOI18N
-    
+   
     /**
      *  Makes sure project is ready for REST development.
      *  @param source source file or directory as part of REST application project.
@@ -92,11 +89,6 @@ public class RestUtils {
         if (restSupport != null) {
             restSupport.setRestSupport(v);
         }
-    }
-    
-    public static JavaSource createRestConnection(FileObject folder, String pkgName) {
-        JavaSource source = JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, folder, pkgName, REST_CONNECTION);
-        return source;
     }
     
     public static RestSupport getRestSupport(Project project) {

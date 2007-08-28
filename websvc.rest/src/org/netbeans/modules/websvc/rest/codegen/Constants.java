@@ -43,6 +43,8 @@ public class Constants {
     
     public static final String QUERY_PARAM = REST_API_PACKAGE + "QueryParam";  //NOI18N
     
+    public static final String DEFAULT_VALUE = REST_API_PACKAGE + "DefaultValue";       //NOI18N
+    
     public static final String HTTP_RESPONSE = REST_API_PACKAGE + "core.Response"; //NOI18N
     
     public static final String RESPONSE_BUILDER = REST_API_PACKAGE + "core.Response.Builder";       //NOI8N
@@ -90,6 +92,8 @@ public class Constants {
     public static final String URI_PARAM_ANNOTATION = "UriParam";       //NOI18N
     
     public static final String QUERY_PARAM_ANNOTATION = "QueryParam";       //NOI18N
+    
+    public static final String DEFAULT_VALUE_ANNOTATION = "DefaultValue";       //NOI18N
     
     public static final String HTTP_METHOD_ANNOTATION = "HttpMethod";   //NOI18N
     

@@ -27,7 +27,10 @@ import java.util.Vector;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -35,6 +38,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
+import org.netbeans.modules.websvc.rest.component.palette.RestComponentSetupPanel;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -378,25 +382,46 @@ public class Util {
     }
 
     private static Map<String,Class> primitiveTypes;
+    
+    public static Class getType(Project project, String typeName) {    
+        List<ClassPath> classPaths = SourceGroupSupport.gerClassPath(project);
+        
+        for (ClassPath cp : classPaths) {
+            try {
+                Class ret = Util.getPrimitiveType(typeName);
+                if (ret != null) {
+                    return ret;
+                }
+                ClassLoader cl = cp.getClassLoader(true);
+                if (cl != null) {
+                    return cl.loadClass(typeName);
+                }
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(RestComponentSetupPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+        }
+        return String.class; 
+    }
+    
     public static Class getPrimitiveType(String typeName) {
         if (primitiveTypes == null) {
             primitiveTypes = new HashMap<String,Class>();
-            primitiveTypes.put("int", int.class);
-            primitiveTypes.put("int[]", int[].class);
-            primitiveTypes.put("boolean", boolean.class);
-            primitiveTypes.put("boolean[]", boolean[].class);
-            primitiveTypes.put("byte", byte.class);
-            primitiveTypes.put("byte[]", byte[].class);
-            primitiveTypes.put("char", char.class);
-            primitiveTypes.put("char[]", char[].class);
-            primitiveTypes.put("double", double.class);
-            primitiveTypes.put("double[]", double[].class);
-            primitiveTypes.put("float", float.class);
-            primitiveTypes.put("float[]", float[].class);
-            primitiveTypes.put("long", long.class);
-            primitiveTypes.put("long[]", long[].class);
-            primitiveTypes.put("short", short.class);
-            primitiveTypes.put("short[]", short[].class);
+            primitiveTypes.put("int", Integer.class);
+            primitiveTypes.put("int[]", Integer[].class);
+            primitiveTypes.put("boolean", Boolean.class);
+            primitiveTypes.put("boolean[]", Boolean[].class);
+            primitiveTypes.put("byte", Byte.class);
+            primitiveTypes.put("byte[]", Byte[].class);
+            primitiveTypes.put("char", Character.class);
+            primitiveTypes.put("char[]", Character[].class);
+            primitiveTypes.put("double", Double.class);
+            primitiveTypes.put("double[]", Double[].class);
+            primitiveTypes.put("float", Float.class);
+            primitiveTypes.put("float[]", Float[].class);
+            primitiveTypes.put("long", Long.class);
+            primitiveTypes.put("long[]", Long[].class);
+            primitiveTypes.put("short", Short.class);
+            primitiveTypes.put("short[]", Short[].class);
         }
         return primitiveTypes.get(typeName);
     }
