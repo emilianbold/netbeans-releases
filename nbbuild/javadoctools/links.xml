@@ -132,3 +132,5 @@ Microsystems, Inc. All Rights Reserved.
 <link href="${javadoc.docs.org-netbeans-modules-xml-xam}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-xml-xam"/>
 <link href="${javadoc.docs.org-netbeans-insane}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-insane"/>
 <link href="${javadoc.docs.org-netbeans-modules-editor-bracesmatching}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-editor-bracesmatching"/>
+<link href="${javadoc.docs.org-netbeans-modules-versioning}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-versioning"/>
+<link href="${javadoc.docs.org-netbeans-modules-refactoring-java}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-refactoring-java"/>

@@ -130,3 +130,5 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-modules-xml-xam@" value="${javadoc.docs.org-netbeans-modules-xml-xam}"/>
 <replacefilter token="@org-netbeans-insane@" value="${javadoc.docs.org-netbeans-insane}"/>
 <replacefilter token="@org-netbeans-modules-editor-bracesmatching@" value="${javadoc.docs.org-netbeans-modules-editor-bracesmatching}"/>
+<replacefilter token="@org-netbeans-modules-versioning@" value="${javadoc.docs.org-netbeans-modules-versioning}"/>
+<replacefilter token="@org-netbeans-modules-refactoring-java@" value="${javadoc.docs.org-netbeans-modules-refactoring-java}"/>
