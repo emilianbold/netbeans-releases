@@ -28,7 +28,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
+import java.text.MessageFormat;
+
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -36,10 +38,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.FileEntry;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -241,14 +245,21 @@ public class PropertiesDataNode extends DataNode {
                 new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
                         if (evt.getSource() == DialogDescriptor.OK_OPTION) {
-                        // OK pressed
-                            Util.createLocaleFile(propertiesDataObject, panel.getLocale().toString(), true);
+                            if (containsLocale(propertiesDataObject, panel.getLocale())) {
+                                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                                    MessageFormat.format(NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"), panel.getLocale()), 
+                                    NotifyDescriptor.ERROR_MESSAGE);
+                                DialogDisplayer.getDefault().notify(msg);
+                            } else {
+                                Util.createLocaleFile(propertiesDataObject, panel.getLocale().toString(), true);
+                                dialog[0].setVisible(false);
+                                dialog[0].dispose();
+                            }
                         }
-                        dialog[0].setVisible(false);
-                        dialog[0].dispose();
                     }
                 }
             );
+            dialogDescriptor.setClosingOptions(new Object [] { DialogDescriptor.CANCEL_OPTION });
             
             dialog[0] = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
             dialog[0].setVisible(true);
@@ -256,4 +267,15 @@ public class PropertiesDataNode extends DataNode {
 
     } // End of NewLocaleType class.
 
+    private static boolean containsLocale(PropertiesDataObject propertiesDataObject, Locale locale) {
+        FileObject file = propertiesDataObject.getPrimaryFile();
+        String newName = file.getName() + PropertiesDataLoader.PRB_SEPARATOR_CHAR + locale;
+        Iterator it = propertiesDataObject.secondaryEntries().iterator();
+        while (it.hasNext()) {
+            FileObject f = ((FileEntry)it.next()).getFile();
+            if (newName.startsWith(f.getName()) && f.getName().length() > file.getName().length())
+                file = f;
+        }        
+        return file.getName().equals(newName);
+    }
 }
