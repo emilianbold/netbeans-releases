@@ -55,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <!-- Copy possible JVM crash error logs (e.g. hs_err_pid20617.log) next
              to testrun logs. -->
-        <copy toDir="${xtest.results.testrun.dir}/logs" flatten="true">
+        <copy toDir="${xtest.results.testrun.dir}/logs" flatten="true"  failonerror="false">
             <fileset dir="${xtest.workdir}" includes="**/hs_err_*"/>
             <fileset dir="${netbeans.dest.dir}" includes="**/hs_err_*"/>
         </copy>
