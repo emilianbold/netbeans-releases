@@ -117,7 +117,6 @@ public class TabularPropertyPanel extends PropertyPanelBase implements TableMode
         renderer.setHorizontalAlignment(javax.swing.JLabel.CENTER);
         renderer.setBackground(new java.awt.Color(212, 208, 200));
         dataTable.getTableHeader().setDefaultRenderer(renderer);
-
         buttonsPanel = new javax.swing.JPanel();
         newButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
@@ -126,9 +125,9 @@ public class TabularPropertyPanel extends PropertyPanelBase implements TableMode
 
         setLayout(new java.awt.GridBagLayout());
 
-        helpLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("TabularPropertyPanel.helpLabel").charAt(0));
+        helpLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle").getString("TabularPropertyPanel.helpLabel").charAt(0));
         helpLabel.setLabelFor(dataTable);
-        helpLabel.setText(bundle.getString("TablePropertyPanel.help"));
+        helpLabel.setText(bundle.getString("TablePropertyPanel.help")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -138,8 +137,10 @@ public class TabularPropertyPanel extends PropertyPanelBase implements TableMode
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 10, 10);
         add(helpLabel, gridBagConstraints);
+        helpLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TabularPropertyPanel.class, "TablePropertyPanel.help.desc")); // NOI18N
 
         dataPane.setEnabled(false);
+
         dataTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
         dataTable.setTableHeader(dataTable.getTableHeader());
         dataPane.setViewportView(dataTable);
@@ -157,45 +158,45 @@ public class TabularPropertyPanel extends PropertyPanelBase implements TableMode
 
         buttonsPanel.setLayout(new java.awt.GridLayout(4, 1, 0, 5));
 
-        newButton.setMnemonic(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("TabularPropertyPanel").charAt(0));
-        newButton.setText(bundle.getString("SelectOneDomainPanel.button.new"));
+        newButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle").getString("TabularPropertyPanel").charAt(0));
+        newButton.setText(bundle.getString("SelectOneDomainPanel.button.new")); // NOI18N
         newButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newActionPerformed(evt);
             }
         });
-
         buttonsPanel.add(newButton);
+        newButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TabularPropertyPanel.class, "TabularPropertyPanel.newButton.desc")); // NOI18N
 
-        deleteButton.setMnemonic(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("TabularPropertyPanel.deleteButton").charAt(0));
-        deleteButton.setText(bundle.getString("SelectOneDomainPanel.button.delete"));
+        deleteButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle").getString("TabularPropertyPanel.deleteButton").charAt(0));
+        deleteButton.setText(bundle.getString("SelectOneDomainPanel.button.delete")); // NOI18N
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteActionPerformed(evt);
             }
         });
-
         buttonsPanel.add(deleteButton);
+        deleteButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TabularPropertyPanel.class, "TabularPropertyPanel.deleteButton.desc")); // NOI18N
 
-        upButton.setMnemonic(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("TabularPropertyPanel.upButton").charAt(0));
-        upButton.setText(bundle.getString("SelectOneDomainPanel.button.up"));
+        upButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle").getString("TabularPropertyPanel.upButton").charAt(0));
+        upButton.setText(bundle.getString("SelectOneDomainPanel.button.up")); // NOI18N
         upButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 upActionPerformed(evt);
             }
         });
-
         buttonsPanel.add(upButton);
+        upButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TabularPropertyPanel.class, "TabularPropertyPanel.upButton.desc")); // NOI18N
 
-        downButton.setMnemonic(java.util.ResourceBundle.getBundle("org.netbeans.modules.visualweb.propertyeditors.Bundle").getString("TabularPropertyPanel.downButton").charAt(0));
-        downButton.setText(bundle.getString("SelectOneDomainPanel.button.down"));
+        downButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/propertyeditors/Bundle").getString("TabularPropertyPanel.downButton").charAt(0));
+        downButton.setText(bundle.getString("SelectOneDomainPanel.button.down")); // NOI18N
         downButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 downActionPerformed(evt);
             }
         });
-
         buttonsPanel.add(downButton);
+        downButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TabularPropertyPanel.class, "TabularPropertyPanel.downButton.desc")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -203,7 +204,6 @@ public class TabularPropertyPanel extends PropertyPanelBase implements TableMode
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 6, 0, 10);
         add(buttonsPanel, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     /**
