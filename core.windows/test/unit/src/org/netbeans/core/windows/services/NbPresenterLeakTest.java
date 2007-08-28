@@ -19,12 +19,16 @@
 
 package org.netbeans.core.windows.services;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
@@ -57,8 +61,19 @@ public class NbPresenterLeakTest extends NbTestCase {
         boolean cancelled = wizardDescriptor.getValue() !=
             WizardDescriptor.FINISH_OPTION;
         Dialog d = new JDialog();
+        
+        // workaround for JDK bug 6575402
+        JPanel p = new JPanel();
+        d.setLayout(new BorderLayout());
+        d.add(p, BorderLayout.CENTER);
+        JButton btn = new JButton("Button");
+        p.add(btn, BorderLayout.NORTH);
+        
         SwingUtilities.invokeAndWait (new EDTJob(d, true));
         SwingUtilities.invokeAndWait (new EDTJob(d, false));
+
+        //assertNull ("BufferStrategy was disposed.", dialog.getBufferStrategy ());
+        
         dialog = null;
         wizardDescriptor = null;
         
