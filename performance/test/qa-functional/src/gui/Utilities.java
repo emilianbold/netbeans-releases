@@ -444,7 +444,7 @@ public class Utilities {
     }
     
     public static Node getApplicationServerNode(){
-        RuntimeTabOperator rto = new RuntimeTabOperator().invoke();
+        RuntimeTabOperator rto = RuntimeTabOperator.invoke();
         
         TreePath path = null;
         
