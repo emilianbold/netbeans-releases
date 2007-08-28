@@ -33,6 +33,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.openide.util.RequestProcessor;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -55,17 +56,21 @@ public class JaxWsAddOperation implements AddOperationCookie {
         service = getService();
     }
     
-    public void addOperation(FileObject implementationClass) {
-        AddWsOperationHelper strategy = new AddWsOperationHelper(
+    public void addOperation(final FileObject implementationClass) {
+        final AddWsOperationHelper strategy = new AddWsOperationHelper(
                 NbBundle.getMessage(AddWsOperationHelper.class, "LBL_OperationAction"));
-        try {
-            String className = _RetoucheUtil.getMainClassName(implementationClass);
-            if (className != null) {
-                strategy.addMethod(implementationClass, className);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    String className = _RetoucheUtil.getMainClassName(implementationClass);
+                    if (className != null) {
+                        strategy.addMethod(implementationClass, className);
+                    }
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
             }
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
+        });
     }
     
     public boolean isEnabledInEditor(FileObject implClass) {
