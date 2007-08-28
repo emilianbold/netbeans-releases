@@ -15,12 +15,6 @@
 		<data>rave_nbpack-toc.xml</data>
 	</view>
 	<view>
-		<name></name>
-		<label></label>
-		<type>javax.help.IndexView</type>
-		<data>rave_nbpack-idx.xml</data>
-	</view>
-	<view>
 		<name>Search</name>
 		<label>Search</label>
 		<type>javax.help.SearchView</type>
