@@ -16,7 +16,7 @@
 	<mapID target="DDEToolsDocumentation2_htm_wp1342319" url="basics/documentation_window.html#ddetools"/>
 	<mapID target="DEToolsDesignCenter2_htm_wp1737211" url="design/using_design_center.html#detools"/>
 	<mapID target="j2me.designer.palette" url="basics/palette.html#j2medesigner"/>
-	<mapID target="nbdocs_org_netbeans_modules_usersguide_project_csh_proj_project_window" url="nbdocs:/org/netbeans/modules/usersguide/project/csh/proj_project_window.html"/>
+	<mapID target="nbdocs_org_netbeans_modules_usersguide_project_csh_proj_project_window" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/proj_project_window.html"/>
 	<mapID target="uml_basics_about_diagrams" url="basics/about_diagrams.html"/>
 	<mapID target="uml_basics_about_packages" url="basics/about_packages.html"/>
 	<mapID target="uml_basics_about_projects" url="basics/about_projects.html"/>
