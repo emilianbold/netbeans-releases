@@ -7,17 +7,24 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-        <title>New Breakpoint Dialog Box: Class</title>
+        <title>Breakpoint Dialog Box: Class</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
 
-        <h2>New Breakpoint Dialog Box: Class</h2>
+        <h2>Breakpoint Dialog Box: Class</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
 
-        <p>You use the New Breakpoint dialog box to set a breakpoint on a class.</p>
-        <p>To open the dialog box, from the main menu, choose Run &gt; New Breakpoint 
-        (Ctrl-Shift-F8), then select Class from the Breakpoint Type drop-down list.</p>
+        <p>You use this dialog box to set the properties of a class breakpoint.</p>
+        <p>You can set class breakpoint properties when you set a new breakpoint or when modifying an
+        existing breakpoint.</p>
+        <ul>
+            <li>To set a new class breakpoint, choose Run &gt; New Breakpoint 
+            (Ctrl-Shift-F8) from the main menu, then select Class from the Breakpoint Type drop-down list.</li>
+            <li>To customize an existing class breakpoint, right-click the class breakpoint in the
+            Breakpoints window and choose Customize.</li>
+        </ul>
+        
         <ul class="note">
             <li>If the fields in the dialog box are already filled in, 
             the information is based on the location of the insertion point in the Source Editor.</li>
@@ -28,19 +35,20 @@
             <li><b>Settings.</b>
             <ul>
                 <li><b>Class Name.</b> The name of the class file you want the 
-                debugger to stop on. You can use an asterisk for the class name 
+                debugger to stop on. You can use an asterisk (*) for the class name 
                 if you do not want to specify just one class. For example, 
                 if you specify <tt>java.lang</tt> as the package name and * for the class name, the 
-                breakpoint applies to any class from the package <tt>java.lang</tt>. </li>
-                <li><b>Stop On.</b> Select which of the following triggers the breakpoint.
+                breakpoint applies to any class from the package <tt>java.lang</tt>. 
+                You can then use the Exclude Classes condition to specify certain classes that
+                do not trigger the breakpoint.</li>
+            <li><b>Stop On.</b> Select which of the following triggers the breakpoint.
                 <ul>
-                    <li><b>Class Load.</b> Triggers the breakpoint when the 
+                    <li><b>Class Load.</b> The breakpoint is triggered when the 
                     class is loaded into the virtual machine. </li>
-                    <li><b>Class Unload. </b>Triggers the breakpoint when the 
+                    <li><b>Class Unload. </b>The breakpoint is triggered when the 
                     class is unloaded from the virtual machine. </li>
-                    <li><b>Class Load or Unload.</b> <b> </b>Triggers 
-                    the breakpoint both when the class is loaded and when it is 
-                    unloaded from the virtual machine.</li>
+                    <li><b>Class Load or Unload.</b> <b> </b>The breakpoint is triggered 
+                    when the class is loaded and when it is unloaded from the virtual machine.</li>
                 </ul>
             </li>
             </ul>
@@ -48,7 +56,8 @@
         <li><b>Conditions</b>
             <ul>
             <li><b>Exclude Classes.</b> When selected, enables you to specify classes to exclude. 
-            Excluded classes do not trigger the breakpoint.</li>
+            Excluded classes do not trigger the breakpoint when they are loaded.
+            If not selected, the breakpoint is triggered by any classes matching the Class Name setting.</li>
             <li><b>Break when hit count.</b> When selected, enables you to specify how frequently the breakpoint is triggered. 
             Choose a criteria in the drop-down list and then specify a numerical value.</li>
             </ul>
@@ -71,7 +80,7 @@
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="breakpoint_window.html">New Breakpoint Dialog Box</a></dd>
             <dd><a href="../breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
-   <dd><a href="../breakpoint_about.html">Breakpoints in the IDE</a></dd>
+            <dd><a href="../breakpoint_about.html">Breakpoints in the IDE</a></dd>
             <dt>&nbsp;</dt>
         </dl>
         <hr>

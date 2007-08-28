@@ -7,25 +7,30 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>New Breakpoint Dialog Box: Field</title>
+<title>Breakpoint Dialog Box: Field</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>New Breakpoint Dialog Box: Field</h2>
+<h2>Breakpoint Dialog Box: Field</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-
-<p>You use the New Breakpoint dialog box to set a breakpoint on a field.</p>
-<p>To open the dialog box, from the main menu, choose Run &gt; New Breakpoint, then select Field from the Breakpoint Type drop-down list.</p>
+<p>You use this dialog box to set the properties of a field breakpoint.</p>
+<p>You can set field breakpoint properties when you set a new breakpoint or when modifying an
+existing breakpoint.</p>
+<ul>
+    <li>To set a new field breakpoint, choose Run &gt; New Breakpoint 
+    (Ctrl-Shift-F8) from the main menu, then select Field from the Breakpoint Type drop-down list.</li>
+    <li>To customize an existing field breakpoint, right-click the field breakpoint in the
+    Breakpoints window and choose Customize.</li>
+</ul>
 <p>You can set the following values:</p>
     <ul>
         <li><b>Settings.</b>
             <ul>
-                <!--<li><b>Package Name.</b> The name of the package you want the debugger to stop on. You can use an asterisk (*) for the package name.</li>-->
                 <li><b>Class Name.</b> The name of the class file. You can also use an asterisk for the class name. For example, if you specify <tt>java.lang</tt> as the package name and * for the class name, the breakpoint applies to any class from the package <tt>java.lang</tt>.</li>
-                <li><b>Field Name.</b> The name of the field.</li>
+                <li><b>Field Name.</b> The name of the field that contains the breakpoint.</li>
                 <li><b>Stop On.</b> When to trigger the breakpoint. 
-                    Field Access stops your program when it queries a field in the specified class. 
+                Field Access stops your program when it queries a field in the specified class. 
                 Field Modification stops your program when the value of the field changes.</li>
             </ul>
         </li>

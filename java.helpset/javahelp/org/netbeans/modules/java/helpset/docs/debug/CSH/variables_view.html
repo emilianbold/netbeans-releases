@@ -17,7 +17,10 @@
 
 <p>The Local Variables window lists the local variables in the current call. By default, the Local Variables window opens automatically whenever you start a debugging session. You can open the Local Variables window by choosing Window &gt; Debugging &gt; Local Variables.</p>
 <p>If you open the Local Variables window when a debugging session is running, it closes automatically when you end the debugging session. If you open the window when no debugging session is running, it stays open until you close it.</p>
-<p>The information given for each variable includes the variable name, type, and value. You can click the control to the left of the name to expand or collapse the variable. If the object type is displayed in blue underlined text, clicking the text jumps to the object type in the source code. You can click the Value cell to edit the value directly in the Local Variables window. </p>
+<p>The information given for each variable includes the variable name, type, and value. 
+You can click the control to the left of the name to expand or collapse the variable. 
+If the object type is displayed in blue underlined text, clicking the text jumps to the object type in the source code. 
+You can click the Value cell to edit the value directly in the Local Variables window. </p>
 <p>In some cases, the debugger assigns a pound sign (#) and a number as the variable's value. This number is a unique identifier of the given instance. You can use this identifier to determine if a variable points to the same or to a different instance. You cannot edit this value. </p>
 
 <h3><a name="icons">Icons</a></h3>
@@ -61,16 +64,26 @@
 		<td>For objects of type integer only. Determines how the value of the selected object is shown. The choices are decimal, hexadecimal, octal, and binary.</td>
 	</tr>
 	<tr valign="top">
+		<td>Go to Source</td>
+		<td>Opens the source file containing the variable.</td>
+	</tr>
+        <tr valign="top">
+		<td>Show References</td>
+		<td>Opens the Instance view showing list of instances and the referrers (not available if IDE is running on JDK 1.5).
+                See <a href="instances_view.html">Instances Window</a> for more information. </td>
+	</tr>
+        <tr valign="top">
 		<td>List Options</td>
 		<td>Enables you to customize the display of the Local Variables window, including adding and removing columns of information, reordering the columns, and sorting the columns. 
-See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
+                See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
 	</tr>
-</table>
+    </table>
 
 <h3>Properties </h3>
-<p>You can see all the properties for a variable by right-clicking the node for the variable 
- and choosing Properties.</p>
-<p>By default, all properties are also displayed directly in the Variables window, except for the <tt>toString()</tt> property.</p>
+<p>By default, all properties are displayed directly in the Local Variables window, except for the <tt>toString()</tt> property.
+To display the <tt>toString()</tt> property in the Local Variables window, 
+ click the <img src="../images/ChangeColumn.gif" alt="Change Column">&nbsp;icon in the upper right corner of the window, 
+ or right-click in the window and choose List Options &gt; Change Visible Columns and then select the <tt>toString()</tt> checkbox in the dialog box.</p>
 
 
 <dl>

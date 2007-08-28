@@ -17,10 +17,10 @@
 
 <p>The debugging engine examines the current stack of the current thread. If the Old Method on Stack alert is displayed, the topmost call is associated with a class that was just swapped into the currently executing program, and there is more than one call on the call stack. You have two choices: </p>
 <ul>
-	<li><b>Pop Call.</b> Remove the most recent call from the current call stack. The program counter is moved to the line before the instruction that made the recently removed call. If the source code is available, the focus of the Source Editor is set to that line. When you continue program execution, the call is repeated.
-		<p>In general, popping, or removing, a call from the call stack does not undo any effects that the call caused. For example, if a call opened a database connection and then that call is removed, the database connection remains open.</p></li>
-	<li><b>Use Old and Step Out.</b> Execute the original version of the call. Use this option when you need the old version of the call to perform an action that the new version might not perform.
-		<p>If methods belonging to an old version of the class are on a stack in the virtual machine (VM), the VM keeps both the old and new versions of the class in memory so that the calls on the stack are not disrupted. If a class is fixed again before the older calls are removed, there might be more than two versions of the class in the VM at one time.</p></li>
+    <li><b>Pop Call.</b> Remove the most recent call from the current call stack. The program counter is moved to the line before the instruction that made the recently removed call. If the source code is available, the focus of the Source Editor is set to that line. When you continue program execution, the call is repeated.
+        <p>In general, popping, or removing, a call from the call stack does not undo any effects that the call caused. For example, if a call opened a database connection and then that call is removed, the database connection remains open.</p></li>
+    <li><b>Use Old and Step Out.</b> Execute the original version of the call. Use this option when you need the old version of the call to perform an action that the new version might not perform.
+        <p>If methods belonging to an old version of the class are on a stack in the virtual machine (VM), the VM keeps both the old and new versions of the class in memory so that the calls on the stack are not disrupted. If a class is fixed again before the older calls are removed, there might be more than two versions of the class in the VM at one time.</p></li>
 </ul>
 
 <dl>

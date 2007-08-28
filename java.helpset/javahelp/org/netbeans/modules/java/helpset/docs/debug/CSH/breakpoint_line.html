@@ -7,37 +7,29 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>Breakpoint Dialog Box: Method</title>
+<title>Breakpoint Dialog Box: Line</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Breakpoint Dialog Box: Method</h2>
+<h2>Breakpoint Dialog Box: Line</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>You use this dialog box to set the properties of an method breakpoint.</p>
-<p>You can set method breakpoint properties when you set a new breakpoint or when modifying an
-existing breakpoint.</p>
-<ul>
-    <li>To set a new method breakpoint, choose Run &gt; New Breakpoint 
-    (Ctrl-Shift-F8) from the main menu, then select Method from the Breakpoint Type drop-down list.</li>
-    <li>To customize an existing exception breakpoint, right-click the method breakpoint in the
-    Breakpoints window and choose Customize.</li>
-</ul>
-<ul class="note">
-	<li>If the fields in the dialog box are already filled in, the information is based on the location of the insertion point in the Source Editor.</li>
-</ul>
+<p>You use this dialog box to set the properties of a line breakpoint.</p>
+<p>You can set line breakpoint properties when modifying an
+existing line breakpoint.</p>
+<p><b>To set line breakpoint properties:</b></p>
+<ol>
+    <li>Set a new line breakpoint by right-clicking in the margin to the left of the line 
+    where you want to set the breakpoint.</li>
+    <li>Open the Breakpoints window and right-click the line breakpoint and choose Customize.</li>
+</ol>
 
 <p>You can set the following values:</p>
 <ul>
 	<li><b>Settings.</b>
             <ul>
-                <li><b>Class Name.</b> The name of the class that contains the method. If the Apply Also to Anonymous Inner Classes checkbox is selected, the breakpoint also applies to all anonymous (unnamed) inner classes that the specified class contains. If an anonymous class contains another inner class (either anonymous or named), the breakpoint also applies to that inner class. </li>
-                <li><b>All Methods for Given Class.</b> If selected, applies the breakpoint to all methods of the specified class. </li>
-                <li><b>Method Name.</b> The name of the method in the class that triggers the breakpoint. 
-                The All Methods for Given Class checkbox must be deselected to specify a method name.
-                If you want to apply the breakpoint to all methods of the specified class, select the All Methods for Given Classes checkbox. </li>
-                <li><b>Stop On.</b> Specifies when program execution is stopped. 
-                Choose one of the criteria from the drop-down list.</li>
+                <li><b>File.</b> Specifies the name of the source file that contains the breakpoint</li>
+                <li><b>Line Number.</b> Shows the line number on which the breakpoint is set.</li>
         </ul></li>
         <li><b>Conditions</b>
             <ul>
@@ -61,9 +53,10 @@ existing breakpoint.</p>
 
 <dl>
 	<dt><a name="seealso">See Also</a></dt>
-	<dd><a href="breakpoint_window.html">New Breakpoint Dialog Box</a></dd>
-            <dd><a href="../breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
-   <dd><a href="../breakpoint_about.html">Breakpoints in the IDE</a></dd>
+        <dd><a href="../breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
+        <dd><a href="../breakpoint_about.html">Breakpoints in the IDE</a></dd>
+	<dd><a href="breakpoint_view.html">Breakpoints Window</a></dd>
+	<dd><a href="debug_window.html">Debugger Windows</a></dd>
 </dl>
 <hr>
 <small><a href="../../credits.html">Legal Notices</a></small>
