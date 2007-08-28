@@ -28,7 +28,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.imagechooser.PropertyEditorImage;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorImage;
 import org.openide.util.NbBundle;
 import java.util.Arrays;
 import java.util.List;

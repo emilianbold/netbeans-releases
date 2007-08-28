@@ -40,7 +40,7 @@ import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
 import org.openide.util.NbBundle;

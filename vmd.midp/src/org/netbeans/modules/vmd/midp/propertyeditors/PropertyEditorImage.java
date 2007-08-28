@@ -14,13 +14,14 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.vmd.midpnb.propertyeditors;
+package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.util.Collections;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.ImageEditorElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement.DesignComponentWrapper;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementEvent;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementListener;
@@ -33,27 +34,27 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class PropertyEditorSVGImage extends PropertyEditorUserCode implements PropertyEditorElement, PropertyEditorResourceElementListener {
+public class PropertyEditorImage extends PropertyEditorUserCode implements PropertyEditorElement, PropertyEditorResourceElementListener {
 
     private JRadioButton radioButton;
-    private SVGImageEditorElement customEditor;
+    private ImageEditorElement customEditor;
     private String resourcePath = ""; // NOI18N
 
-    private PropertyEditorSVGImage() {
-        super(NbBundle.getMessage(PropertyEditorSVGImage.class, "LBL_SVGIMAGE_UCLABEL")); // NOI18N;
+    private PropertyEditorImage() {
+        super(NbBundle.getMessage(PropertyEditorImage.class, "LBL_IMAGE_UCLABEL")); // NOI18N;
         initComponents();
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
-    public static PropertyEditorSVGImage createInstance() {
-        return new PropertyEditorSVGImage();
+    public static PropertyEditorImage createInstance() {
+        return new PropertyEditorImage();
     }
 
     private void initComponents() {
         radioButton = new JRadioButton();
-        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorSVGImage.class, "LBL_SVGIMAGE_STR")); // NOI18N;
-        customEditor = new SVGImageEditorElement();
+        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorImage.class, "LBL_IMAGE_STR")); // NOI18N;
+        customEditor = new ImageEditorElement();
         customEditor.addPropertyEditorResourceElementListener(this);
     }
 

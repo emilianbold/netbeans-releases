@@ -45,8 +45,8 @@ import org.netbeans.modules.vmd.midp.components.points.IfPointCD;
 import org.netbeans.modules.vmd.midp.components.points.MethodPointCD;
 import org.netbeans.modules.vmd.midp.components.points.SwitchPointCD;
 import org.netbeans.modules.vmd.midp.components.sources.SwitchCaseEventSourceCD;
-import org.netbeans.modules.vmd.midp.propertyeditors.usercode.CodeUtils;
-import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.CodeUtils;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode;
 import org.openide.util.NbBundle;
 
 /**

@@ -20,7 +20,7 @@ package org.netbeans.modules.vmd.midpnb.propertyeditors;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElement;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 
 import javax.swing.*;

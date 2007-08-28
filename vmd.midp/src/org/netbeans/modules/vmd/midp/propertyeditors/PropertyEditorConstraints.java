@@ -39,8 +39,8 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.general.Bitmask.BitmaskItem;
 import org.netbeans.modules.vmd.midp.components.items.Constraints;
 import org.netbeans.modules.vmd.midp.components.items.TextFieldCD;
-import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
-import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 

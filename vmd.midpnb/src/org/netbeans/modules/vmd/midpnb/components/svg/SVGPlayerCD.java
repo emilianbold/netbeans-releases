@@ -36,7 +36,7 @@ import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.general.SVGFileAcceptPresenter;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.SVGImageEditorElement;

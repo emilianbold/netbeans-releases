@@ -21,7 +21,7 @@ package org.netbeans.modules.vmd.midp.propertyeditors.element;
 
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
 
 /**
  *

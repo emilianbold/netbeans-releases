@@ -17,6 +17,7 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
 
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;

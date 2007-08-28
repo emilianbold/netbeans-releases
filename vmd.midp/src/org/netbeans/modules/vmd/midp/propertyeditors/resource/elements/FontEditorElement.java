@@ -17,6 +17,7 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
 
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

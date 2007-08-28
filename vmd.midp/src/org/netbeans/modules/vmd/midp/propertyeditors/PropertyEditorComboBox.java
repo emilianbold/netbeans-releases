@@ -34,8 +34,8 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
-import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
-import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 

@@ -32,7 +32,7 @@ import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.StringItemDisplayPresenter;
 
 import java.util.ArrayList;

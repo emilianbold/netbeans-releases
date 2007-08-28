@@ -375,14 +375,15 @@
                 <package>org.netbeans.modules.vmd.midp.palette.wizard</package>
                 <package>org.netbeans.modules.vmd.midp.producers</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors</package>
+                <package>org.netbeans.modules.vmd.midp.propertyeditors.api.resource</package>
+                <package>org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element</package>
+                <package>org.netbeans.modules.vmd.midp.propertyeditors.api.usercode</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.date</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.element</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.eventhandler</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.imagechooser</package>
-                <package>org.netbeans.modules.vmd.midp.propertyeditors.resource</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.resource.elements</package>
                 <package>org.netbeans.modules.vmd.midp.propertyeditors.timezone</package>
-                <package>org.netbeans.modules.vmd.midp.propertyeditors.usercode</package>
                 <package>org.netbeans.modules.vmd.midp.screen</package>
                 <package>org.netbeans.modules.vmd.midp.screen.display</package>
                 <package>org.netbeans.modules.vmd.midp.screen.display.injector</package>

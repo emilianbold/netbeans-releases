@@ -39,7 +39,7 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresent
 import org.netbeans.modules.vmd.midp.flow.FlowAlertViaPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.*;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.AlertDisplayPresenter;
 import org.openide.util.NbBundle;
 

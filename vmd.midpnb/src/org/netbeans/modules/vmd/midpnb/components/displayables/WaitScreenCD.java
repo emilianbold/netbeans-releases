@@ -27,7 +27,7 @@ import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.*;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.resources.CancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.MidpNbPropertiesCategories;

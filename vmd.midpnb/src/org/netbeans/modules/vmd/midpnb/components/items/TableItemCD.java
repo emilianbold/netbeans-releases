@@ -35,7 +35,7 @@ import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;

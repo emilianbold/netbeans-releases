@@ -25,9 +25,9 @@ import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElement.DesignComponentWrapper;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElementEvent;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElementListener;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement.DesignComponentWrapper;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementEvent;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementListener;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.openide.util.NbBundle;
 
