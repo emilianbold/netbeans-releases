@@ -93,6 +93,7 @@
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.KeystoreClientNode" url="webservice/nodes/wsitconf-CertificatesNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.STSClientNode" url="webservice/nodes/wsitconf-SecureTokenServiceNode.html"/>
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode" url="webservice/nodes/wsitconf-TransportClientNode.html"/>
+   <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode" url="webservice/nodes/wsitconf-AdvancedConfigurationNode.html"/>
    
    <!-- Service: -->
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingContainerServiceNode" url="webservice/nodes/wsitconf-BindingContainerServiceNode.html"/>
