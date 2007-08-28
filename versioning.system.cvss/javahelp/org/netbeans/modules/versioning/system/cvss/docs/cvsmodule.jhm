@@ -139,5 +139,9 @@
     <!-- TODO: where is this one -->
     <mapID target="cvs-lite_importfolder_dialog" url="cvsmodule/csh/cvs-lite_importfolder_dialog.html" />
 
+    <!-- these are obselete. they can be deleted once the index page is deleted -->
+    <mapID target="cvs-lite_non-cvs" url="cvsmodule/cvs-lite_non-cvs.html" />
+    <mapID target="cvs-lite_projects" url="cvsmodule/cvs-lite_project-system.html" />
+
 </map>
 
