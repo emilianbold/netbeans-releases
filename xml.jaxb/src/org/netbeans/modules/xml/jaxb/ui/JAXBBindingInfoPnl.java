@@ -580,6 +580,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
             Vector<String> files = new Vector<String>();
             files.addAll(getBindingFiles());
             FileListPanel flp = new FileListPanel();
+            flp.setProjDir(this.projDir);
             flp.setFiles(files);
             DialogDescriptor dd = new DialogDescriptor(flp, 
                     getMsg("LBL_DD_TTL_BindingFile")); //NOI18N
