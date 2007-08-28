@@ -116,6 +116,11 @@ public class StaticAccess extends AbstractHint {
             (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), expression),
             (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), expression),
         };
+        
+        if (span[0] == (-1) || span[1] == (-1)) {
+            return null;
+        }
+        
         List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
             TreePathHandle.create(expr, info),
             TreePathHandle.create(type, info),

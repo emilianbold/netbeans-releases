@@ -231,4 +231,18 @@ public abstract class TreeRuleTestBase extends NbTestCase {
             performAnalysisTest("test/Test.java", before, i);
         }
     }
+    
+    public void testIssue113933() throws Exception {
+        
+        String before = "package test; class Test {" +
+            "  public void test() {" +
+            "  super.A();" +
+            "\n}\n}\n";
+        
+        for (int i = 0; i < before.length(); i++) {
+            LOG.info("testing position " + i + " at " + before.charAt(i));
+            clearWorkDir();
+            performAnalysisTest("test/Test.java", before, i);
+        }
+    }
 }
