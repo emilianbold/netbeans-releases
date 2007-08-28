@@ -149,11 +149,12 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     }
 
     protected void processMouseEvent(MouseEvent event) {
-        super.processMouseEvent(event);
-        Difference diff = getDifferenceAt(event);
-        if (diff == null) return;
-        if (event.getID() == MouseEvent.MOUSE_CLICKED) {
+        if (event.getID() == MouseEvent.MOUSE_CLICKED || event.isPopupTrigger()) {
+            Difference diff = getDifferenceAt(event);
+            if (diff == null) return;
             onClick(event, diff);
+        } else {
+            super.processMouseEvent(event);
         }
     }
     
