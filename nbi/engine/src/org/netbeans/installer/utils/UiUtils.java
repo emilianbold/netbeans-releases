@@ -28,10 +28,12 @@ import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Properties;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
+import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
@@ -51,6 +53,7 @@ public final class UiUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static boolean lookAndFeelInitialized = false;
+    private static LookAndFeelType lookAndFeelType = null;
     
     public static void showMessageDialog(
             final String message,
@@ -326,6 +329,7 @@ public final class UiUtils {
             LogManager.unindent();
             LogManager.log("... initializing L&F finished");
             lookAndFeelInitialized = true;
+            lookAndFeelType = getLAF();
         }
     }
     
@@ -362,7 +366,43 @@ public final class UiUtils {
                 return null;
         }
     }
-    
+    public static final LookAndFeelType getLAF() {
+        if(lookAndFeelType==null) {
+            try {
+                initializeLookAndFeel();
+            } catch (InitializationException e) {
+                LogManager.log(e);
+            }
+            lookAndFeelType = LookAndFeelType.DEFAULT;
+            
+            if(UiMode.getCurrentUiMode() == UiMode.SWING) {
+                LookAndFeel laf = UIManager.getLookAndFeel();
+                if(laf!=null) {
+                    String id = laf.getID();
+                    if(id.equals("Windows")) {
+                        final Object object = Toolkit.
+                                getDefaultToolkit().
+                                getDesktopProperty(WINDOWS_XP_THEME_MARKER_PROPERTY);
+                        boolean xpThemeActive = false;
+                        if (object != null) {
+                            xpThemeActive = (Boolean) object;
+                        }
+                        lookAndFeelType = (xpThemeActive) ? LookAndFeelType.WINDOWS_XP :
+                            LookAndFeelType.WINDOWS_CLASSIC;
+                    } else if(id.equals("GTK")){
+                        lookAndFeelType = LookAndFeelType.GTK;
+                    } else if(id.equals("Motif")){
+                        lookAndFeelType = LookAndFeelType.MOTIF;
+                    }else if(id.equals("Metal")){
+                        lookAndFeelType = LookAndFeelType.METAL;
+                    } else if(id.equals("Aqua")){
+                        lookAndFeelType = LookAndFeelType.AQUA;
+                    }
+                }
+            }
+        }
+        return lookAndFeelType;
+    }
     // private //////////////////////////////////////////////////////////////////////
     private static String extractName(
             final String nameString,
@@ -423,6 +463,47 @@ public final class UiUtils {
         CRITICAL
     }
     
+    public enum LookAndFeelType {
+        WINDOWS_XP("win.xp"),
+        WINDOWS_CLASSIC("win.classic"),
+        MOTIF("motif"),
+        GTK("gtk"),
+        METAL("metal"),
+        AQUA("aqua"),
+        DEFAULT("default");
+        
+        private String name;
+        public String toString() {
+            return name;
+        }
+        private LookAndFeelType(String name) {
+            this.name = name;
+        }
+    };
+    
+    public static int getDimension(Properties props, final String defaultPropertyName, final int defaultValue) {
+        int dimension = defaultValue;
+        String propertyName = defaultPropertyName;
+        if (props.getProperty(propertyName + "." + UiUtils.getLAF()) != null) {
+            propertyName = propertyName + "." + UiUtils.getLAF();
+        }
+        
+        if (props.getProperty(propertyName) != null) {
+            try {
+                dimension = Integer.parseInt(
+                        props.getProperty(propertyName).trim());
+            } catch (NumberFormatException e) {
+                final String warning = ResourceUtils.getString(
+                        UiUtils.class,
+                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
+                        propertyName,
+                        props.getProperty(propertyName));
+                
+                ErrorManager.notifyWarning(warning, e);
+            }
+        } 
+        return dimension;
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     
@@ -440,4 +521,12 @@ public final class UiUtils {
      */
     public static final String LAF_DECORATED_WINDOWS_PROPERTY =
             "nbi.look.and.feel.decorate.windows"; // NOI18N
+    
+    public static final String WINDOWS_XP_THEME_MARKER_PROPERTY =
+            "win.xpstyle.themeActive"; // NOI18N
+     /**
+     * Name of a resource bundle entry.
+     */
+    private static final String RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY =
+            "UI.error.failed.to.parse.property"; // NOI18N
 }

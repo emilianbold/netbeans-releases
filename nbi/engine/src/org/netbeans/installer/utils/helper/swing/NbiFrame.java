@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -35,6 +35,7 @@ import javax.swing.JFrame;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.ExtendedUri;
 
@@ -83,104 +84,28 @@ public class NbiFrame extends JFrame {
     private NbiFrameContentPane contentPane;
     
     public NbiFrame() {
-        super();
+        super();        
         
+        frameWidth  = UiUtils.getDimension(System.getProperties(),
+                FRAME_WIDTH_PROPERTY, 
+                DEFAULT_FRAME_WIDTH);
+        frameHeight = UiUtils.getDimension(System.getProperties(),
+                FRAME_HEIGHT_PROPERTY,
+                DEFAULT_FRAME_HEIGHT);
         
-        frameWidth = DEFAULT_FRAME_WIDTH;
-        if (System.getProperty(FRAME_WIDTH_PROPERTY) != null) {
-            try {
-                frameWidth = Integer.parseInt(
-                        System.getProperty(FRAME_WIDTH_PROPERTY));
-            } catch (NumberFormatException e) {
-                final String warning = ResourceUtils.getString(
-                        NbiFrame.class,
-                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
-                        FRAME_WIDTH_PROPERTY,
-                        System.getProperty(FRAME_WIDTH_PROPERTY));
-                
-                ErrorManager.notifyWarning(warning, e);
-            }
-        }
+        frameMinimumWidth = UiUtils.getDimension(System.getProperties(),
+                FRAME_MINIMUM_WIDTH_PROPERTY, 
+                DEFAULT_FRAME_MINIMUM_WIDTH);
+        frameMinimumHeight = UiUtils.getDimension(System.getProperties(),
+                FRAME_MINIMUM_HEIGHT_PROPERTY,
+                DEFAULT_FRAME_MINIMUM_HEIGHT);
         
-        frameMinimumWidth = DEFAULT_FRAME_MINIMUM_WIDTH;
-        if (System.getProperty(FRAME_MINIMUM_WIDTH_PROPERTY) != null) {
-            try {
-                frameMinimumWidth = Integer.parseInt(
-                        System.getProperty(FRAME_MINIMUM_WIDTH_PROPERTY));
-            } catch (NumberFormatException e) {
-                final String warning = ResourceUtils.getString(
-                        NbiFrame.class,
-                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
-                        FRAME_MINIMUM_WIDTH_PROPERTY,
-                        System.getProperty(FRAME_MINIMUM_WIDTH_PROPERTY));
-                
-                ErrorManager.notifyWarning(warning, e);
-            }
-        }
-        
-        frameMaximumWidth = DEFAULT_FRAME_MAXIMUM_WIDTH;
-        if (System.getProperty(FRAME_MAXIMUM_WIDTH_PROPERTY) != null) {
-            try {
-                frameMaximumWidth = Integer.parseInt(
-                        System.getProperty(FRAME_MAXIMUM_WIDTH_PROPERTY));
-            } catch (NumberFormatException e) {
-                final String warning = ResourceUtils.getString(
-                        NbiFrame.class,
-                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
-                        FRAME_MAXIMUM_WIDTH_PROPERTY,
-                        System.getProperty(FRAME_MAXIMUM_WIDTH_PROPERTY));
-                
-                ErrorManager.notifyWarning(warning, e);
-            }
-        }
-        
-        frameHeight = DEFAULT_FRAME_HEIGHT;
-        if (System.getProperty(FRAME_HEIGHT_PROPERTY) != null) {
-            try {
-                frameHeight = Integer.parseInt(
-                        System.getProperty(FRAME_HEIGHT_PROPERTY));
-            } catch (NumberFormatException e) {
-                final String warning = ResourceUtils.getString(
-                        NbiFrame.class,
-                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
-                        FRAME_HEIGHT_PROPERTY,
-                        System.getProperty(FRAME_HEIGHT_PROPERTY));
-                
-                ErrorManager.notifyWarning(warning, e);
-            }
-        }
-        
-        frameMinimumHeight = DEFAULT_FRAME_MINIMUM_HEIGHT;
-        if (System.getProperty(FRAME_MINIMUM_HEIGHT_PROPERTY) != null) {
-            try {
-                frameMinimumHeight = Integer.parseInt(
-                        System.getProperty(FRAME_MINIMUM_HEIGHT_PROPERTY));
-            } catch (NumberFormatException e) {
-                final String warning = ResourceUtils.getString(
-                        NbiFrame.class,
-                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
-                        FRAME_MINIMUM_HEIGHT_PROPERTY,
-                        System.getProperty(FRAME_MINIMUM_HEIGHT_PROPERTY));
-                
-                ErrorManager.notifyWarning(warning, e);
-            }
-        }
-        
-        frameMaximumHeight = DEFAULT_FRAME_MAXIMUM_HEIGHT;
-        if (System.getProperty(FRAME_MAXIMUM_HEIGHT_PROPERTY) != null) {
-            try {
-                frameMaximumHeight = Integer.parseInt(
-                        System.getProperty(FRAME_MAXIMUM_HEIGHT_PROPERTY));
-            } catch (NumberFormatException e) {
-                final String warning = ResourceUtils.getString(
-                        NbiFrame.class,
-                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
-                        FRAME_MAXIMUM_HEIGHT_PROPERTY,
-                        System.getProperty(FRAME_MAXIMUM_HEIGHT_PROPERTY));
-                
-                ErrorManager.notifyWarning(warning, e);
-            }
-        }
+        frameMaximumWidth = UiUtils.getDimension(System.getProperties(),
+                FRAME_MAXIMUM_WIDTH_PROPERTY, 
+                DEFAULT_FRAME_MAXIMUM_WIDTH);
+        frameMaximumHeight = UiUtils.getDimension(System.getProperties(),
+                FRAME_MAXIMUM_HEIGHT_PROPERTY,
+                DEFAULT_FRAME_MAXIMUM_HEIGHT);
         
         boolean customIconLoaded = false;
         if (System.getProperty(FRAME_ICON_URI_PROPERTY) != null) {
@@ -215,6 +140,8 @@ public class NbiFrame extends JFrame {
         initComponents();
     }
     
+    
+    
     public void setVisible(boolean visible) {
         final GraphicsDevice screen = GraphicsEnvironment.
                 getLocalGraphicsEnvironment().
@@ -248,7 +175,7 @@ public class NbiFrame extends JFrame {
             // we might fail here with a custom security manager (e.g. the netbeans
             // one); in this case just log the exception and "let it be" (c)
             ErrorManager.notifyDebug(
-                    "Cannot set the default close operation", 
+                    "Cannot set the default close operation",
                     e);
         }
         
@@ -264,20 +191,20 @@ public class NbiFrame extends JFrame {
         
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent event) {
-                if ((frameMinimumWidth != -1) && 
+                if ((frameMinimumWidth != -1) &&
                         (getSize().width < frameMinimumWidth)) {
                     setSize(frameMinimumWidth, getSize().height);
                 }
-                if ((frameMinimumHeight != -1) && 
+                if ((frameMinimumHeight != -1) &&
                         (getSize().height < frameMinimumHeight)) {
                     setSize(getSize().width, frameMinimumHeight);
                 }
                 
-                if ((frameMaximumWidth != -1) && 
+                if ((frameMaximumWidth != -1) &&
                         (getSize().width > frameMaximumWidth)) {
                     setSize(frameMaximumWidth, getSize().height);
                 }
-                if ((frameMaximumHeight != -1) && 
+                if ((frameMaximumHeight != -1) &&
                         (getSize().height > frameMaximumHeight)) {
                     setSize(getSize().width, frameMaximumHeight);
                 }
@@ -326,47 +253,47 @@ public class NbiFrame extends JFrame {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String FRAME_WIDTH_PROPERTY = 
+    public static final String FRAME_WIDTH_PROPERTY =
             "nbi.ui.swing.frame.width";
     
-    public static final String FRAME_MINIMUM_WIDTH_PROPERTY = 
+    public static final String FRAME_MINIMUM_WIDTH_PROPERTY =
             "nbi.ui.swing.frame.minimum.width";
     
-    public static final String FRAME_MAXIMUM_WIDTH_PROPERTY = 
+    public static final String FRAME_MAXIMUM_WIDTH_PROPERTY =
             "nbi.ui.swing.frame.maximum.width";
     
-    public static final String FRAME_HEIGHT_PROPERTY = 
+    public static final String FRAME_HEIGHT_PROPERTY =
             "nbi.ui.swing.frame.height";
     
-    public static final String FRAME_MINIMUM_HEIGHT_PROPERTY = 
+    public static final String FRAME_MINIMUM_HEIGHT_PROPERTY =
             "nbi.ui.swing.frame.minimum.height";
     
-    public static final String FRAME_MAXIMUM_HEIGHT_PROPERTY = 
+    public static final String FRAME_MAXIMUM_HEIGHT_PROPERTY =
             "nbi.ui.swing.frame.maximum.height";
     
-    public static final String FRAME_ICON_URI_PROPERTY = 
-            "nbi.ui.swing.frame.icon.uri";
+    public static final String FRAME_ICON_URI_PROPERTY =
+            "nbi.ui.swing.frame.icon.uri";    
     
-    public static final int DEFAULT_FRAME_WIDTH  = 
+    public static final int DEFAULT_FRAME_WIDTH  =
             650;
     
-    public static final int DEFAULT_FRAME_MINIMUM_WIDTH = 
+    public static final int DEFAULT_FRAME_MINIMUM_WIDTH =
             650;
-    
-    public static final int DEFAULT_FRAME_MAXIMUM_WIDTH = 
+       
+    public static final int DEFAULT_FRAME_MAXIMUM_WIDTH =
             -1;
-    
-    public static final int DEFAULT_FRAME_HEIGHT = 
+        
+    public static final int DEFAULT_FRAME_HEIGHT =
             600;
     
-    public static final int DEFAULT_FRAME_MINIMUM_HEIGHT = 
+    public static final int DEFAULT_FRAME_MINIMUM_HEIGHT =
             600;
     
-    public static final int DEFAULT_FRAME_MAXIMUM_HEIGHT = 
+    public static final int DEFAULT_FRAME_MAXIMUM_HEIGHT =
             -1;
     
-    public static final String DEFAULT_FRAME_ICON_URI = 
-            ExtendedUri.RESOURCE_SCHEME + 
+    public static final String DEFAULT_FRAME_ICON_URI =
+            ExtendedUri.RESOURCE_SCHEME +
             ":org/netbeans/installer/utils/helper/swing/frame-icon.png";
     
     /**

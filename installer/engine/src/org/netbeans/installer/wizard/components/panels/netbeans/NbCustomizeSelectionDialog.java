@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -64,6 +64,7 @@ import org.netbeans.installer.product.dependencies.Conflict;
 import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.StringUtils;
@@ -113,8 +114,8 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     private Icon emptyIcon;
     
     public NbCustomizeSelectionDialog(
-            final NbWelcomePanel panel, 
-            final Runnable callback, 
+            final NbWelcomePanel panel,
+            final Runnable callback,
             final List<RegistryNode> registryNodes) {
         this.panel = panel;
         this.callback = callback;
@@ -126,6 +127,26 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 getClass().getClassLoader().getResource(EMPTY_ICON));
         
         initComponents();
+        
+        switch (UiUtils.getLAF()) {
+            case WINDOWS_CLASSIC :
+            case WINDOWS_XP :
+                setSize(560, 420);
+                break;
+            case GTK:
+                setSize(660, 500);
+                break;
+            case AQUA:
+                setSize(550,410);
+                break;
+            case MOTIF:
+            case METAL:
+                setSize(620,460);
+                break;
+            default:
+                setSize(560,420);
+                break;
+        }
     }
     
     @Override
@@ -196,7 +217,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 KEYBOARD_TOGGLE_ACTION_NAME);
         
         // componentsScrollPane /////////////////////////////////////////////////////
-        componentsScrollPane = new NbiScrollPane(componentsList);        
+        componentsScrollPane = new NbiScrollPane(componentsList);
         componentsScrollPane.setVerticalScrollBarPolicy(
                 NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         messageLabel.setLabelFor(componentsScrollPane);
@@ -212,7 +233,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         descriptionScrollPane.setBorder(
                 new TitledBorder(FEATURE_DESCRIPTION_TITLE));
-        descriptionScrollPane.setPreferredSize(new Dimension(200, 10));        
+        descriptionScrollPane.setPreferredSize(new Dimension(200, 10));
         
         // componentPanel ///////////////////////////////////////////////////////////
         componentPanel = new NbiPanel();
@@ -408,15 +429,15 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         final List<Product> toUninstall =
                 registry.getProducts(Status.TO_BE_UNINSTALLED);
         
-            if ((toInstall.size() == 0) && (toUninstall.size() == 0)) {
+        if ((toInstall.size() == 0) && (toUninstall.size() == 0)) {
             if (isThereAnythingVisibleToInstall() &&
                     Boolean.getBoolean(Registry.SUGGEST_INSTALL_PROPERTY)) {
                 return panel.getProperty(panel.ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
             }
-            if (isThereAnythingVisibleToUninstall() && 
+            if (isThereAnythingVisibleToUninstall() &&
                     Boolean.getBoolean(Registry.SUGGEST_UNINSTALL_PROPERTY)) {
                 return panel.getProperty(panel.ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY);
-            }            
+            }
             return panel.getProperty(panel.ERROR_NO_CHANGES_PROPERTY);
         }
         
@@ -617,16 +638,16 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             if (registryNodes.get(index) instanceof Product) {
                 Product product = (Product) registryNodes.get(index);
                 switch (product.getStatus()) {
-                case INSTALLED:
-                    break;
-                case TO_BE_UNINSTALLED:
-                    break;
-                case NOT_INSTALLED:
-                    product.setStatus(Status.TO_BE_INSTALLED);
-                    break;
-                case TO_BE_INSTALLED:
-                    product.setStatus(Status.NOT_INSTALLED);
-                    break;
+                    case INSTALLED:
+                        break;
+                    case TO_BE_UNINSTALLED:
+                        break;
+                    case NOT_INSTALLED:
+                        product.setStatus(Status.TO_BE_INSTALLED);
+                        break;
+                    case TO_BE_INSTALLED:
+                        product.setStatus(Status.NOT_INSTALLED);
+                        break;
                 }
                 
                 fireRowChanged(index);
@@ -807,6 +828,10 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     public static final String FEATURE_DESCRIPTION_TITLE =
             ResourceUtils.getString(NbCustomizeSelectionDialog.class,
             "NCSD.feature.description.title"); // NOI18N
+    public static final String CUSTOMIZE_DIALOG_WIDTH_PROPERTY =
+            "NCSD.dialog.width";
+    public static final String CUSTOMIZE_DIALOG_HEIGHT_PROPERTY =
+            "NCSD.dialog.height";
     
     private static final String CANCEL_ACTION_NAME =
             "evaluate.cancel"; // NOI18N

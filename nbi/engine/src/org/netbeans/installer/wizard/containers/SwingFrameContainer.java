@@ -40,6 +40,7 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiFrame;
@@ -91,101 +92,25 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     public SwingFrameContainer() {
         super();
         
-        frameWidth = DEFAULT_WIZARD_FRAME_WIDTH;
-        if (System.getProperty(WIZARD_FRAME_WIDTH_PROPERTY) != null) {
-            try {
-                frameWidth = Integer.parseInt(
-                        System.getProperty(WIZARD_FRAME_WIDTH_PROPERTY));
-            } catch (NumberFormatException e) {
-                final String warning = ResourceUtils.getString(
-                        SwingFrameContainer.class,
-                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
-                        WIZARD_FRAME_WIDTH_PROPERTY,
-                        System.getProperty(WIZARD_FRAME_WIDTH_PROPERTY));
-                
-                ErrorManager.notifyWarning(warning, e);
-            }
-        }
+        frameWidth = UiUtils.getDimension(System.getProperties(),
+                WIZARD_FRAME_WIDTH_PROPERTY,  
+                DEFAULT_WIZARD_FRAME_WIDTH);
+        frameMinimumWidth = UiUtils.getDimension(System.getProperties(),
+                WIZARD_FRAME_MINIMUM_WIDTH_PROPERTY,
+                DEFAULT_WIZARD_FRAME_MINIMUM_WIDTH);
+        frameMaximumWidth = UiUtils.getDimension(System.getProperties(),
+                WIZARD_FRAME_MAXIMUM_WIDTH_PROPERTY,
+                DEFAULT_WIZARD_FRAME_MAXIMUM_WIDTH);
         
-        frameMinimumWidth = DEFAULT_WIZARD_FRAME_MINIMUM_WIDTH;
-        if (System.getProperty(WIZARD_FRAME_MINIMUM_WIDTH_PROPERTY) != null) {
-            try {
-                frameMinimumWidth = Integer.parseInt(
-                        System.getProperty(WIZARD_FRAME_MINIMUM_WIDTH_PROPERTY));
-            } catch (NumberFormatException e) {
-                final String warning = ResourceUtils.getString(
-                        SwingFrameContainer.class,
-                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
-                        WIZARD_FRAME_MINIMUM_WIDTH_PROPERTY,
-                        System.getProperty(WIZARD_FRAME_MINIMUM_WIDTH_PROPERTY));
-                
-                ErrorManager.notifyWarning(warning, e);
-            }
-        }
-        
-        frameMaximumWidth = DEFAULT_WIZARD_FRAME_MAXIMUM_WIDTH;
-        if (System.getProperty(WIZARD_FRAME_MAXIMUM_WIDTH_PROPERTY) != null) {
-            try {
-                frameMaximumWidth = Integer.parseInt(
-                        System.getProperty(WIZARD_FRAME_MAXIMUM_WIDTH_PROPERTY));
-            } catch (NumberFormatException e) {
-                final String warning = ResourceUtils.getString(
-                        SwingFrameContainer.class,
-                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
-                        WIZARD_FRAME_MAXIMUM_WIDTH_PROPERTY,
-                        System.getProperty(WIZARD_FRAME_MAXIMUM_WIDTH_PROPERTY));
-                
-                ErrorManager.notifyWarning(warning, e);
-            }
-        }
-        
-        frameHeight = DEFAULT_WIZARD_FRAME_HEIGHT;
-        if (System.getProperty(WIZARD_FRAME_HEIGHT_PROPERTY) != null) {
-            try {
-                frameHeight = Integer.parseInt(
-                        System.getProperty(WIZARD_FRAME_HEIGHT_PROPERTY));
-            } catch (NumberFormatException e) {
-                final String warning = ResourceUtils.getString(
-                        SwingFrameContainer.class,
-                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
-                        WIZARD_FRAME_HEIGHT_PROPERTY,
-                        System.getProperty(WIZARD_FRAME_HEIGHT_PROPERTY));
-                
-                ErrorManager.notifyWarning(warning, e);
-            }
-        }
-        
-        frameMinimumHeight = DEFAULT_WIZARD_FRAME_MINIMUM_HEIGHT;
-        if (System.getProperty(WIZARD_FRAME_MINIMUM_HEIGHT_PROPERTY) != null) {
-            try {
-                frameMinimumHeight = Integer.parseInt(
-                        System.getProperty(WIZARD_FRAME_MINIMUM_HEIGHT_PROPERTY));
-            } catch (NumberFormatException e) {
-                final String warning = ResourceUtils.getString(
-                        SwingFrameContainer.class,
-                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
-                        WIZARD_FRAME_MINIMUM_HEIGHT_PROPERTY,
-                        System.getProperty(WIZARD_FRAME_MINIMUM_HEIGHT_PROPERTY));
-                
-                ErrorManager.notifyWarning(warning, e);
-            }
-        }
-        
-        frameMaximumHeight = DEFAULT_WIZARD_FRAME_MAXIMUM_HEIGHT;
-        if (System.getProperty(WIZARD_FRAME_MAXIMUM_HEIGHT_PROPERTY) != null) {
-            try {
-                frameMaximumHeight = Integer.parseInt(
-                        System.getProperty(WIZARD_FRAME_MAXIMUM_HEIGHT_PROPERTY));
-            } catch (NumberFormatException e) {
-                final String warning = ResourceUtils.getString(
-                        SwingFrameContainer.class,
-                        RESOURCE_FAILED_TO_PARSE_SYSTEM_PROPERTY,
-                        WIZARD_FRAME_MAXIMUM_HEIGHT_PROPERTY,
-                        System.getProperty(WIZARD_FRAME_MAXIMUM_HEIGHT_PROPERTY));
-                
-                ErrorManager.notifyWarning(warning, e);
-            }
-        }
+        frameHeight = UiUtils.getDimension(System.getProperties(),
+                WIZARD_FRAME_HEIGHT_PROPERTY,  
+                DEFAULT_WIZARD_FRAME_HEIGHT);
+        frameMinimumHeight = UiUtils.getDimension(System.getProperties(),
+                WIZARD_FRAME_MINIMUM_HEIGHT_PROPERTY,
+                DEFAULT_WIZARD_FRAME_MINIMUM_HEIGHT);
+        frameMaximumHeight = UiUtils.getDimension(System.getProperties(),
+                WIZARD_FRAME_MAXIMUM_HEIGHT_PROPERTY,
+                DEFAULT_WIZARD_FRAME_MAXIMUM_HEIGHT);
         
         boolean customIconLoaded = false;
         if (System.getProperty(WIZARD_FRAME_ICON_URI_PROPERTY) != null) {
@@ -756,7 +681,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      * for the maximum height of the wizard frame.
      */
     public static final String WIZARD_FRAME_MAXIMUM_HEIGHT_PROPERTY =
-            "nbi.wizard.ui.swing.frame.height"; // NOI18N
+            "nbi.wizard.ui.swing.frame.maximum.height"; // NOI18N
     
     /**
      * Name of the system property which is expected to contain the desired value
@@ -810,13 +735,13 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
      * Default value for the wizard frame's initial height.
      */
     public static final int DEFAULT_WIZARD_FRAME_HEIGHT =
-            NbiFrame.DEFAULT_FRAME_HEIGHT;
+           NbiFrame.DEFAULT_FRAME_HEIGHT;
     
     /**
      * Default value for the wizard frame's minimum height.
      */
     public static final int DEFAULT_WIZARD_FRAME_MINIMUM_HEIGHT =
-            NbiFrame.DEFAULT_FRAME_MINIMUM_HEIGHT;
+            NbiFrame.DEFAULT_FRAME_MINIMUM_WIDTH;
     
     /**
      * Default value for the wizard frame's maximum height.
