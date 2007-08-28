@@ -28,6 +28,8 @@
         <zip basedir="${webapps.repos}/TwoPageCrudTable" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/TwoPageCrudTable.zip" />
         <copy file="${webapps.desc}/MovieAdmin.html" todir="${webapps.desc.dest}" />
         <zip basedir="${webapps.repos}/MovieAdmin" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/MovieAdmin.zip" />
+        <copy file="${webapps.desc}/VehicleIncidentReportApplication.html" todir="${webapps.desc.dest}" />
+        <zip basedir="${webapps.repos}/VehicleIncidentReportApplication" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/VehicleIncidentReportApplication.zip" />
     </target>
     
     <target name="netbeans-extra" depends="-init">

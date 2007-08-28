@@ -56,6 +56,15 @@
                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
                            <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
                         </file>
+                        <file name="VehicleIncidentReportApplication" url="VehicleIncidentReportApplication.zip">
+                           <attr name="template" boolvalue="true"/>
+                           <attr name="templateCategory" stringvalue="web-types"/>
+                           <attr name="position" intvalue="600"/>
+                           <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/VehicleIncidentReportApplication.html"/>
+                           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
+                           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
+                           <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
+                        </file>
                     </folder>
                 </folder>
             </folder>
