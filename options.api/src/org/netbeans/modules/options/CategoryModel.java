@@ -388,10 +388,7 @@ public final class CategoryModel implements LookupListener {
         }
         
         private HelpCtx getHelpCtx() {
-            if (helpCtx == null && isUpdated) {
-                helpCtx = create().getHelpCtx();
-            }
-            return helpCtx;
+            return create().getHelpCtx();
         }
         
         

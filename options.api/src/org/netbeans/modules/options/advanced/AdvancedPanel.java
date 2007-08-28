@@ -104,14 +104,14 @@ public final class AdvancedPanel extends JPanel {
         handleTabSwitched();
     }
 
-    private void handleTabSwitched() {
-        firePropertyChange(org.netbeans.spi.options.OptionsPanelController.PROP_HELP_CTX, null, null);
+    private void handleTabSwitched() {        
         final int selectedIndex = tabbedPanel.getSelectedIndex() >= 0 ? tabbedPanel.getSelectedIndex() : 0;
         String category = tabbedPanel.getTitleAt(selectedIndex);
         if (tabbedPanel.getSelectedComponent() instanceof JLabel) {
             tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), model.getPanel(category));
         }
         model.update(category);
+        firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);        
     }
     
     private class LookupListenerImpl implements LookupListener {
