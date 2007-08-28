@@ -372,7 +372,7 @@ public abstract class RubyTestBase extends NbTestCase {
             }
         }
 
-        assertEquals(expected.trim(), description.trim());
+        assertEquals("Not matching goldenfile: " + FileUtil.getFileDisplayName(fileObject), expected.trim(), description.trim());
     }
     
     protected void assertFileContentsMatches(String relFilePath, String description, boolean includeTestName, String ext) throws Exception {
