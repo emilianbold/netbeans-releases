@@ -21,7 +21,9 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -161,6 +163,17 @@ public class InstallManager extends InstalledFileLocator{
                     }
 
                     System.setProperty("netbeans.dirs", sb.toString ()); // NOI18N
+                    File f = new File(new File(getUserDir(), InstallSupportImpl.DOWNLOAD_DIR), "netbeans.dirs");//NOI18N
+                    if (!f.exists()) {
+                        f.getParentFile().mkdirs();
+                        f.createNewFile();
+                    }
+                    OutputStream os = new FileOutputStream(f);
+                    try {
+                        os.write(sb.toString().getBytes());
+                    } finally {
+                        os.close();
+                    }
                     ERR.log (Level.FINE, "Was written new netbeans.dirs " + sb);
 
                     break;
@@ -356,11 +369,7 @@ public class InstallManager extends InstalledFileLocator{
         return null;
     }
     
-    private static File makeFile(File dir, String prefix, String name) {
-        File f = FileUtil.normalizeFile(new File(dir, prefix.replace('/', File.separatorChar) + name));
-        if (f.exists()) {
-            System.out.println("exists: " + f.exists() + "   " + f.getAbsolutePath());
-        }
-        return f;
+    private static File makeFile(File dir, String prefix, String name) {        
+        return FileUtil.normalizeFile(new File(dir, prefix.replace('/', File.separatorChar) + name));
     }
 }
