@@ -20,8 +20,10 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
+import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.Lookups;
 
 public class RubyFileLocatorTest extends RubyProjectTestBase {
 
@@ -29,16 +31,30 @@ public class RubyFileLocatorTest extends RubyProjectTestBase {
         super(testName);
     }
 
-    public void testRelativeToProjectDir() throws Exception { // # 112254
+    private RubyFileLocator generateProject(String... paths) throws Exception {
         RubyProject project = createTestProject("RubyProject1");
+        ProjectManager.getDefault().findProject(project.getProjectDirectory());
         assertNotNull(project);
         FileObject dirFO = project.getProjectDirectory();
         assertNotNull(dirFO);
-        File dir = new File(FileUtil.toFile(dirFO), "./test/unit/http_phone/");
-        dir.mkdirs();
-        File testFile = new File(dir, "asterisk_cmd_test.rb");
-        testFile.createNewFile();
-        RubyFileLocator rfl = new RubyFileLocator(null, project);
+        for (String path : paths) {
+            File file = new File(path);
+            File dir = new File(FileUtil.toFile(dirFO), file.getParent());
+            dir.mkdirs();
+            File testFile = new File(dir, file.getName());
+            testFile.createNewFile();
+        }
+        return new RubyFileLocator(Lookups.singleton(new Object()), project);
+    }
+
+    public void testRelativeToProjectDir() throws Exception { // # 112254
+        RubyFileLocator rfl = generateProject("./test/unit/http_phone/asterisk_cmd_test.rb");
         assertNotNull(rfl.find("./test/unit/http_phone/asterisk_cmd_test.rb"));
+    }
+
+    public void testEdgeCases() throws Exception {
+        RubyFileLocator rfl = generateProject("./test/unit/http_phone/asterisk_cmd_test.rb");
+        assertNotNull(rfl.find("./http_phone/asterisk_cmd_test.rb"));
+        assertNotNull(rfl.find("asterisk_cmd_test.rb"));
     }
 }

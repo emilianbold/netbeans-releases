@@ -13,13 +13,15 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -47,48 +49,58 @@ public class RubyFileLocator implements FileLocator {
     }
 
     public FileObject find(String file) {
-        FileObject[] fos = null;
-
-        SourceGroup[] groups = null;
+        List<FileObject> roots = new ArrayList<FileObject>();
+        
         Sources sources = project.getLookup().lookup(Sources.class);
-
-        if (sources != null) {
-            groups = sources.getSourceGroups(RubyProject.SOURCES_TYPE_RUBY);
-        }
-
-        if (groups == null) {
+        if (sources == null) {
             return null;
         }
-
-        // First check roots and search by relative path.
-        for (SourceGroup group : groups) {
-            FileObject root = group.getRootFolder();
-            FileObject f = root.getFileObject(file);
-
-            if (f != null) {
-                return f;
+        
+        SourceGroup[] rubyGroups = sources.getSourceGroups(RubyProject.SOURCES_TYPE_RUBY);
+        if (rubyGroups != null) {
+            for (SourceGroup group : rubyGroups) {
+                roots.add(group.getRootFolder());
             }
         }
-
+        
+        SourceGroup[] generalGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        if (generalGroups != null) {
+            for (SourceGroup group : generalGroups) {
+                roots.add(group.getRootFolder());
+            }
+        }
+        
+        // Try to resolve relatively to project directory (see e.g. #112254)
+        for (FileObject root : roots) {
+            File relToPrjDir = new File(FileUtil.toFile(root), file);
+            if (relToPrjDir.exists()) {
+                try {
+                    relToPrjDir = relToPrjDir.getCanonicalFile();
+                    return FileUtil.toFileObject(relToPrjDir);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        
         // Next try searching the set of source files
-        fos = findSources(groups);
-
+        FileObject[] fos = findSources(roots);
+        String fileName = new File(file).getName();
         if (fos != null) {
             for (FileObject fo : fos) {
-                if (fo.getNameExt().equals(file)) {
+                if (fo.getNameExt().equals(fileName)) {
                     return fo;
                 }
             }
         }
 
         // Manual search
-        for (SourceGroup group : groups) {
+        for (SourceGroup group : rubyGroups) {
             FileObject root = group.getRootFolder();
 
             // First see if this path is relative to the root
             try {
-                File f = new File(FileUtil.toFile(root), file);
-
+                File f = new File(FileUtil.toFile(root), fileName);
                 if (f.exists()) {
                     f = f.getCanonicalFile();
 
@@ -99,21 +111,9 @@ public class RubyFileLocator implements FileLocator {
             }
 
             // Search recursively for the given file below the path 
-            FileObject fo = findFile(root, file);
-
+            FileObject fo = findFile(root, fileName);
             if (fo != null) {
                 return fo;
-            }
-        }
-
-        // Try to resolve relatively to project directory (see e.g. #112254)
-        File f = new File(FileUtil.toFile(project.getProjectDirectory()), file);
-        if (f.exists()) {
-            try {
-                f = f.getCanonicalFile();
-                return FileUtil.toFileObject(f);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
 
@@ -127,32 +127,28 @@ public class RubyFileLocator implements FileLocator {
 
         for (FileObject child : fo.getChildren()) {
             FileObject found = findFile(child, name);
-
             if (found != null) {
                 return found;
             }
         }
-
         return null;
     }
 
-    /** Find selected sources, the sources has to be under single source root,
-     *  @param context the lookup in which files should be found
+    /**
+     * Find selected sources, the sources has to be under single source root.
+     *
+     * @param context the lookup in which files should be found
      */
-    private FileObject[] findSources(SourceGroup[] groups) {
-        for (SourceGroup group : groups) {
-            FileObject root = group.getRootFolder();
-            FileObject[] files =
-                RubyActionProvider.findSelectedFiles(context, root,
-                    RubyInstallation.RUBY_MIME_TYPE, true); // NOI18N
+    private FileObject[] findSources(List<FileObject> roots) {
+        for (FileObject root : roots) {
+            FileObject[] files = RubyActionProvider.findSelectedFiles(context, root,
+                    RubyInstallation.RUBY_MIME_TYPE, true);
 
             // TODO - what about RHTML files?
-            
             if (files != null) {
                 return files;
             }
         }
-
         return null;
     }
 }
