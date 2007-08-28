@@ -171,8 +171,8 @@ public abstract class OperationWizardModel {
         return allElements;
     }
     
-    public static Set<UpdateElement> getVisibleUpdateElements (Set<UpdateElement> all, boolean canBeEmpty) {
-        if (Utilities.modulesOnly ()) {
+    public static Set<UpdateElement> getVisibleUpdateElements (Set<UpdateElement> all, boolean canBeEmpty, OperationType operationType) {
+        if (Utilities.modulesOnly () || OperationType.LOCAL_DOWNLOAD == operationType) {
             return all;
         } else {
             Set<UpdateElement> visible = new HashSet<UpdateElement> ();

@@ -76,7 +76,7 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     }
     
     private String [] getItems (InstallUnitWizardModel model) {
-        for (UpdateElement el : InstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false)) {
+        for (UpdateElement el : InstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ())) {
             if (el.getLicence () != null) {
                 if (licenses == null) {
                     licenses = new HashMap<String, String> ();

@@ -131,7 +131,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                 break;
             }
             body = new OperationDescriptionPanel (tableTitle,
-                    preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getPrimaryUpdateElements (), false), model.getCustomHandledComponents ()),
+                    preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getPrimaryUpdateElements (), false, model.getOperation ()), model.getCustomHandledComponents ()),
                         getBundle ("OperationDescriptionStep_PleaseWait"), // NOI18N
                         "",
                         true);
@@ -154,10 +154,10 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                             true);
                 } else {
                     body = new OperationDescriptionPanel (tableTitle,
-                            preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getPrimaryUpdateElements (), false), model.getCustomHandledComponents ()),
+                            preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getPrimaryUpdateElements (), false, model.getOperation ()), model.getCustomHandledComponents ()),
                                 dependenciesTitle,
-                                preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getRequiredUpdateElements (), true), null),
-                                ! OperationWizardModel.getVisibleUpdateElements (model.getRequiredUpdateElements (), true).isEmpty ());
+                                preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getRequiredUpdateElements (), true, model.getOperation ()), null),
+                                ! OperationWizardModel.getVisibleUpdateElements (model.getRequiredUpdateElements (), true, model.getOperation ()).isEmpty ());
                 }
                 final JPanel finalPanel = body;
                 readyToGo = model != null && ! model.hasBrokenDependencies ();
