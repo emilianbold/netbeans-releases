@@ -354,13 +354,11 @@
 
     <!-- one of these needs to be changed -->
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.dao.EjbFacadeWizardIterator$PersistenceClientEntitySelection" url="persistence/csh/persist_new_sessionfromentity1.html" />
-    <mapID target="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator$PersistenceClientEntitySelection" url="persistence/csh/persist_new_jsfpage1.html" />
     
     <!-- Persistence Unit Visual Editor CSH -->
     <mapID target="persistence_multiview_design_persistenceUnitNode" url="persistence/csh/persist_editor_persistenceunit.html" />
 
 <!-- TODO: Need help ids for these
-    <mapID target=" " url="persistence/csh/persist_new_jsfpage2.html" />
     <mapID target=" " url="persistence/csh/persist_new_persistenceunit.html" />
     <mapID target=" " url="persistence/csh/persist_new_sessionfromentity2.html" />
 -->
