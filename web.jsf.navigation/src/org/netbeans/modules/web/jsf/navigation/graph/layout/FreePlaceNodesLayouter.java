@@ -151,7 +151,6 @@ public final class FreePlaceNodesLayouter {
                 Object changedObject,
                 ObjectState prevState,
                 ObjectState newState) {
-            System.out.println("State Changed");
             throw uoe;
         }
         
