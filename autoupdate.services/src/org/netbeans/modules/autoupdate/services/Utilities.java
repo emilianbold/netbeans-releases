@@ -222,9 +222,8 @@ public class Utilities {
         // loop for all clusters and write if needed
         List<File> clusters = UpdateTracking.clusters (true);
         assert clusters != null : "Clusters cannot be empty."; // NOI18N
-        Iterator iter =  clusters.iterator ();
-        while (iter.hasNext ()) {
-            writeAdditionalInformationToCluster ((File) iter.next (), updates);
+        for (File cluster : clusters) {
+            writeAdditionalInformationToCluster (cluster, updates);
         }
     }
     
@@ -585,8 +584,11 @@ public class Utilities {
         if (updates.isEmpty ()) {
             return ;
         }
+        
         Document document = XMLUtil.createDocument (UpdateTracking.ELEMENT_ADDITIONAL, null, null, null);                
         Element root = document.getDocumentElement ();
+        boolean isEmpty = true;
+        
         for (UpdateElementImpl impl : updates.keySet ()) {
             File c = updates.get (impl);
             // pass this module to given cluster ?
@@ -596,9 +598,14 @@ public class Utilities {
                         InstallSupportImpl.getDestination (cluster, impl.getCodeName(), true).getName ());
                 module.setAttribute (UpdateTracking.ATTR_ADDITIONAL_SOURCE, impl.getSource ());
                 root.appendChild( module );
+                isEmpty = false;
             }
         }
-
+        
+        if (isEmpty) {
+            return ;
+        }
+        
         document.getDocumentElement ().normalize ();
                 
         File additionalFile = getAdditionalInformation (cluster);
