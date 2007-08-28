@@ -69,7 +69,7 @@ public class TreeUtils {
      */    
     static String getPrecedingImmediateCommentText(CompilationInfo cinfo, Tree tree) {
         List<Comment> comments = cinfo.getTreeUtilities().getComments(tree, true);
-        return comments.get(comments.size()-1).getText();
+        return comments.size() > 0 ? comments.get(comments.size()-1).getText() : null;
     }
     
     /**
