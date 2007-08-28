@@ -353,7 +353,7 @@ public final class Deployment {
     /**
      * Register an instance listener that will listen to server instances changes.
      *
-     * @l listener which should be added.
+     * @param l listener which should be added.
      *
      * @since 1.6
      */
@@ -364,7 +364,7 @@ public final class Deployment {
     /**
      * Remove an instance listener which has been registered previously.
      *
-     * @l listener which should be removed.
+     * @param l listener which should be removed.
      *
      * @since 1.6
      */
