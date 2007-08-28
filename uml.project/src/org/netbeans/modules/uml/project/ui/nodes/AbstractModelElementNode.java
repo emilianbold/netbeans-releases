@@ -334,7 +334,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
         String eType=null;
         if(getParentNode()!=null && getParentNode().getParentNode()!=null)
             eType=getParentNode().getParentNode().getName();
-        if(eType==null || !eType.equals("Imported Elements"))//NoI18n
+        if(eType==null || !eType.equals("Imported Elements")) // NOI18N
             actions.add(SystemAction.get(DeleteAction.class));
         actions.add(SystemAction.get(RenameAction.class));
         
@@ -384,8 +384,8 @@ public abstract class AbstractModelElementNode extends AbstractNode
                     !elemType.equals(""))
             {
                 //newAction=SystemAction.get(NewAction.class);
-                  Action[] newActions = this.getNewMenuAction();
-                  if (newActions != null )
+                  Action[] newActions = getNewMenuAction();
+                  if (newActions != null && newActions.length > 0)
                   {
                      newAction= newActions[0];
                   }
@@ -453,7 +453,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
         
         if (disp != null)
         {
-            IEventPayload payload = disp.createPayload("ProjectTreeBeginDrag"); //$NON-NLS-1$
+            IEventPayload payload = disp.createPayload("ProjectTreeBeginDrag"); // NOI18N
             IProjectTreeDragVerify context = new ProjectTreeDragVerifyImpl();
             
             if (this instanceof ITreeItem)
@@ -623,14 +623,12 @@ public abstract class AbstractModelElementNode extends AbstractNode
    
     protected Action[] getNewMenuAction()
     {
-       return getActionsFromRegistry(
-             "contextmenu/uml/newtypes");
+       return getActionsFromRegistry("contextmenu/uml/newtypes"); // NOI18N
     }
     
     protected void getNewMenuAction(List actions)
     {
-       Action [] nodeActions = getActionsFromRegistry(
-             "contextmenu/uml/newtypes");
+       Action [] nodeActions = getActionsFromRegistry("contextmenu/uml/newtypes"); // NOI18N
        if (nodeActions != null )
        {
           for(Action curAction : nodeActions)
@@ -656,8 +654,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
      */
     protected void addContextMenus(ArrayList<Action> actions)
     {
-        Action[] nodeActions =
-                getActionsFromRegistry("contextmenu/uml/element"); // NOI18N
+        Action[] nodeActions = getActionsFromRegistry("contextmenu/uml/element"); // NOI18N
         
         for(Action curAction : nodeActions)
         {
@@ -801,7 +798,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
                 
                 if (disp != null)
                 {
-                    IEventPayload payload = disp.createPayload("ProjectTreeEndDrag"); //$NON-NLS-1$
+                    IEventPayload payload = disp.createPayload("ProjectTreeEndDrag"); // NOI18N
                     IProjectTreeDragVerify context = new ProjectTreeDragVerifyImpl();
                     context.setTargetNode(mTreeItem);
                     

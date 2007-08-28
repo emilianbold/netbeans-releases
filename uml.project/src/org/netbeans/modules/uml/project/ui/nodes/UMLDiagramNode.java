@@ -50,6 +50,7 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaPropertyKind;
 import org.netbeans.modules.uml.propertysupport.DefinitionPropertyBuilder;
 import javax.swing.Action;
 import org.netbeans.modules.uml.common.Util;
+import org.netbeans.modules.uml.common.ui.SaveNotifierOkCancel;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.project.ui.nodes.actions.CopyDiagramAction;
 import org.netbeans.modules.uml.ui.controls.newdialog.AddPackageVisualPanel1;
@@ -381,9 +382,9 @@ public class UMLDiagramNode extends UMLElementNode
             
             String msg = NbBundle.getMessage(
                     UMLDiagramNode.class,
-                    "LBL_DIALOG_MSG_Diagram"); // NOI18N
+                    "LBL_DIALOG_MSG_RenamePreSaveDiagram", diagram.getName()); // NOI18N
             
-            if (!save(diagram, true, msg))
+            if (!save(diagram, true, msg)) // NOI18N
             {
                 // open/modified diagram not save by user
                 
@@ -683,27 +684,19 @@ public class UMLDiagramNode extends UMLElementNode
         if (dialogMsg == null || dialogMsg.equals("")) // NOI18N
         {
             dialogMsg = NbBundle.getMessage(
-                    UMLDiagramNode.class,
-                    "LBL_DIALOG_MSG_Diagram",  // NOI18N
-                    getDiagram().getDiagram().getName());
+                UMLDiagramNode.class,
+                "LBL_DIALOG_MSG_RenamePreSaveDiagram",  // NOI18N
+                getDiagram().getDiagram().getName());
         }
         
         boolean success = false;
         
         // prompt user to save the target UML diagram
         
-        Object result = SaveNotifier.getDefault().displayNotifier(
-                title, // NOI18N
-                dialogMsg, // NOI18N
-                name);
+        Object result = SaveNotifierOkCancel.getDefault()
+            .displayNotifier(title, dialogMsg);
         
-        if (result == SaveNotifier.SAVE_ALWAYS_OPTION)
-        {
-            success = true;
-            
-        }
-        
-        else if (result == NotifyDescriptor.OK_OPTION)
+        if (result == NotifyDescriptor.OK_OPTION)
             success = true;
         
         else // cancel or closed (x button)
