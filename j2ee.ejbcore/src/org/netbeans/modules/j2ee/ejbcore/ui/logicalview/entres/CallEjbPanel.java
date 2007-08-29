@@ -57,7 +57,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.util.Exceptions;
@@ -429,8 +428,8 @@ public class CallEjbPanel extends javax.swing.JPanel {
         String name = "";
 
         final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(selectedNode);
-        DataObject nodeDO = selectedNode.getLookup().lookup(DataObject.class);
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(nodeDO.getPrimaryFile());
+        FileObject nodeFO = selectedNode.getLookup().lookup(FileObject.class);
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(nodeFO);
         if (ejbModule != null) {
             Map<String, String> names = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Map<String, String>>() {
                 public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
@@ -521,12 +520,12 @@ public class CallEjbPanel extends javax.swing.JPanel {
             }
             
             // if local ref is used, modules must be in same module or J2EE application
-            DataObject dataObject = (DataObject) nodes[0].getCookie(DataObject.class);
-            if (dataObject == null) {
+            FileObject fileObject = nodes[0].getLookup().lookup(FileObject.class);
+            if (fileObject == null) {
                 setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_NoSourcesForBean")); //NOI18N
                 return false;
             }
-            Project nodeProject = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+            Project nodeProject = FileOwnerQuery.getOwner(fileObject);
             if (!isRemoteInterfaceSelected() &&
                     !nodeProject.equals(project) &&
                     !Utils.areInSameJ2EEApp(project, nodeProject)) {

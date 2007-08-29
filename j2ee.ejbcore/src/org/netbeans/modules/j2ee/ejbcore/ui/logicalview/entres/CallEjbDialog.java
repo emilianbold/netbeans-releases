@@ -29,7 +29,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.openide.DialogDescriptor;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -112,8 +111,8 @@ public class CallEjbDialog {
         if (referenceNameFromPanel != null && referenceNameFromPanel.trim().equals("")) {
             referenceNameFromPanel = null;
         }
-        DataObject dataObject = ejbNode.getCookie(DataObject.class);
-        Project nodeProject = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+        FileObject fileObject = ejbNode.getLookup().lookup(FileObject.class);
+        Project nodeProject = FileOwnerQuery.getOwner(fileObject);
         
         boolean remoteInterfaceSelected = panel.isRemoteInterfaceSelected();
         boolean isDefaultRefName = panel.isDefaultRefName();
@@ -123,7 +122,7 @@ public class CallEjbDialog {
         generator.addReference(
                 referencingFO, 
                 referencingClassName, 
-                dataObject.getPrimaryFile(), 
+                fileObject, 
                 referencedClassName, 
                 panel.getServiceLocator(), 
                 remoteInterfaceSelected, 
