@@ -26,9 +26,11 @@ import javax.swing.JSeparator;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.BoxPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 
 
@@ -95,7 +97,23 @@ public class BaseSectionNode extends SectionNode {
     public SectionNodeInnerPanel createInnerPanel() {
         // Ensure child panel(s) are always encapsulated in a BoxPanel regardless
         // of number of child nodes.
-        BoxPanel boxPanel = new BoxPanel(getSectionNodeView());
+        BoxPanel boxPanel = new BoxPanel(getSectionNodeView()) {
+
+            @Override
+            public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+//                System.out.println("[Wrapped box panel - " + BaseSectionNode.this.getClass().getSimpleName() + "].dataModelPropertyChange: " + 
+//                        source + ", " + propertyName + ", " + oldValue + ", " + newValue);
+                super.dataModelPropertyChange(source, propertyName, oldValue, newValue);
+                
+                if(getChildren().getNodesCount() == 0) {
+                    Component [] children = getComponents();
+                    if(children != null && children.length == 1 && children[0] instanceof SectionInnerPanel) {
+                        ((SectionInnerPanel) children[0]).dataModelPropertyChange(source, propertyName, oldValue, newValue);
+                    }
+                }
+            }
+            
+        };
         populateBoxPanel(boxPanel);
         return boxPanel;
     }
