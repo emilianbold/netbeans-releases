@@ -18,6 +18,7 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
 import java.util.Map;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 
 
 /**
@@ -118,7 +119,7 @@ public class DDBinding implements Comparable<DDBinding> {
     }
     
     public int compareTo(DDBinding other) {
-        return getBeanName().compareTo(other.getBeanName());
+        return Utils.strCompareTo(getBeanName(), other.getBeanName());
     }
 
     @Override
