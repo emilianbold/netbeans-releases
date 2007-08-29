@@ -36,20 +36,17 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         // Not yet implemented
         //indentCasesFromSwitchCheckBox.setVisible(false);
         
-        expandTabsToSpacesCheckBox.putClientProperty(OPTION_ID, expandTabToSpaces);
-        tabSizeField.putClientProperty(OPTION_ID, tabSize);
         indentSizeField.putClientProperty(OPTION_ID, indentSize);
         continuationIndentSizeField.putClientProperty(OPTION_ID, continuationIndentSize);
         reformatCommentsCheckBox.putClientProperty(OPTION_ID, reformatComments);        
         indentHtmlCheckBox.putClientProperty(OPTION_ID, indentHtml);        
-        rightMarginField.putClientProperty(OPTION_ID, rightMargin);
     }
     
     public static FormatingOptionsPanel.Category getController() {
         return new CategorySupport(
-                "LBL_TabsAndIndents", 
+                "LBL_Indents", 
                 new FmtTabsIndents(),    // NOI18N   
-                NbBundle.getMessage(FmtTabsIndents.class, "SAMPLE_TabsIndents"), // NOI18N
+                NbBundle.getMessage(FmtTabsIndents.class, "SAMPLE_Indents"), // NOI18N
                 new String[] { FmtOptions.rightMargin, "30" }
                 ); // NOI18N
     }
@@ -64,15 +61,10 @@ public class FmtTabsIndents extends javax.swing.JPanel {
 
         jTextField3 = new javax.swing.JTextField();
         jCheckBox3 = new javax.swing.JCheckBox();
-        expandTabsToSpacesCheckBox = new javax.swing.JCheckBox();
-        tabSizeLabel = new javax.swing.JLabel();
-        tabSizeField = new javax.swing.JTextField();
         indentSizeLabel = new javax.swing.JLabel();
         indentSizeField = new javax.swing.JTextField();
         continuationIndentSizeLabel = new javax.swing.JLabel();
         continuationIndentSizeField = new javax.swing.JTextField();
-        rightMarginLabel = new javax.swing.JLabel();
-        rightMarginField = new javax.swing.JTextField();
         reformatCommentsCheckBox = new javax.swing.JCheckBox();
         indentHtmlCheckBox = new javax.swing.JCheckBox();
 
@@ -84,19 +76,9 @@ public class FmtTabsIndents extends javax.swing.JPanel {
 
         setOpaque(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(expandTabsToSpacesCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_TabToSpaces")); // NOI18N
-        expandTabsToSpacesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        expandTabsToSpacesCheckBox.setOpaque(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(tabSizeLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_TabSize")); // NOI18N
-
-        tabSizeField.setColumns(3);
-
         org.openide.awt.Mnemonics.setLocalizedText(indentSizeLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_IndentSize")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(continuationIndentSizeLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_ContinuationIndentSize")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(rightMarginLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_RightMargin")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(reformatCommentsCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_ReformatComments")); // NOI18N
         reformatCommentsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -109,45 +91,33 @@ public class FmtTabsIndents extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(expandTabsToSpacesCheckBox)
-                    .add(continuationIndentSizeLabel)
-                    .add(indentSizeLabel)
-                    .add(tabSizeLabel)
-                    .add(rightMarginLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(rightMarginField)
-                    .add(continuationIndentSizeField)
-                    .add(indentSizeField)
-                    .add(tabSizeField)))
-            .add(reformatCommentsCheckBox)
-            .add(indentHtmlCheckBox)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(indentSizeLabel)
+                            .add(continuationIndentSizeLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(indentSizeField)
+                            .add(continuationIndentSizeField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)))
+                    .add(reformatCommentsCheckBox)
+                    .add(indentHtmlCheckBox))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(expandTabsToSpacesCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(tabSizeLabel)
-                    .add(tabSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(10, 10, 10)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(indentSizeLabel)
                     .add(indentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(14, 14, 14)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(continuationIndentSizeLabel)
                     .add(continuationIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(rightMarginLabel)
-                    .add(rightMarginField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(18, 18, 18)
                 .add(reformatCommentsCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(indentHtmlCheckBox)
-                .addContainerGap(156, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -155,17 +125,12 @@ public class FmtTabsIndents extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField continuationIndentSizeField;
     private javax.swing.JLabel continuationIndentSizeLabel;
-    private javax.swing.JCheckBox expandTabsToSpacesCheckBox;
     private javax.swing.JCheckBox indentHtmlCheckBox;
     private javax.swing.JTextField indentSizeField;
     private javax.swing.JLabel indentSizeLabel;
     private javax.swing.JCheckBox jCheckBox3;
     private javax.swing.JTextField jTextField3;
     private javax.swing.JCheckBox reformatCommentsCheckBox;
-    private javax.swing.JTextField rightMarginField;
-    private javax.swing.JLabel rightMarginLabel;
-    private javax.swing.JTextField tabSizeField;
-    private javax.swing.JLabel tabSizeLabel;
     // End of variables declaration//GEN-END:variables
     
 }

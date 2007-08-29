@@ -26,31 +26,29 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.ruby.Formatter;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -65,6 +63,9 @@ import org.openide.util.NbPreferences;
 /**
  *
  * @author phrebejk
+ * 
+ * @todo Add an RHTML options category, such that I can see the effects of
+ *   switching the RHTML toggles?
  */
 public class FmtOptions {
 
@@ -80,6 +81,8 @@ public class FmtOptions {
         
     public static Preferences lastValues;
     
+    private static Class<? extends EditorKit> kitClass;
+
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     
     private FmtOptions() {}
@@ -98,6 +101,39 @@ public class FmtOptions {
     
     public static Preferences getPreferences(String profileId) {
         return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").node(profileId);
+    }
+    
+    public static boolean getGlobalExpandTabToSpaces() {
+        org.netbeans.editor.Formatter f = (org.netbeans.editor.Formatter)Settings.getValue(getKitClass(), "formatter");
+        if (f != null)
+            return f.expandTabs();
+        return getDefaultAsBoolean(expandTabToSpaces);
+    }
+    
+    public static int getGlobalTabSize() {
+        Integer i = (Integer)Settings.getValue(getKitClass(), SettingsNames.TAB_SIZE);
+        return i != null ? i.intValue() : getDefaultAsInt(tabSize);
+    }
+
+    // Ruby needs its own indent size; the global "4" isn't a good match
+    //    public static int getGlobalIndentSize() {
+    //        org.netbeans.editor.Formatter f = (org.netbeans.editor.Formatter)Settings.getValue(getKitClass(), "formatter");
+    //        if (f != null)
+    //            return f.getShiftWidth();
+    //        return getDefaultAsInt(indentSize);
+    //    }
+    
+    public static int getGlobalRightMargin() {
+        Integer i = (Integer)Settings.getValue(getKitClass(), SettingsNames.TEXT_LIMIT_WIDTH);
+        return i != null ? i.intValue() : getDefaultAsInt(rightMargin);
+    }
+    
+    public static Class<? extends EditorKit> getKitClass() {
+        if (kitClass == null) {
+            EditorKit kit = MimeLookup.getLookup(MimePath.get(RubyInstallation.RUBY_MIME_TYPE)).lookup(EditorKit.class); //NOI18N
+            kitClass = kit != null ? kit.getClass() : EditorKit.class;
+        }
+        return kitClass;
     }
     
     
@@ -371,11 +407,6 @@ public class FmtOptions {
         }
         
         private void storeData( JComponent jc, String optionID, Preferences p ) {
-            Lookup lookup = MimeLookup.getLookup(MimePath.parse(RubyInstallation.RUBY_MIME_TYPE));
-            BaseOptions options = lookup.lookup(BaseOptions.class);
-            lookup = MimeLookup.getLookup(MimePath.parse(RubyInstallation.RHTML_MIME_TYPE));
-            BaseOptions rhtmlOptions = lookup.lookup(BaseOptions.class);
-            
             Preferences node = p == null ? getPreferences(getCurrentProfileId()) : p;
             
             if ( jc instanceof JTextField ) {
@@ -386,35 +417,6 @@ public class FmtOptions {
                 if ( isInteger(optionID) ) {
                     try {
                         int i = Integer.parseInt(text);
-                        
-                        if (options != null && i > 0) {
-                            if (optionID.equals(rightMargin)) { // NOI18N
-                                // HACK! Synchronize with textline property such that users can see
-                                // the wrapping line
-
-                                if (i > 5) {
-                                    options.setTextLimitWidth(i);
-                                }
-                            } else if (optionID.equals(tabSize)) { // NOI18N
-                                options.setTabSize(i);
-                            } else if (optionID.equals(indentSize)) {
-                                options.setSpacesPerTab(i);
-                            }
-                        }
-                        if (rhtmlOptions != null && i > 0) {
-                            if (optionID.equals(rightMargin)) { // NOI18N
-                                // HACK! Synchronize with textline property such that users can see
-                                // the wrapping line
-
-                                if (i > 5) {
-                                    rhtmlOptions.setTextLimitWidth(i);
-                                }
-                            } else if (optionID.equals(tabSize)) { // NOI18N
-                                rhtmlOptions.setTabSize(i);
-                            } else if (optionID.equals(indentSize)) {
-                                rhtmlOptions.setSpacesPerTab(i);
-                            }
-                        }
                     } catch (NumberFormatException e) {
                         text = getLastValue(optionID);
                     }
@@ -425,12 +427,6 @@ public class FmtOptions {
             }
             else if ( jc instanceof JCheckBox ) {
                 JCheckBox checkBox = (JCheckBox)jc;
-                if (options != null && optionID.equals(expandTabToSpaces)) { // NOI18N
-                    options.setExpandTabs(checkBox.isSelected());
-                }
-                if (rhtmlOptions != null && optionID.equals(expandTabToSpaces)) { // NOI18N
-                    rhtmlOptions.setExpandTabs(checkBox.isSelected());
-                }
                 node.putBoolean(optionID, checkBox.isSelected());
             } 
             else if ( jc instanceof JComboBox) {

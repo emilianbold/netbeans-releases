@@ -40,81 +40,46 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="expandTabsToSpacesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="continuationIndentSizeLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="indentSizeLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="tabSizeLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="rightMarginLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="indentSizeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="continuationIndentSizeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="indentSizeField" max="32767" attributes="1"/>
+                          <Component id="continuationIndentSizeField" alignment="0" pref="75" max="32767" attributes="1"/>
+                      </Group>
+                  </Group>
+                  <Component id="reformatCommentsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="indentHtmlCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="rightMarginField" max="32767" attributes="1"/>
-                  <Component id="continuationIndentSizeField" alignment="0" max="32767" attributes="1"/>
-                  <Component id="indentSizeField" alignment="0" max="32767" attributes="1"/>
-                  <Component id="tabSizeField" alignment="0" max="32767" attributes="1"/>
-              </Group>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
-          <Component id="reformatCommentsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-          <Component id="indentHtmlCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <Component id="expandTabsToSpacesCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="tabSizeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="tabSizeField" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="indentSizeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="indentSizeField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="continuationIndentSizeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="continuationIndentSizeField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="rightMarginLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="rightMarginField" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="reformatCommentsCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="indentHtmlCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="156" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JCheckBox" name="expandTabsToSpacesCheckBox">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/ruby/options/Bundle.properties" key="LBL_TabToSpaces" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
-        <Property name="opaque" type="boolean" value="false"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="tabSizeLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/ruby/options/Bundle.properties" key="LBL_TabSize" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="tabSizeField">
-      <Properties>
-        <Property name="columns" type="int" value="3"/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JLabel" name="indentSizeLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -132,15 +97,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="continuationIndentSizeField">
-    </Component>
-    <Component class="javax.swing.JLabel" name="rightMarginLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/ruby/options/Bundle.properties" key="LBL_RightMargin" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="rightMarginField">
     </Component>
     <Component class="javax.swing.JCheckBox" name="reformatCommentsCheckBox">
       <Properties>
