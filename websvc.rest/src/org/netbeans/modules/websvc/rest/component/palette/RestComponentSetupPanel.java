@@ -190,9 +190,16 @@ public class RestComponentSetupPanel extends javax.swing.JPanel {
     }
 
     private String computeMethodName() {
-        return "get" + Inflector.getInstance().camelize(getUriTemplate()) + GenericResourceBean.RESOURCE_SUFFIX;
-    }
+        String uriTemplate = getUriTemplate();
+        
+        if (uriTemplate.endsWith("/")) {    //NOI18N
+            uriTemplate = uriTemplate.substring(0, uriTemplate.length()-1);
+        }
+    
+        return "get" + Inflector.getInstance().camelize(uriTemplate);
 
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

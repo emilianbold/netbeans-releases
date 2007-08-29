@@ -152,15 +152,6 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
             List<WsdlParameter> parameters = info.getOperation().getParameters();
             for (int i = 0; i < parameters.size(); i++) {
                 String argument = parameters.get(i).getName();
-                //TODO:
-//                if (constants.contains(argument)) {
-//                    Object value = ((WsdlResourceBean)bean).getConstantParamValue(argument);
-//                    if (value instanceof Enum) {
-//                        argument = ((WsdlResourceBean)bean).getConstantParamType(argument) + "." + value;
-//                    } else {
-//                        argument = GenericResourceGenerator.toConstantName(argument);
-//                    }
-//                }
                 argumentBuffer2.append(i > 0 ? ", " + argument : argument); //NOI18N
             }
             argumentInitializationPart = (argumentBuffer1.length() > 0 ? "\t" + HINT_INIT_ARGUMENTS + argumentBuffer1.toString() : "");
@@ -189,7 +180,7 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
                 ClassTree classTree = JavaSourceHelper.findPublicTopLevelClass(controller);
                 generateWsRefInjection[0] = JavaSourceHelper.isInjectionTarget(controller);
                 insertServiceDef[0] = !generateWsRefInjection[0];
-
+          
                 // compute the service field name
                 if (generateWsRefInjection[0]) {
                     Set<String> serviceFieldNames = new HashSet<String>();
@@ -229,7 +220,10 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
         // create the inserted text
         wrapperResourceJS.runUserActionTask(task, true);
 
-        String invocationBody = getJavaInvocationBody(info.getOperation(), insertServiceDef[0], serviceJavaName, portJavaName, portGetterMethod, argumentInitPart[0], returnTypeName, operationJavaName, argumentDeclPart[0], serviceFName[0], printerName[0], responseType);
+        String invocationBody = getJavaInvocationBody(info.getOperation(), insertServiceDef[0],
+                serviceJavaName, portJavaName, portGetterMethod, argumentInitPart[0], 
+                returnTypeName, operationJavaName, argumentDeclPart[0], serviceFName[0], 
+                printerName[0], responseType);
 
         List<WsdlParameter> outParams = info.getOutputParameters();
         String outputClassName = SourceGroupSupport.getClassName(info.getOutputType());
@@ -323,7 +317,11 @@ public class WsdlComponentGenerator extends RestComponentGenerator {
         }
     }
 
-    private static String getJavaInvocationBody(WsdlOperation operation, boolean insertServiceDef, String serviceJavaName, String portJavaName, String portGetterMethod, String argumentInitializationPart, String returnTypeName, String operationJavaName, String argumentDeclarationPart, String serviceFieldName, String printerName, String responseType) {
+    private static String getJavaInvocationBody(WsdlOperation operation, 
+            boolean insertServiceDef, String serviceJavaName, String portJavaName, 
+            String portGetterMethod, String argumentInitializationPart, 
+            String returnTypeName, String operationJavaName, String argumentDeclarationPart, 
+            String serviceFieldName, String printerName, String responseType) {
         String invocationBody = "";
         Object[] args = new Object[]{serviceJavaName, portJavaName, portGetterMethod, argumentInitializationPart, returnTypeName, operationJavaName, argumentDeclarationPart, serviceFieldName, printerName};
         switch (operation.getOperationType()) {

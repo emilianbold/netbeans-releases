@@ -397,10 +397,10 @@ public class Util {
                     return cl.loadClass(typeName);
                 }
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger(RestComponentSetupPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                //Logger.getLogger(RestComponentSetupPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
-        return String.class; 
+        return null; 
     }
     
     public static Class getPrimitiveType(String typeName) {

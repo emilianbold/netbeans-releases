@@ -29,6 +29,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
@@ -43,32 +44,33 @@ import org.openide.filesystems.FileUtil;
  * @author nam
  */
 public class JaxwsOperationInfo {
+
     String serviceName;
     String portName;
     String operationName;
     String wsdlUrl;
     Project project;
+    String packageName;
     JAXWSClientSupport support;
     Client client;
-    
     WsdlService service;
     WsdlOperation operation;
     WsdlPort port;
-    
-    public JaxwsOperationInfo(String serviceName, String portName, String operationName, 
-            String wsdlURL, Project project) {
+
+    public JaxwsOperationInfo(String serviceName, String portName, String operationName, String wsdlURL, Project project) {
         this.serviceName = serviceName;
         this.portName = portName;
         this.operationName = operationName;
         this.wsdlUrl = wsdlURL;
         this.project = project;
+        this.packageName = derivePackageName(wsdlURL, serviceName);
         support = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory());
         if (support == null) {
-            throw new IllegalArgumentException("Project "+project.getProjectDirectory()+" does not support JAX-WS client"); //NOI18N
+            throw new IllegalArgumentException("Project " + project.getProjectDirectory() + " does not support JAX-WS client"); //NOI18N
         }
     }
-    
-    static String derivePackageName(String wsdlURL, String subPackage) {
+
+    private String derivePackageName(String wsdlURL, String subPackage) {
         if (wsdlURL.startsWith("file:")) {
             throw new IllegalArgumentException("URL to access WSDL could not be local");
         }
@@ -76,44 +78,44 @@ public class JaxwsOperationInfo {
         int iEnd = wsdlURL.indexOf('/', iStart);
         String pakName = wsdlURL.substring(iStart, iEnd);
         String[] segments = pakName.split("\\.");
-        StringBuilder sb = new StringBuilder(segments[segments.length-1]);
+        StringBuilder sb = new StringBuilder(segments[segments.length - 1]);
         sb.append('.');
-        sb.append(segments[segments.length-2]);
+        sb.append(segments[segments.length - 2]);
         if (subPackage != null) {
             sb.append(".");
-            sb.append(Util.lowerFirstChar(subPackage));
+            sb.append(subPackage.toLowerCase());
         }
         return sb.toString();
     }
-    
+
     public String getServiceName() {
         return serviceName;
     }
-    
+
     public String getPortName() {
         return portName;
     }
-    
+
     public String getOperationName() {
         return operationName;
     }
-    
+
     public String getWsdlURL() {
         return wsdlUrl;
     }
-    
+
     public URL getWsdlLocation() {
         try {
             String clientName = getServiceClient().getName();
             String localWsdlFilePath = getServiceClient().getLocalWsdlFile();
             File folder = FileUtil.toFile(support.getLocalWsdlFolderForClient(clientName, false));
             return new File(folder, localWsdlFilePath).toURL();
-        } catch(MalformedURLException ex) {
+        } catch (MalformedURLException ex) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             throw new IllegalArgumentException(ex);
         }
     }
-    
+
     public Client getServiceClient() {
         if (client != null) {
             return client;
@@ -129,37 +131,41 @@ public class JaxwsOperationInfo {
         }
         return null;
     }
-    
+
     public void initWsdlModelInfo() {
         if (service != null) {
             return;
         }
-        
+
         setupWebServiceClient();
         service = getWsdlModel().getServiceByName(serviceName);
+
         if (service == null) {
-            throw new IllegalArgumentException("Service "+serviceName+" does not exists");
+            throw new IllegalArgumentException("Service " + serviceName + " does not exists");
         }
         port = service.getPortByName(portName);
         if (port == null) {
-            throw new IllegalArgumentException("Port "+portName+" does not exists");
+            throw new IllegalArgumentException("Port " + portName + " does not exists");
         }
         operation = findOperationByName(port, operationName);
         if (operation == null) {
-            throw new IllegalArgumentException("Operation "+operationName+" does not exists");
+            throw new IllegalArgumentException("Operation " + operationName + " does not exists");
         }
     }
-    
+
     public void setupWebServiceClient() {
         if (getServiceClient() == null) {
-            support.addServiceClient(serviceName, wsdlUrl, derivePackageName(wsdlUrl, serviceName), true); // TODO null package name cause NPE
+            support.addServiceClient(serviceName, wsdlUrl, packageName, true);
         }
     }
-    
+
     private WsdlModel getWsdlModel() {
-        return WsdlModelerFactory.getDefault().getWsdlModeler(getWsdlLocation()).getAndWaitForWsdlModel();
+        WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(getWsdlLocation());
+        wsdlModeler.setPackageName(packageName);
+
+        return wsdlModeler.getAndWaitForWsdlModel();
     }
-    
+
     public static WsdlOperation findOperationByName(WsdlPort port, String name) {
         for (WsdlOperation o : port.getOperations()) {
             if (name.equals(o.getName())) {
@@ -168,22 +174,22 @@ public class JaxwsOperationInfo {
         }
         return null;
     }
-    
+
     public WsdlPort getPort() {
         initWsdlModelInfo();
         return port;
     }
-    
+
     public WsdlOperation getOperation() {
         initWsdlModelInfo();
         return operation;
     }
-    
+
     public WsdlService getService() {
         initWsdlModelInfo();
         return service;
     }
-    
+
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public List<WsdlParameter> getOutputParameters() {
         ArrayList<WsdlParameter> params = new ArrayList<WsdlParameter>();
@@ -194,21 +200,21 @@ public class JaxwsOperationInfo {
         }
         return params;
     }
-    
+
     public static String getParamType(WsdlParameter param) {
         if (param.isHolder()) {
             String outputType = param.getTypeName();
             int iLT = outputType.indexOf('<');
             int iGT = outputType.indexOf('>');
             if (iLT > 0 || iGT > 0) {
-                outputType = outputType.substring(iLT+1, iGT).trim();
+                outputType = outputType.substring(iLT + 1, iGT).trim();
             }
             return outputType;
         } else {
             return param.getTypeName();
         }
     }
-    
+
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public String getOutputType() {
         initWsdlModelInfo();
@@ -223,29 +229,48 @@ public class JaxwsOperationInfo {
         }
         return outputType;
     }
-    
+
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public String[] getInputParameterNames() {
         ArrayList<String> names = new ArrayList<String>();
         for (WsdlParameter p : getOperation().getParameters()) {
-            if (! p.isHolder()) {
+            if (!p.isHolder()) {
                 names.add(p.getName());
             }
         }
-        
+
         return names.toArray(new String[names.size()]);
     }
-    
+
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public Class[] getInputParameterTypes() {
         ArrayList<Class> types = new ArrayList<Class>();
-        
+
         for (WsdlParameter p : getOperation().getParameters()) {
-            if (! p.isHolder()) {
-                types.add(Util.getType(project, p.getTypeName()));
+            if (!p.isHolder()) {
+                int repeatCount = 0;
+                Class type = null;
+
+                // This is hack to wait for the complex type to become
+                // available.
+                try {
+                    while (repeatCount < 10) {
+                        type = Util.getType(project, p.getTypeName());
+
+                        if (type != null) {
+                            break;
+                        }
+
+                        this.wait(1000);
+                        repeatCount++;
+                    }
+                } catch (InterruptedException ex) {
+                }
+
+                types.add(type);
             }
         }
-        
+
         return types.toArray(new Class[types.size()]);
     }
 }

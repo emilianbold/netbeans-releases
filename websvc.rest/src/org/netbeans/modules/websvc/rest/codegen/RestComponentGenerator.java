@@ -21,6 +21,7 @@ package org.netbeans.modules.websvc.rest.codegen;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -160,7 +161,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
 
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.RESOLVED);
-                JavaSourceHelper.addImports(copy, new String[]{getOutputWrapperQualifiedName()});
+                JavaSourceHelper.addImports(copy, getSubresourceLocatorImports());
                 
                 ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
                 String[] annotations = new String[]{Constants.URI_TEMPLATE_ANNOTATION};
@@ -326,6 +327,9 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
         if (subresourceLocatorName == null) {
             String uriTemplate = getSubresourceLocatorUriTemplate();
             
+            if (uriTemplate.endsWith("/")) {
+                uriTemplate = uriTemplate.substring(0, uriTemplate.length()-1);
+            }
             subresourceLocatorName = "get" + Inflector.getInstance().camelize(uriTemplate);
         }
         
@@ -341,6 +345,9 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
             subresourceLocatorUriTemplate = getAvailableUriTemplate();
         }
         
+        if (!subresourceLocatorUriTemplate.endsWith("/")) {     //NOI18N
+            subresourceLocatorUriTemplate += "/";               //NOI18N
+        }
         return subresourceLocatorUriTemplate;
     }
     
@@ -456,5 +463,18 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
         return Inflector.getInstance().camelize(bean.getShortName(), true);
     }
     
-    
+    private String[] getSubresourceLocatorImports() throws IOException {
+        List<String> imports = new ArrayList<String>();
+        //imports.add(getOutputWrapperQualifiedName());
+        
+        List<ParameterInfo> inputParams = bean.getInputParameters();
+        
+        for (ParameterInfo param : inputParams) {
+            if (!param.getType().getPackage().getName().equals("java.lang")) {
+                imports.add(param.getType().getName());
+            }
+        }
+        
+        return imports.toArray(new String[imports.size()]);
+    }
 }

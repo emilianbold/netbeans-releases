@@ -529,14 +529,6 @@ public class JavaSourceHelper {
                     }
 
                     if (paramAnnotations != null) {
-                        System.out.println("parameter = " + parameters[i]);
-                        System.out.println("annotaions.size= " + paramAnnotations.length);
-                        for (String anno : paramAnnotations) {
-                            System.out.println("anno = " + anno);
-                        }
-                        for (Object attr : paramAnnotationAttrs) {
-                            System.out.println("attr = " + attr);
-                        }
                         paramModTree = createModifiersTree(copy, new Modifier[]{}, paramAnnotations, paramAnnotationAttrs);
                     }
                 }
