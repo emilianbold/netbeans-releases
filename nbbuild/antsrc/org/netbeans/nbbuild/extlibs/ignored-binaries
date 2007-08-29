@@ -56,3 +56,14 @@ visualweb/dataconnectivity/release/startup/samples/vir.zip
 
 # Sample database:
 db/derby/release/modules/ext/derbysampledb.zip
+
+# Visualweb Default Themes are not external libaries
+visualweb/webui/themes/release/modules/ext/defaulttheme-gray.jar
+visualweb/webui/themes/release/modules/ext/defaulttheme-green.jar
+visualweb/webui/themes/release/modules/ext/defaulttheme.jar
+
+# Visualweb ThemeBuilder is not currently used in NB 6.0:
+visualweb/themebuilder/templates/WoodstockThemeTemplate/themes.zip
+
+# Only used in automation tests for visualweb and not part of NB 6.0 distribution:
+visualweb/gravy/builds/gravy.jar
