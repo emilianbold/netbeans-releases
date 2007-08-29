@@ -53,7 +53,9 @@ public class ExtIcon {
             setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif"))); //NOI18N
         } finally {
             try {
-                objin.close();
+                if (objin != null) {
+                    objin.close();
+                }
             } catch (IOException ex) {
             }
         }
