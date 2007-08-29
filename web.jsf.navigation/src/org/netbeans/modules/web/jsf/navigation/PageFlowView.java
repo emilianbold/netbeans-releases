@@ -543,7 +543,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         toolbar.addSeparator();
         PageFlowToolbarUtilities utilities = PageFlowToolbarUtilities.getInstance(this);
         toolbar.add(utilities.createScopeComboBox());
-
+        toolbar.addSeparator();
         toolbar.add(utilities.createLayoutButton());
 
         return toolbar;
@@ -807,10 +807,18 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
      */
     public void layoutNodes() {
         LayoutUtility.LayoutType useLayout = null;
-        if (lastUsedLayout.equals(LayoutUtility.LayoutType.GRID_GRAPH)) {
-            useLayout = LayoutUtility.LayoutType.FREE_PLACES_NODES;
-        } else {
-            useLayout = LayoutUtility.LayoutType.GRID_GRAPH;
+        
+        
+        switch( lastUsedLayout ){
+            case GRID_GRAPH:
+                useLayout = LayoutUtility.LayoutType.FREE_PLACES_NODES;
+                break;
+            case FREE_PLACES_NODES:
+//                useLayout = LayoutUtility.LayoutType.TREE_GRAPH;
+//                break;
+//            case TREE_GRAPH:
+                useLayout = LayoutUtility.LayoutType.GRID_GRAPH;
+                break;
         }
 
         LayoutUtility.performLayout(scene, useLayout);

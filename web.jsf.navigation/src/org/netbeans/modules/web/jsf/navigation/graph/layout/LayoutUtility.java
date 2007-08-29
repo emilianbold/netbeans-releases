@@ -35,7 +35,9 @@ public class LayoutUtility<N, E, P> {
     public  LayoutUtility() {
     }
     
-    public static <N,E,P> void performLayout( GraphPinScene<N, E, P> graph, LayoutType type){
+    //public static <N,E,P> void performLayout( GraphPinScene<N, E, P> graph, LayoutType type){
+    @SuppressWarnings("unchecked") /* This is necessary because I can not specify N,E,P without a compilation error in jdk1.5.6 */
+    public static void performLayout( GraphPinScene graph, LayoutType type){
         switch( type ) {
         case GRID_GRAPH:
             GridGraphLayoutUtility.performLayout(graph);
@@ -45,10 +47,10 @@ public class LayoutUtility<N, E, P> {
             TreeGraphLayoutUtility.performLayout(graph);
             break;
         case FREE_PLACES_NODES:
-            TreeGraphLayoutUtility.performLayout(graph); //Putting this in temporarily.
-            /* Tree Graph Layout Utility was taken from Tree Graph Layout as is incomplete.*/
-//            if ( graph instanceof PageFlowScene)
-//                FreePlaceNodesLayouter.performLayout((PageFlowScene)graph);
+           // TreeGraphLayoutUtility.performLayout(graph); 
+            /* Dual Cast done to avoid bugs from 1.5.06 and earlier - http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5066774*/
+            if ( graph instanceof PageFlowScene)
+                FreePlaceNodesLayouter.performLayout((PageFlowScene)graph);
             break;
         }
     }
