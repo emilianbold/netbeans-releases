@@ -33,12 +33,12 @@ public class RubyFileLocatorTest extends RubyProjectTestBase {
     }
 
     public void testRelativeToProjectDir() throws Exception { // # 112254
-        RubyFileLocator rfl = generateProject("./test/unit/http_phone/asterisk_cmd_test.rb");
+        RubyFileLocator rfl = generateProject("test/unit/http_phone/asterisk_cmd_test.rb");
         assertNotNull(rfl.find("./test/unit/http_phone/asterisk_cmd_test.rb"));
     }
 
     public void testEdgeCases() throws Exception {
-        RubyFileLocator rfl = generateProject("./test/unit/http_phone/asterisk_cmd_test.rb");
+        RubyFileLocator rfl = generateProject("test/unit/http_phone/asterisk_cmd_test.rb");
         assertNotNull(rfl.find("./http_phone/asterisk_cmd_test.rb"));
         assertNotNull(rfl.find("asterisk_cmd_test.rb"));
     }

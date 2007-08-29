@@ -434,11 +434,9 @@ public abstract class RubyTestBase extends NbTestCase {
    public static void createFiles(File baseDir, String... paths) throws IOException {
         assertNotNull(baseDir);
         for (String path : paths) {
-            File file = new File(path);
-            File dir = new File(baseDir, file.getParent());
-            dir.mkdirs();
-            File testFile = new File(dir, file.getName());
-            testFile.createNewFile();
+            FileObject baseDirFO = FileUtil.toFileObject(baseDir);
+            assertNotNull(baseDirFO);
+            assertNotNull(FileUtil.createData(baseDirFO, path));
         }
     }
 
