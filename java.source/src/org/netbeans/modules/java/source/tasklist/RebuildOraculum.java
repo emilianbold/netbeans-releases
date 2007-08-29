@@ -20,6 +20,7 @@
 package org.netbeans.modules.java.source.tasklist;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,34 +57,27 @@ import org.openide.filesystems.FileUtil;
 public class RebuildOraculum {
     
     private static final String DEPRECATED = "DEPRECATED"; //NOI18N
+
+    private static Map<URL, Map<ElementHandle, Collection<String>>> url2Members = new HashMap<URL, Map<ElementHandle, Collection<String>>>();
     
-    private static Map<JavaSource, RebuildOraculum> source2Oraculum = new WeakHashMap<JavaSource, RebuildOraculum>();
-    
-    public static RebuildOraculum get(FileObject file) {
-        JavaSource js = JavaSource.forFileObject(file);
-        RebuildOraculum res = source2Oraculum.get(js);
-        
-        if (res == null) {
-            source2Oraculum.put(js, res = new RebuildOraculum(file));
-        }
-        
-        return res;
+    static synchronized void putMembers(URL file, Map<ElementHandle, Collection<String>> members) {
+        url2Members.clear();
+        url2Members.put(file, members);
     }
     
-    private FileObject file;
-    private Map<ElementHandle, Collection<String>> members;
-            
-    private RebuildOraculum(FileObject file) {
-        Logger.getLogger("TIMER").log(Level.FINE, "RebuildOraculum", new Object[] {file, this});
-        this.file = file;
+    private static synchronized Map<ElementHandle, Collection<String>> getMembers(URL file) {
+        Map<ElementHandle, Collection<String>> result = url2Members.get(file);
+        
+        return result != null ? result : new HashMap<ElementHandle, Collection<String>>();
     }
     
-    private Map<ElementHandle, Collection<String>> getMembers() {
-        if (members != null) {
-            return members;
-        } else {
-            return new HashMap<ElementHandle, Collection<String>>();
-        }
+    private static RebuildOraculum INSTANCE = new RebuildOraculum();
+    
+    public static RebuildOraculum get() {
+        return INSTANCE;
+    }
+    
+    private RebuildOraculum() {
     }
     
     private static String convertToSourceName (String binaryName) {
@@ -101,31 +95,27 @@ public class RebuildOraculum {
     
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     
-    public List<File> findFilesToRebuild(File root, FileObject file, ClasspathInfo cpInfo, Map<ElementHandle, Collection<String>> currentMembers, Collection<String> possiblyRemovedClasses) {
+    public List<File> findFilesToRebuild(File root, URL file, ClasspathInfo cpInfo, Map<ElementHandle, Collection<String>> currentMembers) {
         long startTime = System.currentTimeMillis();
         long endTime   = -1;
         
         try {
-        Logger.getLogger(RebuildOraculum.class.getName()).log(Level.FINE, "members={0}", getMembers());
+        Logger.getLogger(RebuildOraculum.class.getName()).log(Level.FINE, "members={0}", getMembers(file));
         Logger.getLogger(RebuildOraculum.class.getName()).log(Level.FINE, "currentMembers={0}", currentMembers);
         
-        Set<String> removedClasses = new HashSet<String>(possiblyRemovedClasses);
         Map<ElementHandle, Collection<String>> added = new HashMap<ElementHandle, Collection<String>>(currentMembers);
         
-        for (ElementHandle h : getMembers().keySet()) {
+        for (ElementHandle h : getMembers(file).keySet()) {
             added.remove(h);
         }
         
-        Map<ElementHandle, Collection<String>> removed = new HashMap<ElementHandle, Collection<String>>(getMembers());
+        Map<ElementHandle, Collection<String>> removed = new HashMap<ElementHandle, Collection<String>>(getMembers(file));
         
         for (ElementHandle h : currentMembers.keySet()) {
             removed.remove(h);
-            if (h.getKind().isClass() || h.getKind().isInterface()) {
-                removedClasses.remove(h.getBinaryName());
-            }
         }
         
-        Map<ElementHandle, Collection<String>> changedElements = new HashMap<ElementHandle, Collection<String>>(getMembers());
+        Map<ElementHandle, Collection<String>> changedElements = new HashMap<ElementHandle, Collection<String>>(getMembers(file));
         
         for (Iterator<ElementHandle> it = changedElements.keySet().iterator(); it.hasNext(); ) {
             ElementHandle h = it.next();
@@ -138,7 +128,11 @@ public class RebuildOraculum {
             }
         }
         
-        members = currentMembers;
+        synchronized (RebuildOraculum.class) {
+            if (url2Members.containsKey(file)) {
+                putMembers(file, currentMembers);
+            }
+        }
         
         Collection<ElementHandle<TypeElement>> classes = new ArrayList<ElementHandle<TypeElement>>();
         
@@ -148,12 +142,6 @@ public class RebuildOraculum {
                 if (h.getKind().isClass() || h.getKind().isInterface()) {
                     classes.add(h);
                 }
-            }
-        }
-        
-        for (String s : removedClasses) {
-            if (!ANONYMOUS.matcher(s).find()) {//ignore probable anonymous inner classes/local classes
-                classes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, s));
             }
         }
         
@@ -180,7 +168,14 @@ public class RebuildOraculum {
         }
     }
     
-    public static List<File> findAllDependent(File root, FileObject file, ClassIndex ci, Collection<ElementHandle<TypeElement>> classes) {
+    public static List<File> findAllDependent(File root, URL file, ClassIndex ci, Collection<ElementHandle<TypeElement>> classes) {
+        //performance: filter out anonymous innerclasses:
+        for (Iterator<ElementHandle<TypeElement>> i = classes.iterator(); i.hasNext(); ) {
+            if (ANONYMOUS.matcher(i.next().getBinaryName()).find()) {
+                i.remove();
+            }
+        }
+        
         Set<ElementHandle<TypeElement>> toParse = new HashSet<ElementHandle<TypeElement>>(classes);
         
         long start = System.currentTimeMillis();
@@ -243,8 +238,8 @@ public class RebuildOraculum {
         return new ArrayList<File>(files);
     }
     
-    public boolean isInitialized() {
-        return members != null;
+    static synchronized boolean isInitialized(URL file) {
+        return url2Members.containsKey(file);
     }
     
     private static Collection<String> getExtendedModifiers(Elements elements, Element el) {
@@ -292,9 +287,4 @@ public class RebuildOraculum {
         return types;
     }
     
-    public void initialize(Map<ElementHandle, Collection<String>> members) {
-        Logger.getLogger(RebuildOraculum.class.getName()).log(Level.FINE, "initializing members={0}", members);
-        if (this.members == null)
-            this.members = members;
-    }
 }

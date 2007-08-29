@@ -21,6 +21,7 @@ package org.netbeans.modules.java.source.tasklist;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.util.TreePathScanner;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -55,9 +56,9 @@ public class FirstParseCatcher extends EditorAwareJavaSourceTaskFactory {
                 Logger.getLogger(FirstParseCatcher.class.getName()).entering(FirstParseCatcher.class.getName(), "run", info.getFileObject());
                 
                 long startTime = System.currentTimeMillis();
-                RebuildOraculum oraculum = RebuildOraculum.get(info.getFileObject());
+                URL file = info.getFileObject().getURL();
                 
-                if (oraculum.isInitialized()) {
+                if (RebuildOraculum.isInitialized(file)) {
                     Logger.getLogger(FirstParseCatcher.class.getName()).finer("Oraculum is initialized.");
                     Logger.getLogger(FirstParseCatcher.class.getName()).exiting(FirstParseCatcher.class.getName(), "run");
                     return ;
@@ -75,7 +76,7 @@ public class FirstParseCatcher extends EditorAwareJavaSourceTaskFactory {
                 
                 Logger.getLogger(FirstParseCatcher.class.getName()).log(Level.FINER, "Found type={0}.", types);
                 
-                oraculum.initialize(RebuildOraculum.sortOut(info.getElements(), types));
+                RebuildOraculum.putMembers(file, RebuildOraculum.sortOut(info.getElements(), types));
                 
                 if (info.getFileObject() != null) {
                     Logger.getLogger("TIMER").log(Level.FINE, "First Parse Catcher",

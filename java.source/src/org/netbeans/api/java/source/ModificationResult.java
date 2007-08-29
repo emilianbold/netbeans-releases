@@ -26,6 +26,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -63,16 +64,18 @@ public final class ModificationResult {
      */
     public void commit() throws IOException {
         try {
+            RepositoryUpdater.getDefault().lockRU();
             for (Map.Entry<FileObject, List<Difference>> me : diffs.entrySet()) {
                 commit(me.getKey(), me.getValue(), null);
             }
         } finally {
+            RepositoryUpdater.getDefault().unlockRU();
             if (this.js != null) {
                 this.js.revalidate();
             }
         }
     }
-    
+            
     private void commit(final FileObject fo, final List<Difference> differences, Writer out) throws IOException {
         DataObject dObj = DataObject.find(fo);
         EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;

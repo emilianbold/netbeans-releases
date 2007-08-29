@@ -48,6 +48,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -126,6 +128,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 
@@ -160,6 +163,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private Set<URL> scannedRoots;
     private Set<URL> scannedBinaries;
     private Map<URL,List<URL>> deps;        //todo: may be shared with scannedRoots, may save some HashMap.Entry
+    private static final RequestProcessor WORKER = new RequestProcessor(RepositoryUpdater.class.getName(),1);
     private Delay delay;
     private Work currentWork;
     private boolean dirty;
@@ -175,6 +179,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     //recompile support:
     private final Map<URL, Collection<File>> url2Recompile = new HashMap<URL, Collection<File>>();
     private boolean recompileScheduled;
+    private boolean recompileToBeScheduled;
+    private final Map<URL, Collection<File>> url2CompileWithDeps = new HashMap<URL, Collection<File>>();
+    private final Map<URL, Reference<Task>> url2CompileWithDepsTask = new HashMap<URL, Reference<Task>>();
+    private boolean compileWithDepsToBeScheduled;
+    private int compileScheduled;
+    
+    private boolean lockRU;
     
     /** Creates a new instance of RepositoryUpdater */
     private RepositoryUpdater() {        
@@ -428,7 +439,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 final URL root = getOwningSourceRoot (fo);        
                 if (root != null) {
                     markRootTasklistDirty(root);
-                    postCompilation(fo, root);
+                    File f = FileUtil.toFile(fo);
+                    
+                    assert f != null;
+                    
+                    assureCompiledWithDeps(root, f);
+                    
                     if (TasklistSettings.isTasklistEnabled() && TasklistSettings.isDependencyTrackingEnabled()) {
                         //new file creation may cause/fix some errors
                         //not 100% correct (consider eg. a file that has two .* imports
@@ -459,9 +475,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         try {
             if (isJava(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
                 final URL root = getOwningSourceRoot (fo);
-                if (root != null) {
+                File file = FileUtil.toFile(fo);
+                if (root != null && file != null) {
                     markRootTasklistDirty(root);
-                    postCompilation(fo, root, WorkType.COMPILE_WITH_DEPENDENCIES);
+                    assureCompiledWithDeps(root, file);
                 }
             }        
             else if (isBinary(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
@@ -489,14 +506,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private final void scheduleCompilation (final URL file, final URL root, boolean isFolder) {
         submit(Work.compile (file,root, isFolder));
-    }
-    
-    private final void postCompilation (final FileObject file, final URL root) throws FileStateInvalidException {
-        delay.post (Work.compile (file,root));
-    }
-    
-    private final void postCompilation (final FileObject file, final URL root, WorkType type) throws FileStateInvalidException {
-        delay.post (Work.compile (file,root, type));
     }
     
     /**
@@ -626,6 +635,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     private synchronized void assureRecompiled(URL root, Collection<File> files) {
+        if (files.isEmpty()) {
+            //nothing to do:
+            return ;
+        }
+        
         Collection<File> storedFiles = url2Recompile.get(root);
         
         if (storedFiles == null) {
@@ -635,8 +649,81 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         storedFiles.addAll(files);
         
         if (!recompileScheduled) {
+            if (lockRU) {
+                recompileToBeScheduled = true;
+            } else {
+                submit(Work.recompile());
+                recompileScheduled = true;
+            }
+        }
+    }
+    
+    private synchronized void assureCompiledWithDeps(final URL root, File file) {
+        Reference<Task> taskRef = url2CompileWithDepsTask.get(root);
+        Task t = taskRef != null ? taskRef.get() : null;
+        Collection<File> storedFiles;
+                
+        if (t == null || !t.cancel()) {
+            //the task either does not exist, or has been already started - create new one:
+            LOGGER.log(Level.FINE, "creating a new task for root: {0}", root.toExternalForm());
+            final Collection<File> storedFilesFin = storedFiles = new LinkedHashSet<File>();
+            t = WORKER.create(new Runnable() {
+                public void run() {
+                    synchronized (RepositoryUpdater.this) {
+                        compileScheduled--;
+                    }
+                    submit(Work.compileWithDeps(root, storedFilesFin));
+                }
+            });
+            url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
+            url2CompileWithDeps.put(root, storedFiles);
+            compileScheduled++;
+        } else {
+            storedFiles = url2CompileWithDeps.get(root);
+            assert storedFiles != null;
+        }
+        
+        storedFiles.add(file);
+        
+        if (lockRU) {
+            compileWithDepsToBeScheduled = true;
+        } else {
+            t.schedule(DELAY);
+        }
+    }
+    
+    public synchronized void lockRU() {
+        lockRU = true;
+    }
+    
+    public synchronized void unlockRU() {
+        lockRU = false;
+        
+        if (recompileToBeScheduled) {
             submit(Work.recompile());
             recompileScheduled = true;
+            recompileToBeScheduled = false;
+        }
+        
+        if (compileWithDepsToBeScheduled) {
+            for (final URL root : url2CompileWithDeps.keySet()) {
+                Reference<Task> taskRef = url2CompileWithDepsTask.get(root);
+                Task t = taskRef != null ? taskRef.get() : null;
+
+                if (t == null || !t.cancel()) {
+                    final Collection<File> storedFilesFin = url2CompileWithDeps.get(root);
+                    //the task either does not exist, or has been already started - create new one:
+                    t = WORKER.create(new Runnable() {
+                        public void run() {
+                            submit(Work.compileWithDeps(root, storedFilesFin));
+                        }
+                    });
+                    url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
+                }
+
+                t.schedule(DELAY);
+            }
+            compileWithDepsToBeScheduled = false;
         }
     }
     
@@ -838,6 +925,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             return new RecompileWork(null);
         }
         
+        public static Work compileWithDeps(URL root, Collection<File> filesToCompile) {
+            return new CompileWithDepsWork(root, filesToCompile, null);
+        }
+        
     }
         
     private static class SingleRootWork extends Work {
@@ -896,6 +987,24 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static class RecompileWork extends Work {
         public RecompileWork(CountDownLatch latch) {
             super(WorkType.RECOMPILE, latch);
+        }
+    }
+    
+    private static class CompileWithDepsWork extends Work {
+        private URL root;
+        private Collection<File> filesToCompile;
+        public CompileWithDepsWork(URL root, Collection<File> filesToCompile, CountDownLatch latch) {
+            super(WorkType.COMPILE_WITH_DEPENDENCIES, latch);
+            this.root = root;
+            this.filesToCompile = filesToCompile;
+        }
+
+        public URL getRoot() {
+            return root;
+        }
+
+        public Collection<File> getFilesToCompile() {
+            return filesToCompile;
         }
     }
     
@@ -1155,15 +1264,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         case COMPILE_WITH_DEPENDENCIES:
                         {
                             try {
-                                final SingleRootWork sw = (SingleRootWork) work;
-                                final URL file = sw.getFile();
-                                final URL root = sw.getRoot ();
-                                assert !sw.isFolder();
-                                Collection<File> toRebuild = updateFile(file,root);
+                                CompileWithDepsWork w = (CompileWithDepsWork) work;
                                 
-                                if (toRebuild != null && !toRebuild.isEmpty() && TasklistSettings.isTasklistEnabled() && TasklistSettings.isDependencyTrackingEnabled()) {
-                                    assureRecompiled(root, toRebuild);
-                                }
+                                compileWithDeps(w.getRoot(), w.getFilesToCompile());
                             } catch (Abort abort) {
                                 //Ignore abort
                             }
@@ -1171,6 +1274,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                         case RECOMPILE:
                         {
+                            //XXX compileWithDeps should have priority ower recompile:
                             try {
                                 recompile();
                             } catch (Abort abort) {
@@ -1338,7 +1442,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             return true;
         }
         
-        private void parseFiles(URL root, boolean isInitialCompilation, Iterable<File> children, boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter, Map<String,List<File>> resources, Set<File> compiledFiles) throws IOException {
+        private void parseFiles(URL root, boolean isInitialCompilation, Iterable<File> children, boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter, Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile) throws IOException {
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo == null) {
                 return;
@@ -1486,7 +1590,20 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
                 errorBadgesToRefresh.addAll(batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles,
                         compiledFiles, compiledFiles != null ? canceled : null, added,
-                        isInitialCompilation ? RepositoryUpdater.this.closed:null));
+                        isInitialCompilation ? RepositoryUpdater.this.closed:null, toRecompile));
+            }
+            Set<ElementHandle<TypeElement>> _at = null;
+            Set<ElementHandle<TypeElement>> _rt = null;
+            if (added != null && !RepositoryUpdater.this.closed.get()) {
+                assert removed != null;
+                _at = new HashSet<ElementHandle<TypeElement>> (added);      //Added
+                _rt = new HashSet<ElementHandle<TypeElement>> (removed);    //Removed
+                _at.removeAll(removed);
+                _rt.removeAll(added);
+                added.retainAll(removed);                                                                   //Changed
+                if (toRecompile != null) {
+                    toRecompile.addAll(RebuildOraculum.get().findAllDependent(rootFile, null, cpInfo.getClassIndex(), _rt));
+                }
             }
             sa.store();
             synchronized (RepositoryUpdater.this) {
@@ -1507,11 +1624,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
             if (added != null && !RepositoryUpdater.this.closed.get()) {
                 assert removed != null;
-                Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (added);      //Added
-                Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removed);    //Removed
-                _at.removeAll(removed);
-                _rt.removeAll(added);
-                added.retainAll(removed);                                                                   //Changed
+                assert _at != null;
+                assert _rt != null;
                 uqImpl.typesEvent(_at.isEmpty() ? null : new ClassIndexImplEvent(uqImpl, _at),
                         _rt.isEmpty() ? null : new ClassIndexImplEvent (uqImpl,_rt),
                         added.isEmpty() ? null : new ClassIndexImplEvent (uqImpl,added));
@@ -1567,7 +1681,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 final File classCache = Index.getClassFolder(rootFile);
                 final Map <String,List<File>> resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile,folderFile),true);
                 final LazyFileList children = new LazyFileList(folderFile);
-                parseFiles(root, isInitialCompilation, children, clean, handle, filter, resources, null);
+                parseFiles(root, isInitialCompilation, children, clean, handle, filter, resources, null, null);
             } catch (OutputFileManager.InvalidSourcePath e) {
                 //Deleted project, ignore
             } finally {
@@ -1630,7 +1744,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
                         Iterable<? extends TypeElement> classes = jt.enter();            
                         Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), classes);
-                        result.addAll(RebuildOraculum.get(fo).findFilesToRebuild(rootFile, fo, cpInfo, members, classNamesToDelete));
+                        result.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, file, cpInfo, members));
                         jt.analyze ();
                         dumpClasses((List<? extends ClassSymbol>)classes, fm, root.toExternalForm(), null,
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
@@ -1679,12 +1793,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                     }
 
-                    sa.store();
                     Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (added);      //Added
                     Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removed);    //Removed
                     _at.removeAll(removed);
                     _rt.removeAll(added);
                     added.retainAll(removed);                                                                   //Changed
+                    
+                    result.addAll(RebuildOraculum.findAllDependent(rootFile, null, cpInfo.getClassIndex(), _rt));
+
+                    sa.store();
+                    
                     if (!closed.get()) {
                         uqImpl.typesEvent(_at.isEmpty() ? null : new ClassIndexImplEvent(uqImpl, _at),
                                 _rt.isEmpty() ? null : new ClassIndexImplEvent(uqImpl,_rt), 
@@ -1745,7 +1863,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 FileObject rootFO = FileUtil.toFileObject(rootFile);
                 final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
                 ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (rootFO, filter, true, false);
-                toReparse = RebuildOraculum.findAllDependent(rootFile, rootFO, cpInfo.getClassIndex(), removed);
+                toReparse = RebuildOraculum.findAllDependent(rootFile, null, cpInfo.getClassIndex(), removed);
                 //actually delete the sig files:
                 for (String s : classNames) {
                     sa.delete(s);
@@ -1803,7 +1921,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         private void recompile() throws IOException {
             Map<URL, Collection<File>> toRecompile = new HashMap<URL, Collection<File>>();
-            List<URL> handledRoots = new LinkedList<URL>();
             synchronized (RepositoryUpdater.this) {
                 toRecompile.putAll(url2Recompile);
                 url2Recompile.clear();
@@ -1811,6 +1928,56 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
             
             Logger.getLogger(RepositoryUpdater.class.getName()).log(Level.FINE, GOING_TO_RECOMPILE, toRecompile);
+            
+            toRecompile = compileFileFromRoots(toRecompile, true, null);
+            
+            if (!toRecompile.isEmpty()) {
+                synchronized (RepositoryUpdater.this) {
+                    for (URL root : toRecompile.keySet()) {
+                        Collection<File> storedFiles = url2Recompile.get(root);
+                        
+                        if (storedFiles == null) {
+                            url2Recompile.put(root, storedFiles = new LinkedHashSet<File>());
+                        }
+                        
+                        storedFiles.addAll(toRecompile.get(root));
+                    }
+                    
+                    if (!recompileScheduled) {
+                        submit(Work.recompile());
+                        recompileScheduled = true;
+                    }
+                }
+            }
+        }
+        
+        private void compileWithDeps(URL root, Collection<File> storedFiles) throws IOException {
+            Map<URL, Collection<File>> depsToRecompile = new HashMap<URL, Collection<File>>();
+            Map<URL, Collection<File>> toCompile = new HashMap<URL, Collection<File>>();
+            
+            toCompile.put(root, storedFiles);
+            
+            if (storedFiles.size() == 1) {
+                depsToRecompile.put(root, updateFile(storedFiles.iterator().next().toURL(), root));
+            } else {
+                Map<URL, Collection<File>> result = compileFileFromRoots(toCompile, false, depsToRecompile);
+
+                assert result.isEmpty(); //not cancellable
+            }
+            
+            if (!depsToRecompile.isEmpty()) {
+                assert depsToRecompile.containsKey(root);
+                
+                Set<File> thisFiles = new LinkedHashSet<File>(depsToRecompile.get(root));
+
+                thisFiles.removeAll(storedFiles);
+
+                assureRecompiled(root, thisFiles);
+            }
+        }
+        
+        private Map<URL, Collection<File>> compileFileFromRoots(Map<URL, Collection<File>> toRecompile, boolean cancellable,  Map<URL, Collection<File>> depsToRecompile) throws IOException {
+            List<URL> handledRoots = new LinkedList<URL>();
             
             ProgressHandle handle = ProgressHandleFactory.createHandle("Refreshing Workspace");
             
@@ -1832,7 +1999,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 
                 long cur = System.currentTimeMillis();
                 
-                Set<File> compiledFiles = new HashSet<File>();
+                Set<File> compiledFiles = cancellable ? new HashSet<File>() : null;
                 Map<String, List<File>> resources = new HashMap<String, List<File>>();
                 File rootFile = FileUtil.toFile(rootFO);
                 String rootName = cacheRoot.getAbsolutePath();
@@ -1890,13 +2057,29 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
                 
                 try {
-                    parseFiles(root, false, files, true, handle, filter, resources, compiledFiles);
+                    Set<File> thisDepsToRecompile;
+                    
+                    if (depsToRecompile != null) {
+                        thisDepsToRecompile = new LinkedHashSet<File>();
+                    } else {
+                        thisDepsToRecompile = null;
+                    }
+                    
+                    parseFiles(root, false, files, true, handle, filter, resources, compiledFiles, thisDepsToRecompile);
+                    
+                    if (thisDepsToRecompile != null && !thisDepsToRecompile.isEmpty()) {
+                        depsToRecompile.put(root, thisDepsToRecompile);
+                    }
 
-                    files.removeAll(compiledFiles);
+                    if (compiledFiles != null) {
+                        files.removeAll(compiledFiles);
 
-                    if (!files.isEmpty()) {
-                        toRecompile.put(root, files);
-                        break;
+                        if (!files.isEmpty()) {
+                            toRecompile.put(root, files);
+                            break;
+                        } else {
+                            it.remove();
+                        }
                     } else {
                         it.remove();
                     }
@@ -1911,27 +2094,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     new Object[] {rootFO, System.currentTimeMillis() - start});
             }
             
-            if (!toRecompile.isEmpty()) {
-                synchronized (RepositoryUpdater.this) {
-                    for (URL root : toRecompile.keySet()) {
-                        Collection<File> storedFiles = url2Recompile.get(root);
-                        
-                        if (storedFiles == null) {
-                            url2Recompile.put(root, storedFiles = new LinkedHashSet<File>());
-                        }
-                        
-                        storedFiles.addAll(toRecompile.get(root));
-                    }
-                    
-                    if (!recompileScheduled) {
-                        submit(Work.recompile());
-                        recompileScheduled = true;
-                    }
-                }
-            }
             handle.finish();
+            return toRecompile;
         }
-    }        
+        
+    }
     
      private static String classPathToString(ClasspathInfo info) throws FileStateInvalidException {
          ClassPath bootPath = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(info, ClasspathInfo.PathKind.BOOT);
@@ -2041,10 +2208,17 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
     boolean waitWorkStarted() throws InterruptedException {
         boolean waited = false;
-        synchronized (delay) {
-            while (!delay.tasks.isEmpty()) {
+        while (true) {
+            boolean sleep;
+            synchronized (this) {
+                sleep = compileScheduled > 0 || !url2Recompile.isEmpty();
+            }
+            
+            if (sleep) {
+                Thread.sleep(100);
                 waited = true;
-                delay.wait();
+            } else {
+                break;
             }
         }
         return waited;
@@ -2052,18 +2226,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private final class Delay {
         
-        private final RequestProcessor rp;
         private final List<Work> tasks;
         
         public Delay () {
-            this.rp = new RequestProcessor(this.getClass().getName(),1);
             this.tasks = new LinkedList<Work> ();
         }
         
         public synchronized void post (final Work work) {
             assert work != null;
             this.tasks.add (work);
-            this.rp.post(new DelayTask (work),DELAY);
+            RepositoryUpdater.WORKER.post(new DelayTask (work),DELAY);
         }
                        
         private class DelayTask implements Runnable {
@@ -2166,10 +2338,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private static Set<URL> batchCompile (final LinkedList<Pair> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo, final SourceAnalyser sa,
         final Set<URI> dirtyFiles, Set<File> compiledFiles, AtomicBoolean canceled, final Set<? super ElementHandle<TypeElement>> added,
-        final AtomicBoolean ideClosed) throws IOException {
+        final AtomicBoolean ideClosed, Set<File> toRecompile) throws IOException {
         assert toCompile != null;
         assert rootFo != null;
         assert cpInfo != null;
+        File rootFile = FileUtil.toFile(rootFo);
+        assert rootFile != null;
         JavaFileObject active = null;
         File           activeFile = null;
         Pair activePair = null;
@@ -2335,6 +2509,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 //                        }
                         if (compiledFiles != null) {
                             compiledFiles.add(activeFile);
+                        }
+                        if (toRecompile != null) {
+                            Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), types);
+                            toRecompile.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, activeFile.toURL(), cpInfo, members));
                         }
                         active = null;
                         activeFile = null;

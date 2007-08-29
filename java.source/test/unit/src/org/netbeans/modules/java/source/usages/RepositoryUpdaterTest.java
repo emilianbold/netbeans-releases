@@ -165,7 +165,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourceCP});
         
-        SourceUtils.waitScanFinished();
+        waitScanFinished();
     }
     
     public void testSimpleReparse() throws Exception {
@@ -293,7 +293,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         
         waitScanFinished();
         
-        assertNull(recompiled);
+        assertNull(String.valueOf(recompiled), recompiled);
         assertFalse(TaskCache.getDefault().getErrors(fileA).toString(), TaskCache.getDefault().isInError(fileA, false));
         assertFalse(TaskCache.getDefault().getErrors(fileB).toString(), TaskCache.getDefault().isInError(fileB, false));
     }
@@ -346,6 +346,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
     }
     
     private void waitScanFinished() throws Exception {
+        //XXX:
+        Thread.sleep(2000);
         while (RepositoryUpdater.getDefault().waitWorkStarted())
             SourceUtils.waitScanFinished();
         
