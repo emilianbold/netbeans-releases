@@ -86,7 +86,11 @@ public final class EncapsulateFieldsPlugin extends ProgressProviderAdapter imple
     }
     
     public Problem fastCheckParameters() {
-        initRefactorings(refactoring.getRefactorFields(),
+        Collection<EncapsulateFieldInfo> fields = refactoring.getRefactorFields();
+        if (fields.isEmpty()) {
+            return new Problem(true, NbBundle.getMessage(EncapsulateFieldsPlugin.class, "ERR_EncapsulateNothingSelected"));
+        }
+        initRefactorings(fields,
                 refactoring.getMethodModifiers(),
                 refactoring.getFieldModifiers(),
                 refactoring.isAlwaysUseAccessors());
