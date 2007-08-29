@@ -202,13 +202,13 @@ class ConfigurationsProvider
                     }    
                     
                     final VisualClassPathItem item=map.get(file);
-                    node.setValue("VCPI",item);
+                    
                     if (item != null)
                     {   
+                        node.setValue("VCPI",item);
+                        
                         final File f=FileUtil.toFile(file);
                         final Lookup lookup=Lookups.fixed(new Object[] {project, conf, item} );
-                        
-                        
                         
                         if (!multi)
                         {
