@@ -35,6 +35,8 @@ import org.openide.xml.XMLUtil;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -527,25 +529,49 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                ClassTree formClass = null;
                 for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
-                    if (t.getKind() == Tree.Kind.CLASS && javaFileName.equals(((ClassTree) t).getSimpleName().toString())) {
-                        Tree superT = ((ClassTree) t).getExtendsClause();
-                        if (superT != null) {
-                            TreePath superTPath = controller.getTrees().getPath(controller.getCompilationUnit(), superT);
-                            Element superEl = controller.getTrees().getElement(superTPath);
-                            if (superEl != null && superEl.getKind() == ElementKind.CLASS) {
-                                result[0] = controller.getElements().getBinaryName((TypeElement)superEl).toString(); // .getQualifiedName()
+                    if (t.getKind() == Tree.Kind.CLASS) {
+                        ClassTree ct = (ClassTree) t;
+                        if (isClass(ct, controller)) {
+                            if (javaFileName.equals(ct.getSimpleName().toString())) {
+                                formClass = ct;
                                 break;
                             }
-                        } else {
-                            result[0] = "java.lang.Object"; // NOI18N
-                            break;
+                            if (formClass == null
+                                    || ct.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
+                                formClass = ct; // find at least something (if not matching file name - issue 105626)
+                            }
                         }
+                    }
+                }
+                if (formClass != null) {
+                    if (!javaFileName.equals(formClass.getSimpleName().toString())) {
+                        // may happen during refactoring - see issue 105626
+                        Logger.getLogger(GandalfPersistenceManager.class.getName())
+                            .log(Level.INFO, "Form class not matching the java file name: " // NOI18N
+                                + formClass.getSimpleName().toString() + " in " + javaFileName + ".java"); // NOI18N
+                    }
+                    Tree superT = formClass.getExtendsClause();
+                    if (superT != null) {
+                        TreePath superTPath = controller.getTrees().getPath(controller.getCompilationUnit(), superT);
+                        Element superEl = controller.getTrees().getElement(superTPath);
+                        if (superEl != null && superEl.getKind() == ElementKind.CLASS) {
+                            result[0] = controller.getElements().getBinaryName((TypeElement)superEl).toString(); // .getQualifiedName()
+                        }
+                    } else {
+                        result[0] = "java.lang.Object"; // NOI18N
                     }
                 }
             }
         }, true);
         return result[0];
+    }
+
+    private static boolean isClass(ClassTree ct, CompilationController controller) {
+        return !controller.getTreeUtilities().isEnum(ct)
+                && !controller.getTreeUtilities().isInterface(ct)
+                && !controller.getTreeUtilities().isAnnotation(ct);
     }
 
     private void setBindingProperties() {
