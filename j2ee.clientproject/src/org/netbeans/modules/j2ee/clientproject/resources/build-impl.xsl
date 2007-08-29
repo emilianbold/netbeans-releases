@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet version="1.0"
@@ -1482,9 +1482,16 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-                <carproject:debug classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}">
+                <property name="test.report.file" location="${{build.test.results.dir}}/TEST-${{test.class}}.xml"/>
+                <delete file="${{test.report.file}}"/>
+                <xsl:comment> the directory must exist, otherwise the XML formatter would fail </xsl:comment>
+                <mkdir dir="${{build.test.results.dir}}"/>
+                <carproject:debug classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner"
+                                  classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}">
                     <customize>
-                        <arg line="${{test.class}}"/>
+                        <arg value="${{test.class}}"/>
+                        <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+                        <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${{test.report.file}}"/>
                     </customize>
                 </carproject:debug>
             </target>
