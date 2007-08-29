@@ -117,7 +117,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         pBodyPanel.setLayout(new java.awt.BorderLayout());
 
         tpPanelHeader.setBackground(java.awt.SystemColor.controlLtHighlight);
-        tpPanelHeader.setContentType(org.openide.util.NbBundle.getMessage(PanelBodyContainer.class, "PanelBodyContainer.tpPanelHeader.contentType")); // NOI18N
+        tpPanelHeader.setContentType("text/html"); // NOI18N
         tpPanelHeader.setEditable(false);
         spPanelHeader.setViewportView(tpPanelHeader);
 
