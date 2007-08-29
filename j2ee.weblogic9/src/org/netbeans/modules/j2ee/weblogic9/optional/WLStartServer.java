@@ -440,7 +440,9 @@ public class WLStartServer extends StartServer {
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
-                new WLTailer(serverProcess.getInputStream(), dm.getURI());
+                WLTailer tailer = new WLTailer(serverProcess.getInputStream(), dm.getURI());
+                dm.setTailer(tailer);
+                tailer.start();
                 
                 String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
 
@@ -558,7 +560,9 @@ public class WLStartServer extends StartServer {
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
-                new WLTailer(serverProcess.getInputStream(), dm.getURI());
+                WLTailer tailer = new WLTailer(serverProcess.getInputStream(), dm.getURI());
+                dm.setTailer(tailer);
+                tailer.start();
                 
                 String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
                 
@@ -648,6 +652,7 @@ public class WLStartServer extends StartServer {
          * Implementation of the run() method from the Runnable interface
          */
         public void run() {
+            WLTailer tailer = null;
             try {
                 // save the current time so that we can deduct that the startup
                 // failed due to timeout
@@ -660,7 +665,8 @@ public class WLStartServer extends StartServer {
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
-                new WLTailer(serverProcess.getInputStream(), dm.getURI());
+                tailer = new WLTailer(serverProcess.getInputStream(), dm.getURI());
+                tailer.start();
 
                 String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
                 
@@ -692,6 +698,13 @@ public class WLStartServer extends StartServer {
                 serverProcess.destroy();
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.WARNING, null, e);
+            } finally {
+                if (dm.getTailer() != null) {
+                    dm.getTailer().exit();
+                }
+                if (tailer != null) {
+                    tailer.exit();
+                }
             }
         }
         

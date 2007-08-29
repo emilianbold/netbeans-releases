@@ -18,13 +18,17 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.util;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
+import org.openide.windows.InputOutput;
 
-import org.openide.*;
-import org.openide.windows.*;
 
 /**
  * This class is capable of tailing the specified file or input stream. It
@@ -39,115 +43,94 @@ public class WLTailer extends Thread {
      * Amount of time in milliseconds to wait between checks of the input
      * stream
      */
-    private static final int delay = 1000;
-    
-    /**
-     * The file for which to track changes
-     */
-    private File file;
-    
+    private static final int DELAY = 500;
+
+    private static final Logger LOGGER = Logger.getLogger(WLTailer.class.getName());
+
     /**
      * The input stream for which to track changes
      */
     private InputStream inputStream;
-    
+
     /**
      * The I/O window where to output the changes
      */
     private InputOutput io;
-    
-    /**
-     * Creates and starts a new instance of WSTailer
-     * 
-     * @param file the file for which to track changes
-     * @param ioPanelName the I/O window where to output the changes
-     */
-    public WLTailer(File file, String uri) {
-        // save the parameters
-        this.file = file;
-        io = UISupport.getServerIO(uri);
-        if (io == null) {
-            return; // finish, it looks like this server instance has been unregistered
-        }
 
-        // clear the old output
-        try {
-            io.getOut().reset();
-        } catch (IOException ioe) {
-            // no op
-        }        
-        io.select();
-        start();
-    }
-    
+    private volatile boolean exit;
+
     /**
-     * Creates and starts a new instance of WSTailer
-     * 
-     * @param file the input stream for which to track changes
-     * @param ioPanelName the I/O window where to output the changes
+     * Creates and starts a new instance of WLTailer.
+     *
+     * @param inputStream the input stream for which to track changes
+     * @param uri uri of the server instance
      */
     public WLTailer(InputStream inputStream, String uri) {
         // save the parameters
         this.inputStream = inputStream;
         io = UISupport.getServerIO(uri);
+    }
+
+    /**
+     * Implementation of the Runnable interface. Here all tailing is
+     * performed
+     */
+    @Override
+    public void run() {
         if (io == null) {
-            return; // finish, it looks like this server instance has been unregistered
+            return;
         }
 
         // clear the old output
         try {
             io.getOut().reset();
         } catch (IOException ioe) {
-            // no op
-        }        
+            LOGGER.log(Level.INFO, null, ioe);
+        }
         io.select();
-        start();
-    }
-    
-    /**
-     * Implementation of the Runnable interface. Here all tailing is 
-     * performed
-     */
-    public void run() {
+
         try {
-            // check the source for the tailing, if it is a file we create a 
-            // new FileInputStream
-            if (file != null) {
-                inputStream = new FileInputStream(file);
-            }
-            
+
             // create a reader from the input stream
             InputStreamReader reader = new InputStreamReader(inputStream);
 
-            // read from the input stream and put all the changes to the 
+            // read from the input stream and put all the changes to the
             // I/O window
             char[] chars = new char[1024];
-            while (true) {
+            while (!exit) {
                 // while there is something in the stream to be read - read that
                 while (reader.ready()) {
-                    io.getOut().println(new String(chars, 0, reader.read(chars)));
+                    int count = reader.read(chars);
+                    io.getOut().println(new String(chars, 0, count));
                 }
-                
+
                 // when the stream is empty - sleep for a while
                 try {
-                    Thread.sleep(delay);
+                    Thread.sleep(DELAY);
                 } catch (InterruptedException e) {
                     // do nothing
                 }
             }
         } catch (FileNotFoundException e) {
-            Logger.getLogger("global").log(Level.WARNING, null, e);
+            LOGGER.log(Level.WARNING, null, e);
             return;
         } catch (IOException e) {
-            Logger.getLogger("global").log(Level.WARNING, null, e);
+            LOGGER.log(Level.WARNING, null, e);
         } finally {
             // close the opened stream
             try {
                 inputStream.close();
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.WARNING, null, e);
+                LOGGER.log(Level.WARNING, null, e);
             }
         }
     }
-    
+
+    /**
+     * Exits this thread.
+     */
+    public void exit() {
+        exit = true;
+    }
+
 }

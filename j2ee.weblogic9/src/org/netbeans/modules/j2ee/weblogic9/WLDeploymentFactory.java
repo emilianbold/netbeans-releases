@@ -234,6 +234,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
         InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
         if (managerCache.get(ip) != null) {
             dm.setServerProcess(managerCache.get(ip).getServerProcess());
+            dm.setTailer(managerCache.get(ip).getTailer());
         }
         managerCache.put(ip, dm);
     }
