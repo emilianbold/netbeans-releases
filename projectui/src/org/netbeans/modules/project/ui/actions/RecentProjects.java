@@ -43,6 +43,7 @@ import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.ProjectTab;
+import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -114,7 +115,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     private void fillSubMenu(JMenu menu) {
         menu.removeAll();
         
-        List<Project> projects = OpenProjectList.getDefault().getRecentProjects();
+        List<UnloadedProjectInformation> projects = OpenProjectList.getDefault().getRecentProjectsInformation();
         if ( projects.isEmpty() ) {
             menu.setEnabled( false );
             return;
@@ -125,24 +126,18 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                         
         // Fill menu with items
         
-        for (Project p : projects) {
-            FileObject prjDir = p.getProjectDirectory();
-            try { 
-                URL prjDirURL = prjDir.getURL();
+        for (UnloadedProjectInformation p : projects) {
+                URL prjDirURL = p.getURL();
+                FileObject prjDir = URLMapper.findFileObject(prjDirURL);
                 if ( prjDirURL == null || prjDir == null || !prjDir.isValid()) {
                     continue;
                 }
                 prjDir.removeFileChangeListener(prjDirListener);            
                 prjDir.addFileChangeListener(prjDirListener);
-                ProjectInformation pi = ProjectUtils.getInformation(p);
-                JMenuItem jmi = new JMenuItem(pi.getDisplayName(), pi.getIcon());
+                JMenuItem jmi = new JMenuItem(p.getDisplayName(), p.getIcon());
                 menu.add( jmi );            
                 jmi.putClientProperty( PROJECT_URL_KEY, prjDirURL );
                 jmi.addActionListener( jmiActionListener );
-            }
-            catch( FileStateInvalidException ex ) {
-                // Don't put the project into the menu
-            }
         }
     }
 
