@@ -119,7 +119,6 @@ class DocFragmentJspWriter extends ResponseWriter {
                     //} else if (tag.equals("script")) {
                     //    depth++;
                     //    skipDepth = depth;
-                    //    skipCount = 1;
                     //
                     //    return null;
                 } // else TODO - yank f:verbatim too (but keep its children)
@@ -257,7 +256,7 @@ class DocFragmentJspWriter extends ResponseWriter {
             //XhtmlElement.setStyleParent(ec, elem);
             depth++;
             skipDepth = depth;
-            skipCount = preRenderedFragment.getChildNodes().getLength();
+            preRenderedFragment.getChildNodes().getLength();
             return;
         }
         
@@ -274,7 +273,6 @@ class DocFragmentJspWriter extends ResponseWriter {
             if (name.equals("script")) {
                 //depth++;
                 //skipDepth = depth;
-                //skipCount = 1;
                 //return;
                 dontEscape = true;
             } else if (name.equals("style")) {
@@ -332,10 +330,7 @@ class DocFragmentJspWriter extends ResponseWriter {
         if (skipDepth != -1) {
             if (depth == skipDepth) {
                 depth--;
-                skipCount--;
-                if (skipCount == 0) {
-                    skipDepth = -1;
-                }
+                skipDepth = -1;
                 return;
             } else if (depth > skipDepth) {
                 depth--;
@@ -664,5 +659,4 @@ class DocFragmentJspWriter extends ResponseWriter {
     private DocumentFragment preRenderedFragment;
     private int depth;
     private int skipDepth;
-    private int skipCount;
 }
