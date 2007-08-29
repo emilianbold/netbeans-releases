@@ -150,7 +150,7 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
             errorMessage.setText(msg);
             return;
         }
-        if(JSPPaletteUtilities.getTypeForName(target, jTextField1.getText())==null)
+        if(!JSPPaletteUtilities.typeExists(target, jTextField1.getText()))
         {
             String msg = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.Bundle").getString("Error_No_Such_class"); // NOI18N
             descriptor.setValid(false);

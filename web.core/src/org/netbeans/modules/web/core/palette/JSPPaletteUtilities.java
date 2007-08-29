@@ -20,22 +20,22 @@
 package org.netbeans.modules.web.core.palette;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.indent.Indent;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.jsp.lexer.JspTokenId;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
@@ -50,31 +50,26 @@ import org.openide.util.Exceptions;
  */
 public final class JSPPaletteUtilities {
 
-    public static void insert(String s, JTextComponent target)
-    throws BadLocationException 
-    {
+    public static void insert(String s, JTextComponent target) throws BadLocationException {
         insert(s, target, true);
     }
-    
-    public static void insert(String s, JTextComponent target, boolean reformat) 
-    throws BadLocationException 
-    {
+
+    public static void insert(String s, JTextComponent target, boolean reformat) throws BadLocationException {
         Document _doc = target.getDocument();
         if (_doc == null || !(_doc instanceof BaseDocument)) {
             return;
         }
-        
-        //check whether we are not in a scriptlet 
+
+        //check whether we are not in a scriptlet
 //        JspSyntaxSupport sup = (JspSyntaxSupport)(doc.getSyntaxSupport().get(JspSyntaxSupport.class));
 //        int start = target.getCaret().getDot();
 //        TokenItem token = sup.getTokenChain(start, start + 1);
 //        if (token != null && token.getTokenContextPath().contains(JavaTokenContext.contextPath)) // we are in a scriptlet
 //            return false;
-
-        if (s == null)
+        if (s == null) {
             s = "";
-        
-        BaseDocument doc = (BaseDocument)_doc;
+        }
+        BaseDocument doc = (BaseDocument) _doc;
         Indent indent = Indent.get(doc);
         indent.lock();
         try {
@@ -92,12 +87,16 @@ public final class JSPPaletteUtilities {
         } finally {
             indent.unlock();
         }
-        
     }
-    
-    private static int insert(String s, JTextComponent target, Document doc) 
-    throws BadLocationException 
-    {
+
+    private static FileObject getFileObject(JTextComponent target) {
+        BaseDocument doc = (BaseDocument) target.getDocument();
+        DataObject dobj = NbEditorUtilities.getDataObject(doc);
+        FileObject fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile() : null;
+        return fobj;
+    }
+
+    private static int insert(String s, JTextComponent target, Document doc) throws BadLocationException {
 
         int start = -1;
         try {
@@ -106,62 +105,115 @@ public final class JSPPaletteUtilities {
             int p0 = Math.min(caret.getDot(), caret.getMark());
             int p1 = Math.max(caret.getDot(), caret.getMark());
             doc.remove(p0, p1 - p0);
-            
+
             //replace selected text by the inserted one
             start = caret.getDot();
             doc.insertString(start, s, null);
-        }
-        catch (BadLocationException ble) {}
-        
-        return start;
-    }
-    
-    public static PageInfo.BeanData[] getAllBeans(JTextComponent target)
-    {
-        if(target!=null && target.getDocument() instanceof BaseDocument){
-           BaseDocument doc =  (BaseDocument) target.getDocument();
-           DataObject dobj = NbEditorUtilities.getDataObject(doc);
-           FileObject fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile() : null;
-           if(fobj==null) return null;
-           JspParserAPI.ParseResult result = JspContextInfo.getContextInfo (fobj).getCachedParseResult (doc, fobj, false, true);
-           if(result==null) return null;
-           return result.getPageInfo().getBeans();
-        }
-        return null;
-       
-    }
-    public static boolean idExists(String id, PageInfo.BeanData[] beanData)
-    {
-        if(id!=null && beanData!=null)
-        for (int i = 0; i < beanData.length; i++) {
-            PageInfo.BeanData beanData1 = beanData[i];
-            if(beanData1.getId().equals(id)) return true;
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
         }
 
-        return false;
+        return start;
     }
-    
-    public static TypeElement getTypeForName(JTextComponent target, final String fqcn)
-    {
-            BaseDocument doc = (BaseDocument) target.getDocument();
-            DataObject dobj = NbEditorUtilities.getDataObject(doc);
-            FileObject fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile() : null;
-            if(fqcn==null || fobj==null) return null;
-            class _CancellableTask implements CancellableTask<CompilationController>
-            {
-                public TypeElement element = null;
-                public void cancel() {}               
-                public void run(CompilationController parameter) throws Exception {
-                    element =  parameter.getElements().getTypeElement(fqcn);
+
+    public static PageInfo.BeanData[] getAllBeans(JTextComponent target) {
+        PageInfo.BeanData[] res = null;
+        FileObject fobj = getFileObject(target);
+        if (fobj != null) {
+            JspParserAPI.ParseResult result = JspContextInfo.getContextInfo(fobj).getCachedParseResult(target.getDocument(), fobj, false, true);
+            if (result != null) {
+                res = result.getPageInfo().getBeans();
+            }
+        }
+
+        return res;
+    }
+
+    public static boolean idExists(String id, PageInfo.BeanData[] beanData) {
+        boolean res = false;
+        if (id != null && beanData != null) {
+            for (int i = 0; i < beanData.length; i++) {
+                PageInfo.BeanData beanData1 = beanData[i];
+                if (beanData1.getId().equals(id)) {
+                    res = true;
+                    break;
                 }
             }
-            _CancellableTask task = new _CancellableTask();
-            try{
-                JavaSource.forFileObject(fobj).runUserActionTask(task, false);
-                return task.element;
-            }catch(Exception e){}
-        return null;
+        }
+        return res;
     }
-     
-    
+
+    public static boolean typeExists(JTextComponent target, final String fqcn) {
+        final boolean[] result = {false};
+        if (fqcn != null) {
+            runUserActionTask(target, new Task<CompilationController>() {
+
+                public void run(CompilationController parameter) throws Exception {
+                    result[0] = parameter.getElements().getTypeElement(fqcn) != null;
+                }
+            });
+        }
+        return result[0];
+    }
+
+    private static void runUserActionTask(JTextComponent target, Task<CompilationController> aTask) {
+        FileObject fobj = getFileObject(target);
+        if (fobj == null) {
+            return;
+        }
+        try {
+            JavaSource.forFileObject(fobj).runUserActionTask(aTask, false);
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
+
+    public static List<String> getTypeProperties(JTextComponent target, final String fqcn, final String[] prefix) {
+        final List<String> result = new ArrayList<String>();
+        if (prefix != null) {
+            runUserActionTask(target, new Task<CompilationController>() {
+                public void run(CompilationController parameter) throws Exception {
+                    TypeElement te = parameter.getElements().getTypeElement(fqcn);
+                    if (te != null) {
+                        List<ExecutableElement> list = ElementFilter.methodsIn(te.getEnclosedElements());
+                        for (Iterator<ExecutableElement> it = list.iterator(); it.hasNext();) {
+                            ExecutableElement executableElement = it.next();
+                            String methodName = executableElement.getSimpleName().toString();
+                            if (executableElement.getModifiers().contains(Modifier.PUBLIC) && match(methodName, prefix)) {
+                                String propName = extractPropName(methodName, prefix);
+                                if (!propName.equals("")) {
+                                    result.add(propName);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                private String extractPropName(String methodName, String[] prefix) {
+                    String res = "";
+                    for (int i = 0; i < prefix.length; i++) {
+                        String string = prefix[i];
+                        if (methodName.startsWith(string)) {
+                            res = methodName.substring(string.length()).toLowerCase();
+                            break;
+                        }
+                    }
+                    return res;
+                }
+
+                private boolean match(String methodName, String[] prefix) {
+                    boolean res = false;
+                    for (int i = 0; i < prefix.length; i++) {
+                        String string = prefix[i];
+                        if (methodName.startsWith(string)) {
+                            res = true;
+                            break;
+                        }
+                    }
+                    return res;
+                }
+            });
+        }
+        return result;
+    }
 }

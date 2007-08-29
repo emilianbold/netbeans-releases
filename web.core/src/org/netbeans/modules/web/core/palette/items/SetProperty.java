@@ -18,52 +18,26 @@
  */
 
 package org.netbeans.modules.web.core.palette.items;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
-import org.openide.text.ActiveEditorDrop;
 
 
 /**
  *
  * @author Libor Kotouc
  */
-public class SetProperty implements ActiveEditorDrop {
+public class SetProperty extends GetProperty {
 
-    public static final String[] implicitBeans = new String[] {  // NOI18N
-        "request",
-        "response",
-        "pageContext",
-        "session",
-        "application",
-        "out",
-        "config", 
-        "page", 
-        "exception" 
-    };
-    public static final int BEAN_DEFAULT = -1;
-    public static final String[] implicitTypes = new String[] { // NOI18N
-        "javax.servlet.http.HttpServletRequest", 
-        "javax.servlet.http.HttpServletResponse",
-        "javax.servlet.jsp.PageContext",
-        "javax.servlet.http.HttpSession",
-        "javax.servlet.ServletContext",
-        "javax.servlet.jsp.JspWriter",
-        "javax.servlet.ServletConfig",
-        "java.lang.Object",
-        "java.lang.Throwable" 
-    };
-    
-    private int beanIndex = BEAN_DEFAULT;
-    private String bean = "";
-    private String property = "";
     private String value = "";
-    
+
     public SetProperty() {
     }
 
+    @Override
     public boolean handleTransfer(JTextComponent targetComponent) {
-
+        allBeans = initAllBeans(targetComponent);
         SetPropertyCustomizer c = new SetPropertyCustomizer(this, targetComponent);
         boolean accept = c.showDialog();
         if (accept) {
@@ -74,49 +48,22 @@ public class SetProperty implements ActiveEditorDrop {
                 accept = false;
             }
         }
-        
+
         return accept;
     }
-    
+
     private String createBody() {
-        
+
         String strBean = " name=\"\""; // NOI18N
-        if (beanIndex == -1)
-            strBean = " name=\"" + bean + "\""; // NOI18N
-        else 
-            strBean = " name=\"" + implicitBeans[beanIndex] + "\""; // NOI18N
-        
-        String strProperty = " property=\"" + property + "\""; // NOI18N
-        
-        String strValue = " value=\"" + value + "\""; // NOI18N
-        
+        if (getBeanIndex() == -1) {
+            strBean = " name=\"" + getBean() + "\""; // NOI18N
+        } else {
+            strBean = " name=\"" + allBeans.get(getBeanIndex()).getId() + "\""; // NOI18N
+        }
+        String strProperty = " property=\"" + getProperty() + "\""; // NOI18N
+        String strValue = " value=\"" + getValue() + "\""; // NOI18N
         String sp = "<jsp:setProperty" + strBean + strProperty + strValue + " />"; // NOI18N
-        
         return sp;
-    }
-
-    public int getBeanIndex() {
-        return beanIndex;
-    }
-
-    public void setBeanIndex(int beanIndex) {
-        this.beanIndex = beanIndex;
-    }
-
-    public String getBean() {
-        return bean;
-    }
-
-    public void setBean(String bean) {
-        this.bean = bean;
-    }
-
-    public String getProperty() {
-        return property;
-    }
-
-    public void setProperty(String property) {
-        this.property = property;
     }
 
     public String getValue() {
@@ -126,5 +73,4 @@ public class SetProperty implements ActiveEditorDrop {
     public void setValue(String value) {
         this.value = value;
     }
-        
 }

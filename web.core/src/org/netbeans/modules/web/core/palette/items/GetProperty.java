@@ -18,9 +18,13 @@
  */
 
 package org.netbeans.modules.web.core.palette.items;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.web.core.palette.JSPPaletteUtilities;
+import org.netbeans.modules.web.jsps.parserapi.PageInfo;
+import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
 import org.openide.text.ActiveEditorDrop;
 
 
@@ -41,7 +45,7 @@ public class GetProperty implements ActiveEditorDrop {
         "page", 
         "exception" 
     };
-    public static final int BEAN_DEFAULT = -1;
+    public static final int BEAN_DEFAULT = 0;
     public static final String[] implicitTypes = new String[] { // NOI18N
         "javax.servlet.http.HttpServletRequest", 
         "javax.servlet.http.HttpServletResponse",
@@ -53,7 +57,7 @@ public class GetProperty implements ActiveEditorDrop {
         "java.lang.Object",
         "java.lang.Throwable" 
     };
-
+    protected List<BeanDescr> allBeans = new ArrayList<BeanDescr>();
     private int beanIndex = BEAN_DEFAULT;
     private String bean = "";
     private String property = "";
@@ -62,8 +66,9 @@ public class GetProperty implements ActiveEditorDrop {
     }
 
     public boolean handleTransfer(JTextComponent targetComponent) {
-
+        allBeans = initAllBeans(targetComponent);
         GetPropertyCustomizer c = new GetPropertyCustomizer(this, targetComponent);
+        
         boolean accept = c.showDialog();
         if (accept) {
             String body = createBody();
@@ -83,7 +88,7 @@ public class GetProperty implements ActiveEditorDrop {
         if (beanIndex == -1)
             strBean = " name=\"" + bean + "\""; // NOI18N
         else 
-            strBean = " name=\"" + implicitBeans[beanIndex] + "\""; // NOI18N
+            strBean = " name=\"" + allBeans.get(beanIndex).getId() + "\""; // NOI18N
         
         String strProperty = " property=\"" + property + "\""; // NOI18N
         
@@ -115,5 +120,56 @@ public class GetProperty implements ActiveEditorDrop {
     public void setProperty(String property) {
         this.property = property;
     }
+
+    protected List<BeanDescr> initAllBeans(JTextComponent targetComponent) {
+       ArrayList<BeanDescr> res = new ArrayList<BeanDescr>();
+        for (int i = 0; i < implicitBeans.length; i++) {
+            String id = implicitBeans[i];
+            String fqcn = implicitTypes[i];
+            res.add(new BeanDescr(id, fqcn));
+        }
+        PageInfo.BeanData[] bd = JSPPaletteUtilities.getAllBeans(targetComponent);
+        for (int i = 0; i < bd.length; i++) {
+            BeanData beanData = bd[i];
+            res.add(new BeanDescr(beanData.getId(), beanData.getClassName()));
+        }
+
+        return res;
+    }
+      
+    class BeanDescr {
+        private String id;
+        private String fqcn;
+
+        public void setFqcn(String fqcn) {
+            this.fqcn = fqcn;
+        }
+
+        public String getFqcn() {
+            return fqcn;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public BeanDescr(String id, String fqcn) {
+            this.id = id;
+            this.fqcn = fqcn;
+        }
+
+        @Override
+        public String toString() {
+            return id;
+        }
         
+    }
+    
+    public List<BeanDescr> getAllBeans(){
+        return allBeans;
+    }
 }
