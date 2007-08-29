@@ -269,13 +269,13 @@ final class Analyzer {
         boolean onLine = hintSeverity == HintSeverity.CURRENT_LINE_WARNING;
         switch (leaf.getKind()) {
         case CLASS:
-            return access.isAccessible(javac, path, !onLine)
+            return access.isAccessible(javac, path, false)
                     && (!onLine || isInHeader(javac, (ClassTree) leaf, caret));
         case METHOD:
-            return access.isAccessible(javac, path, !onLine)
+            return access.isAccessible(javac, path, false)
                     && (!onLine || isInHeader(javac, (MethodTree) leaf, caret));
         case VARIABLE:
-            return access.isAccessible(javac, path, !onLine);
+            return access.isAccessible(javac, path, false);
         }
         return false;
     }
