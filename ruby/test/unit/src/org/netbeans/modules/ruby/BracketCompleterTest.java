@@ -651,6 +651,19 @@ public class BracketCompleterTest extends RubyTestBase {
         deleteChar("x=/^/", "x=^");
     }
     
+
+    public void testPercentBackspace() throws Exception {
+        deleteChar("x=\"#{^}\"", "x=\"^\"");
+    }
+
+    public void testPercentBackspace2() throws Exception {
+        deleteChar("x=\"#{a^}\"", "x=\"#{^}\"");
+    }
+
+    public void testPercentBackspace3() throws Exception {
+        deleteChar("x=\"a#{^}b\"", "x=\"a^b\"");
+    }
+    
     public void testContComment() throws Exception {
         if (BracketCompleter.CONTINUE_COMMENTS) {
             insertBreak("# ^", "# \n# ^");
@@ -740,15 +753,31 @@ public class BracketCompleterTest extends RubyTestBase {
 //    }
 //    
 
+
     public void testInsertPercentInString() throws Exception {
         insertChar("x = \"foo ^\"", '#', "x = \"foo #{^}\"");
     }
 
-    // This is broken!
-//    public void testInsertPercentInString2() throws Exception {
-//        // Make sure type-through works
-//        insertChar("x = \"foo #{^}\"", '}', "x = \"foo #{}^\"");
-//    }
+    public void testInsertPercentInString2() throws Exception {
+        // Make sure type-through works
+        insertChar("x = \"foo #{^}\"", '}', "x = \"foo #{}^\"");
+    }
+
+    public void testInsertPercentInString3() throws Exception {
+        insertChar("x = \"foo #{^}\"", '{', "x = \"foo #{^}\"");
+    }
+
+    public void testInsertPercentInString4() throws Exception {
+        insertChar("x = \"foo #{^a}\"", '}', "x = \"foo #{}^a}\"");
+    }
+
+    public void testInsertPercentInString5() throws Exception {
+        insertChar("x = \"foo {^}\"", '}', "x = \"foo {}^}\"");
+    }
+
+    public void testInsertPercentInString6() throws Exception {
+        insertChar("x = \"foo {^}\"", '{', "x = \"foo {{^}\"");
+    }
 
     public void testNoInsertPercentInString() throws Exception {
         insertChar("x = 'foo ^'", '#', "x = 'foo #^'");

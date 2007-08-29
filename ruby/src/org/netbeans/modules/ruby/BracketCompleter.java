@@ -770,6 +770,51 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
             TokenId id = token.id();
 
+            if ((ch == '{') && (id == RubyTokenId.ERROR && dotPos > 0)) {
+                Token<? extends GsfTokenId> prevToken = LexUtilities.getToken(doc, dotPos-1);
+                TokenId prevId = prevToken.id();
+                if (prevId == RubyTokenId.STRING_LITERAL) {
+                    // Avoid case where typing "#{" ends up as #{{ if user
+                    // isn't used to the #{^} auto-insertion
+                    if (dotPos > 1) {
+                        String s = doc.getText(dotPos-2, 2);
+                        if ("#{".equals(s)) { // NOI18N
+                            doc.remove(dotPos, 1);
+                            caret.setDot(dotPos); // skip closing bracket
+                            return true;
+                        }
+                    }
+                }
+            }
+             
+            if (ch == '}' && (id == RubyTokenId.QUOTED_STRING_LITERAL)) {
+                Token<? extends GsfTokenId> prevToken = LexUtilities.getToken(doc, dotPos-1);
+                TokenId prevId = prevToken.id();
+                if (prevId == RubyTokenId.EMBEDDED_RUBY) {
+                    if (dotPos < doc.getLength()-1) {
+                        char c = doc.getText(dotPos+1, 1).charAt(0);
+                        if (c == '}') {
+                            doc.remove(dotPos, 1);
+                            caret.setDot(dotPos+1); // skip closing bracket
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            // This only kicks in when #{} has no content
+            if ((ch == '}') && id == RubyTokenId.EMBEDDED_RUBY) {
+                // Support type-through of } when we have #{^}
+                if (dotPos < doc.getLength()-1) {
+                    char c = doc.getText(dotPos+1, 1).charAt(0);
+                    if (c == '}') {
+                        doc.remove(dotPos, 1);
+                        caret.setDot(dotPos+1); // skip closing bracket
+                        return true;
+                    }
+                }
+            }
+
             if (id == RubyTokenId.ANY_OPERATOR) {
                 int length = token.length();
                 String s = token.text().toString();
@@ -1023,6 +1068,19 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 target.getCaret().setDot(dotPos-1);
                 
                 return true;
+            }
+        }
+        
+        if (ch == '{') {
+            // Attempt to fix #{} in chars
+            Token<? extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos-1);
+            if (token != null && token.id() == RubyTokenId.QUOTED_STRING_LITERAL) {
+                String s = document.getText(dotPos-1, 2);
+                if ("#}".equals(s)) {
+                    // We have just deleted a #{} segment
+                    doc.remove(dotPos-1, 2);
+                    target.getCaret().setDot(dotPos-1);
+                }
             }
         }
 
