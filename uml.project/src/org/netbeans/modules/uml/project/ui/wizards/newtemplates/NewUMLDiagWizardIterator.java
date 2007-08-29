@@ -264,11 +264,11 @@ public final class NewUMLDiagWizardIterator
          
          if (dDetails != null)
          {
-             UMLSettings.getDefault().incrementDiagramCount(
-                 dDetails.getName(), dDetails.getDiagramKind());
+//             UMLSettings.getDefault().incrementDiagramCount(
+//                 dDetails.getName(), dDetails.getDiagramKind());
              
-             UMLProjectGenerator.createNewDiagram(
-                 dDetails.getNamespace(), dDetails.getDiagramKind(), dDetails.getName());
+             UMLProjectGenerator.createNewDiagram(dDetails.getNamespace(), 
+                 dDetails.getDiagramKind(), dDetails.getName());
          }
          break;
       }

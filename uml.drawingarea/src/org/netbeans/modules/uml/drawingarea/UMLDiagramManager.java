@@ -218,7 +218,7 @@ public class UMLDiagramManager
             String diagramName,
             IDiagramCallback callback)
     {
-        UMLSettings.getDefault().incrementDiagramCount(diagramName, diagramKind);
+        // UMLSettings.getDefault().incrementDiagramCount(diagramName, diagramKind);
         IDiagram retDia = doCreateDiagram(diagramKind, namespace, diagramName);
         
         if (retDia != null && callback != null)

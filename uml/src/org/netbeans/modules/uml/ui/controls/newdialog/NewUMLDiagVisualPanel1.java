@@ -23,7 +23,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.Icon;
@@ -43,26 +42,25 @@ import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.UMLSettings;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 public final class NewUMLDiagVisualPanel1 extends JPanel
-        implements DocumentListener, ListSelectionListener, 
-        ActionListener, INewUMLFileTemplates {
+    implements DocumentListener, ListSelectionListener, 
+        ActionListener, INewUMLFileTemplates 
+{
     
     private NewUMLDiagWizardPanel1 panel;
     private Document m_doc = null;
     private java.util.List saveNamespaces = new java.util.ArrayList();
     private INewDialogDiagramDetails mDetails = null;
-    private int diagramCount = UMLSettings.getDefault().getNewDiagramCount();
+    // private int diagramCount = UMLSettings.getDefault().getNewDiagramCount();
 
     private java.util.ResourceBundle bundle =
         NbBundle.getBundle(NewUMLDiagVisualPanel1.class);
@@ -84,7 +82,7 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
         nameSpace.addActionListener(this);
     }
     
-    private List<String> namespaceChildNames = null;
+    // private List<String> namespaceChildNames = null;
     
     private void updateDefaultDiagramName()
     {
@@ -94,8 +92,14 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
             defaultName = NewDialogUtilities.getDefaultDiagramName();
 
         else
-            defaultName = ((String)diagramTypes.getSelectedValue()) +
-                " " + diagramCount; // NOI18N
+        {
+            defaultName = NewDialogUtilities.getDefaultDiagramName(
+                NewDialogUtilities.diagramNameToKind(
+                (String)diagramTypes.getSelectedValue()));
+            
+//            defaultName = ((String)diagramTypes.getSelectedValue()) +
+//                " " + diagramCount; // NOI18N
+        }
         
         diagName.setText(defaultName);
     }

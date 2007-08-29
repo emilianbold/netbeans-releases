@@ -58,6 +58,7 @@ import org.openide.windows.TopComponent;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
+import org.netbeans.modules.uml.project.ui.nodes.UMLModelRootNode;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogResultProcessor;
 import org.netbeans.modules.uml.ui.controls.newdialog.ProjectLocationPanel;
 import org.openide.DialogDescriptor;
@@ -277,13 +278,23 @@ public class UMLProductProjectManager implements IProductProjectManager {
         return retDia;
     }
     
-    public IProject getCurrentProject() {
+    public IProject getCurrentProject() 
+    {
         IProject retVal = null;
-        
         Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-        for(Node node : nodes) {
+        
+        for (Node node : nodes) 
+        {
             IElement element = (IElement)node.getCookie(IElement.class);
-            if(element != null) {
+            
+            if (element == null && node.getCookie(UMLModelRootNode.class) != null)
+            {
+                element = (IElement)node.getParentNode()
+                    .getLookup().lookup(UMLProject.class);
+            }
+                
+            if (element != null) 
+            {
                 retVal = element.getProject();
                 break;
             }

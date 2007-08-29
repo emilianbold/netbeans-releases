@@ -22,6 +22,8 @@
 package org.netbeans.modules.uml.ui.controls.newdialog;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
@@ -48,12 +50,15 @@ import org.netbeans.modules.uml.core.roundtripframework.RTMode;
 import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
+import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
 import org.netbeans.modules.uml.core.workspacemanagement.WorkspaceManagementException;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductProjectManager;
+import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
+import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -644,10 +649,49 @@ public class NewDialogUtilities
         return NbBundle.getMessage (NewDialogUtilities.class, key);
     }
     
+    
     public static String getDefaultDiagramName(int kind)
     {
-        return getDefaultDiagramBaseName(kind) + " " + // NOI18N
-            UMLSettings.getDefault().getNewDiagramCount();
+        return getDefaultDiagramBaseName(kind) + " " + getNextDiagramCounter(kind); // NOI18N
+        
+//        return getDefaultDiagramBaseName(kind) + " " + // NOI18N
+//            UMLSettings.getDefault().getNewDiagramCount();
+    }
+     
+    public static int getNextDiagramCounter(int kind)
+    {
+        ETList<IProxyDiagram> diagrams = ProxyDiagramManager.instance()
+            .getDiagramsInProject(getProject());
+        
+        String baseName = getDefaultDiagramBaseName(kind);
+        int baseLength = baseName.length();
+        int maxNumber = 0;
+        
+        for (IProxyDiagram diagram: diagrams)
+        {
+            if (diagram.getDiagramKind() == kind)
+            {
+                String dname = diagram.getName();
+                if (dname.length() > baseLength && dname.startsWith(baseName))
+                {
+                    String ending = dname.substring(baseLength).trim();
+                    
+                    try
+                    {
+                        Integer number = Integer.valueOf(ending);
+                        if (number > maxNumber)
+                            maxNumber = number;
+                    }
+                    
+                    catch (NumberFormatException ex)
+                    {
+                        // silently ignore this; means it wasn't a number
+                    }
+                }
+            } // for
+        }
+        
+        return ++maxNumber;
     }
    
    public static String getDefaultElementName()
