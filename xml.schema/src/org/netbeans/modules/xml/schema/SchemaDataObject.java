@@ -22,12 +22,14 @@ package org.netbeans.modules.xml.schema;
 import java.io.IOException;
 import javax.swing.Action;
 import javax.xml.transform.Source;
+import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.modules.xml.refactoring.CannotRefactorException;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.ui.ModelProvider;
 import org.netbeans.modules.xml.schema.actions.SchemaViewOpenAction;
 import org.netbeans.modules.xml.schema.multiview.SchemaMultiViewSupport;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.TransformableSupport;
@@ -65,7 +67,6 @@ public final class SchemaDataObject extends MultiDataObject {
     public SchemaDataObject(FileObject obj, UniFileLoader loader) throws
             DataObjectExistsException {
         super(obj, loader);
-
         CookieSet set = getCookieSet();
         // editor support defines MIME type understood by EditorKits registry
         schemaEditorSupport = new SchemaEditorSupport(this);
@@ -79,6 +80,7 @@ public final class SchemaDataObject extends MultiDataObject {
         set.add(new SchemaValidateXMLCookie(this));
         // ViewComponentCookie implementation
         set.add(new SchemaMultiViewSupport(this));
+        set.assign(FileEncodingQueryImplementation.class, XmlFileEncodingQueryImpl.singleton());
     }
 
     /**
