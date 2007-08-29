@@ -56,7 +56,12 @@ public interface RootInterface extends CommonDDBean {
      * @return status value
      */
     public int getStatus();
-        
+
+    /**
+     * Confirms that the DD passed in is the proxied DD owned by this interface
+     */
+    public boolean isEventSource(RootInterface rootDD);
+    
     /** 
      * Writes the deployment descriptor data from deployment descriptor bean graph to file object.<br>
      * This is more convenient method than {@link org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean#write} method.<br>

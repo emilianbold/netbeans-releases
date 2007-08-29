@@ -427,4 +427,8 @@ public class SunApplicationProxy implements SunApplication, RootInterfaceImpl {
         return false;
     }
     
+    public boolean isEventSource(RootInterface rootDD) {
+        return appRoot != null && appRoot == rootDD;
+    }
+    
 }

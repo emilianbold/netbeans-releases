@@ -17,6 +17,9 @@
                     public int getStatus() {
                         return STATE_VALID;
                     }
+                    public boolean isEventSource(org.netbeans.modules.j2ee.sun.dd.api.RootInterface rootDD) {
+                        return this == rootDD;
+                    }
                     public void setJmsResource(int index, org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value){}
                     public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource getJmsResource(int index){
                         return null;

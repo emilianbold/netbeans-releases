@@ -629,4 +629,8 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
         return false;
     }
     
+    public boolean isEventSource(RootInterface rootDD) {
+        return appClientRoot != null && appClientRoot == rootDD;
+    }
+    
 }

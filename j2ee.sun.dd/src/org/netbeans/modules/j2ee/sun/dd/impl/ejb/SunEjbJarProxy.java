@@ -447,4 +447,8 @@ public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
         return false;
     }
     
+    public boolean isEventSource(RootInterface rootDD) {
+        return ejbJarRoot != null && ejbJarRoot == rootDD;
+    }
+    
 }

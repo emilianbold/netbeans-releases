@@ -431,4 +431,8 @@ public class SunCmpMappingsProxy implements SunCmpMappings, RootInterfaceImpl {
         return false;
     }
     
+    public boolean isEventSource(RootInterface rootDD) {
+        return cmpMappingsRoot != null && cmpMappingsRoot == rootDD;
+    }
+    
 }

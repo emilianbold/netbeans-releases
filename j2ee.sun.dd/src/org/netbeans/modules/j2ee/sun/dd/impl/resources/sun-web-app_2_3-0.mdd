@@ -24,6 +24,9 @@
                     public int getStatus() {
                         return STATE_VALID;
                     }
+                    public boolean isEventSource(org.netbeans.modules.j2ee.sun.dd.api.RootInterface rootDD) {
+                        return this == rootDD;
+                    }
                     // Map 2.4.0 style naming ("myclassloader") to 2.3.0 style ("classloader")
                     public void setMyClassLoader(boolean value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
                         setClassLoader(value);

@@ -611,7 +611,7 @@ public class ResourcesProxy implements Resources, RootInterfaceImpl {
                 new java.beans.PropertyChangeEvent(this, PROPERTY_STATUS, Integer.valueOf(ddStatus), Integer.valueOf(value));
             ddStatus=value;
             for (int i=0;i<listeners.size();i++) {
-                ((java.beans.PropertyChangeListener)listeners.get(i)).propertyChange(evt);
+                listeners.get(i).propertyChange(evt);
             }
         }
     }
@@ -619,6 +619,10 @@ public class ResourcesProxy implements Resources, RootInterfaceImpl {
     public boolean isTrivial(String nameProperty) {
         // Root nodes are non-trivial by definition.
         return false;
+    }
+    
+    public boolean isEventSource(RootInterface rootDD) {
+        return resourcesRoot != null && resourcesRoot == rootDD;
     }
     
 }

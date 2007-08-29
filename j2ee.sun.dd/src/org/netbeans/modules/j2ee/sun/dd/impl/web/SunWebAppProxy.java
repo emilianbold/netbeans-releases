@@ -907,4 +907,8 @@ public class SunWebAppProxy implements SunWebApp, RootInterfaceImpl {
         return false;
     }
     
+    public boolean isEventSource(RootInterface rootDD) {
+        return webRoot != null && webRoot == rootDD;
+    }
+    
 }

@@ -25,6 +25,9 @@
                 public int getStatus() {
                     return STATE_VALID;
                 }
+                public boolean isEventSource(org.netbeans.modules.j2ee.sun.dd.api.RootInterface rootDD) {
+                    return this == rootDD;
+                }
                 //Not in web_2_4-1
                 public void setMyClassLoader(boolean value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_4_1);

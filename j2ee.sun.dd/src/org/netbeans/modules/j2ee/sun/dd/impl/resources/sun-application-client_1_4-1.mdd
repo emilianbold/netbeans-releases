@@ -22,6 +22,9 @@
                 public int getStatus() {
                     return STATE_VALID;
                 }
+                public boolean isEventSource(org.netbeans.modules.j2ee.sun.dd.api.RootInterface rootDD) {
+                    return this == rootDD;
+                }
                 public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
                         throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunApplicationClient.VERSION_1_4_1);
                 } 
