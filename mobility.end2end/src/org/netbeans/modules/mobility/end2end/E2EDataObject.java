@@ -320,6 +320,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
             mapping.setProperty( "instance", className );
             
 //            while( SourceUtils.isScanInProgress()) {}
+            //todo!!!!!
             Thread.sleep( 5000 );
             
             registry.updateClassDataTree();

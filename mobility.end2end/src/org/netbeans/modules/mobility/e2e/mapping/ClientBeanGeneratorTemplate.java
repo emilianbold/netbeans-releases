@@ -53,21 +53,21 @@ import org.openide.util.NbBundle;
  */
 public class ClientBeanGeneratorTemplate extends JavonTemplate {
 
-    private static final String BEANS_OUTPUT = "client-template";
+    private static final String BEANS_OUTPUT = "client-template"; //NOI18N
     
     public ClientBeanGeneratorTemplate( JavonMapping mapping ) {
         super( mapping );
     }
 
     public Set<String> getTargets() {
-        Set<String> targets = new HashSet( 1 );
+        Set<String> targets = new HashSet<String>( 1 );
         targets.add( BEANS_OUTPUT );
         return targets;
     }
 
     public boolean generateTarget( ProgressHandle ph, String target ) {
         if( BEANS_OUTPUT.equals( target )) {
-            ph.progress( NbBundle.getMessage( ClientBeanGeneratorTemplate.class, "MSG_Bean_Generation" ));
+            ph.progress( NbBundle.getMessage( ClientBeanGeneratorTemplate.class, "MSG_Bean_Generation" )); //NOI18N
             Set<Service> services = mapping.getServiceMappings();
             Map<String, ClassData> types = new HashMap<String, ClassData>();
             for( Service service : services ) {
@@ -89,11 +89,11 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
                         FileObject outputDir = FileUtil.toFileObject( FileUtil.normalizeFile( 
                             new File( mapping.getClientMapping().getOutputDirectory())));                    
                         String packageName = type.getPackage();
-                        StringTokenizer token = new StringTokenizer( packageName, "." );
-                        FileObject destination = FileUtil.createFolder( outputDir, packageName.replace( '.', '/' ));
-                        FileObject beanFile = destination.getFileObject( type.getName(), "java" );
+                        StringTokenizer token = new StringTokenizer( packageName, "." ); //NOI18N
+                        FileObject destination = FileUtil.createFolder( outputDir, packageName.replace( '.', '/' )); //NOI18N
+                        FileObject beanFile = destination.getFileObject( type.getName(), "java" ); //NOI18N
                         if( beanFile == null ) {
-                                beanFile = destination.createData( type.getName(), "java" );
+                                beanFile = destination.createData( type.getName(), "java" ); //NOI18N
                         }
                         
                         generateBean( beanFile, type );
@@ -114,15 +114,15 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
             OutputFileFormatter off = new OutputFileFormatter( outputFile );
 
             ScriptEngineManager mgr = new ScriptEngineManager();
-            ScriptEngine eng = mgr.getEngineByName( "freemarker" );
+            ScriptEngine eng = mgr.getEngineByName( "freemarker" ); //NOI18N
             Bindings bind = eng.getContext().getBindings( ScriptContext.ENGINE_SCOPE );
 
-            FileObject template = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject( "Templates/Client/Bean.java" );        
-            bind.put( "mapping", mapping );
-            bind.put( "registry", mapping.getRegistry());
-            bind.put( "bean", beanType );
-            bind.put( "createStubs", mapping.getProperty( "create-stubs" ).equals( "true" ));
-            bind.put( "utils", new Utils( mapping.getRegistry()));
+            FileObject template = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject( "Templates/Client/Bean.java" ); //NOI18N
+            bind.put( "mapping", mapping ); //NOI18N
+            bind.put( "registry", mapping.getRegistry()); //NOI18N
+            bind.put( "bean", beanType ); //NOI18N
+            bind.put( "createStubs", mapping.getProperty( "create-stubs" ).equals( "true" )); //NOI18N
+            bind.put( "utils", new Utils( mapping.getRegistry())); //NOI18N
             
             Writer w = null;
             Reader is = null;

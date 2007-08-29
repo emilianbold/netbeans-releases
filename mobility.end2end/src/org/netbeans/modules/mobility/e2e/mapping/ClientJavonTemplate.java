@@ -77,9 +77,9 @@ public class ClientJavonTemplate extends JavonTemplate {
                         new File( mapping.getClientMapping().getOutputDirectory())));
                 outputDir = outputDir.getFileObject( mapping.getClientMapping().getPackageName().replace( '.', '/' ));
 
-                FileObject outputFile = outputDir.getFileObject( service.getClassName(), "java" );
+                FileObject outputFile = outputDir.getFileObject( mapping.getClientMapping().getClassName(), "java" );
                 if( outputFile == null ) {
-                    outputFile = outputDir.createData( service.getClassName(), "java" );
+                    outputFile = outputDir.createData( mapping.getClientMapping().getClassName(), "java" );
                 }
                 OutputFileFormatter off = new OutputFileFormatter( outputFile );
 

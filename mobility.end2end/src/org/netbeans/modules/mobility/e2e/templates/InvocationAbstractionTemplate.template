@@ -12,7 +12,7 @@ import javax.servlet.http.HttpSession;
  *  This interface is used to abstract the servlet from the functionality be it
  *  an EJB or a plain Java class or a Web service.
  */
-public abstract class InvocationAbstraction {
+public interface InvocationAbstraction {
     /**
      *  This method performs the actual invocation of server functionality. It is
      *  used by the servlet to delegate functionality to external classes.
@@ -22,19 +22,13 @@ public abstract class InvocationAbstraction {
      * @return The return value for the method NULL IS NOT SUPPORTED!!!!
      * @throws java.lang.Exception Thrown when a protocol error occurs
      */
-    public abstract Object invoke(HttpSession session, DataInput input) throws Exception;
+    public Object invoke(HttpSession session, DataInput input) throws Exception;
 
-    <#-- I am not sure, how/if void should be registered here -->
-    public static int[] getIds() {
-            return new int[] {
-                <#list mapping.getServiceMappings() as service>
-                <#list service.getMethods() as method>
-                <#list method.getParameters() as parameter>
-                    ${registry.getRegisteredTypeId( parameter.getType())}<#if parameter_has_next || method_has_next || service_has_next>, </#if>
-                </#list>
-                </#list>
-                </#list>
-                };
-        };
+    /**
+    * Return ID's for parameters in order they are called
+    */
+    public int[] getIds();
+
+    public int[] getReturnIds();
 }
 //GEN-END:Client

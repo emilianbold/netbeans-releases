@@ -24,7 +24,7 @@ public class JavonGateways {
     /**
      *  This class implements the application server connectivity specific to the needs.
      */
-    public static class ${packageName?replace( ".", "_" )}_${className}${method.getName()}${method.getRequestID()}Gateway extends InvocationAbstraction {
+    public static class ${packageName?replace( ".", "_" )}_${className}${method.getName()}${method.getRequestID()}Gateway implements InvocationAbstraction {
 
         /**
          *  This method performs the actual invocation of server functionality. It is
@@ -60,8 +60,21 @@ public class JavonGateways {
                 </#if>
             </#if>
         }
-    }
 
+        public int[] getIds() {
+            return new int[] {
+                <#list method.getParameters() as parameter>
+                    ${registry.getRegisteredTypeId( parameter.getType())}<#if method_has_next> </#if>
+                </#list>
+                };
+        };
+
+        public int[] getReturnIds() {
+            return new int[] {
+                ${registry.getRegisteredTypeId( method.getReturnType() )}
+                };
+        };
+    }
     </#list>
     </#list>
 

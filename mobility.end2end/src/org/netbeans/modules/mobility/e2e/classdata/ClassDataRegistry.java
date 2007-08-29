@@ -33,6 +33,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.mobility.e2e.mapping.PrimitiveTypeSerializer;
 import org.netbeans.modules.mobility.javon.JavonProfileProvider;
 import org.netbeans.modules.mobility.javon.JavonSerializer;
 import org.netbeans.modules.mobility.javon.Traversable;
@@ -256,7 +257,7 @@ public class ClassDataRegistry {
     public Set<ClassData> getRegisteredTypes() {
         if ( typeMap == null )
             updateClassDataTree();
-        return Collections.unmodifiableSet(new HashSet(typeMap.values()));
+        return Collections.unmodifiableSet(new HashSet<ClassData>(typeMap.values()));
     }
 
     /**
@@ -267,7 +268,7 @@ public class ClassDataRegistry {
     public Set<ClassData> getReturnTypes() {
         if ( typeMap == null )
             updateClassDataTree();
-        Set<ClassData> result=new HashSet();
+        Set<ClassData> result=new HashSet<ClassData>();
 
         for (ClassData clsData: typeMap.values()) {
             for (MethodData mthData : clsData.getMethods())

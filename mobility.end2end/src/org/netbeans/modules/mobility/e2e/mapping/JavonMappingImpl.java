@@ -129,7 +129,7 @@ public class JavonMappingImpl implements JavonMapping {
      * @return 
      */
     public Set<JavonMapping.Service> getServiceMappings() {
-        return new HashSet( serviceMappings.values());
+        return new HashSet<JavonMapping.Service>( serviceMappings.values());
     }
             
     /**

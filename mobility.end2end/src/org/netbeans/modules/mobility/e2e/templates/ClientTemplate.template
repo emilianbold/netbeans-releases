@@ -8,10 +8,13 @@ import java.util.*;
 import java.io.*;
 import javax.microedition.io.*;
 
+<#list imports as import>
+import ${import};
+</#list>
 /**
  *
  */
-public class ${service.getClassName()} {
+public class ${mapping.getClientMapping().getClassName()} {
 
     /** The URL of the servlet gateway */
     private String serverURL;
@@ -29,7 +32,7 @@ public class ${service.getClassName()} {
      * Constructs a new WebToMobileClient
      * and initializes the URL to the servlet gateway from a hard-coded value.
      */
-    public ${service.getClassName()}() {
+    public ${mapping.getClientMapping().getClassName()}() {
     <#assign server = mapping.getServerMapping()/>
         this("http://${server.getLocation()}:${server.getPort()}/${server.getServletLocation()}");
     }
@@ -40,7 +43,7 @@ public class ${service.getClassName()} {
      *
      * @param serverURL URL of the deployed servlet
      */
-    public ${service.getClassName()}(String serverURL) {
+    public ${mapping.getClientMapping().getClassName()}(String serverURL) {
         this.serverURL = serverURL;
     }
 
@@ -111,7 +114,8 @@ public class ${service.getClassName()} {
         /* Write the byte signifying that only one call
          * is being made.
          */
-        output.writeShort(1 /* one call to be made to the server */);
+        // TODO This is not reflected on server now
+        //output.writeShort(1 /* one call to be made to the server */);
         
         output.writeInt(requestID);
         for (int i = 0; i < parameters.length; i++ ) {
@@ -137,7 +141,7 @@ public class ${service.getClassName()} {
         short errorCode = input.readShort();
         if (errorCode != 1) {
             // there was a remote exception
-            throw new IOException((String) readObject(input));
+            throw new IOException(input.readUTF());
         }
         
         Object returnValue = readObject(input);
@@ -184,19 +188,22 @@ public class ${service.getClassName()} {
         Object result;
         switch (type) {
         <#list utils.getReturnTypeInstances( service ) as type>
-            <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
-            <#if type.getName() != "void">
+            <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>            
                 case ${registry.getRegisteredTypeId( type )}:
+                    <#if type.getName() == "void">
+                        //void
+                        return _;
+                    <#else>    
                     <#if type.isPrimitive() && !type.isArray()>
                         <#assign typeFromStream = serializer.fromStream( mapping, type, "in", null )/>
                         // Primitive
                         return ${serializer.toObject( type, typeFromStream )};
                     <#else>
-                        // COmplex
+                        // Complex
                         ${serializer.fromStream( mapping, type, "in", "result" )}
                         return result;
                     </#if>
-            </#if>
+                    </#if>
         </#list>
             case -1: /* NULL */
                 return null;

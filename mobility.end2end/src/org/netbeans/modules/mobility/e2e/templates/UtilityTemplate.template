@@ -100,7 +100,7 @@ public class Utility {
                     // Primitive
                     return ${serializer.toObject( type, typeFromStream )};
                 <#else>
-                    // COmplex
+                    // Complex
                     ${serializer.fromStream( mapping, type, "in", "result" )}
                     return result;
                 </#if>

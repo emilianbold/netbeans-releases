@@ -131,7 +131,7 @@ public class ServerJavonTemplate extends JavonTemplate {
             Set<ClassData> parameterInstanceTypes = new HashSet<ClassData>();
             
             Utils utils = new Utils( mapping.getRegistry());
-            
+
             for( JavonMapping.Service service : mapping.getServiceMappings()) {
                 returnTypes.addAll( service.getReturnTypes());
                 parameterTypes.addAll( service.getParameterTypes());
