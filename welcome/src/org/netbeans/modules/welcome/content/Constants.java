@@ -44,7 +44,7 @@ public interface Constants {
     static final Font RSS_DESCRIPTION_FONT = new Font( null, Font.PLAIN, FONT_SIZE-1 );
     static final Font TAB_FONT = new Font( Utils.getPreferredFontName(), Font.BOLD, FONT_SIZE+2 ); //NOI18N
     static final Font WELCOME_LABEL_FONT = new Font( Utils.getPreferredFontName(), Font.BOLD, FONT_SIZE+2 ) ; //NOI18N
-    static final Font SECTION_HEADER_FONT = new Font( Utils.getPreferredFontName(), Font.BOLD, FONT_SIZE+17 ); //NOI18N
+    static final Font SECTION_HEADER_FONT = new Font( Utils.getPreferredFontName(), Font.BOLD, FONT_SIZE+12 ); //NOI18N
 
     static final String BULLET_IMAGE = "org/netbeans/modules/welcome/resources/bullet.png"; // NOI18N
     static final String SUN_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/sun_logo.png"; // NOI18N
@@ -86,4 +86,6 @@ public interface Constants {
     static final int TEXT_INSETS_RIGHT = 10;
 
     static final Border HEADER_TEXT_BORDER = BorderFactory.createEmptyBorder( 1, TEXT_INSETS_LEFT, 1, TEXT_INSETS_RIGHT );
+    
+    static final int START_PAGE_MIN_WIDTH = 600;
 }

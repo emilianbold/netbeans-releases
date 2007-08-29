@@ -24,6 +24,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.*;
 import java.awt.*;
 import javax.swing.*;
+import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.ui.StartPageContent;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -60,7 +61,12 @@ public class WelcomeComponent extends TopComponent {
         
         if( null == content ) {
             WelcomeOptions.getDefault().incrementStartCounter();
-            content = new StartPageContent();
+            JScrollPane scroll = new JScrollPane(new StartPageContent());
+            scroll.setVerticalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_NEVER );
+            scroll.setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
+            scroll.setBorder( BorderFactory.createEmptyBorder() );
+            scroll.getViewport().getView().setPreferredSize( new Dimension(Constants.START_PAGE_MIN_WIDTH,100) );
+            content = scroll;
 
             add( content, BorderLayout.CENTER );
             setFocusable( false );

@@ -25,7 +25,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import javax.swing.JButton;
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.ActionButton;
@@ -43,16 +43,17 @@ class PluginsPanel extends JPanel {
     public PluginsPanel() {
         super( new BorderLayout() );
         setOpaque( false );
-        add( new JLabel("<html>" + BundleSupport.getLabel( "PluginsContent" ) ), //NOI18N
-                BorderLayout.CENTER );
+        JLabel lbl = new JLabel("<html>" + BundleSupport.getLabel( "PluginsContent" ) ); //NOI18N
+        lbl.setBorder( BorderFactory.createEmptyBorder(0, 69, 0, 0) );
+        add( lbl, BorderLayout.CENTER );
         JPanel bottom = new JPanel( new GridBagLayout() );
         bottom.setOpaque( false );
         
-        bottom.add( new JButton( new ShowPluginManagerAction() ), 
-                new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST,
+        bottom.add( new ActionButton( new ShowPluginManagerAction(), false, null ), 
+                new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.EAST,
                 GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
         
-        bottom.add( new JLabel(), new GridBagConstraints(1,0,1,1,1.0,0.0,GridBagConstraints.WEST,
+        bottom.add( new JLabel(), new GridBagConstraints(0,0,1,1,1.0,0.0,GridBagConstraints.WEST,
                 GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
         
 //        bottom.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0,GridBagConstraints.EAST,
@@ -62,7 +63,7 @@ class PluginsPanel extends JPanel {
 
     private static class ShowPluginManagerAction extends AbstractAction {
         public ShowPluginManagerAction() {
-            super( "Add Plugins" );
+            super( BundleSupport.getLabel( "AddPlugins" ) );
         }
         
         public void actionPerformed(ActionEvent e) {

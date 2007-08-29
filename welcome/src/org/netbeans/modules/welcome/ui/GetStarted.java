@@ -86,7 +86,7 @@ class GetStarted extends JPanel implements Constants {
         }
 
         add( new JLabel(), new GridBagConstraints(0, row++, 1, 1, 0.0, 1.0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
+                GridBagConstraints.NORTHWEST, GridBagConstraints.VERTICAL, new Insets(0,0,0,0), 0, 0 ) );
     }
 
     private int addLink( int row, DataObject dob ) {
@@ -97,7 +97,7 @@ class GetStarted extends JPanel implements Constants {
             
             LinkAction la = new LinkAction( dob );
             ActionButton lb = new ActionButton( la, false, Utils.getUrlString( dob ) );
-            panel.add( lb, new GridBagConstraints(1,0,1,3,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
+            panel.add( lb, new GridBagConstraints(1,0,1,3,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
             
             panel.add( new JLabel(), 
                     new GridBagConstraints(2,0,GridBagConstraints.REMAINDER,1,1.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );

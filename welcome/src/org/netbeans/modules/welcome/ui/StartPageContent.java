@@ -20,6 +20,7 @@
 package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
@@ -40,6 +41,6 @@ public class StartPageContent extends JPanel implements Constants {
                        BorderLayout.CENTER  );
         
         setBackground( Utils.getColor( COLOR_SCREEN_BACKGROUND ) );
+        setMinimumSize( new Dimension(START_PAGE_MIN_WIDTH,100) );
     }
-
 }

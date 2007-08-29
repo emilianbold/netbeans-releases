@@ -70,7 +70,7 @@ class LearnMore extends JPanel implements Constants {
 
         WebLink more = new WebLink( "MoreTutorials", false ); //NOI18N
         add( more, new GridBagConstraints(0, maxRow == 0 ? row++ : maxRow+1, col+1, 1, 1.0, 0.0,
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(15,0,0,0), 0, 0 ) );
+                GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(15,0,0,0), 0, 0 ) );
         
 //        add( new JLabel(), new GridBagConstraints(col+1, 0, 1, 1, 1.0, 0.0,
 //                GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
