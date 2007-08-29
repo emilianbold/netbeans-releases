@@ -77,7 +77,8 @@
 
 <!-- Start of "WSIT" section -->
     <mapID target="org.netbeans.modules.websvc.wsitconf.about" url="webservice/nodes/wsitconf-about.html"/>
-   
+    <mapID target="org.netbeans.modules.websvc.wsitconf.access" url="webservice/nodes/wsitconf-access.html"/>
+
    <!-- Start of CSH -->
     <!-- Client: -->
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.BindingContainerClientNode" url="webservice/nodes/wsitconf-BindingContainerClientNode.html"/>
