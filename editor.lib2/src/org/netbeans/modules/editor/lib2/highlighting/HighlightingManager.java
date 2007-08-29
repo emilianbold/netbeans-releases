@@ -346,6 +346,8 @@ public final class HighlightingManager {
 
                 sb.append("    "); //NOI18N
                 sb.append(layerAccessor.getLayerTypeId());
+                sb.append('@'); //NOI18N
+                sb.append(Integer.toHexString(System.identityHashCode(layer)));
                 sb.append("\n"); //NOI18N
             }
             
