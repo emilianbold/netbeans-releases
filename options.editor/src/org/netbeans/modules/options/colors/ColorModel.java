@@ -262,9 +262,7 @@ public final class ColorModel {
             
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    editorPane = new JEditorPane();
                     updateMimeType(mimeType);
-                    add(editorPane, BorderLayout.CENTER);
                 }
             });
             setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
@@ -328,6 +326,11 @@ public final class ColorModel {
             // the Document, so that the layers can get recalculated.
 
             String hackMimeType = hackMimeType(exampleMimeType);
+
+            // Replace the whole component, see #113608
+            removeAll();
+            editorPane = new JEditorPane();
+            add(editorPane, BorderLayout.CENTER);
             
             Document document = editorPane.getDocument ();
             document.putProperty ("mimeType", hackMimeType);
