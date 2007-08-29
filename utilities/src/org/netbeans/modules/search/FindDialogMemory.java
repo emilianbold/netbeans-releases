@@ -55,6 +55,21 @@ public final class FindDialogMemory {
      * (initially {@code null})
      */
     private List<String> replExpressions;
+
+    /**
+     * Storage of last used Whole Words option.
+     */
+    private boolean wholeWords;
+
+    /**
+     * Storage of last used Case Sensitive option.
+     */
+    private boolean caseSensitive;
+
+    /**
+     * Storage of last used Regular Expression option.
+     */
+    private boolean regularExpression;
     
     /** Creates a new instance of FindDialogMemory */
     private FindDialogMemory() { }
@@ -169,4 +184,27 @@ public final class FindDialogMemory {
                                           : Collections.<String>emptyList();
     }
 
+    public boolean isWholeWords() {
+        return wholeWords;
+    }
+
+    public void setWholeWords(boolean wholeWords) {
+        this.wholeWords = wholeWords;
+    }
+
+    public boolean isCaseSensitive() {
+        return caseSensitive;
+    }
+
+    public void setCaseSensitive(boolean caseSensitive) {
+        this.caseSensitive = caseSensitive;
+    }
+
+    public boolean isRegularExpression() {
+        return regularExpression;
+    }
+
+    public void setRegularExpression(boolean regularExpression) {
+        this.regularExpression = regularExpression;
+    }
 }

@@ -499,6 +499,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 cboxReplacement.setModel(new ListComboBoxModel(entries, true));
             }
         }
+        
+        chkWholeWords.setSelected(memory.isWholeWords());
+        chkCaseSensitive.setSelected(memory.isCaseSensitive());
+        chkRegexp.setSelected(memory.isRegularExpression());
     }
     
     /**
@@ -752,6 +756,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             FindDialogMemory.getDefault().storeReplacementExpression(
                     replacementPatternEditor.getText());
         }
+        FindDialogMemory.getDefault().setWholeWords(chkWholeWords.isSelected());
+        FindDialogMemory.getDefault().setCaseSensitive(chkCaseSensitive.isSelected());
+        FindDialogMemory.getDefault().setRegularExpression(chkRegexp.isSelected());
     }
 
     /**
