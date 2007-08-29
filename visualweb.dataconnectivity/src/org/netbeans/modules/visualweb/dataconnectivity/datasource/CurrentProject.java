@@ -53,10 +53,8 @@ public class CurrentProject {
     private final PropertyChangeListener topComponentRegistryListener = new TopComponentRegistryListener();
     private TopComponent.Registry registry  = null;
     Set listeners = new HashSet();
-    private Project previousProject = null;    
     protected ProjectsChangedListener changedProjectsListener = new ProjectsChangedListener();
-    
-    
+        
     /** Creates a new instance of CurrentProject */
     private CurrentProject() {                        
         DataObject obj = Utilities.actionsGlobalContext().lookup(DataObject.class);
@@ -109,7 +107,7 @@ public class CurrentProject {
     }
     
     public void setProject(Project prj) {
-        previousProject = project;
+        PreviousProject.getInstance().setProject(project);
         project = prj;
     }
     
@@ -144,9 +142,11 @@ public class CurrentProject {
                     // if there are still some projects opened, reset the current project to the last project in the list
                     // otherwise set the previous project to null and remove the property change listener
                     if (!newOpenProjectsList.isEmpty()) {
-                        _instance.previousProject = newOpenProjectsList.get(newOpenProjectsList.size()-1);
-                        _instance.project = _instance.previousProject;
-                    } 
+                        PreviousProject.getInstance().setProject(newOpenProjectsList.get(newOpenProjectsList.size()-1));
+                        _instance.project = PreviousProject.getInstance().getProject();
+                    } else {
+                        PreviousProject.getInstance().setProject(null);
+                    }
                 }                
                 
                 Set<Project> openedProjectsSet = new LinkedHashSet<Project>(newOpenProjectsList);
@@ -154,7 +154,7 @@ public class CurrentProject {
                 for (Project project : openedProjectsSet) {
                     // fire an event to notify listeners that a project opened
                     _instance.project = project;
-                    _instance.previousProject = _instance.project;
+                    PreviousProject.getInstance().setProject(project);
 
                 }
             }
@@ -170,11 +170,11 @@ public class CurrentProject {
     }
     
     public void setPreviousProject(Project prj) {
-        previousProject = prj;        
+        PreviousProject.getInstance().setProject(prj);        
     } 
     
     public Project getPreviousProject() {
-        return previousProject;
+        return PreviousProject.getInstance().getProject();
     }
     
     /**
