@@ -19,7 +19,9 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session;
 
+import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.DeleteEJBDialog;
 import org.openide.loaders.DataObject;
@@ -104,7 +106,10 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
         //TODO: RETOUCHE listening on model for logical view
 //        session.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeListener, session));
         instanceContent.add(this);
-        instanceContent.add(ejbViewController.getBeanClass());
+        ElementHandle<TypeElement> beanClassHandle = ejbViewController.getBeanClass();
+        if (beanClassHandle != null) {
+            instanceContent.add(beanClassHandle);
+        }
         if (ejbViewController.getBeanDo() != null) {
             instanceContent.add(ejbViewController.getBeanDo().getPrimaryFile());
         }

@@ -19,7 +19,9 @@
 
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
+import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GenerateDTOAction;
@@ -114,7 +116,10 @@ public class EntityNode extends AbstractNode implements OpenCookie {
         //TODO: RETOUCHE listening on model for logical view
 //        model.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeListener, model));
         content.add(this);
-        content.add(controller.getBeanClass());
+        ElementHandle<TypeElement> beanClassHandle = controller.getBeanClass();
+        if (beanClassHandle != null) {
+            content.add(beanClassHandle);
+        }
         if (controller.getBeanDo() != null) {
             content.add(controller.getBeanDo());
         }

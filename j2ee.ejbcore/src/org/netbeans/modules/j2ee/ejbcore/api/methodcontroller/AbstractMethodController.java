@@ -352,23 +352,25 @@ public abstract class AbstractMethodController extends EjbMethodController {
                 return metadata.findResource(Utils.toResourceName(ejbClass));
             }
         });
-        JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final List<String> result = new ArrayList<String>();
-        try {
-            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-                public void run(CompilationController controller) throws IOException {
-                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = controller.getElements().getTypeElement(className);
-                    Types types = controller.getTypes();
-                    for (TypeMirror interfaceType : typeElement.getInterfaces()) {
-                        Element element = types.asElement(interfaceType);
-                        String interfaceFqn = ((TypeElement) element).getQualifiedName().toString();
-                        result.add(interfaceFqn);
+        if (ejbClassFO != null) {
+            JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
+            try {
+                javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                    public void run(CompilationController controller) throws IOException {
+                        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                        TypeElement typeElement = controller.getElements().getTypeElement(className);
+                        Types types = controller.getTypes();
+                        for (TypeMirror interfaceType : typeElement.getInterfaces()) {
+                            Element element = types.asElement(interfaceType);
+                            String interfaceFqn = ((TypeElement) element).getQualifiedName().toString();
+                            result.add(interfaceFqn);
+                        }
                     }
-                }
-            }, true);
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+                }, true);
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
         return result;
     }

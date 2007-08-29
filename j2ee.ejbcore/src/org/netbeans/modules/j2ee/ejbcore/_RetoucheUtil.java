@@ -102,7 +102,7 @@ public final class _RetoucheUtil {
         }
         //TODO: RETOUCHE TypeElement from Node, this one just takes main TypeElement if ElementHandle is not found
         FileObject fileObject = node.getLookup().lookup(FileObject.class);
-        if (fileObject == null) {
+        if (fileObject == null || !fileObject.isValid()) {
             return null;
         }
         JavaSource javaSource = JavaSource.forFileObject(fileObject);

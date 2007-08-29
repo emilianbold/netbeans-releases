@@ -70,24 +70,26 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> /*
                     for (String className : getInterfaces()) {
                         TypeElement intf = elements.getTypeElement(className);
                         
-                        // from home interface we want only direct methods
-                        if (className.equals(homeInterface)) {
-                            for (ExecutableElement executableElement : ElementFilter.methodsIn(intf.getEnclosedElements())) {
-                                MethodModel methodModel = MethodModelSupport.createMethodModel(controller, executableElement);
-                                keys.add(methodModel);
-                            }
-                        } else {
-                            Iterable<? extends Element> methods = elementUtilities.getMembers(intf.asType(), new ElementAcceptor() {
-                                public boolean accept(Element e, TypeMirror type) {
-                                    TypeElement parent = elementUtilities.enclosingTypeElement(e);
-                                    boolean isInInterface = ElementKind.INTERFACE == parent.getKind();
-                                    boolean isFromJavaxEjb = parent.getQualifiedName().toString().startsWith("javax.ejb."); // NOI18N
-                                    return isInInterface && !isFromJavaxEjb && ElementKind.METHOD == e.getKind();
+                        if (intf != null) {
+                            // from home interface we want only direct methods
+                            if (className.equals(homeInterface)) {
+                                for (ExecutableElement executableElement : ElementFilter.methodsIn(intf.getEnclosedElements())) {
+                                    MethodModel methodModel = MethodModelSupport.createMethodModel(controller, executableElement);
+                                    keys.add(methodModel);
                                 }
-                            });
-                            for (Element method : methods) {
-                                MethodModel methodModel = MethodModelSupport.createMethodModel(controller, (ExecutableElement) method);
-                                keys.add(methodModel);
+                            } else {
+                                Iterable<? extends Element> methods = elementUtilities.getMembers(intf.asType(), new ElementAcceptor() {
+                                    public boolean accept(Element e, TypeMirror type) {
+                                        TypeElement parent = elementUtilities.enclosingTypeElement(e);
+                                        boolean isInInterface = ElementKind.INTERFACE == parent.getKind();
+                                        boolean isFromJavaxEjb = parent.getQualifiedName().toString().startsWith("javax.ejb."); // NOI18N
+                                        return isInInterface && !isFromJavaxEjb && ElementKind.METHOD == e.getKind();
+                                    }
+                                });
+                                for (Element method : methods) {
+                                    MethodModel methodModel = MethodModelSupport.createMethodModel(controller, (ExecutableElement) method);
+                                    keys.add(methodModel);
+                                }
                             }
                         }
                     }

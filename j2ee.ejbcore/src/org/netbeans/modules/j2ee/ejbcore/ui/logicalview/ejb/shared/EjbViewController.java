@@ -179,8 +179,12 @@ public final class EjbViewController {
     }
 
     public ElementHandle<TypeElement> getBeanClass() {
+        FileObject fileObject = findFileObject(ejbClass);
+        if (fileObject == null) {
+            return null;
+        }
         try {
-            JavaSource javaSource = JavaSource.forFileObject(findFileObject(ejbClass));
+            JavaSource javaSource = JavaSource.forFileObject(fileObject);
             final List<ElementHandle<TypeElement>> result = new ArrayList<ElementHandle<TypeElement>>(1);
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController compilationController) throws IOException {
