@@ -34,6 +34,7 @@ import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -200,6 +201,7 @@ public class SendEmailAction extends NodeAction {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
                 MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel);
+                methodTree = (MethodTree) GeneratorUtilities.get(workingCopy).importFQNs(methodTree);
                 ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
                 ClassTree newClassTree = workingCopy.getTreeMaker().addClassMember(classTree, methodTree);
                 workingCopy.rewrite(classTree, newClassTree);
@@ -240,6 +242,7 @@ public class SendEmailAction extends NodeAction {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
                 MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel);
+                methodTree = (MethodTree) GeneratorUtilities.get(workingCopy).importFQNs(methodTree);
                 ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
                 ClassTree newClassTree = workingCopy.getTreeMaker().addClassMember(classTree, methodTree);
                 workingCopy.rewrite(classTree, newClassTree);
