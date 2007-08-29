@@ -76,6 +76,15 @@ public class ClassDataRegistry {
         }
     };
 
+    public static JavonSerializer findSupportingSerializer( TypeMirror type, JavonProfileProvider provider,
+                                                            Traversable traversable, Map<String, ClassData> typeCache ) {
+        for ( JavonSerializer serializer : provider.getSerializers() ) {
+            if ( serializer.isTypeSupported( traversable, type, typeCache ) )
+                return serializer;
+        }
+        return null;
+    }
+
     /**
      * Factory method which returns instance of the ClassDataRegistry
      *
@@ -139,14 +148,13 @@ public class ClassDataRegistry {
      */
 
     public Set<String> getBasePackages() {
-        if ( baseClasses == null )
-            updateClassDataTree();
-
+        if (baseClasses == null) updateClassDataTree();
         Set<String> result=new HashSet<String>();
-
-        for (ClassData clsData: baseClasses.values())
-            result.add( Utils.getPackage( clsData));
-
+        for (ClassData clsData: baseClasses.values()) {
+            String fqn = clsData.getFullyQualifiedName();
+            int index = fqn.lastIndexOf( '.' );
+            result.add(index > 0 ? fqn.substring(0, index) : ""); //NOI18N
+        }
         return Collections.unmodifiableSet( result );
     }
 
@@ -255,8 +263,7 @@ public class ClassDataRegistry {
      * @return
      */
     public Set<ClassData> getRegisteredTypes() {
-        if ( typeMap == null )
-            updateClassDataTree();
+        if (typeMap == null) updateClassDataTree();
         return Collections.unmodifiableSet(new HashSet<ClassData>(typeMap.values()));
     }
 
@@ -266,15 +273,13 @@ public class ClassDataRegistry {
      * @return Set of return ClassData types
      */
     public Set<ClassData> getReturnTypes() {
-        if ( typeMap == null )
-            updateClassDataTree();
+        if (typeMap == null) updateClassDataTree();
         Set<ClassData> result=new HashSet<ClassData>();
-
         for (ClassData clsData: typeMap.values()) {
             for (MethodData mthData : clsData.getMethods())
                 result.add( mthData.getReturnType());
         }
-        return Collections.unmodifiableSet( result );
+        return Collections.unmodifiableSet(result);
     }
 
     /**
@@ -283,10 +288,8 @@ public class ClassDataRegistry {
      * @return Set of parameter ClassData types
      */
     public Set<ClassData> getParameterTypes() {
-        if ( typeMap == null )
-            updateClassDataTree();
-        Set<ClassData> result=new HashSet();
-
+        if (typeMap == null) updateClassDataTree();
+        Set<ClassData> result = new HashSet();
         for (ClassData clsData:typeMap.values())
             for (MethodData mthData : clsData.getMethods())
                 result.addAll( mthData.getReturnType().getParameterTypes());
@@ -342,10 +345,9 @@ public class ClassDataRegistry {
         private ClassData getServiceType( TypeMirror type ) {
             if ( TypeKind.DECLARED == type.getKind() ) {
                 TypeElement clazz = (TypeElement) ( (DeclaredType) type ).asElement();
-
-                String packageName=Utils.getPackage( clazz);
-                JavonSerializer serializer=Utils.findSupportingSerializer( type, this.profileProvider, this, new HashMap<String,ClassData>());
-
+                String packageName=clazz.getQualifiedName().toString();
+                packageName = packageName.length() == clazz.getSimpleName().toString().length() ? "" : packageName.substring(0, packageName.lastIndexOf('.')); //NOI18N
+                JavonSerializer serializer=findSupportingSerializer( type, this.profileProvider, this, new HashMap<String,ClassData>());
                 // Process methods
                 List<MethodData> methods=new ArrayList<MethodData>(0);
                 for ( ExecutableElement e : ElementFilter.methodsIn( clazz.getEnclosedElements() ) ) {
@@ -416,10 +418,7 @@ public class ClassDataRegistry {
         }
 
         public boolean isTypeSupported( TypeMirror type, Map<String, ClassData> typeCache ) {
-            if ( Utils.findSupportingSerializer( type, this.profileProvider, this, typeCache ) != null )
-                return true;
-            else
-                return false;
+            return findSupportingSerializer(type, this.profileProvider, this, typeCache) != null;
         }
 
         public JavonSerializer registerType(ClassData type) {

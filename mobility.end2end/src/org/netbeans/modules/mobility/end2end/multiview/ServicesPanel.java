@@ -23,6 +23,7 @@
  * Created on July 25, 2005, 10:28 AM
  */
 package org.netbeans.modules.mobility.end2end.multiview;
+import java.util.HashSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
 import org.netbeans.modules.mobility.end2end.classdata.*;
@@ -55,6 +56,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
+import org.netbeans.modules.mobility.e2e.classdata.MethodParameter;
 
 
 /**
@@ -198,16 +200,25 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                         WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
                         if( port != null && !portNode.getName().equals( port.getName())) continue;
                         org.netbeans.modules.mobility.e2e.classdata.ClassData cd = registry.getClassData( wsdlPort.getJavaName());
+                        HashSet<String> methodIDs = new HashSet();
+                        if (cd != null) {
+                            for( org.netbeans.modules.mobility.e2e.classdata.MethodData md : cd.getMethods()) {
+                                StringBuffer sb = new StringBuffer(md.getName());
+                                for (MethodParameter mp : md.getParameters()) {
+                                    sb.append(',').append(mp.getType().getFullyQualifiedName());
+                                }
+                                methodIDs.add(sb.toString());
+                            }
+                        }
                         for( Node operationNode : portNode.getChildren().getNodes()) {
                             WsdlOperation wsdlOperation = operationNode.getLookup().lookup( WsdlOperation.class );
-                            org.netbeans.modules.mobility.e2e.classdata.MethodData methodData = null;
-                            if( cd != null )
-                            for( org.netbeans.modules.mobility.e2e.classdata.MethodData md : cd.getMethods()) {
-                                if( md.getName().equals( wsdlOperation.getJavaName())) {
-                                    methodData = md;
-                                }
+                            StringBuffer operationId = new StringBuffer(wsdlOperation.getJavaName());
+                            for (WsdlParameter par : wsdlOperation.getParameters()) {
+                                String pt = par.getTypeName();
+                                int i = pt.indexOf('<'); //cutting off any generics from the ID
+                                operationId.append(',').append(i > 0 ? pt.substring(0, i) : pt);
                             }
-                            operationNode.setValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, Boolean.valueOf(methodData != null));
+                            operationNode.setValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, Boolean.valueOf(methodIDs.contains(operationId.toString())));
                         }
                     }
                 }                

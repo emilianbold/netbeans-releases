@@ -26,7 +26,6 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
-import org.netbeans.modules.mobility.e2e.classdata.Utils;
 import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.javon.JavonSerializer;
 import org.netbeans.modules.mobility.javon.Traversable;
