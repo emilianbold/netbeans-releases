@@ -743,6 +743,7 @@ public class Util {
     public static final boolean isGlassfish(Project project) {
         if (project != null) {
             J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
+            if (mp == null) return false;
             return isGlassfish(mp.getServerInstanceID());
         }
         return false;
