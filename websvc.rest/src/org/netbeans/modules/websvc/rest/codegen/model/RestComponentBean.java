@@ -21,6 +21,7 @@ import java.util.List;
 import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
+import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 
 /**
@@ -88,11 +89,11 @@ public abstract class RestComponentBean extends GenericResourceBean {
     }
 
     protected static String deriveResourceName(String componentName) {
-        return Util.upperFirstChar(componentName + EntityResourcesGenerator.RESOURCE_SUFFIX);
+        return Inflector.getInstance().camelize(componentName + GenericResourceBean.RESOURCE_SUFFIX);
     }
 
     protected static String deriveUriTemplate(JaxwsOperationInfo info) {
-        return "/" + Util.lowerFirstChar(info.getOperationName());
+        return Inflector.getInstance().camelize(info.getOperationName(), true) + "/";     //NOI18N
     }
 
     public String[] getRepresentationTypes() {

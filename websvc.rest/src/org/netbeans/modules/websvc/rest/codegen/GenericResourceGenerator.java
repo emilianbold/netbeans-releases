@@ -334,9 +334,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
             Constants.URI_TEMPLATE_ANNOTATION
         };
         
-        Object[] annotationAttrs = new Object[] {
-            subBean.getUriTemplate()};
-        
+        Object[] annotationAttrs = new Object[] {subBean.getUriTemplate()};
         Object returnType = subBean.getName();
         
         String bodyText = "{ return new " + returnType + "(); }";
@@ -489,7 +487,13 @@ public class GenericResourceGenerator extends AbstractGenerator {
         List<Object> results = new ArrayList<Object>();
         
         for (ParameterInfo param : params) {
-            results.add(param.getDefaultValue());
+            Object defaultValue = null;
+            
+            if (!param.isQueryParam()) {
+                defaultValue = param.getDefaultValue();
+            }
+            
+            results.add(defaultValue);
         }
         
         return results.toArray(new Object[results.size()]);

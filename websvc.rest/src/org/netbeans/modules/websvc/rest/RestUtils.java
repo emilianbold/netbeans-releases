@@ -131,7 +131,12 @@ public class RestUtils {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         restSupport.addJSR311apiJar();
     }
-            
+    
+    //
+    // TODO: The following methods don't belong here. Some of them should go into
+    // JavaSourceHelper and the XML/DOM related methods should go into
+    // their own utility class.
+    //        
     public static String getAttributeValue(Document doc, String nodePath, String attrName) throws XPathExpressionException {
         String attrValue = null;
         XPathFactory factory = XPathFactory.newInstance();

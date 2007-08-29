@@ -56,6 +56,10 @@ import org.openide.util.UserCancelException;
 
 /**
  * Copy of j2ee/utilities Util class
+ *  
+ * TODO: Should move some of the methods into o.n.m.w.r.support.Utils class
+ * since that's the package used for sharing all the utility classes.
+ * 
  */
 public class Util {
     public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
