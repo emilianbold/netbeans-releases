@@ -20,7 +20,9 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.mdb;
 
+import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import org.netbeans.api.java.source.ElementHandle;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
@@ -82,7 +84,10 @@ public class MessageNode extends AbstractNode implements OpenCookie {
         //TODO: RETOUCHE listening on model for logical view
 //        model.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeListener,model));
         content.add(this);
-        content.add(controller.getBeanClass());
+        ElementHandle<TypeElement> beanClassHandle = controller.getBeanClass();
+        if (beanClassHandle != null) {
+            content.add(beanClassHandle);
+        }
         if (controller.getBeanDo() != null) {
             content.add(controller.getBeanDo());
         }
