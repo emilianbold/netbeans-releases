@@ -38,6 +38,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -348,6 +349,31 @@ public final class Deployment {
     
     public String getServerDisplayName (String id) {
         return ServerRegistry.getInstance ().getServer (id).getDisplayName();
+    }
+    
+    /**
+     * Returns <code>true</code> if the given server instance exists and is running, 
+     * <code>false</code> otherwise.
+     * <p>
+     * <b>Never call this method from the event dispatch thread</b> since it might take
+     * several seconds before it finishes.
+     * 
+     * @param serverInstanceID server instance ID.
+     * 
+     * @returns <code>true</code> if the given server instance is running, <code>false</code>
+     *          otherwise.
+     * 
+     * @throws  NullPointerException if serverInstanceID is <code>null</code>.
+     * 
+     * @since 1.32
+     */
+    public boolean isRunning(String serverInstanceID) {
+        Parameters.notNull("serverInstanceID", serverInstanceID); // NOI18N
+        ServerInstance serverInstance = ServerRegistry.getInstance().getServerInstance(serverInstanceID);
+        if (serverInstance == null) {
+            return false;
+        }
+        return (serverInstance.isReallyRunning() || serverInstance.isSuspended());
     }
     
     /**
