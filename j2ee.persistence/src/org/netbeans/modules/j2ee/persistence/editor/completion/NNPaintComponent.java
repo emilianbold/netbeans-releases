@@ -34,6 +34,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -364,7 +365,7 @@ public class NNPaintComponent extends JPanel {
         
         protected void draw(Graphics g){
             drawIcon(g, new ImageIcon(Utilities.loadImage(NOCONNECTION_ICON)));
-            drawString(g, "Connect To Database", Color.RED, getDrawFont().deriveFont(Font.BOLD), false);
+            drawString(g, NbBundle.getMessage(NNPaintComponent.class, "LBL_ConnectToDatabase"), Color.RED, getDrawFont().deriveFont(Font.BOLD), false);
         }
         
     }
