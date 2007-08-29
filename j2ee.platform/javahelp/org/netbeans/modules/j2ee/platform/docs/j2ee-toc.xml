@@ -230,19 +230,6 @@
            </tocitem>
                <tocitem text="Configuring Quality of Service">
                    <tocitem text="About Quality of Service" target="org.netbeans.modules.websvc.wsitconf.about"/>
-                   <tocitem text="Message Security">
-                       <tocitem text="About Security for Web Services" target="org.netbeans.modules.websvc.wsitconf.about.security"/>
-                       <tocitem text="About Security Policy for Web Services" target="org.netbeans.modules.websvc.wsitconf.about.security-policy"/> 
-                       <tocitem text="About Security Mechanism Options for Web Services" target="org.netbeans.modules.websvc.wsitconf.about.security-options"/> 
-                   </tocitem>
-                   <tocitem text="Message Optimization">
-                       <tocitem text="About Message Optimization for Web Services" target="org.netbeans.modules.websvc.wsitconf.about.mtom"/> 
-                       <tocitem text="When Should Message Optimization be Used?" target="org.netbeans.modules.websvc.wsitconf.about.mtom-when"/>
-                   </tocitem>
-                   <tocitem text="Reliable Messaging">
-                       <tocitem text="About Reliable Messaging for Web Services" target="org.netbeans.modules.websvc.wsitconf.about.reliability"/>
-                       <tocitem text="When Should Reliable Messaging be Used?" target="org.netbeans.modules.websvc.wsitconf.about.reliability-when"/>
-                   </tocitem>
                </tocitem>
         </tocitem>
 </toc>

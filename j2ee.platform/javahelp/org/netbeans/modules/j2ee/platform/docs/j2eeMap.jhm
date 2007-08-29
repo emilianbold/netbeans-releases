@@ -76,16 +76,8 @@
 	<!-- End of "JAXB" section -->
 
 <!-- Start of "WSIT" section -->
-    <mapID target="org.netbeans.modules.websvc.wsitconf.about" url="webservice/about/wsitconf-about.html"/>
+    <mapID target="org.netbeans.modules.websvc.wsitconf.about" url="webservice/nodes/wsitconf-about.html"/>
    
-   <mapID target="org.netbeans.modules.websvc.wsitconf.about.reliability" url="webservice/about/wsitconf-reliability.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.about.mtom" url="webservice/about/wsitconf-mtom.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.about.security" url="webservice/about/wsitconf-security.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.about.reliability-when" url="webservice/about/wsitconf-reliability_when.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.about.mtom-when" url="webservice/about/wsitconf-mtom_when.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.about.security-policy" url="webservice/about/wsitconf-security_policy.html"/>
-   <mapID target="org.netbeans.modules.websvc.wsitconf.about.security-options" url="webservice/about/wsitconf-about_security_mechanism_options.html"/>
-  
    <!-- Start of CSH -->
     <!-- Client: -->
    <mapID target="org.netbeans.modules.websvc.wsitconf.ui.client.nodes.BindingContainerClientNode" url="webservice/nodes/wsitconf-BindingContainerClientNode.html"/>
