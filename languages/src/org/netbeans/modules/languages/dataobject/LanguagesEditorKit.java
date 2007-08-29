@@ -54,13 +54,11 @@ import org.netbeans.modules.languages.features.BraceCompletionInsertAction;
 import org.netbeans.modules.languages.features.InstantRenameAction;
 import org.netbeans.modules.languages.features.MarkOccurrencesSupport;
 import org.netbeans.modules.languages.features.CollapseFoldTypeAction;
-import org.netbeans.modules.languages.features.CommentCodeAction;
 import org.netbeans.modules.languages.features.ExpandFoldTypeAction;
 import org.netbeans.modules.languages.features.HyperlinkListener;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.languages.features.DatabaseManager;
 import org.netbeans.modules.languages.features.LanguagesGenerateFoldPopupAction;
-import org.netbeans.modules.languages.features.UncommentCodeAction;
 import org.netbeans.modules.languages.parser.Pattern;
 
 
@@ -176,8 +174,7 @@ public class LanguagesEditorKit extends NbEditorKit {
             //new IndentAction (),
             new InstantRenameAction(),
             new LanguagesGenerateFoldPopupAction (),
-            new CommentCodeAction(),
-            new UncommentCodeAction()
+            new org.netbeans.modules.languages.features.ToggleCommentAction()
         };
         return TextAction.augmentList (
             super.createActions (), 
@@ -260,7 +257,6 @@ public class LanguagesEditorKit extends NbEditorKit {
         //HACK:
         c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK), "in-place-refactoring");
         c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_SLASH, InputEvent.CTRL_DOWN_MASK), "comment");
-        c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_SLASH, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK), "uncomment");
     }
     
     public String getContentType() {

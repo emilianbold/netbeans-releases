@@ -24,6 +24,5 @@ Microsystems, Inc. All Rights Reserved.
      be made there too -->                            
 <bindings>
     <bind actionName="comment" key="D-SLASH"/>
-    <bind actionName="uncomment" key="DS-D"/>
     <bind actionName="in-place-refactoring" key="D-R"/>
 </bindings>
