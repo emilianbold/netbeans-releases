@@ -554,18 +554,34 @@ public abstract class J2eeModuleProvider {
                 String referenceName, String connectionFactoryName,
                 String destName, MessageDestination.Type type) throws ConfigurationException;
 
+
+        /**
+         * Returns a JNDI name for the given EJB or <code>null</code> if the EJB has 
+         * no JNDI name assigned.
+         *
+         * @param  ejbName EJB name
+         * 
+         * @return JNDI name bound to the EJB or <code>null</code> if the EJB has no 
+         *         JNDI name assigned.
+         * 
+         * @throws ConfigurationException if there is some problem with EJB configuration.
+         * 
+         * @since 1.33
+         */
+         public String findJndiNameForEjb(String ejbName) throws ConfigurationException;
+
         /**
          * Binds EJB reference name with EJB name.
          * 
          * @param referenceName name used to identify the EJB
-         * @param referencedEjbName name of the referenced EJB
+         * @param jndiName JNDI name of the referenced EJB
          * 
          * @throws NullPointerException if any of parameters is null
          * @throws ConfigurationException if there is some problem with EJB configuration
          * 
          * @since 1.26
          */
-        public void bindEjbReference(String referenceName, String referencedEjbName) throws ConfigurationException;
+        public void bindEjbReference(String referenceName, String jndiName) throws ConfigurationException;
 
         /**
          * Binds EJB reference name with EJB name within the EJB scope.
@@ -576,7 +592,7 @@ public abstract class J2eeModuleProvider {
          *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.ENTITY and
          *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.MESSAGE_DRIVEN
          * @param referenceName name used to identify the referenced EJB
-         * @param referencedEjbName name of the referenced EJB
+         * @param jndiName JNDI name of the referenced EJB
          * 
          * @throws NullPointerException if any of parameters is null
          * @throws ConfigurationException if there is some problem with EJB configuration
@@ -585,7 +601,7 @@ public abstract class J2eeModuleProvider {
          * @since 1.26
          */
         public void bindEjbReferenceForEjb(String ejbName, String ejbType,
-                String referenceName, String referencedEjbName) throws ConfigurationException;
+                String referenceName, String jndiName) throws ConfigurationException;
     }
 
     /**

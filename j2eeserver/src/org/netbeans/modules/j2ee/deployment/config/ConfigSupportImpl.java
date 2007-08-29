@@ -614,11 +614,24 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         }
         
     }
+
+    public String findJndiNameForEjb(String ejbName) throws ConfigurationException {
+        Parameters.notNull("ejbName", ejbName); // NOI18N
+        ModuleConfiguration config = getModuleConfiguration();
+        if (server == null || config == null) {
+            return null;
+        }
+        EjbResourceConfiguration ejbConfig = config.getLookup().lookup(EjbResourceConfiguration.class);
+        if (ejbConfig != null) {
+            return ejbConfig.findJndiNameForEjb(ejbName);
+        }
+        return null;
+    }
     
-    public void bindEjbReference(String referenceName, String referencedEjbName) throws ConfigurationException {
+    public void bindEjbReference(String referenceName, String jndiName) throws ConfigurationException {
         
         Parameters.notNull("referenceName", referenceName);     // NOI18N
-        Parameters.notNull("referencedEjbName", referencedEjbName);                 // NOI18N
+        Parameters.notNull("referencedEjbName", jndiName);                 // NOI18N
         
         ModuleConfiguration config = getModuleConfiguration();
         if (server == null || config == null) {
@@ -627,18 +640,18 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         
         EjbResourceConfiguration ejbConfig = config.getLookup().lookup(EjbResourceConfiguration.class);
         if (ejbConfig != null) {
-            ejbConfig.bindEjbReference(referenceName, referencedEjbName);
+            ejbConfig.bindEjbReference(referenceName, jndiName);
         }
         
     }
 
     public void bindEjbReferenceForEjb(String ejbName, String ejbType,
-            String referenceName, String referencedEjbName) throws ConfigurationException {
+            String referenceName, String jndiName) throws ConfigurationException {
         
         Parameters.notNull("ejbName", ejbName);                 // NOI18N
         Parameters.notNull("ejbType", ejbType);                 // NOI18N
         Parameters.notNull("referenceName", referenceName);     // NOI18N
-        Parameters.notNull("referencedEjbName", referencedEjbName);                 // NOI18N
+        Parameters.notNull("referencedEjbName", jndiName);                 // NOI18N
         
         if (!EnterpriseBeans.SESSION.equals(ejbType) &&
             !EnterpriseBeans.ENTITY.equals(ejbType) &&
@@ -653,7 +666,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         
         EjbResourceConfiguration ejbConfig = config.getLookup().lookup(EjbResourceConfiguration.class);
         if (ejbConfig != null) {
-            ejbConfig.bindEjbReferenceForEjb(ejbName, ejbType, referenceName, referencedEjbName);
+            ejbConfig.bindEjbReferenceForEjb(ejbName, ejbType, referenceName, jndiName);
         }
         
     }
