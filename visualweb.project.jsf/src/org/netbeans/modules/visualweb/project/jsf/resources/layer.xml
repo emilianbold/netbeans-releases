@@ -184,7 +184,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="webui-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/webui-runtime.xml"/>
             <file name="jdbcsupport-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jdbcsupport-designtime.xml"/>
             <file name="jdbcsupport-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jdbcsupport-runtime.xml"/>
-            <file name="commons-logging-1-0-4.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/commons-logging-1-0-4.xml"/>
         </folder>
         <folder name="LibraryTypeProviders">
             <file name="component_library_provider.instance">
