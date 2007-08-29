@@ -26,6 +26,7 @@ import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -81,22 +82,53 @@ public class DDSectionNodeView extends SectionNodeView {
         }
     }
     
-    
-    @Override
-    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
-        super.dataModelPropertyChange(source, propertyName, oldValue, newValue);
-    }
-    
     public XmlMultiViewDataSynchronizer getModelSynchronizer() {
         return ((SunDescriptorDataObject) getDataObject()).getModelSynchronizer();
     }
     
-//    @Override
-//    public void refreshView() {
-//        checkChildren();
-//        super.refreshView();
-//    }
+    // ------------------------------------------------------------------------
+    // Overrides required to properly support multiple rootNodes
+    //   Taken from SectionNodeView and enhanced for to handle rootNode[]
+    // ------------------------------------------------------------------------
+    private final RequestProcessor.Task ddRefreshTask = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            refreshView();
+        }
+    });
+
+    private static final int DD_REFRESH_DELAY = 20;
     
+    @Override
+    public void refreshView() {
+        Node [] rootNodes = getRoot().getChildren().getNodes();
+        if(rootNodes != null) {
+            for(Node n: rootNodes) {
+                if(n instanceof SectionNode) {
+                    ((SectionNode) n).refreshSubtree();
+                }
+            }
+        }
+    }
+    
+    @Override
+    public void scheduleRefreshView() {
+        ddRefreshTask.schedule(DD_REFRESH_DELAY);
+    }
+    
+    @Override
+    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+//        System.out.println("DDSectionNodeView [" + this.getClass().getSimpleName() + "] .dataModelPropertyChange: " + 
+//                source + ", " + propertyName + ", " + oldValue + ", " + newValue);
+        Node [] rootNodes = getRoot().getChildren().getNodes();
+        if(rootNodes != null) {
+            for(Node n: rootNodes) {
+                if(n instanceof SectionNode) {
+                    ((SectionNode) n).dataModelPropertyChange(source, propertyName, oldValue, newValue);
+                }
+            }
+        }
+    }
+
 //    /** Override this if required by derived classes.  Called before refreshView()
 //     *  to ensure child nodes are up to date.
 //     */

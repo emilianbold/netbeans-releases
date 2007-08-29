@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef;
@@ -128,7 +129,11 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         BoxPanel boxPanel = new BoxPanel(sectionNodeView) {
             @Override
             public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
-                if(source == commonDD) {
+//                System.out.println(NamedBeanGroupNode.this.getClass().getSimpleName() + ".BoxPanel.dataModelPropertyChange: " + 
+//                        source + ", " + propertyName + ", " + oldValue + ", " + newValue);
+                if(source == commonDD || (source instanceof RootInterface && commonDD instanceof RootInterface &&
+                        ((RootInterface) commonDD).isEventSource((RootInterface) source))
+                        ) {
                     if(oldValue != null && newValue == null || oldValue == null && newValue != null) {
                         checkChildren(null);
                     }
