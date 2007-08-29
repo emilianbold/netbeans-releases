@@ -18,15 +18,14 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>When you install the IDE, the installer automatically registers the bundled Tomcat 
-Web Server with the IDE. You can also configure the IDE to deploy web applications to other 
+<p>When you download install the Java EE version of the IDE, you can choose to install and register the Tomcat Web Server. You can also configure the IDE to deploy web applications to other 
 installations of supported versions of the Tomcat Web Server. These Tomcat Web Server
 installations must first be registered. Unsupported versions of the Tomcat Web Server
 cannot be registered with the IDE. Instead, you can <a href="tomcat_setup_unsupported.html">create Ant targets</a> that
 you can run from the IDE to deploy an application, JSP page, or servlet to an unsupported version of the Tomcat Web Server.</p>
 
-<p>You can open the Tomcat Server Instance Properties panel by choosing Tools &gt; Server Manager,
- clicking Add Server, choosing Tomcat 5.0 or Tomcat 5.5, and choosing Next.
+<p>You can open the Tomcat Server Instance Properties panel by choosing Tools &gt; Servers,
+ clicking Add Server, choosing Tomcat 5.0, Tomcat 5.5, or Tomcat 6.0, and choosing Next.
 
 
  <p>Using the Tomcat Server Instance Properties, you can set the following
@@ -51,8 +50,9 @@ you can run from the IDE to deploy an application, JSP page, or servlet to an un
     <li><b><tt>work.</tt></b> Temporary working directory for web applications</li>
   </ul>
   <li><b>Username/Password.</b> The user must be a Tomcat user who has a 
-   <a href="../tomcat/tomcat_edit_tomcatuser.html">manager role</a>.</li>
- 
+   <a href="../tomcat/tomcat_edit_tomcatuser.html">manager role</a>.
+<ul class="note"><li><b>Note:</b> If the username does not exist, you can check the box to create it.</li></ul></li>
+    
 </ul>
 
 <dl>

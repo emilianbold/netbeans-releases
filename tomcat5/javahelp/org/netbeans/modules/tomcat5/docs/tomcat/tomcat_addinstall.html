@@ -18,8 +18,7 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>When you install the IDE, the installer automatically registers the bundled Tomcat 
-Web Server with the IDE. You can also configure the IDE to deploy web applications to other 
+<p>When you download and install the Java EE version of the IDE, you can  choose to install and register the Tomcat Web Server. You can also configure the IDE to deploy web applications to other 
 installations of supported versions of the Tomcat Web Server. These Tomcat Web Server
 installations must first be registered. Unsupported versions of the Tomcat Web Server
 cannot be registered with the IDE. Instead, you can <a href="tomcat_setup_unsupported.html">create Ant targets</a> that
@@ -30,10 +29,9 @@ you can run from the IDE to deploy an application, JSP page, or servlet to an un
   <li>Make sure the server is not running. If the server is running and there 
   is a port number conflict with other installed servers, the IDE will not
   be able to resolve the conflict.</li>
-  <li>Choose Tools > Server Manager.</li>
-  <li>Click Add Server to display the Add Server wizard.</li>
+  <li>Choose Tools > Servers.</li>
+  <li>Click Add Server to display the Add Server Instance wizard.</li>
   <li>Select the Tomcat Web Server from the combo box.</li>
-  <li>Enter a name for the server instance. This name is used to identify the server in the IDE.
   <li>Click Next.</li>
   <li>In the Catalina Home text box, type or browse to the Tomcat installation 
     directory on your local system. Note that the system verifies that you have 
@@ -46,18 +44,18 @@ you can run from the IDE to deploy an application, JSP page, or servlet to an un
     empty, the IDE creates the subdirectories by copying them from Tomcat's
     home directory. In addition, the <tt>conf</tt> 
     directory must have a <tt>server.xml</tt> file.</li>
-  <ul>
-    <li><b><tt>conf.</tt></b> Directory for server configuration files</li>
+   <li><b><tt>conf.</tt></b> Directory for server configuration files</li>
     <li><b><tt>logs.</tt></b> Directory for log and output files</li>
     <li><b><tt>webapps.</tt></b> Directory for automatically loaded web applications</li>
     <li><b><tt>work.</tt></b> Temporary working directory for web applications</li>
-  </ul>
-  <li>Type a user name and password. The user must be a Tomcat user who has a 
-   <a href="../tomcat/tomcat_edit_tomcatuser.html">manager role</a>.</li>
-  <li>Click OK. The IDE displays the server's port number in the server node's 
+    <li>Type a user name and password. The user must be a Tomcat user who has a 
+   <a href="../tomcat/tomcat_edit_tomcatuser.html">manager role</a>.
+<ul class="note"><li><b>Note:</b> If the username does not exist, you can check the box to create it.</li></ul></li>
+<li>Click Finish and Close to exit the Server Manager.<br> 
+The IDE displays the server's port number in the server node's 
     tooltip. If another server instance is using this port, you must change one of 
     the servers' port numbers. To change a port number, right-click the server's 
-    node, choose Start/Stop Server from the contextual menu, and stop the server. 
+    node, choose Stop from the contextual menu. 
     Next, right-click the server node and choose Properties from the contextual 
     menu. Change the server port number and restart the server.</li>
 </ol>

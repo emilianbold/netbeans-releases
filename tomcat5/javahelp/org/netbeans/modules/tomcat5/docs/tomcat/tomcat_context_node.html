@@ -44,15 +44,7 @@ the first time you execute the web application
     not currently available.</li>
   <li><b>Open in Browser.</b> Opens the selected web application's URL in the IDE's
     default browser. This item is enabled when the server is running.</li>
-  <li><b>View Context Log.</b> Displays the context log file. The server does not need to be 
-    running for this item to be enabled, but the context must have a logger defined 
-    in the <tt>context.xml</tt> file. For example, when you create a web application,
-    the IDE creates a <tt>context.xml</tt> file that includes a logger element:
-    <pre>      &lt;Context path="/MyApp"&gt;
-         &lt;Logger className="org.apache.catalina.logger.FileLogger" 
-         prefix="MyApp" suffix=".log" timestamp="true"/&gt;
-      &lt;/Context&gt;    </pre></li>
-  <li><b>Undeploy.</b> Removes the web application's context from the server. The IDE 
+   <li><b>Undeploy.</b> Removes the web application's context from the server. The IDE 
     will recreate the context if the web application is subsequently executed from 
     the IDE.</li>
 </ul>
