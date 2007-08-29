@@ -21,6 +21,8 @@ package org.openide.loaders;
 
 import org.openide.filesystems.*;
 import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import org.netbeans.junit.Log;
 import org.openide.cookies.*;
@@ -97,6 +99,14 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
         
         assertNotNull("Has open cookie", xml.getCookie(OpenCookie.class));
         assertNotNull("Has open cookie in lookup", xml.getLookup().lookup(OpenCookie.class));
+        
+        
+        Reference<Object> ref = new WeakReference<Object>(xml);
+        xml = null;
+        obj = null;
+        doc = null;
+        e = null;
+        assertGC("Data object has to be garbage collectable", ref);
     }
 
     public void testCookieIsUpdatedWhenContentChanges () throws Exception {
