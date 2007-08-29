@@ -7,6 +7,7 @@
   </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -22,6 +23,10 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
+                      <Component id="serviceLocatorPanel" pref="540" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="projectDestinationsRadio" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="serverDestinationsRadio" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -30,18 +35,22 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="destinationText" pref="286" max="32767" attributes="0"/>
-                          <Component id="mdbCombo" alignment="1" pref="286" max="32767" attributes="0"/>
-                          <Component id="serverDestinationsCombo" alignment="1" pref="286" max="32767" attributes="1"/>
-                          <Component id="projectDestinationsCombo" alignment="1" pref="286" max="32767" attributes="1"/>
+                          <Component id="destinationText" pref="289" max="32767" attributes="0"/>
+                          <Component id="mdbCombo" alignment="1" pref="289" max="32767" attributes="0"/>
+                          <Component id="serverDestinationsCombo" alignment="1" pref="289" max="32767" attributes="1"/>
+                          <Component id="projectDestinationsCombo" alignment="1" pref="289" max="32767" attributes="1"/>
+                          <Component id="connectionFactoryTextField" alignment="0" pref="289" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="addButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Component id="serviceLocatorPanel" alignment="0" pref="538" max="32767" attributes="0"/>
-                  <Component id="errorLabel" alignment="0" pref="538" max="32767" attributes="0"/>
+                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="errorLabel" pref="540" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -69,9 +78,14 @@
                   <Component id="destinationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="destinationText" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="connectionFactoryTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="serviceLocatorPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -172,6 +186,13 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabel1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Connection Factory:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="connectionFactoryTextField">
     </Component>
   </SubComponents>
 </Form>

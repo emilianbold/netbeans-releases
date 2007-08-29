@@ -119,6 +119,7 @@ public class SendJMSMessageAction extends NodeAction {
             generator.genMethods(
                     erc, 
                     beanClass.getQualifiedName().toString(), 
+                    sendJmsMessagePanel.getConnectionFactory(),
                     srcFile, 
                     serviceLocatorStrategy,
                     enterpriseProject.getLookup().lookup(J2eeModuleProvider.class)

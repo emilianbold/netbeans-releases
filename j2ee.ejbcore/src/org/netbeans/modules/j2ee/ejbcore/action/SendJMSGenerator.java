@@ -66,8 +66,6 @@ import org.openide.util.Exceptions;
  */
 public final class SendJMSGenerator {
     
-    private static final String HARDCODED_FACTORY_SUFFIX = "Factory"; // NO18N
-    
     private static final String PRODUCES = org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef.MESSAGE_DESTINATION_USAGE_PRODUCES;
     
     private final MessageDestination messageDestination;
@@ -82,6 +80,7 @@ public final class SendJMSGenerator {
     public void genMethods(
             EnterpriseReferenceContainer container,
             final String className,
+            String connectionFactoryName,
             FileObject fileObject,
             ServiceLocatorStrategy slStrategy,
             J2eeModuleProvider j2eeModuleProvider) throws IOException {
@@ -98,17 +97,16 @@ public final class SendJMSGenerator {
         supportsInjection = isInjectionTarget[0];
         String destinationFieldName = null;
         String connectionFactoryFieldName = null;
-        String factoryName = null;
+        String factoryName = connectionFactoryName;
         String destinationName = null;
         
         if (supportsInjection){
-            factoryName = messageDestination.getName() + HARDCODED_FACTORY_SUFFIX;
             destinationName = messageDestination.getName();
             connectionFactoryFieldName = createInjectedField(fileObject, className, factoryName, "javax.jms.ConnectionFactory"); // NO18N
             String type = messageDestination.getType() == MessageDestination.Type.QUEUE ? "javax.jms.Queue" : "javax.jms.Topic"; // NO18N
             destinationFieldName = createInjectedField(fileObject, className, destinationName, type);
         } else {
-            factoryName = generateConnectionFactoryReference(container, fileObject, className);
+            factoryName = generateConnectionFactoryReference(container, factoryName, fileObject, className);
             destinationName = generateDestinationReference(container, fileObject, className);
         }
         String sendMethodName = createSendMethod(fileObject, className, messageDestination.getName());
@@ -164,9 +162,9 @@ public final class SendJMSGenerator {
         }
     }        
 
-    private String generateConnectionFactoryReference(EnterpriseReferenceContainer container, FileObject referencingFile, String referencingClass) throws IOException {
+    private String generateConnectionFactoryReference(EnterpriseReferenceContainer container, String referenceName, FileObject referencingFile, String referencingClass) throws IOException {
         ResourceReference ref = ResourceReference.create(
-                messageDestination.getName() + HARDCODED_FACTORY_SUFFIX,
+                referenceName,
                 "javax.jms.ConnectionFactory",
                 ResourceRef.RES_AUTH_CONTAINER,
                 ResourceRef.RES_SHARING_SCOPE_SHAREABLE,
