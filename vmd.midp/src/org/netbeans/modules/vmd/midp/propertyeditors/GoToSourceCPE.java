@@ -17,7 +17,6 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
-import java.awt.Dimension;
 import java.lang.ref.WeakReference;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
@@ -43,35 +42,42 @@ class GoToSourceCPE extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         goToSourceButton = new javax.swing.JButton();
         noteLabel = new javax.swing.JLabel();
 
         setMinimumSize(new java.awt.Dimension(350, 80));
         setPreferredSize(new java.awt.Dimension(350, 80));
-        setLayout(new java.awt.GridBagLayout());
 
-        goToSourceButton.setText(org.openide.util.NbBundle.getMessage(GoToSourceCPE.class, "LBL_GoToSourceButtonText")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(goToSourceButton, org.openide.util.NbBundle.getMessage(GoToSourceCPE.class, "LBL_GoToSourceButtonText")); // NOI18N
         goToSourceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 goToSourceButtonActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
-        add(goToSourceButton, gridBagConstraints);
 
         noteLabel.setText(org.openide.util.NbBundle.getMessage(GoToSourceCPE.class, "LBL_GoToSourceNote")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        add(noteLabel, gridBagConstraints);
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(16, 16, 16)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(noteLabel)
+                    .add(goToSourceButton))
+                .addContainerGap(38, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(16, 16, 16)
+                .add(goToSourceButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(noteLabel)
+                .addContainerGap(16, Short.MAX_VALUE))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     private void goToSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goToSourceButtonActionPerformed

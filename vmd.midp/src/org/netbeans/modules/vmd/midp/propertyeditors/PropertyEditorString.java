@@ -30,6 +30,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -303,7 +305,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
 /*
      * Custom property editor. JEditorPane plus possible JLabels with comments.
      */
-    private class CustomEditor {
+    private class CustomEditor implements DocumentListener {
 
         private JPanel panel;
         private JTextComponent editorPane;
@@ -361,6 +363,18 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
 
         public String getText() {
             return editorPane.getText();
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            radioButton.setSelected(true);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            radioButton.setSelected(true);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            radioButton.setSelected(true);
         }
     }
 }
