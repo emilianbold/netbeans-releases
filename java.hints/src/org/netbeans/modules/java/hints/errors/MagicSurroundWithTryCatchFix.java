@@ -128,10 +128,28 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                             && catchTree.getLeaf().getKind() != Kind.CATCH)
                         catchTree = catchTree.getParentPath();
                     
+                    boolean createNewTryCatch = false;
+                    
                     if (catchTree.getLeaf().getKind() == Kind.TRY) {
+                        TryTree tt = (TryTree) catchTree.getLeaf();
+                        //#104085: if the statement to be wrapped is inside a finally block of the try-catch,
+                        //do not attempt to extend existing catches...:
+                        for (Tree t : currentPath) {
+                            if (tt.getFinallyBlock() == t) {
+                                createNewTryCatch = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!createNewTryCatch) {
                         //only add catches for uncatched exceptions:
                         new TransformerImpl(wc, thandles, streamAlike, statement).scan(catchTree, null);
+                        }
                     } else {
+                        createNewTryCatch = true;
+                    }
+                    
+                    if (createNewTryCatch) {
                         //find block containing this statement, if exists:
                         TreePath blockTree = currentPath;
                         
