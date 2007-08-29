@@ -170,7 +170,10 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         textView.addMouseWheelListener(this);
         textView.addMouseMotionListener(this);
         textView.addKeyListener(this);
-        textView.setCaret (new OCaret());
+        //#107354
+        OCaret oc = new OCaret();
+        oc.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+        textView.setCaret (oc);
         
         getCaret().setVisible(true);
         getCaret().setBlinkRate(0);
