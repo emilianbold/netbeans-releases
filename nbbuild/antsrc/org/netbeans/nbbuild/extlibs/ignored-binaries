@@ -67,3 +67,6 @@ visualweb/themebuilder/templates/WoodstockThemeTemplate/themes.zip
 
 # Only used in automation tests for visualweb and not part of NB 6.0 distribution:
 visualweb/gravy/builds/gravy.jar
+
+# Not used in NB6.0:
+visualweb/ravelibs/jsf-portlet/jsf-portlet-src.zip
