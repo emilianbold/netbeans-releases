@@ -47,7 +47,9 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 import org.xml.sax.InputSource;
 
 /**
@@ -80,9 +82,15 @@ public final class SchemaDataObject extends MultiDataObject {
         set.add(new SchemaValidateXMLCookie(this));
         // ViewComponentCookie implementation
         set.add(new SchemaMultiViewSupport(this));
-        set.assign(FileEncodingQueryImplementation.class, XmlFileEncodingQueryImpl.singleton());
     }
 
+    public final Lookup getLookup() {
+        return Lookups.fixed(new Object[]{
+            super.getLookup(),
+            this,
+            XmlFileEncodingQueryImpl.singleton()});
+    }
+    
     /**
      * Return the editor support for this data object.
      *
