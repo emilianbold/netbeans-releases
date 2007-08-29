@@ -24,7 +24,6 @@ import java.net.URL;
 import javax.swing.ImageIcon;
 import junit.framework.TestCase;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -44,19 +43,17 @@ public class ExtIconTest extends TestCase {
         ext.setIcon(icon);
         try {
             byte[] bytes1 = ext.getBytes();
-            int height = ext.image.getHeight(null);
-            int width = ext.image.getWidth(null);
             ExtIcon ext2 = new ExtIcon(bytes1);
-            height = ext2.image.getHeight(null);
-            width = ext2.image.getWidth(null);
             byte[] bytes2 = ext2.getBytes();
             ExtIcon ext3 = new ExtIcon(bytes2);
-            height = ext3.image.getHeight(null);
-            width = ext3.image.getWidth(null);
             byte[] bytes3 = ext3.getBytes();
             
             assertEquals(bytes1.length, bytes2.length);
             assertEquals(bytes3.length, bytes3.length);
+            for (int i = 0; i < bytes1.length; i++) {
+                assertEquals("Non equals at position " + i,bytes1[i], bytes2[i]);
+                assertEquals("Non equals at position " + i,bytes1[i], bytes3[i]);
+            }
         }
         catch (IOException ex) {
             Exceptions.printStackTrace(ex);

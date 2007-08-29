@@ -19,90 +19,62 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.image.ColorModel;
-import java.awt.image.ImageObserver;
-import java.awt.image.MemoryImageSource;
-import java.awt.image.PixelGrabber;
-
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.openide.util.Utilities;
 
+
 /**
  * Class for persisting icons
- * @author Milan Kubec
+ * @author Milan Kubec, mkleint
  */
-public class ExtIcon  {
-    
-    Image image;
-    
+public class ExtIcon {
+
+    Icon icon;
+
     public ExtIcon() {
     }
-    
+
     public ExtIcon(byte[] content) {
-        Toolkit toolkit = Toolkit.getDefaultToolkit();
-        ColorModel cm = ColorModel.getRGBdefault();
-        byte w = content[0];
-        byte h = content[1];
-        image = toolkit.createImage(new MemoryImageSource(w, h, cm, content, 2, w));
+        ObjectInputStream objin = null;
+        try {
+            ByteArrayInputStream in = new ByteArrayInputStream(content);
+            objin = new ObjectInputStream(in);
+            Object obj = objin.readObject();
+            if (obj instanceof Icon) {
+                setIcon((Icon)obj);
+            }
+        } catch (Exception ex) {
+            setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif"))); //NOI18N
+        } finally {
+            try {
+                objin.close();
+            } catch (IOException ex) {
+            }
+        }
     }
-    
+
     public void setIcon(Icon icn) {
-        image = icn != null ? Utilities.icon2Image(icn) : null;
+        icon = icn;
     }
-    
+
     public Icon getIcon() {
-        return image != null ? new ImageIcon(image) : null;
+        return icon;
     }
-    
-    
+
     public byte[] getBytes() throws IOException {
-        if (image == null) {
+        if (getIcon() == null) {
             return null;
         }
-        Icon icn = getIcon();
-        byte h = (byte)icn.getIconHeight();
-        byte w = (byte)icn.getIconWidth();
-        PixelGrabber pg = new PixelGrabber(image, 0, 0, w, h, true);
-        try {
-            pg.grabPixels();
-            if ((pg.getStatus() & ImageObserver.ABORT) != 0) {
-                throw new IOException("Cannot load image data");
-            }
-        } catch (InterruptedException e) {
-            throw new IOException("Loading image interrupted");
-        }
-        Object obj = pg.getPixels();
-        if (obj instanceof byte[]) {
-            byte[] data = (byte[])obj;
-            byte[] toRet = new byte[data.length + 2];
-            toRet[0] = w;
-            toRet[1] = h;
-            for (int i = 0; i < data.length; i++) {
-                toRet[i + 2] = data[i];
-            }
-            return toRet;
-        } else if (obj instanceof int[]){
-            return intToByteArray((int[])obj, w, h);
-        }
-        return null;
-    }
-    
-    public static byte[] intToByteArray(int[] value, byte w, byte h) {
-        byte[] b = new byte[value.length * 4 + 2];
-        b[0] = w;
-        b[1] = h;
-        for (int j = 2; j < b.length; j = j + 4) {
-            int val = value[(j - 2) / 4];
-            b[j] = (byte)(val >>> 24);
-            b[j + 1] = (byte)(val >> 16 & 0xff);
-            b[j + 2] = (byte)(val >> 8 & 0xff);
-            b[j + 3] = (byte)(val & 0xff);
-        }
-        return b;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ObjectOutputStream objOut = new ObjectOutputStream(out);
+        objOut.writeObject(getIcon());
+        objOut.close();
+        return out.toByteArray();
     }
 }
