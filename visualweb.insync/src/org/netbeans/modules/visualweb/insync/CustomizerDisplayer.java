@@ -35,6 +35,7 @@ import org.openide.util.NbBundle;
 import com.sun.rave.designtime.Result;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.Customizer2;
+import javax.swing.JDialog;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 
 /**
@@ -139,8 +140,10 @@ public class CustomizerDisplayer
             this
         );
         descriptor.setClosingOptions(closingOptions);
-        customizer.addPropertyChangeListener(this);
-        DialogDisplayer.getDefault().createDialog(descriptor).show();
+        customizer.addPropertyChangeListener(this);        
+        JDialog dialog = (JDialog) DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.getAccessibleContext().setAccessibleDescription(customizer.getDisplayName());        
+        dialog.show();
     }
 
     public final void propertyChange(PropertyChangeEvent evt) {
