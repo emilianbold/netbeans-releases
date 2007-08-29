@@ -316,8 +316,10 @@ public final class DerbyDatabases {
         }
         File systemHomeFile = new File(systemHome);
         if (!systemHomeFile.exists()){
-            if (!systemHomeFile.mkdirs()) {
-                throw new IOException("Could not create the derby.system.home directory"); // NOI18N
+            // issue 113747: if mkdirs() fails, it can be caused by another thread having succeeded,
+            // since there are a few places where sample databases are created at first startup
+            if (!systemHomeFile.mkdirs() && !systemHomeFile.exists()) {
+                throw new IOException("Could not create the derby.system.home directory " + systemHomeFile); // NOI18N
             }
         }
         if (noSystemHome) {
