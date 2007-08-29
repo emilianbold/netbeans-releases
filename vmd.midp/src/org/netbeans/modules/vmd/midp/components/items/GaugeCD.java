@@ -58,6 +58,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorArrayInteger;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorDefaultCommand;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorLayout;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorPreferredSize;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 
 /**
@@ -130,9 +131,9 @@ public class GaugeCD extends ComponentDescriptor {
                         .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Layout"), // NOI18N
                             PropertyEditorLayout.createInstance(), ItemCD.PROP_LAYOUT)
                         .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Width"), // NOI18N
-                            PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Preferred_Width")), ItemCD.PROP_PREFERRED_WIDTH) // NOI18N
+                            PropertyEditorPreferredSize.createInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Preferred_Width")), ItemCD.PROP_PREFERRED_WIDTH) // NOI18N
                         .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Height"), // NOI18N
-                            PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Preferred_Height")), ItemCD.PROP_PREFERRED_HEIGHT) // NOI18N
+                            PropertyEditorPreferredSize.createInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Preferred_Height")), ItemCD.PROP_PREFERRED_HEIGHT) // NOI18N
                      .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
                         .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Instance_Name"), // NOI18N
                             PropertyEditorInstanceName.createInstance(ClassCD.TYPEID), ClassCD.PROP_INSTANCE_NAME)

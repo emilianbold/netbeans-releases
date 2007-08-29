@@ -101,6 +101,8 @@ public class ItemCD extends ComponentDescriptor {
     
     public static final String PROP_OLD_ITEM_COMMAND_LISTENER = "itemCommandlistener"; //NOI18N
 
+    public static final PropertyValue UNLOCKED_VALUE = MidpTypes.createIntegerValue(-1);
+    
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
@@ -142,9 +144,9 @@ public class ItemCD extends ComponentDescriptor {
                         PropertyEditorDefaultCommand.createInstance(), PROP_DEFAULT_COMMAND)
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Layout"), PropertyEditorLayout.createInstance(), PROP_LAYOUT) // NOI18N
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Width"), // NOI18N
-                        PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Preferred_Width")), ItemCD.PROP_PREFERRED_WIDTH) // NOI18N
+                        PropertyEditorPreferredSize.createInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Preferred_Width")), ItemCD.PROP_PREFERRED_WIDTH) // NOI18N
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Height"), // NOI18N
-                        PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Preferred_Height")), ItemCD.PROP_PREFERRED_HEIGHT); // NOI18N
+                        PropertyEditorPreferredSize.createInstance(NbBundle.getMessage(ItemCD.class, "LBL_Item_Preferred_Height")), ItemCD.PROP_PREFERRED_HEIGHT); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {
