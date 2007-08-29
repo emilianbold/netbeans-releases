@@ -132,7 +132,7 @@ public class BeanTypeSerializer implements JavonSerializer {
                 String getterName = ( e.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get" ) + methodPartName;
                 FieldData field = new FieldData( e.getSimpleName().toString(), fieldClass );
                 
-                if( e.getModifiers().contains( Modifier.PRIVATE ) || e.getModifiers().contains( Modifier.PROTECTED )) {
+                if( !e.getModifiers().contains( Modifier.PUBLIC )) { 
                     boolean hasSetter = false, hasGetter = false;
                     for( ExecutableElement ee : ElementFilter.methodsIn( clazz.getEnclosedElements())) {
                         String eeName = ee.getSimpleName().toString();
@@ -199,10 +199,10 @@ public class BeanTypeSerializer implements JavonSerializer {
         if( beanTypes.get( type.getFullyQualifiedName()) != null ) {
             String serialization = "";
             String beanInstanceName = "b_" + type.getFullyQualifiedName().replace( ".", "_" );
-            serialization += type.getFullyQualifiedName() + " " + beanInstanceName + " = (" + type.getFullyQualifiedName() + ")" + object + ";\n";
             for( FieldData field : type.getFields()) {
                 String id = "";
                 if( mapping.getProperty( "target" ).equals( "client" )) {
+                    serialization += type.getFullyQualifiedName() + " " + beanInstanceName + " = (" + type.getFullyQualifiedName() + ")" + object + ";\n";
                     id = ", " + mapping.getRegistry().getRegisteredTypeId( field.getType());
                 }
                 if( mapping.getProperty( "target" ).equals( "client" ) && mapping.getProperty( "create-stubs" ).equals( "true" )) {

@@ -93,20 +93,12 @@ public class ArrayTypeSerializer implements JavonSerializer {
     public String toStream( JavonMapping mapping, ClassData type, String stream, String object ) {
         if( arrayTypes.contains( type )) {
             String serializationCode = "";
-            if( mapping.getProperty( "target" ).equals( "client" )) {
-                serializationCode += "Object[] array = (Object[]) o;\n";
-                serializationCode += stream + ".writeInt( array.length );\n";
-                serializationCode += "for( int i  = 0; i < array.length; i++ ) {\n";
-                serializationCode += "writeObject( " + stream + ", array[i], " + 
-                        mapping.getRegistry().getRegisteredTypeId( type.getComponentType()) + " );\n";
-                serializationCode += "}\n";
-            } else {
-                serializationCode += "Object[] array = (Object[]) o;\n";
-                serializationCode += stream + ".writeInt( array.length );\n";
-                serializationCode += "for( int i = 0; i < array.length; i++ ) {\n";
-                serializationCode += "writeObject( " + stream + "array[i] );\n";
-                serializationCode += "}\n";
-            }
+            serializationCode += "array = (Object[]) o;\n";
+            serializationCode += stream + ".writeInt( array.length );\n";
+            serializationCode += "for( int i  = 0; i < array.length; i++ ) {\n";
+            serializationCode += "writeObject( " + stream + ", array[i], " + 
+                    mapping.getRegistry().getRegisteredTypeId( type.getComponentType()) + " );\n";
+            serializationCode += "}\n";
             return serializationCode;
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
@@ -117,7 +109,7 @@ public class ArrayTypeSerializer implements JavonSerializer {
             String deserializationCode = "";
             String id = "" + mapping.getRegistry().getRegisteredTypeId( type );
             deserializationCode += "int a_size_" + id + " = " + stream + ".readInt();\n";
-            deserializationCode += "Object a_result_" + id + "[] = new Object[ a_size_" + id + " ];\n";
+            deserializationCode += "Object a_result_" + id + " = new Object[ a_size_" + id + " ];\n";
             deserializationCode += "for( int a_i = 0; a_i < a_size_" + id + "; a_i++ ) {\n";
             deserializationCode += "a_result_" + id + "[a_i] = readObject( " + stream + " );\n";
             deserializationCode += "}\n";

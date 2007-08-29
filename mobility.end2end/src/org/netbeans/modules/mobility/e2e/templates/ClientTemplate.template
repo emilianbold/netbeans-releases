@@ -164,6 +164,7 @@ public class ${mapping.getClientMapping().getClassName()} {
             out.writeShort( -1 );
             return;
         }
+        Object[] array;
         switch( id ) {
         <#list utils.getParameterTypeInstances( service ) as type>
             case ${registry.getRegisteredTypeId( type )}:

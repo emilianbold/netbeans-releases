@@ -62,6 +62,7 @@ public class Utility {
             output.writeShort( NULL_TYPE );
             return;
         }
+        Object[] array;
         switch( id ) {
         <#list returnInstanceTypes as type>
             case ${registry.getRegisteredTypeId( type )}:
