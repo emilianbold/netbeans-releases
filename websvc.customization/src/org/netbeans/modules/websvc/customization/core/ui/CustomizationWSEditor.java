@@ -33,11 +33,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import javax.swing.JComponent;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
-import javax.swing.undo.UndoableEdit;
+import javax.swing.undo.UndoManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
@@ -70,11 +67,11 @@ import org.openide.util.RequestProcessor;
  * @author Roderico Cruz
  */
 public class CustomizationWSEditor implements WSEditor{
-    private Stack<UndoableEdit> undoableEdits;
     private WSCustomizationTopComponent wsTopComponent;
     private boolean wsdlIsDirty;
     private boolean jaxwsDirty;
     private Definitions primaryDefinitions;
+    private UndoManager undoManager;
     
     /**
      * Creates a new instance of CustomizationWSEditor
@@ -129,6 +126,7 @@ public class CustomizationWSEditor implements WSEditor{
             public void run(){
                 try{
                     saveAndRefresh(node, jaxWsModel);
+                    removeListeners();
                 }finally{
                     handle.finish();
                 }
@@ -139,7 +137,6 @@ public class CustomizationWSEditor implements WSEditor{
     
     
     public JComponent createWSEditorComponent(Node node, JaxWsModel jaxWsModel) {
-        
         try{
             initializeModels(node);
         }catch(Exception e){
@@ -164,13 +161,20 @@ public class CustomizationWSEditor implements WSEditor{
     
     private void initializeModels(Node node) throws Exception {
         if(wsdlModels.isEmpty()){
-            WSUndoableEditListener listener = new WSUndoableEditListener();
+            undoManager = new UndoManager();
             WSDLModel primaryModel = getPrimaryModel(node);
             populateAllModels(primaryModel);
             Set<WSDLModel> modelSet = wsdlModels.keySet();
             for(WSDLModel wsdlModel: modelSet){
-                wsdlModel.addUndoableEditListener(listener);
+                wsdlModel.addUndoableEditListener(undoManager);
             }
+        }
+    }
+    
+    private void removeListeners(){
+        Set<WSDLModel> modelSet = wsdlModels.keySet();
+        for(WSDLModel wsdlModel: modelSet){
+            wsdlModel.removeUndoableEditListener(undoManager);
         }
     }
     
@@ -222,8 +226,7 @@ public class CustomizationWSEditor implements WSEditor{
     }
     
     private WSDLModel getPrimaryModel(Node node)
-    throws MalformedURLException, Exception{
-        undoableEdits = new Stack<UndoableEdit>();//new HashSet<UndoableEdit>();
+            throws MalformedURLException, Exception{
         WSDLModel model = null;
         //is it a client node?
         Client client = (Client)node.getLookup().lookup(Client.class);
@@ -254,16 +257,12 @@ public class CustomizationWSEditor implements WSEditor{
         return model;
     }
     
-    class WSUndoableEditListener implements UndoableEditListener{
-        public void undoableEditHappened(UndoableEditEvent e) {
-            undoableEdits.push(e.getEdit());
-        }
-    }
     
     public void cancel(Node node, JaxWsModel jaxWsModel) {
-        while(!undoableEdits.empty()){
-            UndoableEdit ue = undoableEdits.pop();
-            ue.undo();
+        if(undoManager != null) {
+            while(undoManager.canUndo()){
+                undoManager.undo();
+            }
         }
         
         try{
@@ -277,6 +276,7 @@ public class CustomizationWSEditor implements WSEditor{
         }catch(DataObjectNotFoundException e){
             ErrorManager.getDefault().notify(e);
         }
+        removeListeners();
     }
     
     public String getDescription() {
