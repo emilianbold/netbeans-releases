@@ -35,7 +35,6 @@ import org.netbeans.modules.editor.NbEditorDocument;
 public class GsfDocument extends NbEditorDocument {
     private Language language;
     private Formatter formatter;
-    private Class kitClass;
     
     public GsfDocument(Class kitClass, Language language) {
         super(kitClass);
@@ -76,5 +75,14 @@ public class GsfDocument extends NbEditorDocument {
         }
         
         return formatter;
+    }
+    
+    @Override
+    public int getShiftWidth() {
+        org.netbeans.api.gsf.Formatter f = language.getFormatter();
+        if (f != null) {
+            return f.indentSize();
+        }
+        return super.getShiftWidth();
     }
 }

@@ -58,7 +58,7 @@ public class GsfEditorSettings extends Settings.AbstractInitializer {
             // but I can't get to the mime type from here. In 6.0 the editor settings are
             // being redone so I can hopefully fix this soon.
             settingsMap.put(SettingsNames.SPACES_PER_TAB, Integer.valueOf(2));
-            settingsMap.put(SettingsNames.INDENT_SHIFT_WIDTH, Integer.valueOf(2));
+            //settingsMap.put(SettingsNames.INDENT_SHIFT_WIDTH, Integer.valueOf(2));
             settingsMap.put(ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE, Boolean.FALSE);
             settingsMap.put(ExtSettingsNames.HIGHLIGHT_MATCH_BRACE, Boolean.TRUE);
             settingsMap.put(SettingsNames.WORD_MATCH_MATCH_CASE, Boolean.TRUE);

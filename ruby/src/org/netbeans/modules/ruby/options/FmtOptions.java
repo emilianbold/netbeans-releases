@@ -102,7 +102,7 @@ public class FmtOptions {
     public static Preferences getPreferences(String profileId) {
         return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").node(profileId);
     }
-    
+
     public static boolean getGlobalExpandTabToSpaces() {
         org.netbeans.editor.Formatter f = (org.netbeans.editor.Formatter)Settings.getValue(getKitClass(), "formatter");
         if (f != null)

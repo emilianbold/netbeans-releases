@@ -66,9 +66,11 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
     private int rightMarginOverride = -1;
 
     public Formatter() {
+        this.codeStyle = CodeStyle.getDefault(null);
     }
     
     public Formatter(CodeStyle codeStyle, int rightMarginOverride) {
+        assert codeStyle != null;
         this.codeStyle = codeStyle;
         this.rightMarginOverride = rightMarginOverride;
     }
@@ -86,11 +88,11 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
     }
     
     public int indentSize() {
-        return 2;
+        return codeStyle.getIndentSize();
     }
     
     public int hangingIndentSize() {
-        return 2;
+        return codeStyle.getContinuationIndentSize();
     }
 
     /** Compute the initial balance of brackets at the given offset. */
@@ -383,9 +385,6 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
-            if (codeStyle == null) {
-                codeStyle = CodeStyle.getDefault(null);
-            }
             syncOptions(doc, codeStyle);
 
             if (endOffset > doc.getLength()) {
@@ -503,23 +502,8 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
             int end = endOffset;
             
-            int indentSize;
-            int hangingIndentSize;
-            
-            if (codeStyle != null) {
-                //CodeStyle style = CodeStyle.getDefault(null);
-                //assert style != null;
-                indentSize = codeStyle.getIndentSize();
-                hangingIndentSize = codeStyle.getContinuationIndentSize();
-            } else if (preferences != null) {
-                indentSize = preferences.getIndentation();
-                hangingIndentSize = preferences.getHangingIndentation();
-            } else {
-                CodeStyle style = CodeStyle.getDefault(null);
-                assert style != null;
-                indentSize = style.getIndentSize();
-                hangingIndentSize = style.getContinuationIndentSize();
-            }
+            int indentSize = codeStyle.getIndentSize();
+            int hangingIndentSize = codeStyle.getContinuationIndentSize();
             
             // Pending - apply comment formatting too?
 
@@ -620,12 +604,6 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
      */
     private static void syncOptions(BaseDocument doc, CodeStyle style) {
         org.netbeans.editor.Formatter formatter = doc.getFormatter();
-        if (formatter.expandTabs() != style.expandTabToSpaces()) {
-            formatter.setExpandTabs(style.expandTabToSpaces());
-        }
-        if (formatter.getTabSize() != style.getTabSize()) {
-            formatter.setTabSize(style.getTabSize());
-        }
         if (formatter.getSpacesPerTab() != style.getIndentSize()) {
             formatter.setSpacesPerTab(style.getIndentSize());
         }

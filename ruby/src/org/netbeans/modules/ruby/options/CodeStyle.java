@@ -69,14 +69,6 @@ public final class CodeStyle {
     
     // General tabs and indents ------------------------------------------------
     
-    public boolean expandTabToSpaces() {
-        return preferences.getBoolean(expandTabToSpaces, getGlobalExpandTabToSpaces());
-    }
-
-    public int getTabSize() {
-        return preferences.getInt(tabSize, getGlobalTabSize());
-    }
-
     public int getIndentSize() {
         return preferences.getInt(indentSize, getDefaultAsInt(indentSize));
     }
