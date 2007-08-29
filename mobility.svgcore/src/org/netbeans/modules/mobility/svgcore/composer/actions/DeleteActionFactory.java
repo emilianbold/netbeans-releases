@@ -11,11 +11,12 @@
  * Microsystems, Inc. All Rights Reserved.
  *
  */
-
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
 import java.awt.event.ActionEvent;
+import javax.swing.Action;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.ActionWrapper;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
@@ -26,7 +27,7 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
  */
 public class DeleteActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction  m_deleteAction = 
-        new AbstractSVGAction("delete_element.png", "HINT_DeleteElement", "LBL_DeleteElement") {  //NOI18N
+        new AbstractSVGAction("svg_delete") {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
                 if (selected != null) {
@@ -47,12 +48,16 @@ public class DeleteActionFactory extends AbstractComposerActionFactory implement
         sceneMgr.addSelectionListener(this);
     }
 
-    public AbstractSVGAction [] getMenuActions() {
-        return new AbstractSVGAction [] { null, m_deleteAction };
+    public Action [] getMenuActions() {
+        return new Action [] { m_deleteAction };
     }
 
     public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {
-        //m_deleteAction.setEnabled(newSelection != null && !isReadOnly);
-        m_deleteAction.setEnabled(true);
+        m_deleteAction.setEnabled(newSelection != null && !isReadOnly);
+        //m_deleteAction.setEnabled(true);
+    }
+    
+    public void updateActionState() {
+        m_deleteAction.setEnabled(!m_sceneMgr.isReadOnly() && m_sceneMgr.getSelected() != null);
     }
 }

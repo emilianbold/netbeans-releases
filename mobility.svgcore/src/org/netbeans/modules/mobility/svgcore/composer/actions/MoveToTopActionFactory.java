@@ -15,7 +15,9 @@
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
 import java.awt.event.ActionEvent;
+import javax.swing.Action;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.ActionWrapper;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
@@ -26,7 +28,7 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
  */
 public class MoveToTopActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener{
     private final AbstractSVGAction  m_moveToTopAction = 
-        new AbstractSVGAction("move_to_top.png", "HINT_MoveToTop", "LBL_MoveToTop") {  //NOI18N
+        new AbstractSVGAction("svg_move_to_top") {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
                 if (selected != null) {
@@ -45,8 +47,8 @@ public class MoveToTopActionFactory extends AbstractComposerActionFactory implem
         sceneMgr.addSelectionListener(this);
     }
 
-    public AbstractSVGAction [] getMenuActions() {
-        return new AbstractSVGAction [] { null, m_moveToTopAction};
+    public Action [] getMenuActions() {
+        return new Action [] { m_moveToTopAction};
     }
     
     public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {

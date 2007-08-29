@@ -31,6 +31,7 @@ public class TranslateAction extends AbstractComposerAction {
     private final SVGObject m_translated;
     private       int       m_x;
     private       int       m_y;
+    private       boolean   m_changed = false;
 
     public TranslateAction(ComposerActionFactory factory,SVGObject translated, MouseEvent me) {
         super(factory);
@@ -82,11 +83,14 @@ public class TranslateAction extends AbstractComposerAction {
         m_translated.translate(dx, dy, isRelative);
         bBox.add(m_translated.getScreenBBox());
         m_factory.getSceneManager().getScreenManager().repaint(bBox, SVGObjectOutline.SELECTOR_OVERLAP);
+        m_changed = true;
     }
     
     public void actionCompleted() {
-        m_translated.applyTextChanges();
-        m_translated.commitChanges();        
+        if ( m_changed) {
+            m_translated.applyTextChanges();
+            m_translated.commitChanges();        
+        }
         super.actionCompleted();
     }
 }

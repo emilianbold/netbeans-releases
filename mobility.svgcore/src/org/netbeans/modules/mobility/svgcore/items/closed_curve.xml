@@ -4,7 +4,7 @@
 
  <editor_palette_item version="1.0">
      <body>
-
+	<![CDATA[ <path d="M100,200 C0,150 0,0 100,50 C200,0 200,150 100, 200" stroke="black" stroke-width="2" fill="red"/> ]]>
      </body>
      
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/closed_curve_16.png" />

@@ -652,6 +652,6 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
 */    
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.xml.text.structure.debug");  //NOI18N
     
-    private static final int ATTRIBS_MAX_LEN = 30;
-    private static final int TEXT_MAX_LEN = ATTRIBS_MAX_LEN;    
+    private static final int ATTRIBS_MAX_LEN = 100;
+    //private static final int TEXT_MAX_LEN = ATTRIBS_MAX_LEN;    
 }

@@ -15,10 +15,13 @@ package org.netbeans.modules.mobility.svgcore.view.svg;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import javax.swing.JComponent;
+import javax.swing.text.Keymap;
+import org.netbeans.editor.MultiKeymap;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.xml.multiview.AbstractMultiViewElement;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -78,7 +81,7 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
         return new ProxyLookup( new Lookup[] {
             svgView.getLookup(),
             dObj.getNodeDelegate().getLookup()
-        });
+        }); 
         //return dObj.getNodeDelegate().getLookup();        
     }
 

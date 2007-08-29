@@ -41,7 +41,6 @@ public final class SaveElementAsImage extends CookieAction {// implements Presen
         if (svgObj != null && image != null) {
             try {
                 SVGImageRasterizerPanel panel = new SVGImageRasterizerPanel(doj, svgObj.getElementId());
-                panel.setMinimumSize(new Dimension(700, 500));
                 DialogDescriptor        dd    = new DialogDescriptor(panel, NbBundle.getMessage(SaveElementAsImage.class, "TITLE_ImageExport"));
                 Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
                 SaveAnimationAsImageAction.setDialogMinimumSize( dlg);
@@ -61,7 +60,7 @@ public final class SaveElementAsImage extends CookieAction {// implements Presen
     }
     
     public String getName() {
-        return NbBundle.getMessage(SaveElementAsImage.class, "CTL_SVGExportAction");
+        return NbBundle.getMessage(SaveElementAsImage.class, "CTL_SVGExportAction"); //NOI18N
     }
     
     protected Class[] cookieClasses() {
@@ -71,7 +70,7 @@ public final class SaveElementAsImage extends CookieAction {// implements Presen
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
     }
     
     public HelpCtx getHelpCtx() {

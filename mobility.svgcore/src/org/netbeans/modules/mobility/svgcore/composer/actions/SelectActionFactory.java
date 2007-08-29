@@ -19,7 +19,9 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.ActionWrapper;
 import org.netbeans.modules.mobility.svgcore.composer.ComposerAction;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
@@ -33,7 +35,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  */
 public class SelectActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction       m_navigateBackAction = 
-        new AbstractSVGAction("back.png", "HINT_SelectionBack", "LBL_SelectionBack", false, 0) {  //NOI18N
+        new AbstractSVGAction("svg_prev_sel", false, 0) {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 if ( m_selectionHistoryIndex > 0){
                     String [] selection = m_selectionHistory.get(--m_selectionHistoryIndex);
@@ -44,7 +46,7 @@ public class SelectActionFactory extends AbstractComposerActionFactory implement
     };            
 
     private final AbstractSVGAction       m_navigateForwardAction = 
-        new AbstractSVGAction("forward.png", "HINT_SelectionForward", "LBL_SelectionForward", false, 1) {  //NOI18N
+        new AbstractSVGAction("svg_next_sel", false, 1) {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 if ( m_selectionHistoryIndex < m_selectionHistory.size() - 1){
                     String [] selection = m_selectionHistory.get(++m_selectionHistoryIndex);
@@ -55,7 +57,7 @@ public class SelectActionFactory extends AbstractComposerActionFactory implement
     };            
 
     private final AbstractSVGAction       m_navigateUpAction = 
-        new AbstractSVGAction("up.png", "HINT_SelectionUp", "LBL_SelectionUp", false, 2) {  //NOI18N
+        new AbstractSVGAction("svg_parent_sel", false, 2) {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
                 if (selected != null && selected.length > 0) {
@@ -121,8 +123,8 @@ public class SelectActionFactory extends AbstractComposerActionFactory implement
         }
     }
     
-    public AbstractSVGAction [] getMenuActions() {
-        return new AbstractSVGAction [] { m_navigateBackAction, m_navigateForwardAction, m_navigateUpAction};
+    public Action [] getMenuActions() {
+        return new Action [] { m_navigateBackAction, m_navigateForwardAction, m_navigateUpAction};
     }
 
     public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {

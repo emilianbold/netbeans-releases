@@ -44,15 +44,18 @@ public class HighlightAction extends AbstractComposerAction {
         SceneManager sceneMgr = m_factory.getSceneManager();
         assert sceneMgr.containsAction(HighlightAction.class);
  
-        if ( !isOutsideEvent && evt.getID() == MouseEvent.MOUSE_MOVED) {
-            MouseEvent me = (MouseEvent) evt;
-            SVGObject [] objects = sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
-            if (objects == null || objects.length == 0 || 
-                objects[0] != m_highlighted)  {
-                getScreenManager().getAnimatorView().setToolTipText("");
+        if ( !isOutsideEvent) {
+            if ( evt.getID() == MouseEvent.MOUSE_MOVED) {
+                MouseEvent me = (MouseEvent) evt;
+                SVGObject [] objects = sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
+                if (objects == null || objects.length == 0 || 
+                    objects[0] != m_highlighted)  {
+                    actionCompleted();
+                }
+            } else if ( evt.getID() == MouseEvent.MOUSE_EXITED) {
                 actionCompleted();
-                m_highlighted.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
             }
+            
         }
         return false;
     }
@@ -65,6 +68,12 @@ public class HighlightAction extends AbstractComposerAction {
         } else {
             actionCompleted();
         }
+    }
+    
+    public void actionCompleted() {
+        super.actionCompleted();
+        getScreenManager().getAnimatorView().setToolTipText("");
+        m_highlighted.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
     }
     
     private String getTooltipText() {

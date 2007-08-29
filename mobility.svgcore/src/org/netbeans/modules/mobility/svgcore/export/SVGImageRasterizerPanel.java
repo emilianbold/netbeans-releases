@@ -31,6 +31,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.export.AnimationRasterizer.ColorReductionMethod;
 import org.netbeans.modules.mobility.svgcore.export.AnimationRasterizer.ImageType;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -92,6 +93,8 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
         compressionQualityLabel = new javax.swing.JLabel();
         transparentCheckBox = new javax.swing.JCheckBox();
         compressionQualitySpinner = new javax.swing.JSpinner();
+        reductionLabel = new javax.swing.JLabel();
+        reductionCombo = new JComboBox( AnimationRasterizer.ColorReductionMethod.values());
         timeLinePanel = new javax.swing.JPanel();
         currentTimeSpinner = new JSpinner( new SpinnerNumberModel( 0.0, 0.0, 30.0, 1.0));
         javax.swing.JLabel startTimeLabel = new javax.swing.JLabel();
@@ -102,14 +105,18 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
         jPanel3 = new javax.swing.JPanel();
         imageHolder = new javax.swing.JScrollPane();
         jPanel4 = new javax.swing.JPanel();
-        imageTypeLabel = new javax.swing.JLabel();
-        imageSizeLabel = new javax.swing.JLabel();
-        fileNameLabel = new javax.swing.JLabel();
+        javax.swing.JLabel previewFormatLabel = new javax.swing.JLabel();
+        javax.swing.JLabel previewSizeLabel = new javax.swing.JLabel();
+        javax.swing.JLabel previewFileLabel = new javax.swing.JLabel();
+        previewFormatText = new javax.swing.JTextField();
+        previewSizeText = new javax.swing.JTextField();
+        previewFileText = new javax.swing.JTextField();
 
         sizePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_ImageSize"))); // NOI18N
 
         jLabel11.setLabelFor(spinnerWidth);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel11, org.openide.util.NbBundle.getBundle(SVGImageRasterizerPanel.class).getString("LBL_AnimationImageWidth")); // NOI18N
+        jLabel11.setName(""); // NOI18N
 
         jLabel12.setLabelFor(spinnerHeight);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel12, org.openide.util.NbBundle.getBundle(SVGImageRasterizerPanel.class).getString("LBL_AnimationImageHeight")); // NOI18N
@@ -145,7 +152,7 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
                     .add(sizePanelLayout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(keepRatio)))
-                .addContainerGap(79, Short.MAX_VALUE))
+                .addContainerGap(91, Short.MAX_VALUE))
         );
         sizePanelLayout.setVerticalGroup(
             sizePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -161,9 +168,14 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
                 .add(keepRatio))
         );
 
+        spinnerWidth.getAccessibleContext().setAccessibleName("Image width");
+        spinnerHeight.getAccessibleContext().setAccessibleName("Image height");
+        keepRatio.getAccessibleContext().setAccessibleDescription("");
+
         optionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_ImageOptions"))); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_OptionsFormat")); // NOI18N
+        jLabel2.setLabelFor(formatComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_OptionsFormat")); // NOI18N
 
         formatComboBox.setModel(createImageTypeComboBoxModel());
         formatComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -174,20 +186,31 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        progressiveCheckBox.setText(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_OptionsProgressive")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(progressiveCheckBox, org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_OptionsProgressive")); // NOI18N
         progressiveCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         progressiveCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        compressionLabel.setText(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_OptionsQuality")); // NOI18N
+        compressionLabel.setLabelFor(compressionLevelCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(compressionLabel, org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_OptionsQuality")); // NOI18N
 
-        compressionQualityLabel.setText("Quality");
+        compressionQualityLabel.setLabelFor(compressionQualitySpinner);
+        org.openide.awt.Mnemonics.setLocalizedText(compressionQualityLabel, "&Quality");
 
-        transparentCheckBox.setText("Transparent");
+        org.openide.awt.Mnemonics.setLocalizedText(transparentCheckBox, "&Transparent");
         transparentCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         transparentCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         transparentCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 transparencyChanged(evt);
+            }
+        });
+
+        reductionLabel.setLabelFor(reductionCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(reductionLabel, "Co&lor reduction method:");
+
+        reductionCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                colorReductionChanged(evt);
             }
         });
 
@@ -199,28 +222,33 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
                 .addContainerGap()
                 .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(optionsPanelLayout.createSequentialGroup()
-                        .add(84, 84, 84)
-                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE))
-                    .add(optionsPanelLayout.createSequentialGroup()
-                        .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(optionsPanelLayout.createSequentialGroup()
-                                .add(jLabel2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(formatComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(progressiveCheckBox))
-                        .addContainerGap(56, Short.MAX_VALUE))
+                        .add(245, 245, 245)
+                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE))
                     .add(optionsPanelLayout.createSequentialGroup()
                         .add(transparentCheckBox)
-                        .addContainerGap(90, Short.MAX_VALUE))
+                        .addContainerGap(102, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, optionsPanelLayout.createSequentialGroup()
+                        .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, optionsPanelLayout.createSequentialGroup()
+                                .add(jLabel2)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(formatComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, progressiveCheckBox))
+                        .addContainerGap(13, Short.MAX_VALUE))
                     .add(optionsPanelLayout.createSequentialGroup()
                         .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, compressionLevelCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, compressionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(compressionQualityLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(compressionQualitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(54, 54, 54))))
+                        .add(106, 106, 106))
+                    .add(optionsPanelLayout.createSequentialGroup()
+                        .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, reductionCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, reductionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap(54, Short.MAX_VALUE))))
         );
         optionsPanelLayout.setVerticalGroup(
             optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -233,17 +261,31 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(transparentCheckBox)
                 .add(14, 14, 14)
-                .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(compressionLabel)
-                    .add(optionsPanelLayout.createSequentialGroup()
-                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18)))
+                .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(reductionLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(reductionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(compressionLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(compressionLevelCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(compressionQualitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(compressionQualityLabel)))
+                    .add(compressionQualityLabel)
+                    .add(compressionLevelCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
+
+        formatComboBox.getAccessibleContext().setAccessibleName("Image format");
+        formatComboBox.getAccessibleContext().setAccessibleDescription("Image format");
+        progressiveCheckBox.getAccessibleContext().setAccessibleDescription("Progressive display");
+        compressionLevelCombo.getAccessibleContext().setAccessibleName("Compression level");
+        compressionLevelCombo.getAccessibleContext().setAccessibleDescription("Compression level");
+        transparentCheckBox.getAccessibleContext().setAccessibleDescription("Transparent background");
+        compressionQualitySpinner.getAccessibleContext().setAccessibleName("Compression quality");
+        reductionLabel.getAccessibleContext().setAccessibleName("Color reduction method:");
+        reductionLabel.getAccessibleContext().setAccessibleDescription("Color reduction method");
+        reductionCombo.getAccessibleContext().setAccessibleName("Color reduction method");
 
         timeLinePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_AnimationFrameTime"))); // NOI18N
 
@@ -261,7 +303,7 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
                         .add(startTimeLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(currentTimeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(animationSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
+                    .add(animationSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE))
                 .addContainerGap())
         );
         timeLinePanelLayout.setVerticalGroup(
@@ -273,6 +315,9 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(animationSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        animationSlider.getAccessibleContext().setAccessibleName("Current time selector");
+        animationSlider.getAccessibleContext().setAccessibleDescription("Current time selector");
 
         exportPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SVGImageRasterizerPanel.class, "LBL_ExportLabel"))); // NOI18N
 
@@ -292,106 +337,138 @@ public final class SVGImageRasterizerPanel extends SVGRasterizerPanel {
         exportPanelLayout.setHorizontalGroup(
             exportPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(exportPanelLayout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
                 .add(exportPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(radioExportCurrent)
-                    .add(radioExportAll)))
+                    .add(radioExportAll))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         exportPanelLayout.setVerticalGroup(
             exportPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(exportPanelLayout.createSequentialGroup()
                 .add(radioExportCurrent)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(radioExportAll))
         );
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jPanel4.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        imageTypeLabel.setText("PNG-8");
+        previewFormatLabel.setLabelFor(previewFormatText);
+        previewFormatLabel.setText("Format");
 
-        imageSizeLabel.setText("200.4K");
+        previewSizeLabel.setLabelFor(previewSizeText);
+        previewSizeLabel.setText("Size");
 
-        fileNameLabel.setText("C:\\Program Files\\");
+        previewFileLabel.setLabelFor(previewFileText);
+        previewFileLabel.setText("File");
 
-            org.jdesktop.layout.GroupLayout jPanel4Layout = new org.jdesktop.layout.GroupLayout(jPanel4);
-            jPanel4.setLayout(jPanel4Layout);
-            jPanel4Layout.setHorizontalGroup(
-                jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(jPanel4Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(fileNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
-                        .add(imageTypeLabel)
-                        .add(imageSizeLabel))
-                    .addContainerGap())
-            );
-            jPanel4Layout.setVerticalGroup(
-                jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(jPanel4Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .add(imageTypeLabel)
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(imageSizeLabel)
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(fileNameLabel)
-                    .addContainerGap())
-            );
+        previewFormatText.setEditable(false);
+        previewFormatText.setText("JPEG");
 
-            org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
-            jPanel3.setLayout(jPanel3Layout);
-            jPanel3Layout.setHorizontalGroup(
-                jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE))
-                    .addContainerGap())
-            );
-            jPanel3Layout.setVerticalGroup(
-                jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .add(imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap())
-            );
+        previewSizeText.setEditable(false);
+        previewSizeText.setText("200 KBytes");
 
-            org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-            this.setLayout(layout);
-            layout.setHorizontalGroup(
-                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                    .addContainerGap()
-                    .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, sizePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, optionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 209, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+        previewFileText.setEditable(false);
+        previewFileText.setText("C:\\Program Files\\about.svg");
+
+        org.jdesktop.layout.GroupLayout jPanel4Layout = new org.jdesktop.layout.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(previewFormatLabel)
+                    .add(previewSizeLabel)
+                    .add(previewFileLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(previewSizeText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(previewFileText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
+                    .add(previewFormatText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 64, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(previewFormatLabel)
+                    .add(previewFormatText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(previewSizeLabel)
+                    .add(previewSizeText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(previewFileLabel)
+                    .add(previewFileText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        previewFormatText.getAccessibleContext().setAccessibleDescription("File format");
+        previewSizeText.getAccessibleContext().setAccessibleDescription("File size");
+        previewFileText.getAccessibleContext().setAccessibleDescription("File location");
+
+        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(imageHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(sizePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(optionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 221, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(timeLinePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(exportPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(sizePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(optionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 233, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(timeLinePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(exportPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap())
-            );
-            layout.setVerticalGroup(
-                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                    .addContainerGap()
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(sizePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(optionsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(timeLinePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(exportPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .addContainerGap())
-            );
-        }// </editor-fold>//GEN-END:initComponents
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(exportPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+private void colorReductionChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorReductionChanged
+    updateImage((JComponent)evt.getSource(), true);
+}//GEN-LAST:event_colorReductionChanged
 
 private void transparencyChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transparencyChanged
     updateImage((JComponent) evt.getSource(), true);
@@ -417,19 +494,21 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JSpinner compressionQualitySpinner;
     private javax.swing.JSpinner currentTimeSpinner;
     private javax.swing.JPanel exportPanel;
-    private javax.swing.JLabel fileNameLabel;
     private javax.swing.JComboBox formatComboBox;
     private javax.swing.JScrollPane imageHolder;
-    private javax.swing.JLabel imageSizeLabel;
-    private javax.swing.JLabel imageTypeLabel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JCheckBox keepRatio;
     private javax.swing.JPanel optionsPanel;
+    private javax.swing.JTextField previewFileText;
+    private javax.swing.JTextField previewFormatText;
+    private javax.swing.JTextField previewSizeText;
     private javax.swing.JCheckBox progressiveCheckBox;
     private javax.swing.JRadioButton radioExportAll;
     private javax.swing.JRadioButton radioExportCurrent;
+    private javax.swing.JComboBox reductionCombo;
+    private javax.swing.JLabel reductionLabel;
     private javax.swing.JPanel sizePanel;
     private javax.swing.JSpinner spinnerHeight;
     private javax.swing.JSpinner spinnerWidth;
@@ -465,6 +544,10 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
     public AnimationRasterizer.ImageType getImageType() {
         return (AnimationRasterizer.ImageType)formatComboBox.getSelectedItem();
     }  
+
+    public ColorReductionMethod getColorReductionMethod() {
+        return (ColorReductionMethod) reductionCombo.getSelectedItem();
+    }
     
     public float getStartTime(){
         return m_currentTime.getValue();
@@ -492,6 +575,10 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
         compressionLabel.setEnabled(supportsCompression);
         compressionQualityLabel.setEnabled(supportsCompression);
         
+        boolean needsColorReduction = imgType.needsColorReduction();
+        reductionCombo.setEnabled(needsColorReduction);
+        reductionLabel.setEnabled(needsColorReduction);
+        
         if (imgType.supportsTransparency()) {
             transparentCheckBox.setEnabled(true);
         } else {
@@ -515,10 +602,10 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
                             } else {
                                 sizeText = (Math.round(preview.m_imageSize / 102.4) / 10.0) + " KBytes";
                             }
-                            imageSizeLabel.setText( sizeText);
-                            imageTypeLabel.setText(preview.m_imageFormat);
+                            previewSizeText.setText( sizeText);
+                            previewFormatText.setText(preview.m_imageFormat);
                             //TODO Handle images not saved yet
-                            fileNameLabel.setText( fileName);
+                            previewFileText.setText( fileName);
                             label.setText(null);
                             label.setIcon(new ImageIcon(preview.m_image));
                             label.invalidate();

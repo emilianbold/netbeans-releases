@@ -30,15 +30,12 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Box;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
@@ -53,17 +50,15 @@ import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Keymap;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.mobility.project.J2MEProject;
-import org.netbeans.modules.mobility.svgcore.ExternalEditAction;
 import org.netbeans.modules.mobility.svgcore.export.SaveElementAsImage;
-import org.netbeans.modules.mobility.svgcore.export.SaveAnimationAsImageAction;
-import org.netbeans.modules.mobility.svgcore.export.SaveAsImageAction;
-import org.openide.actions.EditAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -72,7 +67,6 @@ import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
@@ -118,14 +112,15 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     //private transient JSpinner       maximumTimeSpinner;
     private transient JSpinner       currentTimeSpinner;
     private transient JComboBox      zoomComboBox;
-    private transient JToggleButton  startAnimationButton;
-    private transient JButton        pauseAnimationButton;
-    private transient JButton        stopAnimationButton;
-    private transient JToggleButton  toolTipToggleButton;
-    private transient JToggleButton  hoverToggleButton;
-    private transient JToggleButton  focusToggleButton;
-    private transient JToggleButton  showViewBoxToggleButton;
-    private transient JToggleButton  allowEditToggleButton;
+    private transient AbstractButton  startAnimationButton;
+    private transient AbstractButton  pauseAnimationButton;
+    private transient AbstractButton  stopAnimationButton;
+    private transient AbstractButton  toolTipToggleButton;
+    private transient AbstractButton  hoverToggleButton;
+    private transient AbstractButton  focusToggleButton;
+    private transient AbstractButton  scaleToggleButton;
+    private transient AbstractButton  showViewBoxToggleButton;
+    private transient AbstractButton  allowEditToggleButton;
     private transient ChangeListener changeListener;        
     
     private transient boolean doScale        = false;
@@ -173,19 +168,23 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         }
     };
     
-    private transient AbstractSVGAction       allowEditAction = 
-        new AbstractSVGAction("allow_edit.png", "HINT_AllowEdit", "LBL_AllowEdit", true) {  //NOI18N
+    private final transient AbstractSVGToggleAction       allowEditAction = 
+        new AbstractSVGToggleAction( "svg_allow_edit") {  //NOI18N
             public void actionPerformed(ActionEvent e) {
+                super.actionPerformed(e);
                 SceneManager smgr = getSceneManager();
-                smgr.setReadOnly( !smgr.isReadOnly());
+                boolean isEditable = !smgr.isReadOnly();
+                smgr.setReadOnly( isEditable);
                 updateAnimationTime(0, -1);
                 updateAnimationActions();
-                insertGraphicsAction.setEnabled(!smgr.isReadOnly());
+                insertGraphicsAction.setEnabled(!isEditable);
+                allowEditToggleButton.setSelected(!isEditable);
+                smgr.updateActionState();
             }
     };            
     
-    private transient AbstractSVGAction       startAnimationAction = 
-        new AbstractSVGAction("animate_start.png", "HINT_AnimateStart", "LBL_AnimateStart") { //NOI18N
+    private final transient AbstractSVGAction       startAnimationAction = 
+        new AbstractSVGAction("svg_anim_start") { //NOI18N
             public void actionPerformed(ActionEvent e) {
                 startAnimationButton.setSelected(true);
                 getPerseusController().startAnimator();
@@ -197,8 +196,8 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             }
     };            
 
-    private transient AbstractSVGAction       pauseAnimationAction = 
-        new AbstractSVGAction("animate_pause.png", "HINT_AnimatePause", "LBL_AnimatePause", false) { //NOI18N
+    private final transient AbstractSVGAction       pauseAnimationAction = 
+        new AbstractSVGAction("svg_anim_pause", false) { //NOI18N
             public void actionPerformed(ActionEvent e) {
                 if ( getPerseusController().getAnimatorState() == PerseusController.ANIMATION_RUNNING) {
                     getPerseusController().pauseAnimator();
@@ -209,8 +208,8 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             }
     };            
 
-    private transient AbstractSVGAction       stopAnimationAction = 
-        new AbstractSVGAction("animate_stop.png", "HINT_AnimateStop", "LBL_AnimateStop", false) { //NOI18N
+    private final transient AbstractSVGAction       stopAnimationAction = 
+        new AbstractSVGAction("svg_anim_stop", false) { //NOI18N
             public void actionPerformed(ActionEvent e) {
                 PerseusController pc = getPerseusController();
                 startAnimationButton.setSelected(false);
@@ -225,8 +224,8 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             }
     };            
     
-    private transient AbstractSVGAction       insertGraphicsAction = 
-        new AbstractSVGAction("animate_stop.png", "HINT_InsertGraphics", "LBL_InsertGraphics", false) { //NOI18N
+    private final transient AbstractSVGAction       insertGraphicsAction = 
+        new AbstractSVGAction("svg_insert_graphics", false) { //NOI18N
             public void actionPerformed(ActionEvent e) {
                 JFileChooser chooser = new JFileChooser();
                 chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -253,8 +252,8 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             }
     };     
 
-    private transient AbstractSVGAction       focusAction = 
-        new AbstractSVGAction("focus.png", "HINT_ToggleFocus", "LBL_ToggleFocus", true) { //NOI18N
+    private final transient AbstractSVGAction       focusAction = 
+        new AbstractSVGAction("svg_set_focus", false) { //NOI18N
             public void actionPerformed(ActionEvent e) {
                 ScreenManager smgr = getScreenManager();
                 smgr.setAssignFocus(!smgr.getAssignFocus());
@@ -264,7 +263,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     
     public SVGViewTopComponent(SVGDataObject dObj) {
         m_svgDataObject = dObj;
-        initialize();
+        initialize();       
     }
 
     private SceneManager getSceneManager() {
@@ -312,7 +311,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
                                 //externally modified, refresh image
-                                System.out.println("Refreshing image ...");
+                                //System.out.println("Refreshing image ...");
                                 updateImage();
                             }
                         });
@@ -405,6 +404,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     }
     
     public void componentOpened() {
+        
         getModel().setChanged(true);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -430,14 +430,34 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         basePanel.setLayout(new BorderLayout());
     }
             
-    public void onShow() {        
+    public void onShow() { 
+       /*
+        new Thread() {
+            public void run() {
+                while(true) {
+                    try {
+                        Thread.sleep(2000);
+                        println(javax.swing.FocusManager.getCurrentManager().getFocusOwner());
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }.start();
+      */
+        
         if ( getModel().isChanged()) {
             updateImage();
             getModel().setChanged(false);
         }
     }
 
-    public void componentHidden(){
+    public void componentHidden() {
+        Keymap map = (Keymap)Lookup.getDefault().lookup(Keymap.class);
+        if (map != null) {
+            map.removeKeyStrokeBinding(KeyStroke.getKeyStroke('l'));
+        }
+        
         //System.out.println("Hidding component");
         PerseusController perseus = getPerseusController();
         
@@ -486,6 +506,16 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         setToolTipText(FileUtil.getFileDisplayName(fo));
     }
 
+    private void addButtonsForActions(JToolBar toolbar, Action [] toolbarActions, GridBagConstraints constrains) {
+        for (Action action : toolbarActions) {
+            if (action != null) {
+                initButton(toolbar, action, false);
+            } else {
+                toolbar.add(createToolBarSeparator(), constrains);
+            }
+        }       
+    }
+
     private JToolBar createToolBar(){
         final SceneManager smgr = getSceneManager();
         JToolBar toolbar = new JToolBar();
@@ -500,89 +530,16 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         //constrains.weighty = 1.0;
         //constrains.fill = GridBagConstraints.VERTICAL;
         toolbar.add(createToolBarSeparator(), constrains);
-        /*
-        slider = new JSlider(JSlider.HORIZONTAL, 0, (int)(currentMaximum/DEFAULT_STEP),0);
-        constrains = new GridBagConstraints();
-        constrains.anchor = GridBagConstraints.WEST;
         
-        AbstractSVGAction [] selectActions = m_sceneMgr.m_selectActionFactory.getActions();
-        for (AbstractSVGAction action : selectActions) {
-            initButton(toolbar, new JButton(action));
-        }
-        toolbar.add(createToolBarSeparator(), constrains);
-                
-        toolbar.add(slider, constrains);
-        toolbar.add(Box.createHorizontalStrut(11));
-        currentTimeSpinner = new JSpinner();
-        currentTimeSpinner.setToolTipText(NbBundle.getMessage(SVGViewTopComponent.class, "HINT_CurrentTime")); //NOI18N
-        currentTimeSpinner.setModel(new SpinnerNumberModel(new Float(0), new Float(0.0), new Float(currentMaximum), new Float(0.1)));
-        Font font = currentTimeSpinner.getFont();
-        FontMetrics fm = currentTimeSpinner.getFontMetrics(font);
-        int w = fm.stringWidth("000.0");
-        Dimension d = currentTimeSpinner.getPreferredSize();
-        d.width = d.width + w;
-        currentTimeSpinner.setPreferredSize(d);
-        
-        constrains = new GridBagConstraints();
-        constrains.anchor = GridBagConstraints.WEST;
-        JLabel currentTimeLabel = new JLabel(NbBundle.getMessage(SVGViewTopComponent.class, "LBL_CurrentTime"));
-        toolbar.add( currentTimeLabel, constrains);
-        toolbar.add(Box.createHorizontalStrut(4));
-
-        constrains = new GridBagConstraints();
-        constrains.anchor = GridBagConstraints.WEST;        
-        toolbar.add(currentTimeSpinner, constrains);
-        currentTimeLabel.setLabelFor(currentTimeSpinner);
-        toolbar.add(Box.createHorizontalStrut(4));
-        
-        constrains = new GridBagConstraints();
-        constrains.anchor = GridBagConstraints.WEST;
-        JLabel sec = new JLabel(NbBundle.getMessage(SVGViewTopComponent.class, "LBL_Seconds"));
-        toolbar.add( sec, constrains);
-        toolbar.add(Box.createHorizontalStrut(11));
-        
-        constrains = new GridBagConstraints();
-        constrains.anchor = GridBagConstraints.WEST;
-        JLabel endTime = new JLabel(NbBundle.getMessage(SVGViewTopComponent.class, "LBL_EndTime"));
-        toolbar.add( endTime, constrains);
-        toolbar.add(Box.createHorizontalStrut(4));
-
-        maximumTimeSpinner = new JSpinner();
-        maximumTimeSpinner.setToolTipText(NbBundle.getMessage(SVGViewTopComponent.class, "HINT_EndTime"));
-        maximumTimeSpinner.setModel(new SpinnerNumberModel(new Float(currentMaximum), new Float(0.0), null, new Float(0.1)));
-        maximumTimeSpinner.setPreferredSize(d);
-        constrains = new GridBagConstraints();
-        constrains.anchor = GridBagConstraints.WEST;        
-        toolbar.add(maximumTimeSpinner, constrains);
-        endTime.setLabelFor(maximumTimeSpinner);
-        toolbar.add(Box.createHorizontalStrut(4));
-
-        constrains = new GridBagConstraints();
-        constrains.anchor = GridBagConstraints.WEST;                
-        JLabel sec2 = new JLabel(NbBundle.getMessage(SVGViewTopComponent.class, "LBL_Seconds2")); 
-        toolbar.add( sec2, constrains);
-        constrains = new GridBagConstraints();
-        constrains.anchor = GridBagConstraints.WEST;   
-        constrains.insets = new Insets(0, 3, 0, 2);
-        //constrains.weighty = 1.0;
-        //constrains.fill = GridBagConstraints.VERTICAL;
-        toolbar.add(createToolBarSeparator(), constrains);
-        */
         buttonListener = new ButtonMouseListener();
 
-        //TODO Revisit - use better toolbar creation
-        AbstractSVGAction [] toolbarActions = smgr.getMenuActions();
-        for (AbstractSVGAction action : toolbarActions) {
-            if (action != null) {
-                if ( action.getPositionInToolbar() < 10) {
-                    initButton(toolbar, new JButton( action));
-                }
-            }
-        }       
+        addButtonsForActions( toolbar, 
+                smgr.getToolbarActions( "svg_prev_sel", "svg_next_sel", "svg_parent_sel"), constrains);
 
         toolbar.add(createToolBarSeparator(), constrains);
-        initButton(toolbar, new JButton(zoomToFitAction = new ZoomToFitAction()));  
+        initButton(toolbar, zoomToFitAction = new ZoomToFitAction(), false);  
         initCombo( toolbar, zoomComboBox = new JComboBox( ZOOM_VALUES));
+        
         zoomComboBox.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 if ( smgr.isImageLoaded()) { 
@@ -607,12 +564,12 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
                 }
             }            
         });
-        initButton(toolbar, new JButton(zoomInAction = new ZoomInAction()));
-        initButton(toolbar, new JButton(zoomOutAction = new ZoomOutAction()));
+        initButton(toolbar, zoomInAction = new ZoomInAction(), false);
+        initButton(toolbar, zoomOutAction = new ZoomOutAction(), false);
         toolbar.add(createToolBarSeparator(), constrains);
         
-        initButton(toolbar, toolTipToggleButton = new JToggleButton(toolTipAction = new ToggleTooltipAction()));        
-        initButton(toolbar, hoverToggleButton = new JToggleButton(highlightAction = new ToggleHighlightAction()));
+        toolTipToggleButton = initButton(toolbar, toolTipAction = new ToggleTooltipAction(), true);        
+        hoverToggleButton = initButton(toolbar, highlightAction = new ToggleHighlightAction(), true);
 
         constrains = new GridBagConstraints();
         constrains.anchor = GridBagConstraints.WEST;   
@@ -621,29 +578,21 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         //constrains.fill = GridBagConstraints.VERTICAL;
         toolbar.add(createToolBarSeparator(), constrains);
                 
-        initButton(toolbar, new JToggleButton(scaleAction = new ToggleScaleAction()));
-        initButton(toolbar, showViewBoxToggleButton = new JToggleButton(showViewBoxAction = new ToggleShowViewBoxAction()));               
+        scaleToggleButton = initButton(toolbar, scaleAction = new ToggleScaleAction(), true);
+        showViewBoxToggleButton = initButton(toolbar, showViewBoxAction = new ToggleShowViewBoxAction(), true);               
 
         toolbar.add(createToolBarSeparator(), constrains);
-        /*
-        initButton(toolbar, startAnimationButton = new JToggleButton( startAnimationAction));
-        startAnimationButton.setSelected(false);
-        initButton(toolbar, pauseAnimationButton = new JButton( pauseAnimationAction));
-        initButton(toolbar, stopAnimationButton  = new JButton( stopAnimationAction));
-        
-        toolbar.add(createToolBarSeparator(), constrains); */
-        initButton(toolbar, allowEditToggleButton = new JToggleButton(allowEditAction));               
+
+        allowEditToggleButton = initButton(toolbar, allowEditAction, true);               
         allowEditToggleButton.setSelected(!smgr.isReadOnly());
+
+        toolbar.add(createToolBarSeparator(), constrains);
+        initButton(toolbar, insertGraphicsAction, false);
         
-        for (AbstractSVGAction action : toolbarActions) {
-            if (action != null) {
-                if ( action.getPositionInToolbar() >= 10) {
-                    initButton(toolbar, new JButton( action));
-                }
-            } else {
-                toolbar.add(createToolBarSeparator(), constrains);
-            }
-        }       
+        addButtonsForActions( toolbar, 
+                smgr.getToolbarActions( "svg_delete", null, "svg_move_to_top", 
+                "svg_move_to_bottom", "svg_move_forward", "svg_move_backward"), constrains);
+
         constrains = new GridBagConstraints();
         constrains.anchor = GridBagConstraints.WEST;
         constrains.fill = GridBagConstraints.HORIZONTAL;
@@ -665,13 +614,13 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         constrains.insets = new Insets(0, 3, 0, 2);
         toolbar.add(Box.createHorizontalStrut(5));
         
-        initButton(toolbar, startAnimationButton = new JToggleButton( startAnimationAction));
+        startAnimationButton = initButton(toolbar, startAnimationAction, true);
         startAnimationButton.setSelected(false);
-        initButton(toolbar, pauseAnimationButton = new JButton( pauseAnimationAction));
-        initButton(toolbar, stopAnimationButton  = new JButton( stopAnimationAction));
+        pauseAnimationButton = initButton(toolbar, pauseAnimationAction, false);
+        stopAnimationButton = initButton(toolbar, stopAnimationAction, false);
        
         toolbar.add(createToolBarSeparator(), constrains);
-        initButton(toolbar, focusToggleButton = new JToggleButton(focusAction));
+        focusToggleButton = initButton(toolbar, focusAction, true);
         focusToggleButton.setSelected(getScreenManager().getAssignFocus());
         toolbar.add(createToolBarSeparator(), constrains);
         
@@ -741,8 +690,14 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         return toolbar;
     }
    
-    private void initButton(JComponent bar, AbstractButton button){
+    private AbstractButton initButton(JComponent bar, Action action, boolean isToggle){
         Border buttonBorder = UIManager.getBorder ("nb.tabbutton.border"); //NOI18N
+        AbstractButton button = isToggle ? new JToggleButton(action) : new JButton(action);
+        if (action instanceof AbstractSVGAction) {
+            ((AbstractSVGAction) action).registerAction(this);
+        }
+        
+        
         if ( buttonBorder != null ) {
             button.setBorder( buttonBorder );
         }
@@ -762,6 +717,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         //button.setFocusPainted(false);
         //button.set;
         bar.add(button, constrains);
+        return button;
     }
     
     private void initCombo(JComponent bar, JComboBox comboBox){
@@ -795,6 +751,8 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         stopAnimationAction.setEnabled(isActive);
         pauseAnimationButton.setEnabled(isActive);
         stopAnimationButton.setEnabled(isActive);
+        focusAction.setEnabled(isReadOnly);
+        focusToggleButton.setEnabled(isReadOnly);
     }
     
     private static JSeparator createToolBarSeparator () {
@@ -885,30 +843,22 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         smgr.restoreSelection();
         final JComponent topComponent = smgr.getComposerGUI();
         basePanel.add( topComponent, BorderLayout.CENTER);
-        smgr.registerPopupActions( new Action[]{
-            SystemAction.get(EditAction.class),
-            SystemAction.get(ExternalEditAction.class),
-            null,
-            SystemAction.get(SaveAsImageAction.class),
-            SystemAction.get(SaveAnimationAsImageAction.class),
-            SystemAction.get(SaveElementAsImage.class),
-            null,
+        smgr.registerPopupActions( new Action[] {
             insertGraphicsAction,
-            null,
             zoomToFitAction,
             zoomInAction,
             zoomOutAction,
-            null,
             highlightAction,
             toolTipAction,
             focusAction,
-            null,
             scaleAction,
             showViewBoxAction,
-            null,
             startAnimationAction,
             pauseAnimationAction,
-            stopAnimationAction}, lookup);
+            stopAnimationAction,
+            allowEditAction,
+            focusAction
+        }, lookup);
 
         //enableComponentsInToolbar(toolbar, true);
         updateZoomCombo();
@@ -929,6 +879,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         toolTipToggleButton.setSelected(scrMgr.getShowTooltip());
         focusToggleButton.setSelected(scrMgr.getAssignFocus());
         
+        topComponent.requestFocus();
         //updateSelection(actualSelection);
         repaintAll();
     }
@@ -1007,7 +958,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         private float m_previousZoomRatio;
         
         ToggleScaleAction() {
-            super( "scale.png", "HINT_ToggleScale", "LBL_ToggleScale");  //NOI18N
+            super( "svg_toggle_scale");  //NOI18N
         }
         
         public void actionPerformed(ActionEvent e) {
@@ -1032,6 +983,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             } else {
                 smgr.setZoomRatio(m_previousZoomRatio);
             }
+            scaleToggleButton.setSelected(doScale);
             zoomInAction.setEnabled(!doScale);
             zoomOutAction.setEnabled(!doScale);
             zoomToFitAction.setEnabled(!doScale);
@@ -1040,72 +992,51 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         }
     }    
     
-    private class ToggleHighlightAction extends AbstractAction implements Presenter.Popup {
-        ToggleHighlightAction (){
-            putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/mobility/svgcore/resources/highlight.png"))); //NOI18N
-            putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SVGViewTopComponent.class, "HINT_ToggleHighlight")); // NOI18N
+    private class ToggleHighlightAction extends AbstractSVGAction implements Presenter.Popup {
+        ToggleHighlightAction () {
+            super( "svg_toggle_highlight");
         }
         
         public void actionPerformed(ActionEvent e) {
             ScreenManager smgr = getScreenManager();
-            smgr.setHighlightObject(!smgr.getHighlightObject());
+            boolean b = !smgr.getHighlightObject();
+            smgr.setHighlightObject(b);
+            hoverToggleButton.setSelected(b);
             repaint();
-        }
-
-        public JMenuItem getPopupPresenter() {
-            JMenuItem menu = new JMenuItem(this);
-            menu.setText(NbBundle.getMessage(SVGViewTopComponent.class, "LBL_ToggleHighlight")); //NOI18N
-            menu.setToolTipText(null);
-            menu.setIcon(null);
-            return menu;
         }
     }    
 
-    private class ToggleTooltipAction extends AbstractAction implements Presenter.Popup {
+    private class ToggleTooltipAction extends AbstractSVGAction implements Presenter.Popup {
         ToggleTooltipAction (){
-            putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/mobility/svgcore/resources/help.png"))); //NOI18N
-            putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SVGViewTopComponent.class, "HINT_TogglTooltip")); // NOI18N
+            super( "svg_toggle_tooltip");
         }
         
         public void actionPerformed(ActionEvent e) {
             ScreenManager smgr = getScreenManager();
-            smgr.setShowTooltip(!smgr.getShowTooltip());
+            boolean b = !smgr.getShowTooltip();
+            smgr.setShowTooltip(b);
+            toolTipToggleButton.setSelected(b);
             repaint();
-        }
-
-        public JMenuItem getPopupPresenter() {
-            JMenuItem menu = new JMenuItem(this);
-            menu.setText(NbBundle.getMessage(SVGViewTopComponent.class, "LBL_ToggleTooltip")); //NOI18N
-            menu.setToolTipText(null);
-            menu.setIcon(null);
-            return menu;
         }
     }    
    
-    private class ToggleShowViewBoxAction extends AbstractAction implements Presenter.Popup {
+    private class ToggleShowViewBoxAction extends AbstractSVGAction implements Presenter.Popup {
         ToggleShowViewBoxAction (){
-            putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/mobility/svgcore/resources/showViewBox.png"))); //NOI18N
-            putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SVGViewTopComponent.class, "HINT_ToggleShowViewBox")); // NOI18N
+            super( "svg_toggle_view");
         }
         
         public void actionPerformed(ActionEvent e) {
             ScreenManager smgr = getScreenManager();
-            smgr.setShowAllArea(!smgr.getShowAllArea());
+            boolean b = !smgr.getShowAllArea();
+            smgr.setShowAllArea(b);
+            showViewBoxToggleButton.setSelected(b);
             repaint();
-        }
-
-        public JMenuItem getPopupPresenter() {
-            JMenuItem menu = new JMenuItem(this);
-            menu.setText(NbBundle.getMessage(SVGViewTopComponent.class, "LBL_ToggleShowViewBox")); //NOI18N
-            menu.setToolTipText(null);
-            menu.setIcon(null);
-            return menu;
         }
     }    
     
     private class ZoomToFitAction extends AbstractSVGAction {
         ZoomToFitAction() {
-            super( "zoom_fit.png", "HINT_ZoomFit", "LBL_ZoomFit"); //NOI18N
+            super( "svg_zoom_fit"); //NOI18N
         }
         
         public void actionPerformed(ActionEvent e) {
@@ -1122,7 +1053,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     
     private class ZoomInAction extends AbstractSVGAction {
         ZoomInAction() {
-            super( "zoom_in.png", "HINT_ZoomIn", "LBL_ZoomIn"); //NOI18N
+            super( "svg_zoom_in"); //NOI18N
         }
         
         public void actionPerformed(ActionEvent e) {
@@ -1134,7 +1065,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     
     private class ZoomOutAction extends AbstractSVGAction {
         ZoomOutAction() {
-            super( "zoom_out.png", "HINT_ZoomOut", "LBL_ZoomOut"); //NOI18N
+            super( "svg_zoom_out"); //NOI18N
         }
         
         public void actionPerformed(ActionEvent e) {

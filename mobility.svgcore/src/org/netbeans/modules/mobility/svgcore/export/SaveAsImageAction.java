@@ -44,7 +44,7 @@ public final class SaveAsImageAction extends CookieAction{
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
     }
 
     protected void performAction(Node[] n) {
@@ -68,7 +68,7 @@ public final class SaveAsImageAction extends CookieAction{
     }
 
     public String getName() {
-        return NbBundle.getMessage(SaveAsImageAction.class, "LBL_ExportAction");
+        return NbBundle.getMessage(SaveAsImageAction.class, "LBL_ExportAction"); //NOI18N
     }
 
     public HelpCtx getHelpCtx() {

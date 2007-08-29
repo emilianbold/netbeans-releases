@@ -15,7 +15,9 @@
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
 import java.awt.event.ActionEvent;
+import javax.swing.Action;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.ActionWrapper;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
@@ -26,7 +28,7 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
  */
 public class MoveForwardActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener{
     private final AbstractSVGAction  m_moveForwardAction = 
-        new AbstractSVGAction("move_forward.png", "HINT_MoveForward", "LBL_MoveForward") {  //NOI18N
+        new AbstractSVGAction("svg_move_forward") {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
                 if (selected != null) {
@@ -45,8 +47,8 @@ public class MoveForwardActionFactory extends AbstractComposerActionFactory impl
         sceneMgr.addSelectionListener(this);        
     }
 
-    public AbstractSVGAction [] getMenuActions() {
-        return new AbstractSVGAction [] { m_moveForwardAction};
+    public Action [] getMenuActions() {
+        return new Action [] { m_moveForwardAction};
     }
     
     public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {

@@ -19,13 +19,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.actions.CursorPositionActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.DeleteActionFactory;
@@ -42,11 +42,12 @@ import org.netbeans.modules.mobility.svgcore.composer.actions.SkewActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.TranslateActionFactory;
 import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
 import org.netbeans.modules.mobility.svgcore.view.svg.SVGStatusBar;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
@@ -54,15 +55,19 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * @author Pavel Benes
  */
 public final class SceneManager {   
+    private static SceneManager s_instance;
+    private static final String CLASS_EXT = ".class"; //NOI18N
+    
     private transient SVGDataObject               m_dObj = null;
     private transient InstanceContent             m_lookupContent;
     private transient Lookup                      m_lookup;   
     private transient PerseusController           m_perseusController;
     private transient ScreenManager               m_screenMgr;
     private transient InputControlManager         m_inputControlMgr;
-    private transient List<ComposerActionFactory> m_registeredActions;
+    private transient List<ComposerActionFactory> m_actionFactories;
     private transient Stack<ComposerAction>       m_activeActions;
-    //TODO revisit
+    private transient List<Action>                m_registeredActions;
+    //TODO revisit    
     public transient SelectActionFactory          m_selectActionFactory;
     private transient List<SelectionListener>     m_selectionListeners;
     private transient SVGImage                    m_svgImage;
@@ -78,15 +83,47 @@ public final class SceneManager {
         public void selectionChanged( SVGObject [] newSelection, SVGObject [] oldSelection, boolean isReadOnly);
     }
     
+    public static ActionWrapper wrapAction(FileObject fo) {
+        String actionId = (String) fo.getAttribute("actionId"); //NOI18N
+        
+        if (actionId != null) {
+            Action action = null;
+
+            if (actionId.endsWith(CLASS_EXT)) {
+                try {
+                    String className = actionId.substring(0, actionId.length() - CLASS_EXT.length());
+                    Class clazz = Class.forName(className);
+                    action = SystemAction.get(clazz);
+                } catch( ClassNotFoundException e) {
+                    System.err.println("Class " + actionId + " not found"); //NOI18N
+                }
+            } else {
+                synchronized( SceneManager.class) {
+                    if (s_instance != null) {
+                        action = s_instance.getAction(actionId);
+                    }
+                }
+            }
+            
+            if (action != null) {
+                return new ActionWrapper(action, fo);
+            }       
+        } else {
+            System.err.println("Missing or empty attribute 'actionId' for " + fo); //NOI18N
+        }
+        
+        return null;
+    }
+    
     public SceneManager() {}
 
     public void initialize(SVGDataObject dObj) {
-        assert m_dObj == null : "Scene manager cannot be initialized twice";
+        assert m_dObj == null : "Scene manager cannot be initialized twice"; //NOI18N
         m_dObj              = dObj;
         m_lookupContent     = new InstanceContent();
         m_lookup            = new AbstractLookup(m_lookupContent);        
 
-        m_registeredActions     = new ArrayList<ComposerActionFactory>();
+        m_actionFactories       = new ArrayList<ComposerActionFactory>();
         m_activeActions         = new Stack<ComposerAction>();
         m_selectionListeners    = new ArrayList<SelectionListener>();
         
@@ -94,22 +131,22 @@ public final class SceneManager {
         m_selectActionFactory = new SelectActionFactory(this); 
         addSelectionListener(m_selectActionFactory);
         
-        m_registeredActions.add( new HighlightActionFactory(this));
-        m_registeredActions.add( m_selectActionFactory);
-        m_registeredActions.add( new TranslateActionFactory(this));
-        m_registeredActions.add( new SkewActionFactory(this));
-        m_registeredActions.add( new ScaleActionFactory(this));
-        m_registeredActions.add( new RotateActionFactory(this));
-        m_registeredActions.add( new DeleteActionFactory(this));
-        m_registeredActions.add( new MoveToTopActionFactory(this));
-        m_registeredActions.add( new MoveToBottomActionFactory(this));
-        m_registeredActions.add( new MoveForwardActionFactory(this));
-        m_registeredActions.add( new MoveBackwardActionFactory(this));
-        m_registeredActions.add( new CursorPositionActionFactory(this));
+        m_actionFactories.add( new HighlightActionFactory(this));
+        m_actionFactories.add( m_selectActionFactory);
+        m_actionFactories.add( new TranslateActionFactory(this));
+        m_actionFactories.add( new SkewActionFactory(this));
+        m_actionFactories.add( new ScaleActionFactory(this));
+        m_actionFactories.add( new RotateActionFactory(this));
+        m_actionFactories.add( new DeleteActionFactory(this));
+        m_actionFactories.add( new MoveToTopActionFactory(this));
+        m_actionFactories.add( new MoveToBottomActionFactory(this));
+        m_actionFactories.add( new MoveForwardActionFactory(this));
+        m_actionFactories.add( new MoveBackwardActionFactory(this));
+        m_actionFactories.add( new CursorPositionActionFactory(this));
 
         m_screenMgr = new ScreenManager(this);
         updateStatusBar();
-        
+        /*
         Thread th = new Thread() {
             public void run() {
                 int count = 0;
@@ -145,7 +182,17 @@ public final class SceneManager {
             }
         };
         th.setDaemon(true);
-       // th.start();
+        th.start();
+         */
+        m_registeredActions = new ArrayList<Action>();
+        for (ComposerActionFactory factory : m_actionFactories) {
+            Action [] factoryActions;
+            if ( (factoryActions=factory.getMenuActions()) != null) {
+                for (Action action : factoryActions) {
+                    m_registeredActions.add(action);
+                }
+            }
+        }        
     }
 
     public synchronized void setImage(SVGImage svgImage) {
@@ -211,37 +258,63 @@ public final class SceneManager {
         //m_animDuration = in.readFloat();
     }
     
-    public void registerPopupActions( Action [] actions, Lookup lookup) {
-        List<Action> factoryMenuActions = new ArrayList(Arrays.asList(actions));
-            
-        for (ComposerActionFactory factory : m_registeredActions) {
-            Action [] factoryActions;
-            if ( (factoryActions=factory.getMenuActions()) != null) {
-                for (Action action : factoryActions) {
-                    factoryMenuActions.add(action);
-                }
-            }
-        }
-        
-        actions = factoryMenuActions.toArray( new Action[factoryMenuActions.size()]);
-        JPopupMenu popup = Utilities.actionsToPopup( actions, lookup);
-        m_screenMgr.registerPopupMenu(popup);
-    }
-    
-    public AbstractSVGAction [] getMenuActions() {
-        List<AbstractSVGAction> factoryMenuActions = new ArrayList<AbstractSVGAction>();
-        
-        for (ComposerActionFactory factory : m_registeredActions) {
-            AbstractSVGAction [] actions;
-            if ( (actions=factory.getMenuActions()) != null) {
-                for (AbstractSVGAction action : actions) {
-                    factoryMenuActions.add(action);
-                }
-            }
-        } 
-        return factoryMenuActions.toArray( new AbstractSVGAction[factoryMenuActions.size()]);
+    private synchronized static void setInstance(SceneManager ref) {
+        s_instance = ref;
     }
 
+    private Action getAction(String actionID) {
+        for (Action action : m_registeredActions) {
+            String id;
+            if ( action instanceof AbstractSVGAction) {
+                id = ((AbstractSVGAction) action).getActionID();
+            } else {
+                id = action.getClass().getName();
+            }
+            if ( id != null && id.equals(actionID)) {
+                return action;
+            }
+        }
+        System.err.println("Unknown action id " + actionID); //NOI18N
+        return null;
+    }
+    
+    public void registerPopupActions( Action [] guiActions, Lookup lookup) {
+        for (Action action : guiActions) {
+            m_registeredActions.add(action);
+        }
+        
+        setInstance(this);
+        Lookup lkp = Lookups.forPath("Editors/text/svg+xml/Popup"); //NOI18N
+        Collection<? extends ActionWrapper> wrapperCol = lkp.lookupAll(ActionWrapper.class);        
+        setInstance(null);
+
+        Action [] popupActions = new Action[wrapperCol.size()];
+        int i = 0;
+        for ( Iterator<? extends ActionWrapper> iter = wrapperCol.iterator(); iter.hasNext(); ) {
+            ActionWrapper wrapper = iter.next();
+            if (wrapper != null) {
+                popupActions[i++] = wrapper.getAction();
+            }
+        }
+        m_screenMgr.registerPopupMenu(popupActions, lookup);
+    }
+    
+    public Action [] getToolbarActions(String ... actionIds) {
+        Action [] actions = new Action[actionIds.length];
+        
+        for (int i = 0; i < actionIds.length; i++) {
+            if (actionIds[i] != null) {
+                actions[i] = getAction( actionIds[i]);
+            }
+        }
+        return actions;
+    }
+
+    public void updateActionState() {
+        for ( ComposerActionFactory factory : m_actionFactories) {
+            factory.updateActionState();
+        }
+    }
     public SVGDataObject getDataObject() {
         return m_dObj;
     }
@@ -325,7 +398,7 @@ public final class SceneManager {
     }
     
      void processEvent(InputEvent event) {
-        boolean isOutsideEvent = event.getSource() != m_screenMgr.getAnimatorView();             
+        boolean isOutsideEvent = event.getSource() != m_screenMgr.getAnimatorView(); 
         SVGObject [] oldSelection = getSelected();
 
         //first let ongoing actions to process the event         
@@ -339,6 +412,9 @@ public final class SceneManager {
                 cursor = c;
             }
             if ( action.consumeEvent(event, isOutsideEvent)) {
+                if ( isOutsideEvent) {
+                    System.out.println("hol");
+                }
                 consumed = true;
                 break;
             }
@@ -351,8 +427,8 @@ public final class SceneManager {
 
         if ( !consumed) {
             //now check if the new action should be started
-            for (int i = m_registeredActions.size() - 1; i >= 0; i--) {
-                if ( (action=m_registeredActions.get(i).startAction(event, isOutsideEvent)) != null) {
+            for (int i = m_actionFactories.size() - 1; i >= 0; i--) {
+                if ( (action=m_actionFactories.get(i).startAction(event, isOutsideEvent)) != null) {
                     m_activeActions.push(action);
                     break;
                 }
@@ -361,9 +437,9 @@ public final class SceneManager {
 
         if ( event instanceof MouseEvent && cursor == null) {
             MouseEvent me = (MouseEvent) event;
-            for (int i = m_registeredActions.size() - 1; i >= 0; i--) {
+            for (int i = m_actionFactories.size() - 1; i >= 0; i--) {
                 ActionMouseCursor c;
-                if ( (c=m_registeredActions.get(i).getMouseCursor(me, isOutsideEvent)) != null) {
+                if ( (c=m_actionFactories.get(i).getMouseCursor(me, isOutsideEvent)) != null) {
                     if (cursor == null || cursor.getPriority() < c.getPriority()) {
                         cursor = c;
                     }

@@ -66,23 +66,51 @@ public class AnimationRasterizer {
     public static final int []    COMPRESSION_LEVELS          = new int [] { 10, 30, 40, 60, 80, 99 };
     public static final int       DEFAULT_COMPRESSION_QUALITY = 3;
     
+    private interface ColorReducer {
+        BufferedImage reduceColors(BufferedImage image, Params params);
+    }
+    
+    public enum ColorReductionMethod implements ColorReducer {
+        QUANTIZE("Color Quantization") {
+            public BufferedImage reduceColors(BufferedImage image, Params params) {
+                return reduceColorsQuantize(image, params);
+            }
+        }, 
+        MEDIAN_CUT("Median Cut"){
+            public BufferedImage reduceColors(BufferedImage image, Params params) {
+                return reduceColorsMedianCut(image, params);
+            }
+        };
+        
+        private final String m_displayName;
+        
+        ColorReductionMethod(String displayName) {
+            m_displayName = displayName;
+        }
+        public String toString() {
+            return m_displayName;
+        }
+    }
+    
     public enum ImageType {
-        JPEG("JPG", "JPEG", true, false, ".jpg"),
-        PNG8("PNG", "PNG-8", false, true, ".png"),
-        PNG24("PNG", "PNG-24", false, true, ".png");
+        JPEG("JPG", "JPEG", true, false, false, ".jpg"),
+        PNG8("PNG", "PNG-8", false, true, true, ".png"),
+        PNG24("PNG", "PNG-24", false, true, false, ".png");
 
         private final String  m_name;
         private final String  m_displayName;
         private final boolean m_supportsCompression;
         private final boolean m_supportsTransparency;
         private final String  m_extension;
+        private final boolean m_colorReduction;
         
         ImageType(String name, String displayName,boolean supportsCompression,
-                boolean supportsTransparency, String extension) {
-            m_name = name;
-            m_displayName = displayName;
-            m_supportsCompression = supportsCompression;
+                boolean supportsTransparency, boolean colorReduction, String extension) {
+            m_name                 = name;
+            m_displayName          = displayName;
+            m_supportsCompression  = supportsCompression;
             m_supportsTransparency = supportsTransparency;
+            m_colorReduction       = colorReduction;
             m_extension            = extension;
         }
         
@@ -92,6 +120,10 @@ public class AnimationRasterizer {
 
         public boolean supportsTransparency() {
             return m_supportsTransparency;
+        }
+        
+        public boolean needsColorReduction() {
+            return m_colorReduction;
         }
         
         public String getName() {
@@ -135,6 +167,7 @@ public class AnimationRasterizer {
         int getNumberFrames();
         J2MEProject getProject();
         String getElementId();
+        ColorReductionMethod getColorReductionMethod();
     }
     
     public static class PreviewInfo {
@@ -321,9 +354,9 @@ public class AnimationRasterizer {
             img = background;            
         } */
 
-        if (ImageType.PNG8.equals(params.getImageType())) {
-            img = convertTo256Color(img, params);
-        } 
+        if (params.getImageType().needsColorReduction()) {
+            img = params.getColorReductionMethod().reduceColors(img, params);
+        }
         return img;
     }
     
@@ -472,7 +505,12 @@ public class AnimationRasterizer {
             throw new InterruptedException();
         }
     }
-    public static int calculateAnimationSize(SVGImage svgImage, Params params) throws IOException, InterruptedException {        
+    
+    interface ProgressUpdater {
+        void updateProgress( String text);
+    }
+    
+    public static int calculateAnimationSize(SVGImage svgImage, Params params, ProgressUpdater updater) throws IOException, InterruptedException {        
         int size;
         int frameNum = params.getNumberFrames();
         
@@ -481,12 +519,21 @@ public class AnimationRasterizer {
             int h        = params.getImageHeight();
             BufferedImage img = createBuffer(w * frameNum, h, params.isTransparent());
             for (int i = 0; i < frameNum; i++) {
+                if (updater != null) {
+                    updater.updateProgress("Rasterizing " + i + "/" + frameNum + " ...");
+                }
                 rasterizeFrame( img, i * w, svgImage, params, params.getStartTime() + (i / params.getFramesPerSecond()));
             }
             checkInterrupted();
+            if (updater != null) {
+                updater.updateProgress("Encoding image ...");
+            }
             img = adjustImage(img, params);
             checkInterrupted();
             size = getEncodedSize(img, params);
+            if (updater != null) {
+                updater.updateProgress(getSizeText(size));
+            }
         } else {
             size = 0;
             for (int i = 0; i < frameNum; i++) {
@@ -502,6 +549,15 @@ public class AnimationRasterizer {
         return size;
     }
     
+    public static String getSizeText( int size) {
+        if ( size < 1024) {
+            return size + " Bytes";
+        } else if ( size < 1024 * 1024) {
+            return (Math.round(size / 102.4) / 10.0) + " KBytes";
+        } else {
+            return (Math.round(size / (102.4 * 1024)) / 10.0) + " MBytes";
+        }
+    }
     
     
  /*   
@@ -646,15 +702,40 @@ public class AnimationRasterizer {
         g.dispose();
         return img;
     }
-*/    
-    private static BufferedImage convertTo256Color(BufferedImage image, Params params) {
+*/
+    private static BufferedImage reduceColorsMedianCut(BufferedImage image, Params params) {
+        int w = image.getWidth(),
+            h = image.getHeight();
+        int [] pixels = new int[w * h];
+        
+        int i = 0;
+        for (int x = 0; x < w; x++) {
+            for (int y = 0; y < h; y++) {
+                int rgb = image.getRGB(x, y);
+                if ( (rgb >>> 24) > 127) {
+                    pixels[i++] = rgb;
+                } else {
+                    pixels[i++] = pixels[0];
+                }
+            }
+        }
+        Quantizer quantizer = new Quantizer(pixels, w, h);
+        return quantizer.convertToByte();
+    }
+    
+    private static BufferedImage reduceColorsQuantize(BufferedImage image, Params params) {
         int w = image.getWidth(),
             h = image.getHeight();
         int [][] pixels = new int[w][h];
         
         for (int x = 0; x < w; x++) {
             for (int y = 0; y < h; y++) {
-                pixels[x][y] = image.getRGB(x, y);
+                int rgb = image.getRGB(x, y);
+                if ( (rgb >>> 24) > 127) {
+                    pixels[x][y] = rgb;
+                } else {
+                    pixels[x][y] = pixels[0][0];
+                }
             }
         }
         boolean isTransparent = params.isTransparent();

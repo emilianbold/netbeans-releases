@@ -24,11 +24,14 @@ import java.awt.Shape;
 import java.awt.event.KeyListener;
 import java.util.Stack;
 import javax.microedition.m2g.SVGImage;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.mobility.svgcore.view.svg.SVGImagePanel;
 import org.netbeans.modules.mobility.svgcore.view.svg.SVGStatusBar;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGPoint;
 import org.w3c.dom.svg.SVGRect;
@@ -129,9 +132,10 @@ public final class ScreenManager {
         m_animatorView.addKeyListener(keyListener);
     }
     
-    public void registerPopupMenu( final JPopupMenu popup) {
+    public void registerPopupMenu( final Action [] popupActions, final Lookup lookup) {
         m_topComponent.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
+                JPopupMenu popup = Utilities.actionsToPopup( popupActions, lookup);                
                 popup.show(m_topComponent, e.getX(), e.getY());
             }
         });
@@ -139,6 +143,7 @@ public final class ScreenManager {
         m_animatorView.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
                 m_sceneMgr.popupAt(e.getX(), e.getY());
+                JPopupMenu popup = Utilities.actionsToPopup( popupActions, lookup);                
                 popup.show(m_animatorView, e.getX(), e.getY());
             }
         });        

@@ -26,6 +26,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
@@ -47,8 +48,8 @@ import org.w3c.dom.svg.SVGSVGElement;
  *
  * @author  Pavel Benes
  */
-public abstract class SVGRasterizerPanel extends javax.swing.JPanel implements AnimationRasterizer.Params {
-    protected static final String SVG_VIEW_BOX_ATTRIBUTE = "viewBox";  
+public abstract class SVGRasterizerPanel extends JPanel implements AnimationRasterizer.Params {
+    protected static final String SVG_VIEW_BOX_ATTRIBUTE = "viewBox";  //NOI18N
     
     protected final    SVGDataObject  m_dObj;
     protected final    String         m_elementId;
@@ -59,7 +60,7 @@ public abstract class SVGRasterizerPanel extends javax.swing.JPanel implements A
     protected          int            overrideHeight = -1;
     protected volatile boolean        m_updateInProgress = false;
     protected volatile SVGImage       m_svgImage;
-        
+    private            SVGLocatableElement m_exportedElement = null;            
     
     protected class SVGRasterizerComponentGroup extends ComponentGroup {
         public SVGRasterizerComponentGroup( Object [] comps) {
@@ -141,17 +142,7 @@ public abstract class SVGRasterizerPanel extends javax.swing.JPanel implements A
             }
         };
     }
-
-    protected static String getSizeText( int size) {
-        if ( size < 1024) {
-            return size + " Bytes";
-        } else if ( size < 1024 * 1024) {
-            return (Math.round(size / 102.4) / 10.0) + " KBytes";
-        } else {
-            return (Math.round(size / (102.4 * 1024)) / 10.0) + " MBytes";
-        }
-    }
-    
+   
     protected static float roundTime(float f) {
         return Math.round( f * 100) / 100.0f;
     }
@@ -175,8 +166,6 @@ public abstract class SVGRasterizerPanel extends javax.swing.JPanel implements A
     public double getRatio(){
         return m_ratio;
     }
-    
-    private SVGLocatableElement m_exportedElement = null;
     
     private void loadSVGImage() {
         try {

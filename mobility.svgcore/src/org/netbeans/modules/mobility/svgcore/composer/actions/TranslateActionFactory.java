@@ -101,7 +101,8 @@ public class TranslateActionFactory extends AbstractComposerActionFactory {
     }
     
     static int [] getCoordDiff(InputEvent e) {
-        if ( e.getID() == KeyEvent.KEY_PRESSED) {
+        if ( e.getID() == KeyEvent.KEY_PRESSED &&
+                e.getModifiers() == 0) {
             switch( ((KeyEvent)e).getKeyCode()) {
                 case KeyEvent.VK_DOWN:
                     return DIFF_DOWN;

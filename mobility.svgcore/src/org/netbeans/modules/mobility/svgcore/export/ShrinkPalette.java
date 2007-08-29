@@ -191,8 +191,7 @@ public class ShrinkPalette {
  %  pertaining to distribution of the software without prior specific
  %  written permission from ISI.
  %
- */
-  
+ */  
   final static boolean QUICK = false;
      
      final static int MAX_RGB = 255;

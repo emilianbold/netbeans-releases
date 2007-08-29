@@ -47,29 +47,27 @@ public class SaveAnimationAsImageAction extends CookieAction {
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
     }
         
     public static void setDialogMinimumSize(final Dialog dlg) {
         dlg.pack();
-        final Dimension minSize = dlg.getSize();
-        dlg.setMinimumSize(minSize);
+        dlg.setSize( dlg.getPreferredSize());
         
-        if (minSize != null) {
-            dlg.addComponentListener(new ComponentAdapter() {
-                public void componentResized(ComponentEvent e) {
-                    int w = dlg.getWidth();
-                    int h = dlg.getHeight();
-                    
-                    int _w = Math.max( w, minSize.width + 40);
-                    int _h = Math.max( h, minSize.height + 20);
-                    
-                    if ( w != _w || h != _h) {
-                        dlg.setSize( new Dimension(_w, _h));
-                    }
+        dlg.addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent e) {
+                int w = dlg.getWidth();
+                int h = dlg.getHeight();
+                final Dimension minSize = dlg.getPreferredSize();
+
+                int _w = Math.max( w, minSize.width);
+                int _h = Math.max( h, minSize.height);
+
+                if ( w != _w || h != _h) {
+                    dlg.setSize( new Dimension(_w, _h));
                 }
-            });
-        }
+            }
+        });
     }
     
     protected void performAction(Node[] n) {
@@ -93,7 +91,7 @@ public class SaveAnimationAsImageAction extends CookieAction {
     }
 
     public String getName() {
-        return NbBundle.getMessage(SaveAnimationAsImageAction.class, "LBL_ExportAnimationAction");
+        return NbBundle.getMessage(SaveAnimationAsImageAction.class, "LBL_ExportAnimationAction"); //NOI18N
     }
 
     public HelpCtx getHelpCtx() {

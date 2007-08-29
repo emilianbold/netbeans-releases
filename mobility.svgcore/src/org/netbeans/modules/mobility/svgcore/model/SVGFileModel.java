@@ -233,7 +233,7 @@ public final class SVGFileModel {
     
     private BaseDocument getOpenedDoc() {
         JEditorPane[] panes = m_edSup.getOpenedPanes();
-        if (panes != null || panes.length > 0) {
+        if (panes != null && panes.length > 0) {
             return (BaseDocument) panes[0].getDocument();
         } else {
             return null;
@@ -467,20 +467,7 @@ public final class SVGFileModel {
             }
         });
     }
-    /*
-    public void wrapElement(final String id, final String wrapperId) {
-        runTransaction(new FileModelTransaction() {
-            protected void transaction() throws BadLocationException {
-                DocumentElement de       = checkIntegrity(id);
-                int             startOff = de.getStartOffset();
-                int             length   = de.getEndOffset() - startOff + 1;
 
-                m_bDoc.replace(startOff, length,
-                             PatchedGroup.wrapText( wrapperId, m_bDoc.getText(startOff, length)), null);
-            }
-        });
-    }
-    */
     public void _appendElement( final String insertString) {
         runTransaction(new FileModelTransaction(true) {
             protected void transaction() throws BadLocationException {
@@ -558,6 +545,7 @@ public final class SVGFileModel {
                             }
                         }
                     }
+                    //TODO
                     System.err.println("Attribute " + attrName + " not changed: \"" + fragment + "\"");
                 } else {
                     StringBuilder sb = new StringBuilder(" ");

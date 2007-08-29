@@ -13,6 +13,230 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
+    <folder name="Editors"> 
+        <folder name="text">
+            <folder name="svg+xml">
+                <folder name="Popup">
+                    <file name="ZoomToFitAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_zoom_fit"/>
+                        <attr name="position" intvalue="10"/>
+                    </file>     
+
+                    <file name="ZoomInAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_zoom_in"/>
+                        <attr name="position" intvalue="20"/>
+                    </file>     
+
+                    <file name="ZoomOutAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_zoom_out"/>
+                        <attr name="position" intvalue="30"/>
+                    </file>     
+
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="position" intvalue="35"/>
+                    </file>
+                    
+                    <file name="HighlightElementToggleAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_toggle_highlight"/>
+                        <attr name="position" intvalue="40"/>
+                    </file>     
+
+                    <file name="ShowTooltipToggleAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_toggle_tooltip"/>
+                        <attr name="position" intvalue="50"/>
+                    </file>     
+
+                    <file name="ScaleOnScreenToggleAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_toggle_scale"/>
+                        <attr name="position" intvalue="60"/>
+                    </file>     
+
+                    <file name="ShowViewBoxToggleAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_toggle_view"/>
+                        <attr name="position" intvalue="70"/>
+                    </file>     
+
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="position" intvalue="75"/>
+                    </file>
+                    
+                    <file name="StartAnimationAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_anim_start"/>
+                        <attr name="position" intvalue="80"/>
+                    </file>     
+
+                    <file name="PauseAnimationAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_anim_pause"/>
+                        <attr name="position" intvalue="90"/>
+                    </file>     
+
+                    <file name="StopAnimationAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_anim_stop"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>     
+
+                    <file name="SetFocusToggleAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_set_focus"/>
+                        <attr name="position" intvalue="110"/>
+                    </file>     
+                    
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="position" intvalue="115"/>
+                    </file>
+                    
+                    <file name="EditAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="org.openide.actions.EditAction.class"/>
+                        <attr name="position" intvalue="120"/>
+                    </file>     
+
+                    <file name="ExternalEditAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="org.netbeans.modules.mobility.svgcore.ExternalEditAction.class"/>
+                        <attr name="position" intvalue="130"/>
+                    </file>     
+                    
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="position" intvalue="135"/>
+                    </file>
+
+                    <file name="UnlockDocumentAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_allow_edit"/>
+                        <attr name="position" intvalue="140"/>
+                    </file>     
+
+                    <file name="PreviousSelectionAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_prev_sel"/>
+                        <attr name="position" intvalue="150"/>
+                    </file>     
+                    <file name="NextSelectionAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_next_sel"/>
+                        <attr name="position" intvalue="160"/>
+                    </file>     
+                    
+                    <file name="SelectParentElementAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_parent_sel"/>
+                        <attr name="position" intvalue="170"/>
+                    </file>     
+                    
+                    <file name="sep-5.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="position" intvalue="175"/>
+                    </file>
+                    
+                    <file name="InsertGraphicsAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_insert_graphics"/>
+                        <attr name="position" intvalue="180"/>
+                    </file>     
+
+                    <file name="DeleteElementAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_delete"/>
+                        <attr name="position" intvalue="190"/>
+                    </file>     
+
+                    <file name="sep-6.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="position" intvalue="195"/>
+                    </file>
+                    
+                    <file name="ActionMoveBackward.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_move_backward"/>
+                        <attr name="position" intvalue="200"/>
+                    </file>     
+                    
+                    <file name="ActionMoveForward.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_move_forward"/>
+                        <attr name="position" intvalue="210"/>
+                    </file>     
+                    
+                    <file name="ActionMoveToTop.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_move_to_top"/>
+                        <attr name="position" intvalue="220"/>
+                    </file>     
+
+                    <file name="ActionMoveToBottom.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="svg_move_to_bottom"/>
+                        <attr name="position" intvalue="230"/>
+                    </file>     
+
+                    <file name="sep-7.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="position" intvalue="235"/>
+                    </file>
+
+                    <file name="SaveAsImageAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="org.netbeans.modules.mobility.svgcore.export.SaveAsImageAction.class"/>
+                        <attr name="position" intvalue="240"/>
+                    </file>     
+
+                    <file name="SaveAnimationAsImageAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="org.netbeans.modules.mobility.svgcore.export.SaveAnimationAsImageAction.class"/>
+                        <attr name="position" intvalue="250"/>
+                    </file>     
+
+                    <file name="SaveElementAsImage.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.svgcore.composer.ActionWrapper"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.svgcore.composer.SceneManager.wrapAction"/>
+                        <attr name="actionId" stringvalue="org.netbeans.modules.mobility.svgcore.export.SaveElementAsImage.class"/>
+                        <attr name="position" intvalue="260"/>
+                    </file>     
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+                
     <folder name="SVGXMLPalette">
         <folder name="Basic Shapes">
             <file name="line.xml" url="/org/netbeans/modules/mobility/svgcore/items/line.xml"/>
@@ -170,7 +394,7 @@ Microsystems, Inc. All Rights Reserved.
    </folder>  
     <folder name="Templates">
         <folder name="Other">
-            <file name="SVGFileTemplate.svg" url="nbres:/org/netbeans/modules/mobility/svgcore/SVGFileTemplate.svg">
+            <file name="Image.svg" url="nbres:/org/netbeans/modules/mobility/svgcore/SVGFileTemplate.svg">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
                 <attr name="template" boolvalue="true"/>
 		<attr name="position" intvalue="250"/>
