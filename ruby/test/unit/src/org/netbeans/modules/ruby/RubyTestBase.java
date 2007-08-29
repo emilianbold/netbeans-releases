@@ -154,18 +154,18 @@ public abstract class RubyTestBase extends NbTestCase {
         }
     }
 
-    private String readFile(final FileObject rakeTargetFile) {
+    protected String readFile(final FileObject fo) {
         try {
             final StringBuilder sb = new StringBuilder(5000);
-            rakeTargetFile.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
 
                 public void run() throws IOException {
 
-                    if (rakeTargetFile == null) {
+                    if (fo == null) {
                         return;
                     }
 
-                    InputStream is = rakeTargetFile.getInputStream();
+                    InputStream is = fo.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
                     while (true) {
