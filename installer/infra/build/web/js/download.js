@@ -20,9 +20,9 @@
 
 var PROPERTY_NONE      = 0;
 var PROPERTY_FULL      = 1;
-var PROPERTY_JAVA      = 2;
-var PROPERTY_JAVAEE    = 4;
-var PROPERTY_JAVAME    = 8;
+var PROPERTY_JAVAEE    = 2;
+var PROPERTY_JAVAME    = 4;
+var PROPERTY_JAVA      = 8;
 var PROPERTY_RUBY      = 16;
 var PROPERTY_CND       = 32;
 var PROPERTY_HIDDEN    = 64;
@@ -37,13 +37,14 @@ function write_components() {
     for (var i = 0; i < group_products.length; i++) {
         // skip the first group name as it goes to the title of the table
         if (i != 0) {
-            document.write('<tr class="bottom_border_thick top_border_thick">');
+            document.write('<tr class="bottom_border_thin  top_border_thin">');
             document.write('    <th class="left">' + group_display_names[i] + '</th>');
 	    document.write('    <th class="beige left_border_thin"></th>');
 	    document.write('    <th class="left_border_thin"></th>');            
 	    document.write('    <th class="beige left_border_thin"></th>');
             document.write('    <th class="left_border_thin"></th>');
             document.write('    <th class="beige left_border_thin"></th>');
+	    document.write('    <th class="left_border_thin"></th>');
             document.write('</tr>');
         }
 
@@ -63,18 +64,28 @@ function write_components() {
                     document.write('<br><span class="product_note">' + product_notes[index] + '</span>');
                 }
             document.write('</td>');
-
-            document.write('    <td class="beige left_border_thin" id="product_' + index + '_full"></td>');
-            document.write('    <td class="left_border_thin" id="product_' + index + '_java"></td>');
-            document.write('    <td class="beige left_border_thin" id="product_' + index + '_javaee"></td>');
+                        
+	    document.write('    <td class="beige left_border_thin" id="product_' + index + '_javaee"></td>');
 	    document.write('    <td class="left_border_thin" id="product_' + index + '_javame"></td>');
-	    document.write('    <td class="beige left_border_thin" id="product_' + index + '_ruby"></td>');
-	    document.write('    <td class="left_border_thin" id="product_' + index + '_cnd"></td>');
-            
-            
+            document.write('    <td class="beige left_border_thin" id="product_' + index + '_java"></td>');
+	    document.write('    <td class="left_border_thin" id="product_' + index + '_ruby"></td>');
+	    document.write('    <td class="beige left_border_thin" id="product_' + index + '_cnd"></td>');
+	    document.write('    <td class="left_border_thin" id="product_' + index + '_full"></td>');
             document.write('</tr>');
         }
     }
+}
+
+function write_table_header() {
+    document.write('<tr>');
+    document.write('<th class="left no_border bottom_	border_thin wide bottom">NetBeans IDE 6.0 Build {build.number}</th>');    
+    document.write('<td class="no_border left_border_thin bottom_border_thin wide bottom" id="javaee_link"><a href="javascript: download(\'javaee\')"                 ><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>Web&nbsp;&&nbsp;Java&nbsp;EE</th>');
+    document.write('<td class="no_border left_border_thin bottom_border_thin wide bottom" id="javame_link"><a href="javascript: download(\'javame\')" id="javame_name"><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>Java ME</th>');
+    document.write('<td class="no_border left_border_thin bottom_border_thin wide bottom"   id="java_link"><a href="javascript: download(\'java\')"                   ><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>Java SE</th>');
+    document.write('<td class="no_border left_border_thin bottom_border_thin wide bottom"   id="ruby_link"><a href="javascript: download(\'ruby\')"                   ><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>Ruby</th>');
+    document.write('<td class="no_border left_border_thin bottom_border_thin wide bottom"    id="cnd_link"><a href="javascript: download(\'cnd\')"                    ><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>C/C++</th>');
+    document.write('<td class="no_border left_border_thin bottom_border_thin wide bottom"   id="full_link"><a href="javascript: download(\'full\')"                   ><img src="img/download_h.gif" style="cursor: pointer; border: 0;"/><br></a>All</th>');
+    document.write('</tr>');
 }
 
 function show_description(index) {
@@ -136,17 +147,7 @@ function update() {
         } else {
             document.getElementById("product_" + i + "_full").innerHTML = '';
         }
-        
-        if (product_properties[i] & PROPERTY_JAVA) {
-            if (product_messages[i] == null) {
-                document.getElementById("product_" + i + "_java").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
-            } else {
-                document.getElementById("product_" + i + "_java").innerHTML = '<img src="img/warning_badge_beige_' + platform + '.gif"/>';
-            }
-        } else {
-            document.getElementById("product_" + i + "_java").innerHTML = '';
-        }
-	if (product_properties[i] & PROPERTY_JAVAEE) {
+        if (product_properties[i] & PROPERTY_JAVAEE) {
             if (product_messages[i] == null) {
                 document.getElementById("product_" + i + "_javaee").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
             } else {
@@ -154,7 +155,8 @@ function update() {
             }
         } else {
             document.getElementById("product_" + i + "_javaee").innerHTML = '';
-        }
+        }        
+	
 	if (product_properties[i] & PROPERTY_JAVAME) {
             if (product_messages[i] == null) {
                 document.getElementById("product_" + i + "_javame").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
@@ -164,7 +166,16 @@ function update() {
         } else {
             document.getElementById("product_" + i + "_javame").innerHTML = '';
         }
-        
+        if (product_properties[i] & PROPERTY_JAVA) {
+            if (product_messages[i] == null) {
+                document.getElementById("product_" + i + "_java").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
+            } else {
+                document.getElementById("product_" + i + "_java").innerHTML = '<img src="img/warning_badge_beige_' + platform + '.gif"/>';
+            }
+        } else {
+            document.getElementById("product_" + i + "_java").innerHTML = '';
+        }
+
 	if (product_properties[i] & PROPERTY_RUBY) {
             if (product_messages[i] == null) {
                 document.getElementById("product_" + i + "_ruby").innerHTML = '<img src="img/checked_badge_beige.gif"/>';
@@ -200,9 +211,9 @@ function update() {
     
     // update the sizes 
     var full_size   = 0;
-    var java_size   = 0;
     var javaee_size = 0;
     var javame_size = 0;
+    var java_size   = 0;    
     var ruby_size   = 0;
     var cnd_size    = 0;
     
@@ -211,15 +222,18 @@ function update() {
         if (!is_compatible(i, platform)) {
             continue;
         }
+	if (product_properties[i] & PROPERTY_FULL) {
+            full_size += new Number(product_download_sizes[i]);
+        }
+        if (product_properties[i] & PROPERTY_JAVAEE) {
+            javaee_size += new Number(product_download_sizes[i]);
+        }        	
+	if (product_properties[i] & PROPERTY_JAVAME) {
+            javame_size += new Number(product_download_sizes[i]);
+        }
 
         if (product_properties[i] & PROPERTY_JAVA) {
             java_size += new Number(product_download_sizes[i]);
-        }
-	if (product_properties[i] & PROPERTY_JAVAEE) {
-            javaee_size += new Number(product_download_sizes[i]);
-        }
-	if (product_properties[i] & PROPERTY_JAVAME) {
-            javame_size += new Number(product_download_sizes[i]);
         }
 
         if (product_properties[i] & PROPERTY_RUBY) {
@@ -227,10 +241,7 @@ function update() {
         }
         if (product_properties[i] & PROPERTY_CND) {
             cnd_size += new Number(product_download_sizes[i]);
-        }
-        if (product_properties[i] & PROPERTY_FULL) {
-            full_size += new Number(product_download_sizes[i]);
-        }
+        }        
     }
     full_size    = Math.ceil(full_size / 1024.0);
     java_size    = Math.ceil(java_size / 1024.0);
@@ -238,22 +249,27 @@ function update() {
     javame_size  = Math.ceil(javame_size / 1024.0);
     ruby_size    = Math.ceil(ruby_size / 1024.0);
     cnd_size     = Math.ceil(cnd_size / 1024.0);
-    
+
+    if ((platform == "solaris-x86") || (platform == "solaris-sparc") || (platform == "macosx-ppc") || (platform == "macosx-x86")) {
+	javame_size = "--";
+    }   
 
     document.getElementById("full_size").innerHTML = "Free, " + full_size + " MB";
-    document.getElementById("java_size").innerHTML = "Free, " + java_size + " MB";
-    document.getElementById("javaee_size").innerHTML = "Free, " + javaee_size + " MB"; 
+    document.getElementById("javaee_size").innerHTML = "Free, " + javaee_size + " MB";    
     document.getElementById("javame_size").innerHTML = "Free, " + javame_size + " MB";
+    document.getElementById("java_size").innerHTML = "Free, " + java_size + " MB";
     document.getElementById("ruby_size").innerHTML = "Free, " + ruby_size + " MB";
     document.getElementById("cnd_size").innerHTML = "Free, " + cnd_size + " MB";
     
     // no Mobility for Solaris and MacOS
     if ((platform == "solaris-x86") || (platform == "solaris-sparc") || (platform == "macosx-ppc") || (platform == "macosx-x86")) {
-	var name = document.getElementById("javame_name").innerHTML;
-    	document.getElementById("javame_link").innerHTML = "<a id=\"javame_name\">" + name + "</a>";
+    	document.getElementById("javame_name").innerHTML = "<img src=\"img\/download_d.gif\"/><br>";
+	var name = document.getElementById("javame_link").innerHTML;
+    	//document.getElementById("javame_link").innerHTML = "<a id=\"javame_name\">" + name + "</a>";
     } else {
+    	document.getElementById("javame_name").innerHTML = "<img src=\"img\/download.gif\"   style=\"cursor: pointer; border: 0;\"/><br>";
 	var name = document.getElementById("javame_name").innerHTML;
-    	document.getElementById("javame_link").innerHTML = "<a href=\"javascript: download('javame')\" id=\"javame_name\">" + name + "</a>";
+    	//document.getElementById("javame_link").innerHTML = "<a id=\"javame_name\">" + name + "</a>";
     }
 
 
@@ -274,7 +290,7 @@ function download(option) {
     var platform = select.options[select.selectedIndex].value;
 
     var file_name = 
-            "start.html?netbeans-6.0-nightly-{build.number}-" + 
+            "start.html?netbeans-6.0-nightly-200708160000-" + 
             option + "-" + platform;
     
     if (platform == "windows") {
