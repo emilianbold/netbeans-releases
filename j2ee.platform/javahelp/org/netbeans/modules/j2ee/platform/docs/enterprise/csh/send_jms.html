@@ -1,12 +1,10 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright Â© 2007 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
 <head>
-<meta name="lastupdated" content="9Jul07">
-<!-- p2 -->
 
 <title>Send JMS Message Dialog Box</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
@@ -14,24 +12,27 @@
 <body>
 <h2>Send JMS Message Dialog Box</h2>
 <p><small> <a href="#seealso">See Also</a> </small></p>
-<p>You use this dialog box to send a Java Message Service (JMS) message to a message-driven 
-  bean. A JMS message is an object that communicates information between JMS clients. 
-  The message is sent from one client to a second client that listens for messages 
+<p>You use this dialog box to send a Java Message Service (JMS) message to a message
+destination. A JMS message is an object that communicates information between JMS clients. 
+    The message is sent from one client to a second client that listens for messages 
   through a JMS destination on an application server. </p>
 <p>You open the dialog box by right-clicking a Java file in the Source Editor 
   and choosing Enterprise Resources &gt; Send JMS Message. The file must be in an 
   EJB module project or a standard web application project. You cannot generate 
   lookup code in a free-form web application project.</p>
 <p>You use the dialog box as follows:</p>
-<!-- TODO -- need to check on status of this -->
 <ol>
   <li>Select the destination for the JMS message by selecting one of the following:
       <ul>
-          <li><b>Project Destinations.</b> Choose from the list of available destinations in open projects.
-      If no destination is available in the drop-down list, you can click Add to create a new destination.</li>
+          <li><b>Project Destinations.</b> Choose from the list of available destinations in your project.
+          If no destination is available in the drop-down list, you can click Add to create a new destination.
+          <p>Alternatively, you can create a JMS destination by opening the New File wizard and choosing
+          JMS Resource in the GlassFish category.</p></li>
           <li><b>Server Destinations.</b> Choose from the list of available destinations that exist on the server.</li>
-          <li><b>Message Driven Bean.</b> that is the destination for the message. </li>
-      </ul></li>
+          <li><b>Message Driven Bean.</b> Choose a message-driven bean from the drop-down list.
+          The drop-down list displays the message-driven beans in the same project and fills the 
+          Destination field with the name of the detination resource found in the bean. </li>
+  </ul></li>
   <li>Specify a Service Locator Strategy by choosing to generate an inline lookup 
     code or use an existing service locator. You can click the Browse to search 
     for the service locator class name.</li>

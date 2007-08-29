@@ -30,10 +30,9 @@
     to a different project. The Move Class command only lets you move bean classes 
     and interfaces to different packages in the same EJB module.</li>
   <li>You cannot rename mandatory EJB infrastructure methods such as <tt>ejbCreate</tt>.</li>
-  <li>In EJB 1.4 enterprise beans, when you use refactoring to perform actions such as renaming 
-  a field or finder method, the IDE does not update the the deployment descriptor. 
+  <li>In EJB 1.4 enterprise beans, when you use refactoring to perform actions such as 
+  deleting a bean, renaming a field or finder method, the IDE does not update the deployment descriptor. 
     You have to update the deployment descriptor manually.</li>
-
   <li>In CMP entity beans, you cannot run the Encapsulate Field command on a field 
     that is registered as the bean's primary key.</li>
   <li>When you rename a Web service endpoint interface, the IDE updates the corresponding 
@@ -41,6 +40,11 @@
   <li>When you rename a CMP field, the EJB QL statements for the field still refer 
     to the old names. You have to change the EJB QL statements manually.</li>
 </ul>
+<ul class="note">
+    <li>When deleting a code element, you can use the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/refactor/safeDelete.html">Safely Delete</a> refactoring command to
+    help check for references to that element before making the changes.</li>
+</ul>
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/refactor/aboutRefactoring.html">About Refactoring</a></dd>

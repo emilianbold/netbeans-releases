@@ -18,7 +18,7 @@
     of an enterprise application, its enterprise beans can be accessed from external 
     clients and web application modules through its remote interfaces, and by 
     other modules in the enterprise application through its local interfaces. 
-    All of the JAR files needed for execution are packaged in the in the enterprise 
+    All of the JAR files needed for execution are packaged in the enterprise 
     application's EAR file and the classpath to these JAR files are written in 
     the EJB module's manifest file. This is the most common way of deploying an 
     EJB module. </li>
@@ -29,21 +29,21 @@
 <p>There are two commands you can use to deploy an EJB module or an enterprise 
   application:</p>
 <ul>
-  <li><b>Deploy Project. </b>This stops the enterprise application, undeploys 
+  <li><b>Undeploy and Deploy. </b>This stops the enterprise application, undeploys 
     the application or stand-alone module from the application server, and deploys 
     your local version.</li>
-  <li><b>Run Project. </b>Like Deploy Project, except that for enterprise applications, 
+  <li><b>Run. </b>Like Undeploy and Deploy, except that for enterprise applications, 
     this command also opens the client module's default URL in the external browser.</li>
 </ul>
 <p><b>To deploy an enterprise application:</b></p>
 <ul>
   <li>In the Projects window, right-click the enterprise application project and 
-    choose Run Project or Deploy Project.</li>
+    choose Run or Undeploy and Deploy.</li>
 </ul>
 <p><b>To deploy a stand-alone EJB module:</b></p>
 <ul>
   <li>In the Projects window, right-click the EJB module project and choose Run 
-    Project or Deploy Project.</li>
+    or Undeploy and Deploy.</li>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
@@ -54,12 +54,7 @@
       Module to an Enterprise Application</a></dd>
       <dd><a href="../../server/server_register.html">Registering a Server</a></dd>
       <dd><a href="../../archiveproject/archiveproject-deploying.html">Redeploying an Application to a Different Server</a></dd>
-<!--Index entries:
- 		EJB modules - deploying
-		running - EJB module projects
-		deploying - stand-alone EJB modules
-					EJB modules individually
-  -->
+
 <hr>
 <small> <a href="../../credits.html">Legal Notices</a></small> 
 <table cellpadding="50" border="0"> 

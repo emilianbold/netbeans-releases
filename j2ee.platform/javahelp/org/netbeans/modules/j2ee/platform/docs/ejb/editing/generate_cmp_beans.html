@@ -23,7 +23,7 @@
   connection or from a database schema.</p>
 <ol>
   <li>Make sure that you have access to the database source from which you want 
-    to generate: 
+    to generate the entity beans: 
     <ul>
       <li>If you want to generate entity beans from an existing database connection, 
         make sure the database is running and you have 
@@ -63,21 +63,19 @@
     interfaces. Each entity bean contains a CMP field for each column in the table 
     and a CMR field for any column that references another table. </li>
   <li>Configures any container-managed relationships in the EJB module's <tt>ejb-jar.xml</tt> 
-    deployment descriptor. <!-- TODO: Editing CMP relationships now only works in EJB3.0 -- You can view and edit relationships by expanding the 
-    project's Configuration Files node, double-clicking <tt>ejb-jar.xml</tt>, 
-    and clicking CMP Relationships in the top of the visual editor.--></li>
+    deployment descriptor. </li>
 </ul>
 <p>If your project's target server is the Sun Java System Application Server/GlassFish, the IDE also 
   does the following:</p>
 <ul>
-  <li>Creates a <tt>sun-cmp-mappings.xml</tt> file in your configuration files 
-    folder that contains CMP mapping information for the entity beans. The IDE 
+  <li>Creates a <tt>sun-cmp-mappings.xml</tt> file under the Configuration Files 
+    node that contains CMP mapping information for the entity beans. The IDE 
     maps all CMP fields to the correct columns in the database. You can view and 
     edit CMP mappings by double-clicking <tt>sun-ejb-jar.xml</tt> or <tt>sun-cmp-mappings.xml</tt>, 
-    selecting the bean in the visual editor, and selecting the CMP Mapping tab.</li>
+    and then clicking the XML tab to edit the file in the XML editor.</li>
   <li>Prepares a connection object and JDBC resources for the project which are 
     configured on the server when you run or deploy the project. You can view 
-    and edit these resources under the Server Resources node.</li>
+    and edit these resources in the <tt>sun-resources.xml</tt> file under the Server Resources node in the Projects window.</li>
 </ul>
 <ul class="note">
   <li>If you are deploying to the JBoss or WebLogic application servers, you have 
