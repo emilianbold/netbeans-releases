@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet version="1.0"
@@ -426,6 +426,10 @@ is divided into following sections:
                         <xsl:attribute name="name">args</xsl:attribute>
                         <xsl:attribute name="default">${application.args}</xsl:attribute>
                     </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
                     <sequential>
                         <java fork="true" classname="@{{classname}}">
                             <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
@@ -440,6 +444,7 @@ is divided into following sections:
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <arg line="@{{args}}"/>
+                            <customize/>
                         </java>
                     </sequential>
                 </macrodef>
@@ -1211,7 +1216,19 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-                <ejbjarproject1:debug classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}" args="${{test.class}}"/>
+                <property name="test.report.file" location="${{build.test.results.dir}}/TEST-${{test.class}}.xml"/>
+                <delete file="${{test.report.file}}"/>
+                <xsl:comment> the directory must exist, otherwise the XML formatter would fail </xsl:comment>
+                <mkdir dir="${{build.test.results.dir}}"/>
+                <ejbjarproject1:debug classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner"
+                                      classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}"
+                                      args="${{test.class}}">
+                    <customize>
+                        <arg value="showoutput=true"/>
+                        <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+                        <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${{test.report.file}}"/>
+                    </customize>
+                </ejbjarproject1:debug>
             </target>
             
             <target name="-debug-start-debugger-test">
