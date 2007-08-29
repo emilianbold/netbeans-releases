@@ -33,10 +33,12 @@ import java.util.Vector;
 import org.dom4j.Attribute;
 import org.dom4j.Branch;
 import org.dom4j.Document;
+import org.dom4j.DocumentFactory;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.dom4j.Node;
+import org.dom4j.dom.DOMDocumentFactory;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -405,7 +407,7 @@ public class UMLXMLManip
       try
       {
          String str = "xmi.id";
-         org.dom4j.Node n = XMLManip.selectSingleNode(doc, "/XMI/XMI.content/UML:Project");
+         org.dom4j.Node n = getProjectNode(doc);
          if (n == null)
          {
             // Most likely, we have a versioned element. Get the VersionedElement element, which should have
@@ -891,12 +893,33 @@ public class UMLXMLManip
       return proceed;
    }
 
+
+   private static org.dom4j.XPath projectNodeXPath;
+   private static Object pnLock = new Object();
+
+   public static Node getProjectNode(Node doc) 
+   {
+       if (doc == null) 
+       {
+	   return null;
+       }
+       synchronized(pnLock) 
+       {
+	   if (projectNodeXPath == null) 
+	   {
+	       DocumentFactory fact = DOMDocumentFactory.getInstance();
+	       projectNodeXPath = fact.createXPath("/XMI/XMI.content/UML:Project");
+	   }
+       }	
+       return projectNodeXPath.selectSingleNode(doc);
+   }
+
    public static boolean validate(org.dom4j.Document doc)
    {
       boolean valid = false;
       if (doc != null)
       {
-         Node n = XMLManip.selectSingleNode(doc, "/XMI/XMI.content/UML:Project");
+         Node n = getProjectNode(doc);
          if (n != null)
          {
             valid = true;

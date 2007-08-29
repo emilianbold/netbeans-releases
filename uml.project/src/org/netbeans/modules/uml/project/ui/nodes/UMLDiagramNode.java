@@ -272,6 +272,9 @@ public class UMLDiagramNode extends UMLElementNode
     {
         boolean retVal = false;
         
+        if ( (obj != null) && (this.hashCode() == obj.hashCode()))
+            return true;
+        
         if (obj instanceof ITreeDiagram)
         {
             ITreeDiagram diagram = (ITreeDiagram)obj;
