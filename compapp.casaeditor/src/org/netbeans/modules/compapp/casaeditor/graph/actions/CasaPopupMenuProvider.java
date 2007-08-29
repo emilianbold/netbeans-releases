@@ -21,11 +21,8 @@ package org.netbeans.modules.compapp.casaeditor.graph.actions;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
+import javax.swing.*;
+
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
@@ -36,23 +33,24 @@ import org.netbeans.modules.compapp.casaeditor.nodes.actions.CanvasNodeProxyCont
 import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.Presenter;
 
 /**
  *
  * @author jsandusky
  */
 public class CasaPopupMenuProvider implements PopupMenuProvider {
-    
+
     private Widget mWidget;
     private CasaModelGraphScene mScene;
     private CasaWrapperModel mModel;
-    
-    
+
+
     public JPopupMenu getPopupMenu(Widget widget, Point localLocation) {
         mWidget = widget;
         mScene = (CasaModelGraphScene) widget.getScene();
         mModel = mScene.getModel();
-        
+
         Node node = null;
         if (widget instanceof CasaModelGraphScene) {
             node = mScene.getNodeFactory().createModelNode(mModel);
@@ -62,10 +60,10 @@ public class CasaPopupMenuProvider implements PopupMenuProvider {
                 node = mScene.getNodeFactory().createNodeFor((CasaComponent) widgetData);
             }
         }
-        
+
         boolean hasActions = false;
         JPopupMenu popupMenu = new JPopupMenu();
-        
+
         if (node instanceof CasaNode) {
             CasaNode casaNode = (CasaNode) node;
             Action[] actions = node.getActions(true);
@@ -74,11 +72,20 @@ public class CasaPopupMenuProvider implements PopupMenuProvider {
                 Point sceneLocation = widget.convertLocalToScene(localLocation);
                 if (casaNode.isValidSceneActionForLocation(action, widget, sceneLocation)) {
                     if (action instanceof AbstractAction) {
-                        CanvasNodeActionProxy proxy = CanvasNodeActionProxy.createAction(
-                                action, 
-                                sceneLocation, 
-                                localLocation);
-                        popupMenu.add(proxy);
+                        if (action instanceof Presenter.Popup) {
+                            JMenuItem mi = ((Presenter.Popup) action).getPopupPresenter();
+                            if (mi instanceof JMenu) {
+                                popupMenu.add((JMenu) mi);
+                            } else {
+                                popupMenu.add(mi);
+                            }
+                        } else { // simple abstract action...
+                            CanvasNodeActionProxy proxy = CanvasNodeActionProxy.createAction(
+                                    action,
+                                    sceneLocation,
+                                    localLocation);
+                            popupMenu.add(proxy);
+                        }
                         hasActions = true;
                         lastActionAdded = action;
                     } else if (action instanceof NodeAction) {
@@ -95,11 +102,11 @@ public class CasaPopupMenuProvider implements PopupMenuProvider {
                 }
             }
         }
-        
+
         return hasActions ? popupMenu : null;
     }
-    
-    
+
+
     private static class CanvasNodeActionProxy extends AbstractAction implements CanvasNodeProxyContext {
         private Action mActionable;
         private Point mLocalLocation;

@@ -43,6 +43,7 @@ import org.netbeans.modules.compapp.casaeditor.properties.PortTypeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortNode;
 import org.openide.nodes.Children;
 
+import javax.swing.Action;
 /**
  *
  * @author Josh Sandusky
@@ -54,7 +55,8 @@ public class WSDLEndpointNode extends CasaNode {
     
     private static final String CHILD_ID_PROVIDES = "Provides"; // NOI18N
     private static final String CHILD_ID_CONSUMES = "Consumes"; // NOI18N
-    
+    private static final String SOAP_BINDING = "soap"; // NOI18N
+
     
     public WSDLEndpointNode(CasaPort component, CasaNodeFactory factory) {
         super(component, new MyChildren(component, factory), factory);
@@ -92,12 +94,16 @@ public class WSDLEndpointNode extends CasaNode {
     }
 
     // todo: 05/31/07, enable WSIT GUI
-    /*
     @Override
     protected void addCustomActions(List<Action> actions) {
-        actions.add(SystemAction.get(WSDLEndpointAction.class));
+        CasaPort cp = (CasaPort) this.getData();
+        if (((CasaWrapperModel) cp.getModel()).isEditable(cp)) {
+            // only add this for soap port...
+            if (cp.getBindingType().equalsIgnoreCase(SOAP_BINDING)) {
+                actions.add(new WSDLEndpointAction());
+            }
+        }
     }
-    */
 
     protected void setupPropertySheet(Sheet sheet) {
         final CasaPort casaPort = (CasaPort) getData();
