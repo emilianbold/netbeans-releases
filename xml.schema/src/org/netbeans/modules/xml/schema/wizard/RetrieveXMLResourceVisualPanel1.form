@@ -25,7 +25,8 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="URLFileLocationTextField" alignment="0" pref="488" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="10" pref="10" max="10" attributes="0"/>
                       <Component id="overwriteFiles" min="-2" max="-2" attributes="0"/>
@@ -34,9 +35,8 @@
                       <EmptySpace min="10" pref="10" max="10" attributes="0"/>
                       <Component id="closureCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="URLFileLocationTextField" alignment="0" pref="488" max="32767" attributes="0"/>
-                  <Component id="sourceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="fromURLButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="sourceLabel" alignment="0" max="32767" attributes="1"/>
+                  <Component id="fromURLButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="targetLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -45,9 +45,9 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="tpLocationTextField" pref="309" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="lfsSourceFileLocationTextField" alignment="0" pref="402" max="32767" attributes="0"/>
+                          <Component id="lfsSourceFileLocationTextField" pref="402" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="lfsBrowseButton" pref="79" max="32767" attributes="0"/>
                           <Component id="tpLocationBrowseButton" alignment="0" pref="79" max="32767" attributes="0"/>
@@ -55,7 +55,7 @@
                   </Group>
                   <Component id="fromLocalFileButton" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -66,7 +66,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="fromURLButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="URLFileLocationTextField" min="-2" max="-2" attributes="0"/>
+              <Component id="URLFileLocationTextField" min="-2" pref="21" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="closureCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
@@ -74,7 +74,7 @@
               <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lfsBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="lfsSourceFileLocationTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="lfsSourceFileLocationTextField" alignment="3" min="-2" pref="21" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
               <Component id="targetLabel" min="-2" max="-2" attributes="0"/>
