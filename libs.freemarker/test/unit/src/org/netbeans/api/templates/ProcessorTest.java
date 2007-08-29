@@ -301,12 +301,39 @@ public class ProcessorTest extends TestCase {
         apply(fo, w, parameters);
         assertEquals("The size is greater than 0.", w.toString());
     }
+
+    public void testChangeOfTemplate() throws Exception {
+        FileObject template = FileUtil.createData(root, "some.txt");
+        OutputStream os = template.getOutputStream();
+        String txt = "<html><h1>${title}</h1></html>";
+        os.write(txt.getBytes());
+        os.close();
+        template.setAttribute("title", "Nazdar");
+        
+        StringWriter w = new StringWriter();
+        
+        apply(template, w);
+        
+        String exp = "<html><h1>Nazdar</h1></html>";
+        assertEquals(exp, w.toString());
+        
+        os = template.getOutputStream();
+        txt = "<html><h2>${title}</h2></html>";
+        os.write(txt.getBytes());
+        os.close();
+        
+        w = new StringWriter();
+        apply(template, w);
+        
+        exp = "<html><h2>Nazdar</h2></html>";
+        assertEquals("Second run", exp, w.toString());
+    }
     
-    private static void apply(FileObject template, Writer w) throws Exception {
+    static void apply(FileObject template, Writer w) throws Exception {
         apply(template, w, Collections.<String,Object>emptyMap());
     }
     
-    private static void apply(FileObject template, Writer w, Map<String,? extends Object> values) throws Exception {
+    static void apply(FileObject template, Writer w, Map<String,? extends Object> values) throws Exception {
         ScriptEngineManager mgr = new ScriptEngineManager();
         ScriptEngine eng = mgr.getEngineByName("freemarker");
         assertNotNull("We do have such engine", eng);

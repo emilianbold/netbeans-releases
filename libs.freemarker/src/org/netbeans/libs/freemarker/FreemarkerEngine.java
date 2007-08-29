@@ -26,6 +26,11 @@ import java.io.*;
 import java.util.Properties;
 import java.util.Set;
 import freemarker.template.*;
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 
 /* Taken from A. Sundararajan and adopted by Jaroslav Tulach 
@@ -33,6 +38,8 @@ import org.openide.filesystems.FileObject;
  * 
  * @author A. Sundararajan
  */
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 class FreemarkerEngine extends AbstractScriptEngine {
 
     public static final String STRING_OUTPUT_MODE = "com.sun.script.freemarker.stringOut";
@@ -40,10 +47,13 @@ class FreemarkerEngine extends AbstractScriptEngine {
     public static final String FREEMARKER_PROPERTIES = "com.sun.script.freemarker.properties";
     public static final String FREEMARKER_TEMPLATE_DIR = "com.sun.script.freemarker.template.dir";
     public static final String FREEMARKER_TEMPLATE = "org.openide.filesystems.FileObject";
+    
+    private static Map<FileObject,Template> templates = new WeakHashMap<FileObject, Template>();
 
     // my factory, may be null
     private volatile ScriptEngineFactory factory;
     private volatile Configuration conf;
+    private volatile FileObject fo;
 
     public FreemarkerEngine(ScriptEngineFactory factory) {
         this.factory = factory;
@@ -71,9 +81,19 @@ class FreemarkerEngine extends AbstractScriptEngine {
         } else {
             out = ctx.getWriter();
         }
-
+        
+        Template template = null;
         try {
-            Template template = new Template(fileName, reader, conf);
+            if (fo != null) {
+                template = templates.get(fo);
+            }
+            
+            if (template == null) {
+                template = new MyTemplate(fo, fileName, reader, conf);
+                if (fo != null) {
+                    templates.put(fo, template);
+                }
+            }
             template.process(null, out);
             out.flush();
         } catch (Exception exp) {
@@ -130,7 +150,7 @@ class FreemarkerEngine extends AbstractScriptEngine {
                 }
 
                 Object tfo = ctx.getAttribute(FREEMARKER_TEMPLATE);
-                FileObject fo = tfo instanceof FileObject ? (FileObject)tfo : null;
+                fo = tfo instanceof FileObject ? (FileObject)tfo : null;
                 
                 Configuration tmpConf = new RsrcLoader(fo, ctx);
                 try {
@@ -206,4 +226,38 @@ class FreemarkerEngine extends AbstractScriptEngine {
             throw new RuntimeException(exp);
         }
     }
+    
+    private static final class MyTemplate extends Template 
+    implements FileChangeListener {
+        public MyTemplate(FileObject fo, String s, Reader r, Configuration c) throws IOException {
+            super(s, r, c);
+            fo.addFileChangeListener(FileUtil.weakFileChangeListener(this, fo));
+        }
+        
+        public void fileFolderCreated(FileEvent fe) {
+            clear();
+        }
+        public void fileDataCreated(FileEvent fe) {
+            clear();
+        }
+        public void fileChanged(FileEvent fe) {
+            clear();
+        }
+        public void fileDeleted(FileEvent fe) {
+            clear();
+        }
+        public void fileRenamed(FileRenameEvent fe) {
+            clear();
+        }
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            clear();
+        }
+        private void clear() {
+            templates.clear();
+        }
+    } // end of MyTemplate
+    
+    
+    
+    
 }
