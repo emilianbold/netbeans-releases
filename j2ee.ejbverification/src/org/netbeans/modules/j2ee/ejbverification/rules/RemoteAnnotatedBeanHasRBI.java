@@ -46,7 +46,7 @@ public class RemoteAnnotatedBeanHasRBI extends EJBVerificationRule{
                 Session session = (Session)ctx.getEjb();
                 
                 try {
-                    if (session.getBusinessRemote().length == 0){
+                    if (session.getBusinessRemote() == null || session.getBusinessRemote().length == 0){
                         ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
                                 NbBundle.getMessage(RemoteAnnotatedBeanHasRBI.class, "MSG_RemoteAnnotatedBeanHasRBI"));
                         

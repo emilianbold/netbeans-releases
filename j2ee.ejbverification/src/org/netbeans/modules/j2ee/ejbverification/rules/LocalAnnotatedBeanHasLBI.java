@@ -46,7 +46,7 @@ public class LocalAnnotatedBeanHasLBI extends EJBVerificationRule{
                 Session session = (Session)ctx.getEjb();
                 
                 try {
-                    if (session.getBusinessLocal().length == 0){
+                    if (session.getBusinessLocal() == null || session.getBusinessLocal().length == 0){
                         ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
                                 NbBundle.getMessage(LocalAnnotatedBeanHasLBI.class, "MSG_LocalAnnotatedBeanHasLBI"));
                         

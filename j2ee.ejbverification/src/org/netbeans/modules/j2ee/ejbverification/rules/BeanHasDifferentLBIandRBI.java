@@ -38,34 +38,34 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  */
 public class BeanHasDifferentLBIandRBI extends EJBVerificationRule {
-    
+
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
-        if (ctx.getEjb() instanceof Session){
+        if (ctx.getEjb() instanceof Session) {
             Session session = (Session) ctx.getEjb();
             Collection<String> localInterfaces = new TreeSet<String>();
-            
+
             try {
-                for (String localInterface : session.getBusinessLocal()){
-                    localInterfaces.add(localInterface);
-                }
-                
-                for (String remoteInterface : session.getBusinessRemote()){
-                    if (localInterfaces.contains(remoteInterface)){
-                        
-                        ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(),
-                                ctx.getComplilationInfo(),
-                                NbBundle.getMessage(BMnotPartOfRBIandLBI.class,
-                                "MSG_BeanHasDifferentLBIandRBI"));
-                        
-                        return Collections.singletonList(err);
+                if (session.getBusinessLocal() != null) {
+                    for (String localInterface : session.getBusinessLocal()) {
+                        localInterfaces.add(localInterface);
                     }
                 }
-                
+
+                if (session.getBusinessRemote() != null) {
+                    for (String remoteInterface : session.getBusinessRemote()) {
+                        if (localInterfaces.contains(remoteInterface)) {
+
+                            ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(), NbBundle.getMessage(BMnotPartOfRBIandLBI.class, "MSG_BeanHasDifferentLBIandRBI"));
+
+                            return Collections.singletonList(err);
+                        }
+                    }
+                }
             } catch (VersionNotSupportedException ex) {
                 EJBProblemFinder.LOG.log(Level.SEVERE, ex.getMessage(), ex);
             }
         }
-        
+
         return null;
     }
 }

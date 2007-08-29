@@ -129,13 +129,16 @@ public class BusinessMethodExposed extends EJBVerificationRule {
     private Collection<TypeElement> resolveClasses(CompilationInfo info, String classNames[]){
         Collection<TypeElement> result = new ArrayList<TypeElement>();
         
-        for (String className : classNames){
-            TypeElement clazz = info.getElements().getTypeElement(className);
-            
-            if (clazz != null){
-                result.add(clazz);
+        if (classNames != null) {
+            for (String className : classNames) {
+                TypeElement clazz = info.getElements().getTypeElement(className);
+
+                if (clazz != null) {
+                    result.add(clazz);
+                }
             }
         }
+
         
         return result;
     }
