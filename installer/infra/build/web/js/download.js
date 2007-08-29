@@ -79,12 +79,12 @@ function write_components() {
 function write_table_header() {
     document.write('<tr>');
     document.write('<th class="left no_border bottom_	border_thin wide bottom">NetBeans IDE 6.0 Build {build.number}</th>');    
-    document.write('<td class="no_border left_border_thin bottom_border_thin wide bottom" id="javaee_link"><a href="javascript: download(\'javaee\')"                 ><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>Web&nbsp;&&nbsp;Java&nbsp;EE</th>');
-    document.write('<td class="no_border left_border_thin bottom_border_thin wide bottom" id="javame_link"><a href="javascript: download(\'javame\')" id="javame_name"><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>Java ME</th>');
-    document.write('<td class="no_border left_border_thin bottom_border_thin wide bottom"   id="java_link"><a href="javascript: download(\'java\')"                   ><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>Java SE</th>');
-    document.write('<td class="no_border left_border_thin bottom_border_thin wide bottom"   id="ruby_link"><a href="javascript: download(\'ruby\')"                   ><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>Ruby</th>');
-    document.write('<td class="no_border left_border_thin bottom_border_thin wide bottom"    id="cnd_link"><a href="javascript: download(\'cnd\')"                    ><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>C/C++</th>');
-    document.write('<td class="no_border left_border_thin bottom_border_thin wide bottom"   id="full_link"><a href="javascript: download(\'full\')"                   ><img src="img/download_h.gif" style="cursor: pointer; border: 0;"/><br></a>All</th>');
+    document.write('<td class="no_border bottom_border_thin wide bottom" id="javaee_link"><a href="javascript: download(\'javaee\')"                 ><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>Web&nbsp;&&nbsp;Java&nbsp;EE</th>');
+    document.write('<td class="no_border bottom_border_thin wide bottom" id="javame_link"><a href="javascript: download(\'javame\')" id="javame_name"><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>Java ME</th>');
+    document.write('<td class="no_border bottom_border_thin wide bottom"   id="java_link"><a href="javascript: download(\'java\')"                   ><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>Java SE</th>');
+    document.write('<td class="no_border bottom_border_thin wide bottom"   id="ruby_link"><a href="javascript: download(\'ruby\')"                   ><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>Ruby</th>');
+    document.write('<td class="no_border bottom_border_thin wide bottom"    id="cnd_link"><a href="javascript: download(\'cnd\')"                    ><img src="img/download.gif"   style="cursor: pointer; border: 0;"/><br></a>C/C++</th>');
+    document.write('<td class="no_border bottom_border_thin wide bottom"   id="full_link"><a href="javascript: download(\'full\')"                   ><img src="img/download_h.gif" style="cursor: pointer; border: 0;"/><br></a>All</th>');
     document.write('</tr>');
 }
 
