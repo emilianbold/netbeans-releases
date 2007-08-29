@@ -76,7 +76,11 @@ public class IcanproProjectGenerator {
         assert fo != null : "At least disk roots must be mounted! " + rootF;
         fo.getFileSystem().refresh(false);
         fo = FileUtil.toFileObject (dir);
-        assert fo != null : "No such dir on disk: " + dir;
+
+        // vlv # 113228
+        if (fo == null) {
+          throw new IOException("Can't create " + dir.getName());
+        }
         assert fo.isFolder() : "Not really a dir: " + dir;
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
         AntProjectHelper h = setupProject (fo, name, j2eeLevel);

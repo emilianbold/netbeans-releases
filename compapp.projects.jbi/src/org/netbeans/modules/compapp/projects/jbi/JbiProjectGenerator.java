@@ -98,7 +98,11 @@ public class JbiProjectGenerator {
         assert fo != null : "At least disk roots must be mounted! " + rootF; // NOI18N
         fo.getFileSystem().refresh(false);
         fo = FileUtil.toFileObject(dir);
-        assert fo != null : "No such dir on disk: " + dir; // NOI18N
+
+        // vlv # 113228
+        if (fo == null) {
+          throw new IOException("Can't create " + dir.getName());
+        }
         assert fo.isFolder() : "Not really a dir: " + dir; // NOI18N
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir; // NOI18N
 
@@ -195,7 +199,11 @@ public class JbiProjectGenerator {
         assert fo != null : "At least disk roots must be mounted! " + rootF; // NOI18N
         fo.getFileSystem().refresh(false);
         fo = FileUtil.toFileObject(dir);
-        assert fo != null : "No such dir on disk: " + dir; // NOI18N
+
+        // vlv # 113228
+        if (fo == null) {
+          throw new IOException("Can't create " + dir.getName());
+        }
         assert fo.isFolder() : "Not really a dir: " + dir; // NOI18N
 
         AntProjectHelper h = setupProject(fo, name, j2eeLevel);

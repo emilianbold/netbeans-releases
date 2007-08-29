@@ -16,20 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/*
- *                 Sun Public License Notice
- *
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
- *
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
- * Microsystems, Inc. All Rights Reserved.
- */
-
 package org.netbeans.modules.sql.project;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
@@ -83,7 +69,11 @@ public class SQLproProjectGenerator {
         assert fo != null : "At least disk roots must be mounted! " + rootF;
         fo.getFileSystem().refresh(false);
         fo = FileUtil.toFileObject (dir);
-        assert fo != null : "No such dir on disk: " + dir;
+
+        // vlv # 113228
+        if (fo == null) {
+          throw new IOException("Can't create " + dir.getName());
+        }
         assert fo.isFolder() : "Not really a dir: " + dir;
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
         AntProjectHelper h = setupProject (fo, name, j2eeLevel);
@@ -129,9 +119,9 @@ public class SQLproProjectGenerator {
         
         Deployment deployment = Deployment.getDefault ();
         String serverInstanceID = deployment.getDefaultServerInstanceID ();
-		if(serverInstanceID != null) {
-			ep.setProperty(IcanproProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
-		}
+        if(serverInstanceID != null) {
+            ep.setProperty(IcanproProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
+        }
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEPRECATION, "false");
@@ -162,9 +152,9 @@ public class SQLproProjectGenerator {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-		if(serverInstanceID != null) {
-			ep.setProperty(IcanproProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
-		}
+        if(serverInstanceID != null) {
+            ep.setProperty(IcanproProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
+        }
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_FILE, "default.xml"); // NOI18N
