@@ -230,7 +230,7 @@
            </tocitem>
                <tocitem text="Configuring Quality of Service">
                    <tocitem text="About Quality of Service" target="org.netbeans.modules.websvc.wsitconf.about"/>
-                   <tocitem text="Accessing the Quality of Service Tab" target="org.netbeans.modules.websvc.wsitconf.access"/>
+                   <tocitem text="Configuring Quality of Service" target="org.netbeans.modules.websvc.wsitconf.access"/>
                    <tocitem text="Port Binding" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.ServiceNode"/>
                    <tocitem text="Operation" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationContainerServiceNode">
                         <tocitem text="Operation" target="org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode"/>
