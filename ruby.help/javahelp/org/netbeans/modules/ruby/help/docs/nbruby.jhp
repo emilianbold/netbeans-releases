@@ -9,6 +9,7 @@
     <documents>
 		<directory title="C:/!MySunProjects/Rave/cvstree/ruby/help/javahelp/org/netbeans/modules/ruby/help/docs">
 			<file title="about_ruby.html"/>
+			<file title="credits.html"/>
 			<file title="rubyhelp.hs"/>
 			<file title="rubyindex.xml"/>
 			<file title="rubymap.xml"/>

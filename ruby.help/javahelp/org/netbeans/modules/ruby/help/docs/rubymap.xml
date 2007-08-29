@@ -4,4 +4,5 @@
 
 <map version="1.0">
 	<mapID target="nbruby_about_ruby" url="about_ruby.html"/>
+	<mapID target="nbruby_credits.html" url="credits.html"/>
 </map>
