@@ -25,13 +25,13 @@ the plugin. The Tomcat Web Server implements the JavaServer Pages 2.0 and Servle
   of web applications.</p>
   <p>Instead of using the bundled Tomcat Web Server, you can <a href="tomcat_addinstall.html">register</a>
   a supported Tomcat Web Server with the IDE and then <a href="tomcat_setup_registered.html">deploy</a> to it.
-  The IDE supports Tomcat 5.5 and Tomcat 5.
+  The IDE supports Tomcat 6, Tomcat 5.5,  and Tomcat 5.
   Alternatively, you can create Ant targets to
   <a href="tomcat_setup_unsupported.html">deploy to a Tomcat 4 Web Server</a>.</p>
   
-<p>To see the Tomcat Web Servers that are registered with the IDE, expand Servers 
-  node in the Services window and expand the Tomcat 5 Servers node.</p>
-<p>For more information, see the following web sites:</p>
+  <p>To see the Tomcat Web Servers that are registered with the IDE, expand the Servers 
+  node in the Services window.</p>
+  <p>For more information, see the following web sites:</p>
 <ul>
 <li>Extensive information about the Tomcat Web Server internals is available at:
   <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -54,16 +54,14 @@ the plugin. The Tomcat Web Server implements the JavaServer Pages 2.0 and Servle
         <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
 </object></p></li></ul>
-
-<h3>The Bundled Tomcat Web Server</h3>
-When you install the IDE, the installation automatically registers the bundled Tomcat Web Server with the IDE.
+When you download and install the Java EE version of the IDE, you can choose to install and register the Tomcat Web Server.
 <p>The configuration files for the bundled Tomcat Web Server are in the Tomcat <i>base</i> (Catalina base) 
   directory, located under your IDE user directory. The Tomcat <i>home</i> (Catalina home) directory 
   is under the IDE installation directory. Note that this setup differs from a 
   typical Tomcat installation, where the base directory and home directory coincide. 
   To see the exact locations of the home and base directories, right-click the 
   server's node in the Services tab and choose Properties from the contextual menu. 
-  </p>
+</p>
 	<table cellpadding="3" cellspacing="0" border="0">
   <tr valign="top">
       <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>

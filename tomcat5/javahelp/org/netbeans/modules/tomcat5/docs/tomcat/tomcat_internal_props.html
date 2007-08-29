@@ -22,40 +22,37 @@
 <ol>
   <li>In the Services window, expand the Servers node to view the Tomcat Web Server nodes.</li>
 <li>Right-click a Tomcat Web Server's instance and select Properties from the contextual menu.</li></ol>
-<p>The Serve Manager opens displaying the following information:</p>
-<h3>Properties Section</h3>
+<p>The Server Manager opens displaying the following information:</p>
+<h3>Connection Tab </h3>
 <ul>
-	<li><b>Display Name.</b> Specifies the Tomcat Web Server's name for display
-    purposes in the Services window.</li>
-   <li><b>Server Port.</b> Specifies the number of the TCP/IP port that the server listens 
-    on. The URL for a web application that is deployed on the server is derived from 
-    the host's URL and the server port, such as <tt>http://localhost:8086</tt>.</li>
-   <li><b>Admin Port.</b> Specifies the number of the TCP/IP port that the server's administrative 
-    server listens to.</li>
-    <li><b>User.</b> Specifies the user name that the IDE uses to log into the server's manager 
-    application. The user must be associated with the manager role. The first 
-    time the IDE starts the bundled Tomcat Web Server, such as through the Start/Stop Server menu 
-    action or by executing a web component from the IDE, the IDE adds an admin 
-    user with a randomly-generated password to the <i>tomcat-base-path</i><tt>/conf/tomcat-users.xml</tt> 
-    file. (Right-click the Tomcat Web Server instance node in the Services window and select Properties.
-    In the Properties dialog box, the Base Directory property points to the <tt><i>base-dir directory</i></tt>.)
-    The admin user entry in the <tt>tomcat-users.xml</tt> file looks similar to the following: 
-    <PRE>  &lt;user username=&quot;ide&quot; password=&quot;woiehh&quot; roles=&quot;manager&quot;/&gt;</PRE>
-   </li>
-   <li><b>Password.</b> Specifies the user's password. See the explanation for the User property above for details.</li>
-   
-  <li><b>Home Directory.</b> Specifies the home directory for the server on your 
-    local system. This property is set when you register a Tomcat Web Server in 
-    the Server Manager. This location is where Tomcat expects to find its own 
-    binaries and any libraries that are used by web applications but which are 
-    not part of Tomcat itself.</li>
-   
-  <li><b>Base Directory.</b> Specifies the base directory for the Tomcat Web Server. 
+	<li><b>Catalina Home.</b> Specifies the  location of the server installation.</li>
+    <li><b>Catalina Base.</b> Specifies the base directory for the Tomcat Web Server. 
     You can set this property when you add a Tomcat Web Server to the Server Manager. 
     If you set a base directory, then that is where the Tomcat configuration files 
     reside. One reason for specifying a separate base directory is to allow more 
     than one user to use the same server. If no base directory is specified, then 
     the configuration files reside in the home directory.</li>
+    <li><b>Credentials of an exiting user in the &quot;manager&quot; role .</b> </li>
+   <ul>
+     <li><b>Username.</b> Specifies the user name that the IDE uses to log into the server's manager 
+    application. The user must be associated with the manager role. The first 
+    time the IDE starts the Tomcat Web Server, such as through the Start/Stop  menu 
+    action or by executing a web component from the IDE, the IDE adds an admin 
+    user with a randomly-generated password to the <i>tomcat-base-path</i><tt>/conf/tomcat-users.xml</tt> file. (Right-click the Tomcat Web Server instance node in the Services window and select Properties. In the Properties dialog box, the Base Directory property points to the <tt><i>base-dir directory</i></tt>.) The admin user entry in the <tt>tomcat-users.xml</tt> file looks similar to the following: </b>
+       <pre>  &lt;user username=&quot;ide&quot; password=&quot;woiehh&quot; roles=&quot;manager&quot;/&gt;</pre>
+     </li>
+    <li><b>Password.</b> Specifies the user's password. See the explanation for the Username property above for details.</li>
+   </ul>
+   <li><b>Server Port .</b> Specifies the number of the TCP/IP port that the server listens 
+    on. The URL for a web application that is deployed on the server is derived from 
+   the host's URL and the server port, such as <tt>http://localhost:8086</tt>.</li>
+   
+   <li>Specifies the home directory for the server on your 
+    local system. This property is set when you register a Tomcat Web Server in 
+    the Server Manager. This location is where Tomcat expects to find its own 
+    binaries and any libraries that are used by web applications but which are 
+    not part of Tomcat itself.</li>
+  <li><b>Shutdown Port. </b>Specifies the port number on which the server waits for a shutdown command.</li>
   <li><b>Enable HTTP Monitor.</b> If selected, this checkbox enables the HTTP Monitor 
   for web applications executing on the Tomcat Web Server. When enabling the monitor, you <i>must</i> 
     restart the server in order for the change to take affect. The HTTP Monitor 
@@ -65,42 +62,50 @@
     HTTP monitor's declaration from the server. However the monitor's libraries 
     remain deployed to the server.<br> 
     When you disable the HTTP Monitor, you <i>must</i> restart the server for 
-    the change to take affect.</li>
-    <li><b>Open Context Log on Run.</b> If selected, this checkbox enables the context
-    log to be opened while the web application is being deployed. You can watch
-    the stack trace as it builds.</li>
-    <li><b>Use Security Manager.</b> If selected, this checkbox enables the Tomcat Web Server
-    to be started with the <tt>-security</tt> option. The security policy implemented by the
-    Security Manager are configured in the <tt>catalina.policy</tt> file, which is in the
-    Tomcat home directory's <tt>conf</tt> folder. For details, see
- <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-        <param name="content" value="http://jakarta.apache-korea.org/tomcat/tomcat-5.0-doc/security-manager-howto.html">
-        <param name="text" value="<html><u>http://jakarta.apache-korea.org/tomcat/tomcat-5.0-doc/security-manager-howto.html</u></html>">
-        <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-</object></p>
-  
-</ul>
-<h3>Debugger Section</h3>
-<ul>
-  <li><b>Debugger Port.</b> Specifies the port number that the server uses for 
-    debugging.</li>
-  <li><b>Classic.</b> If selected, uses the &quot;classic&quot; JDK 1.1 
-    JVM for debugging. Clear the box to use HotSpot JVM<b>.</b></li>
-  <li><b>Debugging Type.</b> Specifies how 
-  the IDE connects to the server being debugged. You can choose from the
-  following: 
-    <ul>
-      <li>Socket </li>
-      <li>(Windows only) Shared memory</li>
+    the change to take affect.    </li>
     </ul>
-  </li>
-  <li><b>(Windows only) Name.</b> Specifies the identification 
-    string for shared memory access. To change the string, click the ellipsis 
-    button (...) to display the Name property editor. In the property editor, 
-    type a name, and click OK.</li>
+<h3>Startup Tab </h3>
+<ul>
+	<li><b>Use Custom Catalina Script.</b> Specifies whether to use custom Catalina script or not. This is unchecked by default.</li>
+    <li><b>Force Stop.</b> Specifies whether to use the force shutdown (shutdown is followed by the kill command). This is unchecked by default. This function is disabled on Windows. </li>
+    <li><b>Debugger Transport.</b> Specifies whether to use shared memory or socked based transport for debugging. Shared Memory is default on Windows, socket on other systems. Shared Memory is enabled only on Windows.</li>
+   <ul>
+     <li><b>Shared memory Name.</b> specifies the shared memory name. This function is enabled only on Windows.</li>
+     <li><b>Socket Port.</b> Specifies the socket port number.   
+   </ul> 
+     </li>
+   
+   </ul>
+<h3>Platform Tab </h3>
+<ul>
+	<li><b>Java Platform.</b> Specifies the Java Platform the server will use. </li>
+    <li><b>VM Options.</b> Specifies the Java Virtual Machine options.</li>
+    <li><b>Use IDE Proxy Settings.</b> Specifies whether to use the IDE proxy settings. </li>
+    
+     <li><b>Use Security Manager. </b>If selected, this checkbox enables the Tomcat Web Server to be started with the -security option. The security policy implemented by the Security Manager are configured in the catalina.policy file, which is in the Tomcat home directory's conf folder. For details, see
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value="http://jakarta.apache-korea.org/tomcat/tomcat-5.0-doc/security-manager-howto.html">
+          <param name="text" value="<html><u>http://jakarta.apache-korea.org/tomcat/tomcat-5.0-doc/security-manager-howto.html</u></html>">
+          <param name="textFontSize" value="medium">
+          <param name="textColor" value="blue">
+        </object>
+     </li>
+</ul>
+<h3>Deployment  Tab </h3>
+<ul>
+  <li><b>Deployment Timeout(s).</b> Specifies the length of server timeout(s).</li>
+    <li><b>Enable JDBC driver deployment.</b> Specifies whether to enable JDBC driver deployment. This is checked by default. </li>
 </ul>
 
+<h3>Classes Tab </h3>
+<ul><li>Lists all classes associated with the server instance. </li></ul>
+<h3>Sources Tab </h3>
+<ul><li>Lists all sources associated with the server instance.</li> </ul>
+<h3>Javadoc Tab </h3>
+<ul>
+	<li>Lists all Javadocs associated with the server instance.</li>
+</ul>
+<h3>&nbsp;</h3>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="tomcat_plugintro.html">About the Tomcat Web Server</a></dd>
