@@ -2861,12 +2861,14 @@ public class UMLXMLManip
                // Add the element to its owned namespace here because the
                // put_Name() below will fire events.
                INamedElement element = (INamedElement)unk;
-               if((resolvingFullyQualifiedName == false) &&
-                  (element instanceof IDataType))
-               {
-                   IProject project = curSpace.getProject();
-                   curSpace = project;
-               }
+               // this logic is flawed, totally ignores namespace specified, 
+               // commented out as part of fix for 85895
+//               if((resolvingFullyQualifiedName == false) &&
+//                  (element instanceof IDataType))
+//               {
+//                   IProject project = curSpace.getProject();
+//                   curSpace = project;
+//               }
                curSpace.addOwnedElement(element);               
                //element.setOwner(curSpace);
 

@@ -209,7 +209,7 @@ public class NameResolver
                                             }
                                         }
                                     }
-                                    else
+                                    if (num == 0 || elems == null || elems.size() == 0)
                                     {
                                         // We have a situation where the user is passing in a fully qualified name that does not exist,
                                         // so we need to create the package structure, and then create the type as dictate by
@@ -273,10 +273,10 @@ public class NameResolver
                                 
                                 // THis is a hack.  Since createAndAddUnknowType will always add
                                 // the type to the pacakge.
-                                outerPack.addOwnedElement(retEle);
-                                
-                            } else {
-                                retEle = UMLXMLManip.createAndAddUnknownType(outerPack, typeName);
+//                                outerPack.addOwnedElement(retEle);
+//                                
+//                            } else {
+////                                retEle = UMLXMLManip.createAndAddUnknownType(outerPack, typeName);
                             }
                         }
                     }

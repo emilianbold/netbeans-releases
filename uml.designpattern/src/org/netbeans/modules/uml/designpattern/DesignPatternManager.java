@@ -1040,7 +1040,7 @@ public class DesignPatternManager implements IDesignPatternManager {
                         // so we are storing the metatype of the type element and its full name on the property
                         // element value
                         // this will be interpreted at save time
-                        String typeStr = pTypeEle.getElementType();
+                        String typeStr = PreferenceAccessor.instance().getUnknownClassifierType();//pTypeEle.getElementType();
                         String typeName = pTypeEle.getQualifiedName2();
                         String temp =  typeStr + "??";
                         if(typeName.indexOf("::") <= 0)
@@ -1961,7 +1961,8 @@ public class DesignPatternManager implements IDesignPatternManager {
     public void saveParticipantCreateMethod(IPropertyDefinition pDef, IPropertyElement pPropEle) {
         if (pDef != null && pPropEle != null) {
             String name = pPropEle.getName();
-            if (name.equals("Exception")) {
+            if (name.equals("Exception")) 
+            {
                 // special processing for raised exceptions on an operation.  This is similar to all of the
                 // special put logic for "type", but the exceptions actually get created through the
                 // AddRaisedException logic which goes through this path
