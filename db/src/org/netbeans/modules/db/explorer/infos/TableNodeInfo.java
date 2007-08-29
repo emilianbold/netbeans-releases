@@ -248,8 +248,8 @@ public class TableNodeInfo extends DatabaseNodeInfo {
 
     public void delete() throws IOException {
         try {
-            DDLHelper.deleteTable((Specification)getSpecification(), getTable(),
-                    (String)get(DatabaseNodeInfo.SCHEMA));
+            DDLHelper.deleteTable((Specification)getSpecification(),
+                    (String)get(DatabaseNodeInfo.SCHEMA), getTable());
             
             fireRefresh();
         } catch (Exception e) {
