@@ -90,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="build/pkg/NetBeans.pkg"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value='cd "${appdir}/Contents/Resources/NetBeans"; find . -name \*.jar -exec pack200 -g {}.pack {} \;'/>
+      <arg value='cd "${appdir}/Contents/Resources/NetBeans"; find . -name \*.jar -exec pack200 -J-Xmx256m -g {}.pack {} \;'/>
     </exec>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
