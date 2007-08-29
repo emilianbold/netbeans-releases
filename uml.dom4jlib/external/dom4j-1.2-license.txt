@@ -1,5 +1,6 @@
-Name:
+Name: dom4j
 Version: 1.2
+OSR: 6878
 
 Redistribution and use of this software and associated documentation 
 ("Software"), with or without modification, are permitted provided that 

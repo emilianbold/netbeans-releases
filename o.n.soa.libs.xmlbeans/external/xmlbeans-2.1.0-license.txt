@@ -5,6 +5,7 @@ License: Apache-2.0
 Origin: http://ftp.wayne.edu/apache/xmlbeans/binaries/
 Files: xmlbeans-2.1.0.zip
 Source: http://xmlbeans.apache.org/sourceAndBinaries/
+OSR: 4278
 
 Use of XMLBeans version 2.1.0 is governed by the terms of the license below:
 

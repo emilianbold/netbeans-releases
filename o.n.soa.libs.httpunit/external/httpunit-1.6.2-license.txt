@@ -2,6 +2,7 @@ Name: httpunit
 Version: 1.6.2
 Description: Library for automate HTTP unit testing.
 License: Apache-1.1
+OSR: 4279
 
 Use of httpunit version 1.6.2 is governed by the terms of the license below:
 

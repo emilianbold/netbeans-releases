@@ -5,6 +5,7 @@ License: CPL-1.0
 Origin: http://sourceforge.net/projects/wsdl4j
 Files: wsdl4j-1.5.2.zip
 Source: http://sourceforge.net/project/showfiles.php?group_id=128811&package_id=141069&release_id=373235
+OSR: 4277
 
 Use of WSDL4J version 1.5.2 is governed by the terms of the license below:
 
@@ -220,3 +221,4 @@ intellectual property laws of the United States of America. No party to this
 Agreement will bring a legal action under this Agreement more than one year
 after the cause of action arose. Each party waives its rights to a jury trial in
 any resulting litigation
+
