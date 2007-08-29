@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -33,6 +34,7 @@ import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Refactoring used for changing method signature. It changes method declaration
@@ -42,7 +44,7 @@ import org.openide.util.NbBundle;
  * @author  Tomas Hurka
  * @author  Jan Becicka
  */
-public class ChangeParametersPlugin extends JavaRefactoringPlugin implements ProgressListener {
+public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     
     private ChangeParametersRefactoring refactoring;
     private TreePathHandle treePathHandle;
@@ -65,16 +67,51 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
     @Override
     public Problem fastCheckParameters(CompilationController javac) throws IOException {
         javac.toPhase(JavaSource.Phase.RESOLVED);
-        if (((ExecutableElement) treePathHandle.resolveElement(javac)).isVarArgs()) {
-            int i=refactoring.getParameterInfo().length;
-            for (ParameterInfo in: refactoring.getParameterInfo()) {
-                i--;
-                if (in.getType() != null && in.getType().endsWith("...") && i!=0) {//NOI18N
-                    return new Problem(true, org.openide.util.NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_VarargsFinalPosition", new Object[] {}));
+        ParameterInfo paramTable[] = refactoring.getParameterInfo();
+        Problem p=null;
+        for (int i = 0; i< paramTable.length; i++) {
+            int origIndex = paramTable[i].getOriginalIndex();
+     
+            if (origIndex==-1) {
+            // check parameter name
+            String s;
+            s = paramTable[i].getName();
+            if ((s == null || s.length() < 1))
+                p = createProblem(p, true, newParMessage("ERR_parname")); // NOI18N
+            else {
+                if (!Utilities.isJavaIdentifier(s)) {
+                    p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_InvalidIdentifier",s)); // NOI18N
                 }
             }
+
+            // check parameter type
+            String t = paramTable[i].getType();
+            if (t == null)
+                p = createProblem(p, true, newParMessage("ERR_partype")); // NOI18N
+
+            // check the default value
+            s = paramTable[i].getDefaultValue();
+            if ((s == null || s.length() < 1))
+                p = createProblem(p, true, newParMessage("ERR_pardefv")); // NOI18N
+
+            }
+            ParameterInfo in = paramTable[i];
+
+            if (in.getType() != null && in.getType().endsWith("...") && i!=paramTable.length-1) {//NOI18N
+                    p = createProblem(p, true, org.openide.util.NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_VarargsFinalPosition", new Object[] {}));
+                }
         }
-        return null;    
+        return p;    
+    }
+
+    private static String newParMessage(String par) {
+        return new MessageFormat(
+                getString("ERR_newpar")).format(new Object[] { getString(par) } // NOI18N
+            );
+    }
+    
+    private static String getString(String key) {
+        return NbBundle.getMessage(ChangeParametersPlugin.class, key);
     }
 
     private Set<ElementHandle<ExecutableElement>> allMethods;
@@ -875,17 +912,4 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
 //            return null;
 //        }
 //    }
-    
-    public void start(ProgressEvent event) {
-        fireProgressListenerStart(event.getOperationType(), event.getCount());
-    }
-    
-    public void step(ProgressEvent event) {
-        fireProgressListenerStep();
-    }
-    
-    public void stop(ProgressEvent event) {
-        fireProgressListenerStop();
-    }
-
 }
