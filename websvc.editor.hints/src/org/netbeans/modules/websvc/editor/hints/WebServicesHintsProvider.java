@@ -24,6 +24,7 @@ import java.util.List;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.awt.EventQueue;
 import javax.lang.model.element.TypeElement;
 
 import org.openide.filesystems.FileObject;
@@ -48,6 +49,7 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 
 import org.netbeans.modules.websvc.editor.hints.common.ProblemContext;
 import org.netbeans.modules.websvc.editor.hints.common.RulesEngine;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -198,11 +200,22 @@ public class WebServicesHintsProvider {
         }
         
         void rescan(){
-            JavaSource javaSrc = JavaSource.forFileObject(file);
+            final JavaSource javaSrc = JavaSource.forFileObject(file);
             
             if (javaSrc != null){
                 try{
-                    javaSrc.runUserActionTask(new ProblemFinderCompControl(file), true);
+                    if(EventQueue.isDispatchThread()) {
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                try{
+                                    javaSrc.runUserActionTask(new ProblemFinderCompControl(file), true);
+                                } catch (IOException e){
+                                }
+                            }
+                        });
+                    } else {
+                        javaSrc.runUserActionTask(new ProblemFinderCompControl(file), true);
+                    }
                 } catch (IOException e){
                 }
             }
