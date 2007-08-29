@@ -61,7 +61,6 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
     private static final String NONE_ITEM = NbBundle.getMessage(PropertyEditorDefaultCommand.class, "LBL_SELECTCOMMAND_NONE"); // NOI18N
     private final List<String> tags = new ArrayList<String>();
     private final Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
-
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private TypeID parentTypeID;
@@ -138,6 +137,9 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
 
     @Override
     public Boolean canEditAsText() {
+        if (isCurrentValueAUserCodeType()) {
+            return super.canEditAsText();
+        }
         return null;
     }
 
@@ -164,14 +166,19 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
             if (NONE_ITEM.equals(text)) {
                 super.setValue(NULL_VALUE);
             } else {
-                DesignComponent itemCommandSource = getItemCommandEvenSource(text);
-                if (itemCommandSource == null) {
-                    DesignComponent command = values.get(text);
+                final DesignComponent[] itemCommandSource = new DesignComponent[1];
+                itemCommandSource[0] = getItemCommandEvenSource(text);
+                if (itemCommandSource[0] == null) {
+                    final DesignComponent command = values.get(text);
                     if (component != null && component.get() != null) {
-                        itemCommandSource = MidpDocumentSupport.attachCommandToItem(component.get(), command);
+                        component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
+                            public void run() {
+                                itemCommandSource[0] = MidpDocumentSupport.attachCommandToItem(component.get(), command);
+                            }
+                        });
                     }
                 }
-                super.setValue(PropertyValue.createComponentReference(itemCommandSource));
+                super.setValue(PropertyValue.createComponentReference(itemCommandSource[0]));
             }
         }
     }
@@ -255,7 +262,6 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         }
         return decodeValue[0];
     }
-
 
     private DesignComponent getItemCommandEvenSource(final String name) {
         final DesignComponent[] itemCommandEvenSource = new DesignComponent[1];
