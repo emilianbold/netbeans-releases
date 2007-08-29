@@ -2,5 +2,5 @@
     
     <target name="override-jad" if="override.jarurl.trigger">
         <property name="deployment.jarurl" value="${{dist.jar}}"/>
-        <nb-jad jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.dir}}/${{dist.jar}}" url="${{deployment.jarurl}}" sign="${{sign.enabled}}" keystore="${{sign.keystore}}" keystorepassword="${{sign.keystore.password}}" alias="${{sign.alias}}" aliaspassword="${{sign.alias.password}}" encoding="${{javac.encoding}}"/>
+        <nb-jad jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.dir}}/${{dist.jar}}" url="${{deployment.jarurl}}" sign="${{sign.enabled}}" keystore="${{sign.keystore}}" keystorepassword="${{sign.keystore.password}}" alias="${{sign.alias}}" aliaspassword="${{sign.alias.password}}" encoding="UTF-8"/>
     </target>
