@@ -482,6 +482,10 @@ public class Registry {
                         ERROR_MISSING_TARGET_COMPONENT_MSG_KEY,
                         uid, version ))) {
                     finishHandler.cancel();
+                } else {
+                    for (Product product: getProducts()) {
+                        product.setVisible(false);
+                    }
                 }
             }
         }

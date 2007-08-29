@@ -132,7 +132,11 @@ public abstract class NativeUtils {
             props.addJar(new LauncherResource(true, engine));
             props.setJvmArguments(new String[]{
                 "-Xmx256m",
-                "-Xms64m"});
+                "-Xms64m",
+                "-D" + Installer.LOCAL_DIRECTORY_PATH_PROPERTY + 
+                        "=" + new File(System.getProperty(
+                        Installer.LOCAL_DIRECTORY_PATH_PROPERTY)).
+                        getAbsolutePath()});
             props.setMainClass(Installer.class.getName());
             
             if (uninstall) {
