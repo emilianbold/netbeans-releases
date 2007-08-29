@@ -328,7 +328,7 @@ final class Renamer extends Plugin {
     }
   }
 
-  private void renameComponent(Component component,Named target) throws IOException{
+  private void renameComponent(Component component, Named target) throws IOException{
 //out();
 //out("RENAME: " + Util.getName(target));
 //out("    in: " + Util.getName(component));
@@ -355,7 +355,7 @@ final class Renamer extends Plugin {
     }
   }
 
-  private void renameCamponent(Component component,Named target) throws IOException{
+  private void renameCamponent(Component component, Named target) throws IOException{
     if (component instanceof OperationReference &&
       component instanceof ReferenceCollection &&
       target instanceof Operation)
@@ -379,7 +379,7 @@ final class Renamer extends Plugin {
     }
   }
 
-  private void renameCampanent(Component component,Named target) throws IOException{
+  private void renameCampanent(Component component, Named target) throws IOException{
     if (component instanceof Role &&
       target instanceof PortType)
     {
@@ -411,7 +411,7 @@ final class Renamer extends Plugin {
     }
   }
 
-  private void renameKomponent(Component component,Named target) throws IOException{
+  private void renameKomponent(Component component, Named target) throws IOException{
     if (component instanceof CorrelationSet) {
       rename((CorrelationSet) component, target);
     }
