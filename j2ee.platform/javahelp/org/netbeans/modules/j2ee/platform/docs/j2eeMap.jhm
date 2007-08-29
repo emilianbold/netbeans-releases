@@ -19,7 +19,8 @@
 <!-- Start of "Developing Web Services" help -->
 
         <!-- Start of "About" section -->
-	<mapID target="about_ws" url="webservice/about/about_ws.html" />
+	<mapID target="about_ws" url="webservice/about/about_ws.html" 
+        <mapID target="about_rest" url="webservice/about/about_rest.html" />
 	<mapID target="ws_process" url="webservice/about/ws_process.html" />
 	<mapID target="ws_quickref" url="webservice/about/ws_quickref.html" />
 	<!-- End of "About" section -->

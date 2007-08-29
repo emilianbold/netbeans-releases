@@ -158,6 +158,7 @@
         <tocitem text="Web Services"  expand="false">
             <tocitem text="About Web Services" >
                 <tocitem text="About Web Services" target="about_ws" />
+                <tocitem text="About RESTful Web Services" target="about_rest" />
                 <tocitem text="Working with Web Services" target="ws_process" />
                 <tocitem text="Web Service Tasks: Quick Reference" target="ws_quickref" />	
             </tocitem>
