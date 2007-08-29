@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -157,6 +159,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
      * @param source the obj that provides the environment
      * @return lookup provided by the obj or null if none has been found
      */
+    @SuppressWarnings("deprecation")
     private static Lookup findLookup (DataObject obj, DataObject source) {
         if (source == null) {
             return null;
@@ -198,6 +201,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
     /** Ugly hack to get to openide hidden functionality.
      */
     private static java.lang.reflect.Method method;
+    @SuppressWarnings("deprecation")
     private static Lookup createInfoLookup (XMLDataObject obj, XMLDataObject.Info info) {
         // well, it is a wormhole, but just for default compatibility
         synchronized (FileEntityResolver.class) {
@@ -231,6 +235,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
      *
      * @see EntityCatalog
      */
+    @SuppressWarnings("fallthrough")
     private static String convertPublicId (String publicID) {
         char[] arr = publicID.toCharArray ();
 
@@ -429,6 +434,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
             }
         }
         
+        @Override
         public InputSource resolveEntity(String publicId, String systemID) {
             InputSource ret = new InputSource(new java.io.StringReader("")); // NOI18N
             ret.setSystemId("StringReader");  //NOI18N
@@ -459,7 +465,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         /** converted ID we are associated with */
         private String id;
         /** for this data object we initialized this lookup */
-        private DataObject xml;
+        private Reference<DataObject> xml;
         
         /** last file folder we are listening on. Initialized lazily */
         private volatile FileObject folder;
@@ -470,14 +476,15 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         public Lkp (String id, DataObject xml) {
             super (new Lookup[0]);
             this.id = id;
-            this.xml = xml;
+            this.xml = new WeakReference<DataObject>(xml);
         }
      
         /** Check whether all necessary values are updated.
          */
+        @Override
         protected void beforeLookup (Template t) {
             if (ERR.isLoggable(Level.FINE)) {
-                ERR.fine("beforeLookup: " + t.getType() + " for " + xml); // NOI18N
+                ERR.fine("beforeLookup: " + t.getType() + " for " + getXml()); // NOI18N
             }
             
             if (folder == null && obj == null) {
@@ -488,37 +495,37 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
         /** Updates current state of the lookup.
          */
         private void update () {
-            if (ERR.isLoggable(Level.FINE)) ERR.fine("update: " + id + " for " + xml); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("update: " + id + " for " + getXml()); // NOI18N
             FileObject[] last = new FileObject[1];
             FileObject fo = findObject (id, last);
-            if (ERR.isLoggable(Level.FINE)) ERR.fine("fo: " + fo + " for " + xml); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("fo: " + fo + " for " + getXml()); // NOI18N
             DataObject o = null;
             
             if (fo != null) {
                 try {
                     o = DataObject.find (fo);
-                    if (ERR.isLoggable(Level.FINE)) ERR.fine("object found: " + o + " for " + xml); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("object found: " + o + " for " + getXml()); // NOI18N
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         
             if (o == obj) {
-                if (ERR.isLoggable(Level.FINE)) ERR.fine("same data object" + " for " + xml); // NOI18N
+                if (ERR.isLoggable(Level.FINE)) ERR.fine("same data object" + " for " + getXml()); // NOI18N
                 // the data object is still the same as used to be
                 // 
-                Lookup l = findLookup (xml, o);
+                Lookup l = findLookup (getXml(),o);
                 if (o != null && l != null) {
-                    if (ERR.isLoggable(Level.FINE)) ERR.fine("updating lookups" + " for " + xml); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("updating lookups" + " for " + getXml()); // NOI18N
                     // just update the lookups
                     setLookups (new Lookup[] { l });
-                    if (ERR.isLoggable(Level.FINE)) ERR.fine("updating lookups done" + " for " + xml); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("updating lookups done" + " for " + getXml()); // NOI18N
                     // and exit
                     return;
                 } 
             } else {
                 // data object changed
-                Lookup l = findLookup(xml, o);
+                Lookup l = findLookup(getXml(),o);
                 
                 if (o != null && l != null) {
                     if (ERR.isLoggable(Level.FINE)) ERR.fine("change the lookup"); // NOI18N
@@ -528,18 +535,18 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                     );
                     // update the lookups
                     setLookups (new Lookup[] { l });
-                    if (ERR.isLoggable(Level.FINE)) ERR.fine("change in lookup done" + " for " + xml); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("change in lookup done" + " for " + getXml()); // NOI18N
                     // and exit
                     obj = o;
-                    if (ERR.isLoggable(Level.FINE)) ERR.fine("data object updated to " + obj + " for " + xml); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("data object updated to " + obj + " for " + getXml()); // NOI18N
                     return;
                 } else {
                     obj = o;
-                    if (ERR.isLoggable(Level.FINE)) ERR.fine("data object updated to " + obj + " for " + xml); // NOI18N
+                    if (ERR.isLoggable(Level.FINE)) ERR.fine("data object updated to " + obj + " for " + getXml()); // NOI18N
                 }
             }
             
-            if (ERR.isLoggable(Level.FINE)) ERR.fine("delegating to nobody for " + obj + " for " + xml); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("delegating to nobody for " + obj + " for " + getXml()); // NOI18N
             // object is null => there are no lookups
             setLookups (new Lookup[0]);
             
@@ -612,6 +619,10 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
          * @param fe the event describing context where action has taken place
          */
         public void fileChanged(FileEvent fe) {
+        }
+
+        private DataObject getXml() {
+            return xml.get();
         }
         
     }

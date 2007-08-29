@@ -22,6 +22,8 @@ package org.netbeans.core.filesystems;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.jar.Attributes;
 import java.util.logging.Level;
@@ -31,6 +33,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.core.LoaderPoolNode;
 import org.netbeans.core.startup.ManifestSection;
 import org.openide.ErrorManager;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -149,6 +152,21 @@ implements LookupListener, ChangeListener {
         
         err.log("Object is here: " + now);
         assertEquals("Loader updated to lenka (mimetype: " + fo.getMIMEType() + ")", loader, now.getLoader());
+        
+        {
+            DataObject xml = DataObject.find(res).copy(now.getFolder());
+            
+            Reference<Object> ref = new WeakReference<Object>(xml);
+            xml = null;
+            assertGC("And the copied XML object can disapper", ref);
+            
+        }
+        
+        {
+            Reference<Object> ref = new WeakReference<Object>(now);
+            now = null;
+            assertGC("And the object can disapper", ref);
+        }
     }
 
     public void resultChanged(LookupEvent ev) {
