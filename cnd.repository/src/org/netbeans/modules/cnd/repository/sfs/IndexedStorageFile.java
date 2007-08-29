@@ -66,11 +66,11 @@ class IndexedStorageFile extends FileStorage {
         if (!recreate) {
             try {
                 loadIndex();
+                recalcUsedSize();
             } catch (IOException e) {
                 recreate = true;
             }
             
-            recalcUsedSize();
             indexFile.delete();
             
             if (usedSize == 0) {
