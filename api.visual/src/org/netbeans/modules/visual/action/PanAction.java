@@ -81,9 +81,11 @@ public final class PanAction extends WidgetAction.LockedAdapter {
             return false;
         newLocation = scene.convertSceneToView (widget.convertLocalToScene (newLocation));
         SwingUtilities.convertPointToScreen (newLocation, scene.getView ());
-        Point viewPosition = scrollPane.getViewport ().getViewPosition ();
-        viewPosition = new Point (viewPosition.x + lastLocation.x - newLocation.x, viewPosition.y + lastLocation.y - newLocation.y);
-        scrollPane.getViewport ().setViewPosition (viewPosition);
+        JComponent view = scene.getView ();
+        Rectangle rectangle = view.getVisibleRect ();
+        rectangle.x += lastLocation.x - newLocation.x;
+        rectangle.y += lastLocation.y - newLocation.y;
+        view.scrollRectToVisible (rectangle);
         lastLocation = newLocation;
         return true;
     }
