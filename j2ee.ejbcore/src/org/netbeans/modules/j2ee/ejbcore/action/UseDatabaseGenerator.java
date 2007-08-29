@@ -27,6 +27,7 @@ import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -188,6 +189,7 @@ public final class UseDatabaseGenerator {
                         Collections.singleton(Modifier.PRIVATE)
                         );
                 MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel);
+                methodTree = (MethodTree) GeneratorUtilities.get(workingCopy).importFQNs(methodTree);
                 ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
                 ClassTree modifiedClassTree = workingCopy.getTreeMaker().addClassMember(classTree, methodTree);
                 workingCopy.rewrite(classTree, modifiedClassTree);
