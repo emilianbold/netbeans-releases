@@ -38,6 +38,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.naming.NamingException;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -331,6 +332,7 @@ public class CallEjbGenerator {
                         '{' + MessageFormat.format(JNDI_LOOKUP_EJB3_JAVAEE5, new Object[] { name, homeFieldName }) + '}',
                         null
                         );
+                methodTree = (MethodTree) GeneratorUtilities.get(workingCopy).importFQNs(methodTree);
                 newClassTree = treeMaker.insertClassMember(newClassTree, 3, methodTree);
                 
                 workingCopy.rewrite(classTree, newClassTree);
