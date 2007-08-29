@@ -81,9 +81,8 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
     
     @Override
      public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
         ResourcePropertyEditor imagePropertyEditor = new ResourcePropertyEditor(ImageItemCD.PROP_IMAGE, getComponent());
-        List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>();
-        descriptors.addAll(super.getPropertyDescriptors());
         descriptors.add(new ScreenPropertyDescriptor(getComponent(), label, imagePropertyEditor));
         return descriptors;
     }

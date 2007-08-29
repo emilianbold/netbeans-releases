@@ -59,7 +59,7 @@ public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
         if (text != null) {
             this.textBox.setText(text);
         } else {
-            this.textBox.setText(NbBundle.getMessage(TextBoxDisplayPresenter.class, "DISP_empty_text")); // NOI18N
+            this.textBox.setText(NbBundle.getMessage(TextBoxDisplayPresenter.class, "DISP_text_is_empty")); // NOI18N
         }
     }
     

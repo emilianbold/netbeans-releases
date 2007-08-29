@@ -27,10 +27,15 @@ import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 import org.openide.util.Utilities;
-
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenFileObjectListener;
+import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -39,15 +44,14 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
-    
+
     private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midpnb/resources/broken-image.png"; // NOI18N
     private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
-    
     private JLabel imageLabel;
     private JLabel stringLabel;
     private ScreenFileObjectListener imageFileListener;
     private FileObject imageFileObject;
-    
+
     public AbstractInfoDisplayPresenter() {
         imageLabel = new JLabel();
         imageLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -55,7 +59,7 @@ public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
         stringLabel.setHorizontalAlignment(JLabel.CENTER);
         JPanel contentPanel = getPanel().getContentPanel();
         contentPanel.setLayout(new GridBagLayout());
-        
+
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.weightx = 1.0;
         constraints.weighty = 1.0;
@@ -65,48 +69,75 @@ public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
         constraints.gridy = GridBagConstraints.RELATIVE;
         constraints.anchor = GridBagConstraints.CENTER;
         contentPanel.add(imageLabel, constraints);
-        
+
         constraints.anchor = GridBagConstraints.NORTHWEST;
         contentPanel.add(stringLabel, constraints);
     }
-    
+
+    @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        DesignComponent imageComponent = getComponent().readProperty(AbstractInfoScreenCD.PROP_IMAGE).getComponent();
-        String path = null;
-        if (imageComponent != null)
-            path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
-        Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
-        imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
-        if (imageFileObject != null) {
-            imageFileObject.removeFileChangeListener(imageFileListener);
-            imageFileListener = new ScreenFileObjectListener(getRelatedComponent(), imageComponent, ImageCD.PROP_RESOURCE_PATH);
-            imageFileObject.addFileChangeListener(imageFileListener);
-        }
-        if (icon != null) {
-            imageLabel.setText(null);
-            imageLabel.setIcon(icon);
-        } else if (path != null) {
-            imageLabel.setText(path);
-            imageLabel.setIcon(ICON_BROKEN);
+
+        PropertyValue value = getComponent().readProperty(AbstractInfoScreenCD.PROP_IMAGE);
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            DesignComponent imageComponent = value.getComponent();
+            String path = null;
+            if (imageComponent != null) {
+                path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
+            }
+            Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
+            imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
+            if (imageFileObject != null) {
+                imageFileObject.removeFileChangeListener(imageFileListener);
+                imageFileListener = new ScreenFileObjectListener(getRelatedComponent(), imageComponent, ImageCD.PROP_RESOURCE_PATH);
+                imageFileObject.addFileChangeListener(imageFileListener);
+            }
+            if (icon != null) {
+                imageLabel.setText(null);
+                imageLabel.setIcon(icon);
+            } else if (path != null) {
+                imageLabel.setText(path);
+                imageLabel.setIcon(ICON_BROKEN);
+            } else {
+                imageLabel.setIcon(null);
+                imageLabel.setText(NbBundle.getMessage(AbstractInfoDisplayPresenter.class, "DISP_image_not_specified")); // NOI18N
+            }
         } else {
-            imageLabel.setIcon(null);
-            imageLabel.setText(NbBundle.getMessage(AbstractInfoDisplayPresenter.class, "DISP_image_not_specified"));
+            imageLabel.setText(NbBundle.getMessage(AbstractInfoDisplayPresenter.class, "DISP_image_is_usercode")); // NOI18N
         }
-        
-        String text = MidpTypes.getString(getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT));
-        stringLabel.setText(text);
-        
-        DesignComponent font = getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT_FONT).getComponent();
-        stringLabel.setFont(ScreenSupport.getFont(deviceInfo, font));
+
+        value = getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT);
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            String text = MidpTypes.getString(getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT));
+            if (text == null) {
+                stringLabel.setText(NbBundle.getMessage(AbstractInfoDisplayPresenter.class, "DISP_text_not_specified")); // NOI18N
+            } else if (text.length() == 0) {
+                stringLabel.setText(NbBundle.getMessage(AbstractInfoDisplayPresenter.class, "DISP_text_is_empty")); // NOI18N
+            } else {
+                stringLabel.setText(text);
+                DesignComponent font = getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT_FONT).getComponent();
+                stringLabel.setFont(ScreenSupport.getFont(deviceInfo, font));
+            }
+        } else {
+            stringLabel.setText(NbBundle.getMessage(AbstractInfoDisplayPresenter.class, "DISP_text_is_usercode")); // NOI18N
+        }
     }
-    
+
+    @Override
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        ArrayList<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
+        ResourcePropertyEditor imagePropertyEditor = new ResourcePropertyEditor(AbstractInfoScreenCD.PROP_IMAGE, getComponent());
+        descriptors.add(new ScreenPropertyDescriptor(getComponent(), imageLabel, imagePropertyEditor));
+        descriptors.add(new ScreenPropertyDescriptor(getComponent(), stringLabel, new ScreenStringPropertyEditor(AbstractInfoScreenCD.PROP_TEXT)));
+        return descriptors;
+    }
+
     @Override
     protected void notifyDetached(DesignComponent component) {
-        if (imageFileObject != null && imageFileListener != null)
+        if (imageFileObject != null && imageFileListener != null) {
             imageFileObject.removeFileChangeListener(imageFileListener);
+        }
         imageFileObject = null;
         imageFileListener = null;
     }
-    
 }

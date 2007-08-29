@@ -27,8 +27,15 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.openide.util.Utilities;
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.items.GaugeCD;
+import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
+import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -38,7 +45,6 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
 
     private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/screen/broken-image.png"; // NOI18N
     private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
-
     private JLabel imageLabel;
     private JLabel stringLabel;
     private ScreenFileObjectListener imageFileListener;
@@ -71,28 +77,46 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
 
-        String text = MidpTypes.getString(getComponent().readProperty(AlertCD.PROP_STRING));
-        stringLabel.setText(text);
-
-        DesignComponent imageComponent = getComponent().readProperty(AlertCD.PROP_IMAGE).getComponent();
-        String path = null;
-        if (imageComponent != null) {
-            path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
-        }
-        Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
-        imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
-        if (imageFileObject != null) {
-            imageFileObject.removeFileChangeListener(imageFileListener);
-            imageFileListener = new ScreenFileObjectListener(getRelatedComponent(), imageComponent, ImageCD.PROP_RESOURCE_PATH);
-            imageFileObject.addFileChangeListener(imageFileListener);
-        }
-        if (icon != null) {
-            imageLabel.setIcon(icon);
-        } else if (path != null) {
-            imageLabel.setIcon(ICON_BROKEN);
+        PropertyValue value = getComponent().readProperty(AlertCD.PROP_STRING);
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            String text = MidpTypes.getString(value);
+            if (text == null) {
+                stringLabel.setText(NbBundle.getMessage(AlertDisplayPresenter.class, "DISP_text_not_specified")); // NOI18N
+            } else if (text.length() == 0) {
+                stringLabel.setText(NbBundle.getMessage(AlertDisplayPresenter.class, "DISP_text_is_empty")); // NOI18N
+            } else {
+                stringLabel.setText(text);
+            }
         } else {
-            imageLabel.setIcon(null);
+            stringLabel.setText(NbBundle.getMessage(AlertDisplayPresenter.class, "DISP_text_is_usercode")); // NOI18N
         }
+
+        value = getComponent().readProperty(AlertCD.PROP_IMAGE);
+        if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            DesignComponent imageComponent = value.getComponent();
+            String path = null;
+            if (imageComponent != null) {
+                path = (String) imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH).getPrimitiveValue();
+            }
+            Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
+            imageFileObject = ScreenSupport.getFileObjectFromImageComponent(imageComponent);
+            if (imageFileObject != null) {
+                imageFileObject.removeFileChangeListener(imageFileListener);
+                imageFileListener = new ScreenFileObjectListener(getRelatedComponent(), imageComponent, ImageCD.PROP_RESOURCE_PATH);
+                imageFileObject.addFileChangeListener(imageFileListener);
+            }
+            if (icon != null) {
+                imageLabel.setIcon(icon);
+            } else if (path != null) {
+                imageLabel.setIcon(ICON_BROKEN);
+            } else {
+                imageLabel.setIcon(null);
+                imageLabel.setText(NbBundle.getMessage(AlertDisplayPresenter.class, "DISP_image_not_specified")); // NOI18N
+            }
+        } else {
+            imageLabel.setText(NbBundle.getMessage(AlertDisplayPresenter.class, "DISP_image_is_usercode")); // NOI18N
+        }
+
         DesignComponent indicator = getComponent().readProperty(AlertCD.PROP_INDICATOR).getComponent();
         if (indicator != null) {
             gauge = new GaugeDisplayPresenterElement();
@@ -121,19 +145,28 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
                 maxValue = 1;
             }
             gauge.setMaxValue(maxValue);
-            int value = MidpTypes.getInteger(indicator.readProperty(GaugeCD.PROP_VALUE));
-            if (value < 0) {
-                value = 0;
-            } else if (value > maxValue) {
-                value = maxValue;
+            int intValue = MidpTypes.getInteger(indicator.readProperty(GaugeCD.PROP_VALUE));
+            if (intValue < 0) {
+                intValue = 0;
+            } else if (intValue > maxValue) {
+                intValue = maxValue;
             }
-            gauge.setValue(value);
+            gauge.setValue(intValue);
             panel.repaint();
         } else if (panel != null) {
             getPanel().getContentPanel().remove(panel);
             panel = null;
             gauge = null;
         }
+    }
+
+    @Override
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        ArrayList<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
+        ResourcePropertyEditor imagePropertyEditor = new ResourcePropertyEditor(AlertCD.PROP_IMAGE, getComponent());
+        descriptors.add(new ScreenPropertyDescriptor(getComponent(), imageLabel, imagePropertyEditor));
+        descriptors.add(new ScreenPropertyDescriptor(getComponent(), stringLabel, new ScreenStringPropertyEditor(AlertCD.PROP_STRING)));
+        return descriptors;
     }
 
     @Override
