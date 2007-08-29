@@ -13,36 +13,42 @@
         <h2>Web Service Attributes Editor: Security</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
         <p>In the Quality of Service tab's Security section, on the 
-        client side, you may configure a user name and password for some of the
-        security mechanisms. For this purpose, you can use the default Username and
-        Password Callback Handlers (when deploying to the Application Server), specify
-        the default SAML Callback Handler, specify a default user name and password
-        for development purposes, or create and specify your own Callback
+            client side, you may configure a user name and password for some of the
+            security mechanisms. For this purpose, you can use the default Username and
+            Password Callback Handlers (when deploying to the Application Server), specify
+            the default SAML Callback Handler, specify a default user name and password
+            for development purposes, or create and specify your own Callback
         Handlers if the container you are using does not provide defaults.</p>
         <p>You can set the following options:</p>
+        
         <ul>
-            <li><b>Default Username.<br>Default Password.</b> Enter the name of an authorized
-            user and the password for this user. This option is best used only in the
-            development environment. When the Default Username and Default Password
-            are specified, the username and password are stored in the <tt>wsit-client.xml</tt> 
-            file in clear text, which presents a security risk. Do not use this
-            option for production.
-            <li><b>Username Callback Handler.<br>Password Callback Handler.</b> If you create
-            JSR-109-compliant web services and web service clients that run under an
-            Application Server container (JSR-109 deployment), the container handles
-            the callbacks and you do not need to configure Callback Handlers of your
-            own. If you are using another container, select the Browse button to select
-            the class implementing the <tt>javax.security.auth.callback.CallbackHandler</tt> interface.
+            <li><b>Use development defaults.</b>   
+            <li><b>Authentication Credentials.</b>    
+            <ul>
+                <li>Static.</li>
+                <ul><li><b>Default Username.<br>Default Password.</b> Enter the name of an authorized
+                user and the password for this user. This option is best used only in the
+                development environment. When the Default Username and Default Password
+                are specified, the username and password are stored in the <tt>wsit-client.xml</tt> 
+                file in clear text, which presents a security risk. Do not use this
+                option for production.</ul>
+                <li>Dynamic.</li>
+                <ul><li><b>Username Callback Handler.<br>Password Callback Handler.</b> If you create
+                JSR-109-compliant web services and web service clients that run under an
+                Application Server container (JSR-109 deployment), the container handles
+                the callbacks and you do not need to configure Callback Handlers of your
+                own. If you are using another container, select the Browse button to select
+                the class implementing the <tt>javax.security.auth.callback.CallbackHandler</tt> interface.</ul>
+            </ul>
             <li><b>SAML Callback Hander.</b> To use a SAML Callback Handler, you need to
-            create one, as there is no default.
+                create one, as there is no default.
         </ul>
-       
-         <dl>
+        <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../nodes/wsitconf-about.html">About Quality of Service</a></dd>
         </dl>
-
-
+        
+        
         <hr>
         <small><a href="../../credits.html">Legal Notices</a></small>
     </body>
