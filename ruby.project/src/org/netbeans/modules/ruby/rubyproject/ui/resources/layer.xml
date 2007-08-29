@@ -126,7 +126,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateNamePrefix" stringvalue=""/>
             </file>
             <file name="rspec.rb" url="rspec.rb">
-                <attr name="position" intvalue="800"/>
+                <attr name="position" intvalue="801"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
