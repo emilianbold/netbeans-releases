@@ -20,6 +20,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -28,7 +30,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
@@ -47,39 +48,36 @@ public class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementation {
     }
     
     public synchronized Charset getEncoding(FileObject file) {
-        assert file != null;        
+        assert file != null;
+        InputStream in = null;
+        String encoding = null;
         try {
-            InputStream in = null;
-            String encoding = null;
-            try {
-                in = new BufferedInputStream(file.getInputStream(),
-                        EncodingHelper.EXPECTED_PROLOG_LENGTH);
-                encoding = EncodingHelper.detectEncoding(in);
-                if(encoding == null) {
-                    encoding = getProjectEncoding(file);
-                }
-                if (encoding == null) {
-                    encoding = "UTF8"; //NOI18N
-                }
-            } finally {
-                try {
-                    in.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }            
-            return Charset.forName(encoding);
+            in = new BufferedInputStream(file.getInputStream(),
+                    EncodingHelper.EXPECTED_PROLOG_LENGTH);
+            encoding = EncodingHelper.detectEncoding(in);
+            if(encoding == null) {
+                encoding = getProjectEncoding(file);
+            }
         } catch (Exception ex) {
-            // There isn't specific error processing for a while
-            // Uncomment if necessary.
-//        } catch (FileNotFoundException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (IllegalCharsetNameException ichse) {
-//        } catch (UnsupportedCharsetException uchse) {
+            Logger.getLogger("global").log(Level.INFO, null, ex);
+        } finally {
+            try {
+                in.close();
+            } catch (IOException ex) {
+                //this is silly, java shouldn't do this.
+            }
         }
-        return null;
+
+        if(encoding != null) {
+            try {
+                return Charset.forName(encoding);
+            } catch (Exception ex) {
+                Logger.getLogger("global").log(Level.INFO, null, ex);
+            }
+        }
+        
+        //if nothing works, UTF8 will be the default encoding
+        return Charset.forName("UTF8"); //NOI18N
     }
     
     
