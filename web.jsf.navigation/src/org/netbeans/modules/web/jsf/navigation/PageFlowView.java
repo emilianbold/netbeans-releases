@@ -344,7 +344,11 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
         final VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
         //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
         widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
-        widget.setPreferredLocation(sceneData.getPageLocation(pageName));
+        PageFlowSceneData.PageData data = sceneData.getPageData(pageName);
+        if (data != null ){
+            widget.setPreferredLocation(data.getPoint());
+            widget.setMinimized(data.isMinimized());
+        }
 
 //        widget.getAccessibleContext().setAccessibleDescription(ACDS_PAGE);
 //        widget.getAccessibleContext().setAccessibleDescription(ACN_PAGE);

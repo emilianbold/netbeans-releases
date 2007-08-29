@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities;
 import org.openide.filesystems.FileObject;
+import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneData.PageData;
 
 /**
  * @author David Kaspar
@@ -36,7 +37,8 @@ public class SceneSerializer {
     private static final String NODE_ELEMENT = "Node"; // NOI18N
     private static final String NODE_ID_ATTR = "id"; // NOI18N
     private static final String NODE_X_ATTR = "x"; // NOI18N
-    private static final String NODE_Y_ATTR = "y"; // NOI18N
+    private static final String NODE_Y_ATTR = "y"; // NOI18N    
+    private static final String NODE_ZOOM_ATTR = "zoom"; // NOI18N
     
     private static final String EDGE_ELEMENT = "Edge"; // NOI18N
     private static final String EDGE_ID_ATTR = "id"; // NOI18N
@@ -134,18 +136,19 @@ public class SceneSerializer {
      **/
     private final static Node createScopeElement( Document document, PageFlowSceneData sceneData, String scopeType ){
         Node sceneScopeElement =  null;
-        Map<String,Point> facesConfigScopeMap = sceneData.getScopeData(scopeType);
+        Map<String,PageFlowSceneData.PageData> facesConfigScopeMap = sceneData.getScopeData(scopeType);
         if( facesConfigScopeMap != null ){
             sceneScopeElement = document.createElement(SCENE_SCOPE_ELEMENT);
             setAttribute(document, sceneScopeElement, SCENE_SCOPE_ATTR, scopeType);
             
             for( String key : facesConfigScopeMap.keySet()){
-                Point location = facesConfigScopeMap.get(key);
-                if ( location != null ) {
+                PageFlowSceneData.PageData data = facesConfigScopeMap.get(key);
+                if ( data != null ) {
                     Element nodeElement = document.createElement(NODE_ELEMENT);
                     setAttribute(document, nodeElement, NODE_ID_ATTR, key);
-                    setAttribute(document, nodeElement, NODE_X_ATTR, Integer.toString(location.x));
-                    setAttribute(document, nodeElement, NODE_Y_ATTR, Integer.toString(location.y));
+                    setAttribute(document, nodeElement, NODE_X_ATTR, Integer.toString(data.getPoint().x));
+                    setAttribute(document, nodeElement, NODE_Y_ATTR, Integer.toString(data.getPoint().y));
+                    setAttribute(document, nodeElement, NODE_ZOOM_ATTR, Boolean.toString(data.isMinimized()));
                     sceneScopeElement.appendChild(nodeElement);
                 }
             }
@@ -183,7 +186,7 @@ public class SceneSerializer {
         //        scene.nodeIDcounter = Long.parseLong (getAttributeValue (sceneElement, SCENE_NODE_COUNTER_ATTR));
         //        scene.edgeIDcounter = Long.parseLong (getAttributeValue (sceneElement, SCENE_EDGE_COUNTER_ATTR));
         
-        Map<String,Point> sceneInfo = new HashMap<String,Point>();
+        Map<String,PageData> sceneInfo = new HashMap<String,PageData>();
         for (Node element : getChildNode(sceneElement)) {
             if (NODE_ELEMENT.equals(element.getNodeName())) {
                 String pageId = getAttributeValue(element, NODE_ID_ATTR);
@@ -218,14 +221,20 @@ public class SceneSerializer {
                 if( scopeElement.getNodeName().equals(SCENE_SCOPE_ELEMENT) ){
                     String scope = getAttributeValue(scopeElement, SCENE_SCOPE_ATTR);
                     NodeList pageNodes = scopeElement.getChildNodes();
-                    Map<String,Point> sceneInfo = new HashMap<String,Point>();
+                    Map<String,PageData> sceneInfo = new HashMap<String,PageData>();
                     for( int j = 0; j < pageNodes.getLength(); j++ ){
                         Node pageNode = pageNodes.item(j);
                         if( pageNode.getNodeName().equals(NODE_ELEMENT)){
                             String pageDisplayName = getAttributeValue(pageNode, NODE_ID_ATTR);
                             int x = Integer.parseInt(getAttributeValue(pageNode, NODE_X_ATTR));
                             int y = Integer.parseInt(getAttributeValue(pageNode, NODE_Y_ATTR));
-                            sceneInfo.put(pageDisplayName, new Point(x, y));
+                            boolean isMinimized = false;
+                            String zoom = getAttributeValue(pageNode, NODE_ZOOM_ATTR);
+                            if(zoom != null ) {
+                                isMinimized = Boolean.parseBoolean(zoom);
+                            }
+                            PageData data = PageFlowSceneData.createPageData(new Point(x,y), isMinimized);
+                            sceneInfo.put(pageDisplayName, data);                                    
                         }
                     }
                     sceneData.setScopeData(scope, sceneInfo);
@@ -235,6 +244,8 @@ public class SceneSerializer {
         
         LOG.exiting("SceneSerializer", "deserialize(PageFlowSceneData sceneData, File file)");
     }
+    
+    
     
     private static void setAttribute(Document xml, Node node, String name, String value) {
         NamedNodeMap map = node.getAttributes();
