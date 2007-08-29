@@ -28,60 +28,93 @@ import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorMetaData;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
 
 import com.sun.rave.designtime.DesignBean;
+import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.impl.BasicCustomizer2;
 
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.visualweb.insync.live.LiveUnit;
+import org.netbeans.modules.visualweb.insync.models.FacesModel;
+import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
-
 /**
- *  steps:  this customizer is instatiated with the name of the class
- *    it'll handle:  JdbcRowsetX or cacheRowSetX
- *    the instance is then registered with insync
+ * This customizer is instantiated once with the name of each class that it will customize
+ * (currently only CachedRowSetX); the instance is then registered with insync
  *  When a customizer is needed, getCustomizerPanel() is called.
- *  Which calls
  */
 public class SqlCommandCustomizer extends BasicCustomizer2 {
     
     public String customerizerClassName = "" ; // NOI18N
     
-//    private static boolean useViewData = false ;
+    private OpenProjectsListener openProjectsListener = new OpenProjectsListener();
     
-    private DesignBean 				bean;
-    private VisualSQLEditor			vse;
+    // Maps for tracking open Query Editors
+
+    private static HashMap<DesignBean, QBPair> queryEditors =
+            new HashMap<DesignBean, QBPair>();
+
+    private static HashMap<Project, ArrayList<DesignBean>> projectBeans = 
+            new HashMap<Project, ArrayList<DesignBean>>();
     
-    private static HashMap<DesignBean, TopComponent> queryEditors =
-            new HashMap<DesignBean, TopComponent>();
-    
+
     // Constructor
     
     public SqlCommandCustomizer(String customerizerClassName )  {
         super(null, NbBundle.getMessage(SqlCommandCustomizer.class, "EDIT_QUERY"));        // NOI18N
         this.customerizerClassName = customerizerClassName ; 
+        OpenProjects.getDefault().addPropertyChangeListener(openProjectsListener);
         Log.err.log("Customizer for "+customerizerClassName) ;
     }
+    
+
+    // Factory method.  Returns QueryBuilder, which is a TopComponent
     
     public Component getCustomizerPanel(DesignBean srcBean ) {
         
         Log.err.log("Customizer panel requested for " + srcBean.getInstanceName() ) ;
         
-        bean = srcBean;
-        
-        TopComponent qe = null;
-        
-        if ((qe = queryEditors.get(srcBean)) != null) {
-            if (!qe.isOpened())
-                qe.open();
-            qe.requestActive();
-            return qe;
+	// Check the map for an existing query editor for this bean, and reuse it if so
+        QBPair qbp = queryEditors.get(srcBean);
+        if (qbp != null) {
+            TopComponent qb = qbp.qb;
+            if (!qb.isOpened()) {
+                qb.open();
+	    }
+            qb.requestActive();
+            return qb;
         }
-
+        
+        Project project = null;
+        DesignContext dc = srcBean.getDesignContext();
+        if (dc instanceof LiveUnit) {
+            FacesModel fm = ((LiveUnit)dc).getModel();
+            FacesModelSet fms = fm.getFacesModelSet();
+            project = fms.getProject();
+        }
+        if (project != null) {
+            
+            ArrayList<DesignBean> beans = projectBeans.get(project);
+            if (beans == null) {
+                beans=new ArrayList<DesignBean>();
+                projectBeans.put(project, beans);
+            }
+            beans.add(srcBean);
+        }
+        
         /****
          * get the dataSourceName
          */
@@ -92,18 +125,8 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
         try {
             metadata = VisualSQLEditorMetaDataImpl.getDataSourceCache(dsName);
         } catch (java.sql.SQLException e) {
-            
             // JDTODO
         }
-        
-//        SqlStatement sqlStatement = null ;
-//        try {
-//            sqlStatement = new SqlStatementImpl( dsName, srcBean ) ;
-//        } catch (javax.naming.NamingException ne) {
-//            org.openide.ErrorManager.getDefault().notify(ne);
-//            sqlStatement = null ;
-//        }
-//        if ( sqlStatement == null ) return null ;
         
         // Get the DatabaseConnection, to be passed to the Visual SQL Editor
         DatabaseConnection dbconn = null;
@@ -123,15 +146,13 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
         } catch (NamingException ex) {
         }
         
-//        if ( ! useViewData) {
-        
         String command = (String)srcBean.getProperty("command").getValue();
-        vse = VisualSQLEditorFactory.createVisualSQLEditor(dbconn, command, metadata);
+        VisualSQLEditor vse = VisualSQLEditorFactory.createVisualSQLEditor(dbconn, command, metadata);
         
         vse.addPropertyChangeListener(vseListener);
         Component retComp = vse.open();
         if (retComp instanceof TopComponent) {
-            queryEditors.put(srcBean, (TopComponent)retComp);
+            queryEditors.put(srcBean, new QBPair((TopComponent)retComp, vse));
         }
         
         return retComp ;
@@ -140,81 +161,8 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
     public HelpCtx getHelpCtx() {
         return new HelpCtx( "projrave_ui_elements_editors_about_query_editor" );        // NOI18N
     }
-//     public static void setUseViewData(boolean use) {
-//         useViewData = use ;
-//     }
-//     public static boolean getUseViewData() {
-//         return useViewData ;
-//     }
-    
-//     static {
-//         if ( System.getProperty("useViewData")!=null ) {
-//             useViewData = true ;
-//         } else {
-//             useViewData = false ;
-//         }
-//     }
       
-    /**
-     * Attempt to locate an existing QB for the given designBean.
-     */
-//     public static QueryBuilder findCurrent(DesignBean dBean ) {
         
-//         QueryBuilder qbForm = null;
-        
-//         // Search through workspaces, then modes, then topcomponents
-//         Set modes = WindowManager.getDefault().getModes();
-//         Iterator it2 = modes.iterator();
-        
-//         // JDTODO - figure out a way of doing this in the new version
-//         // The Customizer will have to retain the mapping, since the QueryEditor no longer
-//         // knows about the designbean
-//        while (it2.hasNext()) {
-//            Mode m = (Mode)it2.next();
-//            TopComponent[] tcs = m.getTopComponents();
-//
-//            if (tcs != null) {
-//                for (int j = 0; j < tcs.length; j++) { // for each topcomponents
-//                    TopComponent tc = (TopComponent)tcs[j] ;
-//
-//                    if ( tcs[j] instanceof QueryBuilder) {
-//                        SqlStatement sss = ((QueryBuilder)tcs[j]).getSqlStatement() ;
-//                        if ( sss instanceof SqlStatementImpl) {
-//                            if ( dBean == ((SqlStatementImpl)sss).designBean ) {
-//                                qbForm = (QueryBuilder)tcs[j] ;
-//                                break ;
-//                            }
-//                        }
-//                    }
-//                } // for each topcomponents
-//            }
-//
-//            if (qbForm != null ) {
-//                break ;
-//            }
-//        }
-//
-//        return qbForm;
-//         return null;
-//     }    
-    
-    // Listen for changes to statement property, and notify the bean
-    
-    private PropertyChangeListener vseListener =
-            
-            new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-            // what property?
-            String propName = evt.getPropertyName() ;
-            Log.log("VSE property change: " + propName ) ;
-            if ( propName.equals(VisualSQLEditor.PROP_STATEMENT)) {
-                Log.err.log(" newValue=" + vse.getStatement()) ;
-                bean.getProperty("command").setValue(vse.getStatement()) ;
-            }
-        }
-    } ;
-
-    
     /****
      * convenience method for looking up the datasource in the current
      * context.  Copied from SqlStatementImpl
@@ -240,6 +188,75 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
         return ds ;
     }
     
+
+    // Listen for changes to statement property; update design bean
     
+    private PropertyChangeListener vseListener =
+            
+        new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                // what property?
+                String propName = evt.getPropertyName() ;
+                Log.log("VSE property change: " + propName ) ;
+                if ( propName.equals(VisualSQLEditor.PROP_STATEMENT)) {
+                    
+		    // Get the VSE that raised the event
+                    VisualSQLEditor vse = (VisualSQLEditor)evt.getSource();
+
+                    // Find the bean that is associated with this VSE in the map
+                    for (DesignBean bean : queryEditors.keySet()) {
+                        QBPair qbp = queryEditors.get(bean);
+                        if ((qbp != null) && (qbp.vse == vse)) { 
+                            Log.err.log(" newValue=" + vse.getStatement()) ;
+			    // Found it.  Update the bean property.
+                            bean.getProperty("command").setValue(vse.getStatement()) ;
+			    break;
+                        }
+                    }    
+                }
+            }
+        } ;
+
     
+    // Listen for project close events; update Maps
+    
+    private class OpenProjectsListener implements PropertyChangeListener {
+        
+        public void propertyChange(PropertyChangeEvent event) {
+            
+            // The list of open projects has changed; clean up any old projects we may be holding on to.
+            if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(event.getPropertyName())) {
+
+                List<Project> oldOpenProjectsList = Arrays.asList((Project[]) event.getOldValue());
+                List<Project> newOpenProjectsList = Arrays.asList((Project[]) event.getNewValue());
+                Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
+                closedProjectsSet.removeAll(newOpenProjectsList);
+                for (Project project : closedProjectsSet) {
+
+                    // Project has been closed; close any open QueryEditors, then remove it from map
+                    ArrayList<DesignBean> beans = projectBeans.get(project);
+		    if (beans!=null) {
+			for (DesignBean bean : beans ) {
+			    QBPair qbp = queryEditors.get(bean);
+			    if (qbp != null) { 
+				qbp.qb.close();
+			    }
+			    queryEditors.remove(bean);
+			}
+		    }
+                    projectBeans.remove(project);
+                }
+            }
+        }
+    }
+    
+    // Data class representing a <QueryBuilder, VisualSQLEditor> pair.  Used as the value in the HashMap
+    private class QBPair {
+        TopComponent qb;
+        VisualSQLEditor vse;
+        QBPair(TopComponent qb, VisualSQLEditor vse) {
+            this.qb=qb;
+            this.vse=vse;
+        }
+    }
 }
