@@ -76,7 +76,7 @@ public class RestServiceNode extends AbstractNode{
     }
     
     private static final java.awt.Image SERVICE_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/RestService.png" ); //NOI18N
+            org.openide.util.Utilities.loadImage( "/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png" ); //NOI18N
     
     public java.awt.Image getIcon(int type) {
         return SERVICE_BADGE;

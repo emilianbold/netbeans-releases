@@ -77,7 +77,7 @@ public class HttpMethodNode extends AbstractNode{
     }
     
     private static final java.awt.Image METHOD_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/Method.png" ); //NOI18N
+            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/method.png" ); //NOI18N
     
     public java.awt.Image getIcon(int type) {
         return METHOD_BADGE;

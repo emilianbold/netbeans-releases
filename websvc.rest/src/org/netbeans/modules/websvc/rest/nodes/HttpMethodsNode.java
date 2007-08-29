@@ -36,7 +36,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class HttpMethodsNode extends AbstractNode { //implements PropertyChangeListener{
-    private static final Image HTTP_METHODS_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/HttpMethods.png", true ); // NOI18N
+    private static final Image HTTP_METHODS_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/httpmethods.png", true ); // NOI18N
     static Icon folderIconCache;
     static Icon openedFolderIconCache;
     
