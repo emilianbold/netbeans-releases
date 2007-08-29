@@ -26,6 +26,11 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCompletionProvider.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
+                    <!--
+                    <file name="org-netbeans-modules-cnd-completion-includes-CsmIncludeCompletionProvider.instance">
+                        <attr name="position" intvalue="150"/>
+                    </file>                    
+                    -->
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
@@ -55,6 +60,11 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCompletionProvider.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
+                    <!--
+                    <file name="org-netbeans-modules-cnd-completion-includes-CsmIncludeCompletionProvider.instance">
+                        <attr name="position" intvalue="150"/>
+                    </file>                    
+                    -->
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">
                         <attr name="position" intvalue="200"/>
                     </file>

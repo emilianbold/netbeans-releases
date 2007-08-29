@@ -82,15 +82,26 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                 CCTokenContext.LINE_COMMENT,
                 CCTokenContext.BLOCK_COMMENT,
                 CCTokenContext.CHAR_LITERAL,
-                CCTokenContext.STRING_LITERAL,
+                CCTokenContext.STRING_LITERAL
+            };
+
+    // tokens valid for include-completion provider
+    private static final TokenID[] INCLUDE_COMPLETION_TOKENS = new TokenID[] {
                 CCTokenContext.USR_INCLUDE,
                 CCTokenContext.SYS_INCLUDE,
                 CCTokenContext.INCOMPLETE_SYS_INCLUDE,
                 CCTokenContext.INCOMPLETE_USR_INCLUDE
             };
-
-    private static final TokenID[] COMPLETION_SKIP_TOKENS = BRACKET_SKIP_TOKENS;
-
+    // tokens invalid for general completion provider: skip tokens + include tokens
+    private static final TokenID[] COMPLETION_SKIP_TOKENS;
+    static {
+        int brLen = BRACKET_SKIP_TOKENS.length;
+        int incLen = INCLUDE_COMPLETION_TOKENS.length;
+        COMPLETION_SKIP_TOKENS = new TokenID[brLen + incLen];
+        System.arraycopy(BRACKET_SKIP_TOKENS, 0, COMPLETION_SKIP_TOKENS, 0, brLen);
+        System.arraycopy(INCLUDE_COMPLETION_TOKENS, 0, COMPLETION_SKIP_TOKENS, brLen, incLen);
+    }
+    
     private static final char[] COMMAND_SEPARATOR_CHARS = new char[] {
                 ';', '{', '}', '#'
             };
@@ -105,6 +116,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
         tokenNumericIDsValid = true;
     }
+
 
     abstract protected CsmFinder getFinder();
     
@@ -1134,6 +1146,48 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             }
         }
         return abbrevDisabled;
+    }
+    
+
+    public boolean isIncludeCompletionDisabled(int offset) {
+        TokenItem token;
+        boolean completionDisabled = true;
+        try {
+            token = getTokenChain(offset, offset + 1);
+        } catch (BadLocationException e) {
+            token = null;
+        }
+        if (token != null) {
+            if (offset > token.getOffset()) { // not right at token's begining
+                TokenID[] enabledTokenIds = INCLUDE_COMPLETION_TOKENS;
+                for (int i = enabledTokenIds.length - 1; i >= 0; i--) {
+                    if (token.getTokenID() == enabledTokenIds[i]) {
+                        completionDisabled = false;
+                        break;
+                    }
+                }
+            }
+            if (completionDisabled) {
+                // check whether right after #include or #include_next directive
+                if (token.getOffset() == offset) {
+                    TokenItem prevToken = token.getPrevious();
+                    while (prevToken != null && 
+                            ((prevToken.getTokenID() == CCTokenContext.WHITESPACE) || 
+                            (prevToken.getTokenID() == CCTokenContext.BLOCK_COMMENT))) {
+                        if (prevToken.getImage().contains("\n")) {
+                            return true;
+                        }
+                        prevToken = prevToken.getPrevious();
+                    }
+                    if (prevToken != null && 
+                            ((prevToken.getTokenID() == CCTokenContext.CPPINCLUDE) ||
+                            (prevToken.getTokenID() == CCTokenContext.CPPINCLUDE_NEXT))) {
+                        completionDisabled = false;
+                    }
+                }
+            }
+        }        
+        return completionDisabled;
     }
     
     public boolean isCompletionDisabled(int offset) {
