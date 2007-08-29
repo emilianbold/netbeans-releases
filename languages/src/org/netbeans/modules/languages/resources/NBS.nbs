@@ -67,6 +67,7 @@ TOKEN:string:(
     "\'"
 )
 TOKEN:comment: ( "#" [^"\n" "\r"]* ["\n" "\r"]+ )
+TOKEN:comment: ( "/#" - "#/")
 TOKEN:whitespace:( ["\n" "\r" " " "\t"]+ )
 
 SKIP:comment

@@ -22,15 +22,12 @@ package org.netbeans.modules.languages;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTToken;
 import java.util.Arrays;
-import org.netbeans.modules.languages.Feature;
-import org.netbeans.modules.languages.Selector;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.api.languages.ASTToken;
 
-    
     
 /**
  *
@@ -159,6 +156,13 @@ public class NBSLanguage {
             Parser.DEFAULT_STATE, 
             "comment",
             Pattern.create ("'#' [^'\\n' '\\r']* ['\\n' '\\r']+"),
+            Parser.DEFAULT_STATE,
+            null
+        );
+        l.addToken (
+            Parser.DEFAULT_STATE, 
+            "comment",
+            Pattern.create ("'/#' - '#/'"),
             Parser.DEFAULT_STATE,
             null
         );
