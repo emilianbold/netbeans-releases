@@ -16,13 +16,13 @@
  */
 package org.netbeans.modules.db.explorer.dlg;
 
-import org.netbeans.modules.db.util.DDLTestBase;
+import org.netbeans.modules.db.util.DBTestBase;
 
 /**
  *
  * @author David
  */
-public class AddTableColumnDDLTest extends DDLTestBase {
+public class AddTableColumnDDLTest extends DBTestBase {
 
     public AddTableColumnDDLTest(String name) {
         super(name);

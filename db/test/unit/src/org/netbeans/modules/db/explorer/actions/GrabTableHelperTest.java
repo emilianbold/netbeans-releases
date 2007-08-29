@@ -19,22 +19,19 @@ package org.netbeans.modules.db.explorer.actions;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
-import java.sql.ResultSet;
 import java.sql.Types;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.TableColumn;
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
-import org.netbeans.modules.db.util.DDLTestBase;
+import org.netbeans.modules.db.util.DBTestBase;
+import org.netbeans.modules.db.util.InfoHelper;
 
 /**
  * @author David Van Couvering
  */
-public class GrabTableHelperTest extends DDLTestBase {
+public class GrabTableHelperTest extends DBTestBase {
 
     public GrabTableHelperTest(String name) {
         super(name);
@@ -42,6 +39,7 @@ public class GrabTableHelperTest extends DDLTestBase {
     
     public void testGrabTable() throws Exception {
         File file = null;
+        InfoHelper infoHelper = new InfoHelper(spec, drvSpec, conn);
         
         try {
             String tablename = "grabtable";
@@ -66,7 +64,7 @@ public class GrabTableHelperTest extends DDLTestBase {
             // Initialize the table information in the format required
             // by the helper.  This is done by creating a DatabaseNodeInfo
             // for the table
-            DatabaseNodeInfo tableInfo = getTableInfo(tablename);
+            DatabaseNodeInfo tableInfo = infoHelper.getTableInfo(tablename);
 
             new GrabTableHelper().execute(spec, tablename, 
                     tableInfo.getChildren().elements(), file);
@@ -117,32 +115,4 @@ public class GrabTableHelperTest extends DDLTestBase {
             }
         }
     }
-    
-    private DatabaseNodeInfo getTableInfo(String tablename) throws Exception {
-        drvSpec.getTables(tablename, null);
-        ResultSet rs = drvSpec.getResultSet();
-        assertTrue(rs != null);
-        HashMap rset = new HashMap();
-        rs.next();
-        rset = drvSpec.getRow();
-        assertTrue(rset != null);
-
-
-        ConnectionNodeInfo connNodeInfo = (ConnectionNodeInfo)
-                DatabaseNodeInfo.createNodeInfo(
-                        null, DatabaseNodeInfo.CONNECTION);
-        connNodeInfo.setDriverSpecification(drvSpec);
-        connNodeInfo.setSpecification(spec);
-
-        DatabaseNodeInfo tableInfo =
-                DatabaseNodeInfo.createNodeInfo(
-                    connNodeInfo, 
-                    DatabaseNode.TABLE,
-                    rset);
-        
-        rs.close();
-        
-        return tableInfo;
-    }
-
 }

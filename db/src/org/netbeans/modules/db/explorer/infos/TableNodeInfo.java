@@ -248,10 +248,8 @@ public class TableNodeInfo extends DatabaseNodeInfo {
 
     public void delete() throws IOException {
         try {
-            Specification spec = (Specification)getSpecification();
-            AbstractCommand cmd = spec.createCommandDropTable(getTable());
-            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
-            cmd.execute();
+            DDLHelper.deleteTable((Specification)getSpecification(), getTable(),
+                    (String)get(DatabaseNodeInfo.SCHEMA));
             
             fireRefresh();
         } catch (Exception e) {

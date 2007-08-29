@@ -68,7 +68,7 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
                 rs.close();
             }
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            throw new DatabaseException(e);
         }
     }
 

@@ -114,20 +114,16 @@ public class AddViewDialog {
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         
                         try {
-                            CreateView cmd = spec.createCommandCreateView(getViewName());
-                            cmd.setQuery(getViewCode());
-                            cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
-                            cmd.execute();
-                            result = !cmd.wasException();
+                            boolean wasException = AddViewDDL.addView(spec, 
+                                    (String)info.get(DatabaseNodeInfo.SCHEMA), 
+                                    getViewName(), getViewCode());
                             
-                            if (!cmd.wasException()) {
+                            result = !wasException;
+                            
+                            if (!wasException) {
                                 dialog.setVisible(false);
                                 dialog.dispose();
                             }
-                        } catch (CommandNotSupportedException e) {
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-                        } catch (DDLException e) {
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                         } catch (Exception e) {
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                         }

@@ -77,12 +77,9 @@ public class ViewNodeInfo extends DatabaseNodeInfo {
 
     public void delete() throws IOException {
         try {
-            String code = getCode();
-            String table = (String)get(DatabaseNode.TABLE);
-            Specification spec = (Specification)getSpecification();
-            AbstractCommand cmd = spec.createCommandDropView(getName());
-            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
-            cmd.execute();
+            DDLHelper.deleteView((Specification)getSpecification(), 
+                    (String)get(DatabaseNodeInfo.SCHEMA),
+                    getName());
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }

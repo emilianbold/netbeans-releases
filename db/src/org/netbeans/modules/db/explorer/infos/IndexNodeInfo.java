@@ -41,6 +41,7 @@ import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 public class IndexNodeInfo extends TableNodeInfo {
     static final long serialVersionUID =-8633867970381524742L;
+    static final Logger LOGGER = Logger.getLogger(IndexNodeInfo.class.getName());
     
     public void initChildren(Vector children) throws DatabaseException {
         try {
@@ -112,16 +113,16 @@ public class IndexNodeInfo extends TableNodeInfo {
         try {
             String table = (String)get(DatabaseNode.TABLE);
             Specification spec = (Specification)getSpecification();
-            DropIndex cmd = (DropIndex)spec.createCommandDropIndex(getName());
-            cmd.setTableName(table);
-            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
-            cmd.execute();
+            DDLHelper.deleteIndex(spec, (String)get(DatabaseNodeInfo.SCHEMA), 
+                    table, getName());
+
             //refresh list of columns due to the column's icons
             getParent(DatabaseNode.TABLE).refreshChildren();
         } catch (DDLException e) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
-            throw new IOException(e.getMessage());
+            LOGGER.log(Level.WARNING, null, e);
+            throw new IOException(e.toString());
         }
     }
 }

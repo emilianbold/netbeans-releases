@@ -26,9 +26,6 @@ import java.util.Map;
 import java.text.MessageFormat;
 import org.netbeans.modules.db.explorer.DbUtilities;
 
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-
 import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
@@ -128,7 +125,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
                 rs.close();
             }
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            throw new DatabaseException(e);
         }
 
         return col;

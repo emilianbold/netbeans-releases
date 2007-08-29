@@ -18,13 +18,13 @@ package org.netbeans.modules.db.explorer.dlg;
 
 import java.sql.Types;
 import java.util.HashSet;
-import org.netbeans.modules.db.util.DDLTestBase;
+import org.netbeans.modules.db.util.DBTestBase;
 
 /**
  *
  * @author David
  */
-public class AddIndexDDLTest extends DDLTestBase {
+public class AddIndexDDLTest extends DBTestBase {
 
     public AddIndexDDLTest(String name) {
         super(name);
