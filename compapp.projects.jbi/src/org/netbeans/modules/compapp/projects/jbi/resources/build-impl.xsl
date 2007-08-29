@@ -628,10 +628,10 @@ Microsystems, Inc. All Rights Reserved.
                         <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/catd.jar"/>
                         <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/xmlunit1.0.jar"/>
                         <!--<pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/httpunit-1.6.jar"/> -->
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/junit-3.8.2.jar"/>
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxrpc16/FastInfoset.jar"/>
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxrpc16/saaj-api.jar"/>
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxrpc16/saaj-impl.jar"/>
+                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/junit-3.8.2.jar"/>                        
+                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/api/saaj-api.jar"/>
+                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/saaj-impl.jar"/>
+                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/FastInfoset.jar"/>
                         <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xdm.jar"/>
                         <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
                         <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-lib.jar"/>
@@ -677,9 +677,9 @@ Microsystems, Inc. All Rights Reserved.
                         <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/xmlunit1.0.jar"/>
                         <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/httpunit-1.6.jar"/>
                         <pathelement path="${{netbeans.home}}/../java1/modules/ext/junit-3.8.2.jar"/>
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxrpc16/FastInfoset.jar"/>
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxrpc16/saaj-api.jar"/>
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxrpc16/saaj-impl.jar"/>
+                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/api/saaj-api.jar"/>
+                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/saaj-impl.jar"/>
+                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/FastInfoset.jar"/>
                         <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xdm.jar"/>
                         <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
                         <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-lib.jar"/>
