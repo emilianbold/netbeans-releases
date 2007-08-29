@@ -69,6 +69,14 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+    
+    <testbag testattribs="astgen" executor="unit-executor" name="ASTGen testing suite">
+        <testset dir="qa-functional/src">            
+            <patternset>                
+                <include name="org/netbeans/modules/refactoring/ast/ASTGenTest.class"/>                
+            </patternset>
+        </testset>
+    </testbag>
             
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
