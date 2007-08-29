@@ -450,6 +450,19 @@ public class OffsetsBagTest extends NbTestCase {
         
         assertEquals("Wrong number of highlights", 0, marks.size());
     }
+
+    public void testRemoveMiddleEmptyHighlight() {
+        OffsetsBag hs = new OffsetsBag(doc);
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        
+        attribsA.addAttribute("set-name", "attribsA");
+        
+        hs.addHighlight(10, 20, attribsA);
+        hs.removeHighlights(15, 15, false);
+        OffsetGapList<OffsetsBag.Mark> marks = hs.getMarks();
+        
+        assertEquals("Wrong number of highlights", 0, marks.size());
+    }
     
     public void testRemoveMiddleClip() {
         for(int i = 0; i < 10; i++) {

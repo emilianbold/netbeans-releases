@@ -293,11 +293,11 @@ public final class OffsetsBag extends AbstractHighlightsContainer {
         int changeStart = Integer.MAX_VALUE;
         int changeEnd = Integer.MIN_VALUE;
 
-        // Ignore empty areas
-        if (startOffset == endOffset) {
+        // Ignore empty areas when clipping
+        if (startOffset == endOffset && clip) {
             return;
         } else {
-            assert startOffset < endOffset : "Start offset must be before the end offset. startOffset = " + startOffset + ", endOffset = " + endOffset; //NOI18N
+            assert startOffset <= endOffset : "Start offset must be less than or equal to the end offset. startOffset = " + startOffset + ", endOffset = " + endOffset; //NOI18N
         }
         
         synchronized (marks) {

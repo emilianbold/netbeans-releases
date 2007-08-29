@@ -465,6 +465,19 @@ public class PositionsBagTest extends NbTestCase {
         assertEquals("Wrong number of highlights", 0, marks.size());
     }
     
+    public void testRemoveMiddleEmptyHighlight() {
+        PositionsBag hs = new PositionsBag(doc);
+        SimpleAttributeSet attribsA = new SimpleAttributeSet();
+        
+        attribsA.addAttribute("set-name", "attribsA");
+        
+        hs.addHighlight(pos(10), pos(20), attribsA);
+        hs.removeHighlights(pos(15), pos(15), false);
+        GapList<Position> marks = hs.getMarks();
+        
+        assertEquals("Wrong number of highlights", 0, marks.size());
+    }
+    
     public void testRemoveMiddleClip() {
         for(int i = 0; i < 10; i++) {
             removeMiddleClip(i + 1);

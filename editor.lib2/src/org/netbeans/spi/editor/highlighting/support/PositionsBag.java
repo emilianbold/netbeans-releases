@@ -230,12 +230,12 @@ public final class PositionsBag extends AbstractHighlightsContainer {
         int changeStart = Integer.MAX_VALUE;
         int changeEnd = Integer.MIN_VALUE;
 
-        // Ignore empty areas
+        // Ignore empty areas, we are clipping
         if (startPosition.getOffset() == endPosition.getOffset()) {
             return;
         } else {
             assert startPosition.getOffset() < endPosition.getOffset() : 
-                "Start position must be before the end position"; //NOI18N
+                "Start position must be less than the end position"; //NOI18N
         }
         
         synchronized (marks) {
@@ -265,6 +265,10 @@ public final class PositionsBag extends AbstractHighlightsContainer {
                     changeStart = startPosition.getOffset();
                     changeEnd = endPosition.getOffset();
                 }
+
+                // make sure nothing gets removed
+                startIdx = Integer.MAX_VALUE;
+                endIdx = Integer.MIN_VALUE;
             } else {
                 assert endIdx != -1 : "Invalid range: startIdx = " + startIdx + " endIdx = " + endIdx;
 
@@ -286,19 +290,19 @@ public final class PositionsBag extends AbstractHighlightsContainer {
                     changeStart = startPosition.getOffset();
                 }
                 startIdx++;
-
-                if (startIdx <= endIdx) {
-                    if (changeStart == Integer.MAX_VALUE) {
-                        changeStart = marks.get(startIdx).getOffset();
-                    }
-                    if (changeEnd == Integer.MIN_VALUE) {
-                        changeEnd = marks.get(endIdx).getOffset();
-                    }
-                    marks.remove(startIdx, endIdx - startIdx + 1);
-                    attributes.remove(startIdx, endIdx - startIdx + 1);
-                }
             }
 
+            if (startIdx <= endIdx) {
+                if (changeStart == Integer.MAX_VALUE) {
+                    changeStart = marks.get(startIdx).getOffset();
+                }
+                if (changeEnd == Integer.MIN_VALUE) {
+                    changeEnd = marks.get(endIdx).getOffset();
+                }
+                marks.remove(startIdx, endIdx - startIdx + 1);
+                attributes.remove(startIdx, endIdx - startIdx + 1);
+            }
+            
             if (changeStart < changeEnd) {
                 version++;
             }
@@ -322,12 +326,8 @@ public final class PositionsBag extends AbstractHighlightsContainer {
         int changeStart = Integer.MAX_VALUE;
         int changeEnd = Integer.MIN_VALUE;
 
-        // Ignore empty areas
-        if (startOffset == endOffset) {
-            return;
-        } else {
-            assert startOffset < endOffset : "Start position must be before the end position"; //NOI18N
-        }
+        // We are not clipping, allow removal of empty areas
+        assert startOffset <= endOffset : "Start position must be less than or equal to the end position"; //NOI18N
         
         synchronized (marks) {
             if (marks.isEmpty()) {
@@ -355,6 +355,7 @@ public final class PositionsBag extends AbstractHighlightsContainer {
                     changeEnd = marks.get(endIdx).getOffset();
                 }
                 marks.remove(startIdx, endIdx - startIdx + 1);
+                attributes.remove(startIdx, endIdx - startIdx + 1);
             }
             
             if (changeStart < changeEnd) {
