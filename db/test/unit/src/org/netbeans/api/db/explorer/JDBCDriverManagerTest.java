@@ -19,7 +19,6 @@
 
 package org.netbeans.api.db.explorer;
 
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.netbeans.modules.db.test.TestBase;
@@ -44,28 +43,30 @@ public class JDBCDriverManagerTest extends TestBase {
         Util.deleteDriverFiles();
 
         JDBCDriver driver1 = JDBCDriver.create("bar_driver", "Bar Driver", "org.bar.BarDriver", new URL[0]);
-        // JDBCDriverManager.getDefault().addDriver(driver1);čč
         DataObject driver1DO = JDBCDriverConvertor.create(driver1);
-        assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
 
-        /* Probably cannot be GCed, becaue of I cannot get this GCed due to:
-private static org.netbeans.api.db.explorer.JDBCDriverManager org.netbeans.api.db.explorer.JDBCDriverManager.DEFAULT->
-org.netbeans.api.db.explorer.JDBCDriverManager@63f6ea-result->
-org.openide.util.lookup.ProxyLookup$R@10ad419-this$0->
-org.netbeans.modules.settings.RecognizeInstanceObjects$OverObjects@527386-lookups->
-[Lorg.openide.util.Lookup;@e08edd-[0]->
-org.openide.loaders.FolderLookup$ProxyLkp@1e53a48-lookups->
-org.openide.util.lookup.AbstractLookup@19c0bd6-tree->
-org.openide.util.lookup.ArrayStorage@13e4f82-content->
-[Ljava.lang.Object;@177bebe-[0]->
-org.openide.loaders.FolderLookup$ICItem@b34076-obj->
-org.openide.loaders.XMLDataObject@147917a
-         
-        WeakReference driver1DORef = new WeakReference(driver1DO);
-        driver1DO = null;
-        assertGC("Can GC the driver's DataObject", driver1DORef);
-*/
-        
+        // Probably cannot be GCed, becaue of I cannot get this GCed due to:
+        //
+        // private static org.netbeans.api.db.explorer.JDBCDriverManager org.netbeans.api.db.explorer.JDBCDriverManager.DEFAULT->
+        // org.netbeans.api.db.explorer.JDBCDriverManager@63f6ea-result->
+        // org.openide.util.lookup.ProxyLookup$R@10ad419-this$0->
+        // org.netbeans.modules.settings.RecognizeInstanceObjects$OverObjects@527386-lookups->
+        // [Lorg.openide.util.Lookup;@e08edd-[0]->
+        // org.openide.loaders.FolderLookup$ProxyLkp@1e53a48-lookups->
+        // org.openide.util.lookup.AbstractLookup@19c0bd6-tree->
+        // org.openide.util.lookup.ArrayStorage@13e4f82-content->
+        // [Ljava.lang.Object;@177bebe-[0]->
+        // org.openide.loaders.FolderLookup$ICItem@b34076-obj->
+        // org.openide.loaders.XMLDataObject@147917a
+        //
+        // /*
+        // assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
+        //
+        // WeakReference driver1DORef = new WeakReference(driver1DO);
+        // driver1DO = null;
+        // assertGC("Can GC the driver's DataObject", driver1DORef);
+        // */
+
         // this used to fail as described in issue 75204
         assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
         assertSame(driver1, JDBCDriverManager.getDefault().getDrivers("org.bar.BarDriver")[0]);
