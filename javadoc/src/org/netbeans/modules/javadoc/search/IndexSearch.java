@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,6 +39,7 @@ import org.openide.windows.TopComponent;
 import org.openide.util.RequestProcessor;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -83,11 +84,6 @@ public final class IndexSearch
     private HtmlBrowser quickBrowser;
     private JSplitPane splitPanel;
 
-    /** Button titles */
-
-    private static final String STR_FIND = NbBundle.getMessage(IndexSearch.class, "CTL_SEARCH_ButtonFind");    //NOI18N
-    private static final String STR_STOP = NbBundle.getMessage(IndexSearch.class, "CTL_SEARCH_ButtonStop");    //NOI18N
-    
     /** List models for different sorts */
     private ArrayList results = new ArrayList();
 
@@ -189,7 +185,6 @@ public final class IndexSearch
             });
         resultsScrollPane.validate();
 
-        searchButton.setText( STR_FIND );
 
         
         sourceButton.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/javadoc/resources/showSource.gif"))); // NOI18N
@@ -208,21 +203,24 @@ public final class IndexSearch
 
         searchButton.setToolTipText(b.getString( "CTL_SEARCH_search_ToolTip" ));    //NOI18N
         byReferenceButton.setToolTipText(b.getString( "CTL_SEARCH_byReference_ToolTip" ));   //NOI18N
-        byReferenceButton.setMnemonic(b.getString("CTL_SEARCH_byReference_Mnemonic").charAt(0));  // NOI18N
         byTypeButton.setToolTipText(b.getString( "CTL_SEARCH_byType_ToolTip" ));   //NOI18N
-        byTypeButton.setMnemonic(b.getString("CTL_SEARCH_byType_Mnemonic").charAt(0));  // NOI18N
         byNameButton.setToolTipText(b.getString( "CTL_SEARCH_byName_ToolTip" ));   //NOI18N
-        byNameButton.setMnemonic(b.getString("CTL_SEARCH_byName_Mnemonic").charAt(0));  // NOI18N
         quickViewButton.setToolTipText(b.getString( "CTL_SEARCH_quickView_ToolTip" ));   //NOI18N
-        quickViewButton.setMnemonic(b.getString("CTL_SEARCH_quickView_Mnemonic").charAt(0));  // NOI18N
         sourceButton.setToolTipText(b.getString( "CTL_SEARCH_showSource_ToolTip" ));   //NOI18N
-        sourceButton.setMnemonic(b.getString("CTL_SEARCH_showSource_Mnemonic").charAt(0));  // NOI18N
         searchComboBox.setToolTipText(b.getString( "ACS_SEARCH_SearchComboBoxA11yDesc" ));   //NOI18N
         resultsList.setToolTipText(b.getString( "ACS_SEARCH_ResultsListA11yDesc" ));   //NOI18N
         quickBrowser.setToolTipText(b.getString( "ACS_SEARCH_QuickBrowserA11yDesc" ));   //NOI18N
         
-        searchButton.setMnemonic(b.getString("CTL_SEARCH_ButtonFind_Mnemonic").charAt(0));  // NOI18N
-        helpButton.setMnemonic(b.getString("CTL_SEARCH_ButtonHelp_Mnemonic").charAt(0));  // NOI18N
+        // Adding mnemonics
+        if (!Utilities.isMac()) {
+            byReferenceButton.setMnemonic(b.getString("CTL_SEARCH_byReference_Mnemonic").charAt(0));  // NOI18N
+            byTypeButton.setMnemonic(b.getString("CTL_SEARCH_byType_Mnemonic").charAt(0));  // NOI18N
+            byNameButton.setMnemonic(b.getString("CTL_SEARCH_byName_Mnemonic").charAt(0));  // NOI18N
+            quickViewButton.setMnemonic(b.getString("CTL_SEARCH_quickView_Mnemonic").charAt(0));  // NOI18N
+            sourceButton.setMnemonic(b.getString("CTL_SEARCH_showSource_Mnemonic").charAt(0));  // NOI18N
+        }
+        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonFind"));
+        Mnemonics.setLocalizedText(helpButton, NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonHelp"));
         
         initAccessibility();
     }
@@ -287,7 +285,7 @@ public final class IndexSearch
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         jPanel1.add(searchComboBox, gridBagConstraints);
 
-        searchButton.setText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("IndexSearch.searchButton.text"));
+        searchButton.setText("Search");
         searchButton.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -337,7 +335,7 @@ public final class IndexSearch
         jPanel1.add(quickViewButton, gridBagConstraints);
 
         helpButton.setToolTipText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("CTL_SEARCH_ButtonHelp_tooltip"));
-        helpButton.setText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("CTL_SEARCH_ButtonHelp"));
+        helpButton.setText("Help");
         helpButton.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -560,8 +558,7 @@ public final class IndexSearch
         searchEngine = null;
         javax.swing.SwingUtilities.invokeLater( new Runnable() {
                                                     public void run() {
-                                                        searchButton.setText( STR_FIND );
-                                                        searchButton.setMnemonic(NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonFind_Mnemonic").charAt(0));  // NOI18N
+                                                        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonFind"));
                                                         if ( resultsList.getModel().getSize() > 0 ) {
                                                             resultsList.setSelectedIndex( 0 );
                                                             resultsList.grabFocus();
@@ -689,8 +686,7 @@ public final class IndexSearch
             return;
         }
         
-        searchButton.setText( STR_STOP );
-        searchButton.setMnemonic(NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonStop_Mnemonic").charAt(0));  // NOI18N
+        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(IndexSearch.class,"CTL_SEARCH_ButtonStop"));
     }
     
     private void mirrorMRUStrings() {
