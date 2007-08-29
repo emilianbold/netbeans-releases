@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.visualweb.libs.rowset/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/libs/rowset/Bundle.properties
 OpenIDE-Module-Specification-Version: 2.0
 OpenIDE-Module-Layer: org/netbeans/modules/visualweb/libs/rowset/layer.xml
-AutoUpdate-Show-In-Client: false
+AutoUpdate-Show-In-Client: true
 
