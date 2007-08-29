@@ -26,12 +26,9 @@
                 If there are still unacknowledged messages after this interval
                 is reached, and the call to close has returned, 
                 an error will be logged about messages being lost. 
-                <li><b>RM Ack Request Interval (ms).</b> The time in milliseconds
-                after which the sender (RMSource) asks the receiver (RMDestination) 
-                to  acknowledge the messages it has received. By default, the 
-                sender asks for acknowledgements with every application message.
-                However, if a positive value is given, then the sender will wait
-                for this interval before which it will request an acknowledgement.
+                <li><b>RM Ack Request Interval (ms).</b> The suggested minimum time 
+                that the sender (RMSource) should allow to elapse between Acknowledgement
+                requests to the receiver (RMDestination).
                 <li><b>Secure Session Token Lifetime (ms).</b> 
                 <li><b>Renew Expired Secure Session Tokens.</b> 
                 <li><b>Require Cancel of Secure Session.</b> 
