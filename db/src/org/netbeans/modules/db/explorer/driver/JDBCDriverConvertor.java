@@ -84,15 +84,15 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
      */
     private static final int DELAY = 2000;
     
-    private static FileObject newlyCreated = null;
-    private static JDBCDriver newlyCreatedInstance = null;
+    private static FileObject newlyCreated;
+    private static JDBCDriver newlyCreatedInstance;
     
-    private XMLDataObject holder = null;
+    private final Reference holder;
 
     /**
      * The lookup provided through Environment.Provider.
      */
-    private Lookup lookup = null;
+    private Lookup lookup;
 
     Reference refDriver = new WeakReference(null);
 
@@ -112,10 +112,11 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
     }
     
     private JDBCDriverConvertor() {
+        holder = new WeakReference(null);
     }
 
     private JDBCDriverConvertor(XMLDataObject object) {
-        this.holder = object;
+        this.holder = new WeakReference(object);
         InstanceContent cookies = new InstanceContent();
         cookies.add(this);
         lookup = new AbstractLookup(cookies);
@@ -139,7 +140,8 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
     // InstanceCookie.Of methods
 
     public String instanceName() {
-        return holder.getName();
+        XMLDataObject obj = getHolder();
+        return obj == null ? "" : obj.getName();
     }
     
     public Class instanceClass() {
@@ -157,12 +159,16 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
                 return o;
             }
 
+            XMLDataObject obj = getHolder();
+            if (obj == null) {
+                return null;
+            }
             try {
-                JDBCDriver inst = readDriverFromFile(holder.getPrimaryFile());
+                JDBCDriver inst = readDriverFromFile(obj.getPrimaryFile());
                 refDriver = new WeakReference(inst);
                 return inst;
             } catch (MalformedURLException e) {
-                String message = "Ignoring " + holder.getPrimaryFile(); // NOI18N
+                String message = "Ignoring " + obj.getPrimaryFile(); // NOI18N
                 Logger.getLogger(JDBCDriverConvertor.class.getName()).log(Level.INFO, message, e);
                 return null;
             }
@@ -432,5 +438,9 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             }
         }
         return true;
+    }
+
+    private XMLDataObject getHolder() {
+        return (XMLDataObject)holder.get();
     }
 }

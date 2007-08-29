@@ -21,9 +21,7 @@ package org.netbeans.modules.db.explorer.driver;
 
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.net.URI;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.Collection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.test.DOMCompare;
@@ -37,8 +35,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -58,6 +56,7 @@ public class JDBCDriverConvertorTest extends TestBase {
     }
     
     protected void setUp() throws Exception {
+        super.setUp();
         Util.deleteDriverFiles();
     }
     
@@ -136,8 +135,7 @@ public class JDBCDriverConvertorTest extends TestBase {
     public void testLookup() throws Exception {
         FileObject parent = Util.getDriversFolder();
         createDriverFile11("org_foo_FooDriver.xml", parent);
-        FolderLookup lookup = new FolderLookup(DataFolder.findFolder(parent));
-        Lookup.Result result = lookup.getLookup().lookup(new Lookup.Template(JDBCDriver.class));
+        Lookup.Result result = Lookups.forPath(parent.getPath()).lookup(new Lookup.Template(JDBCDriver.class));
         Collection instances = result.allInstances();
         assertEquals(1, instances.size()); 
     }
@@ -165,8 +163,7 @@ public class JDBCDriverConvertorTest extends TestBase {
         FileObject newRoot = Util.getDriversFolder();
         assertEquals(1, newRoot.getChildren().length);
         
-        FolderLookup lookup = new FolderLookup(DataFolder.findFolder(newRoot));
-        Lookup.Result result = lookup.getLookup().lookup(new Lookup.Template(JDBCDriver.class));
+        Lookup.Result result = Lookups.forPath(newRoot.getPath()).lookup(new Lookup.Template(JDBCDriver.class));
         Collection instances = result.allInstances();
         JDBCDriver drv = (JDBCDriver)instances.iterator().next();
         assertEquals(JDBCDriverConvertor.encodeURL(new URL(UNENCODED_URL)), drv.getURLs()[0]);

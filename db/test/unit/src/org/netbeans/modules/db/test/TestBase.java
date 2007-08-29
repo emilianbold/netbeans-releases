@@ -20,12 +20,8 @@
 package org.netbeans.modules.db.test;
 
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Common ancestor for all test classes.
@@ -33,7 +29,7 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Andrei Badea
  */
 public class TestBase extends NbTestCase {
-
+/*
     static {
         // set the lookup which will be returned by Lookup.getDefault()
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
@@ -42,11 +38,15 @@ public class TestBase extends NbTestCase {
         ((Lkp)Lookup.getDefault()).setRepository(new RepositoryImpl());
         assertEquals("The default Repository is not our repository!", RepositoryImpl.class, Repository.getDefault().getClass());
     }
-    
+  */  
     public TestBase(String name) {
         super(name);
     }
     
+    protected void setUp() throws Exception {
+        Lookup.getDefault().lookup(ModuleInfo.class);
+    }
+    /*
     public static final class Lkp extends ProxyLookup {
         public Lkp() {
             setProxyLookups(new Lookup[0]);
@@ -75,4 +75,5 @@ public class TestBase extends NbTestCase {
             });
         }
     }
+    */
 }

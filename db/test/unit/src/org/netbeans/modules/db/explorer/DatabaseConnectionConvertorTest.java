@@ -52,6 +52,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     }
     
     protected void setUp() throws Exception {
+        super.setUp();
         Util.deleteConnectionFiles();
     }
     

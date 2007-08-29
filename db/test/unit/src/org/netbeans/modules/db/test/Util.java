@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.netbeans.modules.db.explorer.DatabaseConnectionConvertor;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
 /**
@@ -42,12 +43,14 @@ public class Util {
         deleteFileObjects(getDriversFolder().getChildren());
     }
     
-    public static FileObject getConnectionsFolder() {
-        return Repository.getDefault().getDefaultFileSystem().findResource(DatabaseConnectionConvertor.CONNECTIONS_PATH);
+    public static FileObject getConnectionsFolder() throws IOException {
+        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        return FileUtil.createFolder(root, DatabaseConnectionConvertor.CONNECTIONS_PATH);
     }
     
-    public static FileObject getDriversFolder() {
-        return Repository.getDefault().getDefaultFileSystem().findResource(JDBCDriverConvertor.DRIVERS_PATH);
+    public static FileObject getDriversFolder() throws IOException {
+        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        return FileUtil.createFolder(root, JDBCDriverConvertor.DRIVERS_PATH);
     }
     
     private static void deleteFileObjects(FileObject[] fos) throws IOException {

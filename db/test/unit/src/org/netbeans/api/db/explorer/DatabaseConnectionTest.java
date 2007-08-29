@@ -29,6 +29,7 @@ import org.netbeans.modules.db.test.Util;
 public class DatabaseConnectionTest extends TestBase {
     
     protected void setUp() throws Exception {
+        super.setUp();
         Util.deleteConnectionFiles();
     }
     
