@@ -136,26 +136,28 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     @Override
     public Lookup getLookup() {
         Lookup lookup = lookupWRef.get();
+        DataObject jsfConfigDataObject = null;
 
         if (lookup == null) {
             Lookup superLookup = super.getLookup();
+            try {
+                //Necessary for close project work propertly.
+                jsfConfigDataObject = DataObject.find(context.getFacesConfigFile());
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
 
-            // XXX Needed in order to close the component automatically by project close.
-            /* This is currently done at the MultiViewElement level all though we can easily add it here */
-            //            DataObject jspDataObject = webform.getJspDataObject();
-            //            DataObject jspDataObject = null;
-            //            try {
-            //                jspDataObject = DataObject.find(context.getFacesConfigFile());
-            //            } catch ( DataObjectNotFoundException donfe) {
-            //                donfe.printStackTrace();
-            //            }
-            /* Temporarily Removing Palette */
-            //            PaletteController paletteController = getPaletteController();
-            //            if (paletteController == null) {
-            lookup = new ProxyLookup(new Lookup[]{superLookup, Lookups.fixed(new Object[]{scene})});
-            //            } else {
-            //                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] { paletteController})});
-            //            }
+            if (jsfConfigDataObject != null) {
+                lookup = new ProxyLookup(new Lookup[]{superLookup, jsfConfigDataObject.getLookup(), Lookups.fixed(new Object[]{scene})});
+            } else {
+                /* Temporarily Removing Palette */
+                //            PaletteController paletteController = getPaletteController();
+                //            if (paletteController == null) {
+                lookup = new ProxyLookup(new Lookup[]{superLookup, Lookups.fixed(new Object[]{scene})});
+                //            } else {
+                //                lookup = new ProxyLookup(new Lookup[] {superLookup, Lookups.fixed(new Object[] { paletteController})});
+                //            }
+            }
             lookupWRef = new WeakReference<Lookup>(lookup);
         }
 
