@@ -1,15 +1,22 @@
 /*
- *                 Sun Public License Notice
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
  *
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.javadoc.hints;
 
 import com.sun.javadoc.Doc;
@@ -21,8 +28,12 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import java.awt.EventQueue;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -35,6 +46,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -42,6 +54,12 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenSequence;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.text.Line;
+import org.openide.text.NbDocument;
 
 /**
  *
@@ -531,6 +549,43 @@ public class JavadocUtilities {
             }
         }
         return null;
+    }
+    
+    public static void open(final FileObject fo, final int offset) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                doOpenImpl(fo, offset);
+            }
+        });
+    }
+    
+    private static boolean doOpenImpl(FileObject fo, int offset) {
+        try {
+            DataObject od = DataObject.find(fo);
+            EditorCookie ec = od.getCookie(EditorCookie.class);
+            LineCookie lc = od.getCookie(LineCookie.class);
+            
+            if (ec != null && lc != null && offset != -1) {
+                StyledDocument doc = ec.openDocument();
+                if (doc != null) {
+                    int line = NbDocument.findLineNumber(doc, offset);
+                    int lineOffset = NbDocument.findLineOffset(doc, line);
+                    int column = offset - lineOffset;
+                    
+                    if (line != -1) {
+                        Line l = lc.getLineSet().getCurrent(line);
+                        
+                        if (l != null) {
+                            l.show(Line.SHOW_GOTO, column);
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(JavadocUtilities.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+        return false;
     }
     
     public static final class TagHandle {
