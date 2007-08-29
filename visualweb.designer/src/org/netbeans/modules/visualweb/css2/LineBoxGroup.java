@@ -326,8 +326,16 @@ public class LineBoxGroup extends ContainerBox {
             wrap = CssProvider.getValueService().isNormalValue(cssV);
         }
 
+        // XXX #113899 Keeps processed (fixing the ordering) children.
+        List<CssBox> processedChildren = new ArrayList<CssBox>();
+        
         for (int i = 0; i < n; i++) {
             CssBox box = list.get(i);
+            
+            if (processedChildren.contains(box)) {
+                continue;
+            }
+            
             //relative boxes are similar to float boxes
             if (box.getBoxType() == BoxType.FLOAT || box.getBoxType() == BoxType.RELATIVE) {
                 if (box.isInlineBox() && !box.isReplacedBox() && box instanceof ContainerBox
@@ -419,9 +427,32 @@ public class LineBoxGroup extends ContainerBox {
                 //need to assign original container to all sub-boxes,
                 //otherwise it will be lost.
                 BoxList boxList = ((ContainerBox)box).getBoxList();
-                for(int j = 0; j < boxList.size(); j++) {
+                int boxListSize = boxList.size();
+                for(int j = 0; j < boxListSize; j++) {
                     boxList.get(j).originalInlineContainer = box;
                 }
+                
+                // XXX #113899 Bad architecture, the textual nodes are assigned to line box group
+                // which mihgt also be a parent of container which holds the other silings (non-textual) of the textual nodes.
+                // That causes incorrect ordering of the boxes comparing to the original element structure.
+                // Here trying to hack it, i.e. to put the thing into original order.
+                for (int j = 0; j < boxListSize; j++) {
+                    CssBox boxListBox = boxList.get(j);
+                    CssBox nextBoxListBox = j + 1 < boxListSize ? boxList.get(j + 1) : null;
+                    if (boxListBox instanceof ContainerBox && boxListBox.getBoxCount() == 0) {
+                        // Could be a placeholder
+                        Element boxListBoxElement = boxListBox.getElement();
+                        for (int k = i + 1; k < n; k++) {
+                            CssBox nextSibling = list.get(k);
+                            if (boxListBoxElement == nextSibling.getElement()) {
+                                // XXX Place the next sibling to the place holder position.
+                                boxList.add(nextSibling, boxListBox, nextBoxListBox);
+                                processedChildren.add(nextSibling);
+                            }
+                        }
+                    }
+                }
+                
                 relayoutChildren(context, boxList, box.getElement());
             } else {
                 boolean formatContent = true;

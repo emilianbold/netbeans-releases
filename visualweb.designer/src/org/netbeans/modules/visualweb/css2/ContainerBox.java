@@ -254,6 +254,27 @@ public class ContainerBox extends CssBox {
             }
         }
 
+        // This seems to be not needed yet.
+//        // XXX #113899 Ensure the correct order. Due to complicated architecture,
+//        // strange layout processing of LineBoxGroup sometimes leads to wrong order in the line box.
+//        int size = boxes.size();
+//        if (size > 0 && prevBox == null && nextBox == null) {
+//            for (int i = 0; i < size; i++) {
+//                CssBox sibling = boxes.get(i);
+//                if(DesignerUtils.getNextSiblingElement(box.getElement()) == sibling.getElement()) {
+//                    nextBox = sibling;
+//                    break;
+//                }
+//            }
+//            for (int i = size - 1; i >= 0; i--) {
+//                CssBox sibling = boxes.get(i);
+//                if (DesignerUtils.getPreviousSiblingElement(box.getElement()) == sibling.getElement()) {
+//                    prevBox = sibling;
+//                    break;
+//                }
+//            }
+//        }
+        
         boxes.add(box, prevBox, nextBox);
         box.setParent(this);
         box.setPositionedBy(this);
@@ -578,7 +599,7 @@ public class ContainerBox extends CssBox {
             addToLineBox(context, box, null, null);
         }
 
-        // Create children of the box
+//        // Create children of the box
         if (box instanceof ContainerBox) {
             ((ContainerBox)box).createChildren(context);
         }

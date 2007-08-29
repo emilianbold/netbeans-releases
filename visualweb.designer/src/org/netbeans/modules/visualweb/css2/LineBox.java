@@ -29,10 +29,12 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
+import org.netbeans.modules.visualweb.designer.DesignerUtils;
 
 import org.openide.ErrorManager;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 
 /**
@@ -639,6 +641,27 @@ public class LineBox extends ContainerBox {
             }
         }
 
+        // This seems to be not needed yet.
+//        // XXX #113899 Ensure the correct order. Due to complicated architecture,
+//        // strange layout processing of LineBoxGroup sometimes leads to wrong order in the line box.
+//        int size = boxes.size();
+//        if (size > 0 && prevBox == null && nextBox == null) {
+//            for (int i = 0; i < size; i++) {
+//                CssBox sibling = boxes.get(i);
+//                if(DesignerUtils.getNextSiblingElement(box.getElement()) == sibling.getElement()) {
+//                    nextBox = sibling;
+//                    break;
+//                }
+//            }
+//            for (int i = size - 1; i >= 0; i--) {
+//                CssBox sibling = boxes.get(i);
+//                if (DesignerUtils.getPreviousSiblingElement(box.getElement()) == sibling.getElement()) {
+//                    prevBox = sibling;
+//                    break;
+//                }
+//            }
+//        }
+
         boxes.add(box, prevBox, nextBox);
 
         //box.setParent(this);
@@ -647,7 +670,7 @@ public class LineBox extends ContainerBox {
         box.setLocation(nextX, 0);
         nextX += box.getWidth() + box.leftMargin + box.rightMargin;
     }
-
+    
     public void relayout(FormatContext context) {
         // LineBoxGroup should never delegate layout to us but let's
         // make doubly sure since inheriting ContainerBox.relayout

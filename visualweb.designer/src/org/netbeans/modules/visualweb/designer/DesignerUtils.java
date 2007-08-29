@@ -1332,4 +1332,35 @@ public class DesignerUtils {
     public static FontMetrics getFontMetrics(Font font) {
         return Toolkit.getDefaultToolkit().getFontMetrics(font);
     }
+  
+    // This seems to be not needed yet.
+//    public static Element getNextSiblingElement(Element element) {
+//        if (element == null) {
+//            return null;
+//        }
+//        Node sibling = element.getNextSibling();
+//        while (sibling != null) {
+//            if (sibling instanceof Element) {
+//                return (Element)sibling;
+//            }
+//            sibling = sibling.getNextSibling();
+//        }
+//        return null;
+//    }
+//    
+//    public static Element getPreviousSiblingElement(Element element) {
+//        if (element == null) {
+//            return null;
+//        }
+//        Node sibling = element.getPreviousSibling();
+//        while (sibling != null) {
+//            if (sibling instanceof Element) {
+//                return (Element)sibling;
+//            }
+//            sibling = sibling.getPreviousSibling();
+//        }
+//        return null;
+//    }
+
+    
 }
