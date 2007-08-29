@@ -7,7 +7,6 @@
 <mapID target="idmtools_credits" url="credits.html"/>
 <mapID target="idmtools_am_about_am" url="am/about_am.html" />
 <mapID target="idmtools_am_ww_am_instances" url="am/ww_am_instances.html" />
-<mapID target="idmtools_am_adding_am_instance" url="am/adding_am_instance.html" />
 <mapID target="idmtools_am_accessing_am_console" url="am/accessing_am_console.html" />
 <mapID target="idmtools_am_config_am_sec_mech" url="am/config_am_sec_mech.html" />
 <mapID target="idmtools_am_removing_am_instance" url="am/removing_am_instance.html" />
