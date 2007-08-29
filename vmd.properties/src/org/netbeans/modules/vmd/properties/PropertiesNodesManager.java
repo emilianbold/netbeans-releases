@@ -222,13 +222,14 @@ public final class PropertiesNodesManager implements DesignDocumentAwareness,
 
     public synchronized Sheet getSheet(DesignComponent component) {
         assert (component != null);
-        if (sheetMap == null) {
-            return null;
-        }
-        if (sheetMap.get(component) == null) {
-            sheetMap.put(component, createSheet(component));
-        }
-        return sheetMap.get(component);
+        //if (sheetMap == null) {
+        //    return null;
+        //}
+        //if (sheetMap.get(component) == null) {
+        //    sheetMap.put(component, createSheet(component));
+        //}
+        //return sheetMap.get(component);
+        return createSheet(component);
     }
 
     public Sheet createSheet(final DesignComponent component) {
