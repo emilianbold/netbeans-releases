@@ -32,6 +32,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -193,6 +194,9 @@ public class MessageHandlerPanel extends javax.swing.JPanel {
     
     class HandlerTable extends JTable{
         public HandlerTable(){
+            JTableHeader header = getTableHeader();
+            header.setResizingAllowed(false);
+            header.setReorderingAllowed(false);
             ListSelectionModel model = getSelectionModel();
             model.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
             model.addListSelectionListener(new HandlerListSelectionListener());
@@ -257,7 +261,7 @@ public class MessageHandlerPanel extends javax.swing.JPanel {
             }
         });
 
-        handlerTableModel = new DefaultTableModel(new String[]{NbBundle.getMessage(MessageHandlerPanel.class, "HEADING_HANDLERS"),NbBundle.getMessage(MessageHandlerPanel.class, "HEADING_TYPE")}, 0);
+        handlerTableModel = new HandlerTableModel(new String[]{NbBundle.getMessage(MessageHandlerPanel.class, "HEADING_HANDLERS"),NbBundle.getMessage(MessageHandlerPanel.class, "HEADING_TYPE")}, 0);
         handlerTable.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         handlerTable.setModel(handlerTableModel);
         jScrollPane2.setViewportView(handlerTable);
@@ -343,6 +347,16 @@ private int getSelectedRow() {
     } else {
         return lsm.getMinSelectionIndex();
     }
+}
+
+class HandlerTableModel extends DefaultTableModel{
+    public HandlerTableModel(Object[] columnNames, int rowCount){
+        super(columnNames, rowCount);
+    }
+    public boolean isCellEditable(int row,
+                              int column){
+        return false;
+    }    
 }
 
 class TypeCellRenderer implements TableCellRenderer{

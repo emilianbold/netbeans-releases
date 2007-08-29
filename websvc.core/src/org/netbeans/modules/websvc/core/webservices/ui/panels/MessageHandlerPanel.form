@@ -114,7 +114,7 @@
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HandlerTable()"/>
             <AuxValue name="JavaCodeGenerator_DeclarationPost" type="java.lang.String" value="private javax.swing.table.DefaultTableModel handlerTableModel;"/>
-            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="handlerTableModel = new DefaultTableModel(new String[]{NbBundle.getMessage(MessageHandlerPanel.class, &quot;HEADING_HANDLERS&quot;),NbBundle.getMessage(MessageHandlerPanel.class, &quot;HEADING_TYPE&quot;)}, 0);"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="handlerTableModel = new HandlerTableModel(new String[]{NbBundle.getMessage(MessageHandlerPanel.class, &quot;HEADING_HANDLERS&quot;),NbBundle.getMessage(MessageHandlerPanel.class, &quot;HEADING_TYPE&quot;)}, 0);"/>
           </AuxValues>
         </Component>
       </SubComponents>
