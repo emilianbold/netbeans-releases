@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 
 
 <project name="Visual_Web_RowSet_Library" default="default" basedir=".">
-    <description>Builds, tests, and runs the project Creator Data Provider Library.</description>
+    <description>Builds, tests, and runs the project Visual Web Rowset Library.</description>
     <import file="nbproject/build-impl.xml"/>
     
     <target name="-pre-jar"> 
@@ -43,6 +43,42 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="MANIFEST.MF"/>
     </target>
     
+    <target name="-pre-init">
+        <available property="have-jdbc-40" 
+            classname="java.sql.RowIdLifetime" 
+            classpath="${nbjdk.bootclasspath}" 
+            ignoresystemclasses="${nbjdk.bootclasspath.available}"
+        />
+    </target>
+    
+    <target name="-pre-compile" depends="fake-jdbc-40" />
+    
+    <!-- Fake support for JDBC 4.0 when compiling with JDK5, to enable compilation with both JDK5 and JDK6 -->
+    <target name="fake-jdbc-40" unless="have-jdbc-40">
+        <property name="fake-jdbc-40" value="build/fake-jdbc-40"/>
+        <property name="fake-jdbc-40.src" value="${fake-jdbc-40}/src"/>
+        <property name="fake-jdbc-40.build" value="${fake-jdbc-40}/build"/>
+        <mkdir dir="${fake-jdbc-40.src}/java/sql"/>
+        <echo file="${fake-jdbc-40.src}/java/sql/SQLClientInfoException.java">
+          package java.sql;
+           public class SQLClientInfoException extends Exception {}
+        </echo>
+        <echo file="${fake-jdbc-40.src}/java/sql/SQLXML.java">
+          package java.sql;
+          public interface SQLXML {}
+        </echo>
+        <echo file="${fake-jdbc-40.src}/java/sql/NClob.java">
+          package java.sql;
+          public interface NClob extends Clob {}
+        </echo>
+        <echo file="${fake-jdbc-40.src}/java/sql/RowId.java">
+            package java.sql;
+            public interface RowId{};
+        </echo>
+        <mkdir dir="${fake-jdbc-40.build}"/>
+        <javac srcdir="${fake-jdbc-40.src}" destdir="${fake-jdbc-40.build}"/>
+    </target>
+
     <!-- Zip the javadoc -->   
     <target name="javadoc-zip" depends="compile,javadoc">
         <zip basedir="${dist.javadoc.dir}" destfile="${dist.javadoc.zip}" />

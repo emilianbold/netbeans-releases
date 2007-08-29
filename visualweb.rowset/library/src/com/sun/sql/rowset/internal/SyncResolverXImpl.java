@@ -4803,8 +4803,13 @@ public class SyncResolverXImpl extends CachedRowSetXImpl implements SyncResolver
      *         is of type <code>ResultSet.TYPE_FORWARD_ONLY</code> or if an error
      *         occurs.
      */
-    public boolean previousPage() throws SQLException {
+     public boolean previousPage() throws SQLException {
         throw new UnsupportedOperationException();
-    }
+     }
+
+     public Object unwrap(Class arg0) throws SQLException {
+         return null;
+     }
+
 } //end class
 

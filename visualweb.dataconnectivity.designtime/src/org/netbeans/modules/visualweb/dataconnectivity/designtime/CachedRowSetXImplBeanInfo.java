@@ -22,6 +22,7 @@ package org.netbeans.modules.visualweb.dataconnectivity.designtime;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.base.CategoryDescriptors;
 import com.sun.sql.rowset.CachedRowSetXImpl;
+import com.sun.sql.rowset.CachedRowSetXImpl5;
 import org.netbeans.modules.visualweb.faces.dt.data.*;
 import java.awt.Image;
 import java.beans.BeanDescriptor;
@@ -70,17 +71,27 @@ public class CachedRowSetXImplBeanInfo extends SimpleBeanInfo {
     }
 
     public EventSetDescriptor[] getEventSetDescriptors() {
+
+	Class rowsetClass=null;
+	try {
+	    CachedRowSetXImpl.class.getMethod("absolute", new Class[] {int.class});
+	    rowsetClass = CachedRowSetXImpl.class;
+	} catch ( NoClassDefFoundError ncdfe ) {
+	    rowsetClass = CachedRowSetXImpl5.class;
+	}
+	catch ( NoSuchMethodException nsme ) {
+	}
+	
         try {
             EventSetDescriptor[] eventSetDescriptors = new EventSetDescriptor[] {
-                new EventSetDescriptor(CachedRowSetXImpl.class, "rowSet", //NOI18N
-                RowSetListener.class,
-                new String[] {
-                //!JK "cursorMoved", "rowChanged", "rowSetChanged, rowSetPopulated"
-                "cursorMoved", "rowChanged", "rowSetChanged"
-            }
-
-            , //NOI18N
-                "addRowSetListener", "removeRowSetListener") //NOI18N
+                new EventSetDescriptor(rowsetClass,
+				       "rowSet", //NOI18N
+				       RowSetListener.class,
+				       new String[] {
+					   //!JK "cursorMoved", "rowChanged", "rowSetChanged, rowSetPopulated"
+					   "cursorMoved", "rowChanged", "rowSetChanged" } , //NOI18N
+				       "addRowSetListener", //NOI18N
+				       "removeRowSetListener") //NOI18N
             };
 
             return eventSetDescriptors;
@@ -104,78 +115,89 @@ public class CachedRowSetXImplBeanInfo extends SimpleBeanInfo {
     }
 
     public synchronized MethodDescriptor[] getMethodDescriptors() {
+
+	Class rowsetClass=null;
+	try {
+	    CachedRowSetXImpl.class.getMethod("absolute", new Class[] {int.class});
+	    rowsetClass = CachedRowSetXImpl.class;
+	} catch ( NoClassDefFoundError ncdfe ) {
+	    rowsetClass = CachedRowSetXImpl5.class;
+	}
+	catch ( NoSuchMethodException nsme ) {
+	}
+	
         try {
             MethodDescriptor[] methodDescriptors = new MethodDescriptor[] {
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("absolute", //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("absolute", //NOI18N
                         new Class[] {int.class})),
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("acceptChanges", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("acceptChanges", //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("acceptChanges", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("acceptChanges", //NOI18N
                         new Class[] {Connection.class})),
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("afterLast", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("beforeFirst", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("cancelRowUpdates", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("clearParameters", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("clearWarnings", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("close", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("columnUpdated", //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("afterLast", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("beforeFirst", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("cancelRowUpdates", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("clearParameters", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("clearWarnings", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("close", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("columnUpdated", //NOI18N
                         new Class[] {int.class})),
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("columnUpdated", //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("columnUpdated", //NOI18N
                         new Class[] {String.class})),
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("commit", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("createCopy", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("createCopyNoConstraints", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("createCopySchema", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("createShared", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("deleteRow", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("execute", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("findColumn", //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("commit", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("createCopy", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("createCopyNoConstraints", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("createCopySchema", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("createShared", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("deleteRow", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("execute", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("findColumn", //NOI18N
                         new Class[] {String.class})),
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("first", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getMetaData", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getKeyColumns", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getOriginal", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getOriginalRow", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getRow", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getStatement", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("getWarnings", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("insertRow", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("isAfterLast", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("isBeforeFirst", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("isFirst", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("isLast", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("last", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("moveToCurrentRow", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("moveToInsertRow", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("next", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("nextPage", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("populate", //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("first", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("getMetaData", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("getKeyColumns", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("getOriginal", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("getOriginalRow", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("getRow", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("getStatement", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("getWarnings", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("insertRow", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("isAfterLast", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("isBeforeFirst", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("isFirst", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("isLast", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("last", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("moveToCurrentRow", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("moveToInsertRow", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("next", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("nextPage", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("populate", //NOI18N
                         new Class[] {ResultSet.class})),
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("previous", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("previousPage", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("refreshRow", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("relative", //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("previous", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("previousPage", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("refreshRow", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("relative", //NOI18N
                         new Class[] {int.class})),
 
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("release", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("restoreOriginal", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("rollback", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("rollback", //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("release", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("restoreOriginal", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("rollback", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("rollback", //NOI18N
                         new Class[] {Savepoint.class})),
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("rowDeleted", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("rowInserted", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("rowUpdated", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("setKeyColumns", //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("rowDeleted", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("rowInserted", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("rowUpdated", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("setKeyColumns", //NOI18N
                         new Class[] {int[].class})),
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("setOriginalRow", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("toCollection", null)),//NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("toCollection", //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("setOriginalRow", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("toCollection", null)),//NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("toCollection", //NOI18N
                         new Class[] {int.class})),
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("toCollection", //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("toCollection", //NOI18N
                         new Class[] {String.class})),
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("undoDelete", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("undoInsert", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("undoUpdate", null)), //NOI18N
-                    new MethodDescriptor(CachedRowSetXImpl.class.getMethod("wasNull", null)) //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("undoDelete", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("undoInsert", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("undoUpdate", null)), //NOI18N
+                    new MethodDescriptor(rowsetClass.getMethod("wasNull", null)) //NOI18N
 
             };
 
@@ -187,21 +209,32 @@ public class CachedRowSetXImplBeanInfo extends SimpleBeanInfo {
     }
 
     public synchronized PropertyDescriptor[] getPropertyDescriptors() {
+
+	Class rowsetClass=null;
+	try {
+	    CachedRowSetXImpl.class.getMethod("absolute", new Class[] {int.class});
+	    rowsetClass = CachedRowSetXImpl.class;
+	} catch ( NoClassDefFoundError ncdfe ) {
+	    rowsetClass = CachedRowSetXImpl5.class;
+	}
+	catch ( NoSuchMethodException nsme ) {
+	}
+
         try {
             PropertyDescriptor[] propertyDescriptors;
             // command
             PropertyDescriptor command = new PropertyDescriptor(
-                "command", CachedRowSetXImpl.class); //NOI18N
+                "command", rowsetClass); //NOI18N
             command.setBound(true);
             // concurrency
             PropertyDescriptor concurrency = new PropertyDescriptor(
-                "concurrency", CachedRowSetXImpl.class); //NOI18N
+                "concurrency", rowsetClass); //NOI18N
             concurrency.setBound(true);
             concurrency.setPropertyEditorClass(
                 ConcurrencyPropertyEditor.class);
             //dataSourceName
             PropertyDescriptor dataSourceName =
-                new PropertyDescriptor("dataSourceName", CachedRowSetXImpl.class); //NOI18N
+                new PropertyDescriptor("dataSourceName", rowsetClass); //NOI18N
             dataSourceName.setBound(true);
             // EAT: The original prop editor
             dataSourceName.setPropertyEditorClass(
@@ -214,98 +247,98 @@ public class CachedRowSetXImplBeanInfo extends SimpleBeanInfo {
             //     com.sun.jsfcl.std.reference.DataSourceNameReferenceData.NAME);
             // maxRows
             PropertyDescriptor maxRows = new PropertyDescriptor(
-                "maxRows", CachedRowSetXImpl.class); //NOI18N
+                "maxRows", rowsetClass); //NOI18N
             maxRows.setBound(true);
             // pageSize
             PropertyDescriptor pageSize = new PropertyDescriptor(
-                "pageSize", CachedRowSetXImpl.class); //NOI18N
+                "pageSize", rowsetClass); //NOI18N
             // password
             PropertyDescriptor password = new PropertyDescriptor(
-                "password", CachedRowSetXImpl.class); //NOI18N
+                "password", rowsetClass); //NOI18N
             password.setBound(true);
             // showDeleted
             PropertyDescriptor showDeleted = new PropertyDescriptor(
-                "showDeleted", CachedRowSetXImpl.class); //NOI18N
+                "showDeleted", rowsetClass); //NOI18N
             // transactionIsolation
             PropertyDescriptor transactionIsolation =
-                new PropertyDescriptor("transactionIsolation", CachedRowSetXImpl.class); //NOI18N
+                new PropertyDescriptor("transactionIsolation", rowsetClass); //NOI18N
             transactionIsolation.setBound(true);
             transactionIsolation.setPropertyEditorClass(
                 TransactionIsolationPropertyEditor.class);
             // tableName
             PropertyDescriptor tableName = new PropertyDescriptor(
-                "tableName", CachedRowSetXImpl.class); //NOI18N
+                "tableName", rowsetClass); //NOI18N
             // type
             PropertyDescriptor type =
-                new PropertyDescriptor("type", CachedRowSetXImpl.class); //NOI18N
+                new PropertyDescriptor("type", rowsetClass); //NOI18N
             type.setBound(true);
             type.setPropertyEditorClass(
                 TypePropertyEditor.class);
             // url
-            PropertyDescriptor url = new PropertyDescriptor("url", CachedRowSetXImpl.class); //NOI18N
+            PropertyDescriptor url = new PropertyDescriptor("url", rowsetClass); //NOI18N
             url.setBound(true);
             // username
             PropertyDescriptor username = new PropertyDescriptor(
-                "username", CachedRowSetXImpl.class); //NOI18N
+                "username", rowsetClass); //NOI18N
             username.setBound(true);
             // catalogName
             PropertyDescriptor catalogName = new PropertyDescriptor(
-                "catalogName", CachedRowSetXImpl.class); //NOI18N
+                "catalogName", rowsetClass); //NOI18N
             catalogName.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             // columnCatalogNames
             PropertyDescriptor columnCatalogNames = new PropertyDescriptor(
-               "columnCatalogNames", CachedRowSetXImpl.class); // NOI18N
+               "columnCatalogNames", rowsetClass); // NOI18N
             columnCatalogNames.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             columnCatalogNames.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             // columnSchemaNames
             PropertyDescriptor columnSchemaNames = new PropertyDescriptor(
-                "columnSchemaNames", CachedRowSetXImpl.class); //NOI18N
+                "columnSchemaNames", rowsetClass); //NOI18N
             columnSchemaNames.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             // columnTableNames
             PropertyDescriptor columnTableNames = new PropertyDescriptor(
-                "columnTableNames", CachedRowSetXImpl.class); //NOI18N
+                "columnTableNames", rowsetClass); //NOI18N
             columnTableNames.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             // columnNames
             PropertyDescriptor columnNames = new PropertyDescriptor(
-                "columnNames", CachedRowSetXImpl.class); //NOI18N
+                "columnNames", rowsetClass); //NOI18N
             columnNames.setValue(Constants.PropertyDescriptor.CATEGORY,
             CategoryDescriptors.ADVANCED);
             // insertableColumns
             PropertyDescriptor insertableColumns = new PropertyDescriptor(
-                "insertableColumns", CachedRowSetXImpl.class); //NOI18N
+                "insertableColumns", rowsetClass); //NOI18N
             insertableColumns.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             // updatableColumns
             PropertyDescriptor updatableColumns = new PropertyDescriptor(
-                "updatableColumns", CachedRowSetXImpl.class); //NOI18N
+                "updatableColumns", rowsetClass); //NOI18N
             updatableColumns.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);
             // printStatements
             PropertyDescriptor printStatements = new PropertyDescriptor(
-                "printStatements", CachedRowSetXImpl.class); //NOI18N
+                "printStatements", rowsetClass); //NOI18N
             printStatements.setValue(Constants.PropertyDescriptor.CATEGORY,
                 CategoryDescriptors.ADVANCED);            
             // schemaName
             PropertyDescriptor schemaName = new PropertyDescriptor(
-                "schemaName", CachedRowSetXImpl.class); //NOI18N
+                "schemaName", rowsetClass); //NOI18N
             schemaName.setValue(Constants.PropertyDescriptor.CATEGORY, 
                 CategoryDescriptors.ADVANCED);
 
             // size
             PropertyDescriptor size = new PropertyDescriptor(
-                "size", CachedRowSetXImpl.class, "size", null); //NOI18N
+                "size", rowsetClass, "size", null); //NOI18N
 
 
             propertyDescriptors = new PropertyDescriptor[] {
                 command,
                 concurrency,
                 dataSourceName,
-                new PropertyDescriptor("fetchSize", CachedRowSetXImpl.class), //NOI18N
+                new PropertyDescriptor("fetchSize", rowsetClass), //NOI18N
                 maxRows,
                 pageSize,
                 password,
