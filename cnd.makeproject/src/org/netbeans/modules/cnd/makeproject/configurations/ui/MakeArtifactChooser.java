@@ -25,7 +25,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -33,7 +32,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
-import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -43,20 +41,20 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class MakeArtifactChooser extends JPanel implements PropertyChangeListener {
+    public enum ArtifactType {PROJECT, LIBRARY};
     
-    // XXX to become an array later
-    private String artifactType;
+    private ArtifactType artifactType;
     
     /** Creates new form JarArtifactChooser */
-    public MakeArtifactChooser( String artifactType, JFileChooser chooser ) {
+    public MakeArtifactChooser( ArtifactType artifactType, JFileChooser chooser ) {
         this.artifactType = artifactType;
         
         initComponents();
         listArtifacts.setModel( new DefaultListModel() );
         chooser.addPropertyChangeListener( this );
 
-	PathPanel pathPanel = new PathPanel();
-	leftPanel.add(pathPanel);
+	//PathPanel pathPanel = new PathPanel();
+	//leftPanel.add(pathPanel);
         
         // Accessibility
         listArtifacts.getAccessibleContext().setAccessibleDescription(getString("PROJECT_LIBRARY_FILES_AD"));
@@ -180,18 +178,24 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
 	    MakeArtifact[] artifacts = MakeArtifact.getMakeArtifacts(project);
 	    int def = 0;
             for (int i = 0; i < artifacts.length; i++) {
-		if (artifacts[i].getConfigurationType() == MakeArtifact.TYPE_APPLICATION)
-		    continue;
-		if (artifacts[i].getConfigurationType() == MakeArtifact.TYPE_UNKNOWN &&
-		    (artifacts[i].getOutput().endsWith(".a") || // NOI18N
-                        artifacts[i].getOutput().endsWith(".so") || // NOI18N
-                        artifacts[i].getOutput().endsWith(".dylib") || // NOI18N
-                        artifacts[i].getOutput().endsWith(".dll")) || // NOI18N
-		    artifacts[i].getConfigurationType() == MakeArtifact.TYPE_DYNAMIC_LIB ||
-		    artifacts[i].getConfigurationType() == MakeArtifact.TYPE_STATIC_LIB)
+                if (artifactType == ArtifactType.LIBRARY) {
+                    if (artifacts[i].getConfigurationType() == MakeArtifact.TYPE_UNKNOWN &&
+                        (artifacts[i].getOutput().endsWith(".a") || // NOI18N
+                            artifacts[i].getOutput().endsWith(".so") || // NOI18N
+                            artifacts[i].getOutput().endsWith(".dylib") || // NOI18N
+                            artifacts[i].getOutput().endsWith(".dll")) || // NOI18N
+                        artifacts[i].getConfigurationType() == MakeArtifact.TYPE_DYNAMIC_LIB ||
+                        artifacts[i].getConfigurationType() == MakeArtifact.TYPE_STATIC_LIB) {
+                        model.addElement(artifacts[i]);
+                    }
+                }
+                else if (artifactType == ArtifactType.PROJECT) {
                     model.addElement(artifacts[i]);
-		    if (artifacts[i].getActive())
-			def = i;
+                }
+                else
+                    assert false;
+                if (artifacts[i].getActive())
+                    def = i;
             }
             listArtifacts.setSelectionInterval(def, def);
         }
@@ -211,7 +215,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
     /** Shows dialog with the artifact chooser 
      * @return null if canceled selected jars if some jars selected
      */
-    public static MakeArtifact[] showDialog( String artifactType, Project master, Component parent ) {
+    public static MakeArtifact[] showDialog(ArtifactType artifactType, Project master, Component parent ) {
         
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.getAccessibleContext().setAccessibleDescription(getString("ADD_PROJECT_DIALOG_AD"));
@@ -268,33 +272,6 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
             return null; 
         }
                 
-    }
-       
-    /**
-     * Pair of MakeArtifact and one of jars it produces.
-     */
-    public static class ArtifactItem {
-        
-        private MakeArtifact artifact;
-        private URI artifactURI;
-        
-        public ArtifactItem(MakeArtifact artifact, URI artifactURI) {
-            this.artifact = artifact;
-            this.artifactURI = artifactURI;
-        }
-        
-        public MakeArtifact getArtifact() {
-            return artifact;
-        }
-        
-        public URI getArtifactURI() {
-            return artifactURI;
-        }
-        
-        public String toString() {
-            return artifactURI.toString();
-        }
-        
     }
     
     private static String getString(String s) {

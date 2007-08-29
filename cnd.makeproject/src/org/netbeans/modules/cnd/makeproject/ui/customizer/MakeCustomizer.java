@@ -562,8 +562,10 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             if (advanced != null)
                 descriptions.add(advanced);
         }
-        if (includeMakefileDescription)
+        if (includeMakefileDescription) {
             descriptions.add(createMakefileDescription(project));
+            descriptions.add(createRequiredProjectsDescription(project));
+        }
         if (includeNewDescription) {
             //IZ#110443:Adding "Dependencies" node for makefile projects property is premature
             //if (!includeLinkerDescription) {
@@ -811,6 +813,30 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         
         public HelpCtx getHelpCtx() {
             return new HelpCtx("ProjectPropsMake"); // NOI18N
+        }
+    }
+    
+    // Required Projects Node
+    private CustomizerNode createRequiredProjectsDescription(Project project) {
+        ResourceBundle bundle = NbBundle.getBundle( MakeCustomizer.class );
+        
+        return new RequiredProjectsCustomizerNode(
+                "RequiredProjects", // NOI18N
+                getString("LBL_REQUIRED_PROJECTS_NODE"),
+                null );
+    }
+    
+    class RequiredProjectsCustomizerNode extends CustomizerNode {
+        public RequiredProjectsCustomizerNode(String name, String displayName, CustomizerNode[] children) {
+            super(name, displayName, children);
+        }
+        
+        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
+            return ((MakeConfiguration)configuration).getRequiredProjectsSheet(project, (MakeConfiguration)configuration);
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("ProjectPropsRequiredProjects"); // NOI18N
         }
     }
     

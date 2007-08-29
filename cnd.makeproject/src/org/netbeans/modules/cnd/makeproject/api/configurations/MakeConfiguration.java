@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Enumeration;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -36,6 +35,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.ProjectsNodeProp;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -79,6 +79,7 @@ public class MakeConfiguration extends Configuration {
     private FortranCompilerConfiguration fortranCompilerConfiguration;
     private LinkerConfiguration linkerConfiguration;
     private ArchiverConfiguration archiverConfiguration;
+    private RequiredProjectsConfiguration requiredProjectsConfiguration;
     
     // Constructors
     public MakeConfiguration(MakeConfigurationDescriptor makeConfigurationDescriptor, String name, int configurationTypeValue) {
@@ -100,6 +101,7 @@ public class MakeConfiguration extends Configuration {
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
         linkerConfiguration = new LinkerConfiguration(this);
         archiverConfiguration = new ArchiverConfiguration(this);
+	requiredProjectsConfiguration = new RequiredProjectsConfiguration();
     }
     
     public void setMakefileConfiguration(MakefileConfiguration makefileConfiguration) {
@@ -234,6 +236,14 @@ public class MakeConfiguration extends Configuration {
         return archiverConfiguration;
     }
     
+    // LibrariesConfiguration
+    public RequiredProjectsConfiguration getRequiredProjectsConfiguration() {
+	return requiredProjectsConfiguration;
+    }
+    public void setRequiredProjectsConfiguration(RequiredProjectsConfiguration requiredProjectsConfiguration) {
+	this.requiredProjectsConfiguration = requiredProjectsConfiguration;
+    }
+    
     public void assign(Configuration conf) {
         MakeConfiguration makeConf = (MakeConfiguration)conf;
         setName(makeConf.getName());
@@ -252,6 +262,7 @@ public class MakeConfiguration extends Configuration {
         getFortranCompilerConfiguration().assign(makeConf.getFortranCompilerConfiguration());
         getLinkerConfiguration().assign(makeConf.getLinkerConfiguration());
         getArchiverConfiguration().assign(makeConf.getArchiverConfiguration());
+	getRequiredProjectsConfiguration().assign(makeConf.getRequiredProjectsConfiguration());
         
         // do assign on all aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects(); // from this profile
@@ -308,6 +319,7 @@ public class MakeConfiguration extends Configuration {
         clone.setFortranCompilerConfiguration((FortranCompilerConfiguration)getFortranCompilerConfiguration().clone());
         clone.setLinkerConfiguration((LinkerConfiguration)getLinkerConfiguration().clone());
         clone.setArchiverConfiguration((ArchiverConfiguration)getArchiverConfiguration().clone());
+	clone.setRequiredProjectsConfiguration((RequiredProjectsConfiguration)getRequiredProjectsConfiguration().clone());
         
         // Clone all the aux objects
         //Vector clonedAuxObjects = new Vector();
@@ -363,6 +375,20 @@ public class MakeConfiguration extends Configuration {
         sheet.put(set);
         
         return sheet;
+    }
+    
+    public Sheet getRequiredProjectsSheet(Project project, MakeConfiguration conf) {
+	Sheet sheet = new Sheet();
+	String[] texts = new String[] {getString("ProjectsTxt1"), getString("ProjectsHint"), getString("ProjectsTxt2"), getString("AllOptionsTxt2")};
+
+	Sheet.Set set2 = new Sheet.Set();
+	set2.setName("Projects"); // NOI18N
+	set2.setDisplayName(getString("ProjectsTxt1"));
+	set2.setShortDescription(getString("ProjectsHint"));
+	set2.put(new ProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
+	sheet.put(set2);
+
+	return sheet;
     }
     
     private class ProjectLocationNodeProp extends Node.Property {

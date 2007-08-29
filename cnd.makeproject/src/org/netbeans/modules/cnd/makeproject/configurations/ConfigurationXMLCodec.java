@@ -42,6 +42,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.filesystems.FileObject;
@@ -72,6 +73,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private LinkerConfiguration currentLinkerConfiguration = null;
     private ArchiverConfiguration currentArchiverConfiguration = null;
     private LibrariesConfiguration currentLibrariesConfiguration = null;
+    private RequiredProjectsConfiguration currentRequiredProjectsConfiguration = null;
     private Vector currentIncludeDirectories = null;
     private int defaultConf = 0;
     private Vector currentList = null;
@@ -226,30 +228,35 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentIncludeDirectories = currentLinkerConfiguration.getDynamicSearch().getValue();
         } else if (element.equals(LINKER_LIB_ITEMS_ELEMENT)) {
             currentLibrariesConfiguration = ((MakeConfiguration)currentConf).getLinkerConfiguration().getLibrariesConfiguration();
+        } else if (element.equals(REQUIRED_PROJECTS_ELEMENT)) {
+            currentRequiredProjectsConfiguration = ((MakeConfiguration)currentConf).getRequiredProjectsConfiguration();
         } else if (element.equals(MAKE_ARTIFACT_ELEMENT)) {
-            if (currentLibrariesConfiguration != null) {
-                String pl = atts.getValue("PL");        // NOI18N
-                pl = adjustOffset(pl);
-                String ct = atts.getValue("CT");        // NOI18N
-                String cn = atts.getValue("CN");        // NOI18N
-                String ac = atts.getValue("AC");        // NOI18N
-                String bl = atts.getValue("BL");        // NOI18N
-                String wd = atts.getValue("WD");        // NOI18N
-                wd = adjustOffset(wd);
-                String bc = atts.getValue("BC");        // NOI18N
-                String cc = atts.getValue("CC");        // NOI18N
-                String op = atts.getValue("OP");        // NOI18N
-                currentLibrariesConfiguration.add(new LibraryItem.ProjectItem(new MakeArtifact(
-                        pl,
-                        new Integer(ct).intValue(),
-                        cn,
-                        ac.equals(TRUE_VALUE),
-                        bl != null ? bl.equals(TRUE_VALUE) : true,
-                        wd,
-                        bc,
-                        cc,
-                        op)));
-            }
+            String pl = atts.getValue("PL");        // NOI18N
+            pl = adjustOffset(pl);
+            String ct = atts.getValue("CT");        // NOI18N
+            String cn = atts.getValue("CN");        // NOI18N
+            String ac = atts.getValue("AC");        // NOI18N
+            String bl = atts.getValue("BL");        // NOI18N
+            String wd = atts.getValue("WD");        // NOI18N
+            wd = adjustOffset(wd);
+            String bc = atts.getValue("BC");        // NOI18N
+            String cc = atts.getValue("CC");        // NOI18N
+            String op = atts.getValue("OP");        // NOI18N
+
+            LibraryItem.ProjectItem projectItem = new LibraryItem.ProjectItem(new MakeArtifact(
+                    pl,
+                    new Integer(ct).intValue(),
+                    cn,
+                    ac.equals(TRUE_VALUE),
+                    bl != null ? bl.equals(TRUE_VALUE) : true,
+                    wd,
+                    bc,
+                    cc,
+                    op));
+            if (currentLibrariesConfiguration != null)
+                currentLibrariesConfiguration.add(projectItem);
+            else if (currentRequiredProjectsConfiguration != null)
+                currentRequiredProjectsConfiguration.add(projectItem);
         }
     }
     
@@ -500,6 +507,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentArchiverConfiguration.getSupressOption().setValue(ds);
         } else if (element.equals(LINKER_LIB_ITEMS_ELEMENT)) {
             currentLibrariesConfiguration = null;
+        } else if (element.equals(REQUIRED_PROJECTS_ELEMENT)) {
+            currentRequiredProjectsConfiguration = null;
         } else if (element.equals(LINKER_LIB_OPTION_ITEM_ELEMENT)) {
             if (currentLibrariesConfiguration != null)
                 currentLibrariesConfiguration.add(new LibraryItem.OptionItem(currentText));

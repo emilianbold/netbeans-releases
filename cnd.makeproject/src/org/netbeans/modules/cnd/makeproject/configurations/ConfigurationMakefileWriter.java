@@ -235,21 +235,21 @@ public class ConfigurationMakefileWriter {
         String output = getOutput(conf);
         bw.write("# Build Targets\n"); // NOI18N
         if (conf.isCompileConfiguration()) {
-	bw.write(".build-conf: " + "${BUILD_SUBPROJECTS} " + output + "\n"); // NOI18N
-        bw.write("\n"); // NOI18N
-	if (hasSubprojects(conf)) {
-	    bw.write(output + ": " + "${BUILD_SUBPROJECTS}" + "\n"); // NOI18N
-	    bw.write("\n"); // NOI18N
-	}
-        if (conf.isLinkerConfiguration())
-            writeLinkTarget(conf, bw, output);
-        if (conf.isArchiverConfiguration())
-            writeArchiveTarget(conf, bw, output);
-        if (conf.isCompileConfiguration())
-            writeCompileTargets(conf, bw);
+            bw.write(".build-conf: " + "${BUILD_SUBPROJECTS} " + output + "\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+            if (hasSubprojects(conf)) {
+                bw.write(output + ": " + "${BUILD_SUBPROJECTS}" + "\n"); // NOI18N
+                bw.write("\n"); // NOI18N
+            }
+            if (conf.isLinkerConfiguration())
+                writeLinkTarget(conf, bw, output);
+            if (conf.isArchiverConfiguration())
+                writeArchiveTarget(conf, bw, output);
+            if (conf.isCompileConfiguration())
+                writeCompileTargets(conf, bw);
         }
         else if (conf.isMakefileConfiguration()) {
-            bw.write(".build-conf: " + "\n"); // NOI18N
+            bw.write(".build-conf: " + "${BUILD_SUBPROJECTS} " + "\n"); // NOI18N
             writeMakefileTargets(conf, bw);
         }
         writeSubProjectBuildTargets(conf, bw);
@@ -367,17 +367,30 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
         bw.write("# Subprojects\n"); // NOI18N
         bw.write(".build-subprojects:" + "\n"); // NOI18N
-        LibrariesConfiguration librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
-        LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-        for (int j = 0; j < libraryItems.length; j++) {
-            if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
-                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem)libraryItems[j];
-                MakeArtifact makeArtifact = projectItem.getMakeArtifact();
-                String location = makeArtifact.getWorkingDirectory();
-                if (!makeArtifact.getBuild())
-                    continue;
-                bw.write("\tcd " + IpeUtils.escapeOddCharacters(location) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
+        LibrariesConfiguration librariesConfiguration = null;
+        if (conf.isLinkerConfiguration()) {
+            librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
+            
+            LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
+            for (int j = 0; j < libraryItems.length; j++) {
+                if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
+                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem)libraryItems[j];
+                    MakeArtifact makeArtifact = projectItem.getMakeArtifact();
+                    String location = makeArtifact.getWorkingDirectory();
+                    if (!makeArtifact.getBuild())
+                        continue;
+                    bw.write("\tcd " + IpeUtils.escapeOddCharacters(location) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
+                }
             }
+        }
+        
+        LibraryItem.ProjectItem[] projectItems = conf.getRequiredProjectsConfiguration().getRequiredProjectItemsAsArray();
+        for (int i = 0; i < projectItems.length; i++) {
+            MakeArtifact makeArtifact = projectItems[i].getMakeArtifact();
+            String location = makeArtifact.getWorkingDirectory();
+            if (!makeArtifact.getBuild())
+                continue;
+            bw.write("\tcd " + IpeUtils.escapeOddCharacters(location) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
         }
     }
     
@@ -385,17 +398,30 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
         bw.write("# Subprojects\n"); // NOI18N
         bw.write(".clean-subprojects:" + "\n"); // NOI18N
-        LibrariesConfiguration librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
-        LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-        for (int j = 0; j < libraryItems.length; j++) {
-            if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
-                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem)libraryItems[j];
-                MakeArtifact makeArtifact = projectItem.getMakeArtifact();
-                String location = makeArtifact.getWorkingDirectory();
-                if (!makeArtifact.getBuild())
-                    continue;
-                bw.write("\tcd " + IpeUtils.escapeOddCharacters(location) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
+        LibrariesConfiguration librariesConfiguration = null;
+        if (conf.isLinkerConfiguration()) {
+            librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
+            
+            LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
+            for (int j = 0; j < libraryItems.length; j++) {
+                if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
+                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem)libraryItems[j];
+                    MakeArtifact makeArtifact = projectItem.getMakeArtifact();
+                    String location = makeArtifact.getWorkingDirectory();
+                    if (!makeArtifact.getBuild())
+                        continue;
+                    bw.write("\tcd " + IpeUtils.escapeOddCharacters(location) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
+                }
             }
+        }
+        
+        LibraryItem.ProjectItem[] projectItems = conf.getRequiredProjectsConfiguration().getRequiredProjectItemsAsArray();
+        for (int i = 0; i < projectItems.length; i++) {
+            MakeArtifact makeArtifact = projectItems[i].getMakeArtifact();
+            String location = makeArtifact.getWorkingDirectory();
+            if (!makeArtifact.getBuild())
+                continue;
+            bw.write("\tcd " + IpeUtils.escapeOddCharacters(location) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
         }
     }
     

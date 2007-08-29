@@ -125,7 +125,10 @@ public class LibraryItem {
 	}
 
 	public String getToolTip() {
-	    return getString("ProjectTxt") + " " + getMakeArtifact().getProjectLocation() + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
+            String ret = getString("ProjectTxt") + " " + getMakeArtifact().getProjectLocation(); // NOI18N
+            if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0)
+                ret = ret + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
+            return ret;
 	}
 
 	public String getIconName() {
@@ -133,7 +136,10 @@ public class LibraryItem {
 	}
 
 	public String toString() {
-	    return IpeUtils.getBaseName(getMakeArtifact().getProjectLocation()) + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
+            String ret = IpeUtils.getBaseName(getMakeArtifact().getProjectLocation());
+            if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0)
+                ret = ret + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
+            return ret;
 	}
 
 	public void setValue(String value) {

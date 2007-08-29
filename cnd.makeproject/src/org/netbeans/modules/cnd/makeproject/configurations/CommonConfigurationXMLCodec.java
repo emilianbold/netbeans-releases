@@ -39,6 +39,7 @@ import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 
 /**
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec
@@ -46,6 +47,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerCo
 
 /**
  * History:
+ * V39:
+ *   Added Required Projects for unmanaged projects (REQUIRED_PROJECTS_ELEMENT)
  * V38:
  *   Added Mac OS X platform == 4 and changed Generic platform to 5
  * V37:
@@ -74,7 +77,7 @@ abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    protected final static int CURRENT_VERSION = 38;
+    protected final static int CURRENT_VERSION = 39;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -90,6 +93,7 @@ abstract class CommonConfigurationXMLCodec
     protected final static String LOGICAL_FOLDER_ELEMENT = "logicalFolder"; // NOI18N
     protected final static String ITEM_PATH_ELEMENT = "itemPath"; // NOI18N
     protected final static String PROJECT_MAKEFILE_ELEMENT = "projectmakefile"; // NOI18N
+    protected final static String REQUIRED_PROJECTS_ELEMENT = "requiredProjects"; // NOI18N
     // Tools Set (Compiler set and platform)
     protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
     protected final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
@@ -298,6 +302,7 @@ abstract class CommonConfigurationXMLCodec
 	//if (makeConfiguration.getLinkerConfiguration() != null)
 	//    writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
 	xes.elementClose(MAKETOOL_ELEMENT);
+        writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
 	xes.elementClose(MAKEFILE_TYPE_ELEMENT);
     }
 
@@ -483,6 +488,15 @@ abstract class CommonConfigurationXMLCodec
 	    }
 	}
 	xes.elementClose(LINKER_LIB_ITEMS_ELEMENT);
+    }
+    
+    public static void writeRequiredProjects(XMLEncoderStream xes, RequiredProjectsConfiguration requiredProjectsConfiguration) {
+	LibraryItem.ProjectItem[] projectItems = requiredProjectsConfiguration.getRequiredProjectItemsAsArray();
+	xes.elementOpen(REQUIRED_PROJECTS_ELEMENT);
+	for (int i = 0; i < projectItems.length; i++) {
+            writeMakeArtifact(xes, projectItems[i].getMakeArtifact());
+	}
+	xes.elementClose(REQUIRED_PROJECTS_ELEMENT);
     }
 
     public static void writeMakeArtifact(XMLEncoderStream xes, MakeArtifact makeArtifact) {

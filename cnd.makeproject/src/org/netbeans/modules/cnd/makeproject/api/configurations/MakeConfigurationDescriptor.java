@@ -532,13 +532,22 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         Configuration[] confs = getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration)confs[i];
-            LibrariesConfiguration librariesConfiguration = makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration();
-            LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-            for (int j = 0; j < libraryItems.length; j++) {
-                if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
-                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem)libraryItems[j];
-                    subProjects.add(projectItem.getMakeArtifact().getProjectLocation());
+            LibrariesConfiguration librariesConfiguration = null;
+            
+            if (((MakeConfiguration)confs[i]).isLinkerConfiguration()) {
+                librariesConfiguration = makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration();
+                LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
+                for (int j = 0; j < libraryItems.length; j++) {
+                    if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
+                        LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem)libraryItems[j];
+                        subProjects.add(projectItem.getMakeArtifact().getProjectLocation());
+                    }
                 }
+            }
+            
+            LibraryItem.ProjectItem[] projectItems = makeConfiguration.getRequiredProjectsConfiguration().getRequiredProjectItemsAsArray();
+            for (int j = 0; j < projectItems.length; j++) {
+                subProjects.add(projectItems[j].getMakeArtifact().getProjectLocation());
             }
         }
         

@@ -201,7 +201,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 
     class AddProjectButtonAction implements java.awt.event.ActionListener {
 	public void actionPerformed(java.awt.event.ActionEvent evt) {
-	    MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(getString("ADD_PROJECT_DIALOG_TITLE"), project, myListEditorPanel);
+	    MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(MakeArtifactChooser.ArtifactType.LIBRARY, project, myListEditorPanel);
 	    if (artifacts != null) {
 		for (int i = 0; i < artifacts.length; i++) {
 		    String location;
@@ -313,9 +313,9 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 	    path = FilePathAdaptor.mapToRemote(path);
 	    path = FilePathAdaptor.normalize(path);
 	    // FIXUP: why are baseDir UNIX path when remote?
-	    if (pathPanel.getMode() == PathPanel.REL_OR_ABS)
+	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
 		path = IpeUtils.toAbsoluteOrRelativePath(baseDir, path);
-	    else if (pathPanel.getMode() == PathPanel.REL)
+	    else if (PathPanel.getMode() == PathPanel.REL)
 		path = IpeUtils.toRelativePath(baseDir, path);
 	    else
 		path = path;

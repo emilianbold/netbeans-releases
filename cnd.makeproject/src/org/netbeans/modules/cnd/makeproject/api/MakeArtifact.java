@@ -180,18 +180,23 @@ public class MakeArtifact {
 	return output;
     }
 
+    @Override
     public String toString() {
-	return getOutput() + "  [" + getConfigurationName() + "]"; // NOI18N
+        String ret = getConfigurationName();
+        if (getOutput() != null && getOutput().length() > 0)
+	    ret = ret + " (" + getOutput() + ")"; // NOI18N
+        return ret;
     }
 
     public static MakeArtifact[] getMakeArtifacts(Project project) {
-	MakeArtifactProvider map = (MakeArtifactProvider)project.getLookup().lookup(MakeArtifactProvider.class );
+	MakeArtifactProvider map = project.getLookup().lookup(MakeArtifactProvider.class);
 	if (map != null)
 	    return map.getBuildArtifacts();
 	else
 	    return null;
     }
 
+    @Override
     public Object clone() {
 	return new MakeArtifact(
 	    projectLocation,
