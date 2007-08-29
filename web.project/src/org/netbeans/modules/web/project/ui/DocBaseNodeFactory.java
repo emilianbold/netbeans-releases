@@ -90,9 +90,9 @@ public final class DocBaseNodeFactory implements NodeFactory {
         public List<String> keys() {
             FolderHolder nodeFolders = getNodeFolders();
             List<String> result = new ArrayList<String>();
-            result.add(DOC_BASE);
+            result.add(DOC_BASE + nodeFolders.getWebDocBaseDir().getPath());
             if (!nodeFolders.hasCorrectStructure()) {
-                result.add(WEB_INF);
+                result.add(WEB_INF + nodeFolders.getWebInfDir().getPath());
             }
             return result;
         }
@@ -107,14 +107,14 @@ public final class DocBaseNodeFactory implements NodeFactory {
 
         public Node node(String key) {
             FolderHolder nodeFolders = getNodeFolders();
-            if (key == DOC_BASE) {
+            if (key.startsWith(DOC_BASE)) {
                 FileObject webDocBaseDir = nodeFolders.getWebDocBaseDir();
                 DataFolder webFolder = getFolder(webDocBaseDir);
                 if (webFolder != null) {
                     return new DocBaseNode(webFolder, project);
                 }
                 return null;
-            } else if (key == WEB_INF) {
+            } else if (key.startsWith(WEB_INF)) {
                 if (nodeFolders.hasCorrectStructure()) {
                     return null;
                 }
@@ -233,7 +233,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
         }
     }
 
-    private static class BaseNode extends FilterNode {
+    private static abstract class BaseNode extends FilterNode {
         private static Image WEB_PAGES_BADGE = Utilities.loadImage( "org/netbeans/modules/web/project/ui/resources/webPagesBadge.gif" ); //NOI18N
         
         private Action actions[];
