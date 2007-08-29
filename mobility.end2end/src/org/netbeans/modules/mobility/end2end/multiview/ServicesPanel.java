@@ -167,7 +167,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     }
     
     private void updateTree() {
-         final Project serverProject = Util.getServerProject( configuration );
+        final Project serverProject = Util.getServerProject( configuration );
         if( !wsdl ) {
             rootNode = ServiceNodeManager.getRootNode( serverProject );
         } else {

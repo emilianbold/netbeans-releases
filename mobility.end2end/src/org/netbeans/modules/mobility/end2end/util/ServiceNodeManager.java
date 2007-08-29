@@ -48,10 +48,8 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import org.openide.ErrorManager;
+import org.netbeans.modules.mobility.e2e.classdata.MethodParameter;
 import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -228,10 +226,27 @@ public class ServiceNodeManager {
             protected Node[] createNodes(ClassData classData) {
                 AbstractNode n = new AbstractNode(new ClassChildren(classData), Lookups.singleton(classData));
                 n.setName(classData.getName());
-                n.setDisplayName(classData.getName());
+                StringBuffer nodeText = new StringBuffer();
+                createDisplayName(nodeText, classData);
+                n.setDisplayName(nodeText.toString());
                 n.setIconBaseWithExtension(CLASS_ICON);
                 n.setValue(NODE_VALIDITY_ATTRIBUTE, Boolean.valueOf(activeProfileRegistry.getClassData(classData.getFullyQualifiedName()) != null));
                 return new Node[] {n};
+            }
+        }
+        
+        private void createDisplayName(StringBuffer sb, ClassData cl) {
+            sb.append(cl.getName());
+            List<ClassData> gTypes = cl.getParameterTypes();
+            if (gTypes.size() > 0) {
+                sb.append('<');
+                boolean first = true;
+                for (ClassData param : gTypes) {
+                    if (first) first = false;
+                    else sb.append(',');
+                    createDisplayName(sb, param);
+                }
+                sb.append('>');
             }
         }
         
@@ -250,9 +265,16 @@ public class ServiceNodeManager {
             }
             
             protected Node[] createNodes(MethodData methodData) {
-                StringBuffer nodeText = new StringBuffer(methodData.getReturnType().getName());
+                StringBuffer nodeText = new StringBuffer();
+                createDisplayName(nodeText, methodData.getReturnType());
                 nodeText.append(' ').append(methodData.getName()).append('(');
                 boolean first = true;
+                for (MethodParameter param : methodData.getParameters()) {
+                    if (first) first = false;
+                    else nodeText.append(',');
+                    createDisplayName(nodeText, param.getType());
+                    nodeText.append(' ').append(param.getName());
+                }
                 nodeText.append(')');
                 AbstractNode n = new AbstractNode(Children.LEAF, Lookups.singleton(methodData));
                 n.setName(methodData.getName());
