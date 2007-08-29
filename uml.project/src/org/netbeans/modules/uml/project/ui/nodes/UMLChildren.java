@@ -20,12 +20,13 @@
 
 package org.netbeans.modules.uml.project.ui.nodes;
 
-import java.util.ArrayList;
+import java.util.TreeSet;
 
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
+import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeComparable;
 import org.netbeans.modules.uml.project.ui.ITreeItemExpandContext;
 import org.netbeans.modules.uml.project.ui.NetBeansUMLProjectTreeModel;
 // import org.netbeans.modules.uml.core.support.Debug;
@@ -34,13 +35,13 @@ import org.netbeans.modules.uml.project.ui.NetBeansUMLProjectTreeModel;
  *
  * @author Trey Spiva
  */
-public class UMLChildren extends Children.SortedArray
+public class UMLChildren extends Children.Array
 {
    private ITreeItem mItem = null;
 
    public UMLChildren()
    {
-   	super();
+       super(new TreeSet());
    }
    
    /**
@@ -48,8 +49,8 @@ public class UMLChildren extends Children.SortedArray
     */
    public UMLChildren(ITreeItem item)
    {
-      super();
-      
+      this();
+
       setItem(item);
       //setComparator(new ProjectTreeComparable());
    }
@@ -57,39 +58,10 @@ public class UMLChildren extends Children.SortedArray
 
    public boolean add(Node[] arr)
    {
-       if (batchAddRequests) 
-       {
-	   if (batchedNodes == null) 
-	   { 
-	       batchedNodes = new ArrayList<Node>();
-	   }
-	   if (arr != null) 
-	   {
-	       for(Node n : arr) 
-	       {
-		   if (! batchedNodes.contains(n))
-		       batchedNodes.add(n);
-	       }
-	   }
-	   return true;
-       } 
-
        boolean retVal = super.add(arr);
 //       refresh();
        
        return retVal;
-   }
-
-   public boolean flushBatchedAddRequests()
-   {
-       if (batchAddRequests && batchedNodes != null) 
-       { 
-	   boolean retVal = super.add(batchedNodes.toArray(new Node[]{}));
-	   batchedNodes = null;
-	   batchAddRequests = false;
-	   return retVal;
-       } 
-       return false;
    }
 
 
@@ -152,8 +124,8 @@ public class UMLChildren extends Children.SortedArray
     */
    protected void sendNodeExpandEvent()
    {
-      NetBeansUMLProjectTreeModel model = UMLModelRootNode.getProjectTreeModel(); 
-      ITreeItem item = getItem();
+      final NetBeansUMLProjectTreeModel model = UMLModelRootNode.getProjectTreeModel(); 
+      final ITreeItem item = getItem();
       
       // Debug.out.println("UMLChildren Firing node expand event");
       if((model != null) && (item != null))  
@@ -188,8 +160,7 @@ public class UMLChildren extends Children.SortedArray
 	     {
 		 if (nodes != null) 
 		 {
-		     remove(nodes.toArray(new Node[]{}));
-		     nodes = null;
+		     remove(getNodes());
 		     refresh();
 		 }
 	     }
@@ -199,9 +170,7 @@ public class UMLChildren extends Children.SortedArray
 	 {
 	     public void run() 
 	     {
-		 //batchAddRequests = true;
 		 model.fireItemExpanding(item, new ChildrenNodeContext());  
-		 flushBatchedAddRequests();
 	     }
 	 });  
          
@@ -209,9 +178,6 @@ public class UMLChildren extends Children.SortedArray
       }      
    }
 
-   private ArrayList<Node> batchedNodes;
-   private boolean batchAddRequests = false;
-      
  
    /** 
     *  update the nodemap hash in the model to avoid "ghost" nodes in the hash

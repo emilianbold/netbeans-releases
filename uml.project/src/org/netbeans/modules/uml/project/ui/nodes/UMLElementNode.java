@@ -173,15 +173,6 @@ public class UMLElementNode extends AbstractModelElementNode
 		{
 			final UMLChildren children = (UMLChildren)ch;
 			children.setItem(this);
-			//children.setComparator(new ProjectTreeComparable());
-			SwingUtilities.invokeLater(new Runnable()
-			{
-				
-				public void run()
-				{
-					children.setComparator(new ProjectTreeComparable());
-				}
-			});
 		}
 	}
 	
@@ -784,6 +775,9 @@ public class UMLElementNode extends AbstractModelElementNode
 	{
 		boolean retVal = false;
 		
+		if (this.hashCode() == obj.hashCode())
+		    return true;
+        
 		IProjectTreeItem myItem = getData();
 		
 		if (obj instanceof IElement)
@@ -862,7 +856,7 @@ public class UMLElementNode extends AbstractModelElementNode
 	 */
 	public int compareTo(Object o)
 	{
-		return ProjectTreeComparable.compareTo(this, o);
+	    return ProjectTreeComparable.compareTo(this, o);
 	}
 	
 	// to be overridden by subclasses as needed

@@ -408,6 +408,7 @@ public class UMLModelElementNode extends UMLElementNode
     public boolean equals(Object obj)
     {
         boolean retVal = false;
+
         if (this.hashCode() == obj.hashCode())
             return true;
 		

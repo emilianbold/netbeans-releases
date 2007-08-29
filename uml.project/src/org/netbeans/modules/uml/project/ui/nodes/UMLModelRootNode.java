@@ -127,14 +127,6 @@ public class UMLModelRootNode extends UMLModelElementNode
         {
             final UMLChildren children = (UMLChildren)ch;
             ((UMLChildren)ch).setItem(this);
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                
-                public void run()
-                {
-                    children.setComparator(new ProjectTreeComparable());
-                }
-            });
         }
         
         this.displayName = NbBundle.getMessage(

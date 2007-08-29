@@ -46,7 +46,7 @@ public class ProjectTreeComparable implements Comparator
       int retVal = EQUAL_TO;
             
       if((o1 instanceof ITreeItem) && (o2 instanceof ITreeItem))
-      {
+      { 
          ITreeItem lhs = (ITreeItem)o1;
          ITreeItem rhs = (ITreeItem)o2;
          
@@ -54,18 +54,32 @@ public class ProjectTreeComparable implements Comparator
          long rhsPriority = rhs.getSortPriority();
          if(lhsPriority == rhsPriority)
          {
-            String lhsName = lhs.getDisplayedName().toLowerCase();
-            String rhsName = rhs.getDisplayedName().toLowerCase();
-            int result = lhsName.compareTo(rhsName);
-            
-            retVal = EQUAL_TO;
-            if(result > 0)
-            {
-               retVal = GREATER_THAN;
-            }
-            else if(result < 0)
-            {
-               retVal = LESS_THAN;
+	    String lhsName;
+	    String rhsName;
+	    if (o1 instanceof ITreeDiagram && o2 instanceof ITreeDiagram) 
+	    {
+		ITreeDiagram diagram1 = (ITreeDiagram)o1;
+		ITreeDiagram diagram2 = (ITreeDiagram)o2;
+		lhsName = diagram1.getData().getDescription();
+		rhsName = diagram2.getData().getDescription();		
+	    } 
+	    else 
+	    {
+	        
+		lhsName = lhs.getDisplayedName().toLowerCase();
+		rhsName = rhs.getDisplayedName().toLowerCase();
+	    }
+
+	    int result = lhsName.compareTo(rhsName);
+	    
+	    retVal = EQUAL_TO;
+	    if(result > 0)
+	    {
+		retVal = GREATER_THAN;
+	    }
+	    else if(result < 0)
+	    {
+		retVal = LESS_THAN;
             }
          }
          else if(lhsPriority < rhsPriority)
@@ -80,9 +94,9 @@ public class ProjectTreeComparable implements Comparator
        
       // The NetBeans tree does not like it when two items are equal for some
       // reason. 
-      if(retVal == EQUAL_TO)
+      if(retVal == EQUAL_TO && (! (o1 != null && o1.equals(o2))) )
       {
-         retVal = GREATER_THAN;
+	  retVal = GREATER_THAN;
       }
 
       return retVal;
