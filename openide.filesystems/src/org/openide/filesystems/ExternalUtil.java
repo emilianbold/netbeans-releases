@@ -53,7 +53,7 @@ final class ExternalUtil extends Object {
     /** Notifies an exception.
      */
     public static void exception(Exception ex) {
-        LOG.log(Level.WARNING, null, ex);
+        LOG.log(Level.INFO, null, ex);
     }
 
     /** Copies anotation.
