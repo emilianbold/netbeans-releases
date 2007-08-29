@@ -21,6 +21,7 @@ package org.netbeans.modules.web.wizards;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -175,8 +176,10 @@ public class ServletIterator implements TemplateWizard.Iterator {
             template = templateParent.getFileObject("AdvancedFilter","java"); //NOI18N
         }
         
+        HashMap <String, String> templateParameters =  new HashMap<String, String>();
+        templateParameters.put("servletEditorFold", NbBundle.getMessage(ServletIterator.class, "MSG_ServletEditorFold")); //NOI18N
         DataObject dTemplate = DataObject.find( template );                
-        DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard )  );
+        DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard ), templateParameters  );
 
 	if(debug) log("\topened file"); //NOI18N
 
