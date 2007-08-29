@@ -698,10 +698,13 @@ public class SharedUtils {
         FileObject sourceFolder = getSourceFolder(project, source);
                 
         if (sourceFolder == null) {
-            sourceFolder = source.getParent();
+            sourceFolder = source;
            // throw new IllegalArgumentException(source.getPath()+" is not in project source"); //NOI18N
-        }
-        String relPathToSrcGroup = getRelativePath(source.getParent(), sourceFolder);
+        }        
+        if(!source.isFolder())
+            source = source.getParent();
+        
+        String relPathToSrcGroup = getRelativePath(source, sourceFolder);
         String relPathToSrcGroupWithSlash = relPathToSrcGroup.trim().equals("")? "" : 
             relPathToSrcGroup.concat("/");
         if(project!=targetProject) {

@@ -746,7 +746,8 @@ public class XMLRefactoringTransaction implements Transaction {
                                      //if we have a fobj, we can now have two cases
                                      //the refactoring target model is being moved within the same project
                                      //or the target model is being moved to a different project
-                                     flag = SharedUtils.inSameProject(targetFolder, fobj);
+                                     if(fobj != null)
+                                         flag = SharedUtils.inSameProject(targetFolder, fobj);
                                      
                                  }
                                
