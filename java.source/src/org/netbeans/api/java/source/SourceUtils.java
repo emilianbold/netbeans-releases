@@ -74,6 +74,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
@@ -872,7 +873,10 @@ out:                for (URL e : roots) {
                                 Iterable<? extends ExecutableElement> methods = ElementFilter.methodsIn(te.getEnclosedElements());
                                 for (ExecutableElement method : methods) {
                                     if (isMainMethod(method)) {
-                                        result.add (cls);
+                                        if (isIncluded(cls, control.getClasspathInfo())) {
+                                            result.add (cls);
+                                        }
+                                        break;
                                     }
                                 }
                             }
@@ -885,6 +889,22 @@ out:                for (URL e : roots) {
             }
         }
         return result;
+    }
+
+    private static boolean isIncluded (final ElementHandle<TypeElement> element, final ClasspathInfo cpInfo) {
+        FileObject fobj = getFile (element,cpInfo);
+        if (fobj == null) {
+            //Not source
+            return true;
+        }
+        ClassPath sourcePath = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+        for (ClassPath.Entry e : sourcePath.entries()) {
+            FileObject root = e.getRoot ();
+            if (root != null && FileUtil.isParentOf(root,fobj)) {
+                return e.includes(fobj);
+            }
+        }
+        return true;
     }
     
     private static boolean isCaseSensitive () {
