@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.visualweb.compatibilitykit/1
+OpenIDE-Module-Layer: org/netbeans/modules/visualweb/compatibilitykit/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/compatibilitykit/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: true
