@@ -354,6 +354,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
     
     private static Image brokenProjectBadge = Utilities.loadImage( "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif" ); // NOI18N
+    private static Image brokenIncludeBadge = Utilities.loadImage( "org/netbeans/modules/cnd/makeproject/ui/resources/brokenIncludeBadge.gif" ); // NOI18N
     
     private static Node getWaitNode() {
         return new LoadingNode();
@@ -380,9 +381,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private Image icon;
         private Lookup lookup;
         private Action brokenLinksAction;
-        private boolean broken;
+        private boolean brokenLinks;
+        private boolean brokenIncludes;
         private Folder folder;
-        private final Lookup.Result brokenIncludesResult;
+        private final Lookup.Result<BrokenIncludes> brokenIncludesResult;
         
         public MakeLogicalViewRootNode(Folder folder) {
             super(new LogicalViewChildren(folder), Lookups.fixed(new Object[] {
@@ -394,13 +396,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             setIconBaseWithExtension(MakeConfigurationDescriptor.ICON);
             setName( ProjectUtils.getInformation( project ).getDisplayName() );
             
-            brokenIncludesResult = Lookup.getDefault().lookup(new Lookup.Template(BrokenIncludes.class));
+            brokenIncludesResult = Lookup.getDefault().lookup(new Lookup.Template<BrokenIncludes>(BrokenIncludes.class));
             brokenIncludesResult.addLookupListener(this);
             resultChanged(null);
             
-            if (hasBrokenLinks() || hasBrokenIncludes(project)) {
-                broken = true;
-            }
+            brokenLinks = hasBrokenLinks();
+            brokenIncludes = hasBrokenIncludes(project);
             brokenLinksAction = new BrokenLinksAction();
             // Handle annotations
             setForceAnnotation(true);
@@ -428,12 +429,22 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 ((Folder)iter.next()).addChangeListener(this);
             }
         }
+
+        @Override
+        public String getShortDescription() {
+            if (brokenIncludes){
+                return NbBundle.getMessage(getClass(), "BrokenIncludeTxt");
+            } else {
+                return super.getShortDescription();
+            }
+        }
         
         /*
          * Something in the folder has changed
          **/
         public void stateChanged(ChangeEvent e) {
-            broken = hasBrokenLinks() || hasBrokenIncludes(project);
+            brokenLinks = hasBrokenLinks();
+            brokenIncludes = hasBrokenIncludes(project);
             updateAnnotationFiles();
             fireIconChange();
             fireOpenedIconChange();
@@ -452,13 +463,20 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
         
         public Image getIcon( int type ) {
-            Image original = annotateIcon(super.getIcon(type), type);
-            return broken ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            return mergeBadge(annotateIcon(super.getIcon(type), type));
+        }
+
+        private Image mergeBadge(Image original){
+            if (brokenLinks) {
+                return Utilities.mergeImages(original, brokenProjectBadge, 8, 0);
+            } else if (brokenIncludes) {
+                return Utilities.mergeImages(original, brokenIncludeBadge, 8, 0);
+            }
+            return original;
         }
         
         public Image getOpenedIcon( int type ) {
-            Image original = annotateIcon(super.getOpenedIcon(type), type);
-            return broken ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            return mergeBadge(annotateIcon(super.getOpenedIcon(type), type));
         }
         
         public Action[] getActions( boolean context ) {
@@ -474,7 +492,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 actions.add(standardActions[i]);
             actions.add(null);
             addActionsFromLayers(actions, "NativeProjects/Actions"); // NOI18N
-            if(broken ) {
+            if(brokenIncludes ) {
 		actions.add(getBrokenIncludesAction(project));
 	    }
             actions.add(null);
@@ -566,23 +584,17 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         public void resultChanged(LookupEvent ev) {
-            for (Iterator it = brokenIncludesResult.allInstances().iterator(); it.hasNext();) {
-                BrokenIncludes elem = (BrokenIncludes) it.next();
+            for (BrokenIncludes elem : brokenIncludesResult.allInstances()) {
                 elem.addChangeListener(this);
-            };
+            }
         }
         
         private boolean hasBrokenIncludes(Project project) {
-            BrokenIncludes provider = (BrokenIncludes) Lookup.getDefault().lookup(BrokenIncludes.class);
+            BrokenIncludes provider = Lookup.getDefault().lookup(BrokenIncludes.class);
             if (provider != null) {
-                NativeProject id = (NativeProject) project.getLookup().lookup(NativeProject.class);
+                NativeProject id = project.getLookup().lookup(NativeProject.class);
                 if (id != null) {
-                    Project[] projects = OpenProjects.getDefault().getOpenProjects();
-                    for(int i = 0; i < projects.length; i++) {
-                        if (project.equals(projects[i])){
-                            return provider.isBroken(id);
-                        }
-                    }
+                    return provider.isBroken(id);
                 }
             }
             return false;
@@ -639,10 +651,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
             
             public synchronized void run() {
-                boolean old = broken;
-                broken = hasBrokenLinks();
-                if (old != broken) {
-                    setEnabled(broken);
+                boolean old = brokenLinks;
+                brokenLinks = hasBrokenLinks();
+                if (old != brokenLinks) {
+                    setEnabled(brokenLinks);
                     fireIconChange();
                     fireOpenedIconChange();
                 }
