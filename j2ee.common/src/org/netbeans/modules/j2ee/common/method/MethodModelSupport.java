@@ -37,6 +37,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.util.Parameters;
@@ -173,7 +174,7 @@ public final class MethodModelSupport {
                     null
                     );
         }
-        return result;
+        return (MethodTree) GeneratorUtilities.get(workingCopy).importFQNs(result);
     }
     
     /**
