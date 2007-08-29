@@ -125,9 +125,9 @@ public class DescriptorListener implements PropertyChangeListener {
     
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (lastEventMonitor) {
-            System.out.println("RAW EVENT: " + evt.getPropertyName() +
-                    ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue() + 
-                    ", source = " + evt.getSource());
+//            System.out.println("RAW EVENT: " + evt.getPropertyName() +
+//                    ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue() + 
+//                    ", source = " + evt.getSource());
 
             if(lastEvent != null) {
                 // Cancel scheduled task.  If this were to return false (already run/running)
@@ -208,12 +208,12 @@ public class DescriptorListener implements PropertyChangeListener {
             if(!Utils.strEquals(oldName, newName)) {
                 PropertyChangeEvent changeEvent = new PropertyChangeEvent(newBean, createEvent.getPropertyName() + nameVisitor.getNameProperty(), oldName, newName);
 
-                System.out.println("processing delete/create sequence as change name event.");
+//                System.out.println("processing delete/create sequence as change name event.");
                 processEvent(changeEvent);
                 result = true;
             }
         } else {
-            System.out.println("No support for delete/create sequence from type " + newBean.getClass().getSimpleName());
+//            System.out.println("No support for delete/create sequence from type " + newBean.getClass().getSimpleName());
         }
         
         return result;
@@ -679,7 +679,6 @@ public class DescriptorListener implements PropertyChangeListener {
             String linkName = getLinkName(portDD);
 
             if(Utils.notEmpty(portName) && Utils.notEmpty(linkName)) {
-                System.out.println("Port component \'" + portName + "\' changed.  Operation = " + operation);
                 config.updateDefaultEjbEndpointUri(linkName, portName, operation);
             }
         }        
@@ -750,7 +749,6 @@ public class DescriptorListener implements PropertyChangeListener {
             
             if(Utils.notEmpty(ejbName) && 
                     (operation == SunONEDeploymentConfiguration.ChangeOperation.DELETE || Utils.notEmpty(remote))) {
-                System.out.println("Remote entity/session bean \'" + ejbName + "\' updated.  Operation = " + operation);
                 config.updateDefaultEjbJndiName(ejbName, "ejb/", operation);
             }
         }
@@ -777,7 +775,6 @@ public class DescriptorListener implements PropertyChangeListener {
             
             if(Utils.notEmpty(ejbName) && 
                     (operation == SunONEDeploymentConfiguration.ChangeOperation.DELETE || Utils.notEmpty(remote))) {
-                System.out.println("Remote interface for entity/session bean '" + ejbName + "' changed.  Operation = " + operation);
                 config.updateDefaultEjbJndiName(ejbName, "ejb/", operation);
             }
         }
@@ -801,7 +798,6 @@ public class DescriptorListener implements PropertyChangeListener {
             String ejbName = mdbDD.getEjbName();
             
             if(Utils.notEmpty(ejbName)) {
-                System.out.println("Message driven bean '" + ejbName + "' changed.  Operation = " + operation);
                 config.updateDefaultEjbJndiName(ejbName, "jms/", operation);
             }
         }
