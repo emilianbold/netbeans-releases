@@ -589,11 +589,12 @@ public abstract class CsmResultItem
                 sb.append(ps.getSimpleTypeName());
                 if (ps.isVarArg()) {
                     sb.append("..."); // NOI18N
-                }
-                String name = ps.getName();
-                if (name != null && name.length() > 0) {
-                    sb.append(" "); // NOI18N
-                    sb.append(name);
+                } else {
+                    String name = ps.getName();
+                    if (name != null && name.length() > 0) {
+                        sb.append(" "); // NOI18N
+                        sb.append(name);
+                    }
                 }
                 if (it.hasNext()) {
                     sb.append(", "); // NOI18N
