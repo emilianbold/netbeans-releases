@@ -49,7 +49,7 @@ public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJava
     }
     
     public ClassMemberNavigatorJavaSourceFactory() {        
-        super(Phase.ELEMENTS_RESOLVED, Priority.NORMAL, "text/x-java", "application/x-class-file");
+        super(Phase.ELEMENTS_RESOLVED, Priority.LOW, "text/x-java", "application/x-class-file");
     }
 
     public synchronized CancellableTask<CompilationInfo> createTask(FileObject file) {
