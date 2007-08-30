@@ -185,7 +185,7 @@ public class InsertColumnPanel extends JPanel implements JDBCTableColumnDisplaya
          */
         private static final long serialVersionUID = 1L;
 
-        private final String[] tcolumnNames = { "Select", "Column Name" };
+        private final String[] tcolumnNames = { NbBundle.getMessage( InsertColumnPanel.class, "LBL_Columns_Select"), NbBundle.getMessage( InsertColumnPanel.class, "LBL_Columns_ColumnName")};
 
         private List rowList;
 

@@ -181,7 +181,7 @@ public class UpdateColumnPanel extends JPanel implements JDBCTableColumnDisplaya
          */
         private static final long serialVersionUID = 1L;
 
-        private final String[] tcolumnNames = { "Select", "Column Name" };
+        private final String[] tcolumnNames = { NbBundle.getMessage( UpdateColumnPanel.class, "LBL_Columns_Select"), NbBundle.getMessage( UpdateColumnPanel.class, "LBL_Columns_ColumnName")};
 
         private List rowList;
 

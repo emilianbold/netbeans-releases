@@ -404,13 +404,13 @@ public class JDBCWizardTablePanel extends JPanel {
     }
 
     class ColumnAction implements ActionListener {
-        protected JButton okbutton = new JButton("OK");
+        protected JButton okbutton = new JButton(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_OK"));
 
-        protected JButton cancelbutton = new JButton("Cancel");
+        protected JButton cancelbutton = new JButton(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Cancel"));
         
-        protected JButton selectallbutton = new JButton("Select All");
+        protected JButton selectallbutton = new JButton(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_SelectAll"));
         
-        protected JButton clearallbutton = new JButton("Clear All");
+        protected JButton clearallbutton = new JButton(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_ClearAll"));
 
         protected JPanel buttonpanel = new JPanel();
 
@@ -485,10 +485,10 @@ public class JDBCWizardTablePanel extends JPanel {
          */
         public void initializeColumn() {
             this.columnDisplayDialog.setTitle(this.title);
-            this.correspInsertCol.setName("Insert");
-            this.correspUpdateCol.setName("Update");
-            this.correspChosenCol.setName("Find");//
-            this.correspPolledCol.setName("PollRecords");
+            this.correspInsertCol.setName(NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_Col_Insert"));
+            this.correspUpdateCol.setName(NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_Col_Update"));
+            this.correspChosenCol.setName(NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_Col_Find"));//
+            this.correspPolledCol.setName(NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_Col_PollRecords"));
             
             this.myTabpane = new JTabbedPane();
             this.myTabpane.add(this.correspInsertCol);
@@ -644,7 +644,7 @@ public class JDBCWizardTablePanel extends JPanel {
          */
         private static final long serialVersionUID = 1L;
 
-        private final String[] columnNames = { "Select", "Table Name", "Properties" };
+        private final String[] columnNames = { NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_select_jLabell" ),NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_tablename_jLabell" ),NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_properties_jLabell" ) };
 
         private List rowList;
 
@@ -944,8 +944,8 @@ public class JDBCWizardTablePanel extends JPanel {
     public void resetTable(final List tableNameList) {
         final MyTableModel myMod = new MyTableModel(tableNameList);
         this.metaDataTable.setModel(myMod);
-        this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer("Advanced.."));
-        this.metaDataTable.getColumn("Properties").setCellEditor(new MyButtonRenderer("Advanced.."));
+        this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
+        this.metaDataTable.getColumn("Properties").setCellEditor(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
         column.setResizable(false);
@@ -969,8 +969,8 @@ public class JDBCWizardTablePanel extends JPanel {
         this.metaDataTable.getTableHeader().setFont(JDBCWizardTablePanel.FONT_TABLE_HEADER);
         final MyTableModel myModel = new MyTableModel(testList);
         this.metaDataTable.setModel(myModel);
-        this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer("Advacned.."));
-        this.metaDataTable.getColumn("Properties").setCellEditor(new MyButtonRenderer("Advanced.."));
+        this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
+        this.metaDataTable.getColumn("Properties").setCellEditor(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
         this.setLayout(new BorderLayout());
         // add(headerPnl, BorderLayout.NORTH);
         this.setPreferredSize(new Dimension(100, 100));
