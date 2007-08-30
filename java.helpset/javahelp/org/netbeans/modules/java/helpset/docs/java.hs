@@ -26,12 +26,6 @@
     <data>javadev-toc.xml</data> 
   </view>
 
-  <view>
-    <name>Index</name>
-    <label>Index</label>
-    <type>javax.help.IndexView</type>
-    <data>javadev-index.xml</data>
-  </view>
 
   <view>
     <name>Search</name>
