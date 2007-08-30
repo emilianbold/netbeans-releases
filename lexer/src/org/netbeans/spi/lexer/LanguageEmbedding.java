@@ -23,7 +23,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.LanguageOperation;
 import org.netbeans.lib.lexer.LexerApiPackageAccessor;
-import org.netbeans.lib.lexer.LexerUtilsConstants;
 
 /**
  * Description of a particular language embedding including
@@ -61,15 +60,8 @@ public final class LanguageEmbedding<T extends TokenId> {
      *  and there will be no tokens created for them.
      * @param joinSections whether sections with this embedding should be joined
      *  across the input source or whether they should stay separate.
-     *  <br/>
-     *  For example for HTML sections embedded in JSP this flag should be true:
-     *  <pre>
-     *   &lt;!-- HTML comment start
-     *       &lt;% System.out.println("Hello"); %&gt;
-            still in HTML comment --&lt;
-     *  </pre>
-     *  <br/>
-     *  Only the embedded sections with the same language path can be joined.
+     *  See also {@link #joinSections()}.
+     * @return non-null language embedding instance.
      */
     public static <T extends TokenId> LanguageEmbedding<T> create(
     Language<T> language, int startSkipLength, int endSkipLength, boolean joinSections) {
@@ -148,6 +140,41 @@ public final class LanguageEmbedding<T extends TokenId> {
     /**
      * Whether sections with this embedding should be joined with the other
      * sections with this embedding at the same level.
+     * <br/>
+     * For example for HTML sections embedded in JSP this flag should be true:
+     * <pre>
+     *  &lt;!-- HTML comment start
+     *      &lt;% System.out.println("Hello"); %&gt;
+           still in HTML comment --&lt;
+     * </pre>
+     * <br/>
+     * Only the embedded sections with the same language path will be joined.
+     * <br/>
+     * When a particular embedded section would get relexed till its end then
+     * the next section may get relexed as well. For example if someone would add
+     * "--&gt;" at the end of the first line in the example above then the third
+     * line that used to be comment will be relexed and it will become an html text.
+     * <br/>
+     * Generally relexing of a next section happens in the following cases:
+     * <ul>
+     *     <li>
+     *     Tokens right to the end of the present section get relexed
+     *     and state after the present last token differs from the one that
+     *     was there before relexing. Or a state is the same but the last token
+     *     of the section was incomplete and after the relexing either token id
+     *     or part type of the token differs.
+     *     </li>
+     *     <li>
+     *     One or more sections were removed due to modification and it's necessary
+     *     to connect the previous non-removed section with the first one
+     *     that follows the removed ones.
+     *     </li>
+     *     <li>
+     *     One or more sections were added due to modification and it's necessary
+     *     to connect the previous non-removed section with the first one
+     *     that follows the removed ones.
+     *     </li>
+     * </ul>
      *
      * @return joinSections whether sections with this embedding should be joined
      *  across the input source or whether they should stay separate.

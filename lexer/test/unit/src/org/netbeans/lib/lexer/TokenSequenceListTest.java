@@ -97,7 +97,7 @@ public class TokenSequenceListTest extends NbTestCase {
 
     private void testHierarchy(TokenHierarchy<?> tokenHierarchy) throws Exception {
         LanguagePath lp = LanguagePath.get(TestTokenId.language());
-        List<TokenSequence<? extends TokenId>> tsList = tokenHierarchy.tokenSequenceList(lp, 0, Integer.MAX_VALUE);
+        List<TokenSequence<?>> tsList = tokenHierarchy.tokenSequenceList(lp, 0, Integer.MAX_VALUE);
         assertEquals(1, tsList.size());
         TokenSequence<?> ts = tsList.get(0);
         assertTrue(ts.moveNext());

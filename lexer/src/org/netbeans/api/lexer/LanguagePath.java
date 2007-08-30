@@ -116,12 +116,18 @@ public final class LanguagePath {
      */
     private String mimePath;
     
+    /**
+     * Language path with inner language removed. Null for single-language paths.
+     */
+    private LanguagePath parent;
+    
     
     private LanguagePath(LanguagePath prefix, Language<? extends TokenId> language) {
         int prefixSize = prefix.size();
         this.languages = allocateLanguageArray(prefixSize + 1);
         System.arraycopy(prefix.languages, 0, this.languages, 0, prefixSize);
         this.languages[prefixSize] = language;
+        this.parent = (prefix == EMPTY) ? null : prefix;
     }
     
     /** Build EMPTY LanguagePath */
@@ -175,7 +181,7 @@ public final class LanguagePath {
             initLanguage2path();
             Reference<LanguagePath> lpRef = language2path.get(language);
             LanguagePath lp;
-            if (lpRef == null || (lp = (LanguagePath)lpRef.get()) == null) {
+            if (lpRef == null || (lp = lpRef.get()) == null) {
                 // Construct the LanguagePath
                 lp = new LanguagePath(this, language);
                 language2path.put(language, new SoftReference<LanguagePath>(lp));
@@ -202,7 +208,7 @@ public final class LanguagePath {
             initLanguage2path();
             Reference<LanguagePath> lpRef = language2path.get(suffix);
             LanguagePath lp;
-            if (lpRef == null || (lp = (LanguagePath)lpRef.get()) == null) {
+            if (lpRef == null || (lp = lpRef.get()) == null) {
                 // Construct the LanguagePath
                 lp = this;
                 for (int i = 0; i < suffix.size(); i++) {
@@ -214,20 +220,15 @@ public final class LanguagePath {
             return lp;
         }
     }
-    
+
     /**
-     * Check whether the language of this language path
-     * at the given index is the given language.
-     * <br>
-     * Index zero corresponds to the root language.
-     *
-     * @param index >=0 && < {@link #size()}.
-     * @return non-null language at the given index.
-     * @throws IndexOutOfBoundsException in case the index is not within
-     *   required bounds.
+     * Returns language path consisting of <code>&lt;0, size() - 1&gt;</code>
+     * languages (i.e. the inner language is cut out).
+     * <code>
+     * If {@link #size()} == 1 then <code>null</code> is returned.
      */
-    public boolean isLanguage(int index, Language<? extends TokenId> language) {
-        return (language(index) == language);
+    public LanguagePath parent() {
+        return parent;
     }
 
     /**
@@ -242,16 +243,6 @@ public final class LanguagePath {
     }
     
     /**
-     * Check whether the top-level language of this language path
-     * is the given language.
-     *
-     * @see #isLanguage(int, Language)
-     */
-    public boolean isTopLanguage(Language<? extends TokenId> language) {
-        return (topLanguage() == language);
-    }
-    
-    /**
      * Return the most inner language of this path.
      * <br/>
      * It's equivalent to <code>language(size() - 1)</code>.
@@ -260,16 +251,6 @@ public final class LanguagePath {
      */
     public Language<? extends TokenId> innerLanguage() {
         return language(size() - 1);
-    }
-    
-    /**
-     * Check whether the most inner language of this language path
-     * is the given language.
-     *
-     * @see #isLanguage(int, Language)
-     */
-    public boolean isInnerLanguage(Language<? extends TokenId> language) {
-        return (innerLanguage() == language);
     }
     
     /**

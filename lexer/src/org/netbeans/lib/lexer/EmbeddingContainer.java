@@ -23,7 +23,6 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.inc.TokenChangeInfo;
 import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
 import org.netbeans.spi.lexer.LanguageEmbedding;
@@ -91,18 +90,18 @@ public final class EmbeddingContainer<T extends TokenId> {
         // Now either ec == null for no embedding yet or linked list of embedded token lists of ec
         // need to be processed to find the embedded token list for requested language.
         synchronized (tokenList.root()) {
-            EmbeddedTokenList<? extends TokenId> lastEtl;
+            EmbeddedTokenList<? extends TokenId> prevEtl;
             if (ec != null) {
                 ec.updateStatus();
                 EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
-                lastEtl = null;
+                prevEtl = null;
                 while (etl != null) {
                     if (embeddedLanguage == null || etl.languagePath().innerLanguage() == embeddedLanguage) {
                         @SuppressWarnings("unchecked")
                         EmbeddedTokenList<ET> etlUC = (EmbeddedTokenList<ET>)etl;
                         return etlUC;
                     }
-                    lastEtl = etl;
+                    prevEtl = etl;
                     etl = etl.nextEmbeddedTokenList();
                 }
                 // Requested etl not found
@@ -111,7 +110,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                 }
 
             } else { // No embedding yet
-                lastEtl = null;
+                prevEtl = null;
             }
 
             // Attempt to create the default embedding
@@ -131,10 +130,18 @@ public final class EmbeddingContainer<T extends TokenId> {
                 }
                 LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath,
                         embedding.language());
+                // When joining sections ensure that the token list list gets created
+                // Even possibly existing token list list needs to be marked as mandatory
+                // since there is at least one embedding that joins the sections.
+                TokenHierarchyOperation hi;
+                if (embedding.joinSections() && (hi = tokenList.tokenHierarchyOperation()) != null) {
+                    TokenListList tll = hi.tokenListList(embeddedLanguagePath);
+                    tll.setJoinSections(true);
+                }
                 EmbeddedTokenList<ET> etl = new EmbeddedTokenList<ET>(ec,
                         embeddedLanguagePath, embedding, null);
-                if (lastEtl != null) {
-                    lastEtl.setNextEmbeddedTokenList(etl);
+                if (prevEtl != null) {
+                    prevEtl.setNextEmbeddedTokenList(etl);
                 } else {
                     ec.setFirstEmbeddedTokenList(etl);
                 }
@@ -153,19 +160,6 @@ public final class EmbeddingContainer<T extends TokenId> {
         }
     }
     
-    public static EmbeddedTokenList<? extends TokenId> getEmbeddingIfExists(
-    Object tokenOrEmbeddingContainer) {
-        if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
-            EmbeddingContainer<? extends TokenId> ec
-                    = (EmbeddingContainer<? extends TokenId>)tokenOrEmbeddingContainer;
-            ec.updateStatus();
-            EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
-            return etl;
-        } else {
-            return null;
-        }
-    }
-
     /**
      * Create custom embedding.
      *
@@ -234,12 +228,21 @@ public final class EmbeddingContainer<T extends TokenId> {
             LanguagePath languagePath = tokenList.languagePath();
             LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath, embeddedLanguage);
             tokenHierarchyOperation.addLanguagePath(embeddedLanguagePath);
-            // Make the embedded token list to be the first in the list
+            // When joining sections ensure that the token list list gets created
+            // Even possibly existing token list list needs to be marked as mandatory
+            // since there is at least one embedding that joins the sections.
+            if (embedding.joinSections()) {
+                TokenListList tll = tokenHierarchyOperation.tokenListList(embeddedLanguagePath);
+                tll.setJoinSections(true);
+            }
             // Make the embedded token list to be the first in the list
             etl = new EmbeddedTokenList<ET>(
                     ec, embeddedLanguagePath, embedding, ec.firstEmbeddedTokenList());
             ec.setFirstEmbeddedTokenList(etl);
-            // Increment mod count? - not in this case
+            // Increment mod count and since the addition may produce tokens
+            // for joined sections then this needs to be processed
+            // similarly as a regular text modification.
+            // TBD - implement embedded sections handling
         }
 
         // Fire the embedding creation to the clients
@@ -272,8 +275,8 @@ public final class EmbeddingContainer<T extends TokenId> {
                     LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo));
         return true;
     }
-
-    private final AbstractToken<T> token; // 12 bytes (8-super + 4)
+    
+    private AbstractToken<T> token; // 12 bytes (8-super + 4)
     
     /**
      * Cached modification count allows to determine whether the start offset
@@ -312,7 +315,7 @@ public final class EmbeddingContainer<T extends TokenId> {
      * <br>
      * The offset gets refreshed upon <code>updateStartOffset()</code>.
      */
-    private int rootTokenOffsetShift; // 36 bytes
+    private int offsetShiftFromRootToken; // 36 bytes
     
     /**
      * Embedded token list that represents the default embedding.
@@ -322,22 +325,32 @@ public final class EmbeddingContainer<T extends TokenId> {
     private EmbeddedTokenList<? extends TokenId> defaultEmbeddedTokenList; // 40 bytes
     
     public EmbeddingContainer(AbstractToken<T> token) {
-        this.token = token;
-        TokenList<T> embeddedTokenList = token.tokenList();
-        this.rootTokenList = embeddedTokenList.root();
-        this.rootToken = (embeddedTokenList.getClass() == EmbeddedTokenList.class)
-                ? ((EmbeddedTokenList<? extends TokenId>)embeddedTokenList).rootToken()
-                : token;
+        setToken(token);
+        this.rootTokenList = rootToken.tokenList(); // Should not change in future
         // cachedModCount must differ from root's one to sync offsets
         // Root mod count can be >= 0 or -1 for non-incremental token lists
         // It also cannot be -2 which means that this container is no longer
         // attached to the token hierarchy.
         this.cachedModCount = -3;
+        // Update the tokenStartOffset etc. - this assumes that the token
+        // is already parented till the root token list.
         updateStatus();
     }
 
     public AbstractToken<T> token() {
         return token;
+    }
+    
+    /**
+     * Make this container serve a different token.
+     * The updateStatus() should be called afterwards to update tokenStartOffset etc.
+     */
+    public void setToken(AbstractToken<T> token) {
+        this.token = token;
+        TokenList<T> embeddedTokenList = token.tokenList();
+        this.rootToken = (embeddedTokenList.getClass() == EmbeddedTokenList.class)
+                ? ((EmbeddedTokenList<? extends TokenId>)embeddedTokenList).rootToken()
+                : token;
     }
     
     public TokenList<? extends TokenId> rootTokenList() {
@@ -353,11 +366,11 @@ public final class EmbeddingContainer<T extends TokenId> {
     }
     
     public int rootTokenOffsetShift() {
-        return rootTokenOffsetShift;
+        return offsetShiftFromRootToken;
     }
     
     public char charAt(int tokenRelOffset) {
-        return rootToken.charAt(rootTokenOffsetShift + tokenRelOffset);
+        return rootToken.charAt(offsetShiftFromRootToken + tokenRelOffset);
     }
     
     public EmbeddedTokenList<? extends TokenId> firstEmbeddedTokenList() {
@@ -378,27 +391,30 @@ public final class EmbeddingContainer<T extends TokenId> {
     
     public boolean updateStatus() {
         synchronized (rootTokenList) {
-            rootToken = updateStatusImpl();
-            return (rootToken != null);
+            return (updateStatusImpl() != null);
         }
     }
     
+    /**
+     * Update and return root token corresponding to this embedding container.
+     */
     AbstractToken<? extends TokenId> updateStatusImpl() {
         if (rootToken == null)
             return null; // Removed from hierarchy
         int rootModCount;
         if (cachedModCount != (rootModCount = rootTokenList.modCount())) {
             cachedModCount = rootModCount;
-            tokenStartOffset = token.offset(null);
-            rootTokenOffsetShift = tokenStartOffset - rootToken.offset(null);
-
             TokenList<?> tl = token.tokenList();
             if (tl == null) {
-                return null;
-            }
-            if (tl instanceof EmbeddedTokenList) {
-                EmbeddingContainer<?> ec = ((EmbeddedTokenList<?>)tl).embeddingContainer();
-                return ec.updateStatusImpl();
+                rootToken = null;
+            } else if (tl.getClass() == EmbeddedTokenList.class) {
+                EmbeddedTokenList<?> etl = (EmbeddedTokenList<?>)tl;
+                rootToken = etl.embeddingContainer().updateStatusImpl();
+                tokenStartOffset = etl.childTokenOffsetNoUpdate(token.rawOffset());
+                offsetShiftFromRootToken = tokenStartOffset - rootToken.offset(null);
+            } else { // parent is in IncTokenList: rootToken == token
+                tokenStartOffset = token.offset(null);
+                offsetShiftFromRootToken = 0;
             }
         }
         return rootToken;

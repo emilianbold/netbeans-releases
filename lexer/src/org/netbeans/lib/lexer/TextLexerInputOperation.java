@@ -60,7 +60,9 @@ public class TextLexerInputOperation<T extends TokenId> extends LexerInputOperat
         startOffset -= inputTextStartOffset;
         endOffset -= inputTextStartOffset;
         assert (0 <= startOffset) && (startOffset <= endOffset)
-            && (endOffset <= inputText.length());
+            && (endOffset <= inputText.length())
+            : "startOffset=" + startOffset + ", endOffset=" + endOffset
+                + ", inputText.length()=" + inputText.length();
         setTokenStartIndex(startOffset);
         readEndIndex = endOffset;
     }

@@ -146,7 +146,7 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
     public abstract char readExisting(int index);
     
     public abstract void approveToken(AbstractToken<T> token);
-
+    
     public Set<T> skipTokenIds() {
         return tokenList.skipTokenIds();
     }

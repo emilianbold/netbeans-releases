@@ -370,7 +370,8 @@ public abstract class LanguageHierarchy<T extends TokenId> {
         public <T extends TokenId> LexerRestartInfo<T> createLexerRestartInfo(
         LexerInput input, TokenFactory<T> tokenFactory, Object state,
         LanguagePath languagePath, InputAttributes inputAttributes) {
-            return new LexerRestartInfo<T>(input, tokenFactory, state, languagePath, inputAttributes);
+            return new LexerRestartInfo<T>(input, tokenFactory, state, languagePath,
+                    inputAttributes);
         }
 
         public <T extends TokenId> TokenValidator<T> createTokenValidator(

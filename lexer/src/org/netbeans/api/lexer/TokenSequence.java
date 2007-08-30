@@ -321,7 +321,7 @@ public final class TokenSequence<T extends TokenId> {
      * Create language embedding described by the given parameters.
      * <br/>
      * If the underying text input is mutable then this method should only be called
-     * within a read lock over the text input.
+     * within a write lock over the text input.
      *
      * @param embeddedLanguage non-null embedded language
      * @param startSkipLength &gt;=0 number of characters in an initial part of the token

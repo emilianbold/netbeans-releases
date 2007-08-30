@@ -26,7 +26,7 @@ import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
-import org.netbeans.lib.lexer.TokenListList;
+import org.netbeans.lib.lexer.TokenSequenceList;
 import org.netbeans.lib.lexer.inc.DocumentInput;
 
 /**
@@ -188,8 +188,17 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
     }
     
     /**
-     * Get list of token sequences with the given language path
+     * Get immutable list of token sequences with the given language path
      * from this hierarchy.
+     * <br/>
+     * For mutable token hierarchies the list should only be used
+     * under read-locked input source. A new list should be
+     * obtained after each modification.
+     * {@link java.util.ConcurrentModificationException} may be thrown
+     * when iterating over (or retrieving items) from the obsolete list.
+     * <br/>
+     * For forward exploration of the list the iterator is preferred over
+     * index-based iteration because the list contents can be constructed lazily.
      * 
      * @param languagePath non-null language path that the obtained token sequences
      *  will all have.
@@ -197,12 +206,13 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *  If the particular TS ends after this offset then it will be returned.
      * @param endOffset ending offset of the TS to get. Use Integer.MAX_VALUE for no limit.
      *  If the particular TS starts before this offset then it will be returned.
-     * 
-     * @return The list of <code>TokenSequence</code>s.
+     * @return non-null list of <code>TokenSequence</code>s.
      */
     public List<TokenSequence<? extends TokenId>> tokenSequenceList(
     LanguagePath languagePath, int startOffset, int endOffset) {
-        return TokenListList.createTokenSequenceList(operation, languagePath, startOffset, endOffset);
+        if (languagePath == null)
+            throw new IllegalArgumentException("languagePath cannot be null"); // NOI18N
+        return TokenSequenceList.create(operation, languagePath, startOffset, endOffset);
     }
 
     /**

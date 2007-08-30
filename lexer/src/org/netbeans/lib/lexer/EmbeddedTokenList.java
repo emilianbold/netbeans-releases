@@ -63,7 +63,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      */
     public static final EmbeddedTokenList<TokenId> NO_DEFAULT_EMBEDDING
             = new EmbeddedTokenList<TokenId>(null, null, null, null);
-
+    
     /**
      * Embedding container carries info about the token into which this
      * token list is embedded.
@@ -92,7 +92,8 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      * Next embedded token list forming a single-linked list.
      */
     private EmbeddedTokenList<? extends TokenId> nextEmbeddedTokenList; // 52 bytes
-    
+
+
     public EmbeddedTokenList(EmbeddingContainer<? extends TokenId> embeddingContainer,
     LanguagePath languagePath, LanguageEmbedding<T> embedding,
     EmbeddedTokenList<? extends TokenId> nextEmbedding) {
@@ -101,16 +102,13 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         this.embedding = embedding;
         this.nextEmbeddedTokenList = nextEmbedding;
 
-        if (embeddingContainer != null) { // ec may be null for NO_DEFAULT_EMBEDDING
-            if (modCount() != -1 || testing) {
-                this.laState = LAState.empty(); // Store lookaheads and states
-            }
-
-            init();
+        if (embeddingContainer != null) { // ec may be null for NO_DEFAULT_EMBEDDING only
+            laState = LAState.initState();
         }
     }
 
     private void init() {
+        laState = (modCount() != -1 || testing) ? LAState.empty() : null;
         // Lex the whole input represented by token at once
         LexerInputOperation<T> lexerInputOperation = createLexerInputOperation(
                 0, startOffset(), null);
@@ -149,25 +147,29 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
 
     public int tokenCount() {
-        // initialized at once so no need to check whether lexing is finished
+        if (laState == LAState.initState())
+            init();
         return size();
     }
     
     public synchronized Object tokenOrEmbeddingContainer(int index) {
-        // Assuming all the token are lexed since begining and after updates
+        if (laState == LAState.initState())
+            init();
         return (index < size()) ? get(index) : null;
     }
     
     private Token existingToken(int index) {
-        // Tokens not created lazily -> use regular unsync tokenOrEmbeddingContainer()
+        assert (laState != LAState.initState());
         return LexerUtilsConstants.token(tokenOrEmbeddingContainer(index));
     }
     
     public int lookahead(int index) {
+        assert (laState != LAState.initState());
         return (laState != null) ? laState.lookahead(index) : -1;
     }
 
     public Object state(int index) {
+        assert (laState != LAState.initState());
         return (laState != null) ? laState.state(index) : null;
     }
 
@@ -179,12 +181,19 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
      * in the TokenSequence explicitly by adding TokenSequence.tokenOffsetDiff.
      */
     public int tokenOffset(int index) {
+        assert (laState != LAState.initState());
         return elementOffset(index);
     }
 
     public int childTokenOffset(int rawOffset) {
+        assert (laState != LAState.initState());
         // Need to make sure that the startOffset is up-to-date
         embeddingContainer.updateStatus();
+        return childTokenOffsetNoUpdate(rawOffset);
+    }
+    
+    public int childTokenOffsetNoUpdate(int rawOffset) {
+        assert (laState != LAState.initState());
         return embeddingContainer.tokenStartOffset() + embedding.startSkipLength()
             + childTokenRelOffset(rawOffset);
     }
@@ -301,19 +310,36 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         int tokenStartOffset = embeddingContainer.tokenStartOffset();
         int endOffset = tokenStartOffset + tokenText.length()
             - embedding.endSkipLength();
+        
+        TokenList<?> prevSection;
+        if (embedding.joinSections()) {
+                TokenListList tll = tokenHierarchyOperation().tokenListList(languagePath());
+                int prevSectionIndex = tll.findPreviousNonEmptySectionIndex(relexOffset);
+                prevSection = (prevSectionIndex >= 0)
+                        ? tll.get(prevSectionIndex)
+                        : null;
+                if (tokenIndex == 0 && prevSection != null) {
+                    relexState = prevSection.state(prevSection.tokenCount() - 1);
+                }
+
+        } else { // Not joining sections
+            prevSection = null;
+        }
+                
         // Do not need to update offset - clients
         // (constructor or token list updater) call updateStartOffset()
         // before calling this method
-        return new TextLexerInputOperation<T>(this, tokenIndex, relexState, tokenText,
-                tokenStartOffset, relexOffset, endOffset);
+        @SuppressWarnings("unchecked")
+        TokenList<T> prevSectionT = (TokenList<T>)prevSection;
+        return new EmbeddedLexerInputOperation<T>(this, tokenIndex, relexState, tokenText,
+                tokenStartOffset, relexOffset, endOffset, prevSectionT);
     }
 
     public boolean isFullyLexed() {
         return true;
     }
 
-    public void replaceTokens(TokenHierarchyEventInfo eventInfo,
-    TokenListChange<T> change, int removeTokenCount) {
+    public void replaceTokens(TokenListChange<T> change, int removeTokenCount, int diffLength) {
         int index = change.index();
         // Remove obsolete tokens (original offsets are retained)
         Object[] removedTokensOrEmbeddingContainers = new Object[removeTokenCount];
@@ -335,7 +361,6 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
 
         // Move and fix the gap according to the performed modification.
         int startOffset = startOffset();
-        int diffLength = eventInfo.insertedLength() - eventInfo.removedLength();
         if (offsetGapStart() != change.offset() - startOffset) {
             // Minimum of the index of the first removed index and original computed index
             moveOffsetGap(change.offset() - startOffset, Math.min(index, change.offsetGapIndex()));
@@ -372,7 +397,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return null;
     }
     
-    public EmbeddingContainer embeddingContainer() {
+    public EmbeddingContainer<?> embeddingContainer() {
         return embeddingContainer;
     }
     

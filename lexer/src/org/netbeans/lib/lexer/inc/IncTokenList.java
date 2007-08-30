@@ -231,8 +231,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return (lexerInputOperation == null);
     }
 
-    public void replaceTokens(TokenHierarchyEventInfo eventInfo,
-    TokenListChange<T> change, int removeTokenCount) {
+    public void replaceTokens(TokenListChange<T> change, int removeTokenCount, int diffLength) {
         int index = change.index();
         // Remove obsolete tokens (original offsets are retained)
         Object[] removedTokensOrBranches = new Object[removeTokenCount];
@@ -253,7 +252,6 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         change.setRemovedEndOffset(offset);
 
         // Move and fix the gap according to the performed modification.
-        int diffLength = eventInfo.insertedLength() - eventInfo.removedLength();
         if (offsetGapStart() != change.offset()) {
             // Minimum of the index of the first removed index and original computed index
             moveOffsetGap(change.offset(), Math.min(index, change.offsetGapIndex()));

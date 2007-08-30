@@ -47,6 +47,8 @@ public class TokenHierarchySnapshotTest extends TestCase {
     }
 
     public void testSnapshot() throws Exception {
+        if (true)
+            return; // Snapshots will no longer function after #87014
         Document doc = new ModificationTextDocument();
         // Assign a language to the document
         doc.putProperty(Language.class,TestTokenId.language());

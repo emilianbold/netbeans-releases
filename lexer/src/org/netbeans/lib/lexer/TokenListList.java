@@ -28,6 +28,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.ArrayUtilities;
+import org.netbeans.lib.editor.util.GapList;
 
 /**
  * List of token lists that collects all token lists for a given language path.
@@ -41,14 +42,27 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
 
     private final LanguagePath languagePath;
 
-    private final List<TokenList<?>> tokenLists;
-    
+    private final GapList<TokenList<?>> tokenLists;
+
     /** Whether searching thgroughout the token hierarchy was finished. */
-    private boolean closed;
+    private boolean complete;
 
     /** Explorers scanning the hierarchy. */
     private List<TokenListExplorer> explorers;
+
+    /**
+     * Whether this token list is holding joint sections embeddings.
+     * <br/>
+     * If so it is mandatorily maintained.
+     */
+    private boolean joinSections;
     
+    /**
+     * Total count of children. It's maintained to quickly resolve
+     * whether the list may be released.
+     */
+    private int childrenCount;
+
     public static List<TokenSequence<? extends TokenId>> createTokenSequenceList(
     TokenHierarchyOperation operation, LanguagePath languagePath, int startOffset, int endOffset) {
         TokenListList tll = operation.tokenListList(languagePath);
@@ -74,7 +88,7 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
         }
         // Not found exactly -> take the higher one (low variable)
         int startIndex = low;
-        
+
         low = 0;
         high = tll.size() - 1;
         if (startIndex <= high) { // startIndex < tll.size()
@@ -97,7 +111,7 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
             }
             // Not found exactly -> take the high plus one as end index
             int endIndex = high + 1;
-            
+
             assert (startIndex <= endIndex);
             if (endIndex - startIndex > 0) {
                 @SuppressWarnings("unchecked")
@@ -124,7 +138,7 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
                     for (int i = 1; i < tss.length - 1; i++) {
                         tss[i] = LexerApiPackageAccessor.get().createTokenSequence(tll.get(startIndex + i));
                     }
-                                
+
                 }
                 tss[0] = LexerApiPackageAccessor.get().createTokenSequence(startTokenList);
                 return ArrayUtilities.unmodifiableList(tss);
@@ -136,39 +150,87 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
     }
 
     public TokenListList(TokenHierarchyOperation<?,?> operation, LanguagePath languagePath) {
-        assert (languagePath != null);
         this.operation = operation;
         this.languagePath = languagePath;
 
-        if (languagePath.size() == 1) {
-            // For top-level language path return singleton list or nothing
-            if (operation.checkedTokenList().languagePath() == languagePath) {
-                // Other way than through raw-type??
-                List l = Collections.singletonList(operation.checkedTokenList());
-                @SuppressWarnings("unchecked")
-                List<TokenList<?>> tls = (List<TokenList<?>>)l;
-                tokenLists = tls;
-            } else {
-                tokenLists = Collections.emptyList();
+        tokenLists = new GapList<TokenList<?>>(2);
+        if (languagePath.size() == 1) { // Either top-level path or something not present
+            if (languagePath == operation.tokenList().languagePath()) {
+                tokenLists.add(operation.tokenList());
             }
-            explorers = Collections.emptyList();
-            closed = true;
+            complete = true;
 
-        } else { // languagePath.size() > 1
-            tokenLists = new ArrayList<TokenList<?>>(2);
+        } else {
             explorers = new ArrayList<TokenListExplorer>(languagePath.size());
             explorers.add(new TokenListExplorer(operation.checkedTokenList()));
         }
     }
-    
+
     public LanguagePath languagePath() {
         return languagePath;
     }
     
+    /**
+     * Whether the list already contains all the appropriate token lists
+     * from the whole hierarchy.
+     */
+    public boolean isComplete() {
+        return complete;
+    }
+
+    /**
+     * Return true if this list is mandatorily updated because there is
+     * one or more embeddings that join sections.
+     */
+    public boolean isJoinSections() {
+        return joinSections;
+    }
+    
+    public void setJoinSections(boolean joinSections) {
+        this.joinSections = joinSections;
+    }
+    
+    public void increaseChildrenCount() {
+        childrenCount++;
+    }
+    
+    public void decreaseChildrenCount() {
+        childrenCount--;
+    }
+    
+    public boolean hasChildren() {
+        return (childrenCount > 0);
+    }
+
     public TokenList<?> get(int index) {
-        if (!closed && index >= tokenLists.size())
-            findTokenListWithIndex(index);
+        findTokenListWithIndex(index);
         return tokenLists.get(index); // Will fail naturally if index too high
+    }
+
+    /**
+     * Return a valid token list or null if the index is too high.
+     */
+    public TokenList<?> getOrNull(int index) {
+        findTokenListWithIndex(index);
+        return getExistingOrNull(index);
+    }
+    
+    public TokenList<?> getExistingOrNull(int index) {
+        return (index < tokenLists.size()) ? tokenLists.get(index) : null;
+    }
+    
+    private static final TokenList<?>[] EMPTY_TOKEN_LIST_ARRAY = new TokenList<?>[0];
+
+    public TokenList<?>[] replace(int index, int removeCount, List<TokenList<?>> addTokenLists) {
+        TokenList<?>[] removed;
+        if (removeCount > 0) {
+            removed = new TokenList<?>[removeCount];
+            tokenLists.remove(index, removeCount);
+        } else {
+            removed = EMPTY_TOKEN_LIST_ARRAY;
+        }
+        tokenLists.addAll(index, addTokenLists);
+        return removed;
     }
 
     public int size() {
@@ -176,7 +238,66 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
         return tokenLists.size();
     }
 
+    public int sizeCurrent() {
+        return tokenLists.size();
+    }
+
+    public int findPreviousNonEmptySectionIndex(int offset) {
+        int high = sizeCurrent() - 1;
+        int low = 0;
+        while (low <= high) {
+            int mid = (low + high) >> 1;
+            int cmp = tokenLists.get(mid).endOffset() - offset;
+            if (cmp < 0)
+                low = mid + 1;
+            else if (cmp > 0)
+                high = mid - 1;
+            else { // cmp == 0 -> take the previous one
+                high = mid;
+                break;
+            }
+        }
+        // Use 'high' which == low - 1
+        while (high >= 0 && tokenLists.get(high).tokenCount() == 0) {
+            high--; // Skip all empty sections
+        }
+        return high;
+    }
+
+    void childAdded() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    TokenHierarchyOperation operation() {
+        return operation;
+    }
+
+    int modCount() {
+        return operation.modCount();
+    }
+
+    public int findIndex(int offset) {
+        int high = sizeCurrent() - 1;
+        int low = 0;
+        while (low <= high) {
+            int mid = (low + high) >> 1;
+            int cmp = tokenLists.get(mid).startOffset() - offset;
+            if (cmp < 0)
+                low = mid + 1;
+            else if (cmp > 0)
+                high = mid - 1;
+            else { // cmp == 0 -> take the previous one
+                low = mid;
+                break;
+            }
+        }
+        return low;
+    }
+
     private void findTokenListWithIndex(int tokenListIndex) {
+        if (complete || tokenListIndex < tokenLists.size())
+            return;
+
         while (explorers.size() > 0) {
             int explorerIndex = explorers.size() - 1;
             TokenListExplorer explorer = explorers.get(explorerIndex);
@@ -203,23 +324,23 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
             // Finished searching the most embedded list
             explorers.remove(explorerIndex);
         }
-        closed = true;
+        complete = true;
     }
-    
+
     private static final class TokenListExplorer {
-        
+
         final TokenList<?> tokenList;
-        
+
         int index;
-        
+
         TokenListExplorer(TokenList<?> tokenList) {
             this.tokenList = tokenList;
         }
-        
+
         int tokenCount() {
             return tokenList.tokenCount();
         }
 
     }
-    
+
 }

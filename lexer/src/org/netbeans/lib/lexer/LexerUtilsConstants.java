@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer;
 
+import java.util.Set;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -200,6 +201,14 @@ public final class LexerUtilsConstants {
 
     public static <T extends TokenId> AbstractToken<T> token(TokenList<T> tokenList, int index) {
         return token(tokenList.tokenOrEmbeddingContainer(index));
+    }
+    
+    public static int maxLanguagePathSize(Set<LanguagePath> paths) {
+        int maxPathSize = 0;
+        for (LanguagePath lp : paths) {
+            maxPathSize = Math.max(lp.size(), maxPathSize);
+        }
+        return maxPathSize;
     }
 
     public static <T extends TokenId> StringBuilder appendTokenList(StringBuilder sb,

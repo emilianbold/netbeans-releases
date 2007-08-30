@@ -65,26 +65,6 @@ public final class TokenChange<T extends TokenId> {
     }
 
     /**
-     * Get embedded token change of the given type.
-     *
-     * @return non-null token change or null if the embedded token change
-     *  satisfies the condition <code>(embedded().language() == language)</code>.
-     *  Null is returned otherwise.
-     */
-    public <T extends TokenId> TokenChange<T> embeddedChange(Language<T> language) {
-        TokenChange<? extends TokenId>[] ecs = info.embeddedChanges();
-        for (int i = ecs.length - 1; i >= 0; i--) {
-            TokenChange<? extends TokenId> c = ecs[i];
-            if (c.language() == language) {
-                @SuppressWarnings("unchecked")
-                TokenChange<T> ec = (TokenChange<T>)c;
-                return ec;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Get the language describing token ids
      * used by tokens contained in this token change.
      */

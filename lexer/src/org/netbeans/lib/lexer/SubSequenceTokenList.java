@@ -73,7 +73,12 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
      */
     private int limitEndIndex;
     
-    
+    /**
+     * Create new subsequence token list
+     * @param tokenList non-null token list over which the subsequence gets created.
+     * @param limitStartOffset lower offset bound offset or 0 for none.
+     * @param limitEndOffset upper offset bound or Integer.MAX_VALUE for none.
+     */
     public SubSequenceTokenList(TokenList<T> tokenList, int limitStartOffset, int limitEndOffset) {
         this.tokenList = tokenList;
         this.limitStartOffset = limitStartOffset;

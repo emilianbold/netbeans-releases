@@ -96,19 +96,20 @@ public final class TokenListUpdater {
      * 
      * @param tokenList non-null token list that is being updated. It may be top-level list
      *  or embedded token list.
-     * @param eventInfo non-null event info containing information like modification offset
-     *  and removed/inserted length etc.
+     * @param modOffset offset where the modification occurred.
+     * @param insertedLength number of characters inserted at modOffset.
+     * @param removedLength number of characters removed at modOffset.
      * @param change non-null change that will incorporate the performed chagnes.
      */
     public static <T extends TokenId> void update(MutableTokenList<T> tokenList,
-    TokenHierarchyEventInfo eventInfo, TokenListChange<T> change) {
+    int modOffset, int insertedLength, int removedLength,
+    TokenListChange<T> change) {
         // Ensure the offsets in token list are up-to-date
         if (tokenList.getClass() == EmbeddedTokenList.class) {
             ((EmbeddedTokenList<? extends TokenId>)tokenList).updateStatus();
         }
 
         // Fetch offset where the modification occurred
-        int modOffset = eventInfo.modificationOffset();
         LanguageOperation<T> languageOperation = LexerUtilsConstants.innerLanguageOperation(
                 tokenList.languagePath());
 
@@ -127,8 +128,8 @@ public final class TokenListUpdater {
         boolean loggable = LOG.isLoggable(Level.FINE);
         if (loggable) {
             LOG.log(Level.FINE, "TokenListUpdater.update() STARTED\nmodOffset=" + modOffset
-                    + ", insertedLength=" + eventInfo.insertedLength()
-                    + ", removedLength=" + eventInfo.removedLength()
+                    + ", insertedLength=" + insertedLength
+                    + ", removedLength=" + removedLength
                     + ", tokenCount=" + tokenCount + "\n");
         }
 
@@ -224,13 +225,13 @@ public final class TokenListUpdater {
             relexIndex = index;
             relexOffset = modTokenOffset;
             // Can validate modToken if removal does not span whole token
-            if (modToken != null && eventInfo.removedLength() < modToken.length()) {
+            if (modToken != null && removedLength < modToken.length()) {
                 attemptValidation = true;
             }
 
         } else { // Previous token exists
             // Check for insert-only right at the end of the previous token
-            if (modOffset == modTokenOffset && eventInfo.removedLength() == 0) {
+            if (modOffset == modTokenOffset && removedLength == 0) {
                 index--; // move to previous token
                 modToken = token(tokenList, index);
                 modTokenOffset -= modToken.length();
@@ -242,7 +243,7 @@ public final class TokenListUpdater {
                 relexIndex = index;
                 relexOffset = modTokenOffset;
                 // Check whether modification was localized to modToken only
-                if (modOffset + eventInfo.removedLength() < modTokenOffset + modToken.length()) {
+                if (modOffset + removedLength < modTokenOffset + modToken.length()) {
                     attemptValidation = true;
                 }
 
@@ -278,7 +279,7 @@ public final class TokenListUpdater {
             TokenValidator tokenValidator = languageOperation.tokenValidator(modToken.id());
             if (tokenValidator != null
                 && (tokenList.getClass() != IncTokenList.class
-                    || eventInfo.tokenHierarchyOperation().canModifyToken(index, modToken))
+                    || tokenList.tokenHierarchyOperation().canModifyToken(index, modToken))
             ) {
                     
 //                if (tokenValidator.validateToken(modToken, modOffset - modTokenOffset, modRelOffset,
@@ -296,7 +297,7 @@ public final class TokenListUpdater {
             // by iterating forward
             if (index < tokenCount) {
                 matchOffset = modTokenOffset + modToken.length();
-                int removeEndOffset = modOffset + eventInfo.removedLength();
+                int removeEndOffset = modOffset + removedLength;
                 while (matchOffset < removeEndOffset && index + 1 < tokenCount) {
                     index++;
                     matchOffset += token(tokenList, index).length();
@@ -310,7 +311,7 @@ public final class TokenListUpdater {
         Object relexState = (relexIndex > 0) ? tokenList.state(relexIndex - 1) : null;
         // Update the matchOffset so that it corresponds to the state
         // after the modification
-        matchOffset += eventInfo.insertedLength() - eventInfo.removedLength();
+        matchOffset += insertedLength - removedLength;
         change.setOffset(relexOffset);
         
         // Variables' values:
@@ -521,7 +522,7 @@ public final class TokenListUpdater {
         }
         change.setIndex(relexIndex);
         change.setAddedEndOffset(relexOffset);
-        tokenList.replaceTokens(eventInfo, change, removedTokenCount);
+        tokenList.replaceTokens(change, removedTokenCount, insertedLength - removedLength);
     }
     
     private static <T extends TokenId> AbstractToken<T> token(MutableTokenList<T> tokenList, int index) {

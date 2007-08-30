@@ -29,9 +29,18 @@ package org.netbeans.lib.lexer;
 public abstract class LAState {
 
     private static final LAState EMPTY = new NoState(0);
+    
+    private static final LAState INIT_STATE = new NoState(0);
 
     public static LAState empty() {
         return EMPTY;
+    }
+    
+    /**
+     * Special state for marking that an embedded token list was not inited yet.
+     */
+    public static LAState initState() {
+        return INIT_STATE;
     }
 
     static int withExtraCapacity(int capacity) {
