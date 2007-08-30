@@ -107,6 +107,7 @@ public class RestComponentHandler implements ActiveEditorDrop {
                     }
 
                     codegen.generate(dialog.getProgressHandle());
+                    System.out.println("locator name = " + codegen.getSubresourceLocatorName());
                     Utils.showMethod(targetFO, codegen.getSubresourceLocatorName());
                 } catch (Exception ioe) {
                     errors.add(ioe);

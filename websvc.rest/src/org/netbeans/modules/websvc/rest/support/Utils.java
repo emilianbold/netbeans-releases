@@ -65,7 +65,10 @@ public class Utils {
             // Force a save to make sure to make sure the line position in
             // the editor is in sync with the java source.
             SaveCookie sc = (SaveCookie) dataObj.getCookie(SaveCookie.class);
-            sc.save();
+     
+            if (sc != null) {
+                sc.save();
+            }
             
             LineCookie lc = (LineCookie) dataObj.getCookie(LineCookie.class);
             
@@ -80,6 +83,7 @@ public class Utils {
                 });
             }
         } catch (Exception de) {
+            de.printStackTrace();
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
         }    
     }

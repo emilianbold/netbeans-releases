@@ -248,7 +248,10 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
     }
 
     private String getParamInitStatements(WorkingCopy copy) {
-        String text = ""; //NOI18N
+        String text = "// TODO: Assign a value to one of the following variables if you want to \n" +
+                      "// override the corresponding default value or value from the query \n" +
+                      "// parameter in the subresource class.\n";       //NOI18N
+        
         for (ParameterInfo param : bean.getInputParameters()) {
             String initValue = "null"; //NOI18N
             String access = match(JavaSourceHelper.getTopLevelClassElement(copy), param.getName());
