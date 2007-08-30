@@ -13,10 +13,11 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.ruby.ui;
+
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import javax.swing.JPanel;
@@ -25,7 +26,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.refactoring.ruby.RefactoringModule;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
-
 
 /**
  * Rename refactoring parameters panel
@@ -36,6 +36,8 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
     private final transient String oldName;
     private final transient ChangeListener parent;
+    
+    private boolean initialized;
     
     /** Creates new form RenamePanelName */
     public RenamePanel(String oldName, ChangeListener parent, String name, boolean editable, boolean showUpdateReferences) {
@@ -57,9 +59,8 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                 RenamePanel.this.parent.stateChanged(null);
             }
         });
-                }
-    
-    private boolean initialized = false;
+    }
+
     public void initialize() {
         if (initialized)
             return ;
@@ -67,7 +68,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         initialized = true;
     }
     
-    public void requestFocus() {
+    public @Override void requestFocus() {
         nameField.requestFocus();
     }
     
@@ -83,7 +84,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         label = new javax.swing.JLabel();
         nameField = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        warningLabel = new javax.swing.JLabel();
         textCheckBox = new javax.swing.JCheckBox();
         updateReferencesCheckBox = new javax.swing.JCheckBox();
 
@@ -107,8 +108,8 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         jPanel1.setMinimumSize(new java.awt.Dimension(0, 0));
         jPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "<html><font style=\"color:red\"><b>WARNING:</b> Ruby refactoring is not accurate! Inspect everything manually!</font>");
-        jPanel1.add(jLabel1);
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(RenamePanel.class, "LBL_NonAccurateRefactoringWarning")); // NOI18N
+        jPanel1.add(warningLabel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -161,12 +162,12 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     }//GEN-LAST:event_textCheckBoxItemStateChanged
                                                              
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel label;
     private javax.swing.JTextField nameField;
     private javax.swing.JCheckBox textCheckBox;
     private javax.swing.JCheckBox updateReferencesCheckBox;
+    private javax.swing.JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
 
     public String getNameValue() {
