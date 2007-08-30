@@ -33,6 +33,7 @@ import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfoListe
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
 import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
@@ -59,10 +60,8 @@ import org.openide.windows.TopComponent;
  * @author John Baker
  */
 public class DataSourceResolver implements DataSourceInfoListener {
-    private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
-    private static final int TRUE = 1;
-    private static final int FALSE = 0;
-    private static final int RESET = -1;
+    private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N    
+    private static final String DATASOURCE_PREFIX = "java:comp/env/"; // NOI18N
     private static DataSourceResolver dataSourceResolver;
     private String dataSourceInfo = null;
     protected WaitForModelingListener modelingListener = new WaitForModelingListener();
@@ -113,11 +112,43 @@ public class DataSourceResolver implements DataSourceInfoListener {
         return missing;
     }
 
+    public boolean isDataSourceUnique(Project currentProj, String dsName, String url) {        
+        String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(currentProj);
+                
+        for (String name : dynamicDataSources) {
+            if (name.equals((DATASOURCE_PREFIX + dsName))) {
+                if (!getDataSourceUrl(dsName).equals(url)) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 
+     private String getDataSourceUrl(String dsName) {
+        String url = null;
+        DataSourceInfo dsInfo = null;
+
+        List<DataSourceInfo> dataSourcesInfo = DatabaseSettingsImporter.getInstance().getDataSourcesInfo();
+        Iterator it = dataSourcesInfo.iterator();
+        while (it.hasNext()) {
+            dsInfo = (DataSourceInfo) it.next();
+            if (dsName.equals(dsInfo.getName())) {
+                url = dsInfo.getUrl();
+            }
+        }
+
+        return url;
+    }
+     
     public void update(Project currentProj) {
-        updateProject();
         doCopying();
+        updateProject();        
         registerConnections();
+        checkConnections();
     }
 
 
@@ -172,6 +203,15 @@ public class DataSourceResolver implements DataSourceInfoListener {
             new DesignTimeDataSourceHelper().updateDataSource(project);
         } catch (NamingException ne) {
             Logger.getLogger("copy").info("Migrating user settings failed " + ne); //NOI18N
+        }
+    }
+    
+    // Check if any database connections needed by the project are missing
+    private void checkConnections() {
+        DesignTimeDataSourceService dataSourceService = Lookup.getDefault().lookup(DesignTimeDataSourceService.class);
+        Set<RequestedJdbcResource> problemDatasources = dataSourceService.getBrokenDatasources(project);
+        if (!problemDatasources.isEmpty()) {
+            ImportDataSource.showAlert();
         }
     }
 
