@@ -99,7 +99,10 @@ public class ExpandSameLineDef implements AstRule {
                     return;
                 }
                 
-                if (Utilities.getRowEnd(doc, pos.getStartOffset()) == Utilities.getRowEnd(doc, pos.getEndOffset())) {
+                int start = pos.getStartOffset();
+                int end = pos.getEndOffset();
+                int length = doc.getLength();
+                if (Utilities.getRowEnd(doc, Math.min(start,length)) == Utilities.getRowEnd(doc, Math.min(end,length))) {
                     // Block is on a single line
                     // TODO - add a hint to turn off this hint?
                     // Should be a utility or infrastructure option!
