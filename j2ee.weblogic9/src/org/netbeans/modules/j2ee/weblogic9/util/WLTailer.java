@@ -18,16 +18,13 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.util;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 
 /**
@@ -39,13 +36,13 @@ import org.openide.windows.InputOutput;
  */
 public class WLTailer extends Thread {
 
+    private static final Logger LOGGER = Logger.getLogger(WLTailer.class.getName());
+
     /**
      * Amount of time in milliseconds to wait between checks of the input
      * stream
      */
     private static final int DELAY = 500;
-
-    private static final Logger LOGGER = Logger.getLogger(WLTailer.class.getName());
 
     /**
      * The input stream for which to track changes
@@ -55,20 +52,20 @@ public class WLTailer extends Thread {
     /**
      * The I/O window where to output the changes
      */
-    private InputOutput io;
+    private OutputWriter writer;
 
-    private volatile boolean exit;
+    private volatile boolean finish;
 
     /**
      * Creates and starts a new instance of WLTailer.
      *
      * @param inputStream the input stream for which to track changes
-     * @param uri uri of the server instance
+     * @param writer writer where to write output
      */
-    public WLTailer(InputStream inputStream, String uri) {
+    public WLTailer(InputStream inputStream, OutputWriter writer) {
         // save the parameters
         this.inputStream = inputStream;
-        io = UISupport.getServerIO(uri);
+        this.writer = writer;
     }
 
     /**
@@ -77,31 +74,19 @@ public class WLTailer extends Thread {
      */
     @Override
     public void run() {
-        if (io == null) {
-            return;
-        }
-
-        // clear the old output
-        try {
-            io.getOut().reset();
-        } catch (IOException ioe) {
-            LOGGER.log(Level.INFO, null, ioe);
-        }
-        io.select();
 
         try {
-
             // create a reader from the input stream
             InputStreamReader reader = new InputStreamReader(inputStream);
 
             // read from the input stream and put all the changes to the
             // I/O window
             char[] chars = new char[1024];
-            while (!exit) {
+            while (!finish) {
                 // while there is something in the stream to be read - read that
                 while (reader.ready()) {
                     int count = reader.read(chars);
-                    io.getOut().println(new String(chars, 0, count));
+                    writer.println(new String(chars, 0, count));
                 }
 
                 // when the stream is empty - sleep for a while
@@ -129,8 +114,8 @@ public class WLTailer extends Thread {
     /**
      * Exits this thread.
      */
-    public void exit() {
-        exit = true;
+    public void finish() {
+        finish = true;
     }
 
 }

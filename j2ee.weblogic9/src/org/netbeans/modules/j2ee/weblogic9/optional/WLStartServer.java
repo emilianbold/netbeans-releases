@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
+import org.netbeans.modules.j2ee.weblogic9.util.WLOutputManager;
 import org.netbeans.modules.j2ee.weblogic9.util.WLTailer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -440,9 +441,9 @@ public class WLStartServer extends StartServer {
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
-                WLTailer tailer = new WLTailer(serverProcess.getInputStream(), dm.getURI());
-                dm.setTailer(tailer);
-                tailer.start();
+                WLOutputManager manager = new WLOutputManager(serverProcess, dm.getURI());
+                dm.setOutputManager(manager);
+                manager.start();
                 
                 String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
 
@@ -560,9 +561,9 @@ public class WLStartServer extends StartServer {
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
-                WLTailer tailer = new WLTailer(serverProcess.getInputStream(), dm.getURI());
-                dm.setTailer(tailer);
-                tailer.start();
+                WLOutputManager manager = new WLOutputManager(serverProcess, dm.getURI());
+                dm.setOutputManager(manager);
+                manager.start();
                 
                 String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
                 
@@ -652,7 +653,7 @@ public class WLStartServer extends StartServer {
          * Implementation of the run() method from the Runnable interface
          */
         public void run() {
-            WLTailer tailer = null;
+            WLOutputManager manager = null;
             try {
                 // save the current time so that we can deduct that the startup
                 // failed due to timeout
@@ -665,8 +666,8 @@ public class WLStartServer extends StartServer {
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
-                tailer = new WLTailer(serverProcess.getInputStream(), dm.getURI());
-                tailer.start();
+                manager = new WLOutputManager(serverProcess, dm.getURI());
+                manager.start();
 
                 String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
                 
@@ -699,11 +700,11 @@ public class WLStartServer extends StartServer {
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.WARNING, null, e);
             } finally {
-                if (dm.getTailer() != null) {
-                    dm.getTailer().exit();
+                if (dm.getOutputManager() != null) {
+                    dm.getOutputManager().finish();
                 }
-                if (tailer != null) {
-                    tailer.exit();
+                if (manager != null) {
+                    manager.finish();
                 }
             }
         }

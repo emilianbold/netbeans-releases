@@ -46,6 +46,7 @@ import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
+import org.netbeans.modules.j2ee.weblogic9.util.WLOutputManager;
 import org.netbeans.modules.j2ee.weblogic9.util.WLTailer;
 import org.openide.util.NbBundle;
 
@@ -75,7 +76,7 @@ public class WLDeploymentManager implements DeploymentManager {
     /** System process of the started WL server */
     private Process process;
     
-    private WLTailer tailer;
+    private WLOutputManager outputManager;
 
     /** Create connected DM */
     public WLDeploymentManager(WLDeploymentFactory factory, String uri,
@@ -183,12 +184,12 @@ public class WLDeploymentManager implements DeploymentManager {
         return process;
     }
 
-    public WLTailer getTailer() {
-        return tailer;
+    public WLOutputManager getOutputManager() {
+        return outputManager;
     }
 
-    public void setTailer(WLTailer tailer) {
-        this.tailer = tailer;
+    public void setOutputManager(WLOutputManager outputManager) {
+        this.outputManager = outputManager;
     }
 
     public ProgressObject distribute(Target[] target, File file, File file2)
