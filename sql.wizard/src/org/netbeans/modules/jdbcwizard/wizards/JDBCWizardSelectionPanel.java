@@ -146,7 +146,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                 providers.addElement(new ConnectionWrapper(conns[i]));
             }
         } else {
-            providers.addElement("<None>");
+            providers.addElement(NbBundle.getMessage( JDBCWizardSelectionPanel.class, "LBL_None"));
         }
        
         this.datasourceComboBox.setModel(providers);
@@ -172,8 +172,9 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
 
         this.addButton = new javax.swing.JButton(JDBCWizardSelectionPanel.LBL_ADD);
         this.removeButton = new javax.swing.JButton(JDBCWizardSelectionPanel.LBL_REMOVE);
-        this.addAllButton = new javax.swing.JButton(JDBCWizardSelectionPanel.LBL_ADD_ALL);
-        this.removeAllButton = new javax.swing.JButton(JDBCWizardSelectionPanel.LBL_REMOVE_ALL);
+        this.addAllButton = new javax.swing.JButton(NbBundle.getMessage( JDBCWizardSelectionPanel.class, "LBL_ADD_ALL"));
+        this.removeAllButton = new javax.swing.JButton(NbBundle.getMessage( JDBCWizardSelectionPanel.class, "LBL_REMOVE_ALL"));
+		
 
         this.availableTablesLabel = new javax.swing.JLabel();
         this.selectedTablesLabel = new javax.swing.JLabel();
@@ -181,8 +182,8 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         // Adding actionlisteners
         this.addButton.setActionCommand(JDBCWizardSelectionPanel.LBL_ADD);
         this.removeButton.setActionCommand(JDBCWizardSelectionPanel.LBL_REMOVE);
-        this.addAllButton.setActionCommand(JDBCWizardSelectionPanel.LBL_ADD_ALL);
-        this.removeAllButton.setActionCommand(JDBCWizardSelectionPanel.LBL_REMOVE_ALL);
+        this.addAllButton.setActionCommand(NbBundle.getMessage( JDBCWizardSelectionPanel.class, "LBL_ADD_ALL"));
+        this.removeAllButton.setActionCommand(NbBundle.getMessage( JDBCWizardSelectionPanel.class, "LBL_REMOVE_ALL"));
 
         this.addButton.addActionListener(this);
         this.removeButton.addActionListener(this);
@@ -192,11 +193,11 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
         this.removeButton.setEnabled(false);
         this.addAllButton.setEnabled(false);
         this.removeAllButton.setEnabled(false);
-        this.jLabel1.setText("Data Source");
+        this.jLabel1.setText(NbBundle.getMessage( JDBCWizardSelectionPanel.class, "LBL_DataSource"));
 
-        this.availableTablesLabel.setText("Available Tables:");
+        this.availableTablesLabel.setText(NbBundle.getMessage( JDBCWizardSelectionPanel.class, "LBL_AvailableTables_jLabell"));
 
-        this.selectedTablesLabel.setText("Selected Tables");
+        this.selectedTablesLabel.setText(NbBundle.getMessage( JDBCWizardSelectionPanel.class, "LBL_SelectedTables_jLabell"));
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(
@@ -204,7 +205,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                         layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false).add(
                                 org.jdesktop.layout.GroupLayout.LEADING,
                                 layout.createSequentialGroup().add(this.jLabel1,
-                                        org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69,
+                                        org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
                                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(25, 25, 25).add(
                                         this.datasourceComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 288,
                                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).add(
@@ -233,7 +234,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
                                                         190))).add(
                                         layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(
                                                 this.selectedTablesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
-                                                92, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(this.jScrollPane3,
+                                                org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(this.jScrollPane3,
                                                 org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 111,
                                                 org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))).addContainerGap(35,
                         Short.MAX_VALUE)));
