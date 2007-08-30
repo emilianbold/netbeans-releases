@@ -60,6 +60,7 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testChildren2"));
         suite.addTest(new BasicCompletionTest("testReadNamespace"));
         suite.addTest(new BasicCompletionTest("testImport1"));
+        suite.addTest(new BasicCompletionTest("testInclude1"));
         return suite;
     }
     
@@ -413,4 +414,17 @@ public class BasicCompletionTest extends AbstractTestCase {
         assertResult(items, expectedResult);
     }
     
+    public void testInclude1() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<ns:Main2  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=65
+        buffer.append("   xmlns:ns=\"http://xml.netbeans.org/schema/Main\"\n"); //offset=50
+        buffer.append("   xsi:schemaLocation=\"http://xml.netbeans.org/schema/Main Main.xsd\">\n"); //offset=70
+        buffer.append("       <\n"); //offset=9
+        buffer.append("</ns:Main2>\n");
+        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(233);
+        String[] expectedResult = {"ns:M1","ns:M2"};
+        assertResult(items, expectedResult);
+    }
 }

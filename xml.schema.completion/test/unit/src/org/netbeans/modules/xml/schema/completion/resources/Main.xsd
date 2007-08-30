@@ -8,6 +8,7 @@
             xmlns:ns0="http://xml.netbeans.org/schema/TNSA">
     <xsd:import schemaLocation="A.xsd" namespace="http://xml.netbeans.org/schema/TNSA"/>
     <xsd:import schemaLocation="B.xsd" namespace="http://xml.netbeans.org/schema/TNSB"/>
+    <xsd:include schemaLocation="Main2.xsd"/>
     
     <xsd:element name="Main">
         <xsd:complexType>
@@ -17,4 +18,7 @@
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
+    
+    <xsd:element name="Main2" type="tns:MainType"/>
+    
 </xsd:schema>
