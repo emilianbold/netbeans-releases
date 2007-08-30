@@ -91,7 +91,7 @@ function write_table_header() {
     document.write('</tr>');
 	
     document.write('<tr>');
-    document.write('<th class="left no_border bottom_border wide bottom">NetBeans Packs</th>');    
+    document.write('<th class="left no_border bottom_border wide bottom">NetBeans Packs<img src="img/bold_comment_badge_header.gif"/></th>');    
     document.write('<td class="no_border left_border bottom_border" id="javaee_link"><a href="javascript: download(\'javaee\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Web&nbsp;&amp;&nbsp;Java&nbsp;EE</td>');
     document.write('<td class="no_border left_border bottom_border" id="javame_link"><a href="javascript: download(\'mobility\')" id="javame_name"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Mobility</td>');
     document.write('<td class="no_border left_border bottom_border" id="java_link"><a href="javascript: download(\'javase\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Java SE</td>');
