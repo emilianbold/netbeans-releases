@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
+import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.modelutil.MethodParamsTipPaintComponent;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -365,7 +366,21 @@ public class CsmCompletionProvider implements CompletionProvider {
 
                         if (!checked) {
                             CsmCompletionExpression exp = item.getExpression();
-                            if (exp.getTokenCount() > 0) {
+                            int idxLast = exp.getTokenCount() - 1;
+                            if (idxLast >= 0) {
+                                if (exp.getExpID() == CsmCompletionExpression.METHOD && 
+                                        exp.getTokenID(idxLast) == CCTokenContext.RPAREN) {
+                                    // check if query offset is after closing ")"
+                                    if (exp.getTokenOffset(idxLast) + exp.getTokenLength(idxLast) <= caretOffset) {
+                                        resultSet.finish();
+                                        return;
+                                    }
+                                } else if (exp.getExpID() == CsmCompletionExpression.VARIABLE) {
+                                    if (exp.getTokenOffset(0) + exp.getTokenLength(0) >= caretOffset) {
+                                        resultSet.finish();
+                                        return;
+                                    }
+                                }
                                 try {
                                     queryMethodParamsStartPos = bdoc.createPosition(exp.getTokenOffset(0));
                                 } catch (BadLocationException ble) {
