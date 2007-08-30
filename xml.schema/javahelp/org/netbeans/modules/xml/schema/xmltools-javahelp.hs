@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE helpset PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN"
@@ -17,12 +17,6 @@
 		<label>Table of Contents</label>
 		<type>javax.help.TOCView</type>
 		<data>xmltools-javahelp-toc.xml</data>
-	</view>
-	<view mergetype="javax.help.AppendMerge">
-		<name>Index</name>
-		<label>Index</label>
-		<type>javax.help.IndexView</type>
-		<data>xmltools-javahelp-index.xml</data>
 	</view>
 	<view>
 		<name>Search</name>

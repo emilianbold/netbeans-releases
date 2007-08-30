@@ -12,12 +12,6 @@
         <type>javax.help.TOCView</type>
         <data>catalogsupport-toc.xml</data>
     </view>
-    <view mergetype="javax.help.AppendMerge">
-        <name>Index</name>
-        <label>Index</label>
-        <type>javax.help.IndexView</type>
-        <data>catalogsupport-idx.xml</data>
-    </view>
     <view>
         <name>Search</name>
         <label>Search</label>
