@@ -214,6 +214,12 @@ public class GenFiles extends CallableSystemAction {
         
         try {
         	String baseDir = project.getProjectDirectory().getPath();
+			String OS = System.getProperty("os.name").toLowerCase();
+                if(OS.indexOf("windows") > -1){
+                    //do nothing
+                }else{
+                    baseDir='/'+baseDir;
+                }
         	mBuildDirectoryLocation = baseDir+"/build";
         	mSrcDirectoryLocation = baseDir+"/src";
         	File srcDir = new File(mSrcDirectoryLocation);
