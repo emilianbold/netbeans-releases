@@ -184,9 +184,6 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
 
     @Override
     public Boolean canEditAsText() {
-        if (isCurrentValueAUserCodeType()) {
-            return super.canEditAsText();
-        }
         return null;
     }
 

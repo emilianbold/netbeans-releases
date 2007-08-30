@@ -156,6 +156,11 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
     }
 
     @Override
+    public Boolean canEditAsText() {
+        return null;
+    }
+
+    @Override
     public String[] getTags() {
         tags.clear();
         if (isCurrentValueAUserCodeType()) {

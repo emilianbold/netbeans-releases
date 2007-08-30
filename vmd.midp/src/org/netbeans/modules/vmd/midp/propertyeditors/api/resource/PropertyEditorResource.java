@@ -239,9 +239,6 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
 
     @Override
     public Boolean canEditAsText() {
-        //if (isCurrentValueAUserCodeType()) {
-        //    return super.canEditAsText();
-        //}
         return null;
     }
 

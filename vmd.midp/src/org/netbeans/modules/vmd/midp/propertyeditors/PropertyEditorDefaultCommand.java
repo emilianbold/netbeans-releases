@@ -138,9 +138,6 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
 
     @Override
     public Boolean canEditAsText() {
-        if (isCurrentValueAUserCodeType()) {
-            return super.canEditAsText();
-        }
         return null;
     }
 
