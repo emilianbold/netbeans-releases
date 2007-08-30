@@ -116,14 +116,14 @@ public class MakeActionProvider implements ActionProvider {
     ConfigurationDescriptor projectDescriptor = null;
     
     /** Map from commands to ant targets */
-    Map/*<String,String[]>*/ commands;
-    Map/*<String,String[]>*/ commandsNoBuild;
+    Map<String,String[]> commands;
+    Map<String,String[]> commandsNoBuild;
     
     private boolean lastValidation = false;
     
     public MakeActionProvider( MakeProject project) {
         
-        commands = new HashMap();
+        commands = new HashMap<String,String[]>();
         commands.put(COMMAND_BUILD, new String[] {"save", "build"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[] {"save", "clean"}); // NOI18N
         commands.put(COMMAND_REBUILD, new String[] {"save", "clean", "build"}); // NOI18N
@@ -135,7 +135,7 @@ public class MakeActionProvider implements ActionProvider {
         commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
         commands.put(COMMAND_COMPILE_SINGLE, new String[] {"save", "compile-single"}); // NOI18N
         commands.put(COMMAND_CUSTOM_ACTION, new String[] {"save", "build", "custom-action"}); // NOI18N
-        commandsNoBuild = new HashMap();
+        commandsNoBuild = new HashMap<String,String[]>();
         commandsNoBuild.put(COMMAND_BUILD, new String[] {"save", "build"}); // NOI18N
         commandsNoBuild.put(COMMAND_CLEAN, new String[] {"save", "clean"}); // NOI18N
         commandsNoBuild.put(COMMAND_REBUILD, new String[] {"save", "clean", "build"}); // NOI18N
@@ -154,7 +154,7 @@ public class MakeActionProvider implements ActionProvider {
     
     private MakeConfigurationDescriptor getProjectDescriptor() {
         if (projectDescriptor == null) {
-            ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             projectDescriptor = pdp.getConfigurationDescriptor();
         }
         return (MakeConfigurationDescriptor)projectDescriptor;
@@ -166,7 +166,7 @@ public class MakeActionProvider implements ActionProvider {
     
     public void invokeAction( String command, Lookup context) throws IllegalArgumentException {
         // Basic info
-        ProjectInformation info = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class );
+        ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
         String projectName = info.getDisplayName();
         MakeConfigurationDescriptor pd = getProjectDescriptor();
         MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
@@ -607,7 +607,7 @@ public class MakeActionProvider implements ActionProvider {
     String[] getTargetNames(String command, Lookup context) throws IllegalArgumentException {
         String[] targetNames = new String[0];
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            targetNames = (String[])commands.get(command);
+            targetNames = commands.get(command);
         } else if (command.equals(COMMAND_RUN) ||
                 command.equals(COMMAND_DEBUG) ||
                 command.equals(COMMAND_DEBUG_STEP_INTO) ||
@@ -619,19 +619,19 @@ public class MakeActionProvider implements ActionProvider {
             if (profile == null) // See IZ 89349
                 return null;
             if (profile.getBuildFirst())
-                targetNames = (String[])commands.get(command);
+                targetNames = commands.get(command);
             else
-                targetNames = (String[])commandsNoBuild.get(command);
+                targetNames = commandsNoBuild.get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
         } else if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE)) {
-            targetNames = (String[])commands.get(command);
+            targetNames = commands.get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
         } else {
-            targetNames = (String[])commands.get(command);
+            targetNames = commands.get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
@@ -696,7 +696,7 @@ public class MakeActionProvider implements ActionProvider {
         if (item == null) {
             // try to find Item in associated data object if any
             try {
-                File file = FileUtil.toFile(((DataObject)node.getCookie(DataObject.class)).getPrimaryFile());
+                File file = FileUtil.toFile((node.getCookie(DataObject.class)).getPrimaryFile());
                 item = getProjectDescriptor().findItemByFile(file);
             } catch (NullPointerException ex) {
                 // not found item
@@ -711,7 +711,7 @@ public class MakeActionProvider implements ActionProvider {
     
     public boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf, boolean validated) {
         CompilerSetConfiguration csconf = conf.getCompilerSet();
-        ArrayList<String> errs = new ArrayList();
+        ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
         BuildToolsAction bt = null;
         String csname;
@@ -816,7 +816,7 @@ public class MakeActionProvider implements ActionProvider {
         }
         
         if (runBTA || Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
-            bt = (BuildToolsAction) SystemAction.get(BuildToolsAction.class);
+            bt = SystemAction.get(BuildToolsAction.class);
             bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
         }
         
