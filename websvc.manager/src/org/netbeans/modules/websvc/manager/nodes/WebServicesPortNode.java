@@ -178,28 +178,13 @@ public class WebServicesPortNode  extends AbstractNode implements Node.Cookie {
       
     // Handle copying and cutting specially:    
     public boolean canCopy() {
-        return isMethodDroppable();
+        return true;
     }
     public boolean canCut() {
-        return isMethodDroppable();
-    }
-    
-    public boolean isMethodDroppable() {
-        boolean isJ2EE_15 = ManagerUtil.isJavaEE5Project(WebServiceLibReferenceHelper.getActiveProject());
-        if (wsData != null && isJ2EE_15) {
-            return wsData.isJaxWsEnabled();
-        } else if (wsData != null && !isJ2EE_15) {
-            return wsData.isJaxRpcEnabled();
-        } else {
-            return true;
-        }
+        return true;
     }
     
     public Transferable clipboardCopy() throws IOException {
-        if (!isMethodDroppable()) {
-            return super.clipboardCopy();
-        }
-        
         Collection<? extends WebServiceTransferManager> managers = Lookup.getDefault().lookupAll(WebServiceTransferManager.class);
         Transferable result = transferable;
         

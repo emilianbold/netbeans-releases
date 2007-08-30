@@ -62,16 +62,6 @@ public class WebServiceLibReferenceHelper {
     }
     
     /**
-     * Return the Project that is currently active.
-     *
-     * @return currently active project or null, if none.
-     */
-    public static Project getActiveProject() {
-        //TODO
-        return null;
-    }
-    
-    /**
      * Adds the given jars to the project as archive references
      *
      * @param project the project to be added to

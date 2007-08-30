@@ -20,6 +20,7 @@
 package org.netbeans.modules.websvc.manager.ui;
 
 
+import java.awt.Component;
 import java.io.IOException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -32,6 +33,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.filechooser.FileFilter;
 import javax.swing.*;
@@ -64,8 +69,6 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     private static String previousDirectory = null;
     private static JFileChooser wsdlFileChooser;
     
-    private String URL_WSDL_MSG = NbBundle.getMessage(AddWebServiceDlg.class, "URL_WSDL_MSG");
-    private String LOCAL_WSDL_MSG = NbBundle.getMessage(AddWebServiceDlg.class, "LOCAL_WSDL_MSG");
     private  final FileFilter WSDL_FILE_FILTER = new WsdlFileFilter();
     
     
@@ -76,6 +79,30 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     private JPopupMenu resultsPopup = new JPopupMenu();
     
     private String groupId;
+
+    private static final String[] KEYWORDS = 
+    {
+      "abstract", "continue", "for",        "new",       "switch",  // NOI18N
+      "assert",   "default",  "if",         "package",   "synchronized", // NOI18N
+      "boolean",  "do",       "goto",       "private",   "this", // NOI18N
+      "break",    "double",   "implements", "protected", "throw", // NOI18N
+      "byte",     "else",     "import",     "public",    "throws", // NOI18N
+      "case",     "enum",     "instanceof", "return",    "transient", // NOI18N
+      "catch",    "extends",  "int",        "short",     "try", // NOI18N
+      "char",     "final",    "interface",  "static",    "void", // NOI18N
+      "class",    "finally",  "long",       "strictfp",  "volatile", // NOI18N
+      "const",    "float",    "native",     "super",     "while", // NOI18N
+      
+      "true",     "false",    "null" // NOI18N
+    };
+    
+    private static final Set<String> KEYWORD_SET = new HashSet<String>(KEYWORDS.length * 2);
+    
+    static {
+        for (int i = 0; i < KEYWORDS.length; i++) {
+            KEYWORD_SET.add(KEYWORDS[i]);
+        }
+    }
     
     
     public AddWebServiceDlg() {
@@ -88,6 +115,107 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         myInitComponents();
         this.groupId = groupId;
     }
+
+
+    
+    private static boolean isValidPackageName(String packageName) {
+        if (packageName == null || packageName.length() == 0 || !Character.isJavaIdentifierStart(packageName.charAt(0))) {
+            return false;
+        }else {
+            java.util.StringTokenizer pkgIds = new java.util.StringTokenizer(packageName, "."); // NOI18N
+            while (pkgIds.hasMoreTokens()) {
+                String nextIdStr = pkgIds.nextToken();
+                if (KEYWORD_SET.contains(nextIdStr)) {
+                    return false;
+                }
+                
+                char[] nextId = nextIdStr.toCharArray();
+                if (!Character.isJavaIdentifierStart(nextId[0])) {
+                    return false;
+                }
+                
+                for (int i = 1; i < nextId.length; i++) {
+                    if (!Character.isJavaIdentifierPart(nextId[i])) {
+                        return false;
+                    }
+                }
+            }
+            
+            boolean lastDot = false;
+            for (int i = 0; i < packageName.length(); i++) {
+                boolean isDot = packageName.charAt(i) == '.';
+                if (isDot && lastDot) {
+                    return false;
+                }
+                lastDot = isDot;
+            }
+            
+            if (packageName.endsWith(".")) { // NOI18N
+                return false;
+            }
+            
+            return true;
+        }
+    }
+    
+    private void setErrorMessage(String msg) {
+        if (msg == null || msg.length() == 0) {
+            errorLabel.setVisible(false);
+        }else {
+            errorLabel.setVisible(true);
+            errorLabel.setText(msg);
+        }
+    }
+    
+    private void updateAddButtonState(Component changedComponent) {
+        // Check the package name
+        final String packageName = jTxtpackageName.getText().trim();
+        if (changedComponent == jTxtpackageName && !isValidPackageName(packageName)) {
+            setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_PACKAGE"));
+            addButton.setEnabled(false);
+        }else if (jTxtLocalFilename.isEnabled()) {
+            String localText = jTxtLocalFilename.getText().trim();
+            if (localText.length() == 0) {
+                setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "EMPTY_FILE"));
+                addButton.setEnabled(false);
+                return;
+            }
+            
+            File f = new File(localText);
+            if (!f.exists()) {
+                setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_FILE_NOT_FOUND"));
+                addButton.setEnabled(false);
+                return;
+            }else if (!f.isFile()) {
+                setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_FILE_NOT_FILE"));
+                addButton.setEnabled(false);
+                return; 
+            }else {
+                setErrorMessage("");
+                addButton.setEnabled(true);
+            }
+        }else if (jTxtWsdlURL.isEnabled()) {
+            String urlText = jTxtWsdlURL.getText().trim();
+            if (urlText.length() == 0) {
+                setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "EMPTY_URL"));
+                addButton.setEnabled(false);
+                return;                
+            }
+
+            try {
+                URL url = new URL(urlText);
+                setErrorMessage("");
+                addButton.setEnabled(true);
+            }catch (MalformedURLException ex) {
+                setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_URL"));
+                addButton.setEnabled(false);
+            }
+        }else {
+            setErrorMessage("");
+            addButton.setEnabled(true);
+        }
+    }
+    
     
     private void myInitComponents() {
         
@@ -105,30 +233,30 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         
         jTxtLocalFilename.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
-                doAddButtonUpdate(jTxtLocalFilename.getText());
+                updateAddButtonState(jTxtLocalFilename);
             }
             
             public void removeUpdate(DocumentEvent e) {
-                doAddButtonUpdate(jTxtLocalFilename.getText());
+                updateAddButtonState(jTxtLocalFilename);
             }
             
             public void changedUpdate(DocumentEvent e) {
-                doAddButtonUpdate(jTxtLocalFilename.getText());
+                updateAddButtonState(jTxtLocalFilename);
             }
         });
         
         
         jTxtWsdlURL.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
-                doAddButtonUpdate(jTxtWsdlURL.getText());
+                updateAddButtonState(jTxtWsdlURL);
             }
 
             public void removeUpdate(DocumentEvent e) {
-                doAddButtonUpdate(jTxtWsdlURL.getText());
+                updateAddButtonState(jTxtWsdlURL);
             }
 
             public void changedUpdate(DocumentEvent e) {
-                doAddButtonUpdate(jTxtWsdlURL.getText());
+                updateAddButtonState(jTxtWsdlURL);
             }
         });
         
@@ -138,19 +266,11 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         
         
     }
-    
-        private void doAddButtonUpdate(String text) {
-        if (text != null && text.trim().length() > 0) {
-            addButtonEnable(true);
-        } else {
-            addButtonEnable(false);
-        }
-    }
-    
+        
     public void displayDialog(){
         
         dlg = new DialogDescriptor(this, NbBundle.getMessage(AddWebServiceDlg.class, "ADD_WEB_SERVICE"),
-                false, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.CANCEL_OPTION,
+                true, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.CANCEL_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), this);
         addButton.setEnabled(false);
         dlg.setOptions(new Object[] { addButton, cancelButton });
@@ -182,38 +302,21 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
     
     
     private void setDefaults() {
-        addButton.setEnabled(false);
         jRbnUrl.setSelected(true);
         jRbnFilesystem.setSelected(false);
 //        displayInfo("<BR><BR><BR><BR><B>" +NbBundle.getMessage(AddWebServiceDlg.class, "INSTRUCTIONS") + "</B>");
         enableControls();
     }
     
-    private void addButtonEnable(boolean value){
-        addButton.setEnabled(value);
-    }
-    
     private void enableControls(){
-        boolean enabled = false;
-        
-        enabled = jRbnUrl.isSelected();
-        jTxtWsdlURL.setEnabled(enabled);
-        
-        String jTxtWsdlString = jTxtWsdlURL.getText();
-        if (enabled && jTxtWsdlString != null && jTxtWsdlString.trim().length() > 0) {
-            addButton.setEnabled(true);
-        }else if (enabled) {
-            addButton.setEnabled(false);
-        }
-        
-        enabled = jRbnFilesystem.isSelected();
-        jTxtLocalFilename.setEnabled(enabled);
-        
-        String jTxtLocalString = jTxtLocalFilename.getText();
-        if (enabled && jTxtLocalString != null && jTxtLocalString.trim().length() > 0) {
-            addButton.setEnabled(true);
-        }else if (enabled) {
-            addButton.setEnabled(false);
+        if (jRbnUrl.isSelected()) {
+            jTxtWsdlURL.setEnabled(true);
+            jTxtLocalFilename.setEnabled(false);
+            updateAddButtonState(jTxtWsdlURL);
+        }else if (jRbnFilesystem.isSelected()) {
+            jTxtLocalFilename.setEnabled(true);
+            jTxtWsdlURL.setEnabled(false);
+            updateAddButtonState(jTxtLocalFilename);
         }
     }
     
@@ -230,7 +333,7 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
             } else {
                 returnFileURL = "file:///" + returnFileURL;
             }
-        }        
+        }
         return returnFileURL;
     }
     
@@ -325,7 +428,6 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         jLblChooseSource = new javax.swing.JLabel();
@@ -337,15 +439,10 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         jRbnUrl = new javax.swing.JRadioButton();
         jLabel1 = new javax.swing.JLabel();
         jTxtpackageName = new javax.swing.JTextField();
-
-        setLayout(new java.awt.GridBagLayout());
+        errorLabel = new javax.swing.JLabel();
+        errorLabel.setVisible(false);
 
         jLblChooseSource.setText(NbBundle.getMessage(AddWebServiceDlg.class, "LBL_WsdlSource")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(10, 10, 12, 10);
-        add(jLblChooseSource, gridBagConstraints);
 
         buttonGroup1.add(jRbnFilesystem);
         org.openide.awt.Mnemonics.setLocalizedText(jRbnFilesystem, org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "LBL_WsdlSourceFilesystem")); // NOI18N
@@ -354,13 +451,6 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
                 jRbnFilesystemActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 6, 0);
-        add(jRbnFilesystem, gridBagConstraints);
-        jRbnFilesystem.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFilelRadioButton.ACC_desc"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jBtnBrowse, org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "LBL_Browse")); // NOI18N
         jBtnBrowse.addActionListener(new java.awt.event.ActionListener() {
@@ -368,25 +458,8 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
                 jBtnBrowseActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 10);
-        add(jBtnBrowse, gridBagConstraints);
-        jBtnBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFileButton.ACC_desc"));
 
         jTxtWsdlURL.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
-        add(jTxtWsdlURL, gridBagConstraints);
-        jTxtWsdlURL.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlComboBox.ACC_name"));
-        jTxtWsdlURL.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlComboBox.ACC_desc"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jBtnProxy, org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "LBL_ProxySettings")); // NOI18N
         jBtnProxy.addActionListener(new java.awt.event.ActionListener() {
@@ -394,25 +467,8 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
                 jBtnProxyActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 10);
-        add(jBtnProxy, gridBagConstraints);
-        jBtnProxy.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.httpProxyButton.ACC_desc"));
 
         jTxtLocalFilename.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
-        add(jTxtLocalFilename, gridBagConstraints);
-        jTxtLocalFilename.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFileComboBox.ACC_name"));
-        jTxtLocalFilename.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFileComboBox.ACC_desc"));
 
         buttonGroup1.add(jRbnUrl);
         jRbnUrl.setSelected(true);
@@ -422,28 +478,98 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
                 jRbnUrlActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 12, 0);
-        add(jRbnUrl, gridBagConstraints);
-        jRbnUrl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlRadioButton.ACC_desc"));
 
         jLabel1.setLabelFor(jTxtpackageName);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "PACKAGE_LABEL")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(10, 10, 12, 1);
-        add(jLabel1, gridBagConstraints);
 
         jTxtpackageName.setColumns(20);
         jTxtpackageName.setText("websvc");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(8, 6, 12, 6);
-        add(jTxtpackageName, gridBagConstraints);
+        jTxtpackageName.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                updateAddButtonState(jTxtpackageName);
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                updateAddButtonState(jTxtpackageName);
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                updateAddButtonState(jTxtpackageName);
+            }
+        });
+
+        errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/websvc/manager/resources/warning.png"))); // NOI18N
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(10, 10, 10)
+                        .add(errorLabel))
+                    .add(jLblChooseSource, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 589, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(layout.createSequentialGroup()
+                        .add(jRbnFilesystem, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 111, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(6, 6, 6)
+                        .add(jTxtLocalFilename, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 345, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(12, 12, 12)
+                        .add(jBtnBrowse, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 115, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(jRbnUrl)
+                        .add(6, 6, 6)
+                        .add(jTxtWsdlURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 345, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(12, 12, 12)
+                        .add(jBtnProxy))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .add(8, 8, 8)
+                        .add(jTxtpackageName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 345, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLblChooseSource)
+                .add(12, 12, 12)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jRbnFilesystem)
+                    .add(layout.createSequentialGroup()
+                        .add(1, 1, 1)
+                        .add(jTxtLocalFilename, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jBtnBrowse))
+                .add(6, 6, 6)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jRbnUrl)
+                    .add(layout.createSequentialGroup()
+                        .add(1, 1, 1)
+                        .add(jTxtWsdlURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jBtnProxy))
+                .add(20, 20, 20)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(4, 4, 4)
+                        .add(jLabel1))
+                    .add(jTxtpackageName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(errorLabel)
+                .addContainerGap(25, Short.MAX_VALUE))
+        );
+
+        jRbnFilesystem.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFilelRadioButton.ACC_desc"));
+        jBtnBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFileButton.ACC_desc"));
+        jTxtWsdlURL.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlComboBox.ACC_name"));
+        jTxtWsdlURL.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlComboBox.ACC_desc"));
+        jBtnProxy.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.httpProxyButton.ACC_desc"));
+        jTxtLocalFilename.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFileComboBox.ACC_name"));
+        jTxtLocalFilename.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.localFileComboBox.ACC_desc"));
+        jRbnUrl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlRadioButton.ACC_desc"));
         jTxtpackageName.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.packageTextField.ACC_name"));
         jTxtpackageName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.packageTextField.ACC_desc"));
+        errorLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.errorLabel.ACC_name"));
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.main.ACC_name")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.main.ACC_desc")); // NOI18N
@@ -460,7 +586,10 @@ private void jBtnProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 }//GEN-LAST:event_jBtnProxyActionPerformed
 
 private void jBtnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBrowseActionPerformed
-    // 		System.out.println("browse for wsdl file...");
+
+    jRbnFilesystem.setSelected(false);
+    jRbnFilesystem.setSelected(true);
+    enableControls();
     
     JFileChooser chooser = new JFileChooser(previousDirectory);
     chooser.setMultiSelectionEnabled(false);
@@ -484,6 +613,7 @@ private void jRbnFilesystemActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JLabel errorLabel;
     private javax.swing.JButton jBtnBrowse;
     private javax.swing.JButton jBtnProxy;
     private javax.swing.JLabel jLabel1;

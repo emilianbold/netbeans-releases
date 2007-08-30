@@ -17,6 +17,7 @@
 package org.netbeans.modules.websvc.manager.nodes;
 
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.websvc.manager.api.WebServiceManager;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.model.WebServiceDataEvent;
@@ -41,7 +42,7 @@ public class WebServiceNodeChildren extends Children.Keys<WsdlPort> implements W
 
     @Override
     protected void addNotify() {
-        setKeys(wsData.getWsdlService().getPorts());
+        setKeys(filterNonSoapPorts(wsData.getWsdlService().getPorts()));
         super.addNotify();
     }
     
@@ -73,6 +74,19 @@ public class WebServiceNodeChildren extends Children.Keys<WsdlPort> implements W
     }
 
     public void webServiceCompiled(WebServiceDataEvent evt) {
-        setKeys(wsData.getWsdlService().getPorts());
+        setKeys(filterNonSoapPorts(wsData.getWsdlService().getPorts()));
     }
+  
+    private List<WsdlPort> filterNonSoapPorts(List<WsdlPort> ports) {
+        List<WsdlPort> filterPorts = new java.util.ArrayList<WsdlPort>(ports.size());
+        
+        for (WsdlPort port : ports) {
+            if (port.getAddress() != null) {
+                filterPorts.add(port);
+            }
+        }
+        
+        return filterPorts;
+    }
+    
 }

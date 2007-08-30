@@ -222,12 +222,10 @@ public class WebServicePersistenceManager implements ExceptionListener {
                     
                         for (int j = 0; j < nodes.getLength(); j++) {
                             NamedNodeMap attributes = nodes.item(j).getAttributes();
+                            String type = attributes.getNamedItem("type").getNodeValue(); // NOI18N
                             String url = attributes.getNamedItem("url").getNodeValue(); // NOI18N
                             
-                            // we dont support wadl node at this time
-                            if (url.toLowerCase().endsWith("wadl")) continue;
-                            
-                            if (!partnerUrls.contains(url)) {
+                            if ("http://schemas.xmlsoap.org/wsdl/".equals(type) && !partnerUrls.contains(url)) { // NOI18N
                                 partnerUrls.add(url);
                                 currentUrls.add(url);
                             }
