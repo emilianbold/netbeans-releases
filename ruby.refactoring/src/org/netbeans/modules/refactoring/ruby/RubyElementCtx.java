@@ -56,6 +56,7 @@ import org.netbeans.modules.ruby.TypeAnalyzer;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
+import org.netbeans.modules.ruby.lexer.Call;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 
@@ -315,7 +316,7 @@ public class RubyElementCtx {
                 BaseDocument doc = getDocument();
                 TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
                 int astOffset = AstUtilities.getCallRange(node).getStart();
-                LexUtilities.Call call = LexUtilities.getCallType(doc, th, astOffset);
+                Call call = Call.getCallType(doc, th, astOffset);
                 int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
 
                 String type = call.getType();
@@ -331,7 +332,7 @@ public class RubyElementCtx {
                             new TypeAnalyzer(method, node, astOffset, lexOffset, doc, null);
                         type = analyzer.getType(lhs);
                     }
-                } else if (call == LexUtilities.Call.LOCAL) {
+                } else if (call == Call.LOCAL) {
                     // Look in the index to see which method it's coming from... 
                     RubyIndex index = RubyIndex.get(info.getIndex());
                     String fqn = AstUtilities.getFqnName(getPath());

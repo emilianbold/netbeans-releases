@@ -84,7 +84,7 @@ import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.elements.KeywordElement;
 import org.netbeans.modules.ruby.elements.MethodElement;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
-import org.netbeans.modules.ruby.lexer.LexUtilities.Call;
+import org.netbeans.modules.ruby.lexer.Call;
 import org.netbeans.modules.ruby.lexer.RubyStringTokenId;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.ErrorManager;
@@ -1402,7 +1402,7 @@ public class CodeCompleter implements Completable {
         final Node closest = path.leaf();
         request.node = closest;
 
-        Call call = LexUtilities.getCallType(doc, th, lexOffset);
+        Call call = Call.getCallType(doc, th, lexOffset);
 
         // Don't try to add local vars, globals etc. as part of calls or class fqns
         if (call.getLhs() == null) {

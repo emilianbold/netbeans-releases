@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.ruby.refactoring/1
 OpenIDE-Module-Layer: org/netbeans/modules/refactoring/ruby/resources/mf-layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/refactoring/ruby/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 0.57.0
+OpenIDE-Module-Specification-Version: 0.58.0
 AutoUpdate-Show-In-Client: false

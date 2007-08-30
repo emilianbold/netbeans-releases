@@ -18,7 +18,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.RubyTestBase;
-import org.netbeans.modules.ruby.lexer.LexUtilities.Call;
+import org.netbeans.modules.ruby.lexer.Call;
 
 /**
  *

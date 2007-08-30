@@ -74,7 +74,7 @@ import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
-import org.netbeans.modules.ruby.lexer.LexUtilities.Call;
+import org.netbeans.modules.ruby.lexer.Call;
 import org.netbeans.modules.ruby.lexer.RubyCommentTokenId;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.filesystems.FileObject;
@@ -365,7 +365,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                 // A method call
                 String name = ((INameNode)closest).getName();
 
-                Call call = LexUtilities.getCallType(doc, th, lexOffset);
+                Call call = Call.getCallType(doc, th, lexOffset);
 
                 String type = call.getType();
                 String lhs = call.getLhs();
@@ -1380,7 +1380,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         // into the index search)
         TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
 
-        Call call = LexUtilities.getCallType(doc, th, lexOffset);
+        Call call = Call.getCallType(doc, th, lexOffset);
         boolean skipPrivate = true;
 
         if ((path != null) && (callNode != null) && (call != Call.LOCAL) && (call != Call.NONE)) {
