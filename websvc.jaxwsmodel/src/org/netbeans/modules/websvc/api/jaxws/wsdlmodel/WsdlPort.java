@@ -93,4 +93,8 @@ public class WsdlPort {
     public boolean isProvider(){
         return port.isProvider();
     }
+    
+    public String getAddress(){
+        return port.getAddress();
+    }
 }

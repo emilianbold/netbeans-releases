@@ -44,17 +44,20 @@ public class ServiceChildren extends Children.Keys {
     protected void removeNotify() {
         setKeys(Collections.EMPTY_SET);
     }
-       
+    
     private void updateKeys() {
         List keys =  wsdlService.getPorts();
         setKeys(keys==null?new ArrayList():keys);
     }
-
+    
     protected Node[] createNodes(Object key) {
         if(key instanceof WsdlPort) {
-            return new Node[] {new PortNode((WsdlPort)key)};
+            WsdlPort wsdlPort = (WsdlPort)key;
+            if(wsdlPort.getAddress() != null){  //Determine if it is a SOAP port
+                return new Node[] {new PortNode((WsdlPort)key)};
+            }
         }
         return new Node[0];
     }
-
+    
 }
