@@ -18,6 +18,7 @@ package org.netbeans.modules.websvc.rest.codegen.model;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.wizard.Util;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -50,6 +51,9 @@ public class ParameterInfo {
     }
 
     public Object getDefaultValue() {
+        if (defaultValue == null) {
+            defaultValue = generateDefaultValue();
+        }
         return defaultValue;
     }
 
@@ -59,5 +63,26 @@ public class ParameterInfo {
 
     public void setIsQueryParam(boolean flag) {
         this.isQueryParam = flag;
+    }
+    
+    private Object generateDefaultValue() {
+        if (type == Integer.class || type == Short.class || type == Long.class ||
+                type == Float.class || type == Double.class) {
+            try {
+                return type.getConstructor(String.class).newInstance("0"); //NOI18N
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+        
+        if (type == Boolean.class) {
+            return Boolean.FALSE;
+        }
+    
+        if (type == Character.class) {
+            return new Character('\0');
+        }
+        
+        return null;
     }
 }
