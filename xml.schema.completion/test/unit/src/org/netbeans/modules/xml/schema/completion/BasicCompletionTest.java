@@ -59,6 +59,7 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testChildren1"));
         suite.addTest(new BasicCompletionTest("testChildren2"));
         suite.addTest(new BasicCompletionTest("testReadNamespace"));
+        suite.addTest(new BasicCompletionTest("testImport1"));
         return suite;
     }
     
@@ -394,6 +395,22 @@ public class BasicCompletionTest extends AbstractTestCase {
         String[] results = CompletionUtil.getDeclaredNamespaces(FileUtil.toFile(instanceFileObject));
         String[] expectedResult = {"http://www.netbeans.org/ns/project/1","http://www.netbeans.org/ns/nb-module-project/3"};
         assertResult(results, expectedResult);
+    }
+
+    public void testImport1() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<ns:Main  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
+        buffer.append("   xmlns:ns=\"http://xml.netbeans.org/schema/Main\"\n"); //offset=50
+        buffer.append("   xsi:schemaLocation=\"http://xml.netbeans.org/schema/Main Main.xsd\">\n"); //offset=70
+        buffer.append("   <ns:MainA>\n"); //offset=14
+        buffer.append("       <\n"); //offset=9
+        buffer.append("   </ns:MainA>\n");
+        buffer.append("</ns:Main>\n");
+        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(246);
+        String[] expectedResult = {"ns1:A1","ns1:A2"};
+        assertResult(items, expectedResult);
     }
     
 }

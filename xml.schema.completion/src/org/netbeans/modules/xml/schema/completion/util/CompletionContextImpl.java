@@ -426,6 +426,16 @@ public class CompletionContextImpl extends CompletionContext {
         models.addAll(noNSModels);
         return models;
     }
+
+    public void addCompletionModel(CompletionModel cm) {
+        String tns = cm.getTargetNamespace();
+        if(tns == null && !noNSModels.contains(cm)) {
+            noNSModels.add(cm);
+            return;
+        }
+        if(nsModelMap.get(tns) == null)
+            nsModelMap.put(tns, cm);
+    }
     
     /**
      * Finds all CompletionModelProviders and builds a model map for schemas having TNS
@@ -498,6 +508,13 @@ public class CompletionContextImpl extends CompletionContext {
         //return the prefix
         for(String key : getDeclaredNamespaces().keySet()) {
             String ns = getDeclaredNamespaces().get(key);
+            if(ns.equals(tns))
+                return key;
+        }
+
+        //then try to look that up in the suggested namespace
+        for(String key : suggestedNamespaces.keySet()) {
+            String ns = suggestedNamespaces.get(key);
             if(ns.equals(tns))
                 return key;
         }

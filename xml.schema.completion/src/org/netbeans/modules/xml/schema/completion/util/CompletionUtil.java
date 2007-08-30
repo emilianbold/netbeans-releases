@@ -33,7 +33,6 @@ import java.util.logging.Logger;
 import org.xml.sax.Attributes;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AXIModel;
@@ -51,7 +50,6 @@ import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -202,15 +200,16 @@ public class CompletionUtil {
             return null;
         List<CompletionResultItem> results = new ArrayList<CompletionResultItem>();
         for(AbstractAttribute aa: element.getAttributes()) {
-            if(aa.getTargetNamespace() == null) {  //no namespace
-                results.add(createResultItem(aa, null, context));
+            AXIComponent original = aa.getOriginal();
+            if(original.getTargetNamespace() == null) {  //no namespace
+                results.add(createResultItem(original, null, context));
                 continue;
             }            
-            if(aa instanceof AnyAttribute) {
-                results.addAll(substituteAny((AnyAttribute)aa, context));
+            if(original instanceof AnyAttribute) {
+                results.addAll(substituteAny((AnyAttribute)original, context));
                 continue;
             }
-            addNSAwareCompletionItems(aa,context,null,results);
+            addNSAwareCompletionItems(original,context,null,results);
         }
         return results;
     }
@@ -226,15 +225,16 @@ public class CompletionUtil {
         
         List<CompletionResultItem> results = new ArrayList<CompletionResultItem>();
         for(AbstractElement ae: element.getChildElements()) {
-            if(ae.getTargetNamespace() == null) {  //no namespace
-                results.add(createResultItem(ae, null, context));
+            AXIComponent original = ae.getOriginal();
+            if(original.getTargetNamespace() == null) {  //no namespace
+                results.add(createResultItem(original, null, context));
                 continue;
             }            
-            if(ae instanceof AnyElement) {
-                results.addAll(substituteAny((AnyElement)ae, context));
+            if(original instanceof AnyElement) {
+                results.addAll(substituteAny((AnyElement)original, context));
                 continue;
             }
-            addNSAwareCompletionItems(ae,context,null,results);
+            addNSAwareCompletionItems(original,context,null,results);
         }
         return results;
     }
@@ -293,9 +293,20 @@ public class CompletionUtil {
     }
     
     private static List<String> getPrefixes(CompletionContextImpl context, AXIComponent ae, CompletionModel cm) {
-        List<String> prefixes = null;
-        if(cm == null)
+        List<String> prefixes = new ArrayList<String>();
+        if(cm == null) {
+            if(!context.getDefaultNamespace().equals(ae.getTargetNamespace())) {
+                prefixes = getPrefixesAgainstTargetNamespace(context, ae.getTargetNamespace());
+                if(prefixes.size() != 0)
+                    return prefixes;
+                String prefix = context.suggestPrefix("ns1");
+                CompletionModel m = new CompletionModelEx(context, prefix, ae.getModel().getSchemaModel());
+                context.addCompletionModel(m);
+                prefixes.add(prefix); //NOI18N
+                return prefixes;
+            }
             return getPrefixesAgainstTargetNamespace(context, ae.getTargetNamespace());
+        }
         
         prefixes = getPrefixesAgainstTargetNamespace(context, cm.getTargetNamespace());
         if(prefixes.size() == 0)
@@ -445,13 +456,13 @@ public class CompletionUtil {
             NsHandler nsHandler = getNamespaces(inputSource);
             return nsHandler.getNamespaces();
         } catch (FileNotFoundException ex) {
-            logger.log(Level.SEVERE, ex.getMessage());
+            logger.log(Level.INFO, ex.getMessage());
         } finally {
             try {
                 if(fileReader != null)
                     fileReader.close();
             } catch (Exception ex) {
-                logger.log(Level.WARNING, ex.getMessage());
+                logger.log(Level.INFO, ex.getMessage());
             }
         }        
         return null;
@@ -464,7 +475,7 @@ public class CompletionUtil {
             xmlReader.setContentHandler(handler);
             xmlReader.parse(is);
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, ex.getMessage());
+            logger.log(Level.INFO, ex.getMessage());
         }
         return handler;
     }

@@ -24,4 +24,11 @@
             <xsd:attribute name="attrB22" type="xsd:string"/>
         </xsd:complexType>
     </xsd:element>
+    <xsd:complexType name="BType">
+        <xsd:sequence>
+            <xsd:element name="B1"/>
+            <xsd:element name="B2"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
 </xsd:schema>

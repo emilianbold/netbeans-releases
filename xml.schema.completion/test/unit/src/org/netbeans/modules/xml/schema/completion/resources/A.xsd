@@ -40,4 +40,12 @@
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
+    
+    <xsd:complexType name="AType">
+        <xsd:sequence>
+            <xsd:element name="A1"/>
+            <xsd:element name="A2"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
 </xsd:schema>
