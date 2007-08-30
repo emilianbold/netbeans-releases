@@ -24,9 +24,6 @@
 			<tocitem text="Adding XML Schema Components Using the Design View" target="xmltools_designview_addingcomponents" />
 			<tocitem text="Editing XML Schema Components Using the Design View" target="xmltools_designview_editingcomponents" />
 		</tocitem>
-		<tocitem text="Source View">
-			<tocitem text="About the Source Editor" target="nbdocs_org_netbeans_modules_usersguide_editing_csh_about_source_editor" />
-		</tocitem>
 		<tocitem text="Navigating Between Views" target="xmltools_tasks_views_navigation" />
 		<tocitem text="Working With XML Schema Files">
 			<tocitem text="Creating XML Schema Files" target="xmltools_tasks_creatingxmlschema" />
