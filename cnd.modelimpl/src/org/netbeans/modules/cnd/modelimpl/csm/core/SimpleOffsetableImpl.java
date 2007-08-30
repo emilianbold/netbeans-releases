@@ -34,6 +34,10 @@ public class SimpleOffsetableImpl implements CsmOffsetable {
         public SimpleOffsetableImpl(int line, int col, int offset) {
             stPos = new LineColOffsPositionImpl(line, col, offset);
         }
+
+        public void setEndPosition(Position startPosition) {
+            endPos = new LineColOffsPositionImpl(startPosition);
+        }
         
         public void setEndPosition(int line, int col, int offset) {
             endPos = new LineColOffsPositionImpl(line, col, offset);

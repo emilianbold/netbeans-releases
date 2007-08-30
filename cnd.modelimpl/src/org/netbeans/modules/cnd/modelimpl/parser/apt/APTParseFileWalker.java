@@ -25,7 +25,6 @@ import antlr.TokenStreamException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.structure.APT;
@@ -67,6 +66,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         return lang.getFilteredStream(getTokenStream());
     }
     
+    @Override
     public TokenStream getTokenStream() {
         setMode(ProjectBase.GATHERING_TOKENS);
         // in this phase we should create objects for #define and #include
@@ -80,6 +80,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         return ts;
     }
     
+    @Override
     protected void onDefine(APT apt) {
         super.onDefine(apt);
         if (needMacroAndIncludes()) {
@@ -90,6 +91,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     ////////////////////////////////////////////////////////////////////////////
     // impl of abstract methods
     
+    @Override
     protected void postInclude(APTInclude apt, FileImpl included) {
         if (needMacroAndIncludes()) {
             getFile().addInclude(createInclude(apt, included));
@@ -112,12 +114,11 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     private MacroImpl createMacro(APTDefine define) {
         
-        List/*<String>*/ params = null;
-        Collection paramTokens = define.getParams();
+        List<String> params = null;
+        Collection<Token> paramTokens = define.getParams();
         if( paramTokens != null ) {
-            params = new ArrayList/*<String>*/();
-            for (Iterator iter = paramTokens.iterator(); iter.hasNext();) {
-                Token elem = (Token) iter.next();
+            params = new ArrayList<String>();
+            for (Token elem : paramTokens) {
                 if( APTUtils.isID(elem) ) {
                     params.add(elem.getText());
                 }
@@ -139,14 +140,14 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             // so we temporarily switch this off
             body = ""; //file.getText( start.getOffset(), last.getEndOffset());
         }
-        setEndPosition(pos, (APTToken) last);
+        setEndPosition(pos,last);
         
         return new MacroImpl(define.getName().getText(), params, body/*sb.toString()*/, getFile(), pos);
     }
     
     private IncludeImpl createInclude(final APTInclude apt, final FileImpl included) {
         SimpleOffsetableImpl inclPos = getOffsetable((APTToken)apt.getToken());
-        setEndPosition(inclPos, (APTToken)getLastToken(apt.getInclude()));
+        setEndPosition(inclPos,getLastToken(apt.getInclude()));
         IncludeImpl incImpl = new IncludeImpl(apt.getFileName(getMacroMap()), apt.isSystem(getMacroMap()), included, getFile(), inclPos);
         return incImpl;
     }
@@ -158,6 +159,9 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     private void setEndPosition(SimpleOffsetableImpl offsetable, APTToken token) {
         if( token != null && !APTUtils.isEOF(token)) {
             offsetable.setEndPosition(token.getEndLine(), token.getEndColumn(), token.getEndOffset());
+        } else {
+            assert offsetable.getStartPosition() != null;
+            offsetable.setEndPosition(offsetable.getStartPosition());
         }
     }
     
