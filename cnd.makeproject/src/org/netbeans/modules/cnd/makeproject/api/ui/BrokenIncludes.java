@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.makeproject.api.ui;
 
-import javax.swing.Action;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 
@@ -29,7 +28,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
  */
 public interface BrokenIncludes {
     boolean isBroken(NativeProject project);
-    Action getViewAction(NativeProject project);
     void addChangeListener(ChangeListener listener);
     void removeChangeListener(ChangeListener listener);
 }

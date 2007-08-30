@@ -60,9 +60,13 @@ public final class DiscoveryWizardAction extends NodeAction {
     public static final String HELP_CONTEXT_CONSOLIDATION_STRATEGY = "CodeAssistanceWizardP4"; // NOI18N
     public static final String HELP_CONTEXT_SELECT_CONFIGURATION = "CodeAssistanceWizardP5"; // NOI18N
 
+    public DiscoveryWizardAction(){
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
+
     protected void performAction(Node[] activatedNodes) {
         Collection<Project> projects = getMakeProjects(activatedNodes);
-        if( projects == null || projects.size() == 0) {
+        if( projects == null || projects.size() != 1) {
             return;
         }
         invokeWizard(projects.iterator().next());
@@ -70,7 +74,7 @@ public final class DiscoveryWizardAction extends NodeAction {
     
     protected boolean enable(Node[] activatedNodes) {
         Collection<Project> projects = getMakeProjects(activatedNodes);
-        if( projects == null || projects.size() == 0) {
+        if( projects == null || projects.size() != 1) {
             return false;
         }
         return true;
@@ -209,10 +213,11 @@ public final class DiscoveryWizardAction extends NodeAction {
                 return null;
             }
             Configuration conf = confs.getActive();
-            if (conf instanceof MakeConfiguration){
-                if (((MakeConfiguration)conf).isMakefileConfiguration()){
-                    projects.add(project);
-                }
+            if ((conf instanceof MakeConfiguration) && 
+                ((MakeConfiguration)conf).isMakefileConfiguration()){
+                projects.add(project);
+            } else {
+                return null;
             }
         }
         return projects;

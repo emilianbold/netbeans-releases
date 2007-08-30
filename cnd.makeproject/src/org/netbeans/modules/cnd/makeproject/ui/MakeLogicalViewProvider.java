@@ -491,10 +491,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             for (int i = 0; i < standardActions.length; i++)
                 actions.add(standardActions[i]);
             actions.add(null);
-            addActionsFromLayers(actions, "NativeProjects/Actions"); // NOI18N
-            if(brokenIncludes ) {
-		actions.add(getBrokenIncludesAction(project));
-	    }
+            //actions.add(new CodeAssistanceAction());
+            addActionsFromLayers(actions, "NativeProjects/Menu"); // NOI18N
             actions.add(null);
             actions.add(SystemAction.get(org.openide.actions.FindAction.class ));
             addActionsFromLayers(actions, "Projects/Actions"); // NOI18N
@@ -600,17 +598,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return false;
         }
 
-        private Action getBrokenIncludesAction(Project project) {
-            BrokenIncludes provider = (BrokenIncludes) Lookup.getDefault().lookup(BrokenIncludes.class);
-            if (provider != null) {
-                NativeProject id = (NativeProject) project.getLookup().lookup(NativeProject.class);
-                if (id != null) {
-                    return provider.getViewAction(id);
-                }
-            }
-            return null;
-        }
-    
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */
