@@ -15,16 +15,16 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.visualweb.api.insync</code-name-base>
+                    <code-name-base>org.netbeans.modules.servletjspapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.visualweb.api.portlet.dd</code-name-base>
+                    <code-name-base>org.netbeans.modules.visualweb.api.insync</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -59,24 +59,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.servletjspapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.web.jsf12</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.visualweb.project.jsf</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -100,6 +82,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>2.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.jsf12</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -175,7 +166,7 @@
                         <code-name-base>org.openide.loaders</code-name-base>
                         <compile-dependency/>
                         <test/>
-                    </test-dependency> 
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.web.jsf.navigation</code-name-base>
                         <compile-dependency/>
@@ -184,12 +175,10 @@
                         <code-name-base>org.netbeans.modules.web.jsf</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-                    
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-                    
                     <!-- INSYNC DEPENDENCIES -->
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.visualweb.insync</code-name-base>
@@ -198,7 +187,7 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.visualweb.j2ee15classloaderprovider</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>        
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.visualweb.classloaderprovider</code-name-base>
                     </test-dependency>
@@ -217,7 +206,7 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.visualweb.libs.jsf.ri12</code-name-base>
-                    </test-dependency>      
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.xerces</code-name-base>
                     </test-dependency>
