@@ -291,7 +291,7 @@ function download(option) {
     var platform = select.options[select.selectedIndex].value;
 
     var file_name = 
-            "start.html?netbeans-6.0-nightly-200708160000-" + 
+            "start.html?netbeans-6.0-nightly-{build-number}-" + 
             option + "-" + platform;
     
     if (platform == "windows") {
