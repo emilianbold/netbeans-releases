@@ -69,6 +69,16 @@ public class CsmImageLoader implements CsmImageName {
         return icon;
     }
     
+    public static String getIncludeIcon(Boolean usrIncludeKind) {
+        if (usrIncludeKind == Boolean.TRUE) {
+            return INCLUDE_USER;
+        } else if (usrIncludeKind == Boolean.FALSE) {
+            return INCLUDE_SYSTEM;
+        } else {
+            return INCLUDE_FOLDER;
+        }
+    }
+    
     public static String getImagePath(CsmObject o) {
         CsmDeclaration.Kind kind = CsmDeclaration.Kind.BUILT_IN;
         int modifiers = CsmUtilities.getModifiers(o);
