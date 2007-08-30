@@ -62,7 +62,9 @@ public class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementation {
             Logger.getLogger("global").log(Level.INFO, null, ex);
         } finally {
             try {
-                in.close();
+                if (in != null) {
+                    in.close();
+                }
             } catch (IOException ex) {
                 //this is silly, java shouldn't do this.
             }
