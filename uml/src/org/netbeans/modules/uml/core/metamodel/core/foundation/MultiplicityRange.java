@@ -414,8 +414,8 @@ public class MultiplicityRange extends Element implements IMultiplicityRange
         
         Preferences prefs = NbPreferences.forModule (MultiplicityRange.class);
         boolean useCollection = prefs.getBoolean("UML_USE_GENERICS_DEFAULT", true);
-        
-        if((retVal == null) || (retVal.length() == 0))
+
+        if((retVal == null) || (retVal.trim().length() == 0))
         {
 	    if(useDefault) {
 		if(useCollection == true)
