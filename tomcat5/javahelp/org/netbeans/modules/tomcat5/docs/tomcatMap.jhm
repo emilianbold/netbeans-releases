@@ -32,7 +32,6 @@ help\
         <mapID target="tomcat_edit_tomcatuser" url="tomcat/tomcat_edit_tomcatuser.html" />
 	<mapID target="tomcat_setup_tdcp" url="tomcat/tomcat_setup_tdcp.html" />
 	<mapID target="tomcat_use_tdcp" url="tomcat/tomcat_use_tdcp.html" />
-	<mapID target="tomcat_enable_1_5" url="tomcat/tomcat_enable_1_5.html" />
 	<mapID target="tomcat_websvc" url="tomcat/tomcat_websvc.html" />
 	<mapID target="tomcat_websvc_jwsdp" url="tomcat/tomcat_websvc_jwsdp.html" />
 	<!-- this is for the instance node -->

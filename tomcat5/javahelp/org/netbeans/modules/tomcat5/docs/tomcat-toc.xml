@@ -20,7 +20,6 @@
 	<tocitem text="Working with the Tomcat Web Server" target="tomcat_process" />
 	<tocitem text="Tomcat Web Server Tasks: Quick Reference" target="tomcat_quickref" />
 	<tocitem text="Setting Up the Tomcat Web Server">
-	<tocitem text="Enabling JDK 1.5 Compilation Support for Tomcat" target="tomcat_enable_1_5" />
 	<tocitem text="Viewing the Tomcat Web Server in the IDE" target="tomcat_top_node" />
 	<tocitem text="Customizing the Tomcat Web Server" target="tomcat_internal_props"/>
 	<tocitem text="Registering an External Tomcat Web Server" target="tomcat_addinstall_noncsh" />
