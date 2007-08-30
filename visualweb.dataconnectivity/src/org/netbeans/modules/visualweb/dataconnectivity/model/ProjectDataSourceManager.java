@@ -34,12 +34,19 @@ import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceS
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.visualweb.api.j2ee.common.RequestedResource;
+import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
+import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -53,7 +60,6 @@ import org.openide.util.Lookup;
 public class ProjectDataSourceManager  {
     private Project project = null;
     private DesignTimeDataSourceService dataSourceService = null;
-    private static Project currentProj;
 
     /**
      * Creates a new instance of ProjectDataSourceManager
@@ -112,6 +118,20 @@ public class ProjectDataSourceManager  {
         return true;
     }
 
+    /**
+     * Return true if a legacy project's RequestedJdbcResources are available
+     */
+    public boolean isRequestedJdbcResourceAvailable() {
+        RequestedJdbcResource jdbcResource = null;
+        boolean hasResource = false;
+
+        if (dataSourceService.getProjectDataSources(project).size() > 0) {
+            hasResource = true;
+        }
+
+        return hasResource;
+    }
+    
     /**
      * Find the RequestedJdbcResource based on the information in the provided datasource info
      * The Url, driver class, user name and password are matched
