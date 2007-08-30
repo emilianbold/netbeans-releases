@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.ruby.ui;
@@ -43,7 +43,6 @@ import org.netbeans.api.retouche.source.Phase;
 import org.netbeans.api.retouche.source.Source;
 import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
-
 
 /**
  * Based on the WhereUsedPanel in Java refactoring by Jan Becicka.
@@ -138,7 +137,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         remove(methodsPanel);
                         // WARNING for now since this feature is not ready yet
                         //label.setText(labelText);
-                        String combinedLabelText = "<html><b><font style=\"color: red\">WARNING: This feature is in development and inaccurate!</font><br><br>" + labelText + "</html>";
+                        String combinedLabelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_WhereUsedWarningInDevelopment", labelText);
                         label.setText(combinedLabelText);
                         if (element.getKind() == ElementKind.METHOD) {
                             add(methodsPanel, BorderLayout.CENTER);
@@ -179,10 +178,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         
     public RubyElementCtx getBaseMethod() {
         return newElement;
-    }
-    
-    public void requestFocus() {
-        super.requestFocus();
     }
     
     /** This method is called from within the constructor to
@@ -389,7 +384,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         return c_usages.isSelected();
     }
     
-    public Dimension getPreferredSize() {
+    public @Override Dimension getPreferredSize() {
         Dimension orig = super.getPreferredSize();
         return new Dimension(orig.width + 30 , orig.height + 80);
     }
