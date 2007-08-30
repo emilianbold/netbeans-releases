@@ -116,6 +116,7 @@ import com.tomsawyer.graph.TSGraph;
 import com.tomsawyer.graph.TSGraphManager;
 import com.tomsawyer.graph.TSGraphObject;
 import com.tomsawyer.graph.TSNode;
+import com.tomsawyer.graph.event.TSEventManager;
 import com.tomsawyer.graph.event.TSGraphChangeEvent;
 import com.tomsawyer.graph.event.TSGraphChangeEventData;
 import com.tomsawyer.graph.event.TSGraphChangeListener;
@@ -2660,10 +2661,15 @@ public class ADDrawingAreaControl extends ApplicationView
             
       trackBarModifyListener = new MyGraphChangeListener(); 
       //adding listeners - JM
-      getGraphManager().getEventManager().addGraphChangeListener(getGraphManager(), this.getActions());  
-      getGraphManager().getEventManager().addGraphChangeListener(getGraphManager(), trackBarModifyListener, TSGraphChangeEvent.ANY_DISCARDED ); 
-      ((TSEEventManager)getGraphManager().getEventManager()).addSelectionChangeListener(getGraphManager(), this.getActions());      
-      ((TSEEventManager)getGraphManager().getEventManager()).addViewportChangeListener(getGraphWindow(), this.getActions());
+      TSEGraphManager graphManager = getGraphManager();
+      TSEventManager graphEventManager = graphManager.getEventManager();
+      graphEventManager.addGraphChangeListener(graphManager, this.getActions());  
+      graphEventManager.addGraphChangeListener(graphManager, trackBarModifyListener, TSGraphChangeEvent.ANY_DISCARDED ); 
+      if (graphEventManager instanceof  TSEEventManager) 
+      {
+          ((TSEEventManager)graphEventManager).addSelectionChangeListener(graphManager, this.getActions());      
+          ((TSEEventManager)graphEventManager).addViewportChangeListener(getGraphWindow(), this.getActions());
+      }
       
       // specify the default state the graph window restores on reset
       // operations
@@ -11743,13 +11749,15 @@ public class ADDrawingAreaControl extends ApplicationView
        
        public void graphChanged(TSGraphChangeEvent event)
        {
-           if( (event.getType() == TSGraphChangeEvent.NODE_REMOVED) ||  (event.getType() == TSGraphChangeEvent.NODE_DISCARDED) )
+           long eventType = event.getType();
+           if( eventType == TSGraphChangeEvent.NODE_REMOVED ||
+               eventType == TSGraphChangeEvent.NODE_DISCARDED )
            {
                ETList < IETGraphObject > deletedObject = new ETArrayList < IETGraphObject > ();
                
                TSGraphChangeEventData data = (TSGraphChangeEventData)event.getData();
                Object obj = data.getSource();
-               if(obj instanceof TSObject)
+               if(obj instanceof TSObject )
                {
                    deletedObject.add(TypeConversions.getETGraphObject((TSObject)obj));
                    onGraphEvent(IGraphEventKind.GEK_POST_DELETE, null, null, deletedObject);

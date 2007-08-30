@@ -1276,7 +1276,10 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
                 (type == TSGraphChangeEvent.EDGE_ENDNODE_CHANGED)
                 )
         {
-            this.m_drawingArea.setChanged(true);
+            if (m_drawingArea != null)
+            {
+                this.m_drawingArea.setChanged(true);
+            }
         }
         if ((type == TSGraphChangeEvent.GRAPH_INSERTED || type == TSGraphChangeEvent.ANY_CHANGE) && this.m_drawingArea.isAutoFitInWindow())
         {

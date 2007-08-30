@@ -25,6 +25,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -1386,6 +1388,15 @@ public class DiagramTopComponent extends CloneableTopComponent
             {
                 boolean modified = ((Boolean)evt.getNewValue()).booleanValue();
                 DiagramDataObject dobj = getDiagramDO();
+                
+                // Fix for issue 113264.  dobj is not valid if the diagram file has been deleted.
+                // Check for the validity of the object before using it.
+                if ( !dobj.isValid())
+                {
+                    //String message = "The data object " + dobj.getPrimaryFile() + " does not exist or invalid.";   //NO18N
+                    //Logger.getLogger(this.getClass().getName()).log(Level.WARNING, message);
+                    return;
+                }
                 
                 DiagramDataNode diagDataNode = 
                     (DiagramDataNode)dobj.getNodeDelegate();
