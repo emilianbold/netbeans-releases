@@ -23,7 +23,6 @@ import java.awt.font.TextAttribute;
 import java.awt.im.InputMethodHighlight;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
-import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -197,24 +196,10 @@ public final class ComposedTextHighlighting extends AbstractHighlightsContainer 
             
             InputMethodHighlight imh = (InputMethodHighlight) sourceValue;
             
-            // Get the style attributes
-            Map<TextAttribute, ?> style = imh.getStyle();
-            if (style == null) {
-                style = Toolkit.getDefaultToolkit().mapInputMethodHighlight(imh);
-                if (style == null) {
-                    style = Collections.emptyMap();
-                }
-            }
-            
-            for(TextAttribute styleAttrKey : style.keySet()) {
-                Object styleAttrValue = style.get(styleAttrKey);
-                if (styleAttrKey == TextAttribute.INPUT_METHOD_UNDERLINE) {
-                    LOG.fine("Underline ... " + imh); //NOI18N
-                    return highlightUnderlined;
-                } else if (styleAttrKey == TextAttribute.SWAP_COLORS) {
-                    LOG.fine("Inverse ... " + imh); //NOI18N
-                    return highlightInverse;
-                }
+            if (imh.isSelected()) {
+                return highlightInverse;
+            } else {
+                return highlightUnderlined;
             }
         }
         
