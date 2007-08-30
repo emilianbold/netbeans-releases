@@ -20,11 +20,12 @@
 package org.netbeans.modules.uml.drawingarea.dataobject;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
-import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileUtil;
@@ -44,11 +45,12 @@ public class DiagramDataNode extends DataNode
         super(obj, Children.LEAF);
         setIconBaseWithExtension(ImageUtil.DIAGRAM_ICON_DEFAULT);
         
-        IProxyDiagramManager diagramMgr = ProxyDiagramManager.instance();
-        
-        IProxyDiagram proxyDiagram = diagramMgr.getDiagram(
-                FileUtil.getFileDisplayName(obj.getPrimaryFile()));
-        setDisplayName(proxyDiagram.getName());
+        IProxyDiagram proxyDiagram = ProxyDiagramManager.instance().getDiagram(
+            FileUtil.getFileDisplayName(obj.getPrimaryFile()));
+
+//        setIconBaseWithExtension(ImageUtil.instance()
+//            .getDiagramTypeImageName(0));
+
         setValue(IMAGE_ICON_ATTR_NAME, proxyDiagram.getDiagramKind());
     }
     

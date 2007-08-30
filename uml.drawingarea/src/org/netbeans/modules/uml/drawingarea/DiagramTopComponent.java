@@ -82,10 +82,12 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaDropContext;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaEventsSink;
 import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaPropertyKind;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
+import org.netbeans.modules.uml.drawingarea.dataobject.DiagramDataNode;
 import org.netbeans.modules.uml.drawingarea.dataobject.DiagramDataObject;
 import org.netbeans.modules.uml.project.ui.nodes.AbstractModelElementNode;
 import org.netbeans.modules.uml.project.ui.nodes.UMLModelElementNode;
 import org.netbeans.modules.uml.palette.PaletteSupport;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node.Cookie;
@@ -475,7 +477,7 @@ public class DiagramTopComponent extends CloneableTopComponent
             });
         }
     }
-    
+
     protected void initializeUI()
     {
         setLayout(new BorderLayout());
@@ -1384,9 +1386,18 @@ public class DiagramTopComponent extends CloneableTopComponent
             {
                 boolean modified = ((Boolean)evt.getNewValue()).booleanValue();
                 DiagramDataObject dobj = getDiagramDO();
+                
+                DiagramDataNode diagDataNode = 
+                    (DiagramDataNode)dobj.getNodeDelegate();
+
                 if (modified)
                 {
                     dobj.addSaveCookie();
+                    diagDataNode.setDisplayName(mControl.getNameWithAlias());
+                    
+                    diagDataNode.setIconBaseWithExtension(ImageUtil.instance()
+                        .getDiagramTypeImageName(mControl.getDiagramKind()));
+                    
                     setDiagramDisplayName(mControl.getNameWithAlias() + SPACE_STAR);
                     addSaveCookie();
                     dobj.setModified(modified);
@@ -1395,6 +1406,11 @@ public class DiagramTopComponent extends CloneableTopComponent
                 {
                     dobj.removeSaveCookie();
                     dobj.setModified(modified);
+                    
+                    diagDataNode.setIconBaseWithExtension(ImageUtil.instance()
+                        .getDiagramTypeImageName(mControl.getDiagramKind()));
+                    
+                    diagDataNode.setDisplayName(mControl.getNameWithAlias());
                     setDiagramDisplayName(mControl.getNameWithAlias());
                     removeSaveCookie();
                 }
@@ -1403,6 +1419,13 @@ public class DiagramTopComponent extends CloneableTopComponent
             {
                 if (evt.getNewValue() == Boolean.FALSE)
                 {
+                    DiagramDataNode diagDataNode = 
+                        (DiagramDataNode)getDiagramDO().getNodeDelegate();
+                    
+                    diagDataNode.setIconBaseWithExtension(ImageUtil.instance()
+                        .getDiagramTypeImageName(mControl.getDiagramKind()));
+                    
+                    diagDataNode.setDisplayName(mControl.getNameWithAlias());
                     setDiagramDisplayName(mControl.getNameWithAlias());
                     removeSaveCookie();
                 }
