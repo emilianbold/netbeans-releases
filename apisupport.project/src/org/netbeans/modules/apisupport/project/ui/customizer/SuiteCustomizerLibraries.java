@@ -423,6 +423,8 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         // And these are deprecated:
         DISABLED_PLATFORM_MODULES.add("org.openide.compat"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.openide.util.enumerations"); // NOI18N
+        // See issue #112931
+        DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.core.kit"); // NOI18N
     }
     
     public void stateChanged(ChangeEvent ev) {
