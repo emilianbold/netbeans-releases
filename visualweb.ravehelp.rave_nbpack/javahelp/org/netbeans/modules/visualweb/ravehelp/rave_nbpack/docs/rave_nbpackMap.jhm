@@ -625,5 +625,5 @@
 	<mapID target="webapps_process" url="web/about/webapps_process.html"/>
 	<mapID target="webapps_quickref" url="web/about/webapps_quickref.html"/>
 	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html"/>
-	<mapID target="webapps_process_top" url="webapps_process.html#top"/>
+	<mapID target="webapps_process_top" url="web/about/webapps_process.html#top"/>
 </map>
