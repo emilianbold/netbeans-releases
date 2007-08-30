@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.mobility.e2e.mapping;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -117,5 +118,13 @@ public class ArrayTypeSerializer implements JavonSerializer {
             return deserializationCode;
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
+    }
+    
+    public Set<ClassData> getReferencesTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
+        Set<ClassData> result = new HashSet<ClassData>();
+        result.add( rootClassData );
+        result.addAll( rootClassData.getComponentType().getSerializer().
+                getReferencesTypes( rootClassData.getComponentType(), usedTypes ));
+        return result;
     }
 }

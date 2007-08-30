@@ -17,8 +17,10 @@
 package org.netbeans.modules.mobility.e2e.mapping;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
@@ -50,17 +52,14 @@ public class GenericTypeSerializer implements JavonSerializer {
             System.err.println(" - declared type: " + clazz.getQualifiedName().toString());
             if( "java.util.List".equals( clazz.getQualifiedName().toString())) {
                 List<? extends TypeMirror> typeParams = ((DeclaredType) type).getTypeArguments();
-                boolean areParametersSupported = true;
                 for( TypeMirror typeParam : typeParams ) {
                     if( !traversable.isTypeSupported( typeParam, typeCache )) {
-                        areParametersSupported = false;
-                        break;
+                        return false;
                     }
                 }
-                if( areParametersSupported ) return true;
             }
         }
-        return false;
+        return true;
     }
 
     public ClassData getType( Traversable traversable, TypeMirror type, Map<String, ClassData> typeCache ) {
@@ -83,7 +82,7 @@ public class GenericTypeSerializer implements JavonSerializer {
     }
 
     public String instanceOf( ClassData type ) {        
-        return type.getName() + "<" + type.getParameterTypes().get( 0 ).getName() + ">";
+        return type.getName() + "<" + /*type.getParameterTypes().get( 0 ).getName() + */ ">";
     }
 
     public String toObject( ClassData type, String variable ) {
@@ -111,4 +110,7 @@ public class GenericTypeSerializer implements JavonSerializer {
         }
     }
 
+    public Set<ClassData> getReferencesTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
+        return Collections.singleton( rootClassData );
+    }
 }

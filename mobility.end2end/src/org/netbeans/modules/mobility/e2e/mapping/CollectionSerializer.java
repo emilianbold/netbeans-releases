@@ -19,7 +19,9 @@
 
 package org.netbeans.modules.mobility.e2e.mapping;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -115,4 +117,7 @@ public class CollectionSerializer implements JavonSerializer {
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
 
+    public Set<ClassData> getReferencesTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
+        return Collections.singleton( rootClassData );
+    }
 }

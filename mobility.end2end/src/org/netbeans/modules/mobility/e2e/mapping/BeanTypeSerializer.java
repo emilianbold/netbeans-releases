@@ -132,7 +132,11 @@ public class BeanTypeSerializer implements JavonSerializer {
                 String getterName = ( e.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get" ) + methodPartName;
                 FieldData field = new FieldData( e.getSimpleName().toString(), fieldClass );
                 
-                if( !e.getModifiers().contains( Modifier.PUBLIC )) { 
+                if( e.getModifiers().contains( Modifier.PUBLIC )) { 
+                    field.setModifier( ClassData.Modifier.PUBLIC );
+                    cd.addField( field );
+                    traversable.registerType( fieldClass );
+                } else {
                     boolean hasSetter = false, hasGetter = false;
                     for( ExecutableElement ee : ElementFilter.methodsIn( clazz.getEnclosedElements())) {
                         String eeName = ee.getSimpleName().toString();
@@ -148,10 +152,10 @@ public class BeanTypeSerializer implements JavonSerializer {
                         }
                     }
                     field.setModifier( ClassData.Modifier.PRIVATE );
-                    if( hasGetter && hasSetter ) cd.addField( field );
-                } else if( e.getModifiers().contains( Modifier.PUBLIC )) {
-                    field.setModifier( ClassData.Modifier.PUBLIC );
-                    cd.addField( field );
+                    if( hasGetter && hasSetter ) {
+                        cd.addField( field );
+                        traversable.registerType( fieldClass );
+                    }
                 }
             }
                         
@@ -199,13 +203,14 @@ public class BeanTypeSerializer implements JavonSerializer {
         if( beanTypes.get( type.getFullyQualifiedName()) != null ) {
             String serialization = "";
             String beanInstanceName = "b_" + type.getFullyQualifiedName().replace( ".", "_" );
+            if( mapping.getProperty( "target" ).equals( "client" )) {
+                serialization += type.getFullyQualifiedName() + " " + beanInstanceName + " = (" + type.getFullyQualifiedName() + ")" + object + ";\n";
+            }
             for( FieldData field : type.getFields()) {
                 String id = "";
-                if( mapping.getProperty( "target" ).equals( "client" )) {
-                    serialization += type.getFullyQualifiedName() + " " + beanInstanceName + " = (" + type.getFullyQualifiedName() + ")" + object + ";\n";
-                    id = ", " + mapping.getRegistry().getRegisteredTypeId( field.getType());
-                }
-                if( mapping.getProperty( "target" ).equals( "client" ) && mapping.getProperty( "create-stubs" ).equals( "true" )) {
+                id = ", " + mapping.getRegistry().getRegisteredTypeId( field.getType());
+                if(( mapping.getProperty( "target" ).equals( "client" ) && mapping.getProperty( "create-stubs" ).equals( "true" )) 
+                        || field.getModifier() == ClassData.Modifier.PUBLIC ) {
                     if( field.getType().isPrimitive()) {
                         serialization += mapping.getRegistry().getTypeSerializer( field.getType()).
                                 toStream( mapping , field.getType(), stream, beanInstanceName + "." + field.getName()) + "\n";
@@ -216,7 +221,7 @@ public class BeanTypeSerializer implements JavonSerializer {
                     if( field.getType().isPrimitive()) {
                         serialization += mapping.getRegistry().getTypeSerializer( field.getType()).
                                 toStream( mapping , field.getType(), stream, beanInstanceName + "." + getGetter( field ) + "()" ) + "\n";
-                    } else {
+                    } else {                        
                         serialization += "writeObject(" + stream + ", " + beanInstanceName + "." + getGetter( field ) + "()" + id + ");\n";
                     }
                 }
@@ -232,12 +237,13 @@ public class BeanTypeSerializer implements JavonSerializer {
             String deserialization = type.getFullyQualifiedName() + " " + beanInstanceName + 
                     " = new " + type.getFullyQualifiedName() + "();\n";
             for( FieldData field : type.getFields()) {
-                if( mapping.getProperty( "target" ).equals( "client" ) && mapping.getProperty( "create-stubs" ).equals( "true" )) {
+                if(( mapping.getProperty( "target" ).equals( "client" ) && mapping.getProperty( "create-stubs" ).equals( "true" )) 
+                        || field.getModifier() == ClassData.Modifier.PUBLIC ) {
                     if( field.getType().isPrimitive()) {
                         deserialization += beanInstanceName + " = " + mapping.getRegistry().getTypeSerializer( field.getType()).
                                 fromStream( mapping , field.getType(), stream, null ) + "\n";
                     } else {
-                        deserialization += beanInstanceName + " = (" + field.getType().getFullyQualifiedName() + ") readObject(" + stream + ");\n";
+                        deserialization += beanInstanceName + "." + field.getName() + " = (" + field.getType().getFullyQualifiedName() + ") readObject(" + stream + ");\n";
                     }
                 } else {
                     if( field.getType().isPrimitive()) {
@@ -261,4 +267,18 @@ public class BeanTypeSerializer implements JavonSerializer {
     private String getGetter( FieldData field ) {
         return "get" + field.getName().substring( 0, 1 ).toUpperCase() + field.getName().substring( 1 );
     }
+    
+    public Set<ClassData> getReferencesTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
+        Set<ClassData> result = new HashSet<ClassData>();
+        result.add( rootClassData );
+        usedTypes.add( rootClassData );
+        for( FieldData fieldCD : rootClassData.getFields()) {
+            ClassData cd = fieldCD.getType();
+            if( !usedTypes.contains( cd )) {
+                result.addAll( cd.getSerializer().getReferencesTypes( cd, usedTypes ));
+                usedTypes.add( cd );
+            }
+        }
+        return result;
+    }    
 }

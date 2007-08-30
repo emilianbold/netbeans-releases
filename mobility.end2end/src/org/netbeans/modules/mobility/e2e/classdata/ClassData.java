@@ -188,10 +188,7 @@ public class ClassData {
      * @return List of all parameter types, EmptyList if no parameter types are specified
      */
     public List<ClassData> getParameterTypes() {
-        if (this.generics)
-            return Collections.unmodifiableList( typeParameters );
-        else
-            return Collections.unmodifiableList( Collections.EMPTY_LIST );
+        return Collections.unmodifiableList( typeParameters );
     }
     
     public void setParameterTypes( List<ClassData> parameters ) {

@@ -20,6 +20,7 @@
 package org.netbeans.modules.mobility.javon;
 
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
 
@@ -101,4 +102,15 @@ public interface JavonSerializer {
      * @return 
      */
     public String fromStream( JavonMapping mapping, ClassData type, String stream, String object );
+    
+    /**
+     * Return Set of all types on which is the root ClassData object 
+     * depending
+     * 
+     * @param rootClassData root class data
+     * @return Set<ClassData> of all referenced types
+     */
+    public Set<ClassData> getReferencesTypes( ClassData rootClassData, Set<ClassData> usedTypes );
+    
+    
 }

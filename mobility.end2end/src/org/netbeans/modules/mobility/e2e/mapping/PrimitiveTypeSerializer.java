@@ -20,6 +20,7 @@
 package org.netbeans.modules.mobility.e2e.mapping;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -315,4 +316,8 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         
         return result;
     }
+    
+    public Set<ClassData> getReferencesTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {
+        return Collections.singleton( rootClassData );
+    }    
 }
