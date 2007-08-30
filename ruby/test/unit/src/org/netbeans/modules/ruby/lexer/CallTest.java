@@ -52,8 +52,34 @@ public class CallTest extends RubyTestBase {
         assertTrue(call.isStatic());
     }
 
+    public void testCall1c() throws Exception {
+        Call call = getCall("File.ex^ ");
+        assertEquals("File", call.getLhs());
+        assertEquals("File", call.getType());
+        assertTrue(call.isSimpleIdentifier());
+        assertTrue(call.isStatic());
+    }
+
     public void testCall2() throws Exception {
         Call call = getCall("xy.ex^");
+        assertEquals("xy", call.getLhs());
+        assertEquals(null, call.getType());
+    }
+
+    public void testCall2b() throws Exception {
+        Call call = getCall("xy.^");
+        assertEquals("xy", call.getLhs());
+        assertEquals(null, call.getType());
+    }
+
+    public void testCall2c() throws Exception {
+        Call call = getCall("xy.ex^ ");
+        assertEquals("xy", call.getLhs());
+        assertEquals(null, call.getType());
+    }
+
+    public void testCall2d() throws Exception {
+        Call call = getCall("xy.^ ");
         assertEquals("xy", call.getLhs());
         assertEquals(null, call.getType());
     }
@@ -155,7 +181,6 @@ public class CallTest extends RubyTestBase {
         assertFalse(call.isSimpleIdentifier());
         assertFalse(call.isStatic());
     }
-
     // This test doesn't work; the lexer believes this (erroneous input) is a number
     //public void testCall10() throws Exception {
     //    Call call = getCall("1..10.each^");
@@ -171,7 +196,6 @@ public class CallTest extends RubyTestBase {
     //    assertFalse(call.isSimpleIdentifier());
     //    assertFalse(call.isStatic());
     //}
-
     public void testCa11() throws Exception {
         Call call = getCall("nil.foo^");
         assertEquals("NilClass", call.getType());
@@ -286,11 +310,17 @@ public class CallTest extends RubyTestBase {
         Call call = getCall("foo^");
         assertSame(Call.LOCAL, call);
     }
-    
-//    // TODO - test embedded ruby scenario
-//    public void testCallNested() throws Exception {
-//        Call call = getCall("x=\"#{ File.ex^ }\"");
-//        assertEquals("File", call.getType());
-//        assertTrue(call.isStatic());
-//    }
+
+    public void testCallNested() throws Exception {
+        Call call = getCall("x=\"#{ File.ex^}\"");
+        assertEquals("File", call.getType());
+        assertTrue(call.isStatic());
+    }
+
+    // THIS IS BROKEN:
+    //public void testCallNested2() throws Exception {
+    //    Call call = getCall("x=\"#{ File.ex^ }\"");
+    //    assertEquals("File", call.getType());
+    //    assertTrue(call.isStatic());
+    //}
 }
