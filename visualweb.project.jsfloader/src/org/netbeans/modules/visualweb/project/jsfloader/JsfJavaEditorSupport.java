@@ -154,6 +154,16 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         });
     }
     
+    protected void openJsp() {
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
+                CloneableTopComponent editor = openCloneableTopComponent();
+                editor.requestActive();
+                viewJspSource(editor);
+            }
+        });
+    }  
+    
     protected void notifyClosed() {
         super.notifyClosed();
         lastMultiView = null;
@@ -430,7 +440,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
     }
     
 // Helper view methods
-    void viewJspSource(final TopComponent jspEditor) {
+    private void viewJspSource(final TopComponent jspEditor) {
         if(SwingUtilities.isEventDispatchThread()) {
             doViewJspSource(jspEditor);
         } else {

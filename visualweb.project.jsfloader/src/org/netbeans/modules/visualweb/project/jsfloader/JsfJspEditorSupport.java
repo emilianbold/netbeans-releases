@@ -24,12 +24,9 @@ package org.netbeans.modules.visualweb.project.jsfloader;
 
 import org.netbeans.modules.visualweb.palette.api.CodeClipPaletteActions;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.lang.ref.WeakReference;
 import java.util.Enumeration;
 import javax.swing.Action;
@@ -39,8 +36,6 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
-import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.openide.DialogDisplayer;
@@ -246,7 +241,10 @@ public final class JsfJspEditorSupport extends DataEditorSupport
             DialogDisplayer.getDefault().notify(nd);
             if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
         }
-        super.open();
+        
+        final JsfJavaEditorSupport support = getJsfJavaEditorSupport(false);
+        if (support == null) return;
+        support.openJsp();        
     }
     
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
