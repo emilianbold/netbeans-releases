@@ -21,10 +21,17 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="Mac App" basedir="." default="build-dmg">
 
-  <!-- define these: -->
-  <property name="glassfish_location" value=""/>
-  <property name="tomcat_location" value=""/>
-  <property name="openesb_location" value=""/>
+  <condition property="build_glassfish">
+    <isset property="glassfish_location"/>
+  </condition>
+
+  <condition property="build_tomcat">
+    <isset property="tomcat_location"/>
+  </condition>
+
+  <condition property="build_openesb">
+    <isset property="openesb_location"/>
+  </condition>
 
   <property name="nb.dir" value="../../nbbuild/netbeans"/>
   <property name="appname" value="NetBeans 6.0"/>
@@ -102,21 +109,51 @@ Microsystems, Inc. All Rights Reserved.
     </exec>
   </target>
 
-  <target name="build-dmg" depends="build-pkg">
+  <target name="build-glassfish-pkg" if="build_glassfish">
     <ant dir="glassfish" target="build-pkg" inheritAll="false">
       <property name="gf_source" value="${glassfish_location}"/>
+      <property name="pkg.dest" value="${basedir}/build/pkg"/>
     </ant>
+  </target>
+
+  <target name="build-tomcat-pkg" if="build_tomcat">
     <ant dir="tomcat" target="build-pkg" inheritAll="false">
       <property name="tc_source" value="${tomcat_location}"/>
+      <property name="pkg.dest" value="${basedir}/build/pkg"/>
     </ant>
+  </target>
+
+  <target name="build-openesb-pkg" if="build_openesb">
     <ant dir="openesb" target="build-pkg" inheritAll="false">
       <property name="os_source" value="${openesb_location}"/>
+      <property name="pkg.dest" value="${basedir}/build/pkg"/>
     </ant>
+  </target>
+
+  <target name="delete-glassfish-pkg" unless="build_glassfish">
+    <ant dir="glassfish" target="delete-pkg" inheritAll="false">
+      <property name="pkg.dest" value="${basedir}/build/pkg"/>
+    </ant>
+  </target>
+
+  <target name="delete-tomcat-pkg" unless="build_tomcat">
+    <ant dir="tomcat" target="delete-pkg" inheritAll="false">
+      <property name="pkg.dest" value="${basedir}/build/pkg"/>
+    </ant>
+  </target>
+
+  <target name="delete-openesb-pkg" unless="build_openesb">
+    <ant dir="openesb" target="delete-pkg" inheritAll="false">
+      <property name="pkg.dest" value="${basedir}/build/pkg"/>
+    </ant>
+  </target>
+
+  <target name="build-dmg" depends="build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg,delete-glassfish-pkg,delete-tomcat-pkg,delete-openesb-pkg">
     <mkdir dir="dist"/>
     <mkdir dir="build/dmg"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value="sh dmg/createdmg.sh dist/${dmgname} build/dmg build/pkg/ glassfish/build/pkg/ tomcat/build/pkg/ openesb/build/pkg/"/>
+      <arg value="sh dmg/createdmg.sh dist/${dmgname} build/dmg build/pkg/"/>
     </exec>
   </target>
 

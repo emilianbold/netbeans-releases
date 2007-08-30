@@ -64,7 +64,7 @@ unzip -d $progdir/build $zipdir/$basename-javaee.zip
 # copy over GlassFish.pkg
 #mkdir -p $progdir build/pkg
 #rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
-ant -f $progdir/build.xml -Ddmgname=$basename-javaee.dmg -Dnb.dir=$progdir/build/netbeans build-dmg  -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dopenesb_location="$OPENESB_LOCATION"
+ant -f $progdir/build.xml -Ddmgname=$basename-javaee.dmg -Dnb.dir=$progdir/build/netbeans build-dmg  -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION"
 
 # all others
 
@@ -72,6 +72,6 @@ for pkg in java ruby cnd ; do
     ant -f $progdir/build.xml clean
     mkdir $progdir/build
     unzip -d $progdir/build $zipdir/$basename-$pkg.zip
-    ant -f $progdir/build.xml -Ddmgname=$basename-$pkg.dmg -Dnb.dir=$progdir/build/netbeans build-dmg  -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dopenesb_location="$OPENESB_LOCATION"
+    ant -f $progdir/build.xml -Ddmgname=$basename-$pkg.dmg -Dnb.dir=$progdir/build/netbeans build-dmg
 done
 

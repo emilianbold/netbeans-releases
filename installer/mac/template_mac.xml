@@ -29,6 +29,7 @@ appversion, version, exename, icon - values for the pkg
 pmproj - project file
 appdir
 -->
+  <property name="pkg.dest" value="build/pkg"/>
 
   <target name="clean-impl">
     <!-- dummy - to be redefined in the using xml-->
@@ -93,8 +94,6 @@ appdir
   </target>
 
   <target name="build-pkg" depends="build-app">
-    <mkdir dir="build/pkg"/>
-    <delete dir="build/pkg/${appname}.pkg"/>
     <echo message="Executing pack200 in ${appdir}"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
@@ -104,10 +103,16 @@ appdir
       <arg value="-c"/>
       <arg value='cd "${appdir}"; find . -name \*.jar -exec rm {} \;'/>
     </exec>
+    <mkdir dir="${basedir}/build/pkg"/>
+    <delete dir="${basedir}/build/pkg/${appname}.pkg"/>
     <ant target="pre-build-pkg"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p build/pkg/${appname}.pkg -proj ${pmproj}"/>
+      <arg value="cd ${basedir} ; /Developer/Tools/packagemaker -build -v -p ${pkg.dest}/${appname}.pkg -proj ${pmproj}"/>
     </exec>
   </target>
+  <target name="delete-pkg">
+      <delete dir="${pkg.dest}/${appname}.pkg"/>
+  </target>
 </project>
+
