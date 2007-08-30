@@ -167,13 +167,13 @@ public final class CreateDiagramFromSelectedElementsAction extends CookieAction
                 // in order to support CDFS
                 if (pElement instanceof IOperation)
                 {
-                    canCreate = false;
-                    IUMLParsingIntegrator integrator = getUMLParsingIntegrator();
-                    boolean canRE = integrator.canOperationBeREed((IOperation) pElement);
-                    if (canRE)
-                    {
+//                    canCreate = false;
+//                    IUMLParsingIntegrator integrator = getUMLParsingIntegrator();
+//                    boolean canRE = integrator.canOperationBeREed((IOperation) pElement);
+//                    if (canRE)
+//                    {
                         canCreate = true;
-                    }
+//                    }
                 }
             }
             else
