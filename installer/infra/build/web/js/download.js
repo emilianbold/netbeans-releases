@@ -84,12 +84,12 @@ function write_table_header() {
     document.write('<td class="no_border no_padding" colspan="6">');
     document.write('<table><tr>');
     document.write('	<td class="no_border no_padding" style="width: 50%;"><img src="img/1px-gray.png" style="width: 100%; height: 1px"/></td>');
-    document.write('	<td class="no_border title">NetBeans IDE 6.0 {build.number}</td>');
+    document.write('	<td class="no_border title bold" style="color:black"">NetBeans IDE 6.0 {build.number}</td>');
     document.write('	<td class="no_border no_padding" style="width: 50%;"><img src="img/1px-gray.png" style="width: 100%; height: 1px"/></td>');
     document.write('</tr></table>');
     document.write('</td>');
     document.write('</tr>');
-	
+    document.write('<br><br>');	
     document.write('<tr>');
     document.write('<th class="left no_border bottom_border wide bottom">NetBeans Packs<img src="img/bold_comment_badge_header.gif"/></th>');    
     document.write('<td class="no_border left_border bottom_border" id="javaee_link"><a href="javascript: download(\'javaee\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Web&nbsp;&amp;&nbsp;Java&nbsp;EE</td>');
