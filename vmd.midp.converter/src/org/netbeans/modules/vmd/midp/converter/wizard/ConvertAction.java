@@ -35,7 +35,7 @@ public final class ConvertAction extends CookieAction {
         if (primary == null  ||  secondary == null)
             return;
         ConvertPanel panel = new ConvertPanel ();
-        panel.switchToShown (primary, secondary);
+        panel.switchToShown (primary, secondary, primary.getParent ());
         DialogDisplayer.getDefault ().createDialog (panel.getDialogDescriptor ()).setVisible (true);
     }
     

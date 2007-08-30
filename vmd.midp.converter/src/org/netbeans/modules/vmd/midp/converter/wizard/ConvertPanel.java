@@ -27,24 +27,29 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
  * @author David Kaspar
  */
-public final class ConvertPanel extends javax.swing.JPanel implements ActionListener, Runnable {
+public final class ConvertPanel extends javax.swing.JPanel implements ActionListener, Runnable, DocumentListener {
     
     private DialogDescriptor descriptor = new DialogDescriptor (this, NbBundle.getMessage (ConvertPanel.class, "TITLE_ConvertPanel")); // NOI18N
     private JButton startButton = new JButton (NbBundle.getMessage (ConvertPanel.class, "DISP_Start")); // NOI18N
     private JButton finishButton = new JButton (NbBundle.getMessage (ConvertPanel.class, "DISP_Close")); // NOI18N
     private FileObject inputPrimaryFile;
     private FileObject inputSecondaryFile;
+    private FileObject outputDirectory;
 
     /** Creates new form ConvertPanel */
     public ConvertPanel() {
         initComponents();
-        finishIcon.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/warning.gif"))); // NOI18N
+        ImageIcon warningMessage = new ImageIcon (Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/warning.gif"));
+        finishIcon.setIcon (warningMessage); // NOI18N
+        message.setIcon (warningMessage); // NOI18N
         startButton.setDefaultCapable(true);
         startButton.addActionListener(this);
         finishButton.setDefaultCapable(true);
@@ -55,23 +60,29 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
         return descriptor;
     }
     
-    public void switchToShown (FileObject inputPrimaryFile, FileObject inputSecondaryFile) {
+    public void switchToShown (FileObject inputPrimaryFile, FileObject inputSecondaryFile, FileObject outputDirectory) {
         this.inputPrimaryFile = inputPrimaryFile;
         this.inputSecondaryFile = inputSecondaryFile;
+        this.outputDirectory = outputDirectory;
         this.inputFileName.setText (inputPrimaryFile.getName ());
-        outputFileName.setText ("Converted" + inputPrimaryFile.getName ()); // NOI18N
-        outputFileName.setEditable(true);
         progress.setIndeterminate(false);
         finishIcon.setVisible (false);
         finishMessage.setText(NbBundle.getMessage (ConvertPanel.class, "MSG_ShownMessage")); // NOI18N
         startButton.setEnabled(true);
         descriptor.setOptions(new Object[] { startButton, DialogDescriptor.CANCEL_OPTION });
+
+        outputFileName.getDocument ().removeDocumentListener (this);
+        outputFileName.getDocument ().addDocumentListener (this);
+        outputFileName.setText ("Converted" + inputPrimaryFile.getName ()); // NOI18N
+        outputFileName.setEditable(true);
         outputFileName.selectAll ();
         outputFileName.requestFocus ();
     }
     
     public void switchToStarted () {
+        outputFileName.getDocument ().removeDocumentListener (this);
         outputFileName.setEditable(false);
+        
         progress.setIndeterminate(true);
         finishMessage.setText(NbBundle.getMessage (ConvertPanel.class, "MSG_StartMessage")); // NOI18N
         startButton.setEnabled(false);
@@ -82,6 +93,25 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
         finishIcon.setVisible (true);
         finishMessage.setText(NbBundle.getMessage (ConvertPanel.class, "MSG_FinishMessage")); // NOI18N
         descriptor.setOptions(new Object[] { finishButton });
+    }
+
+    public void insertUpdate (DocumentEvent e) {
+        checkErrors ();
+    }
+
+    public void removeUpdate (DocumentEvent e) {
+        checkErrors ();
+    }
+
+    public void changedUpdate (DocumentEvent e) {
+        checkErrors ();
+    }
+
+    private void checkErrors () {
+        boolean exists = outputDirectory.getFileObject (outputFileName.getText (), "java") != null // NOI18N
+            || outputDirectory.getFileObject (outputFileName.getText (), "vmd") != null; // NOI18N
+        message.setVisible(exists);
+        startButton.setEnabled (! exists);
     }
     
     /** This method is called from within the constructor to
@@ -100,6 +130,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
         progress = new javax.swing.JProgressBar();
         finishMessage = new javax.swing.JLabel();
         finishIcon = new javax.swing.JLabel();
+        message = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(500, 400));
 
@@ -122,27 +153,33 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
 
         finishIcon.setText(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.finishIcon.text")); // NOI18N
 
+        message.setText(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.message.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, progress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(inputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, outputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, progress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                    .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(inputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, outputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, finishIcon)))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(finishIcon)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)))
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                            .add(message, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -163,7 +200,9 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(finishIcon)
-                    .add(finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE))
+                    .add(finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(message)
                 .addContainerGap())
         );
 
@@ -181,6 +220,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
     private javax.swing.JTextField inputFileName;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel message;
     private javax.swing.JTextField outputFileName;
     private javax.swing.JProgressBar progress;
     // End of variables declaration//GEN-END:variables
