@@ -35,8 +35,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.Status;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
@@ -112,13 +110,12 @@ public class OccurrencesMarkProvider extends MarkProvider {
         firePropertyChange(PROP_MARKS, old, nue);
     }
     
-    public static Collection<Mark> createMarks(Document doc, OffsetsBag bag, Color color, String tooltip) {
-        HighlightsSequence hs = bag.getHighlights(0, doc.getLength());
+    public static Collection<Mark> createMarks(Document doc, List<int[]> bag, Color color, String tooltip) {
         List<Mark> result = new LinkedList<Mark>();
         
-        while (hs.moveNext()) {
+        for (int[] span : bag) {
             try {
-                result.add(new MarkImpl(doc, doc.createPosition(hs.getStartOffset()), color, tooltip));
+                result.add(new MarkImpl(doc, doc.createPosition(span[0]), color, tooltip));
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }

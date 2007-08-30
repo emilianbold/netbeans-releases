@@ -31,7 +31,6 @@ import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,11 +42,9 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
-import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 
 /**
  *
@@ -55,23 +52,19 @@ import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
  */
 public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stack<Tree>> {
     
-    /** Creates a new instance of MethodExitDetector */
-    public MethodExitDetector() {
-        attributes = ColoringManager.getColoringImpl(MarkOccurrencesHighlighter.MO);
-    }
+    public MethodExitDetector() {}
     
     private CompilationInfo info;
     private Document doc;
-    private OffsetsBag highlights;
+    private List<int[]> highlights;
     private boolean doExitPoints;
     private Collection<TypeMirror> exceptions;
     private Stack<Map<TypeMirror, List<Tree>>> exceptions2HighlightsStack;
-    private AttributeSet attributes;
     
-    public OffsetsBag process(CompilationInfo info, Document document, MethodTree methoddecl, Collection<Tree> excs) {
+    public List<int[]> process(CompilationInfo info, Document document, MethodTree methoddecl, Collection<Tree> excs) {
         this.info = info;
         this.doc  = document;
-        this.highlights = new OffsetsBag(document);
+        this.highlights = new ArrayList<int[]>();
         this.exceptions2HighlightsStack = new Stack<Map<TypeMirror, List<Tree>>>();
         this.exceptions2HighlightsStack.push(null);
         
@@ -91,7 +84,7 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
                 
                 if (lastBracket != (-1)) {
                     //highlight the "fall over" exitpoint:
-                    highlights.addHighlight(lastBracket, lastBracket + 1, attributes);
+                    highlights.add(new int[] {lastBracket, lastBracket + 1});
                 }
             }
             
@@ -157,7 +150,7 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
         int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t);
         int end   = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t);
         
-        highlights.addHighlight(start, end, attributes);
+        highlights.add(new int[] {start, end});
     }
     
     private void addToExceptionsMap(TypeMirror key, Tree value) {
