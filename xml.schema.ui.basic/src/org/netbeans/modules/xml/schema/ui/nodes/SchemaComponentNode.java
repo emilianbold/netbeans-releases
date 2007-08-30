@@ -672,11 +672,23 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
             try {
                 model.startTransaction();
                 model.removeChildComponent(component);
+                //need to provide a hook
+                cleanup();
             } finally {
                 model.endTransaction();
             }
         }
         super.destroy();
+    }
+
+    /**
+     * This is a hook for the subclasses if they want to do something special in the same transaction.
+     * For example, when an import gets deleted, we should also remove the namespace declaration.
+     */
+    protected void cleanup() {
+        //default implementation needs to be empty
+        //subclasses should override, if they want do extra stuff inside the same transaction.
+        //See AdvancedImportNode for details.
     }
     
     

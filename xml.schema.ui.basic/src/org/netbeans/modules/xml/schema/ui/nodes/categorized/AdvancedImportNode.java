@@ -73,26 +73,16 @@ public class AdvancedImportNode extends ImportNode {
         }
     }
     
-    @Override
-    public void destroy() throws IOException {
-         super.destroy();
-         
+    protected void cleanup() {         
          //after deleting the node, we need to delete the prefix attribute from the xsd element
          Map<String, String> prefixes = getContext().getModel().getSchema().getPrefixes();
          Import _import = getReference().get();
          String ns = _import.getNamespace();
          Set<String> keys = prefixes.keySet();
-         if(!getContext().getModel().isIntransaction())
-             getContext().getModel().startTransaction();
-             
          for(String key: keys) {
              if(prefixes.get(key).equals(ns) ) {
                  getContext().getModel().getSchema().removePrefix(key);
              }
-         }
-             
-         if(getContext().getModel().isIntransaction())
-             getContext().getModel().endTransaction();
-         
+         }             
      }
 }
