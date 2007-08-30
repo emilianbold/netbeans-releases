@@ -78,7 +78,6 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
 //            ph.start( types.keySet().size());
             int progress = 0;
             for( String typeName : types.keySet()) {
-                progress++;
                 ClassData type = types.get( typeName );
                 JavonSerializer serializer = mapping.getRegistry().getTypeSerializer( type );
                 if( serializer instanceof BeanTypeSerializer ) {
@@ -102,6 +101,7 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
                         ErrorManager.getDefault().notify( e );
                     }
                 }
+                progress++;
             }
             ph.switchToIndeterminate();
             return true;

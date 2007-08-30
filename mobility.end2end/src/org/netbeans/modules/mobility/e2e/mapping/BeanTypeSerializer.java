@@ -239,14 +239,14 @@ public class BeanTypeSerializer implements JavonSerializer {
             for( FieldData field : type.getFields()) {
                 if(( mapping.getProperty( "target" ).equals( "client" ) && mapping.getProperty( "create-stubs" ).equals( "true" )) 
                         || field.getModifier() == ClassData.Modifier.PUBLIC ) {
-                    if( field.getType().isPrimitive()) {
+                    if( field.getType().isPrimitive() && !field.getType().isArray()) {
                         deserialization += beanInstanceName + " = " + mapping.getRegistry().getTypeSerializer( field.getType()).
                                 fromStream( mapping , field.getType(), stream, null ) + "\n";
                     } else {
                         deserialization += beanInstanceName + "." + field.getName() + " = (" + field.getType().getFullyQualifiedName() + ") readObject(" + stream + ");\n";
                     }
                 } else {
-                    if( field.getType().isPrimitive()) {
+                    if( field.getType().isPrimitive() && !field.getType().isArray()) {
                         deserialization += beanInstanceName + "." + getSetter( field ) + "(" + mapping.getRegistry().getTypeSerializer( field.getType()).
                                 fromStream( mapping , field.getType(), stream, null ) + ");\n";
                     } else {

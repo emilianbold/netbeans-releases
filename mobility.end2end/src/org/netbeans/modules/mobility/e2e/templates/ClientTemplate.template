@@ -166,8 +166,9 @@ public class ${mapping.getClientMapping().getClassName()} {
         }
         Object[] array;
         switch( id ) {
-        <#list utils.getParameterTypeInstances( service ) as type>
+        <#list parameterTypes as type>
             case ${registry.getRegisteredTypeId( type )}:
+                // ${type.getName()}
                 <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
                 out.writeShort(${registry.getRegisteredTypeId( type )});
                 <#if type.isPrimitive()>
@@ -188,19 +189,17 @@ public class ${mapping.getClientMapping().getClassName()} {
         int length;
         Object result;
         switch (type) {
-        <#list utils.getReturnTypeInstances( service ) as type>
+        <#list returnTypes as type>
             <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>            
                 case ${registry.getRegisteredTypeId( type )}:
+                    // ${type.getName()}
                     <#if type.getName() == "void">
-                        //void
                         return _;
                     <#else>    
                     <#if type.isPrimitive() && !type.isArray()>
                         <#assign typeFromStream = serializer.fromStream( mapping, type, "in", null )/>
-                        // Primitive
                         return ${serializer.toObject( type, typeFromStream )};
                     <#else>
-                        // Complex
                         ${serializer.fromStream( mapping, type, "in", "result" )}
                         return result;
                     </#if>

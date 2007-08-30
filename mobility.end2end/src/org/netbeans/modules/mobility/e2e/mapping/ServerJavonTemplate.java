@@ -142,15 +142,12 @@ public class ServerJavonTemplate extends JavonTemplate {
             bind.put( "returnTypes", returnTypes );
             bind.put( "parameterTypes", parameterTypes );
             
-            returnInstanceTypes = utils.filterInstances( returnTypes );
-            parameterInstanceTypes = utils.filterInstances( parameterTypes );
-            bind.put( "returnInstanceTypes", returnInstanceTypes );
-            bind.put( "parameterInstanceTypes", parameterInstanceTypes );
+            bind.put( "returnTypes", returnTypes );
+            bind.put( "parameterTypes", parameterTypes );
             
             Set<ClassData> instanceTypes = new HashSet<ClassData>();
             instanceTypes.addAll( returnTypes );
             instanceTypes.addAll( parameterTypes );
-            instanceTypes = utils.filterInstances( instanceTypes );
             bind.put( "instanceTypes", instanceTypes );
             
             Writer w = null;

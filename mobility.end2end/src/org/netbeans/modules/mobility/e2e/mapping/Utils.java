@@ -46,45 +46,6 @@ public class Utils {
         this.registry = registry;
     }
 
-    /**
-     * Filter out duplicate ClassData instances from Set
-     * 
-     * @param service
-     * @return filtered instances
-     */
-    public Set<ClassData> getReturnTypeInstances( JavonMappingImpl.Service service ) {
-        return filterInstances( service.getReturnTypes());
-    }
-
-    /**
-     * Filter out duplicate ClassData instances from parameter type Set
-     * @param service
-     * @return filtered instances
-     */
-    public Set<ClassData> getParameterTypeInstances( JavonMappingImpl.Service service ) {
-        return filterInstances( service.getParameterTypes());
-    }
-
-    /**
-     * Filter duplicate instance name from the set of classes
-     * @param classes
-     * @return
-     */
-    public Set<ClassData> filterInstances( Set<ClassData> classes ) {
-        Set<String> instanceTypes = new HashSet<String>();
-        for( ClassData cd : classes ) {
-            instanceTypes.add( registry.getTypeSerializer( cd ).instanceOf( cd ));
-        }
-
-        Map<String, ClassData> result = new HashMap<String, ClassData>();
-        for( ClassData cd : classes ) {
-            if( result.get( registry.getTypeSerializer( cd ).instanceOf( cd )) == null ) {
-                result.put( registry.getTypeSerializer( cd ).instanceOf( cd ), cd );
-            }
-        }
-        return Collections.unmodifiableSet( new HashSet( result.values()));
-    }
-
     public static String parsePrimitiveType( ClassData cd, String variable ) {
         String typeName = cd.getFullyQualifiedName();
         if( "java.lang.String".equals( typeName )) {

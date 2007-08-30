@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.mobility.e2e.mapping;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +59,7 @@ public class ArrayTypeSerializer implements JavonSerializer {
             ClassData cCD = traversable.traverseType( componentType, typeCache );
 
             if( cCD != null) {
-                ClassData cd = new ClassData( cCD.getPackage(), cCD.getClassName(), cCD.isPrimitive(), true, this );
+                ClassData cd = new ClassData( cCD.getPackage(), cCD.getClassName(), false, true, this );
                 cd.setComponentType( cCD );
                 traversable.registerType( cCD );
                 //TODO: ??? shouldn't this be cCD instead of cd ???
@@ -93,11 +92,20 @@ public class ArrayTypeSerializer implements JavonSerializer {
     public String toStream( JavonMapping mapping, ClassData type, String stream, String object ) {
         if( arrayTypes.contains( type )) {
             String serializationCode = "";
-            serializationCode += "array = (Object[]) o;\n";
-            serializationCode += stream + ".writeInt( array.length );\n";
-            serializationCode += "for( int i  = 0; i < array.length; i++ ) {\n";
-            serializationCode += "writeObject( " + stream + ", array[i], " + 
-                    mapping.getRegistry().getRegisteredTypeId( type.getComponentType()) + " );\n";
+            String id = "" + mapping.getRegistry().getRegisteredTypeId( type );
+            serializationCode += type.getFullyQualifiedName() + " a_result_" + id + " = (" + 
+                    type.getFullyQualifiedName() + ") o;\n";
+            serializationCode += stream + ".writeInt( a_result_" + id + ".length );\n";
+            serializationCode += "for( int i  = 0; i < a_result_" + id +".length; i++ ) {\n";
+            ClassData componentType = type.getComponentType();
+            if( componentType.isPrimitive()) {
+                serializationCode += "writeObject( " + stream + ", " + 
+                        componentType.getSerializer().toObject( componentType, "a_result_" + id + "[i]" ) + " , " +
+                        mapping.getRegistry().getRegisteredTypeId( componentType ) + " );\n";
+            } else {
+                serializationCode += "writeObject( " + stream + ", a_result_" + id + "[i], " + 
+                        mapping.getRegistry().getRegisteredTypeId( componentType ) + " );\n";
+            }
             serializationCode += "}\n";
             return serializationCode;
         }
@@ -109,9 +117,16 @@ public class ArrayTypeSerializer implements JavonSerializer {
             String deserializationCode = "";
             String id = "" + mapping.getRegistry().getRegisteredTypeId( type );
             deserializationCode += "int a_size_" + id + " = " + stream + ".readInt();\n";
-            deserializationCode += "Object a_result_" + id + " = new Object[ a_size_" + id + " ];\n";
-            deserializationCode += "for( int a_i = 0; a_i < a_size_" + id + "; a_i++ ) {\n";
-            deserializationCode += "a_result_" + id + "[a_i] = readObject( " + stream + " );\n";
+            deserializationCode += type.getFullyQualifiedName() + " a_result_" + id + " = new " + type.getComponentType().getFullyQualifiedName() + "[ a_size_" + id + " ];\n";
+            String i = "a_i_" + id;
+            deserializationCode += "for( int " + i + " = 0; " + i + " < a_size_" + id + "; " + i + "++ ) {\n";
+            ClassData componentType = type.getComponentType();
+            if( componentType.isPrimitive()) {
+                deserializationCode += "a_result_" + id + "[" + i + "] = " + 
+                        componentType.getSerializer().fromObject( componentType, "readObject( " + stream + " )" ) + ";\n";
+            } else {
+                deserializationCode += "a_result_" + id + "[" + i + "] = readObject( " + stream + " );\n";
+            }
             deserializationCode += "}\n";
             deserializationCode += ( object == null ? "" :  object + " = a_result_" + id + ";\n" );
             //deserializationCode += "result = (Object)a_result;\n";

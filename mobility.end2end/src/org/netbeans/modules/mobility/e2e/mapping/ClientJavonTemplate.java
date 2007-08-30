@@ -88,22 +88,33 @@ public class ClientJavonTemplate extends JavonTemplate {
                 Bindings bind = eng.getContext().getBindings( ScriptContext.ENGINE_SCOPE );
 
                 FileObject template = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject( "Templates/Client/Client.java" );        
+                
+                Set<ClassData> returnTypes = service.getReturnTypes();
+                Set<ClassData> parameterTypes = service.getParameterTypes();
                 bind.put( "mapping", mapping );
                 bind.put( "registry", mapping.getRegistry());
-                bind.put( "returnTypes", service.getReturnTypes());
-                bind.put( "parameterTypes", service.getParameterTypes());
+                bind.put( "returnTypes", returnTypes );
+                bind.put( "parameterTypes", parameterTypes );
                 bind.put( "service", service );
                 bind.put( "utils", new Utils( mapping.getRegistry()));
 
                 // Compute imports for JavaBeans
                 Set<String> imports = new HashSet<String>();
-                String getClientPackage = mapping.getClientMapping().getPackageName();
-                for( ClassData cd : service.getParameterTypes()) {
+                for( ClassData cd : parameterTypes ) {
+                    while( cd.isArray()) {
+                        cd = cd.getComponentType();
+                    }
                     if( cd.isPrimitive()) continue;
+                    if( cd.getPackage().equals( "java.lang" )) continue;
                     imports.add( cd.getFullyQualifiedName());
                 }
-                for( ClassData cd : service.getReturnTypes()) {
+                for( ClassData cd : returnTypes ) {
+                    while( cd.isArray()) {
+                        cd = cd.getComponentType();
+                    }
                     if( cd.isPrimitive()) continue;
+                    if( cd.getPackage().equals( "java.lang" )) continue;
+                    
                     imports.add( cd.getFullyQualifiedName());
                 }
                 bind.put( "imports", imports );
