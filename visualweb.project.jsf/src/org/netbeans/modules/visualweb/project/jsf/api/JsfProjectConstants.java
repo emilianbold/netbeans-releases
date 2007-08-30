@@ -61,6 +61,7 @@ public class JsfProjectConstants {
     /**
      * Source structures
      */
+    public static final String WEB_DOCBASE_DIR = "web.docbase.dir"; // NOI18N
     public static final String SRC_DIR = "src.dir"; // NOI18N
     public static final String SRC_STRUCT_BLUEPRINTS = "BluePrints"; // NOI18N
     public static final String SRC_STRUCT_JAKARTA = "Jakarta"; // NOI18N
