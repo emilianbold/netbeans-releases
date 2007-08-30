@@ -50,9 +50,11 @@ import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
-import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
@@ -341,29 +343,58 @@ public final class ColorModel {
             
             editorPane.addCaretListener (new CaretListener () {
                 public void caretUpdate (CaretEvent e) {
-                    int position = e.getDot ();
-                    EditorUI editorUI = Utilities.getEditorUI (editorPane);
-                    if (editorUI == null) return;
-                    SyntaxSupport ss = Utilities.getSyntaxSupport 
-                        (editorUI.getComponent ());
-                    if (!(ss instanceof ExtSyntaxSupport)) return;
+                    int offset = e.getDot ();
+                    String elementName = null;
+                    
+                    TokenHierarchy<Document> th = TokenHierarchy.get(editorPane.getDocument());
+                    if (th != null) {
+                        elementName = findLexerElement(th, offset);
+                    } else {
+                        SyntaxSupport ss = Utilities.getSyntaxSupport(editorPane);
+                        if (ss instanceof ExtSyntaxSupport) {
+                            elementName = findSyntaxElement((ExtSyntaxSupport) ss, offset);
+                        }
+                    }
+
+                    if (elementName != null) {
+                        firePropertyChange(PROP_CURRENT_ELEMENT, null, elementName);
+                    }
+                }
+                
+                private String findLexerElement(TokenHierarchy<Document> hierarchy, int offset) {
+                    String elementName = null;
+                    List<TokenSequence<? extends TokenId>> sequences = hierarchy.embeddedTokenSequences(offset, false);
+                    TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                    seq.move(offset);
+                    if (seq.moveNext()) {
+                        elementName = seq.token().id().primaryCategory();
+                        if (elementName == null) {
+                            elementName = seq.token().id().name();
+                        }
+                    }
+                    return elementName;
+                }
+
+                private String findSyntaxElement(ExtSyntaxSupport syntax, int offset) {
                     try {
-                        TokenItem tokenItem = ((ExtSyntaxSupport) ss).
-                            getTokenChain (position, position + 1);
-                        if (tokenItem == null) return;
-                        String elementName = tokenItem.getTokenContextPath ().
-                                getNamePrefix ();
-                        if (tokenItem.getTokenID ().getCategory () != null)
-                            elementName += tokenItem.getTokenID ().
-                                getCategory ().getName ();
-                        else
-                            elementName += tokenItem.getTokenID ().getName ();
-                        firePropertyChange (PROP_CURRENT_ELEMENT, null, elementName);
-                    } catch (BadLocationException ex) {
-                        ex.printStackTrace ();
+                        TokenItem tokenItem = syntax.getTokenChain(offset, offset + 1);
+                        if (tokenItem == null) {
+                            return null;
+                        }
+                        String elementName = tokenItem.getTokenContextPath().getNamePrefix();
+                        if (tokenItem.getTokenID().getCategory() != null) {
+                            elementName += tokenItem.getTokenID().getCategory().getName();
+                        } else {
+                            elementName += tokenItem.getTokenID().getName();
+                        }
+                        return elementName;
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.WARNING, null, ble);
+                        return null;
                     }
                 }
             });
+            
             editorPane.setEnabled(false);
             editorPane.setText(exampleText);
         }
