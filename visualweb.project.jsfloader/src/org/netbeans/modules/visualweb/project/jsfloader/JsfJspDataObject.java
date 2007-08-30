@@ -175,7 +175,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
         }
         public void edit() {
             // open form editor with java editor selected (form not loaded)
-            getJsfJspEditorSupport().open();
+            getJsfJspEditorSupport().editJsp();
         }
     }
     

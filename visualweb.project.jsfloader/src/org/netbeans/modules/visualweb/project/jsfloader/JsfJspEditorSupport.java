@@ -242,10 +242,30 @@ public final class JsfJspEditorSupport extends DataEditorSupport
             if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
         }
         
+        super.open();
+    }
+    
+    protected void editJsp() {
+        ((JsfJspDataObject)getDataObject()).updateFileEncoding(false);
+        encoding = ((JsfJspDataObject)getDataObject()).getFileEncoding(); //use encoding from fileobject
+        
+        if (!isSupportedEncoding(encoding)) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage (JsfJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
+                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
+                                    encoding, 
+                                    defaultEncoding} ), 
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
+        }
+        
         final JsfJavaEditorSupport support = getJsfJavaEditorSupport(false);
         if (support == null) return;
         support.openJsp();        
     }
+    
     
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
         ((JsfJspDataObject)getDataObject()).updateFileEncoding(false);
