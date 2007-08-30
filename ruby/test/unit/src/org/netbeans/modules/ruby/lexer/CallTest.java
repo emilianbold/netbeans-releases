@@ -323,4 +323,48 @@ public class CallTest extends RubyTestBase {
     //    assertEquals("File", call.getType());
     //    assertTrue(call.isStatic());
     //}
+    
+    public void testConstructorCall() throws Exception {
+        Call call = getCall("String.new.^");
+        assertEquals("String", call.getType());
+        assertFalse(call.isStatic());
+    }
+
+    public void testConstructorCall2() throws Exception {
+        Call call = getCall("String.new.ex^");
+        assertEquals("String", call.getType());
+        assertFalse(call.isStatic());
+    }
+    
+    public void testConstructorCall3() throws Exception {
+        Call call = getCall("String.new.ex^ ");
+        assertEquals("String", call.getType());
+        assertFalse(call.isStatic());
+    }
+
+    public void testConstructorCall4() throws Exception {
+        Call call = getCall("Test::Unit::TestCase.new.ex^ ");
+        assertEquals("Test::Unit::TestCase", call.getType());
+        assertFalse(call.isStatic());
+    }
+
+    public void testNotConstructorCall() throws Exception {
+        Call call = getCall("String.neww.^");
+        assertNull(call.getType());
+    }
+
+    public void testNotConstructorCal2() throws Exception {
+        Call call = getCall("new.^");
+        assertNull(call.getType());
+    }
+
+    public void testNotConstructorCal3() throws Exception {
+        Call call = getCall("@foo.new.^");
+        assertNull(call.getType());
+    }
+
+    public void testNotConstructorCal4() throws Exception {
+        Call call = getCall("foo.new.^");
+        assertNull(call.getType());
+    }
 }

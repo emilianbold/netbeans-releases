@@ -50,6 +50,18 @@ public class RubyUtilsTest extends TestCase {
         assertEquals("JavaScriptMacrosHelper", RubyUtils.underlinedNameToCamel("java_script_macros_helper"));
     }
 
+    public void testModuleStrings() {
+        assertTrue(RubyUtils.isValidRubyModuleName("A"));
+        assertTrue(RubyUtils.isValidRubyModuleName("AB::B::C"));
+        assertTrue(RubyUtils.isValidRubyModuleName("Abc::D1_3"));
+
+        assertFalse(RubyUtils.isValidRubyModuleName("Abc::1_3"));
+        assertFalse(RubyUtils.isValidRubyModuleName("Abc:D1_3"));
+        assertFalse(RubyUtils.isValidRubyModuleName(""));
+        assertFalse(RubyUtils.isValidRubyModuleName("@foo"));
+        assertFalse(RubyUtils.isValidRubyModuleName("1::B"));
+    }
+    
     public void testClassIdentifiers() {
         assertTrue(RubyUtils.isValidRubyClassName("A"));
         assertTrue(RubyUtils.isValidRubyClassName("AB"));

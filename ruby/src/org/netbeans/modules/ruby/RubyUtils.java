@@ -184,6 +184,22 @@ public class RubyUtils {
         }
         return sb.toString();
     }
+
+    /** Similar to isValidRubyClassName, but allows a number of ::'s to join class names */
+    public static boolean isValidRubyModuleName(String name) {
+        if (name.trim().length() == 0) {
+            return false;
+        }
+        
+        String[] mods = name.split("::"); // NOI18N
+        for (String mod : mods) {
+            if (!isValidRubyClassName(mod)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
     
     public static boolean isValidRubyClassName(String name) {
         if (isRubyKeyword(name)) {

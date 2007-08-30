@@ -31,6 +31,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Exceptions;
 
@@ -74,6 +75,7 @@ public class Call {
         if (lhs == null) {
             return false;
         }
+        // TODO - replace with the new RubyUtil validations
         for (int i = 0, n = lhs.length(); i < n; i++) {
             char c = lhs.charAt(i);
             if (Character.isJavaIdentifierPart(c)) {
@@ -100,6 +102,7 @@ public class Call {
         }
     }
 
+    /** foo.| or foo.b|  -> we're expecting a method call. For Foo:: we don't know. */
     public boolean isMethodExpected() {
         return this.methodExpected;
     }
@@ -229,7 +232,7 @@ public class Call {
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
             }
-
+            
             // Find the beginning of the expression. We'll go past keywords, identifiers
             // and dots or double-colons
             while (ts.movePrevious()) {
@@ -245,7 +248,7 @@ public class Call {
                 if (id == RubyTokenId.ANY_KEYWORD) {
                     tokenText = token.text().toString();
                 }
-                
+
                 if (id == RubyTokenId.WHITESPACE) {
                     break;
                 } else if (id == RubyTokenId.RBRACKET) {
@@ -280,6 +283,7 @@ public class Call {
                         id.primaryCategory().equals("keyword") || (id == RubyTokenId.DOT) ||
                         (id == RubyTokenId.COLON3) || (id == RubyTokenId.CONSTANT) ||
                         (id == RubyTokenId.SUPER) || (id == RubyTokenId.SELF)) {
+                    
                     // We're building up a potential expression such as "Test::Unit" so continue looking
                     beginOffset = ts.offset();
 
@@ -306,7 +310,22 @@ public class Call {
 
                         return new Call(lhs, lhs, false, true);
                     } else if (Character.isUpperCase(lhs.charAt(0))) {
-                        return new Call(lhs, lhs, true, methodExpected);
+                        
+                        // Detect constructor calls of the form String.new.^
+                        if (lhs.endsWith(".new")) { // NOI18N
+                            // See if it looks like a type prior to that
+                            String type = lhs.substring(0, lhs.length()-4); // 4=".new".length()
+                            if (RubyUtils.isValidRubyModuleName(type)) {
+                                return new Call(type, lhs, false, methodExpected);
+                            }
+                        }
+                        
+                        String type = null;
+                        if (RubyUtils.isValidRubyModuleName(lhs)) {
+                            type = lhs;
+                        }
+
+                        return new Call(type, lhs, true, methodExpected);
                     } else {
                         return new Call(null, lhs, false, methodExpected);
                     }
