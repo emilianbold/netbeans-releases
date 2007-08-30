@@ -203,9 +203,9 @@ public class BeanTypeSerializer implements JavonSerializer {
         if( beanTypes.get( type.getFullyQualifiedName()) != null ) {
             String serialization = "";
             String beanInstanceName = "b_" + type.getFullyQualifiedName().replace( ".", "_" );
-            if( mapping.getProperty( "target" ).equals( "client" )) {
+//            if( mapping.getProperty( "target" ).equals( "client" )) {
                 serialization += type.getFullyQualifiedName() + " " + beanInstanceName + " = (" + type.getFullyQualifiedName() + ")" + object + ";\n";
-            }
+//            }
             for( FieldData field : type.getFields()) {
                 String id = "";
                 id = ", " + mapping.getRegistry().getRegisteredTypeId( field.getType());
