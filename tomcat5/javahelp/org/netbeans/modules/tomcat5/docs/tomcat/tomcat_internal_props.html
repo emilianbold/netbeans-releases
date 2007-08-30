@@ -25,7 +25,7 @@
 <p>The Server Manager opens displaying the following information:</p>
 <h3>Connection Tab </h3>
 <ul>
-	<li><b>Catalina Home.</b> Specifies the  location of the server installation.</li>
+	<li><b>Catalina Home.</b> Specifies the location of the server installation.</li>
     <li><b>Catalina Base.</b> Specifies the base directory for the Tomcat Web Server. 
     You can set this property when you add a Tomcat Web Server to the Server Manager. 
     If you set a base directory, then that is where the Tomcat configuration files 
@@ -38,7 +38,7 @@
     application. The user must be associated with the manager role. The first 
     time the IDE starts the Tomcat Web Server, such as through the Start/Stop  menu 
     action or by executing a web component from the IDE, the IDE adds an admin 
-    user with a randomly-generated password to the <i>tomcat-base-path</i><tt>/conf/tomcat-users.xml</tt> file. (Right-click the Tomcat Web Server instance node in the Services window and select Properties. In the Properties dialog box, the Base Directory property points to the <tt><i>base-dir directory</i></tt>.) The admin user entry in the <tt>tomcat-users.xml</tt> file looks similar to the following: </b>
+    user with a randomly-generated password to the <i>tomcat-base-path</i><tt>/conf/tomcat-users.xml</tt> file. (Right-click the Tomcat Web Server instance node in the Services window and select Properties. In the Properties dialog box, the Base Directory property points to the <tt><i>base-dir directory</i></tt>.) The admin user entry in the <tt>tomcat-users.xml</tt> file looks similar to the following: 
        <pre>  &lt;user username=&quot;ide&quot; password=&quot;woiehh&quot; roles=&quot;manager&quot;/&gt;</pre>
      </li>
     <li><b>Password.</b> Specifies the user's password. See the explanation for the Username property above for details.</li>
@@ -47,12 +47,7 @@
     on. The URL for a web application that is deployed on the server is derived from 
    the host's URL and the server port, such as <tt>http://localhost:8086</tt>.</li>
    
-   <li>Specifies the home directory for the server on your 
-    local system. This property is set when you register a Tomcat Web Server in 
-    the Server Manager. This location is where Tomcat expects to find its own 
-    binaries and any libraries that are used by web applications but which are 
-    not part of Tomcat itself.</li>
-  <li><b>Shutdown Port. </b>Specifies the port number on which the server waits for a shutdown command.</li>
+     <li><b>Shutdown Port. </b>Specifies the port number on which the server waits for a shutdown command.</li>
   <li><b>Enable HTTP Monitor.</b> If selected, this checkbox enables the HTTP Monitor 
   for web applications executing on the Tomcat Web Server. When enabling the monitor, you <i>must</i> 
     restart the server in order for the change to take affect. The HTTP Monitor 
@@ -71,9 +66,9 @@
     <li><b>Debugger Transport.</b> Specifies whether to use shared memory or socked based transport for debugging. Shared Memory is default on Windows, socket on other systems. Shared Memory is enabled only on Windows.</li>
    <ul>
      <li><b>Shared memory Name.</b> specifies the shared memory name. This function is enabled only on Windows.</li>
-     <li><b>Socket Port.</b> Specifies the socket port number.   
+     <li><b>Socket Port.</b> Specifies the socket port number. </li>  
    </ul> 
-     </li>
+     
    
    </ul>
 <h3>Platform Tab </h3>
