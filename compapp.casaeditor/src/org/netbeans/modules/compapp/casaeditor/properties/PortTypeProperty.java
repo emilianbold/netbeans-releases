@@ -102,7 +102,8 @@ public class PortTypeProperty extends BaseCasaProperty {
         }
         return new PortTypeEditor((CasaWrapperModel)getComponent().getModel(),
                                    pt,
-                                   NbBundle.getMessage(getClass(), "PROP_PortTypeDefinition")  // NOI18N
+                                   NbBundle.getMessage(getClass(), "PROP_PortTypeDefinition"),  // NOI18N
+                                   canWrite()
                                   );
     }
 }
