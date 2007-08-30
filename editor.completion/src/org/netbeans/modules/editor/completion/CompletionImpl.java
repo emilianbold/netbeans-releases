@@ -92,7 +92,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     private static final String TOOLTIP_SHOW = "tooltip-show"; //NOI18N
     
     private static final int PLEASE_WAIT_TIMEOUT = 750;
-    private static final int PRESCAN = 50;
+    private static final int PRESCAN = 25;
     
     public static CompletionImpl get() {
         if (singleton == null)
@@ -742,7 +742,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
         
         // Collect and sort the gathered completion items
-        final List<CompletionItem> sortedResultItems = new ArrayList<CompletionItem>(sortedResultsSize);
+        List<CompletionItem> sri = new ArrayList<CompletionItem>(sortedResultsSize);
         String title = null;
         int anchorOffset = -1;
         boolean hasAdditionalItems = false;
@@ -751,18 +751,19 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             CompletionResultSetImpl resultSet = (CompletionResultSetImpl)completionResultSets.get(i);
             List<? extends CompletionItem> resultItems = resultSet.getItems();
             if (resultItems.size() > 0) {
-                if (cnt < PRESCAN) {
-                    for (CompletionItem item : resultItems) {
-                        if (cnt < PRESCAN && !filter.accept(item)) {
-                            sortedResultsSize--;
-                            continue;
-                        }
-                        sortedResultItems.add(item);
-                        cnt++;
-                    }
-                } else {
-                    sortedResultItems.addAll(resultItems);
-                }
+//                if (cnt < PRESCAN) {
+//                    for (CompletionItem item : resultItems) {
+//                        if (cnt < PRESCAN && !filter.accept(item)) {
+//                            sortedResultsSize--;
+//                            continue;
+//                        }
+//                        sortedResultItems.add(item);
+//                        cnt++;
+//                    }
+//                } else {
+//                    sortedResultItems.addAll(resultItems);
+//                }
+                sri.addAll(resultItems);
                 if (title == null)
                     title = resultSet.getTitle();
                 if (!hasAdditionalItems)
@@ -778,8 +779,32 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             return;
         }
 
-        Collections.sort(sortedResultItems, CompletionItemComparator.get(getSortType()));
+        Collections.sort(sri, CompletionItemComparator.get(getSortType()));
         
+        final ArrayList<CompletionItem> sortedResultItems = new ArrayList<CompletionItem>( sri.size() );
+        
+        if ( sri.size() > 0 ) {
+            // for (Iterator<CompletionItem> it = sortedResultItems.iterator(); it.hasNext() && cnt < PRESCAN;) {
+            for( int i = 0; i < sri.size(); i++) {
+                CompletionItem item = sri.get(i);
+                
+                if (cnt < PRESCAN ) {
+                    if (!filter.accept(item)) {
+                        continue;
+                    }
+                    else {
+                        sortedResultItems.add( item );
+                    }
+                }
+                else {
+                    sortedResultItems.add(item);
+                }
+                //sortedResultItems.add(item);
+                cnt++;
+            }
+        }
+        
+       
         // Request displaying of the completion pane in AWT thread
         final String displayTitle = title;
         final int displayAnchorOffset = anchorOffset;
