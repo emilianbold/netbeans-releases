@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2006 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE helpset
@@ -26,12 +26,6 @@
     <data>nbmodule-tocs.xml</data> 
   </view>
 
-  <view>
-    <name>Index</name>
-    <label>Index</label>
-    <type>javax.help.IndexView</type>
-    <data>nbmodule-index.xml</data>
-  </view>
 
   <view>
     <name>Search</name>

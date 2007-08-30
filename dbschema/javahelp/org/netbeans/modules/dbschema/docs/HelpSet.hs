@@ -38,12 +38,6 @@ Microsystems, Inc. All Rights Reserved.
     <data>toc.xml</data>
   </view>
 
- <view>
-    <name>Index</name>
-    <label>Index</label>
-    <type>javax.help.IndexView</type>
-    <data>idx.xml</data>
-  </view>
   
   <view>
     <name>Search</name>

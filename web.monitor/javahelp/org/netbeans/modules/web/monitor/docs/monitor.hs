@@ -27,12 +27,6 @@
     <data>monitor-toc.xml</data> 
  </view>
  
-  <view>
-    <name>Index</name>
-    <label>Index</label>
-    <type>javax.help.IndexView</type>
-    <data>monitor-idx.xml</data>
-  </view>
 
   <view>
     <name>Search</name>
