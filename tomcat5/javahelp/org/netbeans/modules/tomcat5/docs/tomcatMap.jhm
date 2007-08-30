@@ -8,7 +8,7 @@
          "http://java.sun.com/products/javahelp/map_2_0.dtd">
 <map version="2.0">
 
-<!-- last updated 09Feb04 -->
+
 
 <!-- 
 help\
@@ -41,7 +41,7 @@ help\
 	<mapID target="tomcat_plugin" url="tomcat/tomcat_plugintro.html" />
 	<mapID target="tomcat_top_node" url="tomcat/tomcat_top_node.html" />
 	<mapID target="tomcat_setup_unsupported" url="tomcat/tomcat_setup_unsupported.html" />
-	<mapID target="tomcat_setup_registered" url="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/deploy/deploy_webapp.html" />
+	<mapID target="tomcat_setup_registered" url="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/deploy/deploy_webapp.html" />
  
 
 	<!-- CSH topics -->
