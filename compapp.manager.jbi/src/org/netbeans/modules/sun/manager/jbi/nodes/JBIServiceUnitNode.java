@@ -100,11 +100,11 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
         String status = (unitStatus == null) ? null : unitStatus.getStatus();
         
         String externalBadgeIconName = null;
-        if (JBIComponentStatus.SHUTDOWN.equals(status)) {
+        if (JBIComponentStatus.SHUTDOWN_STATE.equals(status)) {
             externalBadgeIconName = IconConstants.INSTALLED_ICON;
-        } else if (JBIComponentStatus.STOPPED.equals(status)) {
+        } else if (JBIComponentStatus.STOPPED_STATE.equals(status)) {
             externalBadgeIconName = IconConstants.STOPPED_ICON;
-        } else if (!JBIComponentStatus.STARTED.equals(status)) {
+        } else if (!JBIComponentStatus.STARTED_STATE.equals(status)) {
             externalBadgeIconName = IconConstants.UNKNOWN_ICON;
         }
         

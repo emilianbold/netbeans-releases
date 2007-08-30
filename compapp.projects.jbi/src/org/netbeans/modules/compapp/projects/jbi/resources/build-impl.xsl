@@ -149,6 +149,7 @@ Microsystems, Inc. All Rights Reserved.
             <target name="-init-taskdefs" if="from.commandline">
                 <path id="ant.task.classpath">
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-projects-jbi.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-apache-xmlbeans.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-compapp-projects-jbi.jar"/>
                     <!--<pathelement location="${{netbeans.home}}/../soa1/modules/ext/jbi/anttask.jar"/>-->

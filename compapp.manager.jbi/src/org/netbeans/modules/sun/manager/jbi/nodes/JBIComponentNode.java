@@ -303,11 +303,11 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         if (busy) {
             externalBadgeIconName = IconConstants.BUSY_ICON;
         } else {
-            if (JBIComponentStatus.SHUTDOWN.equals(state)) {
+            if (JBIComponentStatus.SHUTDOWN_STATE.equals(state)) {
                 externalBadgeIconName = getInstalledIconBadgeName();
-            } else if (JBIComponentStatus.STOPPED.equals(state)) {
+            } else if (JBIComponentStatus.STOPPED_STATE.equals(state)) {
                 externalBadgeIconName = getStoppedIconBadgeName();
-            } else if (!JBIComponentStatus.STARTED.equals(state)) {
+            } else if (!JBIComponentStatus.STARTED_STATE.equals(state)) {
                 externalBadgeIconName = getUnknownIconBadgeName();
             }
         }
@@ -375,8 +375,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     public boolean canStart() {
         String state = getState();
         return !busy &&
-                (JBIComponentStatus.STOPPED.equals(state) ||
-                JBIComponentStatus.SHUTDOWN.equals(state));
+                (JBIComponentStatus.STOPPED_STATE.equals(state) ||
+                JBIComponentStatus.SHUTDOWN_STATE.equals(state));
     }
     
     /**
@@ -423,7 +423,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      */
     public boolean canStop() {
-        return !busy && JBIComponentStatus.STARTED.equals(getState()); 
+        return !busy && JBIComponentStatus.STARTED_STATE.equals(getState()); 
     }
     
     /**
@@ -471,7 +471,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      */
     public boolean canShutdown() {
         return canStop() ||
-                !busy && JBIComponentStatus.STOPPED.equals(getState()); 
+                !busy && JBIComponentStatus.STOPPED_STATE.equals(getState()); 
     }
     
     /**
@@ -523,7 +523,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      */
     public boolean canUninstall() {
         return canShutdown() ||
-                !busy && JBIComponentStatus.SHUTDOWN.equals(getState()); 
+                !busy && JBIComponentStatus.SHUTDOWN_STATE.equals(getState()); 
     }
     
     /**

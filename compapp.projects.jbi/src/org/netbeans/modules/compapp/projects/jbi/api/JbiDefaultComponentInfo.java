@@ -20,7 +20,6 @@
 package org.netbeans.modules.compapp.projects.jbi.api;
 
 import java.util.ArrayList;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
 import org.netbeans.modules.compapp.javaee.util.ProjectUtil;
 import org.netbeans.api.project.Project;
 
@@ -35,6 +34,7 @@ import java.util.List;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 
 import org.openide.filesystems.FileSystem;
 

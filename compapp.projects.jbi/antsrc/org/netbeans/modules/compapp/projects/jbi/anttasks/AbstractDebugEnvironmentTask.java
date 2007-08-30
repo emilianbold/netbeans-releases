@@ -20,8 +20,9 @@ package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.netbeans.modules.compapp.jbiserver.management.AdministrationService;
+import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 
 
 /**
@@ -89,9 +90,10 @@ public class AbstractDebugEnvironmentTask extends Task {
         String nbUserDir = getNetBeansUserDir();
         String serverInstance = getJ2eeServerInstance();
         
-        AdministrationService adminService = AdminServiceHelper.getAdminService(
-                nbUserDir, serverInstance);
-        
-        return adminService;
+        try {
+            return AdminServiceHelper.getAdminService(nbUserDir, serverInstance);
+        } catch (Exception e) {
+            throw new BuildException(e.getMessage());
+        }
     }
 }

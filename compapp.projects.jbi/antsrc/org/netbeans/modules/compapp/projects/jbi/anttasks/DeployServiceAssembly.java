@@ -28,16 +28,16 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.netbeans.modules.compapp.jbiserver.settings.ServerInstance;
-import org.netbeans.modules.compapp.jbiserver.management.AdministrationService;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIServiceAssemblyDocument;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIServiceAssemblyStatus;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
+import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyDocument;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyStatus;
+import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 
 /**
  * Ant task to deploy/undeploy Service Assembly to/from the target JBI server.
@@ -73,6 +73,8 @@ public class DeployServiceAssembly extends Task {
     // will be used.
     // REMOVE ME
     private String j2eeServerInstance;
+    
+    private boolean FORCE = true; //??
     
     
     /**
@@ -210,21 +212,24 @@ public class DeployServiceAssembly extends Task {
                 
         startServer(serverInstanceID);
         
-        ServerInstance instance = AdminServiceHelper.getServerInstance(nbUserDir, serverInstanceID);
-        AdministrationService adminService = AdminServiceHelper.getAdminService(instance);
+        ServerInstance serverInstance = AdminServiceHelper.getServerInstance(
+                nbUserDir, serverInstanceID);
+        AdministrationService adminService = null;
+        try {
+            adminService = new AdministrationService(serverInstance);
+        } catch (Exception e) {
+            throw new BuildException(e.getMessage());
+        }                
         
-        hostName = instance.getHostName();
-        port = instance.getAdminPort();
-        userName = instance.getUserName();
-        password = instance.getPassword();
+        hostName = serverInstance.getHostName();
+        port = serverInstance.getAdminPort();
+        userName = serverInstance.getUserName();
+        password = serverInstance.getPassword();
         
         JBIServiceAssemblyStatus assembly = getJBIServiceAssemblyStatus(
                 adminService, serviceAssemblyID);
         
-        String status = null;
-        if (assembly != null) {
-            status = assembly.getStatus();
-        }
+        String status = assembly == null ? null : assembly.getStatus();
         // System.out.println("Current assembly status is " + status);
         
         if (JBIComponentStatus.UNKNOWN_STATE.equals(status)) {
@@ -242,7 +247,7 @@ public class DeployServiceAssembly extends Task {
             } else if (JBIComponentStatus.STOPPED_STATE.equals(status)) {
                 success = shutdownServiceAssembly(adminService)
                 && undeployServiceAssembly(adminService);
-            } else if (JBIComponentStatus.INSTALLED_STATE.equals(status)) {
+            } else if (JBIComponentStatus.SHUTDOWN_STATE.equals(status)) {
                 success = undeployServiceAssembly(adminService);
             } else {
                 success = true;
@@ -259,7 +264,7 @@ public class DeployServiceAssembly extends Task {
                 && undeployServiceAssembly(adminService)
                 && deployServiceAssembly(adminService)
                 && startServiceAssembly(adminService);
-            } else if (JBIComponentStatus.INSTALLED_STATE.equals(status)) {
+            } else if (JBIComponentStatus.SHUTDOWN_STATE.equals(status)) {
                 success = undeployServiceAssembly(adminService)
                 && deployServiceAssembly(adminService)
                 && startServiceAssembly(adminService);
@@ -316,18 +321,11 @@ public class DeployServiceAssembly extends Task {
             AdministrationService adminService, String assemblyName) {
         
         if (adminService != null) {
-            JBIServiceAssemblyDocument assemblyDocument = adminService
-                    .getJBIServiceAssemblyDocument();
-            
-            if (assemblyDocument != null) {
-                List assemblyList = assemblyDocument
-                        .getJbiServiceAssemblyList();
-                for (Iterator iter = assemblyList.iterator(); iter.hasNext();) {
-                    JBIServiceAssemblyStatus assembly = (JBIServiceAssemblyStatus) iter
-                            .next();
-                    if (assembly.getServiceAssemblyName().equals(assemblyName)) {
-                        return assembly;
-                    }
+            List<JBIServiceAssemblyStatus> assemblyList = 
+                    adminService.getServiceAssemblyStatusList();
+            for (JBIServiceAssemblyStatus assembly : assemblyList) {
+                if (assembly.getServiceAssemblyName().equals(assemblyName)) {
+                    return assembly;
                 }
             }
         }
@@ -391,7 +389,7 @@ public class DeployServiceAssembly extends Task {
         log("        port=" + port);
         log("        name=" + serviceAssemblyID);
         
-        String result = adminService.shutdownServiceAssembly(serviceAssemblyID);
+        String result = adminService.shutdownServiceAssembly(serviceAssemblyID, FORCE);
         Object[] value = JBIMBeanTaskResultHandler.getProcessedResult("Shutdown", result);
         if (value[0] != null) {
             log((String) value[0]);
@@ -407,7 +405,7 @@ public class DeployServiceAssembly extends Task {
         log("        port=" + port);
         log("        name=" + serviceAssemblyID);
         
-        String result = adminService.undeployServiceAssembly(serviceAssemblyID);
+        String result = adminService.undeployServiceAssembly(serviceAssemblyID, FORCE);
         Object[] value = JBIMBeanTaskResultHandler.getProcessedResult("Undeploy", result);
         if (value[0] != null) {
             log((String) value[0]);

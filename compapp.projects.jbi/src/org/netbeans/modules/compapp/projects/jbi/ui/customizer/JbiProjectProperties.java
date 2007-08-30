@@ -21,13 +21,8 @@ package org.netbeans.modules.compapp.projects.jbi.ui.customizer;
 
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
-import org.netbeans.modules.compapp.projects.jbi.CasaConstants;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.JbiProjectType;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.ComponentInformationParser;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentDocument;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
 
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -48,7 +43,6 @@ import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.openide.util.Mutex;
@@ -77,6 +71,9 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.javaee.sunresources.SunResourcesUtil;
 import org.netbeans.modules.compapp.projects.jbi.ComponentHelper;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
+import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 
 
 /**

@@ -94,11 +94,11 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         if (busy) {
             externalBadgeIconName = IconConstants.BUSY_ICON;
         } else {
-            if (JBIComponentStatus.SHUTDOWN.equals(status)) {
+            if (JBIComponentStatus.SHUTDOWN_STATE.equals(status)) {
                 externalBadgeIconName = IconConstants.INSTALLED_ICON;
-            } else if (JBIComponentStatus.STOPPED.equals(status)) {
+            } else if (JBIComponentStatus.STOPPED_STATE.equals(status)) {
                 externalBadgeIconName = IconConstants.STOPPED_ICON;
-            } else if (!JBIComponentStatus.STARTED.equals(status)) {
+            } else if (!JBIComponentStatus.STARTED_STATE.equals(status)) {
                 externalBadgeIconName = IconConstants.UNKNOWN_ICON;
             }
         }

@@ -34,11 +34,13 @@ import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.sun.manager.jbi.management.JBIClassLoader;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+
 
 public class JbiManager {
     
@@ -49,21 +51,21 @@ public class JbiManager {
     public static final String PASSWORD_ATTR = "password"; // NOI18N
     
     /** Mapping from ServerInstance to JbiClassLoader instances. */
-    private static Map<String,JbiClassLoader> loaderMap;
+    private static Map<String,JBIClassLoader> loaderMap;
     
-    public static JbiClassLoader getJBIClassLoader(String serverInstance) {
+    public static JBIClassLoader getJBIClassLoader(String serverInstance) {
         if (loaderMap == null) {
-            loaderMap = new HashMap<String,JbiClassLoader>();
+            loaderMap = new HashMap<String,JBIClassLoader>();
         }
         
-        JbiClassLoader loader = loaderMap.get(serverInstance);
+        JBIClassLoader loader = loaderMap.get(serverInstance);
         if (loader == null) {
             try {
                 J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstance);
                 
                 if (isAppServer(platform)) {
                     
-                    loader = new JbiClassLoader(new Empty().getClass().getClassLoader());
+                    loader = new JBIClassLoader(new Empty().getClass().getClassLoader());
                     
                     File[] roots = platform.getPlatformRoots();
                     for (int i = 0; i < roots.length; i++) {

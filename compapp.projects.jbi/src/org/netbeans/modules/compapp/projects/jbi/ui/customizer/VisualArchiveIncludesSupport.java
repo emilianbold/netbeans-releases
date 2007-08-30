@@ -19,11 +19,7 @@
 
 package org.netbeans.modules.compapp.projects.jbi.ui.customizer;
 
-import org.netbeans.modules.compapp.jbiserver.connectors.HTTPServerConnector;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.ComponentInformationParser;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentDocument;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
 import org.netbeans.modules.compapp.projects.jbi.ui.deployInfo.ComponentObject;
 import org.netbeans.modules.compapp.projects.jbi.ui.deployInfo.ComponentTableModel;
@@ -63,9 +59,14 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
-import org.netbeans.modules.compapp.jbiserver.management.AdministrationService;
 import org.netbeans.modules.compapp.projects.jbi.JbiActionProvider;
 import org.netbeans.modules.compapp.projects.jbi.ui.NoSelectedServerWarning;
+import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
+import org.netbeans.modules.sun.manager.jbi.management.JBIClassLoader;
+import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
+import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -629,15 +630,15 @@ final class VisualArchiveIncludesSupport {
         String password = (String) webProperties.get(JbiProjectProperties.PASSWORD_PROPERTY_KEY);
         String location = (String) webProperties.get(JbiProjectProperties.LOCATION_PROPERTY_KEY);
         
-        if (hostName == null || port == null || userName == null || password == null
-                || location == null) {
+        if (hostName == null || port == null || userName == null || 
+                password == null || location == null) {
             
             Properties properties = JbiManager.getServerInstanceProperties(serverInstance);
             
-            hostName = (String) properties.getProperty(JbiManager.HOSTNAME_ATTR);
-            port = (String) properties.getProperty(JbiManager.PORT_ATTR);
-            userName = (String) properties.getProperty(JbiManager.USERNAME_ATTR);
-            password = (String) properties.getProperty(JbiManager.PASSWORD_ATTR);
+            hostName = properties.getProperty(JbiManager.HOSTNAME_ATTR);
+            port = properties.getProperty(JbiManager.PORT_ATTR);
+            userName = properties.getProperty(JbiManager.USERNAME_ATTR);
+            password = properties.getProperty(JbiManager.PASSWORD_ATTR);
             
             webProperties.put(JbiProjectProperties.HOST_NAME_PROPERTY_KEY, hostName);
             webProperties.put(JbiProjectProperties.ADMINISTRATION_PORT_PROPERTY_KEY, port);
@@ -645,62 +646,28 @@ final class VisualArchiveIncludesSupport {
             webProperties.put(JbiProjectProperties.PASSWORD_PROPERTY_KEY, password);
         }
         
-        ClassLoader jbiClassLoader = JbiManager.getJBIClassLoader(serverInstance);
+        JBIClassLoader jbiClassLoader = JbiManager.getJBIClassLoader(serverInstance);
         
-//        System.out.println("VisualArchiveIncludesSupport.fetchInfo():");
-//        System.out.println("hostName=" + hostName);
-//        System.out.println("port=" + port);
-//        System.out.println("userName=" + userName);
-//        System.out.println("password=" + password);
-        
-        if (hostName == null || port == null || userName == null || password == null || jbiClassLoader == null) {
-            String msg = "The application server is not set up correctly or it is not running.";   // FIXME // NOI18N
+        if (hostName == null || port == null || userName == null || 
+                password == null || jbiClassLoader == null) {
+            String msg = "The application server is not set up correctly or it is not running.";   // NOI18N
             NotifyDescriptor d =
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
         } else {
-            HTTPServerConnector httpServerConnector =
-                    new HTTPServerConnector(hostName, port, userName, password, jbiClassLoader);
-            
-            AdministrationService adminService = null;
-            try {
-                adminService = new AdministrationService(httpServerConnector);
-            } catch (Exception e) {
-                NotifyDescriptor d = new NotifyDescriptor.Message(
-                        e.getMessage(), NotifyDescriptor.INFORMATION_MESSAGE);
-                DialogDisplayer.getDefault().notify(d);
-            }
-            
+            AdministrationService adminService = new AdministrationService(
+                    jbiClassLoader, hostName, port, userName, password);
             if (adminService != null) {
-                adminService.constructDocumentObject();
-                JBIComponentDocument componentDocument = 
-                        adminService.getJBIComponentDocument();
-                
-                List<JBIComponentStatus> compList = 
-                        componentDocument.getJbiComponentList();                
+                adminService.clearJBIComponentStatusCache(JBIComponentType.SERVICE_ENGINE);
+                adminService.clearJBIComponentStatusCache(JBIComponentType.BINDING_COMPONENT);
+                List<JBIComponentStatus> compList = new ArrayList<JBIComponentStatus>();
+                compList.addAll(adminService.getJBIComponentStatusList(JBIComponentType.SERVICE_ENGINE));
+                compList.addAll(adminService.getJBIComponentStatusList(JBIComponentType.BINDING_COMPONENT));
                 updateComponentTable(compList);
             }
         }
     }
-    
-    /*
-    private void updateComponentInformationFiles(JBIComponentDocument componentDocument) throws IOException {
-        FileObject rootFileObject = webProperties.getProject().getProjectDirectory();
-        FileObject confFileObject = rootFileObject.getFileObject("src").getFileObject("conf"); // NOI18N
-        File confFile = FileUtil.toFile(confFileObject);
-        try {
-            CreateComponentInformation infoDoc = new CreateComponentInformation();
-            infoDoc.buildComponentDOMTree(componentDocument);
-            infoDoc.writeToComponentFile(confFile.getPath()); // confRoot.getPath());
-            // TODO: namespace missing for BC, resulting empty BCComponentList file
-//            infoDoc.buildBCDOMTree(componentDocument);
-//            infoDoc.writeToBCFile(confFile.getPath()); // confRoot.getPath());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    */
-    
+        
     private void updateProperties(JbiProjectProperties prop, 
             ClasspathTableModel classpathModel) {
         List<String> targetIDs = new ArrayList<String>();

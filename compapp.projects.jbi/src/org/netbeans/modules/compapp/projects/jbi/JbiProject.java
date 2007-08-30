@@ -22,10 +22,6 @@ package org.netbeans.modules.compapp.projects.jbi;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentDocument;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.CreateComponentInformation;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.ComponentInformationParser;
 import org.netbeans.modules.compapp.projects.jbi.ui.JbiCustomizerProvider;
 import org.netbeans.modules.compapp.projects.jbi.ui.JbiLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
@@ -70,9 +66,11 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
+import org.netbeans.modules.compapp.projects.jbi.ComponentInfoGenerator;
 import org.netbeans.modules.compapp.projects.jbi.queries.JbiProjectEncodingQueryImpl;
+import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
@@ -735,15 +733,10 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                 }
                 
                 if (deltaList != null && deltaList.size() > 0 || nsListUpdated) {
-                    JBIComponentDocument document = new JBIComponentDocument();
-                    document.getJbiComponentList().addAll(compList);
-                    document.getJbiComponentList().addAll(deltaList);
-                    
-                    CreateComponentInformation infoDoc = new CreateComponentInformation();
-                    infoDoc.buildComponentDOMTree(document);
-                    infoDoc.writeToComponentFile(confDir);
-                    infoDoc.buildBindingComponentDOMTree(document);
-                    infoDoc.writeToBindingComponentFile(confDir);
+                    List<JBIComponentStatus> list = new ArrayList<JBIComponentStatus>();
+                    list.addAll(compList);
+                    list.addAll(deltaList);
+                    new ComponentInfoGenerator(confDir, list).doIt();
                 }
             } catch (Exception e) {
                 e.printStackTrace();

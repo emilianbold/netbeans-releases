@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.sun.manager.jbi.management.model;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Retrieves the status of JBI components installed on the
@@ -29,23 +31,33 @@ import java.io.Serializable;
 public class JBIComponentStatus implements Serializable {
 
     /** Installed state */
-    public static final String SHUTDOWN = "Shutdown"; // NOI18N
+    public static final String SHUTDOWN_STATE = "Shutdown"; // NOI18N
     /** Stopped state  */
-    public static final String STOPPED = "Stopped"; // NOI18N
+    public static final String STOPPED_STATE = "Stopped"; // NOI18N
     /** Started state */
-    public static final String STARTED = "Started"; // NOI18N
+    public static final String STARTED_STATE = "Started"; // NOI18N
+    /** Unknown state */
+    public static final String UNKNOWN_STATE = "Unknown";   // NOI18N
 
+     
+    /** Binding type */
+    public static final String BINDING_TYPE = "Binding";    // NOI18N
+    
+    /** Engine Type */
+    public static final String ENGINE_TYPE = "Engine";  // NOI18N
+    
+    /** Namespace Type */
+    public static final String NAMESPACE_TYPE = "Namespace";    // NOI18N
+    
     String componentId;
     String state;
     String name;
     String description;
     String type;
+    List<String> namespaceList = new ArrayList<String>();
 
-    /**
-     *
-     */
     public JBIComponentStatus() {
-        super();
+        
     }
 
     /**
@@ -55,13 +67,19 @@ public class JBIComponentStatus implements Serializable {
      * @param description
      * @param type
      */
-    public JBIComponentStatus(String componentId, String name, String description, String type, String state) {
-        super();
+    public JBIComponentStatus(String componentId, String name, 
+            String description, String type, String state) {
+        this(componentId, name, description, type, state, null);
+    }
+    
+    public JBIComponentStatus(String componentId, String name, 
+            String description, String type, String state, String[] ns) {
         this.componentId = componentId;
         this.name = name;
         this.description = description;
         this.type = type;
         this.state = state;
+        setNamespace(ns);
     }
     /**
      * @return Returns the componentId.
@@ -126,6 +144,61 @@ public class JBIComponentStatus implements Serializable {
     public void setType(String type) {
         this.type = type;
     }
+    
+    /**
+     * DOCUMENT ME!
+     *
+     * @return Returns the Namespace.
+     */
+    public List<String> getNamespaceList() {
+        return new ArrayList<String>(namespaceList);
+    }
+     
+    /**
+     * DOCUMENT ME!
+     *
+     * @param namesapce The Namespace to set.
+     */
+    // RENAME ME 
+    public void setNamespace(String namespaces[]) {
+        namespaceList.clear();
+        for (String namespace : namespaces) {
+            if (!namespaceList.contains(namespace)) {
+                namespaceList.add(namespace);
+            }            
+        }
+    }
+    
+    // RENAME ME 
+    public void setNamespace(List<String> namespaces) {
+        namespaceList.clear();
+        for (String namespace : namespaces) {
+            if (!namespaceList.contains(namespace)) {
+                namespaceList.add(namespace);
+            }            
+        }
+    }
+    
+    public boolean addNamespace(String namespace) {
+        if (!namespaceList.contains(namespace)) {
+            namespaceList.add(namespace);
+            return true;
+        }      
+        
+        return false;
+    }
+    
+    public boolean isBindingComponent() {
+        return getType().equalsIgnoreCase("Binding"); // NOI18N
+    }
+    
+    public boolean isServiceEngine() {
+        return getType().equalsIgnoreCase("Engine"); // NOI18N
+    }
+    
+    public boolean isSharedLibrary() {
+        return getType().equalsIgnoreCase("shared-library"); // NOI18N
+    }
 
     public void dump() {
         System.out.println("/////////////////////////////////////////////////"); // NOI18N
@@ -137,9 +210,6 @@ public class JBIComponentStatus implements Serializable {
         System.out.println("//  type is: "+ this.type); // NOI18N
         System.out.println("//  state is: "+ this.state); // NOI18N
         System.out.println("/////////////////////////////////////////////////"); // NOI18N
-    }
-
-    public static void main(String[] args) {
     }
 }
 

@@ -25,10 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.ComponentInformationParser;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentDocument;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
+import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.openide.filesystems.FileUtil;
 
 /**

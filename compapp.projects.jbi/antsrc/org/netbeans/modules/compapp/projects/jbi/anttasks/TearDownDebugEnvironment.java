@@ -19,12 +19,12 @@
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
 import java.util.Map;
-import javax.management.MBeanServerConnection;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.compapp.jbiserver.GenericConstants;
-import org.netbeans.modules.compapp.jbiserver.management.AdministrationService;
+import org.netbeans.modules.sun.manager.jbi.GenericConstants;
+import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
+import org.netbeans.modules.sun.manager.jbi.management.JBIComponentConfigurator;
 
 
 /**
@@ -41,8 +41,7 @@ public class TearDownDebugEnvironment extends AbstractDebugEnvironmentTask {
         DebuggerManager.getDebuggerManager().finishAllSessions();
         
         // Restore SE's debugEnabled property        
-        AdministrationService adminService = getAdminService();            
-        MBeanServerConnection connection = adminService.getServerConnection();
+        AdministrationService adminService = getAdminService();  
                 
         Map<String, Boolean> debugEnabledMap = getDebugEnabledMap();
         for (String seName : debugEnabledMap.keySet()) {
@@ -51,9 +50,10 @@ public class TearDownDebugEnvironment extends AbstractDebugEnvironmentTask {
                 try {
                     log("Restore debug-enabled property for " + seName, Project.MSG_DEBUG);
                     
-                    ConfigureDeployments configurator = new ConfigureDeployments(
-                                GenericConstants.SERVICE_ENGINES_FOLDER_NAME, seName, connection);
-                    configurator.setProperty(SERVICE_ENGINE_DEBUG_FLAG, Boolean.FALSE);
+                    JBIComponentConfigurator configurator = 
+                            adminService.getComponentConfigurator(
+                            GenericConstants.SERVICE_ENGINES_FOLDER_NAME, seName);
+                    configurator.setPropertyValue(SERVICE_ENGINE_DEBUG_FLAG, Boolean.FALSE);
                 } catch (Exception e) {
                     log(e.getMessage(), Project.MSG_WARN);
                 }

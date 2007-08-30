@@ -148,7 +148,8 @@ public class HTTPServerConnector extends ServerConnector implements
         boolean result = true;
         try {
             int portValue = new Integer(this.getPort()).intValue();
-            this.connection = this.getMBeanServerConnection(this.getHostName(), portValue, this.getUserName(), this.getPassword());
+            this.connection = this.getMBeanServerConnection(this.getHostName(), 
+                    portValue, this.getUserName(), this.getPassword());
         } catch (Exception exception) {
             throw exception;
         }
@@ -161,7 +162,8 @@ public class HTTPServerConnector extends ServerConnector implements
      * @return true if registered, false if not
      * @throws MalformedObjectNameException, NullPointerException, IOException
      */
-    boolean isMBeanRegistered(MBeanServerConnection connection, String objectNameString) throws MalformedObjectNameException, NullPointerException, IOException {
+    boolean isMBeanRegistered(MBeanServerConnection connection, String objectNameString) 
+            throws MalformedObjectNameException, NullPointerException, IOException {
         boolean result = false;
         ObjectName objectName = new ObjectName(objectNameString);
         result = connection.isRegistered(objectName);
@@ -180,15 +182,13 @@ public class HTTPServerConnector extends ServerConnector implements
      * @return JBIAdminCommands object
      * @throws JBIRemoteException
      */
-    public MBeanServerConnection getMBeanServerConnection(String hostName, int portNumber,
+    public MBeanServerConnection getMBeanServerConnection(String hostName, 
+            int portNumber,
             String userName, String password) throws Exception {
-
 
         MBeanServerConnection connection = null;
         boolean result = false;
         String ADMIN_SERVICE_OBJECTNAME = "com.sun.jbi:ServiceName=JbiAdminUiService,ComponentType=System"; // NOI18N
-
-        ObjectName mbeanName = null;
 
         // Try to obtain a HTTP connection
         try {

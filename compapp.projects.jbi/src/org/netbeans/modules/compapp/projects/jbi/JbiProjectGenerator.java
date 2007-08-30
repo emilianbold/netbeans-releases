@@ -20,8 +20,6 @@
 package org.netbeans.modules.compapp.projects.jbi;
 
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.CreateComponentInformation;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentDocument;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 
 import org.netbeans.api.project.Project;
@@ -36,7 +34,6 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
 import org.w3c.dom.Document;
@@ -46,8 +43,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.compapp.projects.jbi.ComponentInfoGenerator;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
 
 
 /**
@@ -117,23 +116,11 @@ public class JbiProjectGenerator {
         fo.createFolder(DEFAULT_TEST_FOLDER); 
         // End Test Framework
         
-        // create the default component info file
-        JbiDefaultComponentInfo ci = JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
-        JBIComponentDocument document = new JBIComponentDocument();
-
+        // Create default component info config files
         // 04/12/06, NB FO returns different path format for Unix and Windoz..
-        File confFile = FileUtil.toFile(confRoot);
-        try {
-            document.getJbiComponentList().addAll(ci.getComponentList());
-            CreateComponentInformation infoDoc = new CreateComponentInformation();
-            infoDoc.buildComponentDOMTree(document);
-            infoDoc.writeToComponentFile(confFile.getPath()); 
-            infoDoc.buildBindingComponentDOMTree(document);
-            infoDoc.writeToBindingComponentFile(confFile.getPath());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        String confDir = FileUtil.toFile(confRoot).getPath();
+        new ComponentInfoGenerator(confDir).doIt();
+        
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put(JbiProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); 
         ep.setProperty(

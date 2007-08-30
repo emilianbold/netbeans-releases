@@ -20,7 +20,6 @@
 package org.netbeans.modules.sun.manager.jbi.util;
 
 import java.io.Serializable;
-import java.util.Properties;
 
 
 /**
@@ -77,19 +76,6 @@ public class ServerInstance implements Serializable {
     static final String URL = "url"; // NOI18N
     static final String USER_NAME = "username"; // NOI18N
     
-    /*
-    private static final String DISPLAY_NAME_PROPERTY_KEY = "com.sun.appserver.instance.displayName"; // NOI18N
-    private static final String HOST_NAME_PROPERTY_KEY = "com.sun.appserver.instance.hostName"; // NOI18N
-    private static final String ADMINISTRATION_PORT_PROPERTY_KEY = "com.sun.appserver.instance.administrationPort"; // NOI18N
-    private static final String DOMAIN_PROPERTY_KEY = "com.sun.appserver.instance.domain"; // NOI18N
-    private static final String HTTP_MONITOR_ON_PROPERTY_KEY = "com.sun.appserver.instance.httpMonitorOn"; // NOI18N
-    private static final String HTTP_PORT_NUMBER_PROPERTY_KEY = "com.sun.appserver.instance.httpPortNumber"; // NOI18N
-    private static final String LOCATION_PROPERTY_KEY = "com.sun.appserver.instance.location"; // NOI18N
-    private static final String PASSWORD_PROPERTY_KEY = "com.sun.appserver.instance.password"; // NOI18N
-    private static final String URL_PROPERTY_KEY = "com.sun.appserver.instance.url"; // NOI18N
-    private static final String USER_NAME_PROPERTY_KEY = "com.sun.appserver.instance.userName"; // NOI18N
-    */
-    
     private String displayName;
     private String domain;
     private String httpMonitorOn;
@@ -117,12 +103,11 @@ public class ServerInstance implements Serializable {
      * @param url
      * @param userName
      */
-    public ServerInstance(
-            String displayName, String domain, String httpMonitorOn, String httpPortNumber,
-            String location, String password, String url, String userName
-            ) {
-        super();
-        this.setDisplayName(displayName);
+    public ServerInstance(String displayName, String domain, 
+            String httpMonitorOn, String httpPortNumber, 
+            String location, String password, 
+            String url, String userName) {
+        this.displayName = displayName;
         this.domain = domain;
         this.httpMonitorOn = httpMonitorOn;
         this.httpPortNumber = httpPortNumber;
@@ -320,59 +305,7 @@ public class ServerInstance implements Serializable {
     public String getHostName() {
         return this.hostName;
     }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-    public Properties getProperties() {
-        Properties properties = new Properties();
         
-        if (this.displayName != null) {
-            properties.put(ServerInstance.DISPLAY_NAME_PROPERTY_KEY, this.displayName);
-        }
-        
-        if (this.hostName != null) {
-            properties.put(ServerInstance.HOST_NAME_PROPERTY_KEY, this.hostName);
-        }
-        
-        if (this.adminPort != null) {
-            properties.put(ServerInstance.ADMINISTRATION_PORT_PROPERTY_KEY, this.adminPort);
-        }
-        
-        if (this.domain != null) {
-            properties.put(ServerInstance.DOMAIN_PROPERTY_KEY, this.domain);
-        }
-        
-        if (this.httpMonitorOn != null) {
-            properties.put(ServerInstance.HTTP_MONITOR_ON_PROPERTY_KEY, this.httpMonitorOn);
-        }
-        
-        if (this.httpPortNumber != null) {
-            properties.put(ServerInstance.HTTP_PORT_NUMBER_PROPERTY_KEY, this.httpPortNumber);
-        }
-        
-        if (this.location != null) {
-            properties.put(ServerInstance.LOCATION_PROPERTY_KEY, this.location);
-        }
-        
-        if (this.password != null) {
-            properties.put(ServerInstance.PASSWORD_PROPERTY_KEY, this.password);
-        }
-        
-        if (this.url != null) {
-            properties.put(ServerInstance.URL_PROPERTY_KEY, this.url);
-        }
-        
-        if (this.userName != null) {
-            properties.put(ServerInstance.USER_NAME_PROPERTY_KEY, this.userName);
-        }
-        
-        return properties;
-    }
-    */
-    
     /**
      * DOCUMENT ME!
      */
@@ -391,13 +324,5 @@ public class ServerInstance implements Serializable {
         System.out.println("// hostName is :" + this.hostName); // NOI18N
         System.out.println("// adminPort is :" + this.adminPort); // NOI18N
         System.out.println("/////////////////////////////////////////////////"); // NOI18N
-    }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @param args DOCUMENT ME!
-     */
-    public static void main(String[] args) {
     }
 }

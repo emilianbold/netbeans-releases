@@ -88,8 +88,10 @@ import org.netbeans.modules.xml.xdm.nodes.Attribute;
 import javax.swing.text.BadLocationException;
 
 //import org.netbeans.junit.NbTestCase;
-//import org.netbeans.modules.compapp.catd.jbimanager.EnvironmentVariableHandler;
+
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
+import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
+import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
 
 /**
  * Test the HTTP SOAP processing
@@ -1911,11 +1913,14 @@ public class ConfiguredTest extends TestCase {
         if (destination.indexOf("${") != -1 && destination.indexOf("}") != -1) {
             try {
                 String nbUserDir = System.getProperty("NetBeansUserDir");
-                AdministrationService adminService = new AdministrationService(nbUserDir);
+                // FIXME: use the first instance for now
+                ServerInstance serverInstance = getFirstServerInstance(nbUserDir);
+                AdministrationService adminService = new AdministrationService(serverInstance);
                 // Currently only deal with http soap bc because soap binding is the 
                 // only supported binding type in test driver.
-                destination = //EnvironmentVariableHandler.translate(destination);
-                        adminService.translate(destination, "bindingComponents", "sun-http-binding");
+                destination = 
+                        adminService.translateEnvrionmentVariables(
+                        destination, "bindingComponents", "sun-http-binding");
             } catch (Exception ex) {
                 if (stdErr != null) {
                     System.setErr(origErr);
@@ -3277,6 +3282,41 @@ public class ConfiguredTest extends TestCase {
         System.out.print(mesg);
     }
 
+    /**
+     * Gets the server instance configuration.
+     * 
+     * @param netBeansUserDir   NetBeans user directory
+     * @return  server instance configuration
+     */
+    private static ServerInstance getFirstServerInstance(String netBeansUserDir) {
+        ServerInstance instance = null;
+        
+        if (netBeansUserDir != null) {            
+            String settingsFileName = netBeansUserDir + ServerInstanceReader.RELATIVE_FILE_PATH;
+            File settingsFile = new File(settingsFileName);
+            if (settingsFile.exists()) {
+                try {
+                    ServerInstanceReader settings = new ServerInstanceReader(settingsFileName);                    
+                    List<ServerInstance> list = settings.getServerInstances();                    
+                    if (list.size() > 0) {      
+                        instance = list.get(0);      
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            if (instance == null) {
+                throw new RuntimeException(
+                        "The application server definition file " +  // NOI18N
+                        settingsFileName +
+                        " is missing or does not contain the expected server instance." // NOI18N
+                        );
+            }
+        }
+        
+        return instance;
+    }
     
     public final static void main(String[] args) {
         //new ConfiguredTest("testInboundSOAPRequest").run();

@@ -142,7 +142,13 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.compapp.projects.jbi</friend>
+                <package>org.netbeans.modules.sun.manager.jbi.management</package>
+                <package>org.netbeans.modules.sun.manager.jbi.management.connectors</package>
+                <package>org.netbeans.modules.sun.manager.jbi.management.model</package>
+                <package>org.netbeans.modules.sun.manager.jbi.util</package>
+            </friend-packages>
         </data>
         <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit4"/>
     </configuration>
