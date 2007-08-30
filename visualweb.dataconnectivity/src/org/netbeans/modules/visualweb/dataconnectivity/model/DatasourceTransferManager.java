@@ -42,6 +42,8 @@ import java.sql.SQLException;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -148,6 +150,11 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             } else
                 dsName = dbConnection.getSchema() + "_" + databaseProductName;
             
+            // ensure data source name is unique
+            if (!DataSourceResolver.getInstance().isDataSourceUnique(CurrentProject.getInstance().getProject(), dsName, url)) {
+                dsName = getUniqueName(dsName);
+            }
+            
             if (DataconnectivitySettings.promptForName()) {
                 JndiNamePanel jndiPanel = new JndiNamePanel(dsName);
                 final DialogDescriptor dialogDescriptor = new DialogDescriptor(
@@ -182,12 +189,28 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             return super.beansCreatedSetup(designBeans);
         }
         
+         private int getIndex(String name) {
+            int index = -1;
+
+            if (name.indexOf('_') != -1) {
+                try {
+                    index = Integer.parseInt(name.substring(name.lastIndexOf('_') + 1, name.length() - 1));
+                } catch (NumberFormatException nfe) {
+                    // do nothing
+                }
+            }
+
+            return index;
+        }
+         
         private String getUniqueName(String name){
-            if(name.indexOf('_') != -1){
+            int index = getIndex(name);
+            if (index != -1) {
+                index++;
                 String prefix = name.substring(0, name.indexOf('_'));
-                return prefix + "_" + System.currentTimeMillis(); // NOI18N
+                return prefix  + "_" + Integer.toString(index); // NOI18N
             } else{
-                return name + "_" + System.currentTimeMillis(); // NOI18N
+                return name + "_" + 1; // NOI18N
             }
         }
     }
