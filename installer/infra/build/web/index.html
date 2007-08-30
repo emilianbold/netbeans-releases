@@ -21,8 +21,8 @@
 
 <html>
     <head>
-        <title>NetBeans IDE 6.0 Download</title>
-        <meta name="description" content="NetBeans IDE 6.0 Download"/>
+        <title>NetBeans IDE 6.0 {build-number} Download</title>
+        <meta name="description" content="NetBeans IDE 6.0 {build-number} Download"/>
         
         <link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css" media="screen"/>
         <link rel="stylesheet" type="text/css" href="css/download.css" media="screen"/>
@@ -42,90 +42,114 @@
             <div id="page-border">
                 <div id="fixed-tabs"><img src="http://www.netbeans.org/images/v5/corner-left.png" class="float-left" width="11" height="26" style="_margin-right:-3px;"/><img src="http://www.netbeans.org/images/v5/corner-right.png" class="float-right" width="14" height="26" style="_margin-right:-3px;"/><a href="http://www.netbeans.org/index.html" title=""><img src="http://www.netbeans.org/images/v5/home-off.png" alt="" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/products/index.html" title="Products"><img src="http://www.netbeans.org/images/v5/products-off.png" alt="Products" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/catalogue/index.html" title="Plugins"><img src="http://www.netbeans.org/images/v5/catalogue-off.png" alt="Plugins" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/kb/index.html" title="Docs&nbsp;&amp;&nbsp;Support"><img src="http://www.netbeans.org/images/v5/kb-off.png" alt="Docs&nbsp;&amp;&nbsp;Support" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/community/index.html" title="Community"><img src="http://www.netbeans.org/images/v5/community-off.png" alt="Community" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/community/partners/index.html" title="Partners"><img src="http://www.netbeans.org/images/v5/partners-off.png" alt="Partners" width="120" height="26" border="0" class="iMenu"></a></div>
                 <div id="fixed-contentarea">
-                    <div id="navig-breadcrumbs"><a href="http://www.netbeans.org/">HOME</a>  / <a href="http://www.netbeans.org/products/">Products</a> / <a href="http://www.netbeans.org/products/ide/">IDE</a> / Download</div>
+                    <div id="navig-breadcrumbs"><a href="http://www.netbeans.org/">HOME</a> / <a href="http://www.netbeans.org/products/">Products</a> / <a href="http://www.netbeans.org/products/ide/">IDE</a> / Download</div>
                     <div id="fixed-top-contentbox">
                         <!-- =============================================== -->
                         
-                        <table class="top_menu" align="center">
-                            <tr>
-                                <td class="bg">&nbsp;</td>
-                                <td><a href="http://www.netbeans.info/downloads/index.php?rs=21"><img src="img/top_menu_5.5.1.gif"/></a></td>
-                                <td><a href="http://dlc.sun.com/netbeans/download/6.0/milestones/latest/"><img src="img/top_menu_6.0-m10.gif"/></a></td>
-                                <td><a href="http://bits.netbeans.org/download/6.0/nightly/"><img src="img/top_menu_dev_h.gif"/></a></td>
-                                <td class="bg">&nbsp;</td>
-                            </tr>
-                        </table>
-                        
+						<!-- Top header -->
+						<table class="top_header">
+							<tr>
+								<td>
+									<table>
+										<tr>
+											<td class="title">NetBeans IDE 6.0 {build-number} Download</td>
+											<td class="menu">
+												<a href="http://www.netbeans.info/downloads/index.php?rs=21">5.5.1</a> | 
+												<a href="http://dlc.sun.com/netbeans/download/6.0/milestones/latest/">6.0 Beta 1</a> | 
+												Development
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+						
                         <noscript>
                             <div class="noscript_warning">
                                 In order to download NetBeans installers, Javascript must be switched on in your 
                                 browser. Please switch it on before proceeding.
                             </div>
                             <style type="text/css">
+                                table.l_p_select {
+                                    display:    none;
+                                }
                                 table.components_table {
                                     display:    none;
                                 }
                             </style>
                         </noscript>
-                        <div class="align-right">
-				<br><br>
-				<td class="bold">Platform: &nbsp;</td>
-				<select id="platform_select" class="wide" onchange="update()">
-                                        <option value="windows">Windows 2000/XP/Vista</option>
-                                        <option value="linux">Linux (x86/x64)</option>
-                                        <option value="solaris-x86">Solaris 10 (x86/x64)</option>
-                                        <option value="solaris-sparc">Solaris 10 (sparc)</option>
-                                        <option value="macosx-x86">MacOS X (intel)</option>
-                                        <option value="macosx-ppc">MacOS X (powerpc)</option>				
-                        	</select>
-				<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-			</div>
+						
+						<table class="l_p_select">
+							<td class="spacer">&nbsp;</td>
+							<td class="label">Language:</td>
+							<td class="language_select">
+								<select id="language_select" onchange="update()">
+									<option value="en">English</option>
+									<option value="ru">Russisch</option>
+								</select>
+							</td>
+							<td class="label">Platform:</td>
+							<td class="platform_select">
+								<select id="platform_select" onchange="update()">
+									<option value="windows">Windows 2000/XP/Vista</option>
+									<option value="linux">Linux (x86/x64)</option>
+									<option value="solaris-x86">Solaris 10 (x86/x64)</option>
+									<option value="solaris-sparc">Solaris 10 (sparc)</option>
+									<option value="macosx-x86">MacOS X (intel)</option>
+									<option value="macosx-ppc">MacOS X (powerpc)</option>
+								</select>
+							</td>
+						</table>
                         
-                        <table class="components_table" align="center">                            
-			    <script type="text/javascript">write_table_header()</script>
+                        <table class="components_table" align="center">
+							<script type="text/javascript">write_table_header()</script>
                             <script type="text/javascript">write_components()</script>
                             <tr>
                                 <td class="no_border"></td>                                
                                 <td class="no_border" id="javaee_size"></td>
-			        <td class="no_border" id="javame_size"></td>
+								<td class="no_border" id="javame_size"></td>
                                 <td class="no_border" id="java_size"></td>
                                 <td class="no_border" id="ruby_size"></td>
-				<td class="no_border" id="cnd_size"></td>
-				<td class="no_border" id="full_size"></td>
-                            </tr>
-			    <!--
-                            <tr>
-                                <td class="left wide no_border">
-                                <td class="small_pad no_border"><a href="javascript: download('full')"><img src="img/download_h.gif" style="cursor: pointer; border: 0;"/></a></td>
-                                <td class="small_pad no_border"><a href="javascript: download('java')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/></a></td>
-                                <td class="small_pad no_border"><a href="javascript: download('javaee')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/></a></td>
-				<td class="small_pad no_border"><a href="javascript: download('javame')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/></a></td>
-				<td class="small_pad no_border"><a href="javascript: download('ruby')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/></a></td>
-				<td class="small_pad no_border"><a href="javascript: download('cnd')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/></a></td>
-
-                            </tr>
-			    -->
-                            <tr>
-                                <td class="left no_border" colspan="4" id="error_message"></td>
+								<td class="no_border" id="cnd_size"></td>
+								<td class="no_border" id="full_size"></td>
                             </tr>
                         </table>
-                        <script type="text/javascript">
-                            detect_platform();
-                            update();
-                        </script>
-                        <br><br>
-                        <p style="width: 85%; margin: 0px auto 0px auto">
+						
+                        <br/><br/>
+						
+						<p style="width: 95%; margin: 0px auto 0px auto; display: none" id="error_message">
+						</p>
+						
+						<p style="width: 95%; margin: 0px auto 0px auto">
+							You can add or remove packs later using the IDE' Plugin Manager (Tools | Plugins).<br/>
+							JDK is not included, but JDK 6 or JDK 5.0 is required for installing and running NetBeans IDE.
+						</p>
+						<p style="width: 95%; margin: 0px auto 0px auto">
+							NetBeans Platform is part of NetBeans IDE. If you need it separately, you can <a href="#">download the platform</a>.<br/>
+							NetBeans is an open source project. You can build it yourself if you <a href="#">download the sources</a>.
+						</p>
+						<!--
+                        <p style="width: 95%; margin: 0px auto 0px auto">
                             NetBeans source code and binary builds without bundled runtimes are 
                             also available in <a href="zip/">zip file format</a>.<br>
                             Instructions on how to build the IDE from sources are documented in
                             <a href="http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources">NetBeans wiki</a>.
                         </p>
-                        <br><br>
-                        <div class="align-center">
+						-->
+						
+                        <br/><br/>
+                        
+						<div class="align-center">
                             <a href="http://www.netbeans.org/about/legal/product-licences.html">Legal notice</a> | 
                             <a href="http://nbi.netbeans.org/docs/install-60-m8.html">Installation Instructions</a>
                         </div>
-                        <br><br>
+						
+                        <br/><br/>
+						
+                        <script type="text/javascript">
+                            detect_platform();
+                            update();
+                        </script>
                         <!-- =============================================== -->
                     </div>
                 </div>
