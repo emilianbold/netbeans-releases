@@ -55,6 +55,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
 
     private CustomEditor customEditor;
     private JRadioButton radioButton;
+    private static String[] USERCODE_TAGS =  new String[]{(PropertyEditorUserCode.USER_CODE_TEXT)};
 
     private PropertyEditorComboBox(Map<String, PropertyValue> values, TypeID typeID,
             TypeID enableTypeID, String valueLabel, String userCodeLabel) {
@@ -167,7 +168,10 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
 
     @Override
     public String[] getTags() {
-        return isCurrentValueAUserCodeType() ? null : tags;
+        if (isCurrentValueAUserCodeType()) {
+            return USERCODE_TAGS;
+        } 
+        return tags;
     }
 
     private void createTags() {

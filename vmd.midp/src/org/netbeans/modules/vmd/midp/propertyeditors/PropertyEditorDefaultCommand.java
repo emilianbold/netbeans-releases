@@ -125,6 +125,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         }
         final DesignComponent[] isEditable = new DesignComponent[1];
         component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+
             public void run() {
                 isEditable[0] = component.get().getParentComponent();
             }
@@ -172,6 +173,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
                     final DesignComponent command = values.get(text);
                     if (component != null && component.get() != null) {
                         component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
+
                             public void run() {
                                 itemCommandSource[0] = MidpDocumentSupport.attachCommandToItem(component.get(), command);
                             }
@@ -193,55 +195,54 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
 
     @Override
     public String[] getTags() {
-        if (isCurrentValueAUserCodeType()) {
-            return null;
-        }
-
         tags.clear();
-        tags.add(NONE_ITEM);
-        values.clear();
-        values.put(NONE_ITEM, null);
+        if (isCurrentValueAUserCodeType()) {
+            tags.add(PropertyEditorUserCode.USER_CODE_TEXT);
+        } else {
+            tags.add(NONE_ITEM);
+            values.clear();
+            values.put(NONE_ITEM, null);
 
-        if (component != null && component.get() != null) {
-            final DesignComponent itemComponent = component.get();
-            itemComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+            if (component != null && component.get() != null) {
+                final DesignComponent itemComponent = component.get();
+                itemComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
 
-                public void run() {
-                    DesignComponent parentComponent = itemComponent.getParentComponent();
-                    if (parentComponent != null) {
-                        List<PropertyValue> formCmdESValues = parentComponent.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
-                        List<DesignComponent> formCommands = new ArrayList<DesignComponent>(formCmdESValues.size());
+                    public void run() {
+                        DesignComponent parentComponent = itemComponent.getParentComponent();
+                        if (parentComponent != null) {
+                            List<PropertyValue> formCmdESValues = parentComponent.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
+                            List<DesignComponent> formCommands = new ArrayList<DesignComponent>(formCmdESValues.size());
 
-                        for (PropertyValue esValue : formCmdESValues) {
-                            DesignComponent command = esValue.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent();
-                            if (command != null) {
-                                PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
-                                if (MidpTypes.getBoolean(ordinaryValue)) {
-                                    formCommands.add(command);
+                            for (PropertyValue esValue : formCmdESValues) {
+                                DesignComponent command = esValue.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent();
+                                if (command != null) {
+                                    PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
+                                    if (MidpTypes.getBoolean(ordinaryValue)) {
+                                        formCommands.add(command);
+                                    }
                                 }
                             }
-                        }
 
-                        Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(itemComponent.getDocument(), CommandsCategoryCD.TYPEID).getComponents();
-                        Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
-                        for (DesignComponent command : components) {
-                            PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
-                            if (MidpTypes.getBoolean(ordinaryValue)) {
-                                commands.add(command);
+                            Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(itemComponent.getDocument(), CommandsCategoryCD.TYPEID).getComponents();
+                            Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
+                            for (DesignComponent command : components) {
+                                PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
+                                if (MidpTypes.getBoolean(ordinaryValue)) {
+                                    commands.add(command);
+                                }
+                            }
+                            commands.removeAll(formCommands);
+
+                            for (DesignComponent command : commands) {
+                                String displayName = getComponentDisplayName(command);
+                                tags.add(displayName);
+                                values.put(displayName, command);
                             }
                         }
-                        commands.removeAll(formCommands);
-
-                        for (DesignComponent command : commands) {
-                            String displayName = getComponentDisplayName(command);
-                            tags.add(displayName);
-                            values.put(displayName, command);
-                        }
                     }
-                }
-            });
+                });
+            }
         }
-
         return tags.toArray(new String[tags.size()]);
     }
 

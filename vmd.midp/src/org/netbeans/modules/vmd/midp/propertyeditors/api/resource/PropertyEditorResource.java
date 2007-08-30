@@ -62,14 +62,13 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     private final TypeID componentTypeID;
     private String noneComponentAsText;
     private String newComponentAsText;
-
     private ResourceEditorPanel rePanel;
     private JRadioButton radioButton;
     private PropertyEditorResourceElement perElement;
 
     private PropertyEditorResource(PropertyEditorResourceElement perElement, String newComponentAsText, String noneComponentAsText, String userCodeLabel) {
         super(userCodeLabel);
-        
+
         if (newComponentAsText == null || noneComponentAsText == null) {
             throw Debug.illegalArgument("Argument can not be null"); //NOI18N
         }
@@ -89,34 +88,23 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         radioButton = new JRadioButton();
         rePanel = new ResourceEditorPanel(perElement, noneComponentAsText, radioButton);
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorResource.class, "LBL_RB_RESOURCE")); // NOI18N
-
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
-    public static final PropertyEditorResource createInstance(PropertyEditorResourceElement perElement,
-            String newComponentAsText, String noneComponentAsText, String userCodeLabel) {
+    public static final PropertyEditorResource createInstance(PropertyEditorResourceElement perElement, String newComponentAsText, String noneComponentAsText, String userCodeLabel) {
         return new PropertyEditorResource(perElement, newComponentAsText, noneComponentAsText, userCodeLabel);
     }
 
     public static final DesignPropertyEditor createFontPropertyEditor() {
-        return new PropertyEditorResource(new FontEditorElement(),
-                NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_NEW"), // NOI18N
-                NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_NONE"), // NOI18N
-                NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_UCLABEL")); //NOI18N
+        return new PropertyEditorResource(new FontEditorElement(), NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_FONTRESOURCEPE_UCLABEL")); //NOI18N
     }
 
     public static final DesignPropertyEditor createTickerPropertyEditor() {
-        return new PropertyEditorResource(new TickerEditorElement(),
-                NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_NEW"), // NOI18N
-                NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_NONE"), //NOI18N
-                NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_UCLABEL")); //NOI18N
+        return new PropertyEditorResource(new TickerEditorElement(), NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_TICKERRESOURCEPE_UCLABEL")); //NOI18N
     }
 
     public static final DesignPropertyEditor createImagePropertyEditor() {
-        return new PropertyEditorResource(new ImageEditorElement(),
-                NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), // NOI18N
-                NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), //NOI18N
-                NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL")); //NOI18N
+        return new PropertyEditorResource(new ImageEditorElement(), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL")); //NOI18N
     }
 
     private Map<String, DesignComponent> getComponentsMap() {
@@ -237,23 +225,23 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
 
     @Override
     public String[] getTags() {
-        if (isCurrentValueAUserCodeType()) {
-            return null;
-        }
-
         Set<String> components = getComponentsMap().keySet();
         List<String> tags = new ArrayList<String>(components.size() + 2);
-        tags.add(noneComponentAsText);
-        tags.addAll(components);
-        tags.add(newComponentAsText);
+        if (isCurrentValueAUserCodeType()) {
+            tags.add(PropertyEditorUserCode.USER_CODE_TEXT);
+        } else {
+            tags.add(noneComponentAsText);
+            tags.addAll(components);
+            tags.add(newComponentAsText);
+        }
         return tags.toArray(new String[tags.size()]);
     }
 
     @Override
     public Boolean canEditAsText() {
-        if (isCurrentValueAUserCodeType()) {
-            return super.canEditAsText();
-        }
+        //if (isCurrentValueAUserCodeType()) {
+        //    return super.canEditAsText();
+        //}
         return null;
     }
 

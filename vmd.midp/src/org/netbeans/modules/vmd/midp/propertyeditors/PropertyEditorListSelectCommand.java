@@ -59,11 +59,9 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
 
     private final List<String> tags = new ArrayList<String>();
     private final Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
-
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private TypeID typeID;
-
     private String noneItem;
     private String defaultItem;
 
@@ -159,41 +157,40 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
 
     @Override
     public String[] getTags() {
-        if (isCurrentValueAUserCodeType()) {
-            return null;
-        }
-
         tags.clear();
-        tags.add(noneItem);
-        values.clear();
-        values.put(noneItem, null);
+        if (isCurrentValueAUserCodeType()) {
+            tags.add(PropertyEditorUserCode.USER_CODE_TEXT);
+        } else {
+            tags.add(noneItem);
+            values.clear();
+            values.put(noneItem, null);
 
-        if (component != null && component.get() != null) {
-            final DesignDocument document = component.get().getDocument();
-            document.getTransactionManager().writeAccess(new Runnable() {
+            if (component != null && component.get() != null) {
+                final DesignDocument document = component.get().getDocument();
+                document.getTransactionManager().writeAccess(new Runnable() {
 
-                public void run() {
-                    Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
-                    Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
-                    for (DesignComponent command : components) {
-                        PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
-                        if (MidpTypes.getBoolean(ordinaryValue)) {
-                            commands.add(command);
+                    public void run() {
+                        Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
+                        Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
+                        for (DesignComponent command : components) {
+                            PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
+                            if (MidpTypes.getBoolean(ordinaryValue)) {
+                                commands.add(command);
+                            }
+                        }
+
+                        tags.add(defaultItem);
+                        values.put(defaultItem, getListSelectCommand(document));
+
+                        for (DesignComponent command : commands) {
+                            String displayName = getComponentDisplayName(command);
+                            tags.add(displayName);
+                            values.put(displayName, command);
                         }
                     }
-
-                    tags.add(defaultItem);
-                    values.put(defaultItem, getListSelectCommand(document));
-
-                    for (DesignComponent command : commands) {
-                        String displayName = getComponentDisplayName(command);
-                        tags.add(displayName);
-                        values.put(displayName, command);
-                    }
-                }
-            });
+                });
+            }
         }
-
         return tags.toArray(new String[tags.size()]);
     }
 
@@ -237,7 +234,6 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
 
         return decodeValue[0];
     }
-
 
     private DesignComponent getCommandEvenSource(final String name) {
         final DesignComponent[] itemCommandEvenSource = new DesignComponent[1];
