@@ -106,7 +106,7 @@ public class PortTypeEditor extends PropertyEditorSupport {
         );
         
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        dlg.setPreferredSize(new Dimension(500, 250));
+        //dlg.setPreferredSize(new Dimension(500, 250));
         return dlg;
     }
 

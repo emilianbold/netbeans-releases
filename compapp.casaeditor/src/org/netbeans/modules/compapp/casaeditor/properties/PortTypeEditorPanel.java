@@ -35,6 +35,10 @@ public class PortTypeEditorPanel extends javax.swing.JPanel {
     }
     
     private void initialize(List<PortType> portTypes, PortType portType, boolean bCanWrite){
+        
+        LocalNameLabel.setEditable(false);
+        NameSpaceLabel.setEditable(false);
+        
         mPortTypes = portTypes;
         mPortType = portType;
 
@@ -107,21 +111,23 @@ public class PortTypeEditorPanel extends javax.swing.JPanel {
         mPortTypesComboBox = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        LocalNameLabel = new javax.swing.JLabel();
-        NameSpaceLabel = new javax.swing.JLabel();
+        LocalNameLabel = new javax.swing.JTextField();
+        NameSpaceLabel = new javax.swing.JTextField();
 
         jLabel1.setLabelFor(mPortTypesComboBox);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "PortTypeEditorPanel.jLabel1.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "PortTypeEditorPanel.jLabel1.text_1")); // NOI18N
 
         jLabel2.setLabelFor(LocalNameLabel);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "PortTypeEditorPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "PortTypeEditorPanel.jLabel2.text")); // NOI18N
 
         jLabel3.setLabelFor(NameSpaceLabel);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "PortTypeEditorPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "PortTypeEditorPanel.jLabel3.text")); // NOI18N
 
         LocalNameLabel.setText(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "PortTypeEditorPanel.LocalNameLabel.text")); // NOI18N
+        LocalNameLabel.setFocusable(false);
 
         NameSpaceLabel.setText(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "PortTypeEditorPanel.NameSpaceLabel.text")); // NOI18N
+        NameSpaceLabel.setFocusable(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -134,10 +140,10 @@ public class PortTypeEditorPanel extends javax.swing.JPanel {
                     .add(jLabel2)
                     .add(jLabel3))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(LocalNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
-                    .add(mPortTypesComboBox, 0, 408, Short.MAX_VALUE)
-                    .add(NameSpaceLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(LocalNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                    .add(NameSpaceLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, mPortTypesComboBox, 0, 422, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -150,12 +156,12 @@ public class PortTypeEditorPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
-                    .add(LocalNameLabel))
+                    .add(LocalNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
-                    .add(NameSpaceLabel))
-                .addContainerGap(94, Short.MAX_VALUE))
+                    .add(NameSpaceLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(82, Short.MAX_VALUE))
         );
 
         jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "ACSN_InterfaceName")); // NOI18N
@@ -166,16 +172,12 @@ public class PortTypeEditorPanel extends javax.swing.JPanel {
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "ASCD_LocalName")); // NOI18N
         jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "ASCN_NameSpace")); // NOI18N
         jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "ASCD_NameSpace")); // NOI18N
-        LocalNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "ASCN_LocalName")); // NOI18N
-        LocalNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "ASCD_LocalNameValue")); // NOI18N
-        NameSpaceLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "ASCN_NameSpaceValue")); // NOI18N
-        NameSpaceLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PortTypeEditorPanel.class, "ASCD_NameSpaceValue")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel LocalNameLabel;
-    private javax.swing.JLabel NameSpaceLabel;
+    private javax.swing.JTextField LocalNameLabel;
+    private javax.swing.JTextField NameSpaceLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
