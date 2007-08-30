@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -33,6 +33,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
@@ -139,28 +140,38 @@ public class LicensesPanel extends WizardPanel {
             final StringBuilder text = new StringBuilder();
             
             boolean everythingAccepted = true;
-            for (Product product: currentProducts) {
-                if (!acceptedProducts.contains(product)) {
+            
+            if(System.getProperty(OVERALL_LICENSE_RESOURCE_PROPERTY)!=null) {
+                if(acceptedProducts.size()==0) {
                     everythingAccepted = false;
                 }
-                
-                text.append("-------------------------------------------------");
-                text.append(StringUtils.CRLF);
-                text.append(product.getDisplayName() + ":");
-                text.append(StringUtils.CRLFCRLF);
-                try {
-                    Text license = product.getLogic().getLicense();
-                    if(license!=null) {
-                        text.append(license.getText());
+                final String licenseValue =
+                        System.getProperty(OVERALL_LICENSE_RESOURCE_PROPERTY);
+                text.append(SystemUtils.resolveString(
+                        "$R{" + licenseValue + "}"));
+            } else {
+                for (Product product: currentProducts) {
+                    if (!acceptedProducts.contains(product)) {
+                        everythingAccepted = false;
                     }
-                } catch (InitializationException e) {
-                    ErrorManager.notifyError(
-                            component.getProperty(ERROR_CANNOT_GET_LOGIC_PROPERTY),
-                            e);
+                    
+                    text.append("-------------------------------------------------");
+                    text.append(StringUtils.CRLF);
+                    text.append(product.getDisplayName() + ":");
+                    text.append(StringUtils.CRLFCRLF);
+                    try {
+                        Text license = product.getLogic().getLicense();
+                        if(license!=null) {
+                            text.append(license.getText());
+                        }
+                    } catch (InitializationException e) {
+                        ErrorManager.notifyError(
+                                component.getProperty(ERROR_CANNOT_GET_LOGIC_PROPERTY),
+                                e);
+                    }
+                    text.append(StringUtils.CRLFCRLF);
                 }
-                text.append(StringUtils.CRLFCRLF);
             }
-            
             licensePane.setText(text);
             licensePane.setCaretPosition(0);
             
@@ -230,8 +241,10 @@ public class LicensesPanel extends WizardPanel {
     // Constants
     public static final String ACCEPT_CHECKBOX_TEXT_PROPERTY =
             "accept.checkbox.text"; // NOI18N
-    public static final String ERROR_CANNOT_GET_LOGIC_PROPERTY = 
+    public static final String ERROR_CANNOT_GET_LOGIC_PROPERTY =
             "error.cannot.get.logic";//NOI18N
+    public static final String OVERALL_LICENSE_RESOURCE_PROPERTY =
+            "nbi.overall.license.resource";//NOI18N
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(LicensesPanel.class,
