@@ -536,7 +536,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                     CsmType mpt = methodParms[j].getType();
                     CsmType t = (CsmType)parmTypeList.get(j);
                     if (t != null) {
-                        if (!equalTypes(t, mpt)) {
+                        if (!methodParms[j].isVarArgs() && !equalTypes(t, mpt)) {
                             bestMatch = false;
                             if (!isAssignable(t, mpt)) {
                                 accept = false;
