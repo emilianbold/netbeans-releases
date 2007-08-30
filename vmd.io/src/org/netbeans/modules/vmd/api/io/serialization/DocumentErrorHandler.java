@@ -28,37 +28,46 @@ public final class DocumentErrorHandler {
     
     private List<String> errors;
     private List<String> warnings;
-
+   
     public DocumentErrorHandler() {
         errors = new ArrayList<String>();
         warnings = new ArrayList<String>();
     }
-    
+     /**
+     * This method adds critical issues to the deserializing document rapport and
+     * stops loading of document. All reported issues are shown in report
+     * dialog window right after loading of document is stooped.  
+     * @param description of issue, non null String 
+     */ 
     public DocumentErrorHandler addError(String error) {
         if (error == null)
             throw new IllegalArgumentException();
         errors.add(error);
         return this;
     }
-    
+    /**
+     * This method adds NON critical issues to the deserializing document rapport.
+     * All reported issues are shown in report dialog window when document is loaded.
+     * @param description of issue, non null String 
+     */ 
     public DocumentErrorHandler addWaring(String warning) {
          if (warning == null)
             throw new IllegalArgumentException();
         warnings.add(warning);
         return this;
     }
-    
+    /**
+     * Returns reported critical issues;
+     * @return critical issues
+     */ 
     public List<String> getErrors() {
         return Collections.unmodifiableList(errors);
     }
-    
+    /**
+     * Returns reported non criticla issues. 
+     */
     public List<String> getWarnings() {
         return Collections.unmodifiableList(warnings);
-    }
-    
-    void resetErrors() {
-        errors.clear();
-        warnings.clear();
     }
     
 }
