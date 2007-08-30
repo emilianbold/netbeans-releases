@@ -1,4 +1,4 @@
-/*
+b/*
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
@@ -84,7 +84,7 @@ function write_table_header() {
     document.write('<td class="no_border no_padding" colspan="6">');
     document.write('<table><tr>');
     document.write('	<td class="no_border no_padding" style="width: 50%;"><img src="img/1px-gray.png" style="width: 100%; height: 1px"/></td>');
-    document.write('	<td class="no_border title">NetBeans 6.0 {build-number}</td>');
+    document.write('	<td class="no_border title">NetBeans 6.0 {build.number}</td>');
     document.write('	<td class="no_border no_padding" style="width: 50%;"><img src="img/1px-gray.png" style="width: 100%; height: 1px"/></td>');
     document.write('</tr></table>');
     document.write('</td>');
