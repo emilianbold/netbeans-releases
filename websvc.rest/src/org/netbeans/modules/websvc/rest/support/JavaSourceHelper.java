@@ -440,34 +440,6 @@ public class JavaSourceHelper {
         copy.rewrite(classTree, modifiedTree);
     }
 
-    public static void addConstructor(WorkingCopy copy, String[] parameters, Object[] paramTypes) {
-        ClassTree classTree = getTopLevelClassTree(copy);
-        String bodyText = "{" + getThisFieldEqualParamStatements(parameters) + "}"; //NOI18N
-        String comment = "Create an instance of " + classTree.getSimpleName().toString();
-        ClassTree modifiedTree = addConstructor(copy, classTree, Constants.PUBLIC, parameters, paramTypes, bodyText, comment);
-        copy.rewrite(classTree, modifiedTree);
-    }
-
-    public static String getThisFieldEqualParamStatements(String[] params) {
-        StringBuilder sb = new StringBuilder();
-        String template = "this.$PARAM$ = $PARAM$;\n"; //NOI18N
-        for (int i = 0; i < params.length; i++) {
-            sb.append(template.replace("$PARAM$", params[i])); //NOI18N
-        }
-        return sb.toString();
-    }
-
-    public static String getParamEqualThisFieldStatements(String[] params, Class[] paramTypes) {
-        StringBuilder sb = new StringBuilder();
-        String template = "if ($PARAM$ == null) { $PARAM$ = this.$PARAM$; }\n"; //NOI18N
-        for (int i = 0; i < params.length; i++) {
-            if (!paramTypes[i].isPrimitive()) {
-                sb.append(template.replace("$PARAM$", params[i])); //NOI18N
-            }
-        }
-        return sb.toString();
-    }
-
     public static ClassTree addConstructor(WorkingCopy copy, ClassTree tree, Modifier[] modifiers, String[] parameters, Object[] paramTypes, String bodyText, String comment) {
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifiersTree = createModifiersTree(copy, modifiers, null, null);
@@ -532,7 +504,7 @@ public class JavaSourceHelper {
                         paramModTree = createModifiersTree(copy, new Modifier[]{}, paramAnnotations, paramAnnotationAttrs);
                     }
                 }
-                
+
                 paramTrees.add(maker.Variable(paramModTree, parameters[i], createTypeTree(copy, paramTypes[i]), null));
             }
         }
@@ -798,9 +770,10 @@ public class JavaSourceHelper {
         }
         return null;
     }
-    static List<? extends AnnotationMirror> classAnons = null;
 
-    public static synchronized List<? extends AnnotationMirror> getClassAnnotations(JavaSource source) {
+    public static List<? extends AnnotationMirror> getClassAnnotations(JavaSource source) {
+        final List<? extends AnnotationMirror>[] classAnons = new List[1];
+
         try {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
 
@@ -812,17 +785,18 @@ public class JavaSourceHelper {
                         return;
                     }
 
-                    classAnons = controller.getElements().getAllAnnotationMirrors(classElement);
+                    classAnons[0] = controller.getElements().getAllAnnotationMirrors(classElement);
                 }
             }, true);
         } catch (IOException ex) {
         }
 
-        return classAnons;
+        return classAnons[0];
     }
-    static List<? extends Tree> allTree = null;
 
-    public static synchronized List<? extends Tree> getAllTree(JavaSource source) {
+    public static List<? extends Tree> getAllTree(JavaSource source) {
+        final List<? extends Tree>[] allTree = new List[1];
+
         try {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
 
@@ -830,19 +804,19 @@ public class JavaSourceHelper {
                     String className = controller.getFileObject().getName();
                     CompilationUnitTree cu = controller.getCompilationUnit();
                     if (cu != null) {
-                        allTree = cu.getTypeDecls();
+                        allTree[0] = cu.getTypeDecls();
                     }
                 }
             }, true);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        return allTree;
+        return allTree[0];
     }
-    static List<MethodTree> allMethods = new ArrayList<MethodTree>();
 
-    public static synchronized List<MethodTree> getAllMethods(JavaSource source) {
-        allMethods.clear();
+    public static List<MethodTree> getAllMethods(JavaSource source) {
+        final List<MethodTree> allMethods = new ArrayList<MethodTree>();
+
         try {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
 
@@ -858,6 +832,34 @@ public class JavaSourceHelper {
         } catch (IOException ex) {
         }
         return allMethods;
+    }
+
+    public static Collection<String> getAnnotationValuesForAllMethods(JavaSource source, 
+            final String annotation) {
+        final Collection<String> results = new HashSet<String>();
+        try {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
+
+                public void run(CompilationController controller) throws IOException {
+                    TypeElement classElement = getTopLevelClassElement(controller);
+                    List<ExecutableElement> methods = ElementFilter.methodsIn(classElement.getEnclosedElements());
+
+                    for (ExecutableElement method : methods) {
+                        for (AnnotationMirror mirror : method.getAnnotationMirrors()) {
+                            if (((TypeElement) mirror.getAnnotationType().asElement()).
+                                    getQualifiedName().contentEquals(annotation)) {
+                                for (AnnotationValue value : mirror.getElementValues().values()) {
+                                    results.add(value.getValue().toString());
+                                }
+                            }
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+        }
+        
+        return results;
     }
 
     public static long[] getPosition(JavaSource source, final String methodName) {

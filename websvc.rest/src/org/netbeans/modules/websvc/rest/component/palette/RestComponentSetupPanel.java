@@ -27,6 +27,10 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author  nam
+ * 
+ * TODO: Need to check to make sure the UriTemplate value is unique after
+ * the user modifies it.
+ * 
  */
 public class RestComponentSetupPanel extends javax.swing.JPanel {
 
