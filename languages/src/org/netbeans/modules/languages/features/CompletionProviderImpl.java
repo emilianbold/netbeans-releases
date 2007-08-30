@@ -191,11 +191,11 @@ public class CompletionProviderImpl implements CompletionProvider {
                             resultSet.addItem (completionItem);
                     }
                 }
-                resultSet.finish ();
             } finally {
                 if (doc instanceof NbEditorDocument)
                     ((NbEditorDocument) doc).readUnlock ();
             }
+            resultSet.finish ();
         }
 
         public void cancel () {
@@ -205,10 +205,9 @@ public class CompletionProviderImpl implements CompletionProvider {
             doc = component.getDocument ();
             fileObject = NbEditorUtilities.getFileObject (doc);
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
-            boolean locked = false;
+            boolean finishSet = true;
             if (doc instanceof NbEditorDocument) {
                 ((NbEditorDocument) doc).readLock ();
-                locked = true;
             }
             try {
                 int offset = component.getCaret ().getDot ();
@@ -227,17 +226,16 @@ public class CompletionProviderImpl implements CompletionProvider {
                 if (!tokenSequence.isEmpty()) {
                     compute (tokenSequence, offset, resultSet, doc, language);
                 }
-                addParserTags (resultSet, language);
+                finishSet = addParserTags (resultSet, language);
             } catch (LanguageDefinitionNotFoundException ex) {
+                // do nothing
+            } finally {
                 if (doc instanceof NbEditorDocument) {
                     ((NbEditorDocument) doc).readUnlock ();
-                    locked = false;
                 }
+            }
+            if (finishSet) {
                 resultSet.finish ();
-            } finally {
-                if (doc instanceof NbEditorDocument && locked) {
-                    ((NbEditorDocument) doc).readUnlock ();
-                }
             }
         }
     
@@ -299,7 +297,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             }
         }
 
-        private void addParserTags (final Result resultSet, final Language language) {
+        private boolean addParserTags (final Result resultSet, final Language language) {
             final ParserManager parserManager = ParserManager.get (doc);
             if (parserManager.getState () == State.PARSING) {
                 //S ystem.out.println("CodeCompletion: parsing...");
@@ -312,13 +310,14 @@ public class CompletionProviderImpl implements CompletionProvider {
                         resultSet.finish ();
                     }
                 });
+                return false;
             } else {
                 try {
                     addParserTags (ParserManagerImpl.get (doc).getAST (), resultSet, language);
                 } catch (ParseException ex) {
                     ErrorManager.getDefault ().notify (ex);
                 }
-                resultSet.finish ();
+                return true;
             }
         }
         
