@@ -94,23 +94,8 @@ public class RubyFileLocator implements FileLocator {
             }
         }
 
-        // Manual search
-        for (SourceGroup group : rubyGroups) {
-            FileObject root = group.getRootFolder();
-
-            // First see if this path is relative to the root
-            try {
-                File f = new File(FileUtil.toFile(root), fileName);
-                if (f.exists()) {
-                    f = f.getCanonicalFile();
-
-                    return FileUtil.toFileObject(f);
-                }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-
-            // Search recursively for the given file below the path 
+        // Last try - manual recursive search
+        for (FileObject root : roots) {
             FileObject fo = findFile(root, fileName);
             if (fo != null) {
                 return fo;
@@ -120,13 +105,14 @@ public class RubyFileLocator implements FileLocator {
         return null;
     }
 
-    private FileObject findFile(FileObject fo, String name) {
-        if (name.equals(fo.getNameExt())) {
+    /** Searches recursively for the given file below the path. */
+    private FileObject findFile(FileObject fo, String fileName) {
+        if (fileName.equals(fo.getNameExt())) {
             return fo;
         }
 
         for (FileObject child : fo.getChildren()) {
-            FileObject found = findFile(child, name);
+            FileObject found = findFile(child, fileName);
             if (found != null) {
                 return found;
             }
