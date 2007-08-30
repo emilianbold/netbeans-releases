@@ -85,6 +85,7 @@ import com.tomsawyer.graph.TSGraphObject;
 import com.tomsawyer.graph.TSNode;
 //import com.tomsawyer.util.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
+import org.openide.util.NbPreferences;
 
 /**
  * The MessageEdgeDrawEngine provides drawing support for an TSGraphObject.
@@ -108,6 +109,7 @@ public class MessageEdgeDrawEngine extends ETEdgeDrawEngine implements IMessageE
 
    private boolean m_Show = true;
 
+   
    private int m_ShowMessageType = IShowMessageType.SMT_UNKNOWN;
 
    private LifelinePiece m_PieceSelf = null;
@@ -124,6 +126,9 @@ public class MessageEdgeDrawEngine extends ETEdgeDrawEngine implements IMessageE
 
    public MessageEdgeDrawEngine()
    {
+       //kris richards - issue 113794 - getting default value from pref
+       m_ShowMessageType = 
+               NbPreferences.forModule(MessageEdgeDrawEngine.class).getInt("UML_SQD_DEFAULT_MSG", IShowMessageType.SMT_UNKNOWN);
    }
 
    public String getElementType()
