@@ -27,3 +27,21 @@ dirname=`dirname "$0"`
 
 "$dirname"/add_tc.sh "$2/NetBeans 6.0.app" "/Applications/NetBeans/apache-tomcat-6.0.13"
 
+jdk_home_1_5=/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home
+cd "$2/NetBeans 6.0.app"
+cd Contents/Resources/NetBeans*/etc
+if [ -f netbeans.conf ]
+then
+  echo netbeans.conf found: `pwd`/netbeans.conf
+  if [ -d $jdk_home_1_5 ]
+  then
+    echo 1.5 JDK home exists: $jdk_home_1_5
+    cp netbeans.conf netbeans.conf_orig_jdk_home
+    cat netbeans.conf_orig_jdk_home  | sed -e 's|.*netbeans_jdkhome.*|netbeans_jdkhome='$jdk_home_1_5'|' > netbeans.conf
+  else
+    echo No 1.5 JDK home: $jdk_home_1_5
+  fi
+else
+  echo No netbeans.conf in: `pwd`
+fi
+
