@@ -52,7 +52,7 @@ public class JbiBindingInfo implements Serializable {
     /**
      * DOCUMENT ME!
      */
-    private String[] ns;
+    private String ns;
 
     /**
      * DOCUMENT ME!
@@ -64,7 +64,7 @@ public class JbiBindingInfo implements Serializable {
      * @param ns 
      */
     public JbiBindingInfo(String bcName, String bindingType, URL icon, 
-            String description, String[] ns) {
+            String description, String ns) {
         this.bcName = bcName;
         this.bindingType = bindingType;
         this.icon = icon;
@@ -114,8 +114,8 @@ public class JbiBindingInfo implements Serializable {
      *
      * @return the binding component namespaces
      */
-    // FIXME: shouldn't each binding type have only one namespace???
+    // FIXME
     public String[] getNameSpaces() {
-        return this.ns;
+        return new String[] { this.ns };
     }
 }

@@ -194,7 +194,7 @@ public class JbiDefaultComponentInfo {
                     }
                 }
                                 
-                List<String> bindingTypes = new ArrayList<String>();
+//                List<String> bindingTypes = new ArrayList<String>();
                 if (JBIComponentStatus.BINDING_TYPE.equals(type) && compDO instanceof DataFolder) {
                     for (DataObject bindingTypeDO : ((DataFolder)compDO).getChildren()) { 
                         FileObject bindingTypeFO = bindingTypeDO.getPrimaryFile(); // e.x., SeeBeyondJbiComponents/sun-file-binding/file.binding-1.0
@@ -204,25 +204,26 @@ public class JbiDefaultComponentInfo {
                         if (idx > 0) {
                             bindingType = bindingType.substring(0,idx).toLowerCase();
                         }
-                        bindingTypes.add(bindingType); // bid: file, http, soap
+//                        bindingTypes.add(bindingType); // bid: file, http, soap
                         
-                        String attr = (String) bindingTypeFO.getAttribute(COMP_NAMESPACE);
-                        if (attr != null) {
-                            nsList.add(attr);
+                        String ns = (String) bindingTypeFO.getAttribute(COMP_NAMESPACE);
+                        if (ns != null) {
+                            nsList.add(ns);
+                            addBindingInfo(id, bindingType, desc, ns);
                         }
                     }
                 }
-                String[] ns = (String[]) nsList.toArray(new String[0]);
+                String[] nss = nsList.toArray(new String[0]);
                 
                 // check for duplicates first..
                 if (id.length() > 0 && !singleton.componentMap.containsKey(id)) {
                     JBIComponentStatus jcs = 
-                            new JBIComponentStatus(id, id, desc, type, state, ns);
+                            new JBIComponentStatus(id, id, desc, type, state, nss);
                     singleton.componentList.add(jcs);
                     singleton.componentMap.put(id, jcs);
-                    for (String bindingType : bindingTypes) {
-                        addBindingInfo(id, bindingType, desc, ns);
-                    }
+//                    for (String bindingType : bindingTypes) {
+//                        addBindingInfo(id, bindingType, desc, ns);
+//                    }
                 }
             }
         }
@@ -232,9 +233,9 @@ public class JbiDefaultComponentInfo {
      * @param id    binding component identifier, e.x., "sun-http-binding"
      * @param bindingType   binding type, e.x., "http", or "soap"
      * @param desc  binding component description 
-     * @param ns    namespaces for the binding component
+     * @param ns    namespace for the binding type
      */
-    private static void addBindingInfo(String id, String bindingType, String desc, String[] ns) {
+    private static void addBindingInfo(String id, String bindingType, String desc, String ns) {
         URL icon = null;
         
         for (String name : singleton.bcIconMap.keySet()) {
