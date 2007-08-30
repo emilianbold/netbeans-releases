@@ -115,6 +115,7 @@
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.includeview</friend>
                 <friend>org.netbeans.modules.cnd.model.services</friend>
+                <friend>org.netbeans.modules.cnd.navigation</friend>
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <package>org.netbeans.modules.cnd.modelutil</package>
