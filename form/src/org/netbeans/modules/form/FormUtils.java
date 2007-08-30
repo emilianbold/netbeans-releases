@@ -208,7 +208,8 @@ public class FormUtils
                 "icon", PROP_PREFERRED,
                 "defaultButton", PROP_HIDDEN },
         { "javax.swing.JCheckBox", CLASS_EXACTLY,
-                "icon", PROP_NORMAL },
+                "icon", PROP_NORMAL,
+                "model", PROP_PREFERRED },
         { "javax.swing.JRadioButton", CLASS_EXACTLY,
                 "icon", PROP_NORMAL },
         { "javax.swing.JMenuItem", CLASS_AND_SUBCLASSES,
@@ -380,7 +381,10 @@ public class FormUtils
             "contentType", "text",
             "editorKit", "text" },
         { "javax.swing.JTable",
-            "autoCreateColumnsFromModel", "model" }
+            "autoCreateColumnsFromModel", "model" },
+        { "javax.swing.JCheckBox",
+            "model", "mnemonic",
+            "model", "text" }
     };
 
     /** Table enumerating properties that can hold HTML text. */
