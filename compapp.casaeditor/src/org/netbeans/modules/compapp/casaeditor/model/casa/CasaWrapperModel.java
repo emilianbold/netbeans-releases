@@ -2502,6 +2502,12 @@ public class CasaWrapperModel extends CasaModelImpl {
         
         // Can't edit internface name when there is visible connection
         if (JBIAttributes.INTERFACE_NAME.getName().equals(propertyName)) {
+            /* Issue: 113870 : The consumes and provides of wsdl end points shouldn't be editable */
+            CasaPort casaPort = getCasaPort(endpointRef);
+            if(casaPort != null) {
+                return false;
+            }
+            /*
             if (getConnections(endpointRef, false).size() > 0) {
                 return false;
             } else {
@@ -2512,6 +2518,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                     return false;
                 }
             }
+            */
         }
         
         return true;
