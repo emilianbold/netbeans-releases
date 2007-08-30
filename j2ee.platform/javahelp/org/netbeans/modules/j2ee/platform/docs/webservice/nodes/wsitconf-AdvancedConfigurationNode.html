@@ -29,9 +29,12 @@
                 <li><b>RM Ack Request Interval (ms).</b> The suggested minimum time 
                 that the sender (RMSource) should allow to elapse between Acknowledgement
                 requests to the receiver (RMDestination).
-                <li><b>Secure Session Token Lifetime (ms).</b> 
-                <li><b>Renew Expired Secure Session Tokens.</b> 
-                <li><b>Require Cancel of Secure Session.</b> 
+                <li><b>Secure Session Token Lifetime (ms).</b> The life span of
+                the security context. The security context expires when the value
+                set here expires. 
+                <li><b>Renew Expired Secure Session Tokens.</b> Specifies when
+                the expired security context will be renewed. If not set, the
+                expired security context will automatically be renewed.
             </ul>
         </p>
         
