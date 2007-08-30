@@ -35,6 +35,7 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -544,10 +545,25 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                     rewrite(variable, invkgetter);
                 } else {
                     ExpressionTree setter = createMemberSelection(variable, refactoring.getSetterName());
+                    
+                    // resolve types
+                    Trees trees = workingCopy.getTrees();
+                    ExpressionTree expTree = node.getExpression();
+                    ExpressionTree newExpTree;
+                    TreePath varPath = trees.getPath(workingCopy.getCompilationUnit(), variable);
+                    TreePath expPath = trees.getPath(workingCopy.getCompilationUnit(), expTree);
+                    TypeMirror varType = trees.getTypeMirror(varPath);
+                    TypeMirror expType = trees.getTypeMirror(expPath);
+                    if (workingCopy.getTypes().isSubtype(expType, varType)) {
+                        newExpTree = expTree;
+                    } else {
+                        newExpTree = make.TypeCast(make.Type(varType), expTree);
+                    }
+                    
                     MethodInvocationTree invksetter = make.MethodInvocation(
                             Collections.<ExpressionTree>emptyList(),
                             setter,
-                            Collections.singletonList(node.getExpression()));
+                            Collections.singletonList(newExpTree));
                     rewrite(node, invksetter);
                 }
             }
@@ -585,10 +601,27 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                     Tree.Kind operator = Tree.Kind.valueOf(s);
 
                     ExpressionTree invkgetter = createGetterInvokation(variable);
+                    
+                    // resolve types
+                    Trees trees = workingCopy.getTrees();
+                    ExpressionTree expTree = node.getExpression();
+                    ExpressionTree newExpTree;
+                    TreePath varPath = trees.getPath(workingCopy.getCompilationUnit(), variable);
+                    TreePath expPath = trees.getPath(workingCopy.getCompilationUnit(), expTree);
+                    TypeMirror varType = trees.getTypeMirror(varPath);
+                    // getter need not exist yet, use variable to resolve type of binary expression
+                    ExpressionTree expTreeFake = make.Binary(operator, variable, expTree);
+                    TypeMirror expType = workingCopy.getTreeUtilities().attributeTree(expTreeFake, trees.getScope(expPath));
+                    
+                    newExpTree = make.Binary(operator, invkgetter, expTree);
+                    if (!workingCopy.getTypes().isSubtype(expType, varType)) {
+                        newExpTree = make.TypeCast(make.Type(varType), make.Parenthesized(newExpTree));
+                    }
+                    
                     MethodInvocationTree invksetter = make.MethodInvocation(
                             Collections.<ExpressionTree>emptyList(),
                             setter,
-                            Collections.singletonList(make.Binary(operator, invkgetter, node.getExpression())));
+                            Collections.singletonList(newExpTree));
                     rewrite(node, invksetter);
                 }
             }
@@ -621,14 +654,26 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                         rewrite(t, invkgetter);
                     } else {
                         ExpressionTree setter = createMemberSelection(node.getExpression(), refactoring.getSetterName());
-
+                    
                         Tree.Kind operator = kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.PREFIX_INCREMENT
                                 ? Tree.Kind.PLUS
                                 : Tree.Kind.MINUS;
+                        
+                        // resolve types
+                        Trees trees = workingCopy.getTrees();
+                        ExpressionTree expTree = node.getExpression();
+                        TreePath varPath = trees.getPath(workingCopy.getCompilationUnit(), expTree);
+                        TypeMirror varType = trees.getTypeMirror(varPath);
+                        TypeMirror expType = workingCopy.getTypes().getPrimitiveType(TypeKind.INT);
+                        ExpressionTree newExpTree = make.Binary(operator, invkgetter, make.Literal(1));
+                        if (!workingCopy.getTypes().isSubtype(expType, varType)) {
+                            newExpTree = make.TypeCast(make.Type(varType), make.Parenthesized(newExpTree));
+                        }
+
                         MethodInvocationTree invksetter = make.MethodInvocation(
                                 Collections.<ExpressionTree>emptyList(),
                                 setter,
-                                Collections.singletonList(make.Binary(operator, invkgetter, make.Literal(1))));
+                                Collections.singletonList(newExpTree));
                         rewrite(node, invksetter);
                     }
                 }
