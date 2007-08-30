@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Edit">
+            <file name="org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-c++">
+                <folder name="Popup">
+                    <folder name="goto">
+                        <file name="org-netbeans-modules-cnd-navigation-actions-CppSwitchAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-actions-CppSwitchAction.instance"/>
+                            <attr name="position" intvalue="50"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-c">
+                <folder name="Popup">
+                    <folder name="goto">
+                        <file name="org-netbeans-modules-cnd-navigation-actions-CppSwitchAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-actions-CppSwitchAction.instance"/>
+                            <attr name="position" intvalue="50"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Shortcuts">
+        <file name="DS-A.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-actions-CppSwitchAction.instance"/>
+        </file>
+    </folder>
+    <folder name="Menu">
+        <folder name="GoTo">
+            <file name="org-netbeans-modules-cnd-navigation-actions-CppSwitchAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-actions-CppSwitchAction.instance"/>
+                <attr name="position" intvalue="550"/>
+            </file>
+        </folder>
+        <folder name="Window"/>
+    </folder>
+    
+</filesystem>
