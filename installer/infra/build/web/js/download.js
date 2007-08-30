@@ -306,23 +306,23 @@ function download(option) {
     var basename  = "";
 	
 
-    if ((platform == "macosx-x86") || (platform != "macosx-ppc")) {
-	basename  = "netbeans-nightly-{build.number}-";
-    } else {
+    //if ((platform == "macosx-x86") || (platform != "macosx-ppc")) {
+    //  basename  = "netbeans-trunk-nightly-{build.number}-";
+    //} else {
 	basename  = "netbeans-6.0-nightly-{build.number}-";
-    }
+    //}
 
     var file_name = "start.html?" + basename + option;
 
-    if ((platform != "macosx-x86") && (platform != "macosx-ppc")) {
+    //if ((platform != "macosx-x86") && (platform != "macosx-ppc")) {
     	file_name += "-" + platform;
-    }
+    //}
 
     if (platform == "windows") {
         file_name += ".exe";
     } else if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
-        //file_name += ".tgz";
-	file_name += ".dmg";
+        file_name += ".tgz";
+	//file_name += ".dmg";
     } else {
         file_name += ".sh";
     }
