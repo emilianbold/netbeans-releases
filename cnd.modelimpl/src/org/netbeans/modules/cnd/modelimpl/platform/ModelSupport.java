@@ -606,7 +606,9 @@ public class ModelSupport implements PropertyChangeListener {
 	
         // TODO: need to change implementation when ataObject will contain correct cookie
         private void editStart(DataObject curObj) {
-	    
+	    if (!curObj.isValid()) {//IZ#114182
+                return;
+            }
 	    NativeFileItemSet set = (NativeFileItemSet) curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
 	    
 	    if( set != null && ! set.isEmpty() ) {
