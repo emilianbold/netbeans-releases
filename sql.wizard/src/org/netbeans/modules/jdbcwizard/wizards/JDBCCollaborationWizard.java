@@ -178,7 +178,7 @@ public class JDBCCollaborationWizard extends JDBCWizard {
             try {
                 return new String[] {
                         // TODO - need make wizard steps text match actual panel being viewed
-                        "Choose File Type", // TODO - use bundle property
+                        NbBundle.getMessage(JDBCCollaborationWizard.class, "STEP_tblWizard_FileType"), 
                         NbBundle.getMessage(JDBCCollaborationWizard.class, "STEP_tblwizard_name"),
                         NbBundle.getMessage(JDBCCollaborationWizard.class, "STEP_tblwizard_select"),
                         NbBundle.getMessage(JDBCCollaborationWizard.class, "STEP_tblwizard_sources"),
