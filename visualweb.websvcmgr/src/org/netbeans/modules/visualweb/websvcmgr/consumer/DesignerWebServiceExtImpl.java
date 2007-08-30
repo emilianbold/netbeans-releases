@@ -196,6 +196,12 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         for(WsdlPort port: ports) {
             // There will be one client wrapper class per web service port. All the classes (client wrapper class,
             // data provider classes) for the port will live in a sub-package with the port display name (in lower cases)
+            
+            // Skip non-SOAP ports
+            if (port.getAddress() == null) {
+                continue;
+            }
+            
             Map<String, String> methodToDataProviderClassMap = new HashMap<String, String>();
             String className = port.getName() + "Client";
             String serviceClassName = wsMetadataDesc.getPackageName() + "." + wsMetadataDesc.getName();
