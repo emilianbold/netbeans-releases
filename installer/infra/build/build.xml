@@ -1100,8 +1100,9 @@ jarsigner.storepass=${jarsigner.storepass}
         <export-registry 
             root="${output.dir}/registry-temp" 
             destination="${output.dir}/registry" 
-            codebase="http://bits.netbeans.org/download/6.0/nightly/${build.number}/installers/registry"/>
+            codebase="http://bits.netbeans.org/download/6.0/nightly/${build.number}/registry"/>
 
+        <property name="welcome.type" value="NWP.welcome.page.type"/>
 
         <!-- JavaSE bundles -->        
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1109,36 +1110,42 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javase-windows.exe">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javase-linux.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javase-solaris-x86.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javase-solaris-sparc.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javase-macosx-x86.zip">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-javase-macosx-ppc.zip">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
         </create-bundle>
 
 
@@ -1151,6 +1158,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
@@ -1160,6 +1168,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
@@ -1169,6 +1178,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
@@ -1178,6 +1188,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
@@ -1187,6 +1198,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
@@ -1196,6 +1208,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
 
         <!-- JavaME bundles (only for windows and linux) -->
@@ -1205,6 +1218,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="javame"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
@@ -1212,6 +1226,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="javame"/>
         </create-bundle>
 
         <!-- Ruby bundles -->
@@ -1220,36 +1235,42 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-windows.exe">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-linux.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-solaris-x86.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-solaris-sparc.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-macosx-x86.zip">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-ruby-macosx-ppc.zip">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="ruby"/>
         </create-bundle>
 
 
@@ -1259,36 +1280,42 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cpp-windows.exe">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cpp-linux.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cpp-solaris-x86.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cpp-solaris-sparc.sh">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cpp-macosx-x86.zip">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
                        target="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-cpp-macosx-ppc.zip">
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-cnd" version="6.0.0.0.${build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="cnd"/>
         </create-bundle>
 
         <!-- Full bundles -->

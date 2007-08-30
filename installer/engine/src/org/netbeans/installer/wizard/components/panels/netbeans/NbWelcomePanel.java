@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -64,7 +64,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     private Registry defaultRegistry;
     
     private boolean registriesFiltered;
-    
+    private static BundleType type;
     public NbWelcomePanel() {
         setProperty(TITLE_PROPERTY,
                 DEFAULT_TITLE);
@@ -73,8 +73,14 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         
         setProperty(TEXT_PANE_CONTENT_TYPE_PROPERTY,
                 DEFAULT_TEXT_PANE_CONTENT_TYPE);
-        setProperty(WELCOME_TEXT_HEADER_PROPERTY,
-                DEFAULT_WELCOME_TEXT_HEADER);
+        type = BundleType.getType(
+                System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
+        
+        String header = DEFAULT_WELCOME_TEXT_HEADER +
+                ResourceUtils.getString(NbWelcomePanel.class,
+                WELCOME_TEXT_HEADER_APPENDING_PROPERTY + "." + type );
+        
+        setProperty(WELCOME_TEXT_HEADER_PROPERTY, header);
         setProperty(WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY,
                 DEFAULT_WELCOME_TEXT_GROUP_TEMPLATE);
         setProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY,
@@ -172,7 +178,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public boolean canExecuteBackward() {
         return canExecute();
     }
-
+    
     @Override
     public void initialize() {
         super.initialize();
@@ -182,10 +188,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         }
         
         // we need to apply additional filters to the components tree - filter out
-        // the components which are not present in the bundled registry; if the 
-        // bundled registry contains only one element - registry root, this means 
+        // the components which are not present in the bundled registry; if the
+        // bundled registry contains only one element - registry root, this means
         // that we're running without any bundle, hence not filtering is required;
-        // additionally, we should not be suggesting to install tomcat by default, 
+        // additionally, we should not be suggesting to install tomcat by default,
         // thus we should correct it's initial status
         if (bundledRegistry.getNodes().size() > 1) {
             for (Product product: defaultRegistry.getProducts()) {
@@ -193,11 +199,11 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         product.getUid(),
                         product.getVersion()) == null) {
                     product.setVisible(false);
-
+                    
                     if (product.getStatus() == Status.TO_BE_INSTALLED) {
                         product.setStatus(Status.NOT_INSTALLED);
                     }
-                } else if (product.getUid().equals("tomcat") && 
+                } else if (product.getUid().equals("tomcat") &&
                         (product.getStatus() == Status.TO_BE_INSTALLED)) {
                     product.setStatus(Status.NOT_INSTALLED);
                 }
@@ -287,14 +293,19 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     final Product product = (Product) node;
                     
                     if (product.getStatus() == Status.INSTALLED) {
-                        welcomeText.append(StringUtils.format(
-                                panel.getProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY),
-                                node.getDisplayName()));
+                        if(type.equals(BundleType.JAVAEE) ||
+                                type.equals(BundleType.CUSTOMIZE)) {
+                            welcomeText.append(StringUtils.format(
+                                    panel.getProperty(WELCOME_TEXT_PRODUCT_INSTALLED_TEMPLATE_PROPERTY),
+                                    node.getDisplayName()));
+                        }
                     } else if (product.getStatus() == Status.TO_BE_INSTALLED) {
-                        welcomeText.append(StringUtils.format(
-                                panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
-                                node.getDisplayName()));
-                        
+                        if(type.equals(BundleType.JAVAEE) ||
+                                type.equals(BundleType.CUSTOMIZE)) {
+                            welcomeText.append(StringUtils.format(
+                                    panel.getProperty(WELCOME_TEXT_PRODUCT_NOT_INSTALLED_TEMPLATE_PROPERTY),
+                                    node.getDisplayName()));
+                        }
                         everythingIsInstalled = false;
                     } else if ((product.getStatus() == Status.NOT_INSTALLED)) {
                         everythingIsInstalled = false;
@@ -309,9 +320,12 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                             new ProductFilter(Status.INSTALLED)));
                     
                     if (node.hasChildren(filter)) {
-                        welcomeText.append(StringUtils.format(
-                                panel.getProperty(WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY),
-                                node.getDisplayName()));
+                        if(type.equals(BundleType.JAVAEE) ||
+                                type.equals(BundleType.CUSTOMIZE)) {
+                            welcomeText.append(StringUtils.format(
+                                    panel.getProperty(WELCOME_TEXT_GROUP_TEMPLATE_PROPERTY),
+                                    node.getDisplayName()));
+                        }
                     }
                 }
             }
@@ -437,6 +451,15 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             if (SystemUtils.isMacOS()) {
                 customizeButton.setOpaque(false);
             }
+            BundleType type = BundleType.getType(
+                    System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
+            
+            if(type.equals(BundleType.JAVAEE) ||
+                    type.equals(BundleType.CUSTOMIZE)) {
+                customizeButton.setVisible(true);
+            } else {
+                customizeButton.setVisible(false);
+            }
         }
         
         private void customizeButtonPressed() {
@@ -458,7 +481,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         }
         
         private void populateList(
-                final List<RegistryNode> list, 
+                final List<RegistryNode> list,
                 final RegistryNode parent) {
             final List<RegistryNode> groups = new LinkedList<RegistryNode>();
             
@@ -490,6 +513,35 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         }
     }
     
+    public Registry getBundledRegistry() {
+        return bundledRegistry;
+    }
+    
+    private enum BundleType {
+        JAVASE("javase"),
+        JAVAEE("javaee"),
+        JAVAME("javame"),
+        RUBY("ruby"),
+        CND("cnd"),
+        CUSTOMIZE("customize");
+        
+        private String name;
+        private BundleType(String s) {
+            this.name = s;
+        }
+        public static BundleType getType(String s) {
+            if(s!=null) {
+                for(BundleType type : BundleType.values())
+                    if(type.toString().equals(s)) {
+                    return type;
+                    }
+            }
+            return CUSTOMIZE;
+        }
+        public String toString() {
+            return name;
+        }
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String DEFAULT_TITLE =
@@ -522,6 +574,12 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_WELCOME_TEXT_HEADER =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.header"); // NOI18N
+    public static final String WELCOME_TEXT_HEADER_APPENDING_PROPERTY =
+            "NWP.welcome.text.header"; // NOI18N
+    
+    public static final String WELCOME_PAGE_TYPE_PROPERTY =
+            "NWP.welcome.page.type";
+    
     public static final String DEFAULT_WELCOME_TEXT_GROUP_TEMPLATE =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.group.template"); // NOI18N
