@@ -2,13 +2,10 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Actions">
-        <folder name="goto">
-            <file name="org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
-        </folder>
         <folder name="Edit">
-            <!--
-            <file name="org-netbeans-modules-cnd-navigation-classhierarchy-ClassHierarchyPopupAction.instance"/>
-            -->
+            <file name="org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.navigation.switchfiles.Bundle"/>
+            </file>
             <file name="org-netbeans-modules-cnd-navigation-classhierarchy-DescendantClasses.instance"/>
             <file name="org-netbeans-modules-cnd-navigation-includeview-DescendantIncludes.instance"/>
         </folder>
@@ -21,9 +18,9 @@
         <folder name="text">
             <folder name="x-c++">
                 <folder name="Popup">
-                    <folder name="goto">
+                    <folder name="Edit">
                         <file name="org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/goto/org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
                             <attr name="position" intvalue="50"/>
                         </file>
                         <file name="SeparatorBeforeInspect.instance">
@@ -43,9 +40,9 @@
             </folder>
             <folder name="x-c">
                 <folder name="Popup">
-                    <folder name="goto">
+                    <folder name="Edit">
                         <file name="org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/goto/org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
                             <attr name="position" intvalue="50"/>
                         </file>
                         <file name="SeparatorBeforeInspect.instance">
@@ -69,11 +66,11 @@
     </folder>
     <folder name="Shortcuts">
         <file name="DS-A.shadow">
-            <attr name="originalFile" stringvalue="Actions/goto/org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
         </file>
     </folder>
     <folder name="Menu">
-        <folder name="GoTo">
+        <folder name="Edit">
             <folder name="Inspect">
                 <file name="org-netbeans-modules-cnd-navigation-includeview-DescendantIncludes.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-includeview-DescendantIncludes.instance"/>
