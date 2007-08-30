@@ -43,11 +43,14 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ITypedElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IComponent;
-import org.netbeans.modules.uml.core.preferenceframework.UnknownPrefManip;
+import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
 public class Lifeline extends NamedElement implements ILifeline
 {
+    // define default type for creating lifeline representing classifier
+    private static final String unknownClassifierType = "Class";
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline#getEvents()
      */
@@ -383,12 +386,20 @@ public class Lifeline extends NamedElement implements ILifeline
         if (classifierName != null && classifierName.length() > 0)
         {
             EventState es = null;
-            UnknownPrefManip prefManip = null;
+
             try
             {
                es = new EventState( EventDispatchNameKeeper.lifeTime(), "RepresentingClassifier" );
                
+               // 110338 the default unknown classifier type is different
+               String original = PreferenceAccessor.instance().getUnknownClassifierType();
+               PreferenceAccessor.instance().setUnknownClassifierType(unknownClassifierType);
+               
                INamedElement element = resolveSingleTypeFromString(classifierName);
+               
+               // restore
+               PreferenceAccessor.instance().setUnknownClassifierType(original);
+               
                setRepresentingClassifier( (IClassifier) element );
             }
             finally

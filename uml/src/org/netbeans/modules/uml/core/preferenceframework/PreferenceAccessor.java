@@ -28,6 +28,7 @@ import org.openide.util.NbBundle;
 public class PreferenceAccessor implements IPreferenceAccessor{
 
 	private static PreferenceAccessor m_Instance = null;
+        private static String unknownClassifierType = "DataType";
 	
 	private PreferenceAccessor()
 	{
@@ -114,9 +115,15 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	public String getUnknownClassifierType() {
             //kris richards - "UnknownClassifierType" pref expunged. Set to "DataType"
             //change default to Class: see issue 110338
-            return "DataType" ; //returning "Class" causes other problems (see issue 111821)
+//            return "DataType" ; //returning "Class" causes other problems (see issue 111821)
+            return unknownClassifierType;
             
 	}
+        
+        // workaround for 110338, default type for creating unknown lifeline representing classifier is different
+        public synchronized void setUnknownClassifierType(String type) {
+            unknownClassifierType = type;
+        }
 
 	/**
 	 * The default mode of a new Describe session found in the preferences file.

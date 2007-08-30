@@ -21,20 +21,15 @@
 package org.netbeans.modules.uml.core.metamodel.core.foundation;
 
 import org.dom4j.Node;
-
-import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.preferenceframework.IPreferenceAccessor;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
-import org.netbeans.modules.uml.core.preferenceframework.UnknownPrefManip;
 import org.netbeans.modules.uml.core.typemanagement.IPickListManager;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
 import org.netbeans.modules.uml.core.support.umlsupport.IStrings;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
 
 /**
  * @author sumitabhk
