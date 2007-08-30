@@ -42,11 +42,13 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
     private static final boolean QUIET = Boolean.getBoolean("ruby.quiet.tests"); // NOI18N
     
     private final Pattern[] PATTERNS = new Pattern[] {
+        // The final \\s? in the patterns is to allow \r on Windows
+        
         // Test::Unit:   test/unit/testresult.rb#
-        Pattern.compile("\\d+ tests, \\d+ assertions, \\d+ failures, \\d+ errors"), // NOI18N
+        Pattern.compile("\\d+ tests, \\d+ assertions, \\d+ failures, \\d+ errors\\s?"), // NOI18N
                 
         // RSpec: see {rspec}/lib/spec/runner/formatter/base_text_formatter.rb#dump_summary
-        Pattern.compile("\\d+ examples?, \\d+ failures?(, \\d+ not implemented)?") // NOI18N
+        Pattern.compile("\\d+ examples?, \\d+ failures?(, \\d+ not implemented)?\\s?") // NOI18N
     };
     
     private String message;
@@ -100,4 +102,19 @@ public class TestNotifier extends OutputRecognizer implements Runnable {
             }
         }
     }
+
+    /** For unit tests only.
+     * @todo Use a mock object for the status displayer and test processLine itself instead
+     */
+    boolean recognizeLine(String line) {
+        for (Pattern pattern : PATTERNS) {
+            Matcher match = pattern.matcher(line);
+            if (match.matches()) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
 }
