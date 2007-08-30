@@ -5,6 +5,17 @@
         <folder name="goto">
             <file name="org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
         </folder>
+        <folder name="Edit">
+            <!--
+            <file name="org-netbeans-modules-cnd-navigation-classhierarchy-ClassHierarchyPopupAction.instance"/>
+            -->
+            <file name="org-netbeans-modules-cnd-navigation-classhierarchy-DescendantClasses.instance"/>
+            <file name="org-netbeans-modules-cnd-navigation-includeview-DescendantIncludes.instance"/>
+        </folder>
+        <folder name="Window">
+            <file name="org-netbeans-modules-cnd-navigation-classhierarchy-ClassHierarchyAction.instance"/>
+            <file name="org-netbeans-modules-cnd-navigation-includeview-IncludeViewAction.instance"/>
+        </folder>
     </folder>
     <folder name="Editors">
         <folder name="text">
@@ -14,6 +25,18 @@
                         <file name="org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
                             <attr name="position" intvalue="50"/>
+                        </file>
+                        <file name="SeparatorBeforeInspect.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="1000"/>
+                        </file>
+                        <file name="org-netbeans-modules-cnd-navigation-includeview-DescendantIncludes.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-includeview-DescendantIncludes.instance"/>
+                            <attr name="position" intvalue="1100"/>
+                        </file>
+                        <file name="org-netbeans-modules-cnd-navigation-classhierarchy-DescendantClasses.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-classhierarchy-DescendantClasses.instance"/>
+                            <attr name="position" intvalue="1200"/>
                         </file>
                     </folder>
                 </folder>
@@ -25,6 +48,20 @@
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
                             <attr name="position" intvalue="50"/>
                         </file>
+                        <file name="SeparatorBeforeInspect.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="1000"/>
+                        </file>
+                        <file name="org-netbeans-modules-cnd-navigation-includeview-DescendantIncludes.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-includeview-DescendantIncludes.instance"/>
+                            <attr name="position" intvalue="1100"/>
+                        </file>
+                        <!--
+                        <file name="org-netbeans-modules-cnd-navigation-classhierarchy-ClassHierarchyPopupAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-classhierarchy-ClassHierarchyPopupAction.instance"/>
+                            <attr name="position" intvalue="1200"/>
+                        </file>
+                        -->
                     </folder>
                 </folder>
             </folder>
@@ -34,5 +71,53 @@
         <file name="DS-A.shadow">
             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-switchfiles-CppSwitchAction.instance"/>
         </file>
+    </folder>
+    <folder name="Menu">
+        <folder name="GoTo">
+            <folder name="Inspect">
+                <file name="org-netbeans-modules-cnd-navigation-includeview-DescendantIncludes.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-includeview-DescendantIncludes.instance"/>
+                    <attr name="position" intvalue="2300"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-navigation-classhierarchy-DescendantClasses.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-classhierarchy-DescendantClasses.instance"/>
+                    <attr name="position" intvalue="2400"/>
+                </file>
+                <!--
+                <file name="org-netbeans-modules-cnd-navigation-classhierarchy-ClassHierarchyPopupAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-navigation-classhierarchy-ClassHierarchyPopupAction.instance"/>
+                    <attr name="position" intvalue="2500"/>
+                </file>
+                -->
+            </folder>
+        </folder>
+        <folder name="Window">
+            <folder name="Navigator">
+                <file name="org-netbeans-modules-cnd-navigation-includeview-IncludeViewAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-cnd-navigation-includeview-IncludeViewAction.instance"/>
+                    <attr name="position" intvalue="1200"/>
+                </file>
+                <file name="org-netbeans-modules-cnd-navigation-classhierarchy-ClassHierarchyAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-cnd-navigation-classhierarchy-ClassHierarchyAction.instance"/>
+                    <attr name="position" intvalue="1300"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="IncludeViewTopComponent.settings" url="../includeview/IncludeViewTopComponentSettings.xml"/>
+            <file name="ClassHierarchyTopComponent.settings" url="../classhierarchy/ClassHierarchyTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="commonpalette"> 
+                <file name="IncludeViewTopComponent.wstcref" url="../includeview/IncludeViewTopComponentWstcref.xml">
+                    <attr name="position" intvalue="2800"/>
+                </file>
+                <file name="ClassHierarchyTopComponent.wstcref" url="../classhierarchy/ClassHierarchyTopComponentWstcref.xml">
+                    <attr name="position" intvalue="2900"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
 </filesystem>
