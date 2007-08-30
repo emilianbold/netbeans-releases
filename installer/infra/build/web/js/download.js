@@ -84,7 +84,7 @@ function write_table_header() {
     document.write('<td class="no_border no_padding" colspan="6">');
     document.write('<table><tr>');
     document.write('	<td class="no_border no_padding" style="width: 50%;"><img src="img/1px-gray.png" style="width: 100%; height: 1px"/></td>');
-    document.write('	<td class="no_border title">NetBeans 6.0 {build.number}</td>');
+    document.write('	<td class="no_border title">NetBeans IDE 6.0 {build.number}</td>');
     document.write('	<td class="no_border no_padding" style="width: 50%;"><img src="img/1px-gray.png" style="width: 100%; height: 1px"/></td>');
     document.write('</tr></table>');
     document.write('</td>');
@@ -93,11 +93,11 @@ function write_table_header() {
     document.write('<tr>');
     document.write('<th class="left no_border bottom_border wide bottom">NetBeans Packs</th>');    
     document.write('<td class="no_border left_border bottom_border" id="javaee_link"><a href="javascript: download(\'javaee\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Web&nbsp;&amp;&nbsp;Java&nbsp;EE</td>');
-    document.write('<td class="no_border left_border bottom_border" id="javame_link"><a href="javascript: download(\'javame\')" id="javame_name"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Java ME</td>');
-    document.write('<td class="no_border left_border bottom_border" id="java_link"><a href="javascript: download(\'java\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Java SE</td>');
+    document.write('<td class="no_border left_border bottom_border" id="javame_link"><a href="javascript: download(\'mobility\')" id="javame_name"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Mobility</td>');
+    document.write('<td class="no_border left_border bottom_border" id="java_link"><a href="javascript: download(\'javase\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Java SE</td>');
     document.write('<td class="no_border left_border bottom_border" id="ruby_link"><a href="javascript: download(\'ruby\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Ruby</td>');
-    document.write('<td class="no_border left_border bottom_border" id="cnd_link"><a href="javascript: download(\'cnd\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>C/C++</td>');
-    document.write('<td class="no_border left_border bottom_border" id="full_link"><a href="javascript: download(\'full\')"><img src="img/download_h.gif" style="cursor: pointer; border: 0;"/><br/></a>All</td>');
+    document.write('<td class="no_border left_border bottom_border" id="cnd_link"><a href="javascript: download(\'cpp\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>C/C++</td>');
+    document.write('<td class="no_border left_border bottom_border" id="full_link"><a href="javascript: download(\'all\')"><img src="img/download_h.gif" style="cursor: pointer; border: 0;"/><br/></a>All</td>');
     document.write('</tr>');
 }
 
@@ -283,9 +283,9 @@ function update() {
     
     // no Mobility for Solaris and MacOS
     if ((platform == "solaris-x86") || (platform == "solaris-sparc") || (platform == "macosx-ppc") || (platform == "macosx-x86")) {
-    	document.getElementById("javame_link").innerHTML = '<img src="img/download_d.gif" style="border: 0;"/><br>Java ME';
+    	document.getElementById("javame_link").innerHTML = '<img src="img/download_d.gif" style="border: 0;"/><br>Mobility';
     } else {
-    	document.getElementById("javame_link").innerHTML = '<a href="javascript: download(\'javame\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Java ME';
+    	document.getElementById("javame_link").innerHTML = '<a href="javascript: download(\'mobility\')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/><br/></a>Mobility';
     }
 }
 
@@ -303,14 +303,26 @@ function download(option) {
     var select = document.getElementById("platform_select");
     var platform = select.options[select.selectedIndex].value;
 
-    var file_name = 
-            "start.html?netbeans-6.0-nightly-{build.number}-" + 
-            option + "-" + platform;
-    
+    var basename  = "";
+	
+
+    if ((platform == "macosx-x86") || (platform != "macosx-ppc")) {
+	basename  = "netbeans-nightly-{build.number}-";
+    } else {
+	basename  = "netbeans-6.0-nightly-{build.number}-";
+    }
+
+    var file_name = "start.html?" + basename + option;
+
+    if ((platform != "macosx-x86") && (platform != "macosx-ppc")) {
+    	file_name += "-" + platform;
+    }
+
     if (platform == "windows") {
         file_name += ".exe";
     } else if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
-        file_name += ".tgz";
+        //file_name += ".tgz";
+	file_name += ".dmg";
     } else {
         file_name += ".sh";
     }
