@@ -26,6 +26,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 public class ConfigurationDescriptorProvider {
     private FileObject projectDirectory;
@@ -50,36 +51,48 @@ public class ConfigurationDescriptorProvider {
                 synchronized (readLock) {
                     // check again that someone already havn't read
                     if (!hasTried) {
+                        ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
+                        
                         if (SwingUtilities.isEventDispatchThread()) {
-                            System.err.println("ConfigurationDescriptorProvider: I/O in EQ is not good idea"); // NOI18N
+                            //System.err.println("ConfigurationDescriptorProvider Switching thead...");
+                            ProjectReader projectReader = new ProjectReader(reader, relativeOffset);
+                            RequestProcessor.Task task = RequestProcessor.getDefault().post(projectReader); 
+                            task.waitFinished();
+                            projectDescriptor = projectReader.projectDescriptor;
                         }
-                        ConfigurationXMLReader reader;
-                        reader = new ConfigurationXMLReader(projectDirectory);
-                        try {
-                            projectDescriptor = reader.read(relativeOffset);
-                        } catch (java.io.IOException x) {
-                            ;	// most likely open failed
+                        else {
+                            try {
+                                projectDescriptor = reader.read(relativeOffset);
+                            } catch (java.io.IOException x) {
+                                ;	// most likely open failed
+                            }
                         }
                         
-                        if (projectDescriptor == null) {
-                            // Big problems: cannot read descriptor. All information lost....
-                            /*
-                            projectDescriptor = new MakeProjectDescriptor(ProjectDescriptor.TYPE_APPLICATION);
-                            ((MakeProjectDescriptor)projectDescriptor).init();
-                            String folder = FileUtil.toFile(helper.getProjectDirectory()).getPath();
-                             */
-                            /* OLD
-                            Moved into ConfigurationXMLReader or rather, XMLDocReader
-                            String errormsg = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "CANTREADDESCRIPTOR", projectDirectory.getName());
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
-                             */
-                        }
                         hasTried = true;
                     }
                 }
             }
         }
         return projectDescriptor;
+    }
+    
+    private class ProjectReader implements Runnable {
+        public ConfigurationDescriptor projectDescriptor = null;
+        private ConfigurationXMLReader reader;
+        private String relativeOffset;
+        
+        public ProjectReader(ConfigurationXMLReader reader, String relativeOffset) {
+            this.reader = reader;
+            this.relativeOffset = relativeOffset;
+        }
+        
+        public void run() {
+            try {
+                projectDescriptor = reader.read(relativeOffset);
+            } catch (java.io.IOException x) {
+                ;	// most likely open failed
+            }
+        }
     }
     
     public static ConfigurationAuxObjectProvider[] getAuxObjectProviders() {

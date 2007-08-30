@@ -56,9 +56,12 @@ public class MakeSources implements Sources, AntProjectListener {
     }
     
     private Sources delegate;
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     public synchronized SourceGroup[] getSourceGroups(String str) {
+        if (!str.equals("generic")) { // NOI18N
+            return new SourceGroup[0];
+        }
         if (delegate == null) {
             delegate = initSources();
         }
@@ -68,7 +71,7 @@ public class MakeSources implements Sources, AntProjectListener {
     
     private Sources initSources() {
         final SourcesHelper h = new SourcesHelper(helper, project.evaluator());
-	ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+	ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
 	ConfigurationDescriptor pd = pdp.getConfigurationDescriptor();
 	if (pd != null) {
 	    MakeConfigurationDescriptor epd = (MakeConfigurationDescriptor)pd;
@@ -124,7 +127,7 @@ public class MakeSources implements Sources, AntProjectListener {
             if (listeners.isEmpty()) {
                 return;
             }
-            _listeners = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+            _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
         }
         ChangeEvent ev = new ChangeEvent(this);
         for (int i = 0; i < _listeners.length; i++) {
