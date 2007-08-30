@@ -20,6 +20,9 @@
 package org.netbeans.modules.project.uiapi;
 
 import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -33,7 +36,12 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -44,6 +52,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /** Implementation of standard customizer dialog.
  *
@@ -63,7 +73,7 @@ public class CustomizerDialog {
     private static final String COMMAND_OK = "OK";          // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
 
-    public static Dialog createDialog( ActionListener okOptionListener, final CustomizerPane innerPane,
+    public static Dialog createDialog( ActionListener okOptionListener, ActionListener storeListener, final CustomizerPane innerPane,
             HelpCtx helpCtx, final ProjectCustomizer.Category[] categories, 
            //#97998 related
             ProjectCustomizer.CategoryComponentProvider componentProvider ) {
@@ -89,7 +99,7 @@ public class CustomizerDialog {
 
 
         // RegisterListener
-        ActionListener optionsListener = new OptionListener( okOptionListener, categories , componentProvider);
+        ActionListener optionsListener = new OptionListener(okOptionListener, storeListener, categories , componentProvider);
         options[ OPTION_OK ].addActionListener( optionsListener );
         options[ OPTION_CANCEL ].addActionListener( optionsListener );
 
@@ -134,7 +144,7 @@ public class CustomizerDialog {
                 }
             }
         });
-
+        
         return dialog;
 
     }
@@ -159,12 +169,14 @@ public class CustomizerDialog {
     private static class OptionListener implements ActionListener {
 
         private ActionListener okOptionListener;
+        private ActionListener storeListener;
         private ProjectCustomizer.Category[] categories;
         private Lookup.Provider prov;
 
-        OptionListener( ActionListener okOptionListener, ProjectCustomizer.Category[] categs, 
+        OptionListener( ActionListener okOptionListener, ActionListener storeListener, ProjectCustomizer.Category[] categs, 
                 ProjectCustomizer.CategoryComponentProvider componentProvider) {
             this.okOptionListener = okOptionListener;
+            this.storeListener = storeListener;
             categories = categs;
             //#97998 related
             if (componentProvider instanceof Lookup.Provider) {
@@ -174,44 +186,105 @@ public class CustomizerDialog {
         
         public void actionPerformed( final ActionEvent e ) {
             String command = e.getActionCommand();
-            
+
             if ( COMMAND_OK.equals( command ) ) {
                 // Call the OK option listener
                 ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
                     public Object run() {
                         okOptionListener.actionPerformed( e ); // XXX maybe create new event
                         actionPerformed(e, categories);
-                        //#97998 related
-                        if (prov != null) {
-                            Project prj = prov.getLookup().lookup(Project.class);
-                            if (ProjectManager.getDefault().isModified(prj)) {
-                                try {
-                                    ProjectManager.getDefault().saveProject(prj);
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } catch (IllegalArgumentException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        }
                         return null;
                     }
                 });
+                
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(CustomizerDialog.class, "LBL_Saving_Project_data_progress"));
+                JComponent component = ProgressHandleFactory.createProgressComponent(handle);
+                Frame mainWindow = WindowManager.getDefault().getMainWindow();
+                final JDialog dialog = new JDialog(mainWindow, 
+                        NbBundle.getMessage(CustomizerDialog.class, "LBL_Saving_Project_data"), true);
+                SavingProjectDataPanel panel = new SavingProjectDataPanel(component);
+                
+                dialog.getContentPane().add(panel);
+                dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+                dialog.pack();
+                
+                Rectangle bounds = mainWindow.getBounds();
+                int middleX = bounds.x + bounds.width / 2;
+                int middleY = bounds.y + bounds.height / 2;
+                Dimension size = dialog.getPreferredSize();
+                dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
+                
+                // Call storeListeners out of AWT EQ
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
+                                public Object run() {
+                                    handle.start();
+                                    if (storeListener != null) {
+                                        storeListener.actionPerformed(e);
+                                    }
+                                    storePerformed(e, categories);
+                                    // #97998 related
+                                    saveModifiedProject();
+                                    return null;
+                                }
+                            });
+                        } finally {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    dialog.setVisible(false);
+                                    dialog.dispose();
+                                }
+                            });
+                        }
+                    }
+                });
+                
+                dialog.setVisible(true);
+                
             }
         }
         
         private void actionPerformed(ActionEvent e, ProjectCustomizer.Category[] categs) {
-            for (int i = 0; i < categs.length; i++) {
-                ActionListener list = categs[i].getOkButtonListener();
+            for (ProjectCustomizer.Category category : categs) {
+                ActionListener list = category.getOkButtonListener();
                 if (list != null) {
                     list.actionPerformed(e);// XXX maybe create new event
                 }
-                if (categs[i].getSubcategories() != null) {
-                    actionPerformed(e, categs[i].getSubcategories());
+                if (category.getSubcategories() != null) {
+                    actionPerformed(e, category.getSubcategories());
                 }
             }
         }
-
+        
+        private void storePerformed(ActionEvent e, ProjectCustomizer.Category[] categories) {
+            for (ProjectCustomizer.Category category : categories) {
+                ActionListener listener = category.getStoreListener();
+                if (listener != null) {
+                    listener.actionPerformed(e); // XXX maybe create new event
+                }
+                if (category.getSubcategories() != null) {
+                    storePerformed(e, category.getSubcategories());
+                }
+            }
+        }
+        
+        private void saveModifiedProject() {
+            if (prov != null) {
+                Project prj = prov.getLookup().lookup(Project.class);
+                if (ProjectManager.getDefault().isModified(prj)) {
+                    try {
+                        ProjectManager.getDefault().saveProject(prj);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+        
     }
 
     private static class HelpCtxChangeListener implements PropertyChangeListener {

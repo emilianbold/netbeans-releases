@@ -62,7 +62,7 @@ public final class ProjectCustomizer {
     private ProjectCustomizer() {
     }
     
-    /** Creates standard which can be used for implementation
+    /** Creates standard customizer dialog which can be used for implementation
      * of {@link org.netbeans.spi.project.ui.CustomizerProvider}. You don't need
      * to call <code>pack()</code> method on the dialog. The resulting dialog will
      * be non-modal. <br>
@@ -93,11 +93,51 @@ public final class ProjectCustomizer {
                                                  String preselectedCategory,
                                                  ActionListener okOptionListener,
                                                  HelpCtx helpCtx ) {
+        return createCustomizerDialog(categories, componentProvider, preselectedCategory, okOptionListener, null, helpCtx);
+    }
+    
+    /** Creates standard customizer dialog which can be used for implementation
+     * of {@link org.netbeans.spi.project.ui.CustomizerProvider}. Use this version if you need 
+     * to run processing of the customizer data partially off AWT Event Queue. You don't need
+     * to call <code>pack()</code> method on the dialog. The resulting dialog will
+     * be non-modal. <br>
+     * Call <code>show()</code> on the dialog to make it visible. If you want the dialog to be
+     * closed after user presses the "OK" button you have to call hide() and dispose() on it.
+     * (Usually in the <code>actionPerformed(...)</code> method of the listener
+     * you provided as a parameter. In case of the click on the "Cancel" button
+     * the dialog will be closed automatically.
+     * @since org.netbeans.modules.projectuiapi/1 1.25
+     * @param categories array of descriptions of categories to be shown in the
+     *        dialog. Note that categories have the <code>valid</code>
+     *        property. If any of the given categories is not valid cusomizer's
+     *        OK button will be disabled until all categories become valid
+     *        again.
+     * @param componentProvider creator of GUI components for categories in the
+     *        customizer dialog.
+     * @param preselectedCategory name of one of the supplied categories or null.
+     *        Category with given name will be selected. If  <code>null</code>
+     *        or if the category of given name does not exist the first category will
+     *        be selected.
+     * @param okOptionListener listener which will be notified when the user presses
+     *        the OK button.
+     * @param storeListener listener which will be notified when the user presses OK button.
+     *        Listener will be executed after okOptionListener outside of AWT EventQueue.
+     *        Usually to be used to save modified files on disk.
+     * @param helpCtx Help context for the dialog, which will be used when the
+     *        panels in the customizer do not specify their own help context.
+     * @return standard project customizer dialog.
+     */
+    public static Dialog createCustomizerDialog( Category[] categories,
+                                                 CategoryComponentProvider componentProvider,
+                                                 String preselectedCategory,
+                                                 ActionListener okOptionListener,
+                                                 ActionListener storeListener,
+                                                 HelpCtx helpCtx ) {
         CustomizerPane innerPane = createCustomizerPane(categories, componentProvider, preselectedCategory);
-        Dialog dialog = CustomizerDialog.createDialog( okOptionListener, innerPane, helpCtx, categories, componentProvider);
+        Dialog dialog = CustomizerDialog.createDialog(okOptionListener, storeListener, innerPane, helpCtx, categories, componentProvider);
         return dialog;
     }
-
+    
     /**
      * Creates standard customizer dialog that can be used for implementation of
      * {@link org.netbeans.spi.project.ui.CustomizerProvider} based on content of a folder in Layers.
@@ -128,6 +168,46 @@ public final class ProjectCustomizer {
                                                  String preselectedCategory,
                                                  ActionListener okOptionListener,
                                                  HelpCtx helpCtx) {
+        return createCustomizerDialog(folderPath, context, preselectedCategory, 
+                                      okOptionListener, null, helpCtx);
+    }
+    
+    /**
+     * Creates standard customizer dialog that can be used for implementation of
+     * {@link org.netbeans.spi.project.ui.CustomizerProvider} based on content of a folder in Layers.
+     * Use this method when you want to allow composition and 3rd party additions to your customizer UI.
+     * This version runs processing of the customizer data partially off AWT Event Queue.
+     * You don't need to call <code>pack()</code> method on the dialog. The resulting dialog will
+     * be non-modal. <br> 
+     * Call <code>show()</code> on the dialog to make it visible. If you want the dialog to be
+     * closed after user presses the "OK" button you have to call hide() and dispose() on it.
+     * (Usually in the <code>actionPerformed(...)</code> method of the listener
+     * you provided as a parameter. In case of the click on the "Cancel" button
+     * the dialog will be closed automatically.
+     * 
+     * @since org.netbeans.modules.projectuiapi/1 1.25
+     * @param folderPath the path in the System Filesystem that is used as root for panel composition.
+     *        The content of the folder is assummed to be {@link org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider} instances
+     * @param context the context for the panels, up to the project type what the context shall be, for example org.netbeans.api.project.Project instance
+     * @param preselectedCategory name of one of the supplied categories or null.
+     *        Category with given name will be selected. If  <code>null</code>
+     *        or if the category of given name does not exist the first category will
+     *        be selected.
+     * @param okOptionListener listener which will be notified when the user presses
+     *        the OK button.
+     * @param storeListener listener which will be notified when the user presses OK button.
+     *        Listener will be executed after okOptionListener outside of AWT EventQueue.
+     *        Usually to be used to save modified files on disk
+     * @param helpCtx Help context for the dialog, which will be used when the
+     *        panels in the customizer do not specify their own help context.
+     * @return standard project customizer dialog.
+     */
+    public static Dialog createCustomizerDialog( String folderPath,
+                                                 Lookup context,
+                                                 String preselectedCategory,
+                                                 ActionListener okOptionListener,
+                                                 ActionListener storeListener,
+                                                 HelpCtx helpCtx) {
         FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(folderPath);
         if (root == null) {
             throw new IllegalArgumentException("The designated path " + folderPath + " doesn't exist. Cannot create customizer.");
@@ -135,10 +215,8 @@ public final class ProjectCustomizer {
         DataFolder def = DataFolder.findFolder(root);
         assert def != null : "Cannot find DataFolder for " + folderPath;
         DelegateCategoryProvider prov = new DelegateCategoryProvider(def, context);
-        return createCustomizerDialog(prov.getSubCategories(),
-                                      prov,
-                                      preselectedCategory, okOptionListener, helpCtx);
-
+        return createCustomizerDialog(prov.getSubCategories(), prov, preselectedCategory, 
+                                      okOptionListener, storeListener, helpCtx);
     }
     
     /** Creates standard innerPane for customizer dialog.
@@ -238,6 +316,7 @@ public final class ProjectCustomizer {
         private boolean valid;
         private String errorMessage;
         private ActionListener okListener;
+        private ActionListener storeListener;
         
         /** Private constructor. See the factory method.
          */
@@ -367,6 +446,27 @@ public final class ProjectCustomizer {
          */ 
         public ActionListener getOkButtonListener() {
             return okListener;
+        }
+        
+        /**
+         * Set the action listener that will get notified when the changes in the customizer 
+         * are to be applied. Listener is executed after OkButtonListener outside of AWT EventQueue. 
+         * Usually to be used to save modified files on disk.
+         * @param listener ActionListener to notify 
+         * @since org.netbeans.modules.projectuiapi/1 1.25
+         */
+        public void setStoreListener(ActionListener listener) {
+            storeListener = listener;
+        }
+        
+        /**
+         * Returns the action listener that is executed outside of AWT EQ and is associated 
+         * with this category that gets notified when OK button is pressed on the customizer.
+         * @return instance of ActionListener or null if not set.
+         * @since org.netbeans.modules.projectuiapi/1 1.25
+         */
+        public ActionListener getStoreListener() {
+            return storeListener;
         }
         
     }

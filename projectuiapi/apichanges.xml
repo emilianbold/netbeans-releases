@@ -81,6 +81,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        
+        <change id="store-listener-added">
+            <api name="general"/>
+            <summary>Added methods for creating customizer UI with additional listener for saving outside of AWT EQ</summary>
+            <version major="1" minor="25"/>
+            <date day="24" month="8" year="2007"/>
+            <author login="mkubec"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                New methods were added to allow to use additional listener for saving data after user presses OK button
+                on Project Customzer UI. The listener will be executed after all OkListeners and will be executed off the
+                AWT Event Queue. During save operation modal dialog with progress bar is displayed.
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectCustomizer"/>
+            <issue number="91291"/>
+        </change>
+        
         <change id="project-open-hook-merger">
             <api name="general"/>
             <summary>Add <code>LookupMerger</code>implementation for <code>ProjectOpenedHook</code></summary>
@@ -96,6 +113,7 @@ is the proper place.
             <class package="org.netbeans.spi.project.ui.support" name="UILookupMergerSupport"/>
             <issue number="103106"/>
         </change>
+        
         <change id="project-license-property">
             <api name="general"/>
             <summary>Adding template attribute <code>project.license</code></summary>
