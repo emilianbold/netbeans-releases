@@ -53,6 +53,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
+import org.openide.util.NbBundle;
+
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBColumn;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
 import org.netbeans.modules.jdbcwizard.builder.util.XMLCharUtil;
@@ -98,13 +100,13 @@ public class JNDINamePanel extends javax.swing.JPanel implements WizardDescripto
         this.jTextField1 = new javax.swing.JTextField();
         this.jTextField1.setText(JNDINamePanel.JNDI_DEFAULT_NAME);
 
-        this.jLabel1.setText("JNDI Name:");
+        this.jLabel1.setText(NbBundle.getMessage( JNDINamePanel.class, "LBL_JNDIName"));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(
                 layout.createSequentialGroup().add(55, 55, 55).add(this.jLabel1,
-                        org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70,
+                        org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(28, 28, 28).add(this.jTextField1,
                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 179,
                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).addContainerGap(68, Short.MAX_VALUE)));
