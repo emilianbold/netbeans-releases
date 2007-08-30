@@ -491,7 +491,7 @@ public class JavaSourceHelper {
                 String[] paramAnnotations = null;
                 Object[] paramAnnotationAttrs = null;
 
-                if (paramAnnotationsArray != null) {
+                if (paramAnnotationsArray != null && paramAnnotationsArray.length > 0) {
                     if (paramAnnotationsArray[i] instanceof String) {
                         paramAnnotations = new String[]{(String) paramAnnotationsArray[i]};
                         paramAnnotationAttrs = new Object[]{paramAnnotationAttrsArray[i]};
