@@ -14,6 +14,7 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.DesignEvent;
 import com.sun.rave.designtime.DesignProperty;
+import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.awt.EventQueue;
 import java.awt.Image;
@@ -65,9 +66,10 @@ public class VWPContentModel extends PageContentModel {
     private FacesModel facesModel;
     private Collection<PageContentItem> pageContentItems = new ArrayList<PageContentItem>();
     private VWPContentModelProvider provider;
-
-    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.web.jsf.navigation.VWPContentModel");
-
+    private static final Logger LOGGER = Logger.getLogger(VWPContentModel.class.getName());
+    static {
+        LOGGER.setLevel(Level.FINEST);
+    }
 
     /** Creates a new instance of VWPContentModel
      * @param facesModel can not be null
@@ -94,7 +96,6 @@ public class VWPContentModel extends PageContentModel {
     public VWPContentModel() {
     }
 
-
     public Collection<PageContentItem> getPageContentItems() {
         return pageContentItems;
     }
@@ -111,15 +112,25 @@ public class VWPContentModel extends PageContentModel {
         return facesModel.getBeanName();
     }
 
+    protected final FacesModel getFacesModel() {
+        return facesModel;
+    }
     private FacesModelSetListener msl;
+    private DesignContextListener dcl;
 
     public void initListeners() {
+        assert facesModel != null;
+
         LOGGER.entering("VWPContentModel", "initListeners()");
         if (msl == null) {
             LOGGER.finest("Adding model listener for Page: " + getPageName());
             msl = new FacesModelSetListener(this);
             facesModel.getOwner().addModelSetListener(msl);
-            DesignBean designBean = facesModel.getRootBean();
+        }
+        if (dcl == null) {
+            /* So you can see changes on the individual design contexts */
+            dcl = new VWPDesignContextListener(this);
+            facesModel.getLiveUnit().addDesignContextListener(dcl);
         }
         LOGGER.exiting("VWPContentModel", "initListeners()");
     }
@@ -134,47 +145,54 @@ public class VWPContentModel extends PageContentModel {
                 set.removeModelSetListener(msl);
                 msl = null;
             }
+            if (dcl != null) {
+                facesModel.getLiveUnit().removeDesignContextListener(dcl);
+                dcl = null;
+            }
         }
+
         LOGGER.exiting("VWPContentModel", "destroyListeners()");
     }
 
+    protected final void updateModel() {
+        updatePageContentItems();
+        handleModelChangeEvent();
+    }
 
 /**
      * Class which listens to DOM and project events
      */
+    /*
     private class FacesModelSetListener implements ModelSetListener {
-
-        final VWPContentModel vwpContentModel;
-
-        public FacesModelSetListener(VWPContentModel vwpContentModel) {
-            this.vwpContentModel = vwpContentModel;
-        }
-
-        public void modelAdded(Model model) {
-            //DO NOTHING
-        }
-
-        public void modelChanged(Model model) {
-            if ((model == facesModel) || (model.getFile().getExt().equals("jspf") && isKnownFragementModel(facesModel, facesModel.getRootBean(), model))) {
-                EventQueue.invokeLater(new Runnable() {
-
-                    public void run() {
-                        updatePageContentItems();
-                        vwpContentModel.handleModelChangeEvent();
-                    }
-                });
-            }
-        }
-
-        public void modelRemoved(Model model) {
-            //DO NOTHING
-        }
-
-        public void modelProjectChanged() {
-            //DO NOTHING
-        }
+    final VWPContentModel vwpContentModel;
+    public FacesModelSetListener(VWPContentModel vwpContentModel) {
+    this.vwpContentModel = vwpContentModel;
     }
-
+    public void modelAdded(Model model) {
+    LOGGER.finest("Model Added()");
+    //DO NOTHING
+    }
+    public void modelChanged(Model model) {
+    LOGGER.finest("Model Changed()");
+    if ((model == facesModel) || (model.getFile().getExt().equals("jspf") && isKnownFragementModel(facesModel, facesModel.getRootBean(), model))) {
+    EventQueue.invokeLater(new Runnable() {
+    public void run() {
+    updatePageContentItems();
+    vwpContentModel.handleModelChangeEvent();
+    }
+    });
+    }
+    }
+    public void modelRemoved(Model model) {
+    LOGGER.finest("Model Removed()");
+    //DO NOTHING
+    }
+    public void modelProjectChanged() {
+    LOGGER.finest("Model Project Changed()");
+    //DO NOTHING
+    }
+    }
+     */
     /**
      * Recursively locate all UICommand beans and add them to the given list
      * @ fill beans with the list of designBeans
@@ -217,7 +235,7 @@ public class VWPContentModel extends PageContentModel {
     }
 
     /* Check if a fragment model exists in this faces model */
-    private boolean isKnownFragementModel(FacesModel theModel, DesignBean container, Model possibleFragmentModel) {
+    protected boolean isKnownFragementModel(FacesModel theModel, DesignBean container, Model possibleFragmentModel) {
         //DesignBean container = facesModel.getRootBean();
         if (container == null) {
             return false;
@@ -241,7 +259,6 @@ public class VWPContentModel extends PageContentModel {
         }
         return false;
     }
-
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.visualweb.navigation");
     private static final Image commandIcon = org.openide.util.Utilities.loadImage("com/sun/rave/navigation/command.gif"); // NOI18N
 
@@ -325,7 +342,6 @@ public class VWPContentModel extends PageContentModel {
         }
     }
 
-
     private static FacesModel getFragmentModel(FacesModel model, DesignBean fragment) {
 
         DesignProperty prop = fragment.getProperty("file"); // NOI18N
@@ -366,7 +382,6 @@ public class VWPContentModel extends PageContentModel {
         }
         return null;
     }
-
     private Project project = null;
 
     public Project getProject() {
@@ -518,7 +533,6 @@ public class VWPContentModel extends PageContentModel {
         }
         return pr;
     }
-
     public VWPContentActions actions;
 
     public Action[] getActions() {
@@ -544,7 +558,6 @@ public class VWPContentModel extends PageContentModel {
 
         return item;
     }
-
 
     private PageContentItem solveNavComponent(DesignBean designBean) {
         if (designBean == null || getPageName() == null) {
@@ -626,8 +639,6 @@ public class VWPContentModel extends PageContentModel {
         }
     }
 
-
-
     private DesignBean addComponent(String lockDesc, String className) {
         UndoEvent undo = null;
         DesignBean bean = null;
@@ -661,19 +672,18 @@ public class VWPContentModel extends PageContentModel {
         if (item instanceof VWPContentItem) {
             VWPContentItem vwpItem = (VWPContentItem) item;
 
-            /** 
+            /**
              * At first it seems that we can just used the stored facesModel,
              * however is some case the designBean comes from a page fragment
              * and therefore we need to get the model in which it exists.
              **/
             DesignBean bean = vwpItem.getDesignBean();
             DesignContext designContext = bean.getDesignContext();
-            if (designContext instanceof LiveUnit ) {
+            if (designContext instanceof LiveUnit) {
                 ((LiveUnit) designContext).getModel().openDefaultHandler(vwpItem.getDesignBean());
             }
         }
     }
-
 
     private void initMarkupDesignBeanPosition(MarkupDesignBean bean) {
         if (Util.isGridMode(facesModel)) {
