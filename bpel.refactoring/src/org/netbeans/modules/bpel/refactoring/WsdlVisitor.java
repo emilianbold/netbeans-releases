@@ -20,6 +20,7 @@ package org.netbeans.modules.bpel.refactoring;
 
 import java.util.List;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.Referenceable;
 
@@ -30,6 +31,7 @@ import org.netbeans.modules.xml.wsdl.model.visitor.ChildVisitor;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
@@ -97,6 +99,14 @@ final class WsdlVisitor extends ChildVisitor {
     );
     if (myTarget instanceof Part) {
       visit(alias, (Part) myTarget);
+    }
+    if ( !(myTarget instanceof Named)) {
+      return;
+    }
+    Query query = alias.getQuery();
+
+    if (Util.checkQuery(query, ((Named) myTarget).getName()) != -1) {
+      myUsage.add(query);
     }
   }
 

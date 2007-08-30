@@ -58,6 +58,7 @@ import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -235,7 +236,7 @@ final class Renamer extends Plugin {
     Map<Model, Set<RefactoringElementImplementation>> results =
       new HashMap<Model, Set<RefactoringElementImplementation>>();
   
-    for(RefactoringElementImplementation element : elements) {
+    for (RefactoringElementImplementation element : elements) {
       Model model = (element.getLookup().lookup(Component.class)).getModel();
       Set<RefactoringElementImplementation> components = results.get(model);
 
@@ -420,6 +421,9 @@ final class Renamer extends Plugin {
     {
       rename((ContentElement) component);
     }
+    else if (component instanceof Query) {
+      rename((Query) component, target);
+    }
     else {
 //out();
 //out("!!! RENAME IN !!! : " + component.getClass().getName());
@@ -465,7 +469,7 @@ final class Renamer extends Plugin {
     try {
       element.setContent(content);
     }
-    catch(VetoException e) {
+    catch (VetoException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -475,6 +479,7 @@ final class Renamer extends Plugin {
     Named target) throws IOException
   {
     NamedComponentReference<GlobalElement> element = property.getElement();
+
     if (element != null && target instanceof GlobalElement) {
       property.setElement(((GlobalElement) target).createReferenceTo(
         (GlobalElement) target, GlobalElement.class));
@@ -513,6 +518,16 @@ final class Renamer extends Plugin {
     }
   }
 
+  private void rename(Query query, Named target) throws IOException {
+    int k = Util.checkQuery(query, myOldName);
+    if (k == -1) {
+      return;
+    }
+    String path = query.getContent();
+    query.setContent(path.substring(0,k) +
+      target.getName() + path.substring(k + myOldName.length()));
+  }
+
   private void rename(OnEvent event, Named target) throws IOException {
     if (target instanceof Message) {
       event.setMessageType( 
@@ -529,7 +544,7 @@ final class Renamer extends Plugin {
       WSDLReference<Role> reference =
         partnerLink.createWSDLReference((Role) target, Role.class);
 
-      if (isRenamedRole(partnerLink, PartnerLink.MY_ROLE)) {
+    if (isRenamedRole(partnerLink, PartnerLink.MY_ROLE)) {
         partnerLink.setMyRole(reference);
       }
       else if (isRenamedRole(partnerLink, PartnerLink.PARTNER_ROLE)) {

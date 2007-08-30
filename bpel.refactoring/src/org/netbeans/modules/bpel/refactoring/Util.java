@@ -31,7 +31,9 @@ import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
@@ -126,5 +128,49 @@ final class Util {
       }
     }
     return component.getClass().getName();
+  }
+
+  public static int checkQuery(Query query, String name) {
+    if (name == null || name.length() == 0) {
+      return -1;
+    }
+    if (query == null) {
+      return -1;
+    }
+    String path = query.getContent();
+
+    if (path == null) {
+      return -1;
+    }
+    return checkQuery(path, name);
+  }
+
+  private static int checkQuery(String path, String name) {
+//out();
+//out("path: " + path);
+//out("name: " + name);
+    if (path.startsWith(name + "/")) {
+      return 0;
+    }
+    if (path.startsWith("/" + name + "/")) {
+      return 1;
+    }
+    int k = path.indexOf("/" + name + "/");
+
+    if (k != -1) {
+      return k + 1;
+    }
+    k = path.indexOf(":" + name + "/");
+
+    if (k != -1) {
+      return k + 1;
+    }
+    if (path.endsWith("/" + name)) {
+      return path.length() - name.length();
+    }
+    if (path.endsWith(":" + name)) {
+      return path.length() - name.length();
+    }
+    return -1;
   }
 }
