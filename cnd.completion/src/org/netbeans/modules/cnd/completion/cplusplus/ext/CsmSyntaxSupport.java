@@ -1153,7 +1153,11 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         TokenItem token;
         boolean completionDisabled = true;
         try {
-            token = getTokenChain(offset, offset + 1);
+            int checkOffset = offset;
+            if (offset == getDocument().getLength()) {
+                checkOffset--;
+            }
+            token = getTokenChain(checkOffset, checkOffset + 1);
         } catch (BadLocationException e) {
             token = null;
         }
@@ -1169,7 +1173,11 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             }
             if (completionDisabled) {
                 // check whether right after #include or #include_next directive
-                if (token.getOffset() == offset) {
+                if (token.getOffset() + token.getImage().length() <= offset) {
+                    if (token.getTokenID() == CCTokenContext.CPPINCLUDE ||
+                            token.getTokenID() == CCTokenContext.CPPINCLUDE_NEXT) {
+                        return false;
+                    }
                     TokenItem prevToken = token.getPrevious();
                     while (prevToken != null && 
                             ((prevToken.getTokenID() == CCTokenContext.WHITESPACE) || 
