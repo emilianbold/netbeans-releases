@@ -154,7 +154,7 @@ public class NamespaceEditor extends PropertyEditorSupport {
         }
         
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        dlg.setPreferredSize(new Dimension(500, 350));
+        dlg.setPreferredSize(new Dimension(500, 400));
         return dlg;
     }
     
