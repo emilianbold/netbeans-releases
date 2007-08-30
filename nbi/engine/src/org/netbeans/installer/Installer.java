@@ -24,6 +24,7 @@ import com.apple.eawt.Application;
 import com.apple.eawt.ApplicationAdapter;
 import com.apple.eawt.ApplicationEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -678,8 +679,63 @@ public class Installer implements FinishHandler {
                 LogManager.unindent();
                 continue;
             }
+            if (arguments[i].equalsIgnoreCase(PROPERTIES_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        PROPERTIES_ARG + "\""); // NOI18N
+                
+                if (i < arguments.length - 1) {
+                    final String value = arguments[i + 1];
+                    final File propertiesFile = new File(value);
+                    InputStream is = null;
+                    try {
+                        is = new FileInputStream(propertiesFile);
+                        Properties props = new Properties();
+                        props.load(is);
+                        System.getProperties().putAll(props);
+                    } catch (IOException e) {
+                        LogManager.log(e);
+                    } finally {
+                        if(is!=null) {
+                            try {
+                                is.close();
+                            } catch (IOException e) {
+                                LogManager.log(e);
+                            }
+                        }
+                    }
+                    i = i + 1;
+                } else {
+                    ErrorManager.notifyWarning(ResourceUtils.getString(
+                            Installer.class,
+                            WARNING_BAD_PROPERTIES_ARG_KEY,
+                            PROPERTIES_ARG));
+                }
+                
+                LogManager.unindent();
+                continue;
+            }
+            
+            if (arguments[i].equalsIgnoreCase(BUNDLE_PROPERTIES_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        BUNDLE_PROPERTIES_ARG + "\""); // NOI18N
+                
+                if (i < arguments.length - 1) {
+                    String value = arguments[i + 1];
+                    System.setProperty(BUNDLE_PROPERTIES_FILE_PROPERTY,
+                            value);
+                    
+                    i = i + 1;
+                } else {
+                    ErrorManager.notifyWarning(ResourceUtils.getString(
+                            Installer.class,
+                            WARNING_BAD_BUNDLE_PROPERTIES_ARG_KEY,
+                            BUNDLE_PROPERTIES_ARG));
+                }
+                
+                LogManager.unindent();
+                continue;
+            }
         }
-        
         if (arguments.length == 0) {
             LogManager.log(
                     "... no command line arguments were specified"); // NOI18N
@@ -1021,6 +1077,12 @@ public class Installer implements FinishHandler {
     public static final String REGISTRY_ARG =
             "--registry"; // NOI18N
     
+    public static final String PROPERTIES_ARG =
+            "--properties"; // NOI18N
+    
+    public static final String BUNDLE_PROPERTIES_ARG =
+            "--bundle-properties"; // NOI18N
+    
     public static final String UNARY_ARG_VALUE =
             "true"; // NOI18N
     
@@ -1044,6 +1106,9 @@ public class Installer implements FinishHandler {
     
     public static final String EXIT_CODE_PROPERTY =
             "nbi.exit.code"; // NOI18N
+    
+    public static final String BUNDLE_PROPERTIES_FILE_PROPERTY =
+            "nbi.bundle.properties.file";//NOI18N
     
     public static final String LOG_FILE_NAME =
             "log/" + DateUtils.getTimestamp() + ".log";
@@ -1093,6 +1158,12 @@ public class Installer implements FinishHandler {
     
     private static final String WARNING_BAD_REGISTRY_ARG_KEY =
             "I.warning.bad.registry.arg"; // NOI18N
+    
+    private static final String WARNING_BAD_PROPERTIES_ARG_KEY =
+            "I.warning.bad.properties.arg"; // NOI18N
+    
+    private static final String WARNING_BAD_BUNDLE_PROPERTIES_ARG_KEY =
+            "I.warning.bad.bundle.properties.arg"; // NOI18N
     
     private static final String WARNING_SILENT_WITHOUT_STATE_KEY =
             "I.warning.silent.without.state"; // NOI18N

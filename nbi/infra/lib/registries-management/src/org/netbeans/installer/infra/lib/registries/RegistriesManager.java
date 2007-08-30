@@ -21,6 +21,7 @@
 package org.netbeans.installer.infra.lib.registries;
 
 import java.io.File;
+import java.util.Properties;
 import org.netbeans.installer.utils.helper.Platform;
 
 public interface RegistriesManager {
@@ -70,6 +71,14 @@ public interface RegistriesManager {
             final File root,
             final Platform platform,
             final String[] components) throws ManagerException;
+    
+    // bundles //////////////////////////////////////////////////////////////////////
+    File createBundle(
+            final File root,
+            final Platform platform,
+            final String[] components,
+            final Properties props,
+            final Properties bundleProps) throws ManagerException;
     
     void deleteBundles(
             final File root) throws ManagerException;

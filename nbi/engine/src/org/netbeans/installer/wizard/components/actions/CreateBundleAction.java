@@ -21,8 +21,10 @@
 package org.netbeans.installer.wizard.components.actions;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
@@ -163,6 +165,17 @@ public class CreateBundleAction extends WizardAction {
             // load default engine properties and set all components to be installed by default
             Properties engineProps = new Properties();
             engineProps.load(ResourceUtils.getResource(EngineResources.ENGINE_PROPERTIES));
+            
+            if(System.getProperty(Installer.BUNDLE_PROPERTIES_FILE_PROPERTY)!=null) {
+                Properties pr = new Properties();
+                InputStream is = new FileInputStream(new File(
+                        System.getProperty(Installer.
+                        BUNDLE_PROPERTIES_FILE_PROPERTY)));
+                pr.load(is);
+                is.close();
+                engineProps.putAll(pr);
+            }
+            
             engineProps.setProperty(Registry.SUGGEST_INSTALL_PROPERTY,
                     StringUtils.EMPTY_STRING + true);
             output.putNextEntry(new JarEntry(

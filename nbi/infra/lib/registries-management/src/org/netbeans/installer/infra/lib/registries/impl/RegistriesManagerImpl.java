@@ -21,13 +21,16 @@
 package org.netbeans.installer.infra.lib.registries.impl;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.installer.Installer;
@@ -122,7 +125,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
             
             final File registryXml =
                     new File(root, REGISTRY_XML);
-            final File componentsDir = 
+            final File componentsDir =
                     new File(root, COMPONENTS);
             final File archiveDir =
                     FileUtils.createTempFile(new File(root, TEMP), false);
@@ -308,13 +311,13 @@ public class RegistriesManagerImpl implements RegistriesManager {
                         final Product product = (Product) node;
                         
                         final File uidDir = new File(
-                                productsDir, 
+                                productsDir,
                                 product.getUid());
                         final File versionDir = new File(
-                                uidDir, 
+                                uidDir,
                                 product.getVersion().toString());
                         final File platformsDir = new File(
-                                versionDir, 
+                                versionDir,
                                 StringUtils.asString(product.getPlatforms(), " "));
                         
                         FileUtils.deleteFile(platformsDir, true);
@@ -331,7 +334,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                         final Group group = (Group) node;
                         
                         final File uidDir = new File(
-                                groupsDir, 
+                                groupsDir,
                                 group.getUid());
                         
                         FileUtils.deleteFile(uidDir, true);
@@ -404,13 +407,13 @@ public class RegistriesManagerImpl implements RegistriesManager {
                         final Product product = (Product) node;
                         
                         final File uidDir = new File(
-                                productsDir, 
+                                productsDir,
                                 product.getUid());
                         final File versionDir = new File(
-                                uidDir, 
+                                uidDir,
                                 product.getVersion().toString());
                         final File platformsDir = new File(
-                                versionDir, 
+                                versionDir,
                                 StringUtils.asString(product.getPlatforms(), " "));
                         
                         FileUtils.deleteFile(platformsDir, true);
@@ -427,7 +430,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                         final Group group = (Group) node;
                         
                         final File uidDir = new File(
-                                groupsDir, 
+                                groupsDir,
                                 group.getUid());
                         
                         FileUtils.deleteFile(uidDir, true);
@@ -460,7 +463,9 @@ public class RegistriesManagerImpl implements RegistriesManager {
     public File createBundle(
             final File root,
             final Platform platform,
-            final String[] components) throws ManagerException {
+            final String[] components,
+            Properties props,
+            Properties bundleProps) throws ManagerException {
         final ReentrantLock lock = getLock(root);
         
         try {
@@ -468,12 +473,18 @@ public class RegistriesManagerImpl implements RegistriesManager {
             
             initializeRegistryNoLock(root);
             
-            return createBundleNoLock(root, platform, components);
+            return createBundleNoLock(root, platform, components,props,bundleProps);
         } finally {
             lock.unlock();
         }
     }
-    
+    // bundles //////////////////////////////////////////////////////////////////////
+    public File createBundle(
+            final File root,
+            final Platform platform,
+            final String[] components) throws ManagerException {
+        return createBundle(root,platform,components,new Properties(),new Properties());
+    }
     public void generateBundles(
             final File root) throws ManagerException {
         final ReentrantLock lock = getLock(root);
@@ -581,7 +592,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                     new File(destination, COMPONENTS),
                     true);
             
-            final String replacement = 
+            final String replacement =
                     codebase.endsWith("/") ? codebase : codebase + "/";
             FileUtils.modifyFile(
                     tempRegistryXml,
@@ -589,10 +600,10 @@ public class RegistriesManagerImpl implements RegistriesManager {
                     "uri>" + replacement);
             
             FileUtils.copyFile(
-                    tempRegistryXml, 
+                    tempRegistryXml,
                     new File(destination, REGISTRY_XML));
             FileUtils.copyFile(
-                    new File(root, ENGINE_JAR), 
+                    new File(root, ENGINE_JAR),
                     new File(destination, ENGINE_JAR));
             
             FileUtils.deleteFile(tempUserDir);
@@ -620,7 +631,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 "nb-platform",
                 "nb-base",
                 "nb-javase",
-                "nb-javaee",                
+                "nb-javaee",
                 "glassfish",
                 "tomcat",
                 "sjsas");
@@ -633,8 +644,8 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 "nb-platform",
                 "nb-base",
                 "nb-ruby");
-
-	final List<String> cnd = Arrays.asList(
+        
+        final List<String> cnd = Arrays.asList(
                 "nb-platform",
                 "nb-base",
                 "nb-cnd");
@@ -677,13 +688,13 @@ public class RegistriesManagerImpl implements RegistriesManager {
             final StringBuilder out = new StringBuilder();
             
             final Registry registry = loadRegistry(
-                    root, 
-                    tempUserDir, 
+                    root,
+                    tempUserDir,
                     Platform.WINDOWS);
             
-            final List<Product> products = 
+            final List<Product> products =
                     getProducts(registry.getRegistryRoot());
-            final List<Group> groups = 
+            final List<Group> groups =
                     getGroups(registry.getRegistryRoot());
             
             final Map<Integer, Integer> productMapping =
@@ -761,7 +772,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 if (ruby.contains(product.getUid())) {
                     properties += " | PROPERTY_RUBY";
                 }
-		if (cnd.contains(product.getUid())) {
+                if (cnd.contains(product.getUid())) {
                     properties += " | PROPERTY_CND";
                 }
                 if (full.contains(product.getUid())) {
@@ -894,9 +905,11 @@ public class RegistriesManagerImpl implements RegistriesManager {
     private File createBundleNoLock(
             final File root,
             final Platform platform,
-            final String[] components) throws ManagerException {
+            final String[] components,
+            Properties props,
+            Properties bundleProps) throws ManagerException {
         try {
-            final String key = "" + platform.getCodeName() + ": " + 
+            final String key = "" + platform.getCodeName() + ": " +
                     StringUtils.asString(components);
             
             final File bundlesListFile =
@@ -945,6 +958,17 @@ public class RegistriesManagerImpl implements RegistriesManager {
             bundle.getParentFile().mkdirs();
             
             final File javaHome = new File(System.getProperty("java.home"));
+            
+            final File tempPropertiesFile = FileUtils.createTempFile(tempDir, false);            
+            OutputStream os = new FileOutputStream(tempPropertiesFile);            
+            props.store(os,null);
+            os.close();
+            
+            final File tempBundlePropertiesFile = FileUtils.createTempFile(tempDir, false);            
+            os = new FileOutputStream(tempBundlePropertiesFile);
+            bundleProps.store(os,null);
+            os.close();
+            
             final ExecutionResults results = SystemUtils.executeCommand(
                     JavaUtils.getExecutable(javaHome).getAbsolutePath(),
                     "-Dnbi.product.remote.registries=" + registryXml.toURI(),
@@ -959,13 +983,18 @@ public class RegistriesManagerImpl implements RegistriesManager {
                     "--platform",
                     platform.toString(),
                     "--userdir",
-                    tempUserDir.getAbsolutePath());
+                    tempUserDir.getAbsolutePath(),
+                    "--properties",
+                    tempPropertiesFile.getAbsolutePath(),
+                    "--bundle-properties",
+                    tempBundlePropertiesFile.getAbsolutePath());
             
             if (results.getErrorCode() != 0) {
                 throw new ManagerException("Could not create bundle - error in running the engine");
             }
             
             FileUtils.deleteFile(tempStatefile);
+            FileUtils.deleteFile(tempPropertiesFile);
             FileUtils.deleteFile(tempUserDir, true);
             
             if (platform == Platform.WINDOWS) {
@@ -1068,7 +1097,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
         try {
             final File registryXml =
                     new File(root, REGISTRY_XML);
-
+            
             final Registry registry = new Registry();
             registry.setLocalDirectory(tempUserDir);
             registry.setFinishHandler(DummyFinishHandler.INSTANCE);

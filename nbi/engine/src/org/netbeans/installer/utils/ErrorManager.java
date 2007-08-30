@@ -99,12 +99,12 @@ public final class ErrorManager {
                     exception.getClass().getName() + ":\n  " +
                     exception.getMessage();
         }
-        
-        dialogText +=
-                "\n\nYou can get more details about the " +
-                "issue in the installer log file:\n" +
-                LogManager.getLogFile().getAbsolutePath();
-        
+        if(LogManager.getLogFile()!=null) {
+            dialogText +=
+                    "\n\nYou can get more details about the " +
+                    "issue in the installer log file:\n" +
+                    LogManager.getLogFile().getAbsolutePath();
+        }
         switch (level) {
             case ErrorLevel.MESSAGE:
                 UiUtils.showMessageDialog(
@@ -123,7 +123,7 @@ public final class ErrorManager {
             case ErrorLevel.ERROR:
                 UiUtils.showMessageDialog(
                         dialogText,
-                         ResourceUtils.getString(
+                        ResourceUtils.getString(
                         ErrorManager.class, ERROR_ERROR_KEY),
                         UiUtils.MessageType.ERROR);
                 return;
