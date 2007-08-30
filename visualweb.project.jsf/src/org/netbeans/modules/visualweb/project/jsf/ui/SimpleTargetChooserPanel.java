@@ -117,6 +117,12 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
             return false;
         }
 
+        // no support for saving project properties
+        if (!JsfProjectUtils.supportProjectProperty(project)) {
+            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_NotSupportProperties")); // NOI18N
+            return false;
+        }
+
         // Check to make sure that the target name is not illegal
         String targetName = gui.getTargetName();
         if (!JsfProjectUtils.isValidJavaFileName(targetName)) {

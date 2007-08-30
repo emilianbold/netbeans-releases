@@ -231,6 +231,38 @@ public class JsfProjectUtils {
         setJsfProjectDir(project.getProjectDirectory(), Boolean.TRUE);
     }
 
+    public static boolean supportProjectProperty(Project project) {
+        if (isWebProject(project)) {
+            AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
+            if (ac == null) {
+                return false;
+            }
+            
+            Element auxElement = ac.getConfigurationFragment(RAVE_AUX_NAME, RAVE_AUX_NAMESPACE, true);
+            if (auxElement != null) {
+                return true;
+            }
+
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            try {
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Document xmlDoc = builder.newDocument();
+                auxElement = xmlDoc.createElementNS(RAVE_AUX_NAMESPACE, RAVE_AUX_NAME);
+            } catch (ParserConfigurationException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return false;
+            }
+
+            ac.putConfigurationFragment(auxElement, true);
+            auxElement = ac.getConfigurationFragment(RAVE_AUX_NAME, RAVE_AUX_NAMESPACE, true);
+            if (auxElement != null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+            
     public static String getProjectProperty(Project project, String propName) {
         if (isWebProject(project)) {
             AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
