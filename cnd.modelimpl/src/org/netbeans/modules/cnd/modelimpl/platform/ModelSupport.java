@@ -68,7 +68,7 @@ public class ModelSupport implements PropertyChangeListener {
     
     private ModelImpl model;
     
-    private Set openedProjects = new HashSet();
+    private Set<Project> openedProjects = new HashSet<Project>();
     
     private Set sourceExtensions = new TreeSet();
     
@@ -109,15 +109,15 @@ public class ModelSupport implements PropertyChangeListener {
     
     public void init(ModelImpl model) {
         
-        Collection listeners = Lookup.getDefault().lookup(new Lookup.Template(CsmProgressListener.class)).allInstances();
-        for (Iterator it = listeners.iterator(); it.hasNext();) {
-            model.addProgressListener((CsmProgressListener) it.next());
+        Collection<? extends CsmProgressListener> listeners = Lookup.getDefault().lookupAll(CsmProgressListener.class);
+        for (CsmProgressListener csmProgressListener : listeners) {
+            model.addProgressListener(csmProgressListener);
         }
         
         //CodeModelRequestProcessor.instance().post(ProjectListenerThread.instance(), "Project Listener");
         this.model = model;
         
-        openedProjects = new HashSet();
+        openedProjects = new HashSet<Project>();
         if (TRACE_STARTUP) System.out.println("Model support: Inited"); // NOI18N
 
         if (TopComponent.getRegistry().getOpened().size() > 0){
@@ -159,7 +159,7 @@ public class ModelSupport implements PropertyChangeListener {
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         
         synchronized (openedProjects){
-            Set nowOpened = new HashSet();
+            Set<Project> nowOpened = new HashSet<Project>();
             for( int i = 0; i < projects.length; i++ ) {
                 nowOpened.add(projects[i]);
                 if( ! openedProjects.contains(projects[i]) ) {
@@ -167,16 +167,15 @@ public class ModelSupport implements PropertyChangeListener {
                 }
             }
             
-            Set toClose = new HashSet();
-            for( Iterator iter = openedProjects.iterator(); iter.hasNext(); ) {
-                Object o = iter.next();
-                if( ! nowOpened.contains(o) ) {
-                    toClose.add(o);
-                }
+            Set<Project> toClose = new HashSet<Project>();
+            for (Project project : openedProjects) {
+                if( ! nowOpened.contains(project) ) {
+                    toClose.add(project);
+                }                
             }
             
-            for( Iterator iter = toClose.iterator(); iter.hasNext(); ) {
-                closeProject((Project) iter.next());
+            for (Project project : toClose) {
+                closeProject(project);
             }
         }
     }
@@ -453,7 +452,7 @@ public class ModelSupport implements PropertyChangeListener {
         NativeProject nativeProject = platformProject instanceof NativeProject ? (NativeProject)platformProject : null;
         if (platformProject instanceof Project ) {
             Project project = (Project) platformProject;
-            nativeProject = (NativeProject)project.getLookup().lookup(NativeProject.class);
+            nativeProject = project.getLookup().lookup(NativeProject.class);
         }    
 	return nativeProject;
     }
@@ -474,7 +473,7 @@ public class ModelSupport implements PropertyChangeListener {
     
     private void addProject(Project project) {
         if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.addProject: " + toString(project)); // NOI18N
-        NativeProject nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
+        NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject != null) {
             openedProjects.add(project);
             if( TraceFlags.DEBUG ) {
@@ -504,7 +503,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     private void closeProject(Project project) {
         if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.closeProject: " + toString(project)); // NOI18N
-        NativeProject nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
+        NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject != null) {
             model.closeProject(nativeProject);
         }
@@ -513,7 +512,7 @@ public class ModelSupport implements PropertyChangeListener {
     
     private void removeProject(Project project) {
         if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.removeProject: " + toString(project)); // NOI18N
-        NativeProject nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
+        NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject != null) {
             model.removeProject(nativeProject);
         }
@@ -546,7 +545,7 @@ public class ModelSupport implements PropertyChangeListener {
             try {
                 DataObject dao = DataObject.find(fo);
                 if( dao.isModified() ) {
-                    EditorCookie editor = (EditorCookie) dao.getCookie(EditorCookie.class);
+                    EditorCookie editor = dao.getCookie(EditorCookie.class);
                     if( editor != null ) {
                         Document doc = editor.getDocument();
                         if( doc != null ) {
@@ -562,7 +561,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     public void onMemoryLow(LowMemoryEvent event, boolean fatal) {
-        LowMemoryAlerter alerter = (LowMemoryAlerter) Lookup.getDefault().lookup(LowMemoryAlerter.class);
+        LowMemoryAlerter alerter = Lookup.getDefault().lookup(LowMemoryAlerter.class);
         if( alerter != null ) {
             alerter.alert(event, fatal);
         }
@@ -592,7 +591,7 @@ public class ModelSupport implements PropertyChangeListener {
 	
 	private Collection<BufAndProj> getBufNP(DataObject dao) {
 	    Collection<BufAndProj> bufNPcoll = buffers.get(dao);
-	    return (bufNPcoll == null) ? Collections.EMPTY_LIST : bufNPcoll;
+	    return (bufNPcoll == null) ? Collections.<BufAndProj>emptyList() : bufNPcoll;
 	}
 	
 	private void addBufNP(DataObject dao, BufAndProj bufNP) {
@@ -609,11 +608,11 @@ public class ModelSupport implements PropertyChangeListener {
 	    if (!curObj.isValid()) {//IZ#114182
                 return;
             }
-	    NativeFileItemSet set = (NativeFileItemSet) curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+	    NativeFileItemSet set = curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
 	    
 	    if( set != null && ! set.isEmpty() ) {
 		
-		EditorCookie editor = (EditorCookie) curObj.getCookie(EditorCookie.class);
+		EditorCookie editor = curObj.getCookie(EditorCookie.class);
 		Document doc = editor != null ? editor.getDocument() : null;
 		FileObject primaryFile = curObj.getPrimaryFile();
 		File file = FileUtil.toFile(primaryFile);
@@ -654,7 +653,7 @@ public class ModelSupport implements PropertyChangeListener {
                             Diagnostic.trace("object " + i + ":" + curObj.getName()); // NOI18N
                             Diagnostic.indent();
                             Diagnostic.trace("with file: " + curObj.getPrimaryFile()); // NOI18N
-			    NativeFileItemSet set = (NativeFileItemSet) curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
+			    NativeFileItemSet set = curObj.getNodeDelegate().getLookup().lookup(NativeFileItemSet.class);
 			    if( set == null ) {
 				Diagnostic.trace("NativeFileItemSet == null"); // NOI18N
 			    }
@@ -664,7 +663,7 @@ public class ModelSupport implements PropertyChangeListener {
 				    Diagnostic.trace("\t" + item.getNativeProject().getProjectDisplayName()); // NOI18N
 				}
 			    }
-                            EditorCookie editor = (EditorCookie) curObj.getCookie(EditorCookie.class);
+                            EditorCookie editor = curObj.getCookie(EditorCookie.class);
                             Diagnostic.trace("has editor support: " + editor); // NOI18N
                             Document doc = editor != null ? editor.getDocument() : null;
                             Diagnostic.trace("with document: " + doc); // NOI18N
@@ -686,7 +685,7 @@ public class ModelSupport implements PropertyChangeListener {
                 
                 DataObject[] objs = DataObject.getRegistry().getModified();
                 
-                Set/*<DataObject>*/ toDelete = new HashSet/*<DataObject>*/();
+                Set<DataObject> toDelete = new HashSet<DataObject>();
                 
                 // find all files, which stopped editing
                 for( Iterator iter = buffers.keySet().iterator(); iter.hasNext(); ) {
