@@ -38,7 +38,7 @@ import org.openide.util.NbBundle;
 public class EndpointGroupNode extends NamedBeanGroupNode {
 
     public EndpointGroupNode(SectionNodeView sectionNodeView, CommonDDBean commonDD, ASDDVersion version) {
-        super(sectionNodeView, commonDD, WebserviceEndpoint.PORT_COMPONENT_NAME, 
+        super(sectionNodeView, commonDD, WebserviceEndpoint.PORT_COMPONENT_NAME, WebserviceEndpoint.class,
                 NbBundle.getMessage(EndpointGroupNode.class, "LBL_EndpointGroupHeader"), // NOI18N
                 ICON_BASE_ENDPOINT_NODE, version);
         

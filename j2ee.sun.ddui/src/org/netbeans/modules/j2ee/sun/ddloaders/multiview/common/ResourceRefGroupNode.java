@@ -36,7 +36,7 @@ import org.openide.util.NbBundle;
 public class ResourceRefGroupNode extends NamedBeanGroupNode {
 
     public ResourceRefGroupNode(SectionNodeView sectionNodeView, CommonDDBean commonDD, ASDDVersion version) {
-        super(sectionNodeView, commonDD, ResourceRef.RES_REF_NAME, 
+        super(sectionNodeView, commonDD, ResourceRef.RES_REF_NAME, ResourceRef.class,
                 NbBundle.getMessage(ResourceRefGroupNode.class, "LBL_ResourceRefGroupHeader"), // NOI18N
                 ICON_BASE_RESOURCE_REF_NODE, version);
         
@@ -60,34 +60,6 @@ public class ResourceRefGroupNode extends NamedBeanGroupNode {
         }
         return resourceRefs;
     }
-
-//    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
-//        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
-//        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean stdParentDD = null;
-//        
-//        // get binding from parent node if this is ejb...
-//        Node parentNode = getParentNode();
-//        if(parentNode instanceof NamedBeanNode) {
-//            NamedBeanNode namedNode = (NamedBeanNode) parentNode;
-//            DDBinding parentBinding = namedNode.getBinding();
-//            stdParentDD = parentBinding.getStandardBean();
-//        } else {
-//            stdParentDD = getStandardRootDD();
-//        }
-//        
-//        if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
-//            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdParentDD;
-//            stdBeans = webApp.getResourceRef();
-//        } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.Ejb) {
-//            org.netbeans.modules.j2ee.dd.api.ejb.Ejb ejb = (org.netbeans.modules.j2ee.dd.api.ejb.Ejb) stdParentDD;
-//            stdBeans = ejb.getResourceRef();
-//        } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.client.AppClient) {
-//            org.netbeans.modules.j2ee.dd.api.client.AppClient appClient = (org.netbeans.modules.j2ee.dd.api.client.AppClient) stdParentDD;
-//            stdBeans = appClient.getResourceRef();
-//        }
-//        
-//        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
-//    }
 
     protected CommonDDBean addNewBean() {
         ResourceRef newResourceRef = (ResourceRef) createBean();

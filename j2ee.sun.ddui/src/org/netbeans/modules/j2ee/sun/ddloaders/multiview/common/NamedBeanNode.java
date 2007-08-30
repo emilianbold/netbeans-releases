@@ -199,16 +199,15 @@ public abstract class NamedBeanNode extends BaseSectionNode {
                 if(view instanceof DDSectionNodeView) {
                     XmlMultiViewDataObject dObj = ((DDSectionNodeView) view).getDataObject();
                     if(dObj instanceof SunDescriptorDataObject) {
-                        SunDescriptorDataObject sunDO = (SunDescriptorDataObject) dObj;
-                        sunDO.modelUpdatedFromUI();
-//                        dataObject.setChangedFromUI(true);
-
                         Node parentNode = getParentNode();
                         if(parentNode instanceof NamedBeanGroupNode) {
                             NamedBeanGroupNode groupNode = (NamedBeanGroupNode) parentNode;
                             groupNode.removeBean((CommonDDBean) key);
-                            groupNode.checkChildren(null);
                         }
+                        
+                        SunDescriptorDataObject sunDO = (SunDescriptorDataObject) dObj;
+                        sunDO.modelUpdatedFromUI();
+//                        sunDO.setChangedFromUI(true);
                     }
                 }
             }

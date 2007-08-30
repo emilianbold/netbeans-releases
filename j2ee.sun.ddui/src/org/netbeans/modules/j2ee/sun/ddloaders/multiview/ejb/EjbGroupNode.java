@@ -26,6 +26,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
@@ -45,7 +46,7 @@ public class EjbGroupNode extends NamedBeanGroupNode {
     private SunEjbJar sunEjbJar;
     
     public EjbGroupNode(SectionNodeView sectionNodeView, SunEjbJar sunEjbJar, ASDDVersion version) {
-        super(sectionNodeView, sunEjbJar, Ejb.EJB_NAME, 
+        super(sectionNodeView, sunEjbJar, Ejb.EJB_NAME, Ejb.class,
                 NbBundle.getMessage(EjbGroupNode.class, "LBL_EjbGroupHeader"), // NOI18N
                 ICON_EJB_GROUP_NODE, version);
         
@@ -86,8 +87,24 @@ public class EjbGroupNode extends NamedBeanGroupNode {
         if(eb != null) {
             Ejb ejb = (Ejb) bean;
             eb.removeEjb(ejb);
-            // TODO if eb is empty of all data now, we could remove it too.
+            if(eb.isTrivial(null)) {
+                sunEjbJar.setEnterpriseBeans(null);
+            }
         }
+    }
+    
+    /** EjbGroupNode usually gets events from <EnterpriseBeans> so we need
+     *  custom event source matching.
+     */
+    @Override
+    protected boolean isEventSource(Object source) {
+        if(source != null && (
+                source == sunEjbJar.getEnterpriseBeans() ||
+                super.isEventSource(source))
+                ) {
+            return true;
+        }
+        return false;
     }
 
     // ------------------------------------------------------------------------

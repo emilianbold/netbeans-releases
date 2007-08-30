@@ -44,7 +44,7 @@ public class ServletGroupNode extends NamedBeanGroupNode {
     private SunWebApp sunWebApp;
     
     public ServletGroupNode(SectionNodeView sectionNodeView, SunWebApp sunWebApp, ASDDVersion version) {
-        super(sectionNodeView, sunWebApp, Servlet.SERVLET_NAME, 
+        super(sectionNodeView, sunWebApp, Servlet.SERVLET_NAME, Servlet.class,
                 NbBundle.getMessage(ServletGroupNode.class, "LBL_ServletGroupHeader"), // NOI18N
                 ICON_BASE_SERVLET_NODE, version);
         
@@ -60,16 +60,6 @@ public class ServletGroupNode extends NamedBeanGroupNode {
         return sunWebApp.getServlet();
     }
     
-//    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
-//        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
-//        org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = getStandardRootDD();
-//        if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
-//            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdRootDD;
-//            stdBeans = webApp.getServlet();
-//        }
-//        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
-//    }
-
     protected CommonDDBean addNewBean() {
         Servlet newServlet = sunWebApp.newServlet();
         newServlet.setServletName("servlet" + getNewBeanId()); // NOI18N
@@ -85,32 +75,6 @@ public class ServletGroupNode extends NamedBeanGroupNode {
         Servlet servlet = (Servlet) bean;
         sunWebApp.removeServlet(servlet);
     }
-    
-//    protected Map<String, org.netbeans.modules.j2ee.dd.api.web.Servlet> getStandardServletMap() {
-//        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = getStandardBeansFromModel();
-//        Map<String, org.netbeans.modules.j2ee.dd.api.web.Servlet> stdBeanMap =
-//                new HashMap<String, org.netbeans.modules.j2ee.dd.api.web.Servlet>(stdBeans.length*2+3);
-//        
-//        for(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean bean: stdBeans) {
-//            if(bean instanceof org.netbeans.modules.j2ee.dd.api.web.Servlet) {
-//                org.netbeans.modules.j2ee.dd.api.web.Servlet stdServlet = (org.netbeans.modules.j2ee.dd.api.web.Servlet) bean;
-//                String name = stdServlet.getServletName();
-//                // Ignore unnamed standard servlets -- we don't know what to match them with
-//                // and they are illegal anyway.
-//                name = (name != null) ? name.trim() : name;
-//                if(Utils.notEmpty(name)) {
-//                    org.netbeans.modules.j2ee.dd.api.web.Servlet oldServlet = stdBeanMap.put(stdServlet.getServletName(), stdServlet);
-//                    if(oldServlet != null) {
-//                        System.out.println("Ack! duplicate standard names!!!");
-//                    }
-//                }
-//            } else {
-//                System.out.println("Ack! bean is of type : " + bean.getClass().getName());
-//            }
-//        }
-//        
-//        return stdBeanMap;
-//    }
     
     // ------------------------------------------------------------------------
     // DescriptorReader implementation
@@ -172,49 +136,5 @@ public class ServletGroupNode extends NamedBeanGroupNode {
     public String getStandardBeanNameProperty() {
         return STANDARD_SERVLET_NAME;
     }
-    
-    // ------------------------------------------------------------------------
-    // Metadata access    
-    // ------------------------------------------------------------------------
-//    public List<org.netbeans.modules.j2ee.dd.api.web.Servlet> getServletMetadataModel() {
-//        List<org.netbeans.modules.j2ee.dd.api.web.Servlet> result = Collections.EMPTY_LIST;
-//
-//        try {
-//            MetadataModel<WebAppMetadata> webModel = getMetadataModel(WebAppMetadata.class);
-//            if(webModel != null) {
-//                result = webModel.runReadAction(new MetadataModelAction<WebAppMetadata, List<org.netbeans.modules.j2ee.dd.api.web.Servlet>>() {
-//                    public List<org.netbeans.modules.j2ee.dd.api.web.Servlet> run(WebAppMetadata metadata) throws Exception {
-//                        List<org.netbeans.modules.j2ee.dd.api.web.Servlet> servletList = new ArrayList<org.netbeans.modules.j2ee.dd.api.web.Servlet>();
-//                        org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = metadata.getRoot();
-//                        org.netbeans.modules.j2ee.dd.api.web.Servlet [] servlets = webApp.getServlet();
-//                        if(servlets != null) {
-//                            for(org.netbeans.modules.j2ee.dd.api.web.Servlet servlet : servlets) {
-//                                if(Utils.notEmpty(servlet.getServletName())) {
-//                                    org.netbeans.modules.j2ee.dd.api.web.Servlet servletCopy = 
-//                                            (org.netbeans.modules.j2ee.dd.api.web.Servlet) webApp.createBean("Servlet");
-//                                    servletCopy.setServletName(servlet.getServletName());
-//                                    org.netbeans.modules.j2ee.dd.api.common.RunAs runAs = servlet.getRunAs();
-//                                    if(runAs != null && Utils.notEmpty(runAs.getRoleName())) {
-//                                        org.netbeans.modules.j2ee.dd.api.common.RunAs runAsCopy = 
-//                                                (org.netbeans.modules.j2ee.dd.api.common.RunAs) servlet.createBean("RunAs");
-//                                        runAsCopy.setRoleName(runAs.getRoleName());
-//                                        servletCopy.setRunAs(runAsCopy);
-//                                    }
-//                                    servletList.add(servletCopy);
-//                                }
-//                            }
-//                        }
-//                        return servletList;
-//                    }
-//                }); 
-//            }
-//        } catch (MetadataModelException ex) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//        } catch (IOException ex) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//        }
-//
-//        return result;
-//    }
     
 }

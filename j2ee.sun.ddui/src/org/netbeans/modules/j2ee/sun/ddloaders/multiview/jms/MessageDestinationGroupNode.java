@@ -40,10 +40,18 @@ import org.openide.util.NbBundle;
  */
 public class MessageDestinationGroupNode extends NamedBeanGroupNode {
 
+    private final SunWebApp sunWebApp;
+    private final SunEjbJar sunEjbJar;
+    private final SunApplicationClient sunAppClient;
+    
     public MessageDestinationGroupNode(SectionNodeView sectionNodeView, RootInterface rootDD, ASDDVersion version) {
-        super(sectionNodeView, rootDD, MessageDestination.MESSAGE_DESTINATION_NAME, 
+        super(sectionNodeView, rootDD, MessageDestination.MESSAGE_DESTINATION_NAME, MessageDestination.class,
                 NbBundle.getMessage(MessageDestinationGroupNode.class, "LBL_MessageDestinationGroupHeader"), // NOI18N
                 ICON_BASE_MESSAGE_DESTINATION_NODE, version);
+        
+        sunWebApp = (commonDD instanceof SunWebApp) ? (SunWebApp) commonDD : null;
+        sunEjbJar = (commonDD instanceof SunEjbJar) ? (SunEjbJar) commonDD : null;
+        sunAppClient = (commonDD instanceof SunApplicationClient) ? (SunApplicationClient) commonDD : null;
         
         enableAddAction(NbBundle.getMessage(MessageDestinationGroupNode.class, "LBL_AddMessageDestination")); // NOI18N
     }
@@ -56,13 +64,13 @@ public class MessageDestinationGroupNode extends NamedBeanGroupNode {
         MessageDestination [] destinations = null;
         
         // TODO find a better way to do this for common beans.
-        if(commonDD instanceof SunWebApp) {
-            destinations = ((SunWebApp) commonDD).getMessageDestination();
-        } else if(commonDD instanceof SunEjbJar) {
-            EnterpriseBeans eb = ((SunEjbJar) commonDD).getEnterpriseBeans();
+        if(sunWebApp != null) {
+            destinations = sunWebApp.getMessageDestination();
+        } else if(sunEjbJar != null) {
+            EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
             destinations = (eb != null) ? eb.getMessageDestination() : null;
-        } else if(commonDD instanceof SunApplicationClient) {
-            destinations = ((SunApplicationClient) commonDD).getMessageDestination();
+        } else if(sunWebApp != null) {
+            destinations = sunAppClient.getMessageDestination();
         }
         return destinations;
     }
@@ -77,18 +85,17 @@ public class MessageDestinationGroupNode extends NamedBeanGroupNode {
         MessageDestination newMsgDest = (MessageDestination) newBean;
         
         // TODO find a better way to do this for common beans.
-        if(commonDD instanceof SunWebApp) {
-            ((SunWebApp) commonDD).addMessageDestination(newMsgDest);
-        } else if(commonDD instanceof SunEjbJar) {
-            SunEjbJar sunEjbJar = ((SunEjbJar) commonDD);
+        if(sunWebApp != null) {
+            sunWebApp.addMessageDestination(newMsgDest);
+        } else if(sunEjbJar != null) {
             EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
             if(eb == null) {
                 eb = sunEjbJar.newEnterpriseBeans();
                 sunEjbJar.setEnterpriseBeans(eb);
             }
             eb.addMessageDestination(newMsgDest);
-        } else if(commonDD instanceof SunApplicationClient) {
-            ((SunApplicationClient) commonDD).addMessageDestination(newMsgDest);
+        } else if(sunAppClient != null) {
+            sunAppClient.addMessageDestination(newMsgDest);
         }
         
         return newMsgDest;
@@ -98,18 +105,34 @@ public class MessageDestinationGroupNode extends NamedBeanGroupNode {
         MessageDestination msgDest = (MessageDestination) bean;
         
         // TODO find a better way to do this for common beans.
-        if(commonDD instanceof SunWebApp) {
-            ((SunWebApp) commonDD).removeMessageDestination(msgDest);
-        } else if(commonDD instanceof SunEjbJar) {
-            SunEjbJar sunEjbJar = ((SunEjbJar) commonDD);
+        if(sunWebApp != null) {
+            sunWebApp.removeMessageDestination(msgDest);
+        } else if(sunEjbJar != null) {
             EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
             if(eb != null) {
                 eb.removeMessageDestination(msgDest);
-                // TODO if eb is empty of all data now, we could remove it too.
+                if(eb.isTrivial(null)) {
+                    sunEjbJar.setEnterpriseBeans(null);
+                }
             }
-        } else if(commonDD instanceof SunApplicationClient) {
-            ((SunApplicationClient) commonDD).removeMessageDestination(msgDest);
+        } else if(sunAppClient != null) {
+            sunAppClient.removeMessageDestination(msgDest);
         }
+    }
+    
+    /** MessageDestinationGroupNode gets events from <EnterpriseBeans> when in 
+     *  sun-ejb-jar so we need custom event source matching.
+     */
+    @Override
+    protected boolean isEventSource(Object source) {
+        if(source != null && (
+                sunEjbJar != null && source == sunEjbJar.getEnterpriseBeans() ||
+                super.isEventSource(source))
+                ) {
+            return true;
+        }
+        return false;
+        
     }
     
     // ------------------------------------------------------------------------
@@ -129,15 +152,15 @@ public class MessageDestinationGroupNode extends NamedBeanGroupNode {
         MessageDestination newMsgDest = null;
         
         // TODO find a better way to do this for common beans.
-        if(commonDD instanceof SunWebApp) {
-            newMsgDest = ((SunWebApp) commonDD).newMessageDestination();
-        } else if(commonDD instanceof SunEjbJar) {
+        if(sunWebApp != null) {
+            newMsgDest = sunWebApp.newMessageDestination();
+        } else if(sunEjbJar != null) {
             if(ejbJarMesgDestFactory == null) {
-                ejbJarMesgDestFactory = ((SunEjbJar) commonDD).newEnterpriseBeans();
+                ejbJarMesgDestFactory = sunEjbJar.newEnterpriseBeans();
             }
             newMsgDest = ejbJarMesgDestFactory.newMessageDestination();
-        } else if(commonDD instanceof SunApplicationClient) {
-            newMsgDest = ((SunApplicationClient) commonDD).newMessageDestination();
+        } else if(sunAppClient != null) {
+            newMsgDest = sunAppClient.newMessageDestination();
         }
         
         return newMsgDest;

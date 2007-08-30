@@ -39,10 +39,16 @@ import org.openide.util.NbBundle;
  */
 public class WebServiceGroupNode extends NamedBeanGroupNode {
 
+    private final SunWebApp sunWebApp;
+    private final SunEjbJar sunEjbJar;
+    
     public WebServiceGroupNode(SectionNodeView sectionNodeView, CommonDDBean commonDD, ASDDVersion version) {
-        super(sectionNodeView, commonDD, WebserviceDescription.WEBSERVICE_DESCRIPTION_NAME, 
+        super(sectionNodeView, commonDD, WebserviceDescription.WEBSERVICE_DESCRIPTION_NAME, WebserviceDescription.class,
                 NbBundle.getMessage(WebServiceGroupNode.class, "LBL_WebServiceGroupHeader"), // NOI18N
                 ICON_BASE_SERVICE_REF_NODE, version);
+        
+        sunWebApp = (commonDD instanceof SunWebApp) ? (SunWebApp) commonDD : null;
+        sunEjbJar = (commonDD instanceof SunEjbJar) ? (SunEjbJar) commonDD : null;
         
         enableAddAction(NbBundle.getMessage(WebServiceGroupNode.class, "LBL_AddWebService")); // NOI18N
     }
@@ -55,10 +61,10 @@ public class WebServiceGroupNode extends NamedBeanGroupNode {
         WebserviceDescription [] webServiceDesc = null;
         
         // TODO find a better way to do this for common beans.
-        if(commonDD instanceof SunWebApp) {
-            webServiceDesc = ((SunWebApp) commonDD).getWebserviceDescription();
-        } else if(commonDD instanceof SunEjbJar) {
-            EnterpriseBeans eb = ((SunEjbJar) commonDD).getEnterpriseBeans();
+        if(sunWebApp != null) {
+            webServiceDesc = sunWebApp.getWebserviceDescription();
+        } else if(sunEjbJar != null) {
+            EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
             if(eb != null) {
                 webServiceDesc = eb.getWebserviceDescription();
             }
@@ -77,10 +83,9 @@ public class WebServiceGroupNode extends NamedBeanGroupNode {
         WebserviceDescription newWebServiceDesc = (WebserviceDescription) newBean;
         
         // TODO find a better way to do this for common beans.
-        if(commonDD instanceof SunWebApp) {
-            ((SunWebApp) commonDD).addWebserviceDescription(newWebServiceDesc);
-        } else if(commonDD instanceof SunEjbJar) {
-            SunEjbJar sunEjbJar = (SunEjbJar) commonDD;
+        if(sunWebApp != null) {
+            sunWebApp.addWebserviceDescription(newWebServiceDesc);
+        } else if(sunEjbJar != null) {
             EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
             if(eb == null) {
                 eb = sunEjbJar.newEnterpriseBeans();
@@ -96,17 +101,34 @@ public class WebServiceGroupNode extends NamedBeanGroupNode {
         WebserviceDescription webServiceDesc = (WebserviceDescription) bean;
         
         // TODO find a better way to do this for common beans.
-        if(commonDD instanceof SunWebApp) {
-            ((SunWebApp) commonDD).removeWebserviceDescription(webServiceDesc);
-        } else if(commonDD instanceof SunEjbJar) {
-            EnterpriseBeans eb = ((SunEjbJar) commonDD).getEnterpriseBeans();
+        if(sunWebApp != null) {
+            sunWebApp.removeWebserviceDescription(webServiceDesc);
+        } else if(sunEjbJar != null) {
+            EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
             if(eb != null) {
                 eb.removeWebserviceDescription(webServiceDesc);
+                if(eb.isTrivial(null)) {
+                    sunEjbJar.setEnterpriseBeans(null);
+                }
             }
-            // TODO if eb is empty of all data now, we could remove it too.
         }
     }
     
+    /** WebServiceGroupNode gets events from <EnterpriseBeans> when in 
+     *  sun-ejb-jar so we need custom event source matching.
+     */
+    @Override
+    protected boolean isEventSource(Object source) {
+        if(source != null && (
+                sunEjbJar != null && source == sunEjbJar.getEnterpriseBeans() ||
+                super.isEventSource(source))
+                ) {
+            return true;
+        }
+        return false;
+        
+    }
+
     // ------------------------------------------------------------------------
     // Support for DescriptorReader interface implementation
     // ------------------------------------------------------------------------
@@ -130,10 +152,9 @@ public class WebServiceGroupNode extends NamedBeanGroupNode {
         WebserviceDescription newWebServiceDesc = null;
         
         // TODO find a better way to do this for common beans.
-        if(commonDD instanceof SunWebApp) {
-            newWebServiceDesc = ((SunWebApp) commonDD).newWebserviceDescription();
-        } else if(commonDD instanceof SunEjbJar) {
-            SunEjbJar sunEjbJar = (SunEjbJar) commonDD;
+        if(sunWebApp != null) {
+            newWebServiceDesc = sunWebApp.newWebserviceDescription();
+        } else if(sunEjbJar != null) {
             if(ejbWebserviceDescFactory == null) {
                 ejbWebserviceDescFactory = sunEjbJar.newEnterpriseBeans();
             }

@@ -37,7 +37,7 @@ public class PortInfoGroupNode extends NamedBeanGroupNode {
     private ServiceRef serviceRef;
     
     public PortInfoGroupNode(SectionNodeView sectionNodeView, ServiceRef serviceRef, ASDDVersion version) {
-        super(sectionNodeView, serviceRef, ServiceRef.SERVICE_REF_NAME, 
+        super(sectionNodeView, serviceRef, ServiceRef.SERVICE_REF_NAME, PortInfo.class,
                 NbBundle.getMessage(ServiceRefGroupNode.class, "LBL_PortInfoGroupHeader"), // NOI18N
                 ICON_BASE_PORT_INFO_NODE, version);
         

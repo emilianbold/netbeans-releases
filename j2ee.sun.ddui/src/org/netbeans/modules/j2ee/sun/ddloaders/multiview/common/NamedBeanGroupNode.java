@@ -88,6 +88,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     
     protected CommonDDBean commonDD;
     private String beanNameProperty;
+    private Class beanClass;
     private AddBeanAction addBeanAction;
     
     private volatile boolean doCheck = false;
@@ -96,12 +97,13 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     private static AtomicInteger newBeanId = new AtomicInteger(1);
     
     public NamedBeanGroupNode(SectionNodeView sectionNodeView, CommonDDBean commonDD,
-            String beanNameProperty, String header, String iconBase,
+            String beanNameProperty, Class beanClass, String header, String iconBase,
             ASDDVersion version) {
         super(sectionNodeView, new NamedChildren(), commonDD, version, header, iconBase);
         
         this.commonDD = commonDD;
         this.beanNameProperty = beanNameProperty;
+        this.beanClass = beanClass;
         
         setExpanded(true);
     }
@@ -122,6 +124,18 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     
     protected abstract void removeBean(CommonDDBean bean);
     
+    /** This method determines whether a given sun DD event source is one this
+     *  group should listen to.  Generally this means the source is equivalent
+     *  to the sun DD object owned by this group.
+     * 
+     *  Override this when event source matching is not this simple (See
+     *  EjbGroupNode.java).
+     */
+    protected boolean isEventSource(Object source) {
+        return source == commonDD || 
+                (source instanceof RootInterface && commonDD instanceof RootInterface &&
+                ((RootInterface) commonDD).isEventSource((RootInterface) source));
+    }
     
     @Override
     public SectionNodeInnerPanel createInnerPanel() {
@@ -131,11 +145,11 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
             public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
 //                System.out.println(NamedBeanGroupNode.this.getClass().getSimpleName() + ".BoxPanel.dataModelPropertyChange: " + 
 //                        source + ", " + propertyName + ", " + oldValue + ", " + newValue);
-                if(source == commonDD || (source instanceof RootInterface && commonDD instanceof RootInterface &&
-                        ((RootInterface) commonDD).isEventSource((RootInterface) source))
-                        ) {
-                    if(oldValue != null && newValue == null || oldValue == null && newValue != null) {
-                        checkChildren(null);
+                // Check for matching bean first, then check for matching event source.
+                if(newValue == null && beanClass.isInstance(oldValue) || 
+                        oldValue == null && beanClass.isInstance(newValue)) {
+                    if(isEventSource(source)) {
+                        checkChildren((CommonDDBean) newValue);
                     }
                 }
             }
@@ -171,6 +185,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     }    
     
     public void checkChildren(final CommonDDBean focusBean) {
+//        System.out.println(this.getClass().getSimpleName() + ".checkChildren( " + focusBean + " )");
         processor.post(new Runnable() {
             public void run() {
                 // Compute dataset
@@ -293,10 +308,16 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         }
         
         if(focusBean != null && focusNode != null) {
-            SectionNodePanel nodePanel = focusNode.getSectionNodePanel();
+            final SectionNodePanel nodePanel = focusNode.getSectionNodePanel();
             nodePanel.open();
             nodePanel.scroll();
-            nodePanel.setActive(true);
+
+            // XXX hack to work around focus bug on reference panel.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    nodePanel.setActive(true);
+                }
+            });
         }
     }
     
@@ -519,16 +540,18 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
             if(view instanceof DDSectionNodeView) {
                 XmlMultiViewDataObject dObj = ((DDSectionNodeView) view).getDataObject();
                 if(dObj instanceof SunDescriptorDataObject) {
+                    Node parent = getParentNode();
+                    if(parent instanceof ReferencesNode) {
+                        parent = ((ReferencesNode) parent).getParentNode();
+                    }
+                    if(parent instanceof NamedBeanNode) { // ejb parent node
+                        ((NamedBeanNode) parent).addVirtualBean();
+                    }
+                    addNewBean();
+                    
                     SunDescriptorDataObject sunDO = (SunDescriptorDataObject) dObj;
                     sunDO.modelUpdatedFromUI();
-                    // dataObject.setChangedFromUI(true);
-                    
-                    CommonDDBean newBean = addNewBean();
-                    Node parent = getParentNode();
-                    if(parent instanceof NamedBeanNode) { // ejb parent node
-                        ((NamedBeanNode) getParentNode()).addVirtualBean();
-                    }
-                    checkChildren(newBean);
+                    // sunDO.setChangedFromUI(true);
                 }
             }
         }
@@ -538,16 +561,6 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
 
         public NamedChildren() {
             setComparator(this);
-        }
-        
-        @Override
-        protected void addNotify() {
-            super.addNotify();
-            Node n = getNode();
-            if(n instanceof NamedBeanGroupNode) {
-                NamedBeanGroupNode owner = (NamedBeanGroupNode) n;
-                owner.checkChildren(null);
-            }
         }
         
         @Override

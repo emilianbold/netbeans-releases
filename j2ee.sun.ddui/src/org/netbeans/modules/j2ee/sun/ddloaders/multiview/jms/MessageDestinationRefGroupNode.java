@@ -41,7 +41,7 @@ import org.openide.util.NbBundle;
 public class MessageDestinationRefGroupNode extends NamedBeanGroupNode {
 
     public MessageDestinationRefGroupNode(SectionNodeView sectionNodeView, CommonDDBean commonDD, ASDDVersion version) {
-        super(sectionNodeView, commonDD, MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME, 
+        super(sectionNodeView, commonDD, MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME, MessageDestinationRef.class, 
                 NbBundle.getMessage(MessageDestinationRefGroupNode.class, "LBL_MessageDestinationRefGroupHeader"), // NOI18N
                 ICON_BASE_MESSAGE_DESTINATION_NODE, version);
         

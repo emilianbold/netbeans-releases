@@ -37,7 +37,7 @@ import org.openide.util.NbBundle;
 public class SecurityRoleMappingGroupNode extends NamedBeanGroupNode {
 
     public SecurityRoleMappingGroupNode(SectionNodeView sectionNodeView, RootInterface rootDD, ASDDVersion version) {
-        super(sectionNodeView, rootDD, SecurityRoleMapping.ROLE_NAME, 
+        super(sectionNodeView, rootDD, SecurityRoleMapping.ROLE_NAME, SecurityRoleMapping.class,
                 NbBundle.getMessage(SecurityRoleMappingGroupNode.class, "LBL_SecurityRoleMappingGroupHeader"), // NOI18N
                 ICON_BASE_SECURITY_ROLE_MAPPING_NODE, version);
         

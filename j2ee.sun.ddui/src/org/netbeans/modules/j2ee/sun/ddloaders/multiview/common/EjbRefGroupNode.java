@@ -27,7 +27,6 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 
@@ -37,7 +36,7 @@ import org.openide.util.NbBundle;
 public class EjbRefGroupNode extends NamedBeanGroupNode {
 
     public EjbRefGroupNode(SectionNodeView sectionNodeView, CommonDDBean commonDD, ASDDVersion version) {
-        super(sectionNodeView, commonDD, EjbRef.EJB_REF_NAME, 
+        super(sectionNodeView, commonDD, EjbRef.EJB_REF_NAME, EjbRef.class,
                 NbBundle.getMessage(EjbRefGroupNode.class, "LBL_EjbRefGroupHeader"), // NOI18N
                 ICON_BASE_EJB_REF_NODE, version);
         
@@ -62,34 +61,6 @@ public class EjbRefGroupNode extends NamedBeanGroupNode {
         return ejbRefs;
     }
     
-//    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
-//        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
-//        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean stdParentDD = null;
-//        
-//        // get binding from parent node if this is ejb...
-//        Node parentNode = getParentNode();
-//        if(parentNode instanceof NamedBeanNode) {
-//            NamedBeanNode namedNode = (NamedBeanNode) parentNode;
-//            DDBinding parentBinding = namedNode.getBinding();
-//            stdParentDD = parentBinding.getStandardBean();
-//        } else {
-//            stdParentDD = getStandardRootDD();
-//        }
-//        
-//        if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
-//            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdParentDD;
-//            stdBeans = webApp.getEjbRef();
-//        } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.Ejb) {
-//            org.netbeans.modules.j2ee.dd.api.ejb.Ejb ejb = (org.netbeans.modules.j2ee.dd.api.ejb.Ejb) stdParentDD;
-//            stdBeans = ejb.getEjbRef();
-//        } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.client.AppClient) {
-//            org.netbeans.modules.j2ee.dd.api.client.AppClient appClient = (org.netbeans.modules.j2ee.dd.api.client.AppClient) stdParentDD;
-//            stdBeans = appClient.getEjbRef();
-//        }
-//        
-//        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
-//    }
-
     protected CommonDDBean addNewBean() {
         EjbRef newEjbRef = (EjbRef) createBean();
         newEjbRef.setEjbRefName("ejb_ref" + getNewBeanId()); // NOI18N
