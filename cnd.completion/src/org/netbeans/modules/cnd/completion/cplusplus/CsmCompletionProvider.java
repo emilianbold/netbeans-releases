@@ -107,6 +107,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             this.creationCaretOffset = caretOffset;
         }
         
+        @Override
         protected void preQueryUpdate(JTextComponent component) {
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();
@@ -144,10 +145,12 @@ public class CsmCompletionProvider implements CompletionProvider {
             resultSet.finish();
         }
         
+        @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
         
+        @Override
         protected boolean canFilter(JTextComponent component) {
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();
@@ -167,6 +170,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             return (filterPrefix != null);
         }        
         
+        @Override
         protected void filter(CompletionResultSet resultSet) {
             if (filterPrefix != null && queryResult != null) {
                 // no more title in NB 6 in completion window
@@ -232,6 +236,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             resultSet.finish();
         }
         
+        @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
@@ -314,6 +319,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                         super(content);
                     }
                     
+                    @Override
                     protected void showJavaDoc(final String preparedText) {
                         text = preparedText;                                
                     }
@@ -384,10 +390,12 @@ public class CsmCompletionProvider implements CompletionProvider {
             resultSet.finish();
         }
         
+        @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
         
+        @Override
         protected boolean canFilter(JTextComponent component) {
             String text = null;
             int caretOffset = component.getCaretPosition();            
@@ -433,6 +441,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             return otherMethodContext || filter;
         }
         
+        @Override
         protected void filter(CompletionResultSet resultSet) {
             if (!otherMethodContext) {
                 resultSet.setAnchorOffset(queryAnchorOffset);
