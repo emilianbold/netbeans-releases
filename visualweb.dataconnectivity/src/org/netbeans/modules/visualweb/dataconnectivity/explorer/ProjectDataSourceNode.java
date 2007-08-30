@@ -21,8 +21,6 @@ package org.netbeans.modules.visualweb.dataconnectivity.explorer;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.BrokenDataSourceSupport;
 import javax.swing.Action;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.netbeans.modules.visualweb.dataconnectivity.actions.ResolveProjectDataSourceAction;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourcesListener;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourcesChangeEvent;
@@ -30,9 +28,9 @@ import java.awt.Image;
 import java.io.CharConversionException;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.modules.visualweb.dataconnectivity.actions.RefreshProjectDataSourceAction;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
+import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
@@ -56,7 +54,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     public ProjectDataSourceNode(org.netbeans.api.project.Project project) {
         super(new ProjectDataSourceNodeChildren(project));
         nbProject = project;
-        CurrentProject.getInstance().setProject(nbProject);
+//        CurrentProject.getInstance().setProject(nbProject);
         // Create a weak listener so that the connection listener can be GC'd when listener for a project is no longer referenced
         ConnectionManager.getDefault().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getDefault()));
         initPuppy() ;
@@ -88,23 +86,9 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         setValue("propertiesHelpID", "projrave_ui_elements_project_nav_node_prop_sheets_data_source_node_props"); // NOI18N
         addListener();      
     }
-
-    // Create the popup menu:
-//    public Action[] getActions(boolean context) {
-////        if (ImportDataSource.isLegacyProject(nbProject)) {
-////            return new Action[] {
-////                SystemAction.get(ResolveProjectDataSourceAction.class),
-////                SystemAction.get(RefreshProjectDataSourceAction.class)
-////            };
-////        } else {
-////            return new Action[] {         
-////                SystemAction.get(RefreshProjectDataSourceAction.class)
-////            };
-//        }
-//    }
+  
 
     public Action getPreferredAction() {
-//        return SystemAction.get(ResolveProjectDataSourceAction.class);
         return null;
     }
 
@@ -124,8 +108,10 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         boolean isBroken = false;         
         
         if (ImportDataSource.isLegacyProject(nbProject)) {
-            DataSourceResolver.getInstance().modelProjectForDataSources(nbProject);
-        }                            
+            if (!new ProjectDataSourceManager(nbProject).isRequestedJdbcResourceAvailable()) {
+                DataSourceResolver.getInstance().modelProjectForDataSources(nbProject);
+            }
+        }                       
         
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
         if (this.getChildren().getNodes().length > 0) {
@@ -138,6 +124,9 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         
         if (isBroken){
             Image brokenBadge = Utilities.mergeImages(dSContainerImage, brokenDsReferenceBadge, 8, 0);
+            if (ImportDataSource.isLegacyProject(nbProject)) {
+                ImportDataSource.showAlert();
+            }
             return brokenBadge;
         } else{
             return dSContainerImage;
