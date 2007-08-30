@@ -69,6 +69,7 @@ import org.netbeans.modules.xml.xam.Referenceable;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 import prefuse.Constants;
 import prefuse.Display;
 import prefuse.Visualization;
@@ -217,14 +218,17 @@ public class WhereUsedView implements View, PropertyChangeListener {
 //            System.out.println("AnalysisView dimensions:" + dim.toString());
             Dimension displayDim = display.getBounds().getSize();
             if (dim.width < 1  || dim.height < 1){
-                display.setSize(dim.width < 1?AnalysisConstants.DISPLAY_PREFERRED_WIDTH:
-                    dim.width,dim.height<1?AnalysisConstants.DISPLAY_PREFERRED_HEIGHT:dim.height);
+                //when the view is first displayed, if we go with preferred width (i.e 300)
+                //then the usages graph is very small and unreadable
+                //get the width of the netbeans IDE running, subtract 100 to be on the safe side and use that
+                int width = WindowManager.getDefault().getMainWindow().getWidth() -100;
+                display.setSize(dim.width < 1? width:dim.width,dim.height<1?AnalysisConstants.DISPLAY_PREFERRED_HEIGHT:dim.height);
                 viewer.getPanel().setSize(display.getSize());
             } else if (!dim.equals(displayDim)) {
                 display.setSize(dim.width, dim.height);
             }
             
-          //  display.setSize(740, 500);
+          //  display.setSize(1500, 200);
             //viewer.getPanel().setSize(display.getSize());
             this.displayPanel = new JPanel(new BorderLayout());
             displayPanel.add(display, BorderLayout.CENTER);
