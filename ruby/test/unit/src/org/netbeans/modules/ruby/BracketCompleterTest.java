@@ -653,7 +653,7 @@ public class BracketCompleterTest extends RubyTestBase {
     
 
     public void testPercentBackspace() throws Exception {
-        deleteChar("x=\"#{^}\"", "x=\"^\"");
+        deleteChar("x=\"#{^}\"", "x=\"#^\"");
     }
 
     public void testPercentBackspace2() throws Exception {
@@ -661,7 +661,7 @@ public class BracketCompleterTest extends RubyTestBase {
     }
 
     public void testPercentBackspace3() throws Exception {
-        deleteChar("x=\"a#{^}b\"", "x=\"a^b\"");
+        deleteChar("x=\"a#{^}b\"", "x=\"a#^b\"");
     }
     
     public void testContComment() throws Exception {

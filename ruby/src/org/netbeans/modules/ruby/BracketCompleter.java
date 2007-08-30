@@ -1078,8 +1078,8 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 String s = document.getText(dotPos-1, 2);
                 if ("#}".equals(s)) {
                     // We have just deleted a #{} segment
-                    doc.remove(dotPos-1, 2);
-                    target.getCaret().setDot(dotPos-1);
+                    doc.remove(dotPos, 1);
+                    target.getCaret().setDot(dotPos);
                 }
             }
         }
