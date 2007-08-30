@@ -25,19 +25,16 @@
 
 package org.netbeans.modules.uml;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.util.Properties;
 import org.openide.modules.ModuleInstall;
 import java.util.zip.*;
-import java.util.Enumeration;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -86,6 +83,10 @@ public class UMLCoreModule extends ModuleInstall
 				return;
 			}
 
+                        if (Utilities.isMac()) {
+                               showMacWarning() ;
+                        }
+                        
 			ClassLoader loader = UMLCoreModule.class.getClassLoader();
 			InputStream in = null;
 			if (loader!=null)
@@ -137,4 +138,18 @@ public class UMLCoreModule extends ModuleInstall
         }
    }
  
+   private void showMacWarning() {
+        DialogDescriptor dd = new DialogDescriptor(
+                NbBundle.getMessage (UMLCoreModule.class, "MAC_WARNING"), 
+                NbBundle.getMessage (UMLCoreModule.class, "MAC_WARNING_TITLE"), 
+                 false, 
+                 new Object[] {DialogDescriptor.OK_OPTION}, 
+                 null, 
+                 DialogDescriptor.DEFAULT_ALIGN,
+                 null,
+                 null)  ;
+        
+        DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
+    }
+   
 }
