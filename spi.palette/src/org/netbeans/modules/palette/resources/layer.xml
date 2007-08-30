@@ -45,7 +45,9 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Modes">
             <file name="commonpalette.wsmode" url="commonpalette.wsmode"/>
             <folder name="commonpalette">
-                <file name="CommonPalette.wstcref" url="CommonPalette.wstcref"/>
+                <file name="CommonPalette.wstcref" url="CommonPalette.wstcref">
+                    <attr name="position" intvalue="100"/>
+                </file>
             </folder>
         </folder>
 
