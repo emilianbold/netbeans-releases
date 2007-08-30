@@ -26,6 +26,7 @@ import java.io.*;
 import java.util.Properties;
 import java.util.Set;
 import freemarker.template.*;
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.openide.filesystems.FileAttributeEvent;
@@ -48,7 +49,9 @@ class FreemarkerEngine extends AbstractScriptEngine {
     public static final String FREEMARKER_TEMPLATE_DIR = "com.sun.script.freemarker.template.dir";
     public static final String FREEMARKER_TEMPLATE = "org.openide.filesystems.FileObject";
     
-    private static Map<FileObject,Template> templates = new WeakHashMap<FileObject, Template>();
+    private static Map<FileObject,Template> templates = Collections.synchronizedMap(
+        new WeakHashMap<FileObject, Template>()
+    );
 
     // my factory, may be null
     private volatile ScriptEngineFactory factory;
@@ -85,17 +88,19 @@ class FreemarkerEngine extends AbstractScriptEngine {
         Template template = null;
         try {
             if (fo != null) {
-                template = templates.get(fo);
+                template = templates.remove(fo);
             }
             
             if (template == null) {
                 template = new MyTemplate(fo, fileName, reader, conf);
-                if (fo != null) {
-                    templates.put(fo, template);
-                }
+            } else {
+                ((MyTemplate)template).conf = conf;
             }
             template.process(null, out);
             out.flush();
+            if (fo != null) {
+                templates.put(fo, template);
+            }
         } catch (Exception exp) {
             throw new ScriptException(exp);
         }
@@ -229,9 +234,16 @@ class FreemarkerEngine extends AbstractScriptEngine {
     
     private static final class MyTemplate extends Template 
     implements FileChangeListener {
+        public Configuration conf;
+        
         public MyTemplate(FileObject fo, String s, Reader r, Configuration c) throws IOException {
             super(s, r, c);
             fo.addFileChangeListener(FileUtil.weakFileChangeListener(this, fo));
+        }
+
+        @Override
+        public Configuration getConfiguration() {
+            return conf == null ? super.getConfiguration() : conf;
         }
         
         public void fileFolderCreated(FileEvent fe) {

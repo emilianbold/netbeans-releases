@@ -18,7 +18,6 @@ package org.netbeans.api.templates;
 import freemarker.ext.beans.BeansWrapper;
 import java.awt.Color;
 import java.awt.Panel;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
@@ -321,13 +320,39 @@ public class ProcessorTest extends TestCase {
         txt = "<html><h2>${title}</h2></html>";
         os.write(txt.getBytes());
         os.close();
-        
+      
         w = new StringWriter();
         apply(template, w);
         
         exp = "<html><h2>Nazdar</h2></html>";
         assertEquals("Second run", exp, w.toString());
     }
+
+    public void testChangeOfParams() throws Exception {
+        FileObject template = FileUtil.createData(root, "some.txt");
+        OutputStream os = template.getOutputStream();
+        String txt = "<${html}><h1>${title}</h1></${html}>";
+        os.write(txt.getBytes());
+        os.close();
+        template.setAttribute("title", "Nazdar");
+        
+        StringWriter w = new StringWriter();
+        
+        Map<String,Object> param = new HashMap<String, Object>();
+        param.put("html", "html");
+        apply(template, w, param);
+        
+        String exp = "<html><h1>Nazdar</h1></html>";
+        assertEquals(exp, w.toString());
+        
+        param.put("html", "xml");
+        w = new StringWriter();
+        apply(template, w, param);
+        
+        exp = "<xml><h1>Nazdar</h1></xml>";
+        assertEquals("Second run", exp, w.toString());
+    }
+    
     
     static void apply(FileObject template, Writer w) throws Exception {
         apply(template, w, Collections.<String,Object>emptyMap());
