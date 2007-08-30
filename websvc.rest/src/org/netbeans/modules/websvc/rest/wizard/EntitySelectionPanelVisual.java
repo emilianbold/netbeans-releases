@@ -120,8 +120,9 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
 
         listAvailable.setCellRenderer(ENTITY_LIST_RENDERER);
         jScrollPane1.setViewportView(listAvailable);
-        listAvailable.getAccessibleContext().setAccessibleName(null);
-        listAvailable.getAccessibleContext().setAccessibleDescription(null);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wizard/Bundle"); // NOI18N
+        listAvailable.getAccessibleContext().setAccessibleName(bundle.getString("AvailableEntityClasses")); // NOI18N
+        listAvailable.getAccessibleContext().setAccessibleDescription(bundle.getString("DESC_AvailableEntityClasses")); // NOI18N
 
         listSelected.setCellRenderer(ENTITY_LIST_RENDERER);
         listSelected.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -135,11 +136,10 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
             }
         });
         jScrollPane2.setViewportView(listSelected);
-        listSelected.getAccessibleContext().setAccessibleName(null);
-        listSelected.getAccessibleContext().setAccessibleDescription(null);
+        listSelected.getAccessibleContext().setAccessibleName(bundle.getString("SelectedEntityList")); // NOI18N
+        listSelected.getAccessibleContext().setAccessibleDescription(bundle.getString("DESC_SelectedEntityClasses")); // NOI18N
 
         labelAvailableEntities.setLabelFor(listAvailable);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wizard/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(labelAvailableEntities, bundle.getString("LBL_AvailableEntities")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonAdd, org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_Add")); // NOI18N
@@ -185,7 +185,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
                     .add(buttonRemove, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
                     .add(buttonAdd, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
                     .add(buttonAddAll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
-                    .add(buttonRemoveAll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, Short.MAX_VALUE))
+                    .add(buttonRemoveAll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE))
                 .addContainerGap())
         );
         panelButtonsLayout.setVerticalGroup(
@@ -202,10 +202,14 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
                 .addContainerGap(132, Short.MAX_VALUE))
         );
 
-        buttonAdd.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_Add")); // NOI18N
-        buttonRemove.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_Remove")); // NOI18N
-        buttonAddAll.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_AddAll")); // NOI18N
-        buttonRemoveAll.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_RemoveAll")); // NOI18N
+        buttonAdd.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "AddEntityClass")); // NOI18N
+        buttonAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "DESC_AddEntityClass")); // NOI18N
+        buttonRemove.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "RemoveEntityClass")); // NOI18N
+        buttonRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "DESC_RemoveEntityClass")); // NOI18N
+        buttonAddAll.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "AddAllEntityClasses")); // NOI18N
+        buttonAddAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "DESC_AddAllEntityClasses")); // NOI18N
+        buttonRemoveAll.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "RemoveAllEntityClasses")); // NOI18N
+        buttonRemoveAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "DESC_RemoveAllEntityClasses")); // NOI18N
 
         labelSelectedEntities.setLabelFor(listSelected);
         org.openide.awt.Mnemonics.setLocalizedText(labelSelectedEntities, bundle.getString("LBL_SelectedEntities")); // NOI18N
@@ -238,14 +242,18 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
                     .add(labelSelectedEntities))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
                     .add(panelButtons, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE))
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
-        labelAvailableEntities.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_AvailableEntityClasses")); // NOI18N
-        labelSelectedEntities.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "LBL_SelectEntityClasses")); // NOI18N
+        labelAvailableEntities.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "AvailableEntityClasses")); // NOI18N
+        labelAvailableEntities.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "DESC_AvailableEntityClasses")); // NOI18N
+        panelButtons.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "AddOrRemoveEntityClasses")); // NOI18N
+        panelButtons.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "DESC_AddRemovePanel")); // NOI18N
+        labelSelectedEntities.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "SelectedEntityClasses")); // NOI18N
+        labelSelectedEntities.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntitySelectionPanelVisual.class, "DESC_SelectedList")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeActionPerformed

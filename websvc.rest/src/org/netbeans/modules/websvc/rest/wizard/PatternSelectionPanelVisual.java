@@ -71,8 +71,6 @@ public class PatternSelectionPanelVisual extends javax.swing.JPanel implements A
         org.openide.awt.Mnemonics.setLocalizedText(containerRadioButton, org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_ContainerItem")); // NOI18N
         containerRadioButton.setActionCommand(org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_ContainerItem")); // NOI18N
         containerRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        containerRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        containerRadioButton.setOpaque(false);
         containerRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 containerRadioButtonActionPerformed(evt);
@@ -83,8 +81,6 @@ public class PatternSelectionPanelVisual extends javax.swing.JPanel implements A
         org.openide.awt.Mnemonics.setLocalizedText(standAloneRadioButton, org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_SingletonResource")); // NOI18N
         standAloneRadioButton.setActionCommand(org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_GenericResource")); // NOI18N
         standAloneRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        standAloneRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        standAloneRadioButton.setOpaque(false);
         standAloneRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 standAlonePatternSelected(evt);
@@ -94,8 +90,6 @@ public class PatternSelectionPanelVisual extends javax.swing.JPanel implements A
         patternButtons.add(clientControlledRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(clientControlledRadioButton, org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_ClientControl")); // NOI18N
         clientControlledRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        clientControlledRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        clientControlledRadioButton.setOpaque(false);
         clientControlledRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clientControlledPatternSelected(evt);
@@ -135,9 +129,13 @@ public class PatternSelectionPanelVisual extends javax.swing.JPanel implements A
 
         descriptionEditorPane.setEditable(false);
         jScrollPane1.setViewportView(descriptionEditorPane);
+        descriptionEditorPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_PatternDescription")); // NOI18N
+        descriptionEditorPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "DESC_PatternDescription")); // NOI18N
 
+        jLabel1.setLabelFor(jPanel2);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_SelectPattern")); // NOI18N
 
+        jLabel2.setLabelFor(descriptionEditorPane);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_Description")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -165,6 +163,9 @@ public class PatternSelectionPanelVisual extends javax.swing.JPanel implements A
         jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_SelectDesignPattern")); // NOI18N
         jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_SelectPattern")); // NOI18N
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_Description")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_Select_Pattern")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PatternSelectionPanelVisual.class, "LBL_SelectPattern")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void clientControlledPatternSelected(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientControlledPatternSelected

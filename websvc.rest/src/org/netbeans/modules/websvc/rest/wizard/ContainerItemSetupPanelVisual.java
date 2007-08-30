@@ -200,7 +200,7 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(selectClassButton1, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_Select")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(selectClassButton1, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_SelectContainerRepresentationClass")); // NOI18N
         selectClassButton1.setActionCommand(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_Select")); // NOI18N
         selectClassButton1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -219,25 +219,25 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(uriLabel)
-                .addContainerGap(380, Short.MAX_VALUE))
+                .addContainerGap(391, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(containerUriLabel)
-                .addContainerGap(321, Short.MAX_VALUE))
+                .addContainerGap(332, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(mediaTypeLabel)
-                .addContainerGap(395, Short.MAX_VALUE))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+                .addContainerGap(403, Short.MAX_VALUE))
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(contentClassLabel1)
                     .add(contentClassLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerUriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, contentClassTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, medaTypeComboBox, 0, 188, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, uriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, contentClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerUriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, contentClassTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, medaTypeComboBox, 0, 207, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, uriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, contentClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(selectClassButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -316,15 +316,38 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
 
         classLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_ClassName")); // NOI18N
         uriLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_UirTemplate")); // NOI18N
+        uriTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "ItemUriTemplate")); // NOI18N
+        uriTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_Uri")); // NOI18N
         projectLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_Project")); // NOI18N
+        projectTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "Project")); // NOI18N
+        projectTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_ProjectName")); // NOI18N
+        locationComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "Location")); // NOI18N
+        locationComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_Location")); // NOI18N
         packageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_Package")); // NOI18N
+        packageComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "ResourcePackage")); // NOI18N
+        packageComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_ResourcePackage")); // NOI18N
+        medaTypeComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "MimeType")); // NOI18N
+        medaTypeComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_MimeType")); // NOI18N
         mediaTypeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_MimeType")); // NOI18N
         contentClassLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_RepresentationClass")); // NOI18N
-        selectClassButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_Select")); // NOI18N
+        selectClassButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "SelectItemResourceRepresentation")); // NOI18N
+        selectClassButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_SelectClass")); // NOI18N
+        contentClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "ItemResourceRepresentationClass")); // NOI18N
+        contentClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_RepresentationClass")); // NOI18N
         resourceNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_ResourceName")); // NOI18N
+        resourceNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "ResourceName")); // NOI18N
+        resourceNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_ResourceName")); // NOI18N
+        classTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "ClassName")); // NOI18N
+        classTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_ClassName")); // NOI18N
         containerLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_ContainerClass")); // NOI18N
+        containerTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "ContainerClassName")); // NOI18N
+        containerTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_ContainerClassName")); // NOI18N
         containerUriLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_ContainerUriTemplate")); // NOI18N
         contentClassLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_ContainerRepresentationClass")); // NOI18N
+        contentClassTextField1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "ContainerResourceRepresentationClass")); // NOI18N
+        contentClassTextField1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_ContainerRepresentationClass")); // NOI18N
+        selectClassButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "SelectContainerRepresentationClass")); // NOI18N
+        selectClassButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_SelectContainerRepresentationClass")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void selectClassButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectClassButton1ActionPerformed

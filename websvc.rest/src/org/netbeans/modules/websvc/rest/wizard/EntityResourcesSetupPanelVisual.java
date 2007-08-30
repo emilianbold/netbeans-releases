@@ -122,7 +122,10 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
         previewTA.setText(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "MSG_GeneratedClassNames")); // NOI18N
         previewTA.setRequestFocusEnabled(false);
         jScrollPane1.setViewportView(previewTA);
+        previewTA.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "PreviewGeneratedClassNames")); // NOI18N
+        previewTA.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "DESC_Preview")); // NOI18N
 
+        jLabel1.setLabelFor(previewTA);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "LBL_Preview")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -139,11 +142,11 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
                     .add(locationLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(locationComboBox, 0, 363, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
                     .add(converterPackageComboBox, 0, 363, Short.MAX_VALUE)
-                    .add(resourcePackageComboBox, 0, 363, Short.MAX_VALUE)
-                    .add(locationComboBox, 0, 363, Short.MAX_VALUE)))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 480, Short.MAX_VALUE)
+                    .add(resourcePackageComboBox, 0, 363, Short.MAX_VALUE)))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -154,7 +157,7 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(locationLabel)
-                    .add(locationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(locationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(resourcePackageLabel)
@@ -166,12 +169,25 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE))
         );
 
-        projectLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "LBL_Project")); // NOI18N
-        locationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "LBL_Location")); // NOI18N
-        resourcePackageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "LBL_Package")); // NOI18N
+        projectLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "Project")); // NOI18N
+        projectLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "DESC_Project")); // NOI18N
+        projectTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "Project")); // NOI18N
+        projectTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "DESC_Project")); // NOI18N
+        locationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "Location")); // NOI18N
+        locationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "DESC_Location")); // NOI18N
+        locationComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "Location")); // NOI18N
+        locationComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "DESC_Location")); // NOI18N
+        resourcePackageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "ResourcePackage")); // NOI18N
+        resourcePackageLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "DESC_ResourcePackage")); // NOI18N
+        resourcePackageComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "ResourcePackage")); // NOI18N
+        resourcePackageComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "DESC_ResourcePackage")); // NOI18N
+        converterPackageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "ConverterPackage")); // NOI18N
+        converterPackageLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "DESC_ConverterPackage")); // NOI18N
+        converterPackageComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "ConverterPackage")); // NOI18N
+        converterPackageComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "DESC_ConverterPackage")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
 private void converterPackageComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_converterPackageComboBoxItemStateChanged
