@@ -73,27 +73,31 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     
     public boolean accept() {
         if (handle != null) {
-            if (simpleName.length() == 0 || Character.isDigit(simpleName.charAt(0))) {
+//            if (simpleName.length() == 0 || Character.isDigit(simpleName.charAt(0))) {
+            if (isAnnonInner()) {
                 handle = null;
                 return false;
             }
             try {
+                long t = System.currentTimeMillis();
                 javaSource.runUserActionTask(new Task<CompilationController>() {
 
                     public void run(CompilationController controller) throws Exception {
                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         Scope scope = controller.getTrees().getScope(controller.getTreeUtilities().pathFor(substitutionOffset));
                         LazyTypeCompletionItem item = LazyTypeCompletionItem.this;
-                        for (int i = 0; i < 50 && item != null;) {
+                        for (int i = 0; i < 1 && item != null;) {
                             if (item.init(controller, scope))
                                 i++;
                             item = item.nextItem;
                         }
                     }
                 }, true);
+                //System.out.println("ACCEPT took: " + (System.currentTimeMillis() - t));
             } catch(Throwable t) {
             }
         }
+        //System.out.println("accept name=" + name + " " + ( delegate != null ));
         return delegate != null;
     }
 
@@ -142,12 +146,17 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
         return simpleName;
     }
     
+    boolean isAnnonInner() {
+        return simpleName.length() == 0 || Character.isDigit(simpleName.charAt(0));
+    }
+    
     void setNextItem(LazyTypeCompletionItem nextItem) {
         this.nextItem = nextItem;
     }
     
     boolean init(CompilationController controller, Scope scope) {
-        if (simpleName.length() >= 0 && !Character.isDigit(simpleName.charAt(0))) {
+        //if (simpleName.length() >= 0 && !Character.isDigit(simpleName.charAt(0))) {
+        if (!isAnnonInner()) {
             TypeElement e = handle.resolve(controller);
             if (e != null && controller.getTrees().isAccessible(scope, e)) {
                 if (isOfKind(e, kinds))
@@ -155,6 +164,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
             }
         }
         handle = null;
+        // System.out.println("   init: name=" + name + " " + ( delegate != null ) );
         return delegate != null;
     }
 
