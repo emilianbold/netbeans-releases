@@ -25,6 +25,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -96,6 +97,22 @@ public class EjbMetadataReader implements MetadataModelAction<EjbJarMetadata, Ma
 //                                }
 //                            }
 //                        }
+                    }
+                }
+            }
+            Entity [] entityBeans = eb.getEntity();
+            if(entityBeans != null) {
+                for(Entity entity: entityBeans) {
+                    String ejbName = entity.getEjbName();
+                    if(Utils.notEmpty(ejbName)) {
+                        Map<String, Object> entityMap = new HashMap<String, Object>();
+                        data.put(ejbName, entityMap);
+                        entityMap.put(DDBinding.PROP_NAME, ejbName);
+                        
+                        String persistenceType = entity.getPersistenceType();
+                        if(persistenceType != null && persistenceType.length() > 0) {
+                            entityMap.put(DDBinding.PROP_PERSISTENCE_TYPE, persistenceType);
+                        }
                     }
                 }
             }

@@ -31,6 +31,7 @@ public class DDBinding implements Comparable<DDBinding> {
     public static final String PROP_NAME = "Name"; // varies...
     public static final String PROP_SESSION_TYPE = "SessionType"; // session
     public static final String PROP_DESTINATION_TYPE = "DestinationType"; // message-driven
+    public static final String PROP_PERSISTENCE_TYPE = "PersistenceType"; // session
     public static final String PROP_ROLE_NAME = "RoleName"; // security-role/role-name
     public static final String PROP_RUNAS_ROLE = "RunAsRole"; // run-as/role-name
 
