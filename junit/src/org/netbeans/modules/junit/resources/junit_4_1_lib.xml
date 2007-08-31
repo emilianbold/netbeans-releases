@@ -26,4 +26,9 @@ Microsystems, Inc. All Rights Reserved.
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.junit/modules/ext/junit-4.1.jar!/</resource>
     </volume>
+    <volume>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <type>maven-pom</type>
+        <resource>http://repo1.maven.org/maven2/junit/junit/4.1/junit-4.1.pom</resource>
+    </volume>
 </library>

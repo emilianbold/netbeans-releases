@@ -31,4 +31,10 @@ Microsystems, Inc. All Rights Reserved.
         <type>javadoc</type>
         <resource>jar:nbinst:///docs/javaee5-doc-api.zip!/</resource>
     </volume>
+    <volume>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <type>maven-pom</type>
+        <resource>http://download.java.net/maven/1/toplink.essentials/poms/toplink-essentials-agent-2.0-36.pom</resource>
+        <resource>http://download.java.net/maven/1/toplink.essentials/poms/toplink-essentials-2.0-36.pom</resource>
+    </volume>
 </library>

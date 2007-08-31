@@ -36,4 +36,9 @@ Microsystems, Inc. All Rights Reserved.
         <type>src</type>
         <resource>jar:nbinst://org.jdesktop.layout/docs/swing-layout-1.0.2-src.zip!/</resource>
     </volume>
+    <volume>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <type>maven-pom</type>
+        <resource>http://repo1.maven.org/maven2/net/java/dev/swing-layout/swing-layout/1.0.2/swing-layout-1.0.2.pom</resource>
+    </volume>
 </library>

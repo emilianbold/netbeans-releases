@@ -36,6 +36,11 @@ Microsystems, Inc. All Rights Reserved.
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/struts-1.2.9-javadoc.zip!/</resource>
+            <resource>jar:nbinst:///docs/struts-1.2.9-javadoc.zip!/</resource>
+    </volume>
+    <volume>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <type>maven-pom</type>
+        <resource>http://repo1.maven.org/maven2/struts/struts/1.2.9/struts-1.2.9.pom</resource>
     </volume>
 </library>
