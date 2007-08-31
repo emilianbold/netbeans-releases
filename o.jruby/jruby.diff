@@ -1,6 +1,6 @@
-diff -u -r jruby-1.0/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0/src/org/jruby/lexer/yacc/HeredocTerm.java
---- jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java	2007-06-07 10:37:46.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java	2007-08-24 09:55:35.000000000 -0700
+diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java
+--- jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java	2007-08-23 19:14:06.000000000 -0700
++++ jruby-1.0.1/src/org/jruby/lexer/yacc/HeredocTerm.java	2007-08-31 08:46:21.000000000 -0700
 @@ -47,12 +47,26 @@
          char c;
          boolean indent = (func & RubyYaccLexer.STR_FUNC_INDENT) != 0;
@@ -213,9 +213,9 @@ diff -u -r jruby-1.0/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0/src/org
 +
 +    // END NETBEANS MODIFICATIONS
  }
-diff -u -r jruby-1.0/src/org/jruby/lexer/yacc/LexState.java jruby-1.0/src/org/jruby/lexer/yacc/LexState.java
---- jruby-1.0.1/src/org/jruby/lexer/yacc/LexState.java	2007-06-07 10:37:46.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/lexer/yacc/LexState.java	2007-08-24 09:55:35.000000000 -0700
+diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/LexState.java jruby-1.0.1/src/org/jruby/lexer/yacc/LexState.java
+--- jruby-1.0.1/src/org/jruby/lexer/yacc/LexState.java	2007-08-23 19:14:06.000000000 -0700
++++ jruby-1.0.1/src/org/jruby/lexer/yacc/LexState.java	2007-08-31 08:46:21.000000000 -0700
 @@ -47,6 +47,40 @@
  
      private final String debug;
@@ -257,10 +257,10 @@ diff -u -r jruby-1.0/src/org/jruby/lexer/yacc/LexState.java jruby-1.0/src/org/jr
      private LexState(String debug) {
          this.debug = debug;
      }
-diff -u -r jruby-1.0/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.0/src/org/jruby/lexer/yacc/LexerSource.java
---- jruby-1.0.1/src/org/jruby/lexer/yacc/LexerSource.java	2007-06-07 10:37:46.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/lexer/yacc/LexerSource.java	2007-08-24 09:55:35.000000000 -0700
-@@ -486,4 +486,24 @@
+diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.0.1/src/org/jruby/lexer/yacc/LexerSource.java
+--- jruby-1.0.1/src/org/jruby/lexer/yacc/LexerSource.java	2007-08-23 19:14:06.000000000 -0700
++++ jruby-1.0.1/src/org/jruby/lexer/yacc/LexerSource.java	2007-08-31 08:46:21.000000000 -0700
+@@ -487,4 +487,24 @@
              return null;
          }
      }
@@ -285,9 +285,9 @@ diff -u -r jruby-1.0/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.0/src/org
 +    }
 +    // END NETBEANS MODIFICATIONS
  }
-diff -u -r jruby-1.0/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0/src/org/jruby/lexer/yacc/RubyYaccLexer.java
---- jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2007-06-07 10:37:46.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2007-08-24 09:55:35.000000000 -0700
+diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java
+--- jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2007-08-23 19:14:06.000000000 -0700
++++ jruby-1.0.1/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2007-08-31 08:46:21.000000000 -0700
 @@ -73,6 +73,124 @@
      // grammar use.
      private LexState lex_state;
@@ -805,9 +805,9 @@ diff -u -r jruby-1.0/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0/src/o
 +    
 +// END NETBEANS MODIFICATIONS
  }
-diff -u -r jruby-1.0/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.0/src/org/jruby/lexer/yacc/StrTerm.java
---- jruby-1.0.1/src/org/jruby/lexer/yacc/StrTerm.java	2007-06-07 10:37:46.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/lexer/yacc/StrTerm.java	2007-08-24 09:55:35.000000000 -0700
+diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.0.1/src/org/jruby/lexer/yacc/StrTerm.java
+--- jruby-1.0.1/src/org/jruby/lexer/yacc/StrTerm.java	2007-08-23 19:14:06.000000000 -0700
++++ jruby-1.0.1/src/org/jruby/lexer/yacc/StrTerm.java	2007-08-31 08:46:21.000000000 -0700
 @@ -29,4 +29,46 @@
  
  public abstract class StrTerm {
@@ -855,9 +855,9 @@ diff -u -r jruby-1.0/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.0/src/org/jru
 +    public abstract void setMutableState(Object o);
 +    // END NETBEANS MODIFICATIONS
  }
-diff -u -r jruby-1.0/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.0/src/org/jruby/lexer/yacc/StringTerm.java
---- jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java	2007-06-07 10:37:46.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java	2007-08-24 09:55:35.000000000 -0700
+diff -u -r jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java
+--- jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java	2007-08-23 19:14:06.000000000 -0700
++++ jruby-1.0.1/src/org/jruby/lexer/yacc/StringTerm.java	2007-08-31 08:46:21.000000000 -0700
 @@ -69,8 +69,20 @@
              space = 1;
          }
@@ -1207,9 +1207,9 @@ diff -u -r jruby-1.0/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.0/src/org/
 +    }
 +    // END NETBEANS MODIFICATIONS
  }
-diff -u -r jruby-1.0/src/org/jruby/parser/Tokens.java jruby-1.0/src/org/jruby/parser/Tokens.java
---- jruby-1.0.1/src/org/jruby/parser/Tokens.java	2007-06-07 10:37:50.000000000 -0700
-+++ jruby-1.0.1/src/org/jruby/parser/Tokens.java	2007-08-24 09:55:35.000000000 -0700
+diff -u -r jruby-1.0.1/src/org/jruby/parser/Tokens.java jruby-1.0.1/src/org/jruby/parser/Tokens.java
+--- jruby-1.0.1/src/org/jruby/parser/Tokens.java	2007-08-23 19:14:12.000000000 -0700
++++ jruby-1.0.1/src/org/jruby/parser/Tokens.java	2007-08-31 08:46:21.000000000 -0700
 @@ -152,6 +152,16 @@
      int tRCURLY     = DefaultRubyParser.tRCURLY;
      int tPIPE       = DefaultRubyParser.tPIPE;
@@ -1227,3 +1227,18 @@ diff -u -r jruby-1.0/src/org/jruby/parser/Tokens.java jruby-1.0/src/org/jruby/pa
      String[] operators = {"+@", "-@", "**", "<=>", "==", "===", "!=", ">=", "<=", "&&",
                            "||", "=~", "!~", "..", "...", "[]", "[]=", "<<", ">>", "::"};
  }
+diff -u -r jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java
+--- jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java	2007-08-23 19:13:48.000000000 -0700
++++ jruby-1.0.1/src/org/jruby/runtime/DynamicScope.java	2007-08-31 08:46:21.000000000 -0700
+@@ -106,9 +106,10 @@
+             
+             parent.setValue(offset, value, depth - 1);
+         } else {
++            lazy();
++
+             assert offset < variableValues.length : "Setting " + offset + " to " + value + ", O: " + this; 
+ 
+-            lazy();
+             variableValues[offset] = value;
+         }
+     }
