@@ -129,7 +129,7 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
     /// the minimum allowable rectangle for this container
     IETRect m_rectMinimumResize = null;
     private boolean adjustCreateConnnector = false;
-
+    
     public void init() throws ETException
     {
         if (TypeConversions.getElement(this) != null)
@@ -141,13 +141,13 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
                 createCompartments();
                 initCompartments(pPE);
             }
-
+            
             initResources();
             handleSizeToContents(-1);
         }
     }
-
-
+    
+    
     public String getElementType()
     {
         String type = super.getElementType();
@@ -304,9 +304,9 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
         
         if(updateConnectors == true)
         {
-            // If the size of the head changes, we need to make sure that we 
+            // If the size of the head changes, we need to make sure that we
             // update the messages, because everything will push down.
-            // This is not perfect, we rely on layout being executed after 
+            // This is not perfect, we rely on layout being executed after
             // drawing
             updateConnectors = false;
             
@@ -484,16 +484,16 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
      */
     public void createCompartments() throws ETException
     {
-       // Fixed issue 82208, 82207
-       // get the flag which indicates if this lifeline is a actor lifeline.
-       // If the lifeline is an actor lifeline or representes an actor classifier,
-       // then add a stickFigureCompartment
-       boolean isActorLifeline = false;
-       ILifeline lifeline = getLifeline(); 
-       if (lifeline != null)
-       {
-          isActorLifeline = lifeline.getIsActorLifeline();
-       }
+        // Fixed issue 82208, 82207
+        // get the flag which indicates if this lifeline is a actor lifeline.
+        // If the lifeline is an actor lifeline or representes an actor classifier,
+        // then add a stickFigureCompartment
+        boolean isActorLifeline = false;
+        ILifeline lifeline = getLifeline();
+        if (lifeline != null)
+        {
+            isActorLifeline = lifeline.getIsActorLifeline();
+        }
         String currentModelElementType = getRepresentsMetaType();
         
         // Process the stick figure compartment, if necessary
@@ -570,10 +570,10 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
                     //             ETLifelineNameCompartment.updateConnectors()
                     m_ConnectorCreate.setConstantXOffset( 2 );
                     
-//               if(isResizing() == false)
-//               {
-//                  makeCreateMessageHorizontal();
-//               }
+                    //               if(isResizing() == false)
+                    //               {
+                    //                  makeCreateMessageHorizontal();
+                    //               }
                 }
             }
         }
@@ -976,7 +976,7 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
             IDrawingAreaControl daCtrl = getDrawingArea();
             ADGraphWindow graphWindow = daCtrl != null ? daCtrl.getGraphWindow() : null;
             // Don't remove the connectors if we are in the Reconnect Edge mode,
-//			boolean reconnecting = graphWindow != null && graphWindow.getCurrentTool() instanceof TSEReconnectEdgeState;
+            //			boolean reconnecting = graphWindow != null && graphWindow.getCurrentTool() instanceof TSEReconnectEdgeState;
             boolean reconnecting = graphWindow != null && graphWindow.getCurrentTool() instanceof TSEReconnectEdgeTool;
             if (!reconnecting)
             {
@@ -1224,7 +1224,7 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
             IETRect bounding = TypeConversions.getLogicalBoundingRect(nodeP);
             // Fix J2573:  CLEAN bounding.normalizeRect();
             
-//         assert bounding.getTop() <= bounding.getBottom() : "The normalizeRect method failed";
+            //         assert bounding.getTop() <= bounding.getBottom() : "The normalizeRect method failed";
             // Fix J2314:  For some reason the draw engine was not getting redrawn during
             //             SQD CDFS.  So, we just invalidate the node to make sure it gets drawn.
             nodeP.moveTo(0, (int)(bounding.getCenterY() + delta),
@@ -1479,27 +1479,11 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
             IETNodeUI nodeUI = (IETNodeUI)ui;
             IDrawInfo info = nodeUI.getDrawInfo();
             
-            IETRect beforeRect = null;
-            
-            IADStereotypeCompartment stereo = getStereotypeCompartment();
-            if(stereo != null)
-            {
-                beforeRect = TypeConversions.getLogicalBoundingRect(stereo);
-            }
-            
             IETSize optimumSize = calculateOptimumSize(info, false);
-            
-            if(minWidth >= 0)
-            {
-                optimumSize.setWidth((int)Math.max(optimumSize.getWidth(), minWidth));
-            }
-            
-            if((optimumSize.getWidth() > 0) && (optimumSize.getHeight() > 0) && 
-             // disable automatic down-sizing #90587, but stretch lifeline when necessary
-                    optimumSize.getHeight() > nodeUI.getHeight())
-            {
-                resize(new ETSize(optimumSize.getWidth(), optimumSize.getHeight()), true);
-            }
+                       
+            // disable automatic down-sizing #90587, but stretch lifeline when necessary 
+            resize(new ETSize((int)Math.max(optimumSize.getWidth(), minWidth),
+                    (int)Math.max(optimumSize.getHeight(), nodeUI.getHeight())) , true);
         }
     }
     
@@ -1512,59 +1496,59 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
         
         switch( nKind )
         {
-            case IGraphEventKind.GEK_PRE_MOVE:
-                // This mechanism should not be necessary
-                // This flag was used in C++ to capture the fact that TS passes a bogus resize event
-                // during a moveto command from the node presentation element.
-                // CLEAN m_bIsMoving = true;
-                break;
-                
-            case IGraphEventKind.GEK_POST_MOVE:
-            {
-                // CLEAN m_bIsMoving = false;
-                
-                IADLifelineCompartment lifelineCompartment = getCompartmentByKind( IADLifelineCompartment.class );
-                if ( lifelineCompartment != null )
-                {
-                    layout();
-                    
-                    updateConnectors( lifelineCompartment );
-                    
-                    // Fix W4687:  The wiggle from CSequenceDiagramAddEdgeListener.postIncrementalMoveMessages()
-                    // sends a this event, so here is a good place to update the reflexive bends.
-                    lifelineCompartment.updateReflexiveBends() ;
-                }
-            }
+        case IGraphEventKind.GEK_PRE_MOVE:
+            // This mechanism should not be necessary
+            // This flag was used in C++ to capture the fact that TS passes a bogus resize event
+            // during a moveto command from the node presentation element.
+            // CLEAN m_bIsMoving = true;
             break;
             
-            case IGraphEventKind.GEK_POST_PASTE_VIEW:
-            {
-                validateNode();
-            }
-            break;
+        case IGraphEventKind.GEK_POST_MOVE:
+        {
+            // CLEAN m_bIsMoving = false;
             
-            case IGraphEventKind.GEK_PRE_RESIZE:
-                handlePreResize();
-                break;
-                
-            case IGraphEventKind.GEK_POST_RESIZE:
-                handlePostResize();
-                break;
-                
-            case IGraphEventKind.GEK_SQD_DIAGRAM_POST_SCROLLZOOM:
+            IADLifelineCompartment lifelineCompartment = getCompartmentByKind( IADLifelineCompartment.class );
+            if ( lifelineCompartment != null )
             {
-                // Notification that the sequence diagram has been zoomed
                 layout();
+                
+                updateConnectors( lifelineCompartment );
+                
+                // Fix W4687:  The wiggle from CSequenceDiagramAddEdgeListener.postIncrementalMoveMessages()
+                // sends a this event, so here is a good place to update the reflexive bends.
+                lifelineCompartment.updateReflexiveBends() ;
             }
+        }
+        break;
+        
+        case IGraphEventKind.GEK_POST_PASTE_VIEW:
+        {
+            validateNode();
+        }
+        break;
+        
+        case IGraphEventKind.GEK_PRE_RESIZE:
+            handlePreResize();
             break;
             
-            case IGraphEventKind.GEK_PRE_DELETEGATHERSELECTED :
-                onPreDeleteGatherSelected();
-                break;
-                
-            default:
-                // do nothing
-                break;
+        case IGraphEventKind.GEK_POST_RESIZE:
+            handlePostResize();
+            break;
+            
+        case IGraphEventKind.GEK_SQD_DIAGRAM_POST_SCROLLZOOM:
+        {
+            // Notification that the sequence diagram has been zoomed
+            layout();
+        }
+        break;
+        
+        case IGraphEventKind.GEK_PRE_DELETEGATHERSELECTED :
+            onPreDeleteGatherSelected();
+            break;
+            
+        default:
+            // do nothing
+            break;
         }
     }
     
@@ -1676,20 +1660,20 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
             int kind = targets.getKind();
             switch( kind )
             {
-                case ModelElementChangedKind.MECK_REPRESENTINGCLASSIFIERCHANGED:
-                    // Enhancement W6120:  Process the stereotype compartment
-                    updateStereotypeCompartment();
-                    // fall through
-                    
-                case ModelElementChangedKind.MECK_STEREOTYPEAPPLIED:
-                case ModelElementChangedKind.MECK_STEREOTYPEDELETED:
-                    delayedSizeToContents();
-                    adjustCreateConnnector = true;
-                    break;
-                    
-                default:
-                    // do nothing
-                    break;
+            case ModelElementChangedKind.MECK_REPRESENTINGCLASSIFIERCHANGED:
+                // Enhancement W6120:  Process the stereotype compartment
+                updateStereotypeCompartment();
+                // fall through
+                
+            case ModelElementChangedKind.MECK_STEREOTYPEAPPLIED:
+            case ModelElementChangedKind.MECK_STEREOTYPEDELETED:
+                delayedSizeToContents();
+                adjustCreateConnnector = true;
+                break;
+                
+            default:
+                // do nothing
+                break;
             }
         }
         
@@ -1735,24 +1719,24 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
             String initStr = "";
             switch(message.getKind())
             {
-                case IMessageKind.MK_CREATE:
-                    initStr = "org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Message create";
-                    break;
-                    
-                default:
-                    assert false : "did we add another message kind?";
-                    
-                case IMessageKind.MK_SYNCHRONOUS:
-                    initStr = "org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Message";
-                    break;
-                    
-                case IMessageKind.MK_ASYNCHRONOUS:
-                    initStr = "org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Message asynchronous";
-                    break;
-                    
-                case IMessageKind.MK_RESULT:
-                    initStr = "org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Message result";
-                    break;
+            case IMessageKind.MK_CREATE:
+                initStr = "org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Message create";
+                break;
+                
+            default:
+                assert false : "did we add another message kind?";
+                
+            case IMessageKind.MK_SYNCHRONOUS:
+                initStr = "org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Message";
+                break;
+                
+            case IMessageKind.MK_ASYNCHRONOUS:
+                initStr = "org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Message asynchronous";
+                break;
+                
+            case IMessageKind.MK_RESULT:
+                initStr = "org.netbeans.modules.uml.ui.products.ad.viewfactory.RelationEdge Message result";
+                break;
             }
             
             try
@@ -1802,30 +1786,30 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
             int kind = message.getKind();
             switch(kind)
             {
-                case IMessageKind.MK_CREATE:
-                    retVal = attachCreateEdge(toEngine, edge, verticalLocation);
-                    break;
-                    
-                default:
-                    assert false : "did we add another message kind?";
-                    
-                case IMessageKind.MK_SYNCHRONOUS:
-                    retVal = createPiecesAndAttachEdge(toEngine,
-                            edge,
-                            kind,
-                            verticalLocation);
-                    break;
-                    
-                case IMessageKind.MK_ASYNCHRONOUS:
-                    retVal = createPiecesAndAttachEdge(toEngine,
-                            edge,
-                            kind,
-                            verticalLocation);
-                    break;
-                    
-                case IMessageKind.MK_RESULT:
-                    attachResultEdge(toEngine, edge, verticalLocation);
-                    break;
+            case IMessageKind.MK_CREATE:
+                retVal = attachCreateEdge(toEngine, edge, verticalLocation);
+                break;
+                
+            default:
+                assert false : "did we add another message kind?";
+                
+            case IMessageKind.MK_SYNCHRONOUS:
+                retVal = createPiecesAndAttachEdge(toEngine,
+                        edge,
+                        kind,
+                        verticalLocation);
+                break;
+                
+            case IMessageKind.MK_ASYNCHRONOUS:
+                retVal = createPiecesAndAttachEdge(toEngine,
+                        edge,
+                        kind,
+                        verticalLocation);
+                break;
+                
+            case IMessageKind.MK_RESULT:
+                attachResultEdge(toEngine, edge, verticalLocation);
+                break;
             }
         }
         
@@ -1905,8 +1889,8 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
                     IETPoint point = createNewPiecePoint( fromCompartment,
                             (int)(verticalLocation + deltaClosestAbove));
                     
-//               IETPoint point = new ETPoint((int)rectBounding.getCenterX(),
-//                                            (int)(verticalLocation + deltaClosestAbove));
+                    //               IETPoint point = new ETPoint((int)rectBounding.getCenterX(),
+                    //                                            (int)(verticalLocation + deltaClosestAbove));
                     
                     LifelinePiece fromPiece = fromCompartment.getClosestLifelinePiece(point);
                     if((fromPiece != null) && (fromPiece.isValid() == true))
@@ -2044,7 +2028,7 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
                 }
                 
                 // Create the required piece on the from lifeline
-//            CComPtr< ILifelinePiece > cpFromPiece;
+                //            CComPtr< ILifelinePiece > cpFromPiece;
                 int kindPiece = LifelinePiecesKind.LPK_SUSPENSION;
                 if(IMessageKind.MK_ASYNCHRONOUS == kind)
                 {
@@ -2421,7 +2405,7 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
     }
     
     /**
-     * Adds a destroy decorator to the end of a the lifeline.  
+     * Adds a destroy decorator to the end of a the lifeline.
      */
     public void addDestroyMessage()
     {
@@ -2429,8 +2413,8 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
     }
     
     /**
-     * Inserts a new message to self.  The location of the new messages is 
-     * based on target messages.  The new message to self will be either 
+     * Inserts a new message to self.  The location of the new messages is
+     * based on target messages.  The new message to self will be either
      * before or after the target message.
      *
      * If the target message is null, the new message will be at the end of the
@@ -2446,19 +2430,19 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
         IADLifelineCompartment compartment = getLifelineCompartment();
         if(before == true)
         {
-            compartment.addMessageBefore(this, targetMsg, 
-                                         IMessageKind.MK_SYNCHRONOUS);
+            compartment.addMessageBefore(this, targetMsg,
+                    IMessageKind.MK_SYNCHRONOUS);
         }
         else
         {
-            compartment.addMessageAfter(this, targetMsg, 
-                                        IMessageKind.MK_SYNCHRONOUS);
+            compartment.addMessageAfter(this, targetMsg,
+                    IMessageKind.MK_SYNCHRONOUS);
         }
     }
-
+    
     /**
-     * Inserts a new create message.  The location of the new messages is 
-     * based on target messages.  The new create message will be either 
+     * Inserts a new create message.  The location of the new messages is
+     * based on target messages.  The new create message will be either
      * before or after the target message.
      *
      * If the target message is null, the new message will be at the end of the
@@ -2487,12 +2471,12 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
                 if(before == true)
                 {
                     compartment.addMessageBefore(targetLifeline, targetMsg,
-                                                 IMessageKind.MK_CREATE);
+                            IMessageKind.MK_CREATE);
                 }
                 else
                 {
                     compartment.addMessageAfter(targetLifeline, targetMsg,
-                                                IMessageKind.MK_CREATE);
+                            IMessageKind.MK_CREATE);
                 }
             }
         }
@@ -2501,7 +2485,7 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
             ErrorManager.getDefault().notify(ex);
         }
     }
-   
+    
     protected void validateCreateMessageConnector()
     {
         if(m_ConnectorCreate != null)
