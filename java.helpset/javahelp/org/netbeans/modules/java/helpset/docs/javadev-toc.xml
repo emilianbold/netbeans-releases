@@ -120,14 +120,15 @@
     <tocitem text="Finishing a Session" target="debug.finish" />
     </tocitem>
     <tocitem text="Viewing Program Information">
-    <tocitem text="Variables and Expressions in the IDE" target="debug.variables" />
-    <tocitem text="Creating a Watch" target="debug.new.watch"/>
-    <tocitem text="Creating a Fixed Watch" target="debug.fix.watch"/>
-    <tocitem text="Debugging Threads in the IDE" target="debug.threads"/>
-    <tocitem text="Using the Call Stack" target="debug.callstack"/>
-    <tocitem text="Popping a Call From the Call Stack" target="debug.pop"/>
+        <tocitem text="Variables and Expressions in the IDE" target="debug.variables" />
+        <tocitem text="Creating a Watch" target="debug.new.watch"/>
+        <tocitem text="Creating a Fixed Watch" target="debug.fix.watch"/>
+        <tocitem text="Debugging Threads in the IDE" target="debug.threads"/>
+        <tocitem text="Using the Call Stack" target="debug.callstack"/>
+        <tocitem text="Popping a Call From the Call Stack" target="debug.pop"/>
         <tocitem text="Evaluating an Expression" target="debug.expression"/>
-        </tocitem>
+        <tocitem text="Stepping Through an Expression" target="debug_expressionstep"/>
+    </tocitem>
     </tocitem>
     <tocitem text="Profiling Java Applications">
     <tocitem text="About Profiling Java Applications" target="profiling_javaapp"/>
