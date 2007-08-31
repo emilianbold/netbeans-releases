@@ -81,6 +81,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
     
+    <change id="Customizer-can-be-null">
+            <api name="general"/>
+            <summary>Customizer for volume type in LibraryTypeProvider is not mandatory</summary>
+            <version major="1" minor="15"/>
+            <date day="31" month="8" year="2007"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                 LibraryTypeProvider.getCustomizer() can return null for some volume types.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.libraries" name="LibraryTypeProvider"/>
+    </change>    
+
     <change id="LibraryManager.add-remove">
             <api name="general"/>
             <summary>Added methods for adding and removing libraries into/from library manager</summary>

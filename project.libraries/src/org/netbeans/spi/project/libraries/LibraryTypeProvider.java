@@ -79,14 +79,15 @@ public interface LibraryTypeProvider extends Lookup.Provider {
     public void libraryCreated (LibraryImplementation libraryImpl);
 
     /**
-     * Returns customizer for given volume's type.
+     * Returns customizer for given volume's type, or null if the volume is not customizable.
      * The object of the LibraryImplementation type is
      * passed to the customizer's setObject method.
      * The customized object describes the library created by this
      * provider, but the customizer cannot assume that the customized
      * object is of the same type as the object created by {@link #createLibrary}.
      * @param volumeType a type of volume listed in {@link #getSupportedVolumeTypes}
-     * @return a customizer (must extend {@link javax.swing.JComponent})
+     * @return a customizer (must extend {@link javax.swing.JComponent}) or null if such
+     *  customizer doesn't exist.
      */
     public Customizer getCustomizer (String volumeType);
     

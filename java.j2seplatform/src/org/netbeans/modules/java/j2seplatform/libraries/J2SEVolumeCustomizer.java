@@ -27,6 +27,8 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -290,6 +292,9 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         else if (indices[0]  >= 1) {
             this.content.setSelectedIndex (indices[0]-1);
         }
+        if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
+            impl.setContent(J2SELibraryTypeProvider.VOLUME_TYPE_MAVEN_POM, Collections.<URL>emptyList());
+        }
     }//GEN-LAST:event_removeResource
 
     private void addResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addResource
@@ -404,6 +409,11 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 toSelect[i] = firstIndex+i;
             }
             this.content.setSelectedIndices(toSelect);
+        }
+        if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
+            if (impl != null) {
+                impl.setContent(J2SELibraryTypeProvider.VOLUME_TYPE_MAVEN_POM, Collections.<URL>emptyList());
+            }
         }
     }
     

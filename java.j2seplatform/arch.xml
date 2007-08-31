@@ -72,6 +72,9 @@ Microsystems, Inc. All Rights Reserved.
       <li>
        <code>javadoc</code>
       </li>
+      <li>
+       <code>maven-pom</code> - Added for 6.0 beta1 to allow maven projects to recognize the library content.
+      </li>
      </ol>
      <p>
       The actual definition of the XML syntax is controlled by the Project
