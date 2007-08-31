@@ -1958,7 +1958,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             toCompile.put(root, storedFiles);
             
             if (storedFiles.size() == 1) {
-                depsToRecompile.put(root, updateFile(storedFiles.iterator().next().toURL(), root));
+                depsToRecompile.put(root, updateFile(storedFiles.iterator().next().toURI().toURL(), root));
             } else {
                 Map<URL, Collection<File>> result = compileFileFromRoots(toCompile, false, depsToRecompile);
 
@@ -2512,7 +2512,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                         if (toRecompile != null) {
                             Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), types);
-                            toRecompile.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, activeFile.toURL(), cpInfo, members));
+                            toRecompile.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, activeFile.toURI().toURL(), cpInfo, members));
                         }
                         active = null;
                         activeFile = null;
