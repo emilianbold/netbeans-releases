@@ -1,6 +1,6 @@
 Software: Java API for Servlets, Java API for JavaServer Pages
 Version: 2.3
-License:
+License: Apache-1.1
    
         The Apache Software License, Version 1.1
 

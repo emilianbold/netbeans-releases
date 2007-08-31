@@ -1,5 +1,5 @@
 Name: Tom Sawyer Visualization Library
-Version 6.0
+Version: 6.0
 
 Sun Microsystems, Inc. ("Sun") ENTITLEMENT for SOFTWARE
 
