@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.welcome;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 
@@ -33,6 +35,8 @@ public class WelcomeOptions {
     private static final String PROP_SHOW_ON_STARTUP = "showOnStartup";
     private static final String PROP_LAST_ACTIVE_TAB = "lastActiveTab";
     private static final String PROP_START_COUNTER = "startCounter";
+    
+    private PropertyChangeSupport propSupport;
     
     /** Creates a new instance of WelcomeOptions */
     private WelcomeOptions() {
@@ -50,7 +54,10 @@ public class WelcomeOptions {
     }
  
     public void setShowOnStartup( boolean show ) {
+        boolean oldVal = isShowOnStartup();
         prefs().putBoolean(PROP_SHOW_ON_STARTUP, show);
+        if( null != propSupport )
+            propSupport.firePropertyChange( PROP_SHOW_ON_STARTUP, oldVal, show );
     }
 
     public boolean isShowOnStartup() {
@@ -58,7 +65,10 @@ public class WelcomeOptions {
     }
 
     public void setLastActiveTab( int tabIndex ) {
+        int oldVal = getLastActiveTab();
         prefs().putInt(PROP_LAST_ACTIVE_TAB, tabIndex);
+        if( null != propSupport )
+            propSupport.firePropertyChange( PROP_LAST_ACTIVE_TAB, oldVal, tabIndex );
     }
 
     public int getLastActiveTab() {
@@ -74,5 +84,17 @@ public class WelcomeOptions {
         if( count > 3 )
             return; //we're just interested in the first and second start so don't bother any more then
         prefs().putInt( PROP_START_COUNTER, count );
+    }
+    
+    public void addPropertyChangeListener( PropertyChangeListener l ) {
+        if( null == propSupport )
+            propSupport = new PropertyChangeSupport( this );
+        propSupport.addPropertyChangeListener( l );
+    }
+    
+    public void removePropertyChangeListener( PropertyChangeListener l ) {
+        if( null == propSupport )
+            return;
+        propSupport.removePropertyChangeListener( l );
     }
 }
