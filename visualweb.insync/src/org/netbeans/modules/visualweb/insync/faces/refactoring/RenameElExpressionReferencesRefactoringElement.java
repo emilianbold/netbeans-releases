@@ -64,4 +64,14 @@ public class RenameElExpressionReferencesRefactoringElement extends MarkupRefact
         v.apply(document);
         markupUnit.flush();        
     }
+
+    @Override
+    public void undoChange() {
+        Document document = markupUnit.getSourceDom();
+        MarkupVisitor v = new ElAttrUpdater(newName, oldName);
+        v.apply(document);
+        markupUnit.flush();        
+    }
+    
+    
 }
