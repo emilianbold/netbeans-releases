@@ -22,7 +22,6 @@ package org.netbeans.modules.cnd.modelutil;
 import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -33,7 +32,8 @@ import org.openide.util.Utilities;
  * @author jec
  */
 public class CsmImageLoader implements CsmImageName {
-    private static Map<String,Icon> map = new HashMap<String,Icon>();
+    private static Map<String,ImageIcon> map = new HashMap<String,ImageIcon>();
+
     
     /** Creates a new instance of CsmImageLoader */
     private CsmImageLoader() {
@@ -59,24 +59,19 @@ public class CsmImageLoader implements CsmImageName {
         return Utilities.loadImage(iconPath);
     }
     
-    public static Icon getIcon(CsmDeclaration.Kind kind, int modifiers) {
+    public static ImageIcon getIcon(CsmDeclaration.Kind kind, int modifiers) {
         String iconPath = getImagePath(kind, modifiers);
-        Icon icon = map.get(iconPath);
-        if (icon == null) {
-            icon = new ImageIcon(Utilities.loadImage(iconPath));
-            map.put(iconPath, icon);
-        }
-        return icon;
+        return getCachedImageIcon(iconPath);        
     }
     
-    public static String getIncludeIcon(Boolean usrIncludeKind) {
-        if (usrIncludeKind == Boolean.TRUE) {
-            return INCLUDE_USER;
-        } else if (usrIncludeKind == Boolean.FALSE) {
-            return INCLUDE_SYSTEM;
+    public static ImageIcon getIncludeImageIcon(boolean usrIncludeKind, boolean folder) {
+        String iconPath;
+        if (folder) {
+            iconPath = usrIncludeKind ? INCLUDE_USR_FOLDER : INCLUDE_SYS_FOLDER;
         } else {
-            return INCLUDE_FOLDER;
+            iconPath = usrIncludeKind ? INCLUDE_USER : INCLUDE_SYSTEM;
         }
+        return getCachedImageIcon(iconPath);        
     }
     
     public static String getImagePath(CsmObject o) {
@@ -345,5 +340,14 @@ public class CsmImageLoader implements CsmImageName {
             }
         }
         return iconPath;
-    }
+    }    
+
+    private static ImageIcon getCachedImageIcon(String iconPath) {
+        ImageIcon icon = map.get(iconPath);
+        if (icon == null) {
+            icon = new ImageIcon(Utilities.loadImage(iconPath));
+            map.put(iconPath, icon);
+        }
+        return icon;
+    }    
 }
