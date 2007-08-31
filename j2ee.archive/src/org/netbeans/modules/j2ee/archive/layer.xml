@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.archive.project.Bundle"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.archive.wizard.DeployableWizardIterator.createIterator"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/archive/wizard/DeployableDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/archive/project/resources/application_assembler_16.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/archive/project/resources/packaged_archive_16.png"/>
                     <attr name="position" intvalue="800"/>
                     <attr name="template" boolvalue="true"/>
                 </file>

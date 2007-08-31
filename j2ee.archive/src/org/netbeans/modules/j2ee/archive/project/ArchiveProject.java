@@ -87,7 +87,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private ArchiveProjectProperties projProperties;
-    private static final Icon ARCHIVE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/archive/project/resources/application_assembler_16.gif")); // NOI18N
+    private static final Icon ARCHIVE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/archive/project/resources/packaged_archive_16.png")); // NOI18N
     private final UpdateHelper updateHelper;
     
     private HashMap<String,String> nameMap;

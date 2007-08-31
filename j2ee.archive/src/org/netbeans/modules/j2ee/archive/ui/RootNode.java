@@ -57,7 +57,7 @@ public class RootNode extends org.openide.nodes.AbstractNode {
     public RootNode(ArchiveProject ap) {
         super(new LogicalViewChildren(ap), createLookup(ap));
         super.setName(ProjectUtils.getInformation(ap).getDisplayName());
-        setIconBaseWithExtension("org/netbeans/modules/j2ee/archive/project/resources/application_assembler_16.gif"); // NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/archive/project/resources/packaged_archive_16.png"); // NOI18N
 //        if (hasBrokenLinks()) {
 //            broken = true;
 //        }
