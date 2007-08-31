@@ -274,8 +274,8 @@ public final class SourceRoots {
         }
         sourceRoots = Collections.unmodifiableList(result);
         
-        assert sourceRootNames.size() == sourceRootProperties.size() && 
-                sourceRootNames.size() == sourceRoots.size();
+//        assert sourceRootNames.size() == sourceRootProperties.size() && 
+//                sourceRootNames.size() == sourceRoots.size();
     }
     
     /** Look in the given directory and identify any folders we don't "know" about yet */
