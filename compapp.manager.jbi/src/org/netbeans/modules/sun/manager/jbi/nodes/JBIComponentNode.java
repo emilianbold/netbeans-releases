@@ -43,6 +43,7 @@ import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentConfigurator;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
+import org.netbeans.modules.sun.manager.jbi.util.DoNotShowAgainConfirmation;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.Sheet;
 import org.openide.DialogDisplayer;
@@ -68,6 +69,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     private String configSchema;
     
     private boolean hasConfigSchema = true;
+    
+    // This is not persistent across sessions.
+    private static boolean confirmComponentUninstallation = true;
     
         
     public JBIComponentNode(final AppserverJBIMgmtController controller,
@@ -539,13 +543,20 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         if (adminService != null) {
             
             final String componentName = getName();
-            NotifyDescriptor d = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(JBIComponentNode.class, "MSG_UNINSTALL_CONFIRMATION", componentName), // NOI18N
-                    NbBundle.getMessage(JBIComponentNode.class, "TTL_UNINSTALL_CONFIRMATION"), // NOI18N
-                    NotifyDescriptor.OK_CANCEL_OPTION);
-            if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
-                return;
-            }
+            
+            if (confirmComponentUninstallation) {
+                DoNotShowAgainConfirmation d = new DoNotShowAgainConfirmation(
+                        NbBundle.getMessage(JBIComponentNode.class, "MSG_UNINSTALL_CONFIRMATION", componentName), // NOI18N
+                        NbBundle.getMessage(JBIComponentNode.class, "TTL_UNINSTALL_CONFIRMATION"), // NOI18N
+                        NotifyDescriptor.YES_NO_OPTION);
+                if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                    return;
+                }
+
+                if (d.getDoNotShowAgain()) {
+                    confirmComponentUninstallation = false;
+                }
+            }            
             
             String progressLabel = getUninstallProgressLabel();
             String title =

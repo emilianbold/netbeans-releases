@@ -42,9 +42,7 @@ public class DoNotShowAgainMessage extends NotifyDescriptor.Message {
      * @see NotifyDescriptor#NotifyDescriptor
      */
     public DoNotShowAgainMessage(Object message) {
-        this(message, INFORMATION_MESSAGE, 
-                NbBundle.getMessage(DoNotShowAgainMessage.class, 
-                "LBL_DO_NOT_SHOW_AGAIN")); // NOI18N
+        this(message, INFORMATION_MESSAGE); 
     }
     
     /**
@@ -54,17 +52,16 @@ public class DoNotShowAgainMessage extends NotifyDescriptor.Message {
      * @see NotifyDescriptor#NotifyDescriptor
      */
     public DoNotShowAgainMessage(Object message, int messageType) {
-        this(message, messageType, 
-                NbBundle.getMessage(DoNotShowAgainMessage.class, 
-                "LBL_DO_NOT_SHOW_AGAIN")); // NOI18N
+        this(message, messageType, null);                
     }
 
     /**
      * Create a report about the results of a command.
      *
-     * @param message the message object
-     * @param messageType the type of message to be displayed
-     * @param checkboxText text for the do-not-show-again checkbox
+     * @param message   the message object
+     * @param messageType   the type of message to be displayed
+     * @param checkboxText  text for the do-not-show-again checkbox, 
+     *                      null for the default message
      * @see NotifyDescriptor#NotifyDescriptor
      */
     public DoNotShowAgainMessage(Object message, int messageType, 
@@ -96,6 +93,11 @@ public class DoNotShowAgainMessage extends NotifyDescriptor.Message {
             panel.add(label, BorderLayout.NORTH);
         }
         
+        if (checkboxText == null) {
+            checkboxText = 
+                NbBundle.getMessage(DoNotShowAgainMessage.class, 
+                "LBL_DO_NOT_SHOW_MESSAGE_AGAIN"); // NOI18N 
+        }
         checkbox = new JCheckBox(checkboxText);
         
         panel.add(checkbox, BorderLayout.SOUTH);        
