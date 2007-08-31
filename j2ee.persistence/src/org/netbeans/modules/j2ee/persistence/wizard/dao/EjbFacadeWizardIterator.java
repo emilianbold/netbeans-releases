@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.persistence.wizard.dao;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -359,34 +358,30 @@ import org.openide.util.NbBundle;
         JavaSource source = JavaSource.forFileObject(target);
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
             
-            public void run(WorkingCopy parameter) throws Exception {
-                parameter.toPhase(Phase.RESOLVED);
-                TreeMaker make = parameter.getTreeMaker();
-                CompilationUnitTree cut = parameter.getCompilationUnit();
-                for (Tree tree : cut.getTypeDecls()) {
-                    if (tree.getKind() == Tree.Kind.CLASS) {
-                        ClassTree original = (ClassTree) tree;
-                        ClassTree modifiedClass = original;
-                        for (GenerationOptions each : options) {
-                            MethodTree method = make.Method(make.Modifiers(Collections.<Modifier>emptySet()),
-                                    each.getMethodName(), make.Identifier(each.getReturnType()), Collections.<TypeParameterTree>emptyList(),
-                                    getParameterList(each, make), Collections.<ExpressionTree>emptyList(), (BlockTree) null, null);
-                            modifiedClass = make.addClassMember(modifiedClass, method);
-                        }
-                        parameter.rewrite(original, modifiedClass);
-                    }
+            public void run(WorkingCopy copy) throws Exception {
+                GenerationUtils utils = GenerationUtils.newInstance(copy);
+                ClassTree original = utils.getClassTree();
+                ClassTree modifiedClass = original;
+                TreeMaker make = copy.getTreeMaker();
+                for (GenerationOptions each : options) {
+                    MethodTree method = make.Method(make.Modifiers(Collections.<Modifier>emptySet()), 
+                            each.getMethodName(), utils.createType(each.getReturnType()), 
+                            Collections.<TypeParameterTree>emptyList(), getParameterList(each, make, utils),
+                            Collections.<ExpressionTree>emptyList(), (BlockTree) null, null);
+                    modifiedClass = make.addClassMember(modifiedClass, method);
                 }
+                copy.rewrite(original, modifiedClass);
             }
         });
         result.commit();
     }
     
-    private List<VariableTree> getParameterList(GenerationOptions options, TreeMaker make){
+    private List<VariableTree> getParameterList(GenerationOptions options, TreeMaker make, GenerationUtils utils){
         if (options.getParameterName() == null){
             return Collections.<VariableTree>emptyList();
         }
         VariableTree vt = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), 
-                options.getParameterName(), make.Identifier(options.getParameterType()), null);
+                options.getParameterName(), utils.createType(options.getParameterType()), null);
         return Collections.<VariableTree>singletonList(vt);
     }
     

@@ -84,7 +84,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
                 Collections.<AnnotationTree>emptyList()
                 ),
                 getGenerationOptions().getParameterName(),
-                getTreeMaker().Identifier(getGenerationOptions().getParameterType()),
+                getGenUtils().createType(getGenerationOptions().getParameterType()),
                 null
                 );
         return Collections.<VariableTree>singletonList(parameter);

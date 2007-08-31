@@ -1,5 +1,6 @@
 package foo;
 
+import java.util.List;
 import javax.ejb.Remote;
 
 @Remote
@@ -13,5 +14,5 @@ public interface TestFacadeRemote {
 
     Test find(Object id);
 
-    java.util.List findAll();
+    List findAll();
 }

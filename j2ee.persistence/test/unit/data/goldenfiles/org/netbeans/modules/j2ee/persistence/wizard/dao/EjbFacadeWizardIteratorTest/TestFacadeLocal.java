@@ -1,5 +1,6 @@
 package foo;
 
+import java.util.List;
 import javax.ejb.Local;
 
 @Local
@@ -13,5 +14,5 @@ public interface TestFacadeLocal {
 
     Test find(Object id);
 
-    java.util.List findAll();
+    List findAll();
 }
