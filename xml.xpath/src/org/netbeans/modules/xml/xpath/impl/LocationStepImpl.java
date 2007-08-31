@@ -118,19 +118,53 @@ public class LocationStepImpl extends XPathExpressionImpl implements LocationSte
      * @return the string representation
      */
     public String getString() {
-        StringBuffer sb = new StringBuffer();
-        
-        if (LocationStep.AXIS_ATTRIBUTE == getAxis()) {
-            sb.append('@');
-        }
-        
+        StringBuilder sb = new StringBuilder();
+        //
         StepNodeTest nodeTest = getNodeTest();
         if (nodeTest instanceof StepNodeNameTest) {
-            sb.append(((StepNodeNameTest) nodeTest).getNodeName());
+            StepNodeNameTest snnt = (StepNodeNameTest)nodeTest;
+            if (snnt.isWildcard()) {
+                switch (getAxis()) {
+                case LocationStep.AXIS_ATTRIBUTE:
+                    sb.append("@*"); // NOI18N
+                    break;
+                case LocationStep.AXIS_CHILD:
+                    sb.append("*"); // NOI18N
+                    break;
+                default: 
+                    // other axis are not supported with the wildcard
+                }
+            } else {
+                // Ignore axis for a while
+                // 
+                sb.append(((StepNodeNameTest) nodeTest).getNodeName());
+            }
         } else if (nodeTest instanceof StepNodeTypeTest) {
-            sb.append(((StepNodeTypeTest) nodeTest).getNodeTypeString());
+            StepNodeTypeTest sntt = (StepNodeTypeTest)nodeTest;
+            switch (sntt.getNodeType()) {
+            case NODETYPE_NODE:
+                switch (getAxis()) {
+                case LocationStep.AXIS_SELF:   // it means that the location step is abbreviated step "."
+                    sb.append(".");
+                    break;
+                case LocationStep.AXIS_PARENT: // it means that the location step is abbreviated step ".."
+                    sb.append("..");
+                    break;
+                case LocationStep.AXIS_CHILD: // it means that the location step is "node()"
+                    sb.append(sntt.getNodeTypeString());
+                    break;
+                default:
+                    // other axis are not supported here
+                }
+                break;
+            case NODETYPE_COMMENT:
+            case NODETYPE_PI:
+            case NODETYPE_TEXT:
+                sb.append(sntt.getNodeTypeString());
+                break;
+            }
         }
-        
+        //
         return sb.toString();
     }
 

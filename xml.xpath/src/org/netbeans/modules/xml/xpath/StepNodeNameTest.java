@@ -51,4 +51,8 @@ public class StepNodeNameTest extends StepNodeTest {
     public String toString() {
         return getNodeName();
     }
+    
+    public boolean isWildcard() {
+        return mNodeName.equals("*"); // NOI18N
+    }
 }
