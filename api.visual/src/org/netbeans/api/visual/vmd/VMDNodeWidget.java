@@ -21,6 +21,7 @@ package org.netbeans.api.visual.vmd;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
+import org.netbeans.api.visual.animator.AnimatorEvent;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
@@ -30,6 +31,9 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
+import org.netbeans.api.visual.animator.Animator;
+import org.netbeans.api.visual.animator.AnimatorListener;
+import org.netbeans.api.visual.animator.SceneAnimator;
 
 /**
  * This class represents a node widget in the VMD visualization style. It implements the minimize ability.
@@ -172,7 +176,27 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         Rectangle rectangle = minimized ? new Rectangle () : null;
         for (Widget widget : getChildren ())
             if (widget != header  &&  widget != pinsSeparator) {
-                getScene ().getSceneAnimator ().animatePreferredBounds (widget, minimized  && isMinimizableWidget (widget) ? rectangle : null);
+                SceneAnimator sceneAnimator = getScene ().getSceneAnimator ();
+                sceneAnimator.animatePreferredBounds (widget, minimized  && isMinimizableWidget (widget) ? rectangle : null);
+                final Animator animator = sceneAnimator.getPreferredBoundsAnimator ();
+                animator.addAnimatorListener(new AnimatorListener () {
+                    public void animatorStarted(AnimatorEvent event) {
+                    }
+
+                    public void animatorReset(AnimatorEvent event) {
+                    }
+
+                    public void animatorFinished(AnimatorEvent event) {
+                        animator.removeAnimatorListener (this);
+                    }
+
+                    public void animatorPreTick(AnimatorEvent event) {
+                    }
+
+                    public void animatorPostTick(AnimatorEvent event) {
+                        header.revalidate();
+                    }
+                });
             }
         minimizeWidget.setImage (scheme.getMinimizeWidgetImage (this));
     }
