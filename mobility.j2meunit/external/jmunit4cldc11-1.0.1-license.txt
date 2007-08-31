@@ -1,6 +1,6 @@
 Name: JMUnit
 Version: 1.0.1
-OSR: 3486 
+OSR: 4806 
 Description: http://sourceforge.net/projects/jmunit/
 Origin: http://sourceforge.net/projects/jmunit/
 License: Apache-2.0

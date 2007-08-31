@@ -4,6 +4,7 @@ License: GPL
 Origin: http://proguard.sourceforge.net/
 Source: proguard3.7-src.zip
 Files: proguard3.7-src.zip
+OSR: 5748
  
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991
