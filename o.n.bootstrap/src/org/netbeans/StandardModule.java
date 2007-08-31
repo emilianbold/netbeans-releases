@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -53,7 +52,6 @@ import org.netbeans.Module.PackageExport;
 import org.openide.modules.Dependency;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Union2;
 
 /** Object representing one module, possibly installed.
  * Responsible for opening of module JAR file; reading
@@ -579,45 +577,24 @@ final class StandardModule extends Module {
             }
             loaders.add(l);
         }
-        List<Union2<File,JarFile>> classp = new ArrayList<Union2<File,JarFile>>(3);
-        if (patches != null) {
-            for (File f : patches) {
-                if (f.isDirectory()) {
-                    classp.add(Union2.<File,JarFile>createFirst(f));
-                } else {
-                    classp.add(Union2.<File,JarFile>createSecond(new JarFile(f, false)));
-                }
-            }
-        }
+        List<File> classp = new ArrayList<File>(3);
+        if (patches != null) classp.addAll(patches);
+
         if (reloadable) {
             ensurePhysicalJar();
             // Using OPEN_DELETE does not work well with test modules under 1.4.
             // Random code (URL handler?) still expects the JAR to be there and
             // it is not.
-            classp.add(Union2.<File,JarFile>createSecond(new JarFile(physicalJar, false)));
+            classp.add(physicalJar);
         } else {
-            classp.add(Union2.<File,JarFile>createSecond(new JarFile(jar, false)));
+            classp.add(jar);
         }
         // URLClassLoader would not otherwise find these, so:
-        if (localeVariants != null) {
-            for (File var : localeVariants) {
-                classp.add(Union2.<File,JarFile>createSecond(new JarFile(var, false)));
-            }
-        }
-        if (localeExtensions != null) {
-            for (File ext : localeExtensions) {
-                classp.add(ext.isDirectory() ?
-                    Union2.<File,JarFile>createFirst(ext) :
-                    Union2.<File,JarFile>createSecond(new JarFile(ext, false)));
-            }
-        }
-        if (plainExtensions != null) {
-            for (File ext : plainExtensions) {
-                classp.add(ext.isDirectory() ?
-                    Union2.<File,JarFile>createFirst(ext) :
-                    Union2.<File,JarFile>createSecond(new JarFile(ext, false)));
-            }
-        }
+        if (localeVariants != null) classp.addAll(localeVariants);
+
+        if (localeExtensions != null) classp.addAll(localeExtensions);
+
+        if (plainExtensions != null) classp.addAll(plainExtensions);
         
         // #27853:
         getManager().refineClassLoader(this, loaders);
@@ -689,8 +666,8 @@ final class StandardModule extends Module {
          *      The items are JarFiles for jars and Files for directories
          * @param parents a set of parent classloaders (from other modules)
          */
-        public OneModuleClassLoader(List<Union2<File,JarFile>> classp, ClassLoader[] parents) throws IllegalArgumentException {
-            super(classp, parents, false);
+        public OneModuleClassLoader(List<File> classp, ClassLoader[] parents) throws IllegalArgumentException {
+            super(classp, parents, false, StandardModule.this);
             rc = releaseCount++;
         }
         
@@ -717,14 +694,6 @@ final class StandardModule extends Module {
             }
         }
 
-        protected boolean isSpecialResource(String pkg) {
-            if (mgr.isSpecialResource(pkg)) {
-                return true;
-            }
-            return super.isSpecialResource(pkg);
-        }
-        
-        
         protected boolean shouldDelegateResource(String pkg, ClassLoader parent) {
             if (!super.shouldDelegateResource(pkg, parent)) {
                 return false;

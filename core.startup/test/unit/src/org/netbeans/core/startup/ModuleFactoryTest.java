@@ -209,7 +209,7 @@ public class ModuleFactoryTest extends ModuleManagerTest {
         }
         @Override
         protected void classLoaderUp(Set parents) throws IOException {
-            classloader = new JarClassLoader(Collections.<Union2<File,JarFile>>emptyList(), new ClassLoader[] {new NoOpClassLoader()});
+            classloader = new JarClassLoader(Collections.<File>emptyList(), new ClassLoader[] {new NoOpClassLoader()});
         }
         @Override
         protected void classLoaderDown() {

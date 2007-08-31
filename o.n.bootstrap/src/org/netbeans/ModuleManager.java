@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import org.openide.modules.Dependency;
@@ -81,7 +80,7 @@ public final class ModuleManager {
     private ModuleFactory moduleFactory;
 
     private SystemClassLoader classLoader;
-    private List<Union2<File,JarFile>> classLoaderPatches;
+    private List<File> classLoaderPatches;
     private final Object classLoaderLock = new String("ModuleManager.classLoaderLock"); // NOI18N
 
     private final Events ev;
@@ -99,19 +98,10 @@ public final class ModuleManager {
             // to a classpath (list of directories and JARs separated by the normal
             // path separator) you may append to the system class loader.
             System.err.println("System class loader patches: " + patches); // NOI18N
-            classLoaderPatches = new ArrayList<Union2<File,JarFile>>();
+            classLoaderPatches = new ArrayList<File>();
             StringTokenizer tok = new StringTokenizer(patches, File.pathSeparator);
             while (tok.hasMoreTokens()) {
-                File f = new File(tok.nextToken());
-                if (f.isDirectory()) {
-                    classLoaderPatches.add(Union2.<File,JarFile>createFirst(f));
-                } else {
-                    try {
-                        classLoaderPatches.add(Union2.<File,JarFile>createSecond(new JarFile(f)));
-                    } catch (IOException ioe) {
-                        Util.err.log(Level.WARNING, "Problematic file: " + f, ioe);
-                    }
-                }
+                classLoaderPatches.add(new File(tok.nextToken()));
             }
         } else {
             // Normal case.
@@ -403,20 +393,20 @@ public final class ModuleManager {
         private final StringBuffer debugme;
         private boolean empty = true;
 
-        public SystemClassLoader(List<Union2<File,JarFile>> files, ClassLoader[] parents, Set<Module> modules) throws IllegalArgumentException {
+        public SystemClassLoader(List<File> files, ClassLoader[] parents, Set<Module> modules) throws IllegalArgumentException {
             super(files, parents, false);
             allPermissions = new Permissions();
             allPermissions.add(new AllPermission());
             allPermissions.setReadOnly();
             debugme = new StringBuffer(100 + 50 * modules.size());
             debugme.append("SystemClassLoader["); // NOI18N
-            for (Union2<File,JarFile> file : files) {
+            for (File file : files) {
                 if (empty) {
                     empty = false;
                 } else {
                     debugme.append(','); // NOI18N
                 }
-                debugme.append(file.hasFirst() ? file.first().getAbsolutePath() : file.second().getName());
+                debugme.append(file.getAbsolutePath());
             }
             record(modules);
             debugme.append(']'); // NOI18N
@@ -450,13 +440,6 @@ public final class ModuleManager {
                 return "SystemClassLoader";
             }
             return debugme.toString();
-        }
-
-        protected boolean isSpecialResource(String pkg) {
-            if (installer.isSpecialResource(pkg)) {
-                return true;
-            }
-            return super.isSpecialResource(pkg);
         }
 
         /** Provide all permissions for any code loaded from the files list

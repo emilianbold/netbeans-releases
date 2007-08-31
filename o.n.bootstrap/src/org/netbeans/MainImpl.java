@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -36,9 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.jar.JarFile;
 import org.openide.util.Lookup;
-import org.openide.util.Union2;
 import org.openide.util.lookup.Lookups;
 
 /** Bootstrap main class.
@@ -102,7 +100,7 @@ final class MainImpl extends Object {
             public void connect() throws IOException {}
         }.setDefaultUseCaches(false);
 
-        ArrayList<Union2<File,JarFile>> list = new ArrayList<Union2<File,JarFile>>();
+        ArrayList<File> list = new ArrayList<File>();
 
         HashSet<File> processedDirs = new HashSet<File> ();
         String home = System.getProperty ("netbeans.home"); // NOI18N
@@ -127,16 +125,14 @@ final class MainImpl extends Object {
             StringTokenizer tok = new StringTokenizer (prepend, File.pathSeparator);
             while (tok.hasMoreElements()) {
                 File f = new File(tok.nextToken());
-                list.add(0, f.isDirectory() ?
-                    Union2.<File,JarFile>createFirst(f) :
-                    Union2.<File,JarFile>createSecond(new JarFile(f, false)));
+                list.add(0, f);
             }
         }
 
         // Compute effective dynamic classpath (mostly lib/*.jar) for TopLogging, NbInstaller:
         StringBuffer buf = new StringBuffer(1000);
-        for (Union2<File,JarFile> o : list) {
-	    String f = o.hasFirst() ? o.first().getAbsolutePath() : o.second().getName();
+        for (File o : list) {
+	    String f = o.getAbsolutePath();
             if (buf.length() > 0) {
                 buf.append(File.pathSeparatorChar);
             }
@@ -207,7 +203,7 @@ final class MainImpl extends Object {
 
         private List<CLIHandler> handlers;
 
-        public BootClassLoader(List<Union2<File,JarFile>> cp, ClassLoader[] parents) {
+        public BootClassLoader(List<File> cp, ClassLoader[] parents) {
             super(cp, parents);
 
             metaInf = Lookups.metaInfServices(this);
@@ -259,7 +255,7 @@ final class MainImpl extends Object {
             if (onlyRunRunOnce) return;
             onlyRunRunOnce = true;
 
-            ArrayList<Union2<File,JarFile>> toAdd = new ArrayList<Union2<File,JarFile>> ();
+            ArrayList<File> toAdd = new ArrayList<File> ();
             String user = System.getProperty ("netbeans.user"); // NOI18N
             try {
                 if (user != null) {
@@ -306,7 +302,7 @@ final class MainImpl extends Object {
         }
     } // end of BootClassLoader
 
-    private static void append_jars_to_cp (File dir, Collection<Union2<File,JarFile>> toAdd) throws IOException {
+    private static void append_jars_to_cp (File dir, Collection<File> toAdd) throws IOException {
         if (!dir.isDirectory()) return;
 
         File[] arr = dir.listFiles();
@@ -320,13 +316,13 @@ final class MainImpl extends Object {
             }
             */
             if (n.endsWith("jar") || n.endsWith ("zip")) { // NOI18N
-                toAdd.add(Union2.<File,JarFile>createSecond(new JarFile(arr[i], false)));
+                toAdd.add(arr[i]);
             }
         }
     }
 
 
-    private static void build_cp(File base, Collection<Union2<File,JarFile>> toAdd, Set<File> processedDirs)
+    private static void build_cp(File base, Collection<File> toAdd, Set<File> processedDirs)
     throws java.io.IOException {
         if (!processedDirs.add (base)) {
             // already processed
