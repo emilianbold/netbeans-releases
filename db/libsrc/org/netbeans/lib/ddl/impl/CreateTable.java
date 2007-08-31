@@ -33,22 +33,29 @@ import org.netbeans.lib.ddl.impl.*;
 public class CreateTable extends ColumnListCommand
 {
     static final long serialVersionUID =-6731725400393279232L;
+    
+    public CreateTable() {
+        setNewObject(true);
+    }
+    
     public TableColumn createColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        return specifyColumn(TableColumn.COLUMN, name, Specification.CREATE_TABLE);
+        return specifyColumn(TableColumn.COLUMN, name, 
+            Specification.CREATE_TABLE, true, true);
     }
 
     public TableColumn createColumn(String type, String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        return specifyColumn(type, name, Specification.CREATE_TABLE);
+        return specifyColumn(type, name, Specification.CREATE_TABLE, true, true);
     }
 
     public TableColumn createUniqueColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.UNIQUE, name, Specification.CREATE_TABLE);
+        TableColumn col = specifyColumn(TableColumn.UNIQUE, name, 
+            Specification.CREATE_TABLE, true, true);
         col.setObjectName(name+"_UQ"); // NOI18N
         return col;
     }
@@ -56,7 +63,8 @@ public class CreateTable extends ColumnListCommand
     public TableColumn createPrimaryKeyColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, Specification.CREATE_TABLE);
+        TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, 
+            Specification.CREATE_TABLE, true, true);
         col.setObjectName(name+"_PK"); // NOI18N
         return col;
     }
@@ -64,7 +72,8 @@ public class CreateTable extends ColumnListCommand
     public TableColumn createForeignKeyColumn(String name, String rtablename, String rcolumnname)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.FOREIGN_KEY, name, Specification.CREATE_TABLE);
+        TableColumn col = specifyColumn(TableColumn.FOREIGN_KEY, name, 
+            Specification.CREATE_TABLE, true, true);
         col.setObjectName(name+"_FK"); // NOI18N
         col.setReferencedTableName(rtablename);
         col.setReferencedColumnName(rcolumnname);
@@ -74,7 +83,8 @@ public class CreateTable extends ColumnListCommand
     public TableColumn createCheckColumn(String name, String expression)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.CHECK, name, Specification.CREATE_TABLE);
+        TableColumn col = specifyColumn(TableColumn.CHECK, name, 
+            Specification.CREATE_TABLE, true, true);
         col.setObjectName(name+"_CH"); // NOI18N
         col.setCheckCondition(expression);
         return col;
@@ -83,7 +93,8 @@ public class CreateTable extends ColumnListCommand
     public TableColumn createUniqueConstraint(String columnname)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.UNIQUE_CONSTRAINT, columnname, Specification.CREATE_TABLE);
+        TableColumn col = specifyColumn(TableColumn.UNIQUE_CONSTRAINT, columnname, 
+            Specification.CREATE_TABLE, true, true);
         col.setObjectName(columnname+"_UQ"); // NOI18N
         return col;
     }
@@ -91,7 +102,8 @@ public class CreateTable extends ColumnListCommand
     public TableColumn createCheckConstraint(String name, String expression)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.CHECK_CONSTRAINT, name, Specification.CREATE_TABLE);
+        TableColumn col = specifyColumn(TableColumn.CHECK_CONSTRAINT, name, 
+            Specification.CREATE_TABLE, true, true);
         col.setObjectName(name+"_CH"); // NOI18N
         col.setCheckCondition(expression);
         return col;
@@ -100,7 +112,8 @@ public class CreateTable extends ColumnListCommand
     public TableColumn createPrimaryKeyConstraint(String columnname)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY_CONSTRAINT, columnname, Specification.CREATE_TABLE);
+        TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY_CONSTRAINT, 
+            columnname, Specification.CREATE_TABLE, true, true);
         col.setObjectName(columnname+"_PK"); // NOI18N
         return col;
     }
@@ -108,7 +121,8 @@ public class CreateTable extends ColumnListCommand
     public TableColumn createForeignKeyConstraint(String columnname, String rtablename, String rcolumnname)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.FOREIGN_KEY_CONSTRAINT, columnname, Specification.CREATE_TABLE);
+        TableColumn col = specifyColumn(TableColumn.FOREIGN_KEY_CONSTRAINT, 
+            columnname, Specification.CREATE_TABLE, true, true);
         col.setObjectName(columnname+"_FK"); // NOI18N
         col.setReferencedTableName(rtablename);
         col.setReferencedColumnName(rcolumnname);

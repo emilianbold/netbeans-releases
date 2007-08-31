@@ -35,20 +35,21 @@ public class AddToIndexDDLTest extends DBTestBase {
         String indexname = "index";
         String col1name = "col1";
         String col2name = "col2";
-        AddToIndexDDL ddl = new AddToIndexDDL(spec, SCHEMA, tablename);
         
         createBasicTable(tablename, "id");
         addBasicColumn(tablename, col1name, Types.VARCHAR, 255);
         createSimpleIndex(tablename, indexname, col1name);
 
         addBasicColumn(tablename, col2name, Types.VARCHAR, 255);
+
+        AddToIndexDDL ddl = new AddToIndexDDL(spec, SCHEMA, fixIdentifier(tablename));
         
         HashSet cols = new HashSet();
-        cols.add(col2name);
+        cols.add(fixIdentifier(col2name));
         
-        boolean wasException = ddl.execute(indexname, false, cols);
+        boolean wasException = ddl.execute(fixIdentifier(indexname), false, cols);
         assertFalse(wasException);
-        assertTrue(super.columnInIndex(tablename, col2name, indexname));        
+        assertTrue(columnInIndex(tablename, col2name, indexname));        
     }
 
 }

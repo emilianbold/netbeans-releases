@@ -91,10 +91,14 @@ public class CreateTableDDL {
                   cmd.createCheckConstraint(name, col.getCheckConstraint());
               if (col.isIndexed()&&!col.isPrimaryKey()&&!col.isUnique()) {
                   xcmd = spec.createCommandCreateIndex(tablename);
+                  // This index is referring to a tablename that is being
+                  // created now, versus an existing one.  This
+                  // means we shouldn't quote it.
+                  xcmd.setNewObject(true);
                   xcmd.setIndexName(tablename+ "_" + name + "_idx"); // NOI18N
                   xcmd.setIndexType(new String());
                   xcmd.setObjectOwner(schema);
-                  xcmd.specifyColumn(name);
+                  xcmd.specifyNewColumn(name);
                   idxCommands.add(xcmd);
               }
           }

@@ -31,20 +31,20 @@ import org.netbeans.lib.ddl.impl.*;
 
 public class CreateIndex extends ColumnListCommand {
     /** Index name */
-    private String tablename;
+    private String indexname;
 
     /** Index type */
     private String unique;
 
-    static final long serialVersionUID =1899024699690380782L;
+    static final long serialVersionUID =1899024699690380782L;    
     public String getIndexName()
     {
-        return tablename;
+        return indexname;
     }
 
-    public void setIndexName(String tname)
+    public void setIndexName(String iname)
     {
-        tablename = tname;
+        indexname = iname;
     }
 
     public String getIndexType()
@@ -60,12 +60,20 @@ public class CreateIndex extends ColumnListCommand {
     public TableColumn specifyColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        return specifyColumn(TableColumn.COLUMN, name, Specification.CREATE_INDEX);
+        return specifyColumn(TableColumn.COLUMN, name, 
+            Specification.CREATE_INDEX, false, false);
+    }
+    
+    public TableColumn specifyNewColumn(String name)
+            throws ClassNotFoundException, IllegalAccessException, 
+            InstantiationException {
+        return specifyColumn(TableColumn.COLUMN, name, 
+                Specification.CREATE_INDEX, false, true);
     }
 
     public Map getCommandProperties() throws DDLException {
         Map args = super.getCommandProperties();
-        args.put("index.name", quote(tablename)); // NOI18N
+        args.put("index.name", indexname); // NOI18N
         args.put("index.unique", unique); // NOI18N
         
         return args;

@@ -57,8 +57,14 @@ public class ColumnListCommand extends AbstractCommand
     * @param type Type of column
     * @param name Name of column
     * @param cmd Command
+    * @param newObject indicates whether the object for this column
+    *   (e.g. a table) is an existing object or a new object.  This affects
+    *   whether we quote the object or not.
+    * @param newColumn indicates whether this column refers to a column
+     *   being created as part of this command or it is an existing column
     */	
-    public TableColumn specifyColumn(String type, String name, String cmd)
+    public TableColumn specifyColumn(String type, String name, String cmd,
+        boolean newObject, boolean newColumn)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         TableColumn column;
@@ -76,6 +82,8 @@ public class ColumnListCommand extends AbstractCommand
                 column.setObjectType(type);
                 column.setColumnName(name);
                 column.setFormat(format);
+                column.setNewObject(newObject);
+                column.setNewColumn(newColumn);
                 columns.add(column);
             } else throw new InstantiationException(
                     MessageFormat.format(

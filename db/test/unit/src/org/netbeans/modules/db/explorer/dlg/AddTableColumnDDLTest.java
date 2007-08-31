@@ -36,7 +36,7 @@ public class AddTableColumnDDLTest extends DBTestBase {
         String colname = "testColumn";
         String pkeyName = "id";
         
-        super.createBasicTable(tablename, pkeyName);
+        createBasicTable(tablename, pkeyName);
         
         addColumn(tablename, colname);
         
@@ -47,7 +47,7 @@ public class AddTableColumnDDLTest extends DBTestBase {
     
     private void addColumn(String tablename, String colname) throws Exception {
         AddTableColumnDDL ddl = new AddTableColumnDDL(
-                spec, drvSpec, SCHEMA, tablename);
+                spec, drvSpec, SCHEMA, fixIdentifier(tablename));
         
         ColumnItem col = new ColumnItem();
         col.setProperty(ColumnItem.NAME, colname);
@@ -65,12 +65,12 @@ public class AddTableColumnDDLTest extends DBTestBase {
         String pkeyName = "id";
         String indexName = "idx";
 
-        super.createBasicTable(tablename, pkeyName);     
+        createBasicTable(tablename, pkeyName);     
         addColumn(tablename, firstColname);
-        super.createSimpleIndex(tablename, indexName, firstColname);        
+        createSimpleIndex(tablename, indexName, firstColname);        
 
         AddTableColumnDDL ddl = new AddTableColumnDDL(
-                spec, drvSpec, SCHEMA, tablename);
+                spec, drvSpec, SCHEMA, fixIdentifier(tablename));
         
         ColumnItem col = new ColumnItem();
         col.setProperty(ColumnItem.NAME, secondColname);
@@ -79,7 +79,7 @@ public class AddTableColumnDDLTest extends DBTestBase {
         col.setProperty(ColumnItem.SIZE, "255");
         col.setProperty(ColumnItem.INDEX, new Boolean(true));
         
-        ddl.execute(secondColname, col, indexName);
+        ddl.execute(secondColname, col, fixIdentifier(indexName));
         
         // Now verify the column exists and is part of the index
         assertTrue(columnInIndex(tablename, secondColname, 

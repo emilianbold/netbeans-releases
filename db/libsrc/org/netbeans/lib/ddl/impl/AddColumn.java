@@ -37,19 +37,21 @@ public class AddColumn extends ColumnListCommand
     public AbstractTableColumn specifyColumn(String type, String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        return specifyColumn(type, name, Specification.ADD_COLUMN);
+        return specifyColumn(type, name, Specification.ADD_COLUMN, false, true);
     }
 
     public AbstractTableColumn createColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        return specifyColumn(TableColumn.COLUMN, name, Specification.ADD_COLUMN);
+        return specifyColumn(TableColumn.COLUMN, name, 
+            Specification.ADD_COLUMN, false, true);
     }
 
     public TableColumn createUniqueColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.UNIQUE, name, Specification.ADD_COLUMN);
+        TableColumn col = specifyColumn(TableColumn.UNIQUE, name, 
+            Specification.ADD_COLUMN, false, true);
         col.setObjectName(name+"_UQ"); // NOI18N
         return col;
     }
@@ -57,7 +59,8 @@ public class AddColumn extends ColumnListCommand
     public TableColumn createPrimaryKeyColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, Specification.ADD_COLUMN);
+        TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, 
+            Specification.ADD_COLUMN, false, true);
         col.setObjectName(name+"_PK"); // NOI18N
         return col;
     }
@@ -65,7 +68,8 @@ public class AddColumn extends ColumnListCommand
     public TableColumn createCheckColumn(String name, String expression)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.CHECK, name, Specification.ADD_COLUMN);
+        TableColumn col = specifyColumn(TableColumn.CHECK, name, 
+            Specification.ADD_COLUMN, false, true);
         col.setObjectName(name+"_CH"); // NOI18N
         col.setCheckCondition(expression);
         return col;
@@ -74,7 +78,8 @@ public class AddColumn extends ColumnListCommand
     public TableColumn createCheckConstraint(String name, String expression)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.CHECK_CONSTRAINT, name, Specification.ADD_COLUMN);
+        TableColumn col = specifyColumn(TableColumn.CHECK_CONSTRAINT, name, 
+            Specification.ADD_COLUMN, false, true);
         col.setObjectName(name+"_CH"); // NOI18N
         col.setCheckCondition(expression);
         return col;

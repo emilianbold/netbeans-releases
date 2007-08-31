@@ -53,6 +53,7 @@ public class CreateProcedure extends AbstractCommand implements ProcedureDescrip
     public CreateProcedure()
     {
         args = new Vector();
+        setNewObject(true);
     }
 
     /** Returns catalog */

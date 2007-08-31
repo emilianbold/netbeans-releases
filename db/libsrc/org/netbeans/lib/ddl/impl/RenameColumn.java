@@ -42,7 +42,8 @@ public class RenameColumn extends ColumnCommand
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         newname = nname;
-        return specifyColumn(TableColumn.COLUMN, name, Specification.RENAME_COLUMN);
+        return specifyColumn(TableColumn.COLUMN, name, 
+            Specification.RENAME_COLUMN, false, false);
     }
 
     /** Returns properties of command:

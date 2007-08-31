@@ -35,7 +35,7 @@ import org.netbeans.lib.ddl.adaptors.DatabaseMetaDataAdaptor;
 import org.openide.*;
 
 public class Specification implements DatabaseSpecification {
-
+    
     /** Used DBConnection */
     private HashMap desc;
 

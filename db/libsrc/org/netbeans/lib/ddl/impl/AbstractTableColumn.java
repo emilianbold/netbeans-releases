@@ -48,6 +48,14 @@ public class AbstractTableColumn implements Serializable {
 
     /** Referenced column */
     String refcol;
+    
+    /** Is this a new column or an existing one */
+    boolean newColumn = false;
+    
+    /** Is this a column for an existing object or one that is being
+     * newly created?
+     */
+    boolean newObject = false;
 
     static final long serialVersionUID =-5128289937199572117L;
     /** Returns name of object */
@@ -122,6 +130,23 @@ public class AbstractTableColumn implements Serializable {
         refcol = col;
     }
 
+    public boolean isNewColumn() {
+        return newColumn;
+    }
+
+    public void setNewColumn(boolean newColumn) {
+        this.newColumn = newColumn;
+    }
+    
+    public boolean isNewObject() {
+        return newObject;
+    }
+    
+    public void setNewObject(boolean newObject) {
+        this.newObject = newObject;
+    }
+    
+
     /** Returns custom property identified by name */
     public Object getProperty(String pname)
     {
@@ -152,9 +177,11 @@ public class AbstractTableColumn implements Serializable {
         String cname = getColumnName();
 
         if (addprops != null) args.putAll(addprops);
-        if (oname != null) args.put("object.name", cmd.quote(oname)); // NOI18N
+        if (oname != null) args.put("object.name", 
+            newObject ? oname : cmd.quote(oname)); // NOI18N
         else throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_Unknown")); // NOI18N
-        if (cname != null) args.put("column.name", cmd.quote(cname)); // NOI18N
+        if (cname != null) args.put("column.name",
+            newColumn ? cname : cmd.quote(cname)); // NOI18N
         else throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_Unknown")); // NOI18N
 
         if (reftab != null) args.put("fkobject.name", cmd.quote(reftab)); // NOI18N

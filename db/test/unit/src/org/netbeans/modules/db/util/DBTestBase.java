@@ -237,7 +237,7 @@ public abstract class DBTestBase extends TestBase {
         // drop schema
         try {
             conn.createStatement().executeUpdate(
-                    "DROP SCHEMA " + quote(SCHEMA) + " RESTRICT");
+                    "DROP SCHEMA " + SCHEMA + " RESTRICT");
         } catch (SQLException e) {
             LOGGER.log(Level.FINE, null, e);
             LOGGER.log(DEBUGLEVEL, "Got an exception when attempting to " +
@@ -266,7 +266,6 @@ public abstract class DBTestBase extends TestBase {
 
     protected void dropView(String viewname) {
         try {
-            viewname = quote(viewname);
             conn.createStatement().executeUpdate(
                     "DROP VIEW " + viewname);
         } catch ( Exception e ) {
@@ -277,7 +276,6 @@ public abstract class DBTestBase extends TestBase {
     }
     protected void dropTable(String tablename) {
         try {
-            tablename = quote(tablename);
             Statement stmt = conn.createStatement();
             stmt.executeUpdate("DROP TABLE " + tablename);
         } catch (Exception e) {
@@ -310,6 +308,7 @@ public abstract class DBTestBase extends TestBase {
     }
     
     protected boolean tableExists(String tablename) throws Exception {
+        tablename = fixIdentifier(tablename);
         DatabaseMetaData md = conn.getMetaData();
         ResultSet rs = md.getTables(null, SCHEMA, tablename, null);
         return rs.next();        
@@ -317,6 +316,8 @@ public abstract class DBTestBase extends TestBase {
     
     protected boolean columnExists(String tablename, String colname)
             throws Exception {
+        tablename = fixIdentifier(tablename);
+        colname = fixIdentifier(colname);
         DatabaseMetaData md = conn.getMetaData();
         ResultSet rs = md.getColumns(null, SCHEMA, tablename, colname);
         
@@ -330,6 +331,7 @@ public abstract class DBTestBase extends TestBase {
     
     protected boolean indexExists(String tablename, String indexname)
             throws Exception {
+        indexname = fixIdentifier(indexname);
         DatabaseMetaData md = conn.getMetaData();
         ResultSet rs = md.getIndexInfo(null, SCHEMA, tablename, false, false);
 
@@ -345,7 +347,7 @@ public abstract class DBTestBase extends TestBase {
     
     protected boolean viewExists(String viewName) throws Exception {
         DatabaseMetaData md = conn.getMetaData();
-        ResultSet rs = md.getTables(null, SCHEMA, viewName,
+        ResultSet rs = md.getTables(null, SCHEMA, fixIdentifier(viewName),
                 new String[] {"VIEW"});
         
         return rs.next();
@@ -353,6 +355,8 @@ public abstract class DBTestBase extends TestBase {
     
     protected boolean columnInPrimaryKey(String tablename, String colname) 
         throws Exception {
+        tablename = fixIdentifier(tablename);
+        colname = fixIdentifier(colname);
         DatabaseMetaData md = conn.getMetaData();
         ResultSet rs = md.getPrimaryKeys(null, SCHEMA, tablename);
         
@@ -377,6 +381,9 @@ public abstract class DBTestBase extends TestBase {
 
     protected boolean columnInIndex(String tablename, String colname, 
             String indexname) throws Exception {
+        tablename = fixIdentifier(tablename);
+        colname = fixIdentifier(colname);
+        indexname = fixIdentifier(indexname);
         DatabaseMetaData md = conn.getMetaData();
         ResultSet rs = md.getIndexInfo(null, SCHEMA, tablename, false, false);
 
@@ -398,6 +405,8 @@ public abstract class DBTestBase extends TestBase {
     
     protected boolean columnInAnyIndex(String tablename, String colname)
             throws Exception {
+        tablename = fixIdentifier(tablename);
+        colname = fixIdentifier(colname);
         DatabaseMetaData md = conn.getMetaData();
         ResultSet rs = md.getIndexInfo(null, SCHEMA, tablename, false, false);
 
@@ -417,6 +426,8 @@ public abstract class DBTestBase extends TestBase {
     
     protected boolean indexIsUnique(String tablename, String indexName)
             throws Exception {
+        tablename = fixIdentifier(tablename);
+        indexName = fixIdentifier(indexName);
         DatabaseMetaData md = conn.getMetaData();
         ResultSet rs = md.getIndexInfo(null, SCHEMA, tablename, false, false);
         
@@ -577,6 +588,9 @@ public abstract class DBTestBase extends TestBase {
 
     protected void createSimpleIndex(String tablename, 
             String indexname, String colname) throws Exception {
+        // Need to get identifier into correct case because we are
+        // still quoting referred-to identifiers.
+        tablename = fixIdentifier(tablename);
         CreateIndex xcmd = spec.createCommandCreateIndex(tablename);
         xcmd.setIndexName(indexname);
 
@@ -584,7 +598,7 @@ public abstract class DBTestBase extends TestBase {
         xcmd.setIndexType(new String());
 
         xcmd.setObjectOwner(SCHEMA);
-        xcmd.specifyColumn(colname);
+        xcmd.specifyColumn(fixIdentifier(colname));
 
         xcmd.execute();        
     }
@@ -594,6 +608,9 @@ public abstract class DBTestBase extends TestBase {
      */
     protected void addBasicColumn(String tablename, String colname,
             int type, int size) throws Exception {
+        // Need to get identifier into correct case because we are
+        // still quoting referred-to identifiers.
+        tablename = fixIdentifier(tablename);
         AddColumn cmd = spec.createCommandAddColumn(tablename);
         cmd.setObjectOwner(SCHEMA);
         TableColumn col = (TableColumn)cmd.createColumn(colname);

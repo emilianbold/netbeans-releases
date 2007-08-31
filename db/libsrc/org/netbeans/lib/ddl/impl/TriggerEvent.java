@@ -103,7 +103,7 @@ public class TriggerEvent {
     public Map getColumnProperties(AbstractCommand cmd) throws DDLException {
         HashMap args = new HashMap();
         args.put("event.name", cmd.quote(name)); // NOI18N
-        args.put("event.column", col); // NOI18N
+        args.put("event.column", cmd.quote(col)); // NOI18N
         
         return args;
     }

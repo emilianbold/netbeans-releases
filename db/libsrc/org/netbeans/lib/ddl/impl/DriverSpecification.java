@@ -112,7 +112,6 @@ public class DriverSpecification {
 
     public void getTables(String tableNamePattern, String[] types) throws SQLException {
         try {
-            tableNamePattern = quoteString(tableNamePattern);
             rs = dmd.getTables(catalog, schema, tableNamePattern, types);
         } catch (SQLException exc) {
             rs = null;

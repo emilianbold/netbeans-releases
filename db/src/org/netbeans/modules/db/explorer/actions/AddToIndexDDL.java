@@ -41,7 +41,9 @@ public class AddToIndexDDL {
     public boolean execute(String indexName, boolean unique, Set columns) 
             throws Exception {
         CreateIndex icmd = spec.createCommandCreateIndex(tablename);
-        icmd.setIndexName(indexName);
+        // Quote the index name in this case because we're recreating an
+        // existing index name
+        icmd.setIndexName(icmd.quote(indexName));
         icmd.setObjectOwner(schema);
         icmd.setIndexType(unique ? ColumnItem.UNIQUE : "");
 

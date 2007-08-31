@@ -39,10 +39,11 @@ public class AddIndexDDLTest extends DBTestBase {
         createBasicTable(tablename, pkname);
         addBasicColumn(tablename, colname, Types.VARCHAR, 255);
         
-        AddIndexDDL ddl = new AddIndexDDL(spec, SCHEMA, tablename);
+        AddIndexDDL ddl = new AddIndexDDL(spec, SCHEMA, 
+                fixIdentifier(tablename));
         
         HashSet cols = new HashSet();
-        cols.add(colname);
+        cols.add(fixIdentifier(colname));
         
         boolean wasException = ddl.execute(ixname, false, cols);
         
@@ -54,7 +55,7 @@ public class AddIndexDDLTest extends DBTestBase {
         addBasicColumn(tablename, colname, Types.VARCHAR, 255);
         
         cols.clear();
-        cols.add(colname);
+        cols.add(fixIdentifier(colname));
         wasException = ddl.execute(ixname, true, cols);
         assertFalse(wasException);
         assertTrue(columnInIndex(tablename, colname, ixname));

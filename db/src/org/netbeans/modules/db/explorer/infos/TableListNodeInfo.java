@@ -93,34 +93,7 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
     * Creates new node info and adds node into node children.
     */
     public void addTable(String tname) throws DatabaseException {
-        try {
-            String[] types = new String[] {"TABLE", "BASE"}; // NOI18N
-
-            DriverSpecification drvSpec = getDriverSpecification();
-            drvSpec.getTables(tname, types);
-            ResultSet rs = drvSpec.getResultSet();
-            if (rs != null) {
-                HashMap rset = new HashMap();
-                rs.next();
-                rset = drvSpec.getRow();
-                if (rset == null)
-                    throw new NullPointerException();
-                DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rset);
-                rset.clear();
-                rs.close();
-
-                if (info != null)
-                    info.put(DatabaseNode.TABLE, info.getName());
-                else
-                    throw new Exception(bundle().getString("EXC_UnableToCreateNodeInformationForTable")); // NOI18N
-                // refersh list of tables
-                refreshChildren();
-            }
-        } catch (Exception e) {
-            DatabaseException dbe = new DatabaseException(e.getMessage());
-            dbe.initCause(e);
-            throw dbe;
-        }
+        refreshChildren();
     }
 
     /** Returns tablenodeinfo specified by info

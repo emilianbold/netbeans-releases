@@ -61,6 +61,15 @@ public class GrabTableHelperTest extends DBTestBase {
             addBasicColumn(tablename, col1, Types.VARCHAR, 255);
             addBasicColumn(tablename, col2, Types.INTEGER, 0);
 
+            // Fix the identifiers based on how the database converts
+            // the casing of identifiers.   This is because we still
+            // quote existing (versus) new identifiers, so we need to
+            // make sure they are quoted correctly.
+            tablename = fixIdentifier(tablename);
+            col1 = fixIdentifier(col1);
+            col2 = fixIdentifier(col2);
+            pkName = fixIdentifier(pkName);
+            
             // Initialize the table information in the format required
             // by the helper.  This is done by creating a DatabaseNodeInfo
             // for the table

@@ -38,7 +38,8 @@ public class RemoveColumn extends ColumnCommand
     public TableColumn removeColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        return specifyColumn(TableColumn.COLUMN, name, Specification.REMOVE_COLUMN);
+        return specifyColumn(TableColumn.COLUMN, name, 
+            Specification.REMOVE_COLUMN, false, false);
     }
 
     /** Remove unique column
@@ -47,7 +48,8 @@ public class RemoveColumn extends ColumnCommand
     public TableColumn removeUniqueColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.UNIQUE, name, Specification.REMOVE_COLUMN);
+        TableColumn col = specifyColumn(TableColumn.UNIQUE, name, 
+            Specification.REMOVE_COLUMN, false, false);
         return col;
     }
 
@@ -57,7 +59,8 @@ public class RemoveColumn extends ColumnCommand
     public TableColumn removePrimaryKeyColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, Specification.REMOVE_COLUMN);
+        TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, 
+            Specification.REMOVE_COLUMN, false, false);
         return col;
     }
 
@@ -67,7 +70,8 @@ public class RemoveColumn extends ColumnCommand
     public TableColumn removeForeignKeyColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.FOREIGN_KEY, name, Specification.REMOVE_COLUMN);
+        TableColumn col = specifyColumn(TableColumn.FOREIGN_KEY, name, 
+            Specification.REMOVE_COLUMN, false, false);
         return col;
     }
 
@@ -77,7 +81,8 @@ public class RemoveColumn extends ColumnCommand
     public TableColumn removeCheckColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        TableColumn col = specifyColumn(TableColumn.CHECK, name, Specification.REMOVE_COLUMN);
+        TableColumn col = specifyColumn(TableColumn.CHECK, name, 
+            Specification.REMOVE_COLUMN, false, false);
         return col;
     }
 }

@@ -42,8 +42,13 @@ public class ColumnCommand extends AbstractCommand
     * @param type Type of column
     * @param name Name of column
     * @param cmd Command
+    * @param newObject set to true if this column is for a new object (table)
+    *   and set to false if this column is for an existing object (table)
+    * @param newColumn set to true if this is a new column, false if this
+    *   is an existing column.
     */	
-    public TableColumn specifyColumn(String type, String name, String cmd)
+    public TableColumn specifyColumn(String type, String name, String cmd,
+        boolean newObject, boolean newColumn)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
         Map gprops = (Map)getSpecification().getProperties();
@@ -62,6 +67,8 @@ public class ColumnCommand extends AbstractCommand
             column.setObjectType(type);
             column.setColumnName(name);
             column.setFormat(format);
+            column.setNewObject(newObject);
+            column.setNewColumn(newColumn);
         } else throw new InstantiationException(MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableLocateType"), // NOI18N
                                                     new String[] {type, bindmap.toString() }));
 

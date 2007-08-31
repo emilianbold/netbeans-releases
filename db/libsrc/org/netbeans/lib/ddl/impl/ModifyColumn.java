@@ -37,13 +37,15 @@ public class ModifyColumn extends ColumnCommand
     public AbstractTableColumn specifyColumn(String type, String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        return specifyColumn(type, name, Specification.MODIFY_COLUMN);
+        return specifyColumn(type, name, Specification.MODIFY_COLUMN, 
+                false, false);
     }
 
     public AbstractTableColumn specifyColumn(String name)
     throws ClassNotFoundException, IllegalAccessException, InstantiationException
     {
-        return specifyColumn(TableColumn.COLUMN, name, Specification.MODIFY_COLUMN);
+        return specifyColumn(TableColumn.COLUMN, name, 
+            Specification.MODIFY_COLUMN, false, false);
     }
 }
 

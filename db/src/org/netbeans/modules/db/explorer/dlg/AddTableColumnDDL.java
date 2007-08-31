@@ -175,7 +175,7 @@ public class AddTableColumnDDL {
           while (enu.hasMoreElements()) {
               xcmd.specifyColumn((String)enu.nextElement());
           }
-          xcmd.specifyColumn(citem.getName());
+          xcmd.specifyNewColumn(citem.getName());
           cbuff.add(xcmd);
 
     }

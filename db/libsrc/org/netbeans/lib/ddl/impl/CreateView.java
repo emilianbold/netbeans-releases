@@ -36,6 +36,10 @@ public class CreateView extends AbstractCommand
     String query;
 
     static final long serialVersionUID =-3890617111076632936L;
+    
+    public CreateView() {
+        setNewObject(true);
+    }
     public String getQuery()
     {
         return query;

@@ -63,6 +63,9 @@ public class AbstractCommand implements Serializable, DDLCommand {
     static final long serialVersionUID =-560515030304320086L;
 
     private String quoteStr;
+    
+    /** Indicates if the object is being newly created or is an existing object */
+    private boolean newObject = false;
 
     /** Returns specification (DatabaseSpecification) for this command */
     public DatabaseSpecification getSpecification() {
@@ -115,6 +118,16 @@ public class AbstractCommand implements Serializable, DDLCommand {
         owner = objectowner;
     }
 
+    public boolean isNewObject() {
+        return newObject;
+    }
+
+    public void setNewObject(boolean newObject) {
+        this.newObject = newObject;
+    }
+    
+    
+
     /** Returns general property */
     public Object getProperty(String pname) {
         return addprops.get(pname);
@@ -139,7 +152,8 @@ public class AbstractCommand implements Serializable, DDLCommand {
             args.putAll(addprops);
         String oname = getObjectName();
         if (oname != null)
-            args.put("object.name", quote(getObjectName())); // NOI18N
+            args.put("object.name", 
+                newObject ? getObjectName() : quote(getObjectName())); // NOI18N
         else
             throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_Unknown")); // NOI18N
         args.put("object.owner", quote(getObjectOwner())); // NOI18N
@@ -250,7 +264,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
         return quoteStr;
     }
 
-    protected String quote(String name) {
+    public String quote(String name) {
         if (name == null || name.equals(""))
             return name;
 
@@ -259,7 +273,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
 
         return quoteStr + name + quoteStr;
     }
-
+    
     /** Reads object from stream */
     public void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
         format = (String)in.readObject();

@@ -66,34 +66,7 @@ public class ViewListNodeInfo extends DatabaseNodeInfo {
     * @param name Name of existing view
     */
     public void addView(String name) throws DatabaseException {
-        try {
-            String[] types = new String[] {"VIEW"}; // NOI18N
-
-            DriverSpecification drvSpec = getDriverSpecification();
-            if (drvSpec.areViewsSupported()) {
-                drvSpec.getTables(name, types);
-                ResultSet rs = drvSpec.getResultSet();
-                if (rs != null) {
-                    HashMap rset = new HashMap();
-                    rs.next();
-                    rset = drvSpec.getRow();
-                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rset);
-                    rset.clear();
-                    rs.close();
-                    if (info != null)
-                        ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
-                    else
-                        throw new Exception(bundle().getString("EXC_UnableToCreateNodeInformationForView")); // NOI18N
-                }
-                // refersh list of views
-                refreshChildren();
-
-            }
-        } catch (Exception e) {
-            DatabaseException dbe = new DatabaseException(e.getMessage());
-            dbe.initCause(e);
-            throw dbe;
-        }
+        refreshChildren();
     }
 
 }

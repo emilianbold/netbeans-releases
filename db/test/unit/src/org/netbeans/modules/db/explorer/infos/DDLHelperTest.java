@@ -41,7 +41,9 @@ public class DDLHelperTest extends DBTestBase {
         // Create an index
         createSimpleIndex(tablename, indexname, colname);
         
-        DDLHelper.deleteIndex(spec, SCHEMA, tablename, indexname);
+        DDLHelper.deleteIndex(spec, SCHEMA, 
+                fixIdentifier(tablename), 
+                fixIdentifier(indexname));
         
         assertFalse(indexExists(tablename, indexname));
     }
@@ -52,7 +54,7 @@ public class DDLHelperTest extends DBTestBase {
         createBasicTable(tablename, "id");
         assertTrue(tableExists(tablename));
         
-        DDLHelper.deleteTable(spec, SCHEMA, tablename);
+        DDLHelper.deleteTable(spec, SCHEMA, fixIdentifier(tablename));
         
         assertFalse(tableExists(tablename));
     }
@@ -63,10 +65,10 @@ public class DDLHelperTest extends DBTestBase {
         
         createBasicTable(tablename, "id");
         
-        createView(viewname, "SELECT * FROM " + quote(tablename));
+        createView(viewname, "SELECT * FROM " + tablename);
         assertTrue(viewExists(viewname));
         
-        DDLHelper.deleteView(spec, SCHEMA, viewname);
+        DDLHelper.deleteView(spec, SCHEMA, fixIdentifier(viewname));
         
         assertFalse(viewExists(viewname));
     }

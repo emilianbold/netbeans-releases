@@ -29,7 +29,7 @@ public class AddViewDDLTest extends DBTestBase {
         createBasicTable(table1, "id");
         
         String viewname = "testview";
-        String query = "SELECT * FROM " + quote(table1);
+        String query = "SELECT * FROM " + table1;
         boolean wasException = AddViewDDL.addView(spec, SCHEMA, viewname, query);
         
         assertFalse(wasException);
