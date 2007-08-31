@@ -99,8 +99,8 @@ public class RestServiceNode extends AbstractNode{
         return new SystemAction[] {
             SystemAction.get(OpenAction.class),
             null,
-            SystemAction.get(DeleteAction.class),
-            null,
+            //SystemAction.get(DeleteAction.class),
+            //null,
             SystemAction.get(PropertiesAction.class),
         };
     }
