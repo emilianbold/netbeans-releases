@@ -25,16 +25,17 @@
             <file name="org-netbeans-modules-vmd-midp-palette-MidpPaletteManagerAction.instance"/>
         </folder>
     </folder>
-    <!--folder name="Menu">
+
+    <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
-                <attr name="position" intvalue="1000"/>
                 <file name="org-netbeans-modules-vmd-midp-palette-MidpPaletteManagerAction.instance">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="position" intvalue="1000"/>
                 </file>
             </folder>
         </folder>
-    </folder-->
+    </folder>
+
     <folder name="Templates">
         <folder name="MIDP">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
