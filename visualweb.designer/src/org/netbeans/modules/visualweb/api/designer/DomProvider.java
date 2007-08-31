@@ -413,55 +413,7 @@ public interface DomProvider {
     
     public interface DomPosition {
         
-        public final DomPosition NONE = new DomPosition() {
-            public Node getNode() {
-                return null;
-            }
-
-            public int getOffset() {
-                return -1;
-            }
-            
-            public Bias getBias() {
-                return Bias.FORWARD;
-            }
-
-            public boolean isEarlierThan(DomPosition domPosition) {
-                return false;
-            }
-            
-            public boolean isLaterThan(DomPosition domPosition) {
-                return false;
-            }
-            
-            public boolean isStrictlyEarlierThan(DomPosition domPosition) {
-                return false;
-            }
-            
-            public Element getTargetElement() {
-                return null;
-            }
-            
-            public boolean isInside(Element targetElement) {
-                return false;
-            }
-            
-            public boolean isRenderedPosition() {
-                return false;
-            }
-            
-            public DomPosition getRenderedPosition() {
-                return this;
-            }
-            
-            public boolean isSourcePosition() {
-                return false;
-            }
-            
-            public DomPosition getSourcePosition() {
-                return this;
-            }
-        }; // End of NONE.
+        public final DomPosition NONE = new NoneDomPosition();
         
         public enum Bias {
             FORWARD,
@@ -484,6 +436,62 @@ public interface DomProvider {
         public DomPosition getRenderedPosition();
         public boolean isSourcePosition();
         public DomPosition getSourcePosition();
+        
+    
+        static class NoneDomPosition implements DomPosition {
+            
+            private NoneDomPosition() {
+            }
+            
+            public Node getNode() {
+                return null;
+            }
+
+            public int getOffset() {
+                return -1;
+            }
+
+            public Bias getBias() {
+                return Bias.FORWARD;
+            }
+
+            public boolean isEarlierThan(DomPosition domPosition) {
+                return false;
+            }
+
+            public boolean isLaterThan(DomPosition domPosition) {
+                return false;
+            }
+
+            public boolean isStrictlyEarlierThan(DomPosition domPosition) {
+                return false;
+            }
+
+            public Element getTargetElement() {
+                return null;
+            }
+
+            public boolean isInside(Element targetElement) {
+                return false;
+            }
+
+            public boolean isRenderedPosition() {
+                return false;
+            }
+
+            public DomPosition getRenderedPosition() {
+                return this;
+            }
+
+            public boolean isSourcePosition() {
+                return false;
+            }
+
+            public DomPosition getSourcePosition() {
+                return this;
+            }
+        }; // End of NoneDomPosition.
+        
     } // End of DomPosition.
  
     public interface DomRange {
