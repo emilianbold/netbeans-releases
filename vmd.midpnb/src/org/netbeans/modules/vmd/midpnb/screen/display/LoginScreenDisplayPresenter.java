@@ -171,7 +171,6 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
                     } else {
                         passwordTextField.setText(NULL_TEXT); 
                         passwordTextField.setEnabled(true);
-                        passwordTextField.
                     }
                     Integer bckColor = (Integer) component.readProperty(LoginScreenCD.PROP_BGK_COLOR).getPrimitiveValue();
                     Integer frgColor = (Integer) component.readProperty(LoginScreenCD.PROP_FRG_COLOR).getPrimitiveValue();

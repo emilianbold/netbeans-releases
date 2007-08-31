@@ -24,6 +24,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
@@ -129,8 +130,10 @@ public class SMSComposerDisplayPresenter extends DisplayableDisplayPresenter {
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
                 public void run() {
-                    String phoneNumberLabelText = (String) component.readProperty(SMSComposerCD.PROP_PHONE_NUMEBR_LABEL).getPrimitiveValue();
-                    phoneNumberLabel.setText(phoneNumberLabelText);
+                    //PropertyValue phoneNumberLabelTextPV = component.readProperty(SMSComposerCD.PROP_PHONE_NUMEBR_LABEL);
+                    //String phoneNumberLabelText
+                    //       phoneNumberLabelT = (String) phoneNumberLabelTextPV.getPrimitiveValue();
+                    //phoneNumberLabel.setText(phoneNumberLabelText);
                     String phoneNumberText = (String) component.readProperty(SMSComposerCD.PROP_PHONE_NUMBER).getPrimitiveValue();
                     phoneNumberTextField.setText(phoneNumberText);
                     String messageLabelString = (String) component.readProperty(SMSComposerCD.PROP_MESSAGE_LABEL).getPrimitiveValue();
