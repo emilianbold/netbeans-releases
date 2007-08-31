@@ -190,14 +190,15 @@ public class BpelNavigatorVisualPanel extends JPanel
             myBpelModelLogicalBeanTree.removeListeners();
         }
 
-        myBpelModelLogicalBeanTree = new BpelModelLogicalBeanTree(
-                myExplorerManager,
-                myBpelModel,
-                getContextLookup());
 
-        final BeanTreeView treeView = myBpelModelLogicalBeanTree.getBeanTreeView();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                myBpelModelLogicalBeanTree = new BpelModelLogicalBeanTree(
+                    myExplorerManager,
+                    myBpelModel,
+                    getContextLookup());
+                BeanTreeView treeView = myBpelModelLogicalBeanTree.getBeanTreeView();
+
                 removeAll();
                 add(treeView);
                 revalidate();
