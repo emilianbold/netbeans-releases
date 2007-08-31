@@ -137,6 +137,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
             checkedTreeView.addChangeListener( new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                    ServicesPanel.this.dataObject.setModified(true);
+                   changeTask.schedule(100);
                 }
             });
             setConfiguration(dataObject.getConfiguration());
@@ -194,6 +195,17 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                 return;
             } else {
                 final List<ClassData> ports = service.getData();
+                HashSet<String> selectedIDs = new HashSet();
+                for (org.netbeans.modules.mobility.end2end.classdata.ClassData cd : configuration.getServices().get(0).getData()) {
+                    for (OperationData od : cd.getOperations()) {
+                        StringBuffer sb = new StringBuffer(cd.getType());
+                        sb.append('.').append(od.getMethodName());
+                        for (TypeData td : od.getParameterTypes()) {
+                            sb.append(',').append(td.getType());
+                        }
+                        selectedIDs.add(sb.toString());
+                    }
+                }
                 FileObject generatedClientFO = serverProject.getProjectDirectory().getFileObject( "build/generated/wsimport/client/" );
                 // Add all paths to the ClasspathInfo structure
                 List<ClasspathInfo> classpaths = Collections.singletonList( ClasspathInfo.create( generatedClientFO ));
@@ -225,16 +237,16 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                                 operationId.append(',').append(i > 0 ? pt.substring(0, i) : pt);
                             }
                             operationNode.setValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, methodIDs.contains(operationId.toString()));
+                            if (cd != null) operationNode.setValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE, selectedIDs.contains(cd.getFullyQualifiedName()+'.'+operationId.toString()) ? MultiStateCheckBox.State.SELECTED : MultiStateCheckBox.State.UNSELECTED);
                         }
                     }
-                }                
+                }  
+                checkedTreeView.updateTreeNodeStates(null);
             }
         }
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                 public void run() {
-                    //remove listeners while selecting
-                    getExplorerManager().removePropertyChangeListener( ServicesPanel.this );
                     if( !wsdl && rootNode.getChildren().getNodesCount() == 0 ) {
                         waitNode.setDisplayName( NbBundle.getMessage( ServicesPanel.class, "MSG_NoMethodAvailable" ));
                         return;
@@ -244,8 +256,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                         getExplorerManager().setRootContext(rootNode);
                         expandNodes(rootNode);
                     }
-                    //add back after selection
-                    getExplorerManager().addPropertyChangeListener( ServicesPanel.this );
+                    checkValid();
                 }
             });
         } catch (Exception ite) {
@@ -260,29 +271,32 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     
     private void selectionChanged() {
             getSelectedMethods();
-//            System.err.println(" - selection changed");
-            final AbstractService service = configuration.getServices().get(0);
-            final SectionView sectionView = getSectionView();
-            if (sectionView != null){
-                if( service == null || ( service != null && service.getData().size() == 0 )) {
-                    sectionView.getErrorPanel().setError(
-                            new Error( Error.TYPE_FATAL, Error.MISSING_VALUE_MESSAGE,
-                            NbBundle.getMessage( ServicesPanel.class, "ERR_MissingServiceSelection" ), checkedTreeView ));
-                    generateButton.setEnabled( false );
-                } else {
-                    sectionView.getErrorPanel().clearError();
-                    generateButton.setEnabled( true );
-                }
-            }
+            checkValid();
             fireChange();
     }
 
+    private void checkValid() {
+        final AbstractService service = configuration.getServices().get(0);
+        final SectionView sectionView = getSectionView();
+        if (sectionView != null){
+            if( service == null || ( service != null && service.getData().size() == 0 )) {
+                sectionView.getErrorPanel().setError(
+                        new Error( Error.TYPE_FATAL, Error.MISSING_VALUE_MESSAGE,
+                        NbBundle.getMessage( ServicesPanel.class, "ERR_MissingServiceSelection" ), checkedTreeView ));
+                generateButton.setEnabled( false );
+            } else {
+                sectionView.getErrorPanel().clearError();
+                generateButton.setEnabled( true );
+            }
+        }
+
+    }
+    
     public void getSelectedMethods() {
 //        todo should distinguish between WS and classes
         if (!wsdl) {
             final List<ClassData> classData = new ArrayList<ClassData>();
             final Node packageNodes[] = rootNode.getChildren().getNodes();
-
                for ( Node pkNode : packageNodes ) {
                     final Node classNodes[] = pkNode.getChildren().getNodes();
                     for ( Node clNode : classNodes ) {
@@ -323,26 +337,16 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
 
         } else { //we are wsdl
             final List<AbstractService> servicesData = new ArrayList<AbstractService>();
-            final Node serviceNodes[] = rootNode.getChildren().getNodes();
-            WSI serviceClassInfo = null;
-                                
-            for( int i = 0; i < serviceNodes.length; i++ ) { //there is only one service node now!
-                final Node portNodes[] = serviceNodes[i].getChildren().getNodes();
+            final Client client = rootNode.getLookup().lookup(Client.class);
+            if (client != null) for(Node serviceNode : rootNode.getChildren().getNodes()) { //there is only one service node now!
                 final List<ClassData> classData = new ArrayList<ClassData>();
-                                
-                for( int j = 0; j < portNodes.length; j++ ) {
-                    final Node operationNodes[] = portNodes[j].getChildren().getNodes();
+                for(Node portNode : serviceNode.getChildren().getNodes()) {
+                    final WsdlPort port = portNode.getLookup().lookup(WsdlPort.class);
                     final List<OperationData> methodData = new ArrayList<OperationData>();
-                    
-                    for( int k = 0; k < operationNodes.length; k++ ) {
-                        final String operationName = operationNodes[k].getName(); //name of the operation (selection)
-                        
-                        if(MultiStateCheckBox.State.SELECTED == operationNodes[k].getValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE)) {
-                            serviceClassInfo = computeMethodCall( operationNodes[ k ] );
-                            if( serviceClassInfo == null ) {
-                                continue;
-                            }
-                            WsdlOperation wsdlOp = operationNodes[k].getLookup().lookup( WsdlOperation.class );
+                    if (port != null) for(Node operationNode : portNode.getChildren().getNodes()) {
+                        final String operationName = operationNode.getName(); //name of the operation (selection)
+                        if(MultiStateCheckBox.State.SELECTED == operationNode.getValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE)) {
+                            WsdlOperation wsdlOp = operationNode.getLookup().lookup( WsdlOperation.class );
                             final OperationData md = new OperationData( operationName );
                             md.setMethodName( wsdlOp.getJavaName());
                             md.setReturnType( wsdlOp.getReturnTypeName());
@@ -357,9 +361,9 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                             }
                         }
                     }
-                    if( serviceClassInfo != null && methodData.size() != 0 ) { //class was found
-                        final PortData pd = new PortData( serviceClassInfo.getFqPortTypeName());
-                        pd.setName( portNodes[j].getName());
+                    if(port != null && methodData.size() > 0) { //class was found
+                        final PortData pd = new PortData(port.getJavaName());
+                        pd.setName( portNode.getName());
                         pd.setOperations( methodData );
                         classData.add( pd );
                     }
@@ -367,43 +371,11 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                 final WSDLService wsdlService = (WSDLService)configuration.getServices().get(0);
                 wsdlService.setData( classData );
                 wsdlService.setName( rootNode.getName());
-                wsdlService.setType( serviceNodes[i].getName());
+                wsdlService.setType( serviceNode.getName());
                 servicesData.add( wsdlService );
             }
             configuration.setServices( servicesData );
         }
-    }
-            
-    private static WSI computeMethodCall( final Node serviceOperationNode ) {        
-        try {
-            final Node servicePortNode = serviceOperationNode.getParentNode();
-            final Node serviceNode = servicePortNode.getParentNode();
-            final Client client = serviceNode.getParentNode().getLookup().lookup( Client.class );
-            final String servicePortName = client.getName();
-            final String serviceName = client.getName();
-            final String serviceClassName = client.getName(); //here is the class name //??
-            String servicePackageName = client.getPackageName();
-            String servicePortTypeName = servicePortName;
-            if( servicePackageName == null ) {
-                return null;
-            }
-            final String fqServiceClassName = servicePackageName + "." + serviceClassName; //NOI18N //MUST BE STORED FOR LATTER USAGE
-            final String fqPortTypeName = servicePackageName + "." + servicePortTypeName; //NOI18N //MUST BE STORED FOR LATTER USAGE
-            return new WSI( serviceName, fqServiceClassName, fqPortTypeName );
-        } catch (NullPointerException npe) {
-            ErrorManager.getDefault().notify(npe);
-        }
-        return null;
-    }
-        
-    public JComponent getErrorComponent(String errorId) {
-        return null;
-    }
-    
-    public void linkButtonPressed(Object ddBean, String ddProperty) {
-    }
-    
-    public void setValue(JComponent source, Object value) {
     }
     
     /** This method is called from within the constructor to
@@ -435,7 +407,6 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     }// </editor-fold>//GEN-END:initComponents
     
     private void generateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateButtonActionPerformed
-//        generateButton.setEnabled(false);
         dataObject.generate();
     }//GEN-LAST:event_generateButtonActionPerformed
     
@@ -445,10 +416,8 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     // End of variables declaration//GEN-END:variables
     
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())){
-            changeTask.schedule(100);
-        } else if (E2EDataObject.PROP_GENERATING.equals(evt.getPropertyName())){
-            generateButton.setEnabled(!Boolean.TRUE.equals(evt.getNewValue()));
+        if (E2EDataObject.PROP_GENERATING.equals(evt.getPropertyName())){
+            generateButton.setEnabled(!(Boolean)evt.getNewValue());
         }
     }
     
@@ -467,31 +436,17 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         }
     }
     
-    private static class WSI {
-        final private String serviceName;
-        final private String fqServiceClassName;
-        final private String fqPortTypeName;
-        
-        WSI(String serviceName, String fqServiceClassName, String fqPortTypeName) {
-            this.serviceName = serviceName;
-            this.fqServiceClassName = fqServiceClassName;
-            this.fqPortTypeName = fqPortTypeName;
-        }
-        
-        public String getServiceName() {
-            return serviceName;
-        }
-        
-        public String getFqServiceClassName() {
-            return fqServiceClassName;
-        }
-        
-        public String getFqPortTypeName() {
-            return fqPortTypeName;
-        }
-    }
-    
     public void setServerProjectFolder(final FileObject serverProjectFolder) {
         this.serverProjectFolder = serverProjectFolder;
+    }
+
+    public void setValue(JComponent source, Object value) {
+    }
+
+    public void linkButtonPressed(Object ddBean, String ddProperty) {
+    }
+
+    public JComponent getErrorComponent(String errorId) {
+        return null;
     }
 }

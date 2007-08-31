@@ -444,10 +444,10 @@ public class E2EDataObject extends XmlMultiViewDataObject {
 //                                        return;
                             }
                         }
+                        generating = false;
+                        E2EDataObject.this.firePropertyChange(PROP_GENERATING, Boolean.TRUE, Boolean.FALSE);
                     } 
                 } );
-                generating = false;
-                E2EDataObject.this.firePropertyChange(PROP_GENERATING, Boolean.TRUE, Boolean.FALSE);
 //                            }
 //                            
 //                            private void setServerUrlInJad( J2MEProject project, String url ) {

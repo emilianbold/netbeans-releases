@@ -100,11 +100,9 @@ public class MethodCheckedTreeBeanView extends BeanTreeView {
     
     private MultiStateCheckBox.State updateMixedStates(Node pn) {
         Children ch = pn.getChildren();
-        if (ch.equals(Children.LEAF)) return (MultiStateCheckBox.State)pn.getValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE);
         MultiStateCheckBox.State ret = null;
         for (Node n : pn.getChildren().getNodes()) {
-            Boolean valid = (Boolean)n.getValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE);
-            if (valid != null && valid) {
+            if (n.getValue(ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE) != Boolean.FALSE) {
                 MultiStateCheckBox.State state = updateMixedStates(n);
                 if (ret == null) ret = state;
                 else if (state != ret) {
@@ -112,6 +110,7 @@ public class MethodCheckedTreeBeanView extends BeanTreeView {
                 }
             }
         }
+        if (ret == null) ret = (MultiStateCheckBox.State)pn.getValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE);
         if (ret == null) ret = MultiStateCheckBox.State.UNSELECTED;
         pn.setValue(ServiceNodeManager.NODE_SELECTION_ATTRIBUTE, ret);
         return ret;
