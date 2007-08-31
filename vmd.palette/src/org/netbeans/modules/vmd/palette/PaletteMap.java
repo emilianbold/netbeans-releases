@@ -40,7 +40,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.openide.util.RequestProcessor;
 
@@ -247,6 +246,9 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
     }
 
     private ClasspathInfo getClasspathInfo(Project project) {
+        if (project == null) {
+            return null;
+        }
         SourceGroup group = getSourceGroup(project);
         if (group == null) {
             return null;
