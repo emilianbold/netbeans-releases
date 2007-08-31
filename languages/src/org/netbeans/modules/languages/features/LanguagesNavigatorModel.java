@@ -84,22 +84,22 @@ class LanguagesNavigatorModel implements TreeModel {
     }
 
     public Object getChild (Object parent, int index) {
-        return ((NavigatorNode) parent).getNodes ().get (index);
+        return ((NavigatorNode) parent).getNodes (null).get (index);
     }
 
     public int getChildCount (Object parent) {
-        return ((NavigatorNode) parent).getNodes ().size ();
+        return ((NavigatorNode) parent).getNodes (null).size ();
     }
 
     public boolean isLeaf (Object node) {
-        return ((NavigatorNode) node).getNodes ().isEmpty ();
+        return ((NavigatorNode) node).getNodes (null).isEmpty ();
     }
 
     public void valueForPathChanged (TreePath path, Object newValue) {
     }
 
     public int getIndexOfChild (Object parent, Object child) {
-        return ((NavigatorNode) parent).getNodes ().indexOf (child);
+        return ((NavigatorNode) parent).getNodes (null).indexOf (child);
     }
 
     public void addTreeModelListener (TreeModelListener l) {
@@ -156,7 +156,10 @@ class LanguagesNavigatorModel implements TreeModel {
         else {
             List<ASTItem> path = new ArrayList<ASTItem> ();
             path.add (astNode);
-            root = new ASTNavigatorNode (document, astNode, path, "Root", "", null, false);
+            ASTNavigatorNode newASTNode = new ASTNavigatorNode (document, astNode, path, "Root", "", null, false);
+            newASTNode.getNodes (this);
+            if (parserManager.getState () == State.PARSING) return;
+            root = newASTNode;
         }
         fire ();
     }
@@ -185,7 +188,7 @@ class LanguagesNavigatorModel implements TreeModel {
         nodePath.add (n);
         while (it.hasNext ()) {
             ASTItem astItem = it.next ();
-            Iterator<ASTNavigatorNode> it2 = n.getNodes ().iterator ();
+            Iterator<ASTNavigatorNode> it2 = n.getNodes (null).iterator ();
             while (it2.hasNext ()) {
                 ASTNavigatorNode nn = it2.next ();
                 if (nn.item != astItem) continue;
@@ -249,7 +252,7 @@ class LanguagesNavigatorModel implements TreeModel {
         
         void show () {}
         
-        List<ASTNavigatorNode> getNodes () {
+        List<ASTNavigatorNode> getNodes (LanguagesNavigatorModel model) {
             return Collections.<ASTNavigatorNode>emptyList ();
         }
     }
@@ -287,7 +290,7 @@ class LanguagesNavigatorModel implements TreeModel {
 
         private List<ASTNavigatorNode> nodes;
         
-        List<ASTNavigatorNode> getNodes () {
+        List<ASTNavigatorNode> getNodes (LanguagesNavigatorModel model) {
             if (nodes != null) return nodes;
             if (isLeaf)
                 return nodes = Collections.<ASTNavigatorNode>emptyList ();
@@ -295,7 +298,8 @@ class LanguagesNavigatorModel implements TreeModel {
             getNavigatorNodes (
                 item, 
                 new ArrayList<ASTItem> (path), 
-                nodes
+                nodes,
+                model
             );
             try {
                 Language language = LanguagesManager.getDefault ().
@@ -314,13 +318,18 @@ class LanguagesNavigatorModel implements TreeModel {
         }
 
         private void getNavigatorNodes (
-            ASTItem             item, 
-            List<ASTItem>       path, 
-            List<ASTNavigatorNode> nodes
+            ASTItem                     item, 
+            List<ASTItem>               path, 
+            List<ASTNavigatorNode>      nodes,
+            LanguagesNavigatorModel     model
 
         ) {
             Iterator<ASTItem> it = item.getChildren ().iterator ();
             while (it.hasNext ()) {
+                if (model != null && model.cancel ()) {
+                    System.out.println("cancelled");
+                    return;
+                }
                 ASTItem item2 = it.next ();
                 path.add (item2);
                 ASTNavigatorNode navigatorNode = createNavigatorNode (
@@ -330,7 +339,7 @@ class LanguagesNavigatorModel implements TreeModel {
                 if (navigatorNode != null) 
                     nodes.add (navigatorNode);
                 else
-                    getNavigatorNodes (item2, path, nodes);
+                    getNavigatorNodes (item2, path, nodes, model);
                 path.remove (path.size () - 1);
             }
             return;
