@@ -163,6 +163,12 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         boolean fastDebuggerRequired = descriptor.isFastDebugRequired() 
                 && !Boolean.getBoolean("org.netbeans.modules.ruby.debugger.fast.not.required");
 
+        // See issue #114183
+        if (prefs.isFirstTime()) {
+            prefs.setFirstTime(false);
+            Util.offerToInstallFastDebugger();
+        }
+        
         // JRuby vs. ruby-debug-ide
         if (jrubySet) {
             if (fastDebuggerRequired) {
