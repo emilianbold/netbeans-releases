@@ -132,6 +132,7 @@ code {
 <ul>
 <li><a href="#Router">Router</a>
 <li><a href="#ConnectionWidgetLayout">ConnectionWidgetLayout</a>
+<li><a href="#RoutingPolicy">Routing Policy</a>
 <li><a href="#ConnectionWidgetMethods">ConnectionWidget Methods</a>
 </ul>
 <li><a href="#Anchor">Anchor</a>
@@ -857,7 +858,7 @@ The action allows to handle D'n'D drop operation. <code>AcceptProvider.isAccepta
 Created by: <code>ActionFactory.createAddRemoveControlPointAction</code>
 
 <p>
-The action could be attached to <code>FreeConnectionWidget</code> only and allow user to add a control point by double-clicking on path or remove control point by double-clicking on it. The action requires <code>FreeRouter</code> to be set to the <code>FreeConnectionWidget</code> where the action is attached - otherwise the control points are rerouted and therefore you loose the change. For fixing moving-anchor problem use <code>FreeRectangularAnchor</code>.
+The action allows user to add a control point by double-clicking on path or remove control point by double-clicking on it. The action has <code>routingPolicy</code> which is automatically set to <code>ConnectionWidget</code> to prevent discarding of user changes by router assigned to the connection widget. For fixing moving-anchor problem use <code>FreeRectangularAnchor</code>.
 
 <h3><a name="AlignWithMoveAction">AlignWithMoveAction</a></h3>
 
@@ -1175,7 +1176,7 @@ There is a <code>controlPointCutDistance</code> property. If set to positive num
 <li><code>RouterFactory.createDirectRouter</code> creates a straight line between the source and the target anchor.
 <li><code>RouterFactory.createOrthogonalSeachRouter (CollisionsCollector)</code> creates an orthogonal path that tries to avoid overlapping areas specified by the <code>CollisionsCollector</code>. There is a built-in implementation <code>RouterFactory.createWidgetsCollisionCollector (LayerWidget...)</code> which collects all validated children widgets of the specified layer widgets and for each it gets the widget boundary and claims it as a vertical and horizontal collision. In case of ConnectionWidget, it takes the path (defined by its control points) and claims all horizontal and vertical segments as appropriate collisions.
 <li><code>RouterFactory.createOrthogonalSeachRouter (ConnectionWidgetCollisionsCollector)</code> creates an orthogonal path similarly as the previous case but the <code>ConnectionWidgetCollisionsCollector</code> gets a context of currently routed connection widget.
-<li><code>RouterFactory.createFreeRouter</code> is similar to <code>DirectRouter</code> but it modifies only the first and last point of the route. The "middle" control points stay the same. This effect is used by <code>AddRemoveControlPointAction</code> to maintain the control points created by user.
+<li><code>RouterFactory.createFreeRouter</code> is similar to <code>DirectRouter</code> but it modifies only the first and last point of the route. The "middle" control points stay the same. This effect is used by <code>AddRemoveControlPointAction</code> to maintain the control points created by user. From now this router is no longer useful, since it can be replaced by more flexible way: use any router that you like and set "Update-end-points-only" routing policy to the ConnectionWidget.
 </ul>
 
 <h3><a name="ConnectionWidgetLayout">ConnectionWidgetLayout</a></h3>
@@ -1185,6 +1186,23 @@ There is a <code>controlPointCutDistance</code> property. If set to positive num
 
 <p>
 See <code>test.connectionlabels.ConnectionLabelsTest</code> for details.
+
+<h3><a name="RoutingPolicy">Routing Policy</a></h3>
+
+Since version 2.9, the ConnectionWidget class has additional <code>routingPolicy</code> property. It ease management of control points changed by users. There are 4 values:
+<ol>
+<li><code>ALWAYS_ROUTE</code> - This is default value. The router is always invoked when a ConnectionWidget is changed and needs to be re-routed.
+<li><code>UPDATE_END_POINTS_ONLY</code> - The router is not invoked. Instead location of the first and the last control points are changed/updated to location computed by source and target anchors.
+<li><code>DISABLE_ROUTING_UNTIL_END_POINT_IS_MOVED</code> - The router is not invoked until the first or the last control points is moved (means it has different location from one computed by source or target anchor).
+<li><code>DISABLE_ROUTING</code> - The router is not invoked. The control points are freezed at the same locations.
+</ol>
+
+These routing policy are very useful when you are using modifying control points:
+<ul>
+<li>You can specify <code>routingPolicy</code> value to factory method of <code>AddRemoveControlPointAction</code> and <code>MoveControlPointAction</code>. If not null, then the value is automatically set to a ConnectionWidget which control points are modified by the action. Usually <code>UPDATE_END_POINT_ONLY</code> is used.
+<li>Some graph-oriented layout algorithms are resolving not only location of nodes on a scene but also routes path of edges. Then you can use <code>UPDATE_END_POINT_ONLY</code> or <code>DISABLE_ROUTING_UNTIL_END_POINT_IS_MOVED</code> to prevent discard of paths routed by the graph-oriented layout.
+
+For usages, see <code>test.routing.ActionsWithRoutingPolicyTest</code> and <code>test.routing.RoutingPolicyTest</code> examples.
 
 <h3><a name="ConnectionWidgetMethods">ConnectionWidget Methods</a></h3>
 
@@ -1225,6 +1243,9 @@ See <code>test.connectionlabels.ConnectionLabelsTest</code> for details.
 <tr>
 <td>getRouter<br>setRouter
 <td>Controls a router assigned to the connection widget. The routers is calculating a path and sets a new one using <code>setControlPoints</code> method.
+<tr>
+<td>getRoutingPolicy<br>setRoutingPolicy
+<td>Controls a routing policy assigned to the connection widget. It controls whether and how control points are re-routed. For details, see <a href="#RoutingPolicy">Routing Policy</a> section.
 <tr>
 <td>getControlPoints()<br>setControlPoints(List&lt;Point>controlPoints,boolean sceneLocations)<br>getControlPoint(int index)
 <td>Manipulates with control points. If the <code>sceneLocations</code> is <code>true</code> then the <code>controlPoints</code> are recalculated relatively to the connection widget location otherwise controlPoints are taken as they are (and therefore they are taken as local locations). This method is usually called by the assigned router.

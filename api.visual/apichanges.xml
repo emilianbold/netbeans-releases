@@ -534,6 +534,22 @@
             <class package="org.netbeans.api.visual.anchor" name="Anchor" link="yes"/>
             <issue number="111987"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>Routing policy support for ConnectionWidget</summary>
+            <version major="2" minor="9"/>
+            <date day="31" month="8" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                ConnectionWidget allows to specify routing policy. The policy defines behaviour of path routing in ConnectionWidget.
+                There are 4 values: Always-route, Update-end-points-only, Disable-routing-until-end-point-is-moved, Disable-routing.
+                AddRemoveControlPointAction and MoveControlPointAction has new factory methods for automatic assignment of routing policy.
+            </description>
+            <class package="org.netbeans.api.visual.widget" name="ConnectionWidget" link="yes"/>
+            <issue number="113573"/>
+        </change>
     </changes>
 
     <htmlcontents>

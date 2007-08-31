@@ -61,6 +61,46 @@ public class ConnectionWidget extends Widget {
     private static final double HIT_DISTANCE_SQUARE = 16.0;
     private static final Stroke STROKE_DEFAULT = new BasicStroke (1.0f);
 
+    /**
+     * This enum represents a policy which is used for re-routing control points of a ConnectionWidget.
+     * @since 2.9
+     */
+    public enum RoutingPolicy {
+
+        /**
+         * All control points are rerouted when it is necessary. This is the default policy.
+         * @since 2.9
+         */
+        ALWAYS_ROUTE,
+
+        /**
+         * All control points (except end points) are kept at the same location.
+         * End points are updated to locations resolved by source and target anchors.
+         * Note: This is used when an user customizes/adds/removes control points
+         * and the change has to be kept until it is reset by the user (setting policy to ALWAYS_ROUTE.
+         * @since 2.9
+         */
+        UPDATE_END_POINTS_ONLY,
+
+        /**
+         * Temporarily disables routing until any end point changes its location. Locations are the first
+         * and the last point of control points. When an end point location is changed,
+         * then the policy is automatically changed to <code>ALWAYS_ROUTE</code>.
+         * Note: This is used by GraphLayouts which routes the path (control points)
+         * by themselves and would like to keep the path until user moves with source or target widget/anchor.
+         * @since 2.9
+         */
+        DISABLE_ROUTING_UNTIL_END_POINT_IS_MOVED,
+
+        /**
+         * Disable routing completely, so control points are kept at their previous location.
+         * Note: This is not often used unless you have to freeze a ConnectionWidget
+         * @since 2.9
+         */
+        DISABLE_ROUTING
+
+    }
+
     private Anchor sourceAnchor;
     private Anchor targetAnchor;
     private AnchorShape sourceAnchorShape;
@@ -81,6 +121,8 @@ public class ConnectionWidget extends Widget {
     private Anchor.Entry sourceEntry;
     private Anchor.Entry targetEntry;
 
+    private RoutingPolicy routingPolicy;
+
     /**
      * Creates a connection widget.
      * @param scene the scene
@@ -100,6 +142,8 @@ public class ConnectionWidget extends Widget {
         controlPointCutDistance = 0;
         sourceEntry = new ConnectionEntry (true);
         targetEntry = new ConnectionEntry (false);
+
+        routingPolicy = RoutingPolicy.ALWAYS_ROUTE;
     }
 
     /**
@@ -338,6 +382,30 @@ public class ConnectionWidget extends Widget {
     }
 
     /**
+     * Returns a routing policy.
+     * @return the routing policy
+     * @since 2.9
+     */
+    public final RoutingPolicy getRoutingPolicy () {
+        return routingPolicy;
+    }
+
+    /**
+     * Sets a routing policy. It invokes re-routing in case of routing policy change unless its is changed to DISABLE_ROUTING.
+     * @param routingPolicy the new routing policy
+     * @since 2.9
+     */
+    public final void setRoutingPolicy (RoutingPolicy routingPolicy) {
+        assert routingPolicy != null;
+        if (this.routingPolicy == routingPolicy)
+            return;
+        boolean changed = routingPolicy != RoutingPolicy.DISABLE_ROUTING;
+        this.routingPolicy = routingPolicy;
+        if (changed)
+            reroute ();
+    }
+
+    /**
      * Returns the control-points-based path router of the connection widget.
      * @return the path router
      */
@@ -427,8 +495,51 @@ public class ConnectionWidget extends Widget {
      * Forces path routing.
      */
     public final void calculateRouting () {
-        if (routingRequired)
-            setControlPoints (router.routeConnection (this), true);
+        if (routingRequired) {
+            switch (routingPolicy) {
+                case ALWAYS_ROUTE:
+                    setControlPoints (router.routeConnection (this), true);
+                    break;
+                case UPDATE_END_POINTS_ONLY: {
+                    Point sourcePoint = sourceAnchor != null ? sourceAnchor.compute (sourceEntry).getAnchorSceneLocation () : null;
+                    Point targetPoint = targetAnchor != null ? targetAnchor.compute (targetEntry).getAnchorSceneLocation () : null;
+                    if (sourcePoint == null  ||  targetPoint == null) {
+                        controlPoints.clear ();
+                        break;
+                    }
+                    sourcePoint = convertSceneToLocal (sourcePoint);
+                    targetPoint = convertSceneToLocal (targetPoint);
+                    if (controlPoints.size () < 1)
+                        controlPoints.add (sourcePoint);
+                    else
+                        controlPoints.set (0, sourcePoint);
+                    if (controlPoints.size () < 2)
+                        controlPoints.add (targetPoint);
+                    else
+                        controlPoints.set (controlPoints.size () - 1, targetPoint);
+                    } break;
+                case DISABLE_ROUTING_UNTIL_END_POINT_IS_MOVED: {
+                    Point sourcePoint = sourceAnchor != null ? sourceAnchor.compute (sourceEntry).getAnchorSceneLocation () : null;
+                    Point firstPoint = getFirstControlPoint ();
+                    if (firstPoint != null)
+                        firstPoint = convertLocalToScene (firstPoint);
+                    if (sourcePoint == null ? firstPoint == null : sourcePoint.equals (firstPoint)) {
+                        Point targetPoint = targetAnchor != null ? targetAnchor.compute (targetEntry).getAnchorSceneLocation () : null;
+                        Point lastPoint = getLastControlPoint ();
+                        if (lastPoint != null)
+                            lastPoint = convertLocalToScene (lastPoint);
+                        if (targetPoint == null  ? lastPoint == null : targetPoint.equals (lastPoint))
+                            break;
+                    }
+                    routingPolicy = RoutingPolicy.ALWAYS_ROUTE;
+                    setControlPoints (router.routeConnection (this), true);
+                    } break;
+                case DISABLE_ROUTING:
+                    break;
+                default:
+                    throw new IllegalStateException ("Unexpected routing policy: " + routingPolicy); // NOI18N
+            }
+        }
     }
 
     /**

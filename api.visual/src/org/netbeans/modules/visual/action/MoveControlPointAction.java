@@ -32,14 +32,16 @@ import java.awt.event.MouseEvent;
 public final class MoveControlPointAction extends WidgetAction.LockedAdapter {
 
     private MoveControlPointProvider provider;
+    private ConnectionWidget.RoutingPolicy routingPolicy;
 
     private ConnectionWidget movingWidget = null;
     private Point controlPointLocation;
     private int controlPointIndex;
     private Point lastLocation = null;
 
-    public MoveControlPointAction (MoveControlPointProvider provider) {
+    public MoveControlPointAction (MoveControlPointProvider provider, ConnectionWidget.RoutingPolicy routingPolicy) {
         this.provider = provider;
+        this.routingPolicy = routingPolicy;
     }
 
     protected boolean isLocked () {
@@ -90,6 +92,8 @@ public final class MoveControlPointAction extends WidgetAction.LockedAdapter {
         if (controlPoints == null)
             return State.REJECTED;
 
+        if (routingPolicy != null)
+            movingWidget.setRoutingPolicy (routingPolicy);
         movingWidget.setControlPoints (controlPoints, false);
         return State.createLocked (widget, this);
     }

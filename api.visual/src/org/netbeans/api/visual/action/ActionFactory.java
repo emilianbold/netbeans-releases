@@ -178,13 +178,26 @@ public final class ActionFactory {
     }
 
     /**
-     * Creates a add-remove control point action with a specified sensitivity. The action is assigned to a FreeConnectionWidget.
+     * Creates a add-remove control point action with a specified sensitivity.
      * @param createSensitivity the create sensitivity
      * @param deleteSensitivity the delete sensitivity
      * @return the add-remove control point action
      */
     public static WidgetAction createAddRemoveControlPointAction (double createSensitivity, double deleteSensitivity) {
-        return new AddRemoveControlPointAction (createSensitivity, deleteSensitivity);
+        return createAddRemoveControlPointAction (createSensitivity, deleteSensitivity, null);
+    }
+
+    /**
+     * Creates a add-remove control point action with a specified sensitivity.
+     * @param createSensitivity the create sensitivity
+     * @param deleteSensitivity the delete sensitivity
+     * @param routingPolicy the routing policy that is automatically set to a connection widget with control points modified by this action;
+     *     if null, then routing policy is not set
+     * @return the add-remove control point action
+     * @since 2.9
+     */
+    public static WidgetAction createAddRemoveControlPointAction (double createSensitivity, double deleteSensitivity, ConnectionWidget.RoutingPolicy routingPolicy) {
+        return new AddRemoveControlPointAction (createSensitivity, deleteSensitivity, routingPolicy);
     }
 
     /**
@@ -452,8 +465,20 @@ public final class ActionFactory {
      * @return the move control point action
      */
     public static WidgetAction createMoveControlPointAction (MoveControlPointProvider provider) {
+        return createMoveControlPointAction (provider, null);
+    }
+
+    /**
+     * Creates a move control point (of a connection widget) action with a specified provider.
+     * @param provider the move control point provider
+     * @param routingPolicy the routing policy that is automatically set to a connection widget with control points modified by this action;
+     *     if null, then routing policy is not set
+     * @return the move control point action
+     * @since 2.9
+     */
+    public static WidgetAction createMoveControlPointAction (MoveControlPointProvider provider, ConnectionWidget.RoutingPolicy routingPolicy) {
         assert provider != null;
-        return new MoveControlPointAction (provider);
+        return new MoveControlPointAction (provider, routingPolicy);
     }
 
     /**
