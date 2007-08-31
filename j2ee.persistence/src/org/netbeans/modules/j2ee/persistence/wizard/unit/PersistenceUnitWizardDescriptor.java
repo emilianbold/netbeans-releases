@@ -85,7 +85,7 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     }
     
     public org.openide.util.HelpCtx getHelp() {
-        return new HelpCtx(EntityWizardDescriptor.class);
+        return new HelpCtx(PersistenceUnitWizardDescriptor.class);
     }
     
     public boolean isValid() {
