@@ -16,24 +16,63 @@
  */
 package org.netbeans.modules.cnd.completion.includes;
 
-import java.util.Collections;
-import java.util.List;
-import javax.swing.JComponent;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.modules.cnd.loaders.HDataLoader;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.loaders.ExtensionList;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public class CsmIncludeCompletionQuery {
+    private Collection<CsmIncludeCompletionItem> results;
     private final CsmFile file;
     public CsmIncludeCompletionQuery(CsmFile file) {
         this.file = file;
     }
     
-    public List<CompletionItem> query(JComponent component, BaseDocument doc, Boolean usrInclude) {
-        return Collections.<CompletionItem>emptyList();
+    public Collection<CsmIncludeCompletionItem> query( BaseDocument doc,int substitutionOffset, Boolean usrInclude, boolean showAll) {
+        results = new ArrayList<CsmIncludeCompletionItem>(100);
+        CsmFile docFile = this.file;
+        if (docFile == null) {
+            docFile = CsmUtilities.getCsmFile(doc, false);
+        }
+        if (docFile != null) {
+            File dir = new File (docFile.getAbsolutePath()).getParentFile();
+            if (dir != null && dir.exists()) {
+                File[] list = dir.listFiles(new MyFileFilter(HDataLoader.getInstance().getExtensions()));
+                String relFileName;
+                boolean quoted = usrInclude == null ? true : usrInclude;
+                for (File curFile : list) {
+                    relFileName = curFile.getName();
+                    CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(substitutionOffset, relFileName, dir, quoted, true, curFile.isDirectory());
+                    results.add(item);
+                }
+            }
+        }
+        return results;
+    }
+    
+    private static final class MyFileFilter implements FileFilter {
+        private final ExtensionList exts;
+
+        protected MyFileFilter(ExtensionList exts) {
+            this.exts = exts;
+        }
+        
+        public boolean accept(File dir, String name) {
+            return exts.isRegistered(name);
+        }
+
+        public boolean accept(File pathname) {
+            return exts.isRegistered(pathname.getName()) || pathname.isDirectory();
+        }
+        
     }
 }

@@ -20,15 +20,17 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -36,16 +38,69 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  */
 public class CsmIncludeCompletionItem implements CompletionItem {
        
-    protected int substitutionOffset;
+    protected final static String QUOTE = "\""; // NOI18N
+    protected final static String SYS_OPEN = "<"; // NOI18N
+    protected final static String SYS_CLOSE = ">"; // NOI18N
     
-    protected CsmIncludeCompletionItem(int substitutionOffset) {
+    private final int substitutionOffset;
+    private final int priority;
+    private final String item;
+    private final String parentFolder;
+    private final boolean isUserInclude;
+    private final boolean isFolder;
+    private String insPrefix;
+    
+    private static final int FOLDER_PRIORITY = 30;
+    private static final int FILE_PRIORITY = 10;
+    private static final int SYS_VS_USR = 5;
+    
+    protected CsmIncludeCompletionItem(int substitutionOffset, int priority, 
+            String parentFolder, String item,
+            boolean usrInclude, boolean isFolder) {
         this.substitutionOffset = substitutionOffset;
+        this.priority = priority;
+        this.parentFolder = parentFolder == null ? "" : parentFolder;
+        this.isUserInclude = usrInclude;
+        this.isFolder = isFolder;
+        assert item != null;
+        this.item = item;
+    }
+    
+    public static CsmIncludeCompletionItem createItem(int substitutionOffset, 
+                                                    String relFileName, File parentDir,
+                                                    boolean usrInclude,
+                                                    boolean highPriority,
+                                                    boolean isFolder) {
+        int priority;
+        if (isFolder) {
+            if (highPriority) {
+                priority = FOLDER_PRIORITY - SYS_VS_USR;
+            } else {
+                priority = FOLDER_PRIORITY + SYS_VS_USR;
+            }
+        } else {
+            if (highPriority) {
+                priority = FILE_PRIORITY - SYS_VS_USR;
+            } else {
+                priority = FILE_PRIORITY + SYS_VS_USR;
+            }
+        }
+        String parentFolder = parentDir.getName();
+        if (parentFolder == null) {
+            parentFolder = "";
+        }
+        String item = relFileName;
+        return new CsmIncludeCompletionItem(substitutionOffset, priority, parentFolder, item, usrInclude, isFolder);
+    }
+    
+    public String getItemText() {
+        return item;
     }
     
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             Completion.get().hideDocumentation();
-            Completion.get().hideCompletion();
+            //Completion.get().hideCompletion();
             int caretOffset = component.getSelectionEnd();
             substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
         }
@@ -54,18 +109,33 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
             switch (evt.getKeyChar()) {
-                case ';':
-                case ',':
-                case '(':
+                case '>':
                     Completion.get().hideDocumentation();
                     Completion.get().hideCompletion();
-                case '.':
+                    break;
+//                case '<':
+                case '"':
+                    Completion.get().hideDocumentation();
+//                    Completion.get().hideCompletion();
                     JTextComponent component = (JTextComponent)evt.getSource();
+                    BaseDocument doc = (BaseDocument)component.getDocument();
                     int caretOffset = component.getSelectionEnd();
-                    substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
-                    if (evt.getKeyChar() == '.')
-                        Completion.get().showCompletion();
-                    evt.consume();
+                    doc.atomicLock();
+                    try {
+                        String toReplace = doc.getText(substitutionOffset, caretOffset - substitutionOffset);
+                        if (toReplace.startsWith("\"")) {
+                            Completion.get().hideCompletion();
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        doc.atomicUnlock();
+                    }
+//                    substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
+//                    if (evt.getKeyChar() == '"' || evt.getKeyChar() == '<') {
+//                        Completion.get().showCompletion();
+//                    }
+//                    evt.consume();
                     break;
             }
         }
@@ -92,18 +162,44 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(), getRightHtmlText(), g, defaultFont, defaultColor, width, height, selected);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder out = new StringBuilder();
+        out.append(this.isUserInclude ? "[U ": "[S ");
+        out.append(this.isFolder ? "D] ": "F] ");
+        out.append(this.getLeftHtmlText()).append(" : ");
+        out.append(this.getRightHtmlText());
+        return out.toString();
+    }
+    
+    public int getSortPriority() {
+        return this.priority;
+    }
+
+    public CharSequence getSortText() {
+        return item;
+    }
+
+    public CharSequence getInsertPrefix() {
+        if (insPrefix == null) {
+            insPrefix = this.isUserInclude ? CsmIncludeCompletionItem.QUOTE : CsmIncludeCompletionItem.SYS_OPEN;
+            insPrefix += item;
+        }
+        return insPrefix;
+    }        
+    
     protected ImageIcon getIcon() {
-        return null;
+        return CsmImageLoader.getIncludeImageIcon(isUserInclude, isFolder);
     }
     
     protected String getLeftHtmlText() {
-        return null;
+        return this.item;
     }
     
     protected String getRightHtmlText() {
-        return null;
+        return this.parentFolder;
     }
-
+    
     protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
         BaseDocument doc = (BaseDocument)c.getDocument();
         String text = getInsertPrefix().toString();
@@ -163,18 +259,6 @@ public class CsmIncludeCompletionItem implements CompletionItem {
 //                doc.atomicUnlock();
 //            }
         }
-    }
-    
-    public int getSortPriority() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public CharSequence getSortText() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public CharSequence getInsertPrefix() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

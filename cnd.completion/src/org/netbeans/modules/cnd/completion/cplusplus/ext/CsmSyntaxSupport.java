@@ -583,6 +583,24 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         return ret;
     }
 
+    private boolean checkOffsetInToken(TokenItem token, TokenID[] tokenIDs, int offset) {
+        boolean exists = false;
+        for (int i = tokenIDs.length - 1; i >= 0; i--) {
+            if (token.getTokenID() == tokenIDs[i]) {
+                exists = true;
+                break;
+            }
+        }
+        if (exists) {
+            // check offset
+            if ((token.getOffset() >= offset) ||    
+                    ((token.getOffset() + token.getImage().length()) < offset)) {
+                exists = false;
+            }
+        }
+        return exists;
+    }
+
     /**
      * Interface that can be implemented by the values (in the key-value Map terminology)
      * of the variableMap provided by VariableMapTokenProcessor implementations.
@@ -1162,18 +1180,11 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             token = null;
         }
         if (token != null) {
-            if (offset > token.getOffset()) { // not right at token's begining
-                TokenID[] enabledTokenIds = INCLUDE_COMPLETION_TOKENS;
-                for (int i = enabledTokenIds.length - 1; i >= 0; i--) {
-                    if (token.getTokenID() == enabledTokenIds[i]) {
-                        completionDisabled = false;
-                        break;
-                    }
-                }
-            }
+            completionDisabled = !checkOffsetInToken(token, INCLUDE_COMPLETION_TOKENS, offset);
             if (completionDisabled) {
                 // check whether right after #include or #include_next directive
-                if (token.getOffset() + token.getImage().length() <= offset) {
+                if ((token.getTokenID() == CCTokenContext.WHITESPACE) || 
+                        (token.getOffset() + token.getImage().length() <= offset)) {
                     if (token.getTokenID() == CCTokenContext.CPPINCLUDE ||
                             token.getTokenID() == CCTokenContext.CPPINCLUDE_NEXT) {
                         return false;
@@ -1187,10 +1198,13 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                         }
                         prevToken = prevToken.getPrevious();
                     }
-                    if (prevToken != null && 
-                            ((prevToken.getTokenID() == CCTokenContext.CPPINCLUDE) ||
-                            (prevToken.getTokenID() == CCTokenContext.CPPINCLUDE_NEXT))) {
-                        completionDisabled = false;
+                    if (prevToken != null) {
+                        if ((prevToken.getTokenID() == CCTokenContext.CPPINCLUDE) ||
+                            (prevToken.getTokenID() == CCTokenContext.CPPINCLUDE_NEXT)) {
+                            completionDisabled = false;
+                        } else {
+                            completionDisabled = !checkOffsetInToken(prevToken, INCLUDE_COMPLETION_TOKENS, offset);
+                        }
                     }
                 }
             }

@@ -22,14 +22,11 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.TokenID;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -38,33 +35,44 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public class CsmIncludeCompletionProvider implements CompletionProvider  {
-    private final static String QUOTE = "\""; // NOI18N
-    private final static String SYS_OPEN = "<"; // NOI18N
-    private final static String SYS_CLOSE = ">"; // NOI18N
+    static int index = 0;
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
-        if (typedText.equals(QUOTE) || typedText.equals(SYS_OPEN)) {
-            if (!sup.isIncludeCompletionDisabled(component.getCaret().getDot())) {
-                System.err.println("include completion will be shown");
+        if (typedText.equals(CsmIncludeCompletionItem.QUOTE) || 
+                typedText.equals(CsmIncludeCompletionItem.SYS_OPEN) || 
+                typedText.equals(" ")) {
+            int dot = component.getCaret().getDot();
+            System.out.println("offset " + dot);
+            if (dot == 11) {
+                dot=11;
+            }
+            if (!sup.isIncludeCompletionDisabled(dot)) {
+                System.out.println("include completion will be shown");
                 return COMPLETION_QUERY_TYPE;
+            } else {
+                System.out.println("include completion will NOT be shown");
             }
         }
         return 0;
     }
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (queryType == COMPLETION_QUERY_TYPE) {
+        System.out.println("queryType = " + queryType);
+        if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
+            boolean all = (queryType == COMPLETION_ALL_QUERY_TYPE);
+            int dot = component.getCaret().getDot();
             CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
-            if (!sup.isIncludeCompletionDisabled(component.getCaret().getDot())) {
-                System.err.println("include completion task is created");
-                return new AsyncCompletionTask(new Query(component.getCaret().getDot()), component);
+            if (!sup.isIncludeCompletionDisabled(dot)) {
+                System.out.println("include completion task is created with offset " + dot);
+                return new AsyncCompletionTask(new Query(dot, all), component);
+            } else {
+                System.out.println("include completion task is NOT created");
             }
         }
         return null;
@@ -82,8 +90,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
         
         private JTextComponent component;
         
-        private Collection<? extends CompletionItem> results;
-        private NbCsmCompletionQuery.CsmCompletionResult queryResult;
+        private Collection<CsmIncludeCompletionItem> results;
         
         private int creationCaretOffset;
         private int queryCaretOffset;
@@ -92,17 +99,20 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
         
         private String filterPrefix;
         private Boolean usrInclude;
+        private boolean showAll;
         
-        Query(int caretOffset) {
+        Query(int caretOffset, boolean showAll) {
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
+            this.showAll = showAll;
         }
         
         @Override
         protected void preQueryUpdate(JTextComponent component) {
             int caretOffset = component.getCaretPosition();
+            System.out.println("preQueryUpdate on " + caretOffset + " anchor " + queryAnchorOffset);
             Document doc = component.getDocument();
-            if (queryAnchorOffset > 0 && caretOffset >= queryAnchorOffset) {
+            if (creationCaretOffset > 0 && caretOffset >= creationCaretOffset) {
                 try {
                     if (isValidIncludeNamePart(doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset))) {
                         return;
@@ -110,22 +120,25 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                 } catch (BadLocationException e) {
                 }
             }
-            Completion.get().hideCompletion();
+            System.out.println("hiding completion");
+            //Completion.get().hideCompletion();
         }        
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
+                System.out.println("query on " + caretOffset + " anchor " + queryAnchorOffset);
                 initAnchorAndFilter((BaseDocument) doc, caretOffset);
                 queryCaretOffset = caretOffset;
                 if (this.queryAnchorOffset > 0) {
                     CsmIncludeCompletionQuery query = getCompletionQuery();
-                    Collection<? extends CompletionItem> items = query.query(component, (BaseDocument)doc, usrInclude);
+                    Collection<CsmIncludeCompletionItem> items = query.query( (BaseDocument)doc, queryAnchorOffset, usrInclude,showAll);
                     if (items != null && items.size() > 0) {
                             this.results = items;
                             items = getFilteredData(items, filterPrefix);
                             resultSet.estimateItems(items.size(), -1);
                             resultSet.addAllItems(items);
                     }
+                    resultSet.setHasAdditionalItems(usrInclude != null ? usrInclude : true);
                 }
             } catch (BadLocationException ex) {
             }
@@ -177,7 +190,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
         protected void filter(CompletionResultSet resultSet) {
             if (filterPrefix != null && results != null) {
                 resultSet.setAnchorOffset(queryAnchorOffset);
-                Collection<? extends CompletionItem> items = getFilteredData(results, filterPrefix);
+                Collection<? extends CsmIncludeCompletionItem> items = getFilteredData(results, filterPrefix);
                 resultSet.estimateItems(items.size(), -1);
                 resultSet.addAllItems(items);
             }
@@ -197,19 +210,18 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                         TokenItem tok = sup.getTokenChain(caretOffset, caretOffset+1);
                         tok = toPrevNonWhiteAndNotCommentOnSameLine(tok);
                         if (tok != null) {
-                            TokenID id = tok.getTokenID();
                             switch (tok.getTokenID().getNumericID()) {
                             case CCTokenContext.SYS_INCLUDE_ID:
                             case CCTokenContext.INCOMPLETE_SYS_INCLUDE_ID:
-                                usrInclude = Boolean.TRUE;
+                                usrInclude = Boolean.FALSE;
                                 queryAnchorOffset = tok.getOffset();
-                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset);
+                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset-queryAnchorOffset);
                                 break;
                             case CCTokenContext.USR_INCLUDE_ID:
                             case CCTokenContext.INCOMPLETE_USR_INCLUDE_ID:
-                                usrInclude = Boolean.FALSE;
+                                usrInclude = Boolean.TRUE;
                                 queryAnchorOffset = tok.getOffset();
-                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset);
+                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset-queryAnchorOffset);
                                 break;
                             case CCTokenContext.CPPINCLUDE_ID:
                             case CCTokenContext.CPPINCLUDE_NEXT_ID:
@@ -224,20 +236,26 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                     doc.atomicUnlock();
                 }
             }
+            if (filterPrefix != null) {
+                filterPrefix = trimIncludeSigns(filterPrefix);
+            }
+            System.out.println("INCINFO: usrInclude " + usrInclude + " anchorOffset = " + queryAnchorOffset + " filterPrefix = " + filterPrefix);
         }
 
         private String trimIncludeSigns(String str) {
-            if (str.startsWith(QUOTE) || str.startsWith(SYS_OPEN)) {
+            if (str.startsWith(CsmIncludeCompletionItem.QUOTE) || 
+                    str.startsWith(CsmIncludeCompletionItem.SYS_OPEN)) {
                 str = str.substring(1);
             }
-            if (str.endsWith(QUOTE) || str.endsWith(SYS_CLOSE)) {
+            if (str.endsWith(CsmIncludeCompletionItem.QUOTE) || 
+                    str.endsWith(CsmIncludeCompletionItem.SYS_CLOSE)) {
                 str = str.substring(0, str.length() - 1);
             }
             return str;
         }
         
-        private boolean matchPrefix(CompletionItem itm, String prefix) {
-            return itm.getInsertPrefix().toString().startsWith(prefix);
+        private boolean matchPrefix(CsmIncludeCompletionItem itm, String prefix) {
+            return itm.getItemText().startsWith(prefix);
         }
 
         private TokenItem toPrevNonWhiteAndNotCommentOnSameLine(TokenItem token) {
@@ -247,6 +265,12 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                 if (!checkedFirst) {
                     if (token.getTokenID() != CCTokenContext.WHITESPACE) {
                         return prev;
+                    } else {
+                        prev = token;
+                        token = token.getPrevious();
+                        if (token == null) {
+                            return prev;
+                        }
                     }
                     checkedFirst = true;
                 }
@@ -256,7 +280,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
                         return prev;
                     }
                 } else {
-                    return prev;
+                    return token;
                 }
                 prev = token;
                 token = token.getPrevious();
@@ -265,7 +289,8 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
         }
         
         private boolean isValidIncludeNamePart(String text) {
-            if (true) return text.length() < 2 || !text.endsWith(QUOTE);
+            if (true) return text.length() < 2 || 
+                    !text.endsWith(CsmIncludeCompletionItem.QUOTE);
 //            if (text.startsWith(QUOTE)) {
 //                text = text.substring(QUOTE.length());
 //            } 
@@ -280,13 +305,13 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
             return true;
         }
         
-        private Collection<? extends CompletionItem> getFilteredData(Collection<? extends CompletionItem> data, String prefix) {
-            Collection<? extends CompletionItem> out;
+        private Collection<CsmIncludeCompletionItem> getFilteredData(Collection<CsmIncludeCompletionItem> data, String prefix) {
+            Collection<CsmIncludeCompletionItem> out;
             if (prefix == null) {
                 out = data;
             } else {
-                List<CompletionItem> ret = new ArrayList<CompletionItem>(data.size());
-                for (CompletionItem itm : data) {
+                List<CsmIncludeCompletionItem> ret = new ArrayList<CsmIncludeCompletionItem>(data.size());
+                for (CsmIncludeCompletionItem itm : data) {
                     if (matchPrefix(itm, prefix)) {
                         ret.add(itm);
                     }
