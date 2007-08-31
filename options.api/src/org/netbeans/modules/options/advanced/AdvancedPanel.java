@@ -25,6 +25,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -83,8 +84,7 @@ public final class AdvancedPanel extends JPanel {
     
     void init (Lookup masterLookup) {
         // init components
-        tabbedPanel = new JTabbedPane();        
-        tabbedPanel.setBorder (null);        
+        tabbedPanel = new JTabbedPane();                
         
         // define layout
         setLayout (new BorderLayout ());
@@ -109,6 +109,7 @@ public final class AdvancedPanel extends JPanel {
         String category = tabbedPanel.getTitleAt(selectedIndex);
         if (tabbedPanel.getSelectedComponent() instanceof JLabel) {
             tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), model.getPanel(category));
+            ((JComponent)tabbedPanel.getSelectedComponent()).setBorder (new EmptyBorder(11,11,11,11));
         }
         model.update(category);
         firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);        
