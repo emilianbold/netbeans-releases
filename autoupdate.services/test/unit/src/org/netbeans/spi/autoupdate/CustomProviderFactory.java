@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.api.progress.ProgressHandle;
 
 /**
@@ -57,6 +58,10 @@ public class CustomProviderFactory {
 
             public boolean refresh(boolean force) {
                 return true;
+            }
+
+            public CATEGORY getCategory() {
+                return CATEGORY.COMMUNITY;
             }
         };
         return provider;

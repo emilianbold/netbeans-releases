@@ -29,6 +29,7 @@ import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.openide.util.NbBundle;
 
 /**
@@ -86,10 +87,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
             res = u.getCategoryName();
             break;
         case 3 :
-            res = u.getAvailableVersion();
-            break;
-        case 4 :
-            res = Utilities.getDownloadSizeAsString(u.getCompleteSize());
+            res = u.getSourceCategory();
             break;
         }
         
@@ -97,7 +95,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     }
 
     public int getColumnCount() {
-        return 3;
+        return 4;
     }
     
     public Class getColumnClass(int c) {
@@ -114,10 +112,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
             res = String.class;
             break;
         case 3 :
-            res = String.class;
-            break;
-        case 4 :
-            res = String.class;
+            res = CATEGORY.class;
             break;
         }
         
@@ -134,9 +129,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
             case 2 :
                 return getBundle("AvailableTableModel_Columns_Category");
             case 3 :
-                return getBundle ("AvailableTableModel_Columns_Version");
-            case 4 :
-                return getBundle ("AvailableTableModel_Columns_Size");
+                return getBundle ("AvailableTableModel_Source_Category");
         }
         
         assert false;
@@ -174,9 +167,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
                 } else if (getColumnName(2).equals(columnIdentifier)) {
                     return Unit.compareCategories(unit1, unit2);
                 } else if (getColumnName(3).equals(columnIdentifier)) {
-                    return Unit.Available.compareAvailableVersion(unit1, unit2);
-                } else if (getColumnName(4).equals(columnIdentifier)) {
-                    return Unit.compareCompleteSizes(unit1, unit2);
+                    return Unit.Available.compareSourceCategories(unit1, unit2);
                 }                
                 return 0;
             }

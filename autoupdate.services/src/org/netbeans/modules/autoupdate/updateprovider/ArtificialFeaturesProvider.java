@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Module;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.services.ModuleUpdateElementImpl;
 import org.netbeans.modules.autoupdate.services.UpdateElementImpl;
 import org.netbeans.modules.autoupdate.services.Utilities;
@@ -258,6 +259,10 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         }
         
         return digits;
+    }
+
+    public CATEGORY getCategory() {
+        return CATEGORY.COMMUNITY;
     }
 
 }

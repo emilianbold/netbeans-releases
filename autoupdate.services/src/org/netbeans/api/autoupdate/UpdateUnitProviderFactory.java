@@ -58,7 +58,22 @@ public final class UpdateUnitProviderFactory {
     public List<UpdateUnitProvider> getUpdateUnitProviders (boolean onlyEnabled) {
         return UpdateUnitProviderImpl.getUpdateUnitProviders (onlyEnabled);
     }
-    
+
+    /** Creates new <code>UpdateUnitProvider</code> and store its preferences. The new provider 
+     * is based of the given URL where is the Autoupdate Catalog.
+     * 
+     * @param name name of provider, this name is used by Autoupdate infrastructure for manimulating
+     * of providers.
+     * @param displayName display name of provider
+     * @param url URL to Autoupdate Catalog
+     * @param category quality classification for every <code>UpdateElement</code> 
+     * comming from returned <code>UpdateUnitProvider</code>
+     * @return URL-based UpdateUnitProvider
+     */        
+    public UpdateUnitProvider create (String name, String displayName, URL url, UpdateUnitProvider.CATEGORY  category) {
+        return UpdateUnitProviderImpl.createUpdateUnitProvider (name, displayName, url, category);
+    }
+
     /** Creates new <code>UpdateUnitProvider</code> and store its preferences. The new provider 
      * is based of the given URL where is the Autoupdate Catalog.
      * 
@@ -67,9 +82,9 @@ public final class UpdateUnitProviderFactory {
      * @param displayName display name of provider
      * @param url URL to Autoupdate Catalog
      * @return URL-based UpdateUnitProvider
-     */
+     */    
     public UpdateUnitProvider create (String name, String displayName, URL url) {
-        return UpdateUnitProviderImpl.createUpdateUnitProvider (name, displayName, url);
+        return UpdateUnitProviderImpl.createUpdateUnitProvider (name, displayName, url, UpdateUnitProvider.CATEGORY.COMMUNITY);
     }
     
     /** Creates new <code>UpdateUnitProvider</code> for temporary usage. This provider contains

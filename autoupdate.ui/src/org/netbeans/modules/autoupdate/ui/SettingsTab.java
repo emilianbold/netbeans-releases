@@ -33,17 +33,22 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -81,6 +86,9 @@ public class SettingsTab extends javax.swing.JPanel {
         spTab.setRightComponent(scrollerForDetails);
         
         table.setModel(new SettingsTableModel());        
+        TableColumnModel columnModel = table.getColumnModel();
+        columnModel.getColumn(1).setCellRenderer(new UpdateProviderRenderer ());
+        
         
         cbCheckPeriod.setModel(new DefaultComboBoxModel(new String [] {
             getMessage("CTL_Update_every_startup"),
@@ -585,6 +593,29 @@ private class Listener implements ListSelectionListener,  TableModelListener {
             Component[] nested = ((Container)component).getComponents();
             for (Component nestedcomponent : nested)
                 changeComponentsEnableState(nestedcomponent, b);
+        }
+    }
+    
+    private static class UpdateProviderRenderer extends  DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            JLabel renderComponent = (JLabel) super.getTableCellRendererComponent (table, value, isSelected, hasFocus, row, column);
+
+            if (value instanceof UpdateUnitProvider) {
+                UpdateUnitProvider u = (UpdateUnitProvider) value;
+                CATEGORY state = u.getCategory();
+                if (CATEGORY.BETA.equals(state)) {
+                    renderComponent.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/autoupdate/ui/resources/icon-beta.png"))); // NOI18N
+                } else if (CATEGORY.COMMUNITY.equals(state)) {
+                    renderComponent.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/autoupdate/ui/resources/icon-community.png"))); // NOI18N
+                } else if (CATEGORY.STANDARD.equals(state)) {
+                    renderComponent.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/autoupdate/ui/resources/icon-standard.png"))); // NOI18N
+                }
+                renderComponent.setText (u.getDisplayName());
+                renderComponent.setHorizontalAlignment(SwingConstants.LEFT);
+            }
+            Component retval = renderComponent;
+            return retval;
         }
     }
 }

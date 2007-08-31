@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 
@@ -39,14 +40,20 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     private AutoupdateCatalogCache cache = AutoupdateCatalogCache.getDefault ();
     private Logger log = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog");
     private String description = null;
+    private CATEGORY category = null;
+
+    public AutoupdateCatalogProvider (String name, String displayName, URL updateCenter) {
+        this(name, displayName, updateCenter, CATEGORY.COMMUNITY);
+    }
     
     /**
      * Creates a new instance of AutoupdateCatalog
      */
-    public AutoupdateCatalogProvider (String name, String displayName, URL updateCenter) {
+    public AutoupdateCatalogProvider (String name, String displayName, URL updateCenter, CATEGORY category) {
         this.codeName = name;
         this.displayName = displayName;
         this.updateCenter = updateCenter;
+        this.category = (category != null) ? category : CATEGORY.COMMUNITY;
     }
     
     public String getName () {
@@ -110,5 +117,8 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     public String toString () {
         return displayName + "[" + codeName + "] to " + updateCenter;
     }
-    
+
+    public CATEGORY getCategory() {
+        return category;
+    }    
 }

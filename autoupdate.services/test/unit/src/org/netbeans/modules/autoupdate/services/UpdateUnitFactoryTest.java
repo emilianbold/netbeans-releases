@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateInfoParserTest;

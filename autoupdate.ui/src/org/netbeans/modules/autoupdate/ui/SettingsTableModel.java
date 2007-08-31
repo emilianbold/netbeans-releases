@@ -47,7 +47,7 @@ public class SettingsTableModel extends AbstractTableModel {
     
     private static final Class[] COLUMN_TYPES = new Class[] {
         Boolean.class,
-        String.class,
+        UpdateUnitProvider.class,
         /*String.class*/
     };
     private List<UpdateUnitProvider> updateProviders;
@@ -185,14 +185,6 @@ public class SettingsTableModel extends AbstractTableModel {
                 }
             }
             break;
-        case 1: unitProvider.setDisplayName ((String)aValue);break;
-            /*case 2: URL u = null;
-                try {
-                    u = new URL((String)aValue);
-                    unitProvider.setProviderURL(u);break;
-                } catch(MalformedURLException mux) {
-                    logger.warning(mux.getLocalizedMessage());
-                }*/
         }
     }
     
@@ -201,7 +193,7 @@ public class SettingsTableModel extends AbstractTableModel {
         UpdateUnitProvider unitProvider = updateProviders.get (rowIndex);
         switch(columnIndex) {
         case 0: retval = unitProvider.isEnabled ();break;
-        case 1: retval = unitProvider.getDisplayName ();break;
+        case 1: retval = unitProvider;break;
             /*case 2: URL url = unitProvider.getProviderURL();
             retval = (url != null) ? url.toExternalForm() : "";//NOI18N
             break;*/

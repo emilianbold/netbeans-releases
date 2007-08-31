@@ -21,7 +21,7 @@ package org.netbeans.spi.autoupdate;
 
 import java.io.IOException;
 import java.util.Map;
-
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 
 /** <code>UpdateProvider</code> providers items for Autoupdate infrastructure. The items
  * are available on e.g. Update Center. Items can represents NetBeans Module,
@@ -54,6 +54,13 @@ public interface UpdateProvider {
      * @return description of provider or null
      */
     public String getDescription ();
+
+
+    /**
+     * @return <code>UpdateUnitProvider.CATEGORY</code> for a quality classification 
+     * of updates comming from this instance
+     */    
+    public CATEGORY getCategory();
     
     /** Returns <code>UpdateItem</code>s which is mapped to its unique ID.
      * Unique ID depends on the type of <code>UpdateItem</code>.

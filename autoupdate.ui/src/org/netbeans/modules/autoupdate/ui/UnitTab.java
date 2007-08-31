@@ -59,6 +59,7 @@ import javax.swing.table.TableModel;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -299,6 +300,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         bTabAction.setAction (new AvailableAction ());
         prepareTopButton (reloadAction = new ReloadAction ());
+        table.setEnableRenderer (new SourceCategoryRenderer ());
         break;
         case LOCAL :
             removeLocallyDownloaded = new RemoveLocallyDownloadedAction ();
@@ -1566,7 +1568,35 @@ public class UnitTab extends javax.swing.JPanel {
             return retval;
         }
     }
-        
+     
+    class SourceCategoryRenderer extends  DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent (
+                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            JLabel renderComponent = (JLabel)super.getTableCellRendererComponent (table, value, isSelected, hasFocus, row, column);
+            
+            if (value instanceof CATEGORY) {
+                Unit u = model.getUnitAtRow (row);
+                if (u instanceof Unit.Available) {
+                    Unit.Available a = (Unit.Available)u;
+                    CATEGORY state = a.getSourceCategory();
+                    if (CATEGORY.BETA.equals(state)) {
+                            renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/icon-beta.png"))); // NOI18N
+                    } else if (CATEGORY.COMMUNITY.equals(state)) {
+                            renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/icon-community.png"))); // NOI18N
+                        
+                    } else if (CATEGORY.STANDARD.equals(state)) {
+                            renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/icon-standard.png"))); // NOI18N                        
+                    }                        
+                    renderComponent.setText ("");
+                    renderComponent.setHorizontalAlignment (SwingConstants.CENTER);
+                }
+                
+            }
+            Component retval = renderComponent;
+            return retval;
+        }
+    }    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bTabAction;
     private javax.swing.JLabel lSearch;

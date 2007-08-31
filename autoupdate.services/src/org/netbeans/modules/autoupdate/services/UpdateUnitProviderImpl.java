@@ -49,6 +49,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.Cancellable;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 
 
 /** XXX <code>UpdateProvider</code> providers items for Autoupdate infrastructure. The items
@@ -63,8 +64,9 @@ public final class UpdateUnitProviderImpl {
     private static Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl");
     private static final String REMOVED_MASK ="_removed";
     private static final String URL = "url";
-    private static final String DISPLAY_NAME = "displayName";
+    private static final String DISPLAY_NAME = "displayName";    
     private static final String ENABLED = "enabled";
+    private static final String CATEGORY_NAME = "categoryName";
             
     public UpdateUnitProviderImpl (UpdateProvider provider) {
         this.provider = provider;
@@ -83,6 +85,10 @@ public final class UpdateUnitProviderImpl {
         return getUpdateProvider ().getDescription ();
     }
 
+    public CATEGORY getCategory() {
+        return getUpdateProvider().getCategory();
+    }
+    
     /** Display name of provider. This display name can be visualized in UI.
      * 
      * @return display name of provider
@@ -177,13 +183,17 @@ public final class UpdateUnitProviderImpl {
         // don't remember clean-up update units
         UpdateManagerImpl.getInstance().cleanupUpdateUnits ();
     }
+
+    public static UpdateUnitProvider createUpdateUnitProvider (String codeName, String displayName, URL url) {
+        return createUpdateUnitProvider(codeName, displayName, url, CATEGORY.COMMUNITY);
+    }
     
     // static factory methods
-    public static UpdateUnitProvider createUpdateUnitProvider (String codeName, String displayName, URL url) {
+    public static UpdateUnitProvider createUpdateUnitProvider (String codeName, String displayName, URL url, CATEGORY category) {
         // store to Preferences
         storeProvider(codeName, displayName, url);
         
-        AutoupdateCatalogProvider catalog = new AutoupdateCatalogProvider (codeName, displayName, url);
+        AutoupdateCatalogProvider catalog = new AutoupdateCatalogProvider (codeName, displayName, url, category);
         
         return Trampoline.API.createUpdateUnitProvider (new UpdateUnitProviderImpl (catalog));
     }
@@ -313,6 +323,7 @@ public final class UpdateUnitProviderImpl {
         
         String toUrl = providerPreferences.get (URL, providerPreferences.get (AutoupdateCatalogFactory.ORIGINAL_URL, null));
         String displayName = providerPreferences.get (DISPLAY_NAME, providerPreferences.get (AutoupdateCatalogFactory.ORIGINAL_DISPLAY_NAME, codeName));
+        CATEGORY category = CATEGORY.valueOf(providerPreferences.get (CATEGORY_NAME, providerPreferences.get (AutoupdateCatalogFactory.ORIGINAL_CATEGORY_NAME, CATEGORY.COMMUNITY.name())));
         
         // filter Providers which store only its state
         if (toUrl == null) {
@@ -326,7 +337,7 @@ public final class UpdateUnitProviderImpl {
             assert false : mue;
         }
         
-        return new AutoupdateCatalogProvider (codeName, displayName, url);
+        return new AutoupdateCatalogProvider (codeName, displayName, url, category);
     }
     
     private static boolean loadState (String codename) {

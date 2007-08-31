@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.openide.modules.ModuleInfo;
@@ -115,5 +116,9 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
         }
         assert moduleInfos != null;
         return true;
+    }
+
+    public CATEGORY getCategory() {
+        return CATEGORY.COMMUNITY;
     }
 }

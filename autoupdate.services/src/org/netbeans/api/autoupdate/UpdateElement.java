@@ -19,7 +19,9 @@
 
 package org.netbeans.api.autoupdate;
 
+import java.util.List;
 import org.netbeans.modules.autoupdate.services.UpdateElementImpl;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 
 /** Instances provided by the <code>UpdateUnit</code> which represents specific version
  * of update (e.g. module or feature). The <code>UpdateElement</code> can be installed,
@@ -92,6 +94,27 @@ public final class UpdateElement {
      */
     public String getSource () {
         return impl.getSource ();
+    }
+
+    /**
+     * @return <code>UpdateUnitProvider.CATEGORY</code> for a quality classification 
+     * for update represented by this instance
+     */
+    public CATEGORY getSourceCategory () {
+        UpdateUnitProvider provider = getUpdateUnitProvider();
+        return (provider != null) ? provider.getCategory() : CATEGORY.COMMUNITY;
+    }
+    
+    private UpdateUnitProvider getUpdateUnitProvider() {
+        String source = getSource();
+        UpdateUnitProvider retval = null;
+        List<UpdateUnitProvider> providers = UpdateUnitProviderFactory.getDefault().getUpdateUnitProviders(false);
+        for (UpdateUnitProvider updateUnitProvider : providers) {
+            if (updateUnitProvider.getDisplayName().equals(source)) {
+                retval = updateUnitProvider;
+            }
+        }
+        return retval;
     }
     
     /** Returns name of the author of the update element.

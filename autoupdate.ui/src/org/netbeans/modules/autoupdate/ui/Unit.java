@@ -34,6 +34,7 @@ import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.ui.UnitCategoryTableModel.Type;
 import org.openide.modules.SpecificationVersion;
 
@@ -489,6 +490,16 @@ public abstract class Unit {
             }
             return Unit.compareDisplayVersions (u1, u2);
         }
+
+        public static int compareSourceCategories(Unit u1, Unit u2) {
+            if (u1 instanceof Unit.Available && u2 instanceof Unit.Available) {
+                Unit.Available unit1 = (Unit.Available)u1;
+                Unit.Available unit2 = (Unit.Available)u2;
+                return Collator.getInstance().compare(unit1.getSourceCategory().name(), unit2.getSourceCategory().name());
+            }
+            
+            throw new IllegalStateException();
+        }
         
         public String getAvailableVersion () {
             return updateEl.getSpecificationVersion ().toString ();
@@ -524,6 +535,10 @@ public abstract class Unit {
         public Type getModelType() {
             return (isNbms) ? UnitCategoryTableModel.Type.LOCAL : UnitCategoryTableModel.Type.AVAILABLE;
         }        
+        
+        public CATEGORY getSourceCategory() {
+            return updateEl.getSourceCategory();
+        }
     }
     
 }

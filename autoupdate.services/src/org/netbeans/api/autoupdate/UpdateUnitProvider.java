@@ -35,6 +35,12 @@ import org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl;
  * @author Jiri Rechtacek
  */
 public final class UpdateUnitProvider {
+    public static enum CATEGORY {
+        STANDARD,
+        COMMUNITY,
+        BETA
+    }
+    
     UpdateUnitProviderImpl impl;
     
     UpdateUnitProvider (UpdateUnitProviderImpl impl) {
@@ -73,6 +79,11 @@ public final class UpdateUnitProvider {
      */
     public String getDescription () {
         return impl.getDescription ();
+    }
+
+    
+    public CATEGORY getCategory() {
+        return impl.getCategory();
     }
 
     /** It's special support for <code>UpdateProvider</code> based on Autoupdate Catalog.

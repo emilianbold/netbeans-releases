@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.xml.sax.SAXException;
@@ -77,4 +78,7 @@ public class LocalNBMsProvider implements UpdateProvider {
         return false;
     }
 
+    public CATEGORY getCategory() {
+        return CATEGORY.COMMUNITY;
+    }
 }

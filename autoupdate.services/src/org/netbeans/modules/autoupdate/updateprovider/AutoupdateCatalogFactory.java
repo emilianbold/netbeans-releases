@@ -31,6 +31,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -59,6 +60,7 @@ public class AutoupdateCatalogFactory {
     public static final String ORIGINAL_URL = "originalUrl"; // NOI18N
     public static final String ORIGINAL_DISPLAY_NAME = "originalDisplayName"; // NOI18N
     public static final String ORIGINAL_ENABLED = "originalEnabled"; // NOI18N
+    public static final String ORIGINAL_CATEGORY_NAME = "originalCategoryName"; // NOI18N
     
     public static UpdateProvider createUpdateProvider (FileObject fo) {
         String sKey = (String) fo.getAttribute ("url_key"); // NOI18N
@@ -91,12 +93,14 @@ public class AutoupdateCatalogFactory {
             }
         }
         url = modifyURL (url);
-                
-        AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider (sKey, displayName (fo), url);
+        String categoryName = (String) fo.getAttribute ("category"); // NOI18N    
+        CATEGORY category = (categoryName != null) ? CATEGORY.valueOf(categoryName) : CATEGORY.COMMUNITY;
+        AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider (sKey, displayName (fo), url, category);
         
         Preferences providerPreferences = getPreferences ().node (sKey);
         providerPreferences.put (ORIGINAL_URL, url.toExternalForm ());
         providerPreferences.put (ORIGINAL_DISPLAY_NAME, au_catalog.getDisplayName ());
+        providerPreferences.put (ORIGINAL_CATEGORY_NAME, au_catalog.getCategory().name());        
         Boolean en = (Boolean) fo.getAttribute("enabled"); // NOI18N        
         if (en != null) {
             providerPreferences.putBoolean (ORIGINAL_ENABLED, en);

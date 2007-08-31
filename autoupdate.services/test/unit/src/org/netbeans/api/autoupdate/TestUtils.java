@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.netbeans.ModuleManager;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.core.startup.Main;
 import org.netbeans.spi.autoupdate.CustomInstaller;
@@ -81,6 +82,10 @@ public class TestUtils {
 
         public boolean refresh(boolean force) {
             return true;
+        }
+
+        public CATEGORY getCategory() {
+            return CATEGORY.COMMUNITY;
         }
     }
     

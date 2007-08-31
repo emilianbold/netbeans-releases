@@ -27,21 +27,36 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="AutoupdateType">
       <!-- this ordering left because backward compatibility with deserialized autoupdate types -->
-      <file name="standard-update-provider.instance">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
-        <attr name="url_key" stringvalue="URL_au_110566"/>
-        <attr name="category" stringvalue="STANDARD"/>
+      <file name="enabled-update-provider.instance">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.api.autoupdate.Bundle"/>
+        <attr name="url_key" stringvalue="UC_ENABLED"/>
+        <attr name="category" stringvalue="STANDARD"/>          
         <attr name="enabled" boolvalue="true"/>
         <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
         <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />        
       </file>
     
-      <file name="dev-update-provider.instance">
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
-          <attr name="url_key" stringvalue="URL_Default_N"/>
-          <attr name="category" stringvalue="STANDARD"/> 
+      <file name="disabled-update-provider.instance">
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.api.autoupdate.Bundle"/>
+          <attr name="url_key" stringvalue="UC_DISABLED"/>
+          <attr name="category" stringvalue="STANDARD"/>                    
+          <attr name="enabled" boolvalue="false"/>
+          <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
+          <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />                
+      </file>
+
+      <file name="beta-update-provider.instance">
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.api.autoupdate.Bundle"/>
+          <attr name="url_key" stringvalue="UC_BETA"/>
+          <attr name="category" stringvalue="BETA"/>                    
+          <attr name="enabled" boolvalue="true"/>
+          <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
+          <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />                
+      </file>
+
+      <file name="fallback-category-update-provider.instance">
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.api.autoupdate.Bundle"/>
+          <attr name="url_key" stringvalue="UC_FALLBACK_CATEGORY"/>
           <attr name="enabled" boolvalue="true"/>
           <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider" />
           <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider" />                

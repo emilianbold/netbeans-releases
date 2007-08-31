@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.autoupdate.services;
 
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.updateprovider.*;
 import org.netbeans.api.autoupdate.*;
 import java.io.File;
@@ -136,6 +137,10 @@ public class FeatureNotUpToDateTest extends NbTestCase
 
         public boolean refresh (boolean force) throws IOException {
             return true;
+        }
+
+        public CATEGORY getCategory() {
+            return CATEGORY.COMMUNITY;
         }
     }
 

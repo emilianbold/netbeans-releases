@@ -48,4 +48,13 @@ public class UpdateElementTest extends DefaultTestCase {
         UpdateElement engineElement = getAvailableUpdate(engineUnit,0);
         assertEquals("[NO LICENSE SPECIFIED]\n",engineElement.getLicence());
     }
+    
+    public void testSourceCategory() {
+        UpdateUnit engineUnit = getUpdateUnit("org.yourorghere.engine");
+        assertNull("cannot be installed",engineUnit.getInstalled());
+        UpdateElement engineElement = getAvailableUpdate(engineUnit,0);
+        assertNotNull(engineUnit);
+        assertEquals(UpdateUnitProvider.CATEGORY.STANDARD, engineElement.getSourceCategory());
+    }
+    
 }

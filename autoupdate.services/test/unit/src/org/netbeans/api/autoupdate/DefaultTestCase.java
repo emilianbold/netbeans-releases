@@ -49,7 +49,7 @@ public class DefaultTestCase extends NbTestCase {
         
     public static class MyProvider extends AutoupdateCatalogProvider {
         public MyProvider () {
-            super ("test-updates-provider", "test-updates-provider", catalogURL);
+            super ("test-updates-provider", "test-updates-provider", catalogURL, UpdateUnitProvider.CATEGORY.STANDARD);
         }
     }
 

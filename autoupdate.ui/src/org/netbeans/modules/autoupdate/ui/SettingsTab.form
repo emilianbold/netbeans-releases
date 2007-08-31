@@ -19,46 +19,35 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="addButton" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="spTab" alignment="1" pref="578" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="1" pref="1" max="1" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="1">
+                      <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
+                      <Component id="lCheckPeriod" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="1">
-                              <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
-                              <Component id="lCheckPeriod" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="cbCheckPeriod" pref="290" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
-                              <Component id="bProxy" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="lGeneral" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jSeparatorAdvanced" pref="507" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="lConnection" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jSeparatorConnection" pref="525" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
+                      <Component id="cbCheckPeriod" pref="313" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
+                      <Component id="bProxy" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
+                      <Component id="lGeneral" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="lUpdateCenters" min="-2" max="-2" attributes="0"/>
+                      <Component id="jSeparatorAdvanced" pref="514" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
+                      <Component id="lConnection" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cbGlobalInstall" min="-2" max="-2" attributes="0"/>
+                      <Component id="jSeparatorConnection" pref="531" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="lUpdateCenters" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbGlobalInstall" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

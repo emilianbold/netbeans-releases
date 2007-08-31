@@ -20,6 +20,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.updateprovider.*;
 import java.net.URL;
 import java.util.HashMap;
@@ -166,6 +167,10 @@ public class UpdateUnitProviderImplTest extends NbTestCase {
         
         public boolean refresh(boolean force) throws IOException {
             return true;
+        }
+
+        public CATEGORY getCategory() {
+            return CATEGORY.COMMUNITY;
         }
     }        
 }
