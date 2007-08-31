@@ -18,12 +18,14 @@
  */
 package org.netbeans.modules.java.source.usages;
 
+import java.io.IOException;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -57,11 +59,28 @@ public abstract class ResultConvertor<T> {
         }
         
         public FileObject convert (ElementKind kind, String value) {
-            for (int i=0; i<roots.length; i++) {
-                FileObject result = resolveFile (roots[i], value);
+            for (FileObject root : roots) {
+                FileObject result = resolveFile (root, value);
                 if (result != null) {
                     return result;
                 }
+            }
+            ClassIndexManager cim = ClassIndexManager.getDefault();
+            for (FileObject root : roots ) {
+                try {
+                    ClassIndexImpl impl = cim.getUsagesQuery(root.getURL());
+                    if (impl != null) {
+                        String sourceName = impl.getSourceName(value);
+                        if (sourceName != null) {
+                            FileObject result = root.getFileObject(sourceName);
+                            if (result != null) {
+                                return result;
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }                
             }
             return null;
         }

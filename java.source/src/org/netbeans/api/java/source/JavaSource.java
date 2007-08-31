@@ -2202,12 +2202,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
      * Only for unit tests
      */
     static interface JavaFileObjectProvider {
-        public JavaFileObject createJavaFileObject (FileObject fo, JavaFileFilterImplementation filter) throws IOException;
+        public JavaFileObject createJavaFileObject (FileObject fo, FileObject root, JavaFileFilterImplementation filter) throws IOException;
     }
     
     static final class DefaultJavaFileObjectProvider implements JavaFileObjectProvider {
-        public JavaFileObject createJavaFileObject (FileObject fo, JavaFileFilterImplementation filter) throws IOException {
-            return FileObjects.nbFileObject(fo, filter, true);
+        public JavaFileObject createJavaFileObject (FileObject fo, FileObject root, JavaFileFilterImplementation filter) throws IOException {
+            return FileObjects.nbFileObject(fo, root, filter, true);
         }
     }
     

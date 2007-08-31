@@ -176,11 +176,12 @@ public class FileObjects {
      * Any client which needs to create {@link JavaFileObject} for java
      * source file should use this factory method.
      * @param {@link FileObject} for which the {@link JavaFileObject} should be created
+     * @param {@link FileObject} root owning the file
      * @return {@link JavaFileObject}, never returns null
      * @exception {@link IOException} may be thrown
      */
-    public static JavaFileObject nbFileObject (final FileObject file) throws IOException {
-        return nbFileObject (file, null, false);
+    public static JavaFileObject nbFileObject (final FileObject file, final FileObject root) throws IOException {
+        return nbFileObject (file, root, null, false);
     }
     
     /**
@@ -188,16 +189,17 @@ public class FileObjects {
      * Any client which needs to create {@link JavaFileObject} for java
      * source file should use this factory method.
      * @param {@link FileObject} for which the {@link JavaFileObject} should be created
+     * @param {@link FileObject} root owning the file
      * @param renderNow if true the snap shot of the file is taken immediately
      * @return {@link JavaFileObject}, never returns null
      * @exception {@link IOException} may be thrown
      */
-    public static JavaFileObject nbFileObject (final FileObject file, JavaFileFilterImplementation filter, boolean renderNow) throws IOException {
+    public static JavaFileObject nbFileObject (final FileObject file, final FileObject root, JavaFileFilterImplementation filter, boolean renderNow) throws IOException {
         assert file != null;
         if (!file.isValid() || file.isVirtual()) {
             throw new InvalidFileException (file);
         }
-        return new SourceFileObject (file, filter, renderNow);
+        return new SourceFileObject (file, root, filter, renderNow);
     }
     
     /**

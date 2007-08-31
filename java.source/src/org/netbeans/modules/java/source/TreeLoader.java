@@ -67,11 +67,11 @@ public class TreeLoader extends LazyTreeLoader {
     public boolean loadTreeFor(final ClassSymbol clazz) {
         if (clazz != null) {
             try {
-                FileObject fo = SourceUtils.getFile(clazz, cpInfo);
+                FileObject fo = SourceUtils.getFile(clazz, cpInfo);                
                 JavacTaskImpl jti = context.get(JavacTaskImpl.class);
                 if (fo != null && jti != null) {
                     Log.instance(context).nerrors = 0;
-                    JavaFileObject jfo = FileObjects.nbFileObject(fo);
+                    JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
                     try {
                         jti.analyze(jti.enter(jti.parse(jfo)));
                         dumpSymFile(clazz);

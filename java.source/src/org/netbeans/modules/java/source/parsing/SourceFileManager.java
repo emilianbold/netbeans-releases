@@ -82,7 +82,7 @@ public class SourceFileManager implements JavaFileManager {
                                     kind = JavaFileObject.Kind.OTHER;
                                 }
                                 if (kinds.contains(kind)) {                        
-                                    result.add (SourceFileObject.create(file));
+                                    result.add (SourceFileObject.create(file, root));
                                 }
                             }
                         }
@@ -101,7 +101,7 @@ public class SourceFileManager implements JavaFileManager {
                 if (root != null) {
                     FileObject file = root.getFileObject(rp);
                     if (file != null) {
-                        return SourceFileObject.create (file);
+                        return SourceFileObject.create (file, root);
                     }
                 }
             }
@@ -123,7 +123,7 @@ public class SourceFileManager implements JavaFileManager {
                     FileObject[] children = parent.getChildren();
                     for (FileObject child : children) {
                         if (namePair[1].equals(child.getName()) && ext.equalsIgnoreCase(child.getExt()) && (ignoreExcludes || entry.includes(child))) {
-                            return SourceFileObject.create (child);
+                            return SourceFileObject.create (child, root);
                         }
                     }
                 }
@@ -169,21 +169,30 @@ public class SourceFileManager implements JavaFileManager {
     public String inferBinaryName (final Location l, final JavaFileObject jfo) {        
         try {            
             FileObject fo;
+            FileObject root = null;
             if (jfo instanceof SourceFileObject) {
                 fo = ((SourceFileObject)jfo).file;
+                root = ((SourceFileObject)jfo).root;
             }
             else {
                 //Should never happen in the IDE
                 fo = URLMapper.findFileObject(jfo.toUri().toURL());
-            }
-            for (FileObject root : this.sourceRoots.getRoots()) {
-                if (FileUtil.isParentOf(root,fo)) {
-                    String relativePath = FileUtil.getRelativePath(root,fo);
-                    int index = relativePath.lastIndexOf('.');
-                    assert index > 0;                    
-                    final String result = relativePath.substring(0,index).replace('/','.');                    
-                    return result;
+            }            
+            
+            if (root == null) {
+                for (FileObject rc : this.sourceRoots.getRoots()) {
+                    if (FileUtil.isParentOf(rc,fo)) {
+                        root = rc;
+                    }
                 }
+            }
+            
+            if (root != null) {
+                String relativePath = FileUtil.getRelativePath(root,fo);
+                int index = relativePath.lastIndexOf('.');
+                assert index > 0;                    
+                final String result = relativePath.substring(0,index).replace('/','.');                    
+                return result;
             }
         } catch (MalformedURLException e) {
             ErrorManager.getDefault().notify(e);

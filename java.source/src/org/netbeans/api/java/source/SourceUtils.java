@@ -67,6 +67,9 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.usages.ClassFileUtil;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
@@ -380,11 +383,19 @@ public class SourceUtils {
                     }
                 }
             }
+            FileObject foundFo;
+            String signature = ClassFileUtil.encodeClassNameOrArray(clsSym);
+            if (sourceRoots.length == 0) {
+                foundFo = findSource (signature,root);
+            }
+            else {
+                foundFo = findSource (signature,sourceRoots);
+            }
+            if (foundFo != null) {
+                return foundFo;
+            }
         }
-        } catch (MalformedURLException e) {
-            Exceptions.printStackTrace(e);
-        }
-        catch (FileStateInvalidException e) {
+        } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
         return null;
@@ -449,15 +460,50 @@ public class SourceUtils {
                             }
                         }
                     }
+                    FileObject foundFo;
+                    if (sourceRoots.length == 0) {
+                        foundFo = findSource (signature[0],root);
+                    }
+                    else {
+                        foundFo = findSource (signature[0],sourceRoots);
+                    }
+                    if (foundFo != null) {
+                        return foundFo;
+                    }
                 }
             }
-        } catch (MalformedURLException e) {
-            Exceptions.printStackTrace(e);
-        }
-        catch (FileStateInvalidException e) {
+        } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
         return null;        
+    }
+    
+    private static FileObject findSource (final String binaryName, final FileObject... fos) throws IOException {
+        final ClassIndexManager cim = ClassIndexManager.getDefault();
+        try {
+            return cim.readLock(new ClassIndexManager.ExceptionAction<FileObject>() {
+
+                public FileObject run() throws IOException, InterruptedException {
+                    for (FileObject fo : fos) {
+                        ClassIndexImpl ci = cim.getUsagesQuery(fo.getURL());
+                        if (ci != null) {
+                            String sourceName = ci.getSourceName(binaryName);
+                            if (sourceName != null) {
+                                FileObject result = fo.getFileObject(sourceName);
+                                if (result != null) {
+                                    return result;
+                                }
+                            }
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (InterruptedException e) {
+            //Never thrown
+            Exceptions.printStackTrace(e);
+            return null;
+        }
     }
     
     /**

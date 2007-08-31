@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -84,6 +83,15 @@ public class PersistentClassIndex extends ClassIndexImpl {
             rootFos = SourceForBinaryQuery.findSourceRoots(this.root).getRoots();
         }
         return rootFos;
+    }
+    
+    public String getSourceName (final String binaryName) {
+        try {
+            return index.getSourceName(binaryName);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            return null;
+        }
     }
     
 
@@ -188,14 +196,15 @@ public class PersistentClassIndex extends ClassIndexImpl {
                             ClassIndexManager.getDefault().writeLock(
                                 new ClassIndexManager.ExceptionAction<Void>() {
                                     public Void run () throws IOException {
-                                        CompilationInfo compilationInfo = JavaSourceAccessor.INSTANCE.getCurrentCompilationInfo (js, JavaSource.Phase.RESOLVED);
+                                        CompilationInfo compilationInfo = JavaSourceAccessor.INSTANCE.getCurrentCompilationInfo (js, JavaSource.Phase.RESOLVED);                                        
                                         if (compilationInfo != null) {
                                             //Not cancelled
                                             final SourceAnalyser sa = getSourceAnalyser();
                                             long st = System.currentTimeMillis();
-                                            sa.analyseUnitAndStore(compilationInfo.getCompilationUnit(), JavaSourceAccessor.INSTANCE.getJavacTask(compilationInfo));
+                                            sa.analyseUnitAndStore(compilationInfo.getCompilationUnit(), JavaSourceAccessor.INSTANCE.getJavacTask(compilationInfo),
+                                                ClasspathInfoAccessor.INSTANCE.getFileManager(compilationInfo.getClasspathInfo()));
                                             long et = System.currentTimeMillis();
-                                        }
+                                            }
                                         return null;
                                     }
                             });                                        
@@ -218,7 +227,8 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                                     controller.toPhase(Phase.RESOLVED);
                                                     final SourceAnalyser sa = getSourceAnalyser();
                                                     long st = System.currentTimeMillis();
-                                                    sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.INSTANCE.getJavacTask(controller));
+                                                    sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.INSTANCE.getJavacTask(controller),
+                                                    ClasspathInfoAccessor.INSTANCE.getFileManager(controller.getClasspathInfo()));
                                                     long et = System.currentTimeMillis();
                                                     return null;
                                                 }

@@ -50,6 +50,7 @@ class DocumentUtil {
     private static final String FIELD_REFERENCES = "references";        //NOI18N
     private static final String FIELD_SIMPLE_NAME = "simpleName";       //NOI18N
     private static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N
+    private static final String FIELD_SOURCE = "source";                //NOI18N
     
     private static final char NO = '-';                                 //NOI18N
     private static final char YES = '+';                                //NOI18N
@@ -103,6 +104,17 @@ class DocumentUtil {
     public static String getSimpleBinaryName (final Document doc) {
         assert doc != null;
         Field field = doc.getField(FIELD_BINARY_NAME);
+        if (field == null) {
+            return null;
+        }
+        else {
+            return field.stringValue();
+        }
+    }
+    
+    public static String getSourceName (final Document doc) {
+        assert doc != null;
+        Field field = doc.getField(FIELD_SOURCE);
         if (field == null) {
             return null;
         }
@@ -235,7 +247,7 @@ class DocumentUtil {
     }    
     
     //Factories for lucene document
-    public static Document createDocument (final String binaryName, final long timeStamp, List<String> references) {
+    public static Document createDocument (final String binaryName, final long timeStamp, List<String> references, String source) {
         assert binaryName != null;
         assert references != null;
         int index = binaryName.lastIndexOf(PKG_SEPARATOR);  //NOI18N
@@ -269,6 +281,10 @@ class DocumentUtil {
         doc.add (field);
         for (String reference : references) {
             field = new Field (FIELD_REFERENCES,reference,Field.Store.YES,Field.Index.UN_TOKENIZED);
+            doc.add(field);
+        }
+        if (source != null) {
+            field = new Field (FIELD_SOURCE,source,Field.Store.YES,Field.Index.UN_TOKENIZED);
             doc.add(field);
         }
         return doc;

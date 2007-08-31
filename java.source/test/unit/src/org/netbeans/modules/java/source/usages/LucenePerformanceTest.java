@@ -71,7 +71,7 @@ public class LucenePerformanceTest extends NbTestCase {
         final File indexDir = new File (this.getWorkDir(),"index");
         indexDir.mkdirs();
         final Index index = LuceneIndex.create (indexDir);
-        Map<String,List<String>> data = prepareData(20000,1000,50);
+        Map<String,Pair<String,List<String>>> data = prepareData(20000,1000,50);
 //        Map<String,List<String>> data = loadData(new File ("/tmp/data"));
 //        storeData(new File ("/tmp/data"),data);
         long startTime = System.currentTimeMillis();
@@ -117,8 +117,8 @@ public class LucenePerformanceTest extends NbTestCase {
     }
     
     
-    private static Map<String, List<String>> prepareData (final int count, final int pkgLimit, final int refLimit) {
-        final Map<String,List<String>> result = new HashMap<String,List<String>> ();
+    private static Map<String, Pair<String,List<String>>> prepareData (final int count, final int pkgLimit, final int refLimit) {
+        final Map<String,Pair<String,List<String>>> result = new HashMap<String,Pair<String,List<String>>> ();
         final List<String> refs = new LinkedList<String>();
         final Random r = new Random (System.currentTimeMillis());
         for (int i=0; i<count; i++) {
@@ -132,7 +132,7 @@ public class LucenePerformanceTest extends NbTestCase {
                 }
             }
             String name = String.format("pkg%d.Class%d",r.nextInt(pkgLimit),i);
-            result.put(name,l);
+            result.put(name,Pair.<String,List<String>>of (null,l));
             refs.add (name);                    
         }
         return result;

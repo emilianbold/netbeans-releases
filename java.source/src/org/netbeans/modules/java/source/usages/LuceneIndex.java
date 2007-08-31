@@ -207,6 +207,25 @@ class LuceneIndex extends Index {
         }
     }
         
+    public String getSourceName (final String resourceName) throws IOException {
+        if (!isValid(false)) {
+            return null;
+        }
+        Searcher searcher = new IndexSearcher (this.getReader());
+        try {
+            Hits hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
+            if (hits.length() == 0) {
+                return null;
+            }
+            else {
+                Hit hit = (Hit) hits.iterator().next();
+                return DocumentUtil.getSourceName(hit.getDocument());
+            }
+        } finally {
+            searcher.close();
+        }
+    }
+        
     @SuppressWarnings ("unchecked") // NOI18N, unchecked - lucene has source 1.4
     public <T> void getDeclaredTypes (final String name, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException, InterruptedException {
         if (!isValid(false)) {
@@ -521,7 +540,7 @@ class LuceneIndex extends Index {
         }
     }
     
-    public void store (final Map<String, List<String>> refs, final List<String> topLevels) throws IOException {
+    public void store (final Map<String, Pair<String,List<String>>> refs, final List<String> topLevels) throws IOException {
         this.rootPkgCache = null;
         boolean create = !isValid (false);
         long timeStamp = System.currentTimeMillis();
@@ -543,7 +562,7 @@ class LuceneIndex extends Index {
         storeData(refs, create, timeStamp);
     }
 
-    public void store(final Map<String, List<String>> refs, final Set<String> toDelete) throws IOException {
+    public void store(final Map<String, Pair<String,List<String>>> refs, final Set<String> toDelete) throws IOException {
         this.rootPkgCache = null;
         boolean create = !isValid (false);        
         long timeStamp = System.currentTimeMillis();
@@ -570,7 +589,7 @@ class LuceneIndex extends Index {
         storeData(refs, create, timeStamp);
     }    
     
-    private void storeData (final Map<String, List<String>> refs, final boolean create, final long timeStamp) throws IOException {        
+    private void storeData (final Map<String, Pair<String,List<String>>> refs, final boolean create, final long timeStamp) throws IOException {        
         final IndexWriter out = getWriter(create);
         try {
             if (debugIndexMerging) {
@@ -596,12 +615,13 @@ class LuceneIndex extends Index {
             }        
             try {
                 activeOut.addDocument (DocumentUtil.createRootTimeStampDocument (timeStamp));
-                for (Iterator<Map.Entry<String,List<String>>> it = refs.entrySet().iterator(); it.hasNext();) {
-                    Map.Entry<String,List<String>> refsEntry = it.next();
+                for (Iterator<Map.Entry<String,Pair<String,List<String>>>> it = refs.entrySet().iterator(); it.hasNext();) {
+                    Map.Entry<String,Pair<String,List<String>>> refsEntry = it.next();
                     it.remove();
                     String cn = refsEntry.getKey();
-                    List<String> cr = refsEntry.getValue();
-                    Document newDoc = DocumentUtil.createDocument(cn,timeStamp,cr);
+                    Pair<String,List<String>> ev = refsEntry.getValue();
+                    List<String> cr = ev.second;
+                    Document newDoc = DocumentUtil.createDocument(cn,timeStamp,cr,ev.first);
                     activeOut.addDocument(newDoc);
                     if (memDir != null && lmListener.lowMemory.getAndSet(false)) {                       
                         activeOut.close();

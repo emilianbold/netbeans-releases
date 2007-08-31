@@ -82,7 +82,7 @@ public class CompilationInfo {
         assert javaSource != null;        
         this.javaSource = javaSource;
         this.binding = binding;
-        this.jfo = this.binding != null ? javaSource.jfoProvider.createJavaFileObject(binding.getFileObject(), this.binding.getFilter()) : null;
+        this.jfo = this.binding != null ? javaSource.jfoProvider.createJavaFileObject(binding.getFileObject(), this.javaSource.rootFo, this.binding.getFilter()) : null;
         this.javacTask = javacTask;        
         this.errors = new ArrayList<Diagnostic>();
     }

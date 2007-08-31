@@ -74,6 +74,8 @@ public abstract class ClassIndexImpl {
     
     public abstract SourceAnalyser getSourceAnalyser ();
     
+    public abstract String getSourceName (String binaryName);
+    
     public abstract void setDirty (JavaSource js);
     
     protected abstract void close () throws IOException;

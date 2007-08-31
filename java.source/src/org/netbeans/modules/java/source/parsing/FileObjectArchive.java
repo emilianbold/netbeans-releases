@@ -52,7 +52,7 @@ public class FileObjectArchive implements Archive {
         for (FileObject fo : children) {
             if (fo.isData() && (entry == null || entry.includes(fo))) {
                 if (kinds == null || kinds.contains (FileObjects.getKind(fo.getExt()))) {
-                    result.add(FileObjects.nbFileObject(fo,filter,false));
+                    result.add(FileObjects.nbFileObject(fo, root, filter,false));
                 }
             }
         }

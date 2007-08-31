@@ -57,6 +57,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.SimpleAnnotationValueVisitor6;
 import javax.tools.Diagnostic;
+import javax.tools.JavaFileManager;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -68,6 +70,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
+import org.netbeans.modules.java.source.usages.Pair;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -822,9 +825,14 @@ public class SymbolDumperTest extends NbTestCase {
     }
     
     private Map<String, String> dumpIncludingInnerClasses(CompilationInfo info, TypeElement type) {
-        SourceAnalyserImpl sa = new SourceAnalyserImpl((JavacTaskImpl) SourceUtilsTestUtil.getJavacTaskFor(info), info.getCompilationUnit());
+        SourceAnalyserImpl sa = new SourceAnalyserImpl(
+            (JavacTaskImpl) SourceUtilsTestUtil.getJavacTaskFor(info),
+            info.getCompilationUnit(),
+            ClasspathInfoAccessor.INSTANCE.getFileManager(info.getClasspathInfo()),           
+            info.getCompilationUnit().getSourceFile()
+            );
         
-        info.getCompilationUnit().accept(sa, new HashMap<String,Map<String,Set<UsageType>>>());
+        info.getCompilationUnit().accept(sa, new HashMap<String,Pair<String,Map<String,Set<UsageType>>>>());
         
         return sa.class2Sig;
     }
@@ -1382,8 +1390,8 @@ public class SymbolDumperTest extends NbTestCase {
         
         private Map<String, String> class2Sig = new TreeMap<String, String>();
         
-        public SourceAnalyserImpl(JavacTaskImpl jt, CompilationUnitTree cu) {
-            super(jt, cu, null);
+        public SourceAnalyserImpl(JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, JavaFileObject sibling) {
+            super(jt, cu, manager, sibling, (List<String>)null);
         }
         
         @Override void dump(TypeElement clazz, String className, Element enclosingMethod) {

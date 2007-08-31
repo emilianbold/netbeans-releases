@@ -39,7 +39,6 @@ import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.modules.java.source.parsing.DocumentProvider;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
@@ -59,16 +58,17 @@ import org.openide.text.NbDocument;
  */
 public class SourceFileObject implements JavaFileObject, DocumentProvider {    
     
-    final FileObject file;    
+    final FileObject file;
+    final FileObject root;
     private final Kind kind;
     private URI uri;        //Cache for URI
     private String text;
     private TokenHierarchy<Void> tokens;
     private final JavaFileFilterImplementation filter;
     
-    public static SourceFileObject create (final FileObject file) {        
+    public static SourceFileObject create (final FileObject file, final FileObject root) {        
         try {
-            return new SourceFileObject (file, null, false);
+            return new SourceFileObject (file, root, null, false);
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
             return null;
@@ -76,9 +76,10 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
     }
     
     /** Creates a new instance of SourceFileObject */
-    public SourceFileObject (final FileObject file, final JavaFileFilterImplementation filter, final boolean renderNow) throws IOException {
+    public SourceFileObject (final FileObject file, final FileObject root, final JavaFileFilterImplementation filter, final boolean renderNow) throws IOException {
         assert file != null;
         this.file = file;
+        this.root = root;
         this.filter = filter;
         String ext = this.file.getExt();        
         this.kind = FileObjects.getKind(ext);        

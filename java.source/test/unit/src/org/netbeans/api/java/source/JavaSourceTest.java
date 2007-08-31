@@ -66,6 +66,7 @@ import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Index;
+import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
@@ -1316,15 +1317,15 @@ public class JavaSourceTest extends NbTestCase {
             this.lock = lock;
         }
         
-        public JavaFileObject createJavaFileObject(FileObject fo, JavaFileFilterImplementation filter) throws IOException {
-            return new TestJavaFileObject (fo, lock);
+        public JavaFileObject createJavaFileObject(FileObject fo, FileObject root, JavaFileFilterImplementation filter) throws IOException {
+            return new TestJavaFileObject (fo, root, lock);
         }        
     }
     
     private static class TestJavaFileObject extends SourceFileObject {
         
-        public TestJavaFileObject (FileObject fo, Object lock) throws IOException {            
-            super (fo,null, true);
+        public TestJavaFileObject (FileObject fo, FileObject root, Object lock) throws IOException {            
+            super (fo, root, null, true);
             //Deadlock
             synchronized (lock) {
                 lock.toString();
@@ -1642,11 +1643,15 @@ public class JavaSourceTest extends NbTestCase {
         public void getPackageNames(String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException {
             await ();
         }
-
-        public void store(Map<String, List<String>> refs, Set<String> toDelete) throws IOException {            
+        
+        public String getSourceName (final String binaryName) {
+            return null;
         }
 
-        public void store(Map<String, List<String>> refs, List<String> topLevels) throws IOException {            
+        public void store(Map<String, Pair<String,List<String>>> refs, Set<String> toDelete) throws IOException {            
+        }
+
+        public void store(Map<String, Pair<String,List<String>>> refs, List<String> topLevels) throws IOException {            
         }
 
         public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {
