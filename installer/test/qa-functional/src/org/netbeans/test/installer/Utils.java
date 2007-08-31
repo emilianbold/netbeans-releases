@@ -417,7 +417,7 @@ public class Utils {
         stepLicense();
 
         //Choose dir
-        stepSetDir(data, "Install NetBeans IDE", NB_DIR_NAME);
+        stepSetDir(data, "Install the NetBeans IDE", NB_DIR_NAME);
     }
 
     public static void phaseThree(TestData data) {
