@@ -11,27 +11,35 @@
 <body>
 <h2>Generating Code</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The IDE's UML Modeling feature enables you to develop software incrementally, starting either from a new design or from an existing body of code. You can quickly generate source code for classes and interfaces using a pop-up menu in the Projects window or in the Diagram editor. </p>
+<p>The IDE's UML Modeling feature enables you to develop software incrementally, starting either from a new design or from an existing body of code. You can quickly generate source code for your UML model's classes and interfaces using a pop-up menu in the Projects window or in the Diagram editor. </p>
 <p><b>To generate code:</b></p>
 <ol>
-<li>In the Projects window or in the Diagram editor, right-click the UML Modeling element or elements for which you want to generate code.
+<li>In the Projects window or in the Diagram editor, right-click the UML  element or elements for which you want to generate code.
   <ul class="note">
-<li>In the Projects window, this code generation function is supported for entire UML Modeling projects and for individual diagram elements. </li>
-</ul>
+    <li>In the Projects window, this code generation function is supported for entire UML  projects and for individual diagram elements. </li>
+   </ul>
 </li>
-<li>From the pop-up menu, choose Generate Code.<br>
-  You can also access the Generate Code dialog by right-clicking on the UML project node in the Projects window, selecting Properties from the pop-up menu, and then selecting the Code Generation category node in the Project Properties dialog.</li>
+<li>From the pop-up menu, choose Generate Code.
+  <ul class="note">
+    <li>You can also modify the project's code generation settings by using the Project Properties dialog. Right-click on the UML project node, select Properties from the pop-up menu, and then select the Code Generation category node in the Project Properties dialog to customize the project's code generation settings.</li>
+  </ul>
+</li>
 <li>In the Generate Code dialog, specify the following settings:
   <ul>
   <li><b>Target Project.</b> Select the target project to which the generated code will be associated.</li>
   <li><b>Source Root.</b> Specify which package folder location  to store the generated source files. </li>
-  <li><b>Backup Existing Source Files.</b> If selected, the code generation process creates backup copies of the existing version of source files that are about to be generated. If not selected, backups are not created and only changes to the sources are merged into the affected source files.<br>
-      An existing source file will be saved to a similarly named file with a number appended to its file name. For example, a source file named <i>sample.java</i> 
-       will be saved to a file named <i>sample.java1. </i> On the next backup request, <i>sample.java</i> will be saved to <i>sample.java2</i>, and so on. The most recent backup file is the file with the highest sequential number at the end of its filename.</li>
+  <li><b>Backup Existing Source Files.</b> If selected, the code generation process creates backup copies of the existing version of source files that are about to be generated. If not selected, backups are not created and changes are merged into the affected existing source files only.<br>
+      An existing source file will be saved to a similarly named file with a number and a tilde (~) symbol appended to its file name. For example, a source file named <i>sample.java</i> 
+      will be saved to a file named <i>sample.java1~. </i> On the next backup request, <i>sample.java</i> will be saved to <i>sample.java2~</i>, and so on. The most recent backup file is the file with the highest sequential number at the end of its filename. 
+      <ul class="note">
+        <li>Backup files are not displayed in the IDE's Projects window, but are accessible outside of the IDE. </li>
+	  </ul>
+	</li>  
    <li><b>Generate Markers for Source File Merging.</b> If selected, specifies that code be annotated with special code generation merge markers so that further code generation for the sources can be intelligently merged with existing code. Keep this option enabled until you are confident that you are finished modeling and you would like to generate the sources without the markers, if desired.
 
 Attributes and operations that do not have any markers are ignored by the generate code process. </li>
-   <li><b>Add Merge Markers to Existing Source Elements.</b> If selected, merge markers for existing attributes and operations are created in the existing source files. </li>
+   <li><b>Add Merge Markers to Existing Source Elements.</b> If selected, merge markers are created in the existing source files which have  attributes and operations that are 
+not yet annotated with the code generation marker. </li>
    <li><b>Prompt Before Generating Code. </b>If selected, the Generate Code dialog is prompted every time the Generate Code action is invoked. This is the default action and  provides you with the chance to change the generate code options (backup, merge markers or active templates) or to cancel out of the action before any sources are updated. Some may prefer to set the options once and never be prompted again. Disabling this option will prevent the dialog from displaying with each Generate Code execution.</li>
    <li><b>Templates</b> Displays a list of available domain template categories.    Under each category is a list of the
 domain templates in summarized form (name, description, element type
@@ -41,26 +49,15 @@ elements in the project when the <i>Generate Code</i> action is invoked. At leas
   </ul>
 </li>
 <li>Click OK.<br>
-  The Java Source code is generated for the selected element or elements. </li>
-<li>If the Authorize UML Project Save dialog appears, you have some unsaved changes in your UML modeling project. Click one of the following buttons to continue with the code generation process. <br>
-    <ul>
-      <li><b>Yes. </b>Save the changes in the UML project before generating code.</li>
-      <li><b>No.</b> Do not save the changes before generating code.</li>
-      <li><b>Yes to All. </b>Always save the changes in the UML project before generating code during the current IDE session.</li>
-    </ul>
-    <br>
-  The IDE generates the source code for target elements .<br>
-  </li>
+  The source code is generated for the selected element or elements. </li>
 </ol>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
+<dd><a href="./source_code_synchronization.html">Source Code Synchronization</a></dd>
+<dd><a href="../prefs/configuring_templates_options.html">Configuring Domain Templates Options</a></dd>
+<dd><a href="../prefs/categories_in_preferences_editor.html">UML Categories in the Options Window</a></dd>
 <dd><a href="../round_trip_eng/setting_general_prefs.html">Setting General Code Engineering Preferences</a></dd>
 <dd><a href="../round_trip_eng/setting_java_prefs.html">Setting Java Code Engineering Preferences</a></dd>
-<dd><a href="../prefs/categories_in_preferences_editor.html">UML Categories in the Options Window</a></dd>
-<dd><a href="../prefs/configuring_templates_options.html">Configuring Domain Templates Options</a></dd>
-<!--
-<dd><a href="../round_trip_eng/about_roundtrip_engineering.html">About Bi-Directional Engineering</a></dd>
--->
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>
