@@ -78,10 +78,16 @@ public class SpacerCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Layout"), PropertyEditorLayout.createInstance(), ItemCD.PROP_LAYOUT) // NOI18N
-                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Preferred_Width"), PropertyEditorPreferredSize.createInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Preferred_Width")), ItemCD.PROP_PREFERRED_WIDTH) // NOI18N
-                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Preferred_Height"), PropertyEditorPreferredSize.createInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Preferred_Height")), ItemCD.PROP_PREFERRED_HEIGHT) // NOI18N
-                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Minimum_Width"), PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Minimum_Width")), PROP_MIN_WIDTH) // NOI18N
-                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Minimum_Height"), PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Minimum_Height")), PROP_MIN_HEIGHT); // NOI18N
+                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Preferred_Width"), // NOI18N
+                    PropertyEditorPreferredSize.createInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Preferred_Width"),  // NOI18N
+                        NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Preferred_Width")), ItemCD.PROP_PREFERRED_WIDTH) // NOI18N
+                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Preferred_Height"), // NOI18N
+                    PropertyEditorPreferredSize.createInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Preferred_Height"), // NOI18N
+                        NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Preferred_Height")), ItemCD.PROP_PREFERRED_HEIGHT) // NOI18N
+                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Minimum_Width"), // NOI18N
+                    PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Minimum_Width")), PROP_MIN_WIDTH) // NOI18N
+                .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Minimum_Height"), // NOI18N
+                    PropertyEditorNumber.createIntegerInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Minimum_Height")), PROP_MIN_HEIGHT); // NOI18N
     }
    
     private static Presenter createSetterPresenter() {

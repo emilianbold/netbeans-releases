@@ -51,16 +51,16 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
     private JRadioButton radioButton;
     private String label;
 
-    private PropertyEditorPreferredSize(String label) {
-        super(NbBundle.getMessage(PropertyEditorPreferredSize.class, "LBL_TIMEOUT_UCLABEL")); // NOI18N
+    private PropertyEditorPreferredSize(String label, String ucLabel) {
+        super(ucLabel);
         this.label = label;
         initComponents();
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
-    public static final PropertyEditorPreferredSize createInstance(String label) {
-        return new PropertyEditorPreferredSize(label);
+    public static PropertyEditorPreferredSize createInstance(String label, String ucLabel) {
+        return new PropertyEditorPreferredSize(label, ucLabel);
     }
 
     private void initComponents() {
