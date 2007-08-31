@@ -19,32 +19,18 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ResourceBundle;
-import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
-import org.netbeans.spi.viewmodel.Models;
 import org.openide.util.NbBundle;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -60,11 +46,7 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
     
     private GdbDebugger debugger;
     private GdbProxy gdbProxy;
-    private JMenuItem menuItemHideText;
-    private JPopupMenu popup;
     private JScrollBar scrollBar;
-    private boolean dontShowText=true;
-    private String status;
     private static GdbConsoleWindow instance = null;
     
     /** Creates new GdbConsoleWindow */
@@ -72,7 +54,7 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         initComponents();
         try {
             final TopComponent tc = this;
-            SwingUtilities.invokeAndWait(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     tc.setDisplayName(NbBundle.getMessage(GdbConsoleWindow.class, "TITLE_GdbConsoleWindow")); // NOI18N
                 }
@@ -87,7 +69,6 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         ProjectActionEvent pae = (ProjectActionEvent)
                         debugger.getLookup().lookupFirst(null, ProjectActionEvent.class);
         programName.setText(pae.getExecutable());
-        status = debugger.getState().toString();
     }
     
     public static GdbConsoleWindow getInstance(GdbDebugger debugger, GdbProxy gdbProxy) {
@@ -149,11 +130,12 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         }
     }
     
+    @Override
     protected String preferredID() {
         return this.getClass().getName();
     }
-    
-    public void propertyChange(PropertyChangeEvent ev) {
+  
+    public void propertyChange(PropertyChangeEvent ev) { 
         if (ev.getPropertyName() == GdbDebugger.PROP_STATE) {
             Object state = ev.getNewValue();
             if (state == GdbDebugger.STATE_NONE) {
@@ -164,6 +146,7 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         }
     }
     
+    @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
     }

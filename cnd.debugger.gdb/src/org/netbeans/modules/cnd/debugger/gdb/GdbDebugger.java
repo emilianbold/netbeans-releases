@@ -114,13 +114,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private long programPID = 0;
     private double gdbVersion = 0.0;
     private boolean continueAfterFirstStop = true;
-    private ArrayList<GdbVariable> localVariables = new ArrayList();
-    private Map<Integer, GdbVariable> symbolCompletionTable = new HashMap();
-    private Map<Integer, StringBuilder> typeCompletionTable = new HashMap();
-    private Set<String> typePendingTable = new HashSet();
-    private Map<Integer, GdbVariable> valueCompletionTable = new HashMap();
-    private Map<Integer, GdbWatchVariable> watchTypeMap = new HashMap();
-    private Map<Integer, GdbWatchVariable> watchValueMap = new HashMap();
+    private ArrayList<GdbVariable> localVariables = new ArrayList<GdbVariable>();
+    private Map<Integer, GdbVariable> symbolCompletionTable = new HashMap<Integer, GdbVariable>();
+    private Map<Integer, StringBuilder> typeCompletionTable = new HashMap<Integer, StringBuilder>();
+    private Set<String> typePendingTable = new HashSet<String>();
+    private Map<Integer, GdbVariable> valueCompletionTable = new HashMap<Integer, GdbVariable>();
+    private Map<Integer, GdbWatchVariable> watchTypeMap = new HashMap<Integer, GdbWatchVariable>();
+    private Map<Integer, GdbWatchVariable> watchValueMap = new HashMap<Integer, GdbWatchVariable>();
     private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private int currentToken = 0;
     private int ttToken = 0;
@@ -128,7 +128,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Timer startupTimer = null;
     private boolean cygwin = false;
     private boolean cplusplus = false;
-    private Map<String, Object> stlMap = new HashMap();
     private int tcwait = 0; // counter for type completion
         
     public GdbDebugger(ContextProvider lookupProvider) {
@@ -181,8 +180,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (gdbCommand.toLowerCase().contains("cygwin")) { // NOI18N
                 cygwin = true;
             }
+            System.err.println("GD.startDebugger: Creating GdbProxy");
             gdb = new GdbProxy(this, gdbCommand, pae.getProfile().getEnvironment().getenv(),
                     runDirectory, termpath);
+            System.err.println("GD.startDebugger: Got GdbProxy");
             gdb.gdb_version();
             gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
             gdb.environment_cd(getProgramDirectory(pae.getExecutable()));
