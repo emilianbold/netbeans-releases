@@ -113,7 +113,7 @@ public class CmpFromDbGenerator {
                         entityClass.getPackageFileObject(),
                         pkClassName,
                         null,
-                        Collections.singletonMap("seq", "")
+                        Collections.singletonMap("seq", primaryKeys)
                         );
             } else if (primaryKeys.size() == 1) {
                 entityClass.setPkFieldName(primaryKeys.get(0).getMemberName());

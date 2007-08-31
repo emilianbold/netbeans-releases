@@ -12,7 +12,7 @@ package ${package};
 public final class ${name} implements java.io.Serializable {
 
     <#list seq as field>
-        ${field.returnType} ${field.name};
+        ${field.memberType} ${field.memberName};
     </#list>
 
 }
