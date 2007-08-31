@@ -1,9 +1,10 @@
-Name: Commons Net
-Version: 1.4.1
-OSR: 3487
-Description: Apache Commons Net implements the client side of many basic Internet protocols.
-Origin: http://commons.apache.org/net/
+Name: JMUnit
+Version: 1.0.1
+OSR: 3486 
+Description: http://sourceforge.net/projects/jmunit/
+Origin: http://sourceforge.net/projects/jmunit/
 License: Apache-2.0
+Files: jmunit4cldc11-1.0.1.jar, jmunit-1.0.1-api.zip
 
                                  Apache License
                            Version 2.0, January 2004

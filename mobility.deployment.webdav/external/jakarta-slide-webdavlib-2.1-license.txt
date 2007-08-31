@@ -1,3 +1,10 @@
+Name: Jakarta Slide
+Version: 2.1
+OSR: 3489
+Description: Slide is a content repository which can serve as a basis for a
+content management system / framework and other purposes.
+Origin: http://jakarta.apache.org/slide/
+License: Apache-2.0
 
                                  Apache License
                            Version 2.0, January 2004

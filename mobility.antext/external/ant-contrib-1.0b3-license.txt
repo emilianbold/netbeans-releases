@@ -1,9 +1,8 @@
-Name: Commons Net
-Version: 1.4.1
-OSR: 3487
-Description: Apache Commons Net implements the client side of many basic Internet protocols.
-Origin: http://commons.apache.org/net/
-License: Apache-2.0
+Name: Ant-Contrib
+Version: 1.0b3
+OSR: 5461
+Description: The Ant-Contrib project is a collection of tasks for Apache Ant.
+Origin: http://sourceforge.net/projects/ant-contrib/
 
                                  Apache License
                            Version 2.0, January 2004
