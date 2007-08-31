@@ -88,7 +88,8 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             });
 
             OptionListener listener = new OptionListener( project, uiProperties );
-            dialog = ProjectCustomizer.createCustomizerDialog( CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, null );
+            StoreListener storeListener = new StoreListener(uiProperties);
+            dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, storeListener, null);
             dialog.addWindowListener( listener );
             dialog.setTitle( MessageFormat.format(                 
                     NbBundle.getMessage( CustomizerProviderImpl.class, "LBL_Customizer_Title" ), // NOI18N 
@@ -98,6 +99,20 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
         }
     }    
+    
+    private class StoreListener implements ActionListener {
+    
+        private EjbJarProjectProperties uiProperties;
+        
+        StoreListener(EjbJarProjectProperties uiProperties ) {
+            this.uiProperties = uiProperties;
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            uiProperties.save();
+        }
+        
+    }
     
     /** Listens to the actions on the Customizer's option buttons */
     private static class OptionListener extends WindowAdapter implements ActionListener {
@@ -116,7 +131,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             // Store the properties into project 
             assert !ProjectManager.getDefault().isModified(project) : 
                 "Some of the customizer panels has written the changed data before OK Button was pressed. Please file it as bug."; //NOI18N
-            uiProperties.save();
             
             // Close & dispose the the dialog
             Dialog dialog = (Dialog)project2Dialog.get( project );
