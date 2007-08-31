@@ -46,7 +46,6 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
 
     private static final PropertyValue TRUE_VALUE = MidpTypes.createBooleanValue(true);
     private static final PropertyValue FALSE_VALUE = MidpTypes.createBooleanValue(false);
-
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private BooleanInplaceEditor inplaceEditor;
@@ -70,7 +69,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     public static PropertyEditorBooleanUC createInstance(String rbLabel) {
         return new PropertyEditorBooleanUC(true, null, rbLabel);
     }
-    
+
     public static PropertyEditorBooleanUC createInstance(TypeID parentTypeID, String rbLabel) {
         return new PropertyEditorBooleanUC(true, parentTypeID, rbLabel);
     }
@@ -109,9 +108,12 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         g.dispose();
     }
 
-
     @Override
     public boolean supportsCustomEditor() {
+        if (!isWriteableByParentType()) {
+            return false;
+        }
+
         return supportsCustomEditor ? super.supportsCustomEditor() : false;
     }
 
@@ -183,24 +185,15 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
             }
         }
     }
-    
+
     @Override
     public boolean canWrite() {
-        if (component.get() == null) {
-            return MidpPropertyEditorSupport.singleSelectionEditAsTextOnly();
-        }
-        final DesignComponent[] isEditable = new DesignComponent[1];
-        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                isEditable[0] = component.get().getParentComponent();
-            }
-        });
-        if (parentTypeID != null && isEditable[0] != null && isEditable[0].getType().equals(parentTypeID)) {
+        if (!isWriteableByParentType()) {
             return false;
         }
+
         return MidpPropertyEditorSupport.singleSelectionEditAsTextOnly();
     }
-    
 
     @Override
     public Object getDefaultValue() {
@@ -209,6 +202,28 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
             updateInplaceEditorComponent((Boolean) value.getPrimitiveValue());
         }
         return super.getDefaultValue();
+    }
+    
+    private boolean isWriteableByParentType() {
+        if (component == null || component.get() == null) {
+            return false;
+        }
+
+        if (parentTypeID != null) {
+            final DesignComponent _component = component.get();
+            final DesignComponent[] parent = new DesignComponent[1];
+            _component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                public void run() {
+                    parent[0] = _component.getParentComponent();
+                }
+            });
+            
+            if (parent[0] != null && parentTypeID.equals(parent[0].getType())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void updateInplaceEditorComponent(boolean selected) {

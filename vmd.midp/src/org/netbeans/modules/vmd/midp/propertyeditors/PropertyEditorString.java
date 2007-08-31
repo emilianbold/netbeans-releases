@@ -230,22 +230,22 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
 
     @Override
     public boolean canWrite() {
-        if (component.get() == null) {
-            return super.canWrite();
-        }
-        final DesignComponent[] isEditable = new DesignComponent[1];
-        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                isEditable[0] = component.get().getParentComponent();
-            }
-        });
-        if (parentTypeID != null && isEditable[0] != null && isEditable[0].getType().equals(parentTypeID)) {
+        if (!isWriteableByParentType()) {
             return false;
         }
+
         return super.canWrite();
     }
 
-    
+    @Override
+    public boolean supportsCustomEditor() {
+        if (!isWriteableByParentType()) {
+            return false;
+        }
+
+        return super.supportsCustomEditor();
+    }
+
     /*
      * This method updates state of custom property editor.
      */
@@ -302,7 +302,29 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
     }
 
-/*
+    private boolean isWriteableByParentType() {
+        if (component == null || component.get() == null) {
+            return false;
+        }
+
+        if (parentTypeID != null) {
+            final DesignComponent _component = component.get();
+            final DesignComponent[] parent = new DesignComponent[1];
+            _component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                public void run() {
+                    parent[0] = _component.getParentComponent();
+                }
+            });
+            
+            if (parent[0] != null && parentTypeID.equals(parent[0].getType())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /*
      * Custom property editor. JEditorPane plus possible JLabels with comments.
      */
     private class CustomEditor implements DocumentListener {

@@ -69,8 +69,8 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         return new PropertyEditorLayout(null);
     }
     
-    public static final PropertyEditorLayout createInstance( TypeID parentTypeID) {
-        return new PropertyEditorLayout(null);
+    public static final PropertyEditorLayout createInstance(TypeID parentTypeID) {
+        return new PropertyEditorLayout(parentTypeID);
     }
     
     private void initComponents() {
@@ -140,22 +140,44 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
     
     @Override
     public boolean canWrite() {
-        if (component.get() == null) {
-            return super.canWrite();
-        }
-        final DesignComponent[] isEditable = new DesignComponent[1];
-        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                isEditable[0] = component.get().getParentComponent();
-            }
-        });
-        if (parentTypeID != null && isEditable[0] != null && isEditable[0].getType().equals(parentTypeID)) {
+        if (!isWriteableByParentType()) {
             return false;
         }
+
         return super.canWrite();
     }
 
+    @Override
+    public boolean supportsCustomEditor() {
+        if (!isWriteableByParentType()) {
+            return false;
+        }
+
+        return super.supportsCustomEditor();
+    }
     
+    private boolean isWriteableByParentType() {
+        if (component == null || component.get() == null) {
+            return false;
+        }
+
+        if (parentTypeID != null) {
+            final DesignComponent _component = component.get();
+            final DesignComponent[] parent = new DesignComponent[1];
+            _component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                public void run() {
+                    parent[0] = _component.getParentComponent();
+                }
+            });
+            
+            if (parent[0] != null && parentTypeID.equals(parent[0].getType())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private final class CustomEditorConstraints extends JPanel implements ItemListener {
         
         private ItemLayouts layouts;

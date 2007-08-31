@@ -30,7 +30,9 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
@@ -50,17 +52,23 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private String label;
+    private TypeID parentTypeID;
 
-    private PropertyEditorPreferredSize(String label, String ucLabel) {
+    private PropertyEditorPreferredSize(String label, String ucLabel, TypeID parentTypeID) {
         super(ucLabel);
         this.label = label;
+        this.parentTypeID = parentTypeID; 
         initComponents();
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static PropertyEditorPreferredSize createInstance(String label, String ucLabel) {
-        return new PropertyEditorPreferredSize(label, ucLabel);
+        return new PropertyEditorPreferredSize(label, ucLabel, null);
+    }
+
+    public static PropertyEditorPreferredSize createInstance(String label, String ucLabel, TypeID parentTypeID) {
+        return new PropertyEditorPreferredSize(label, ucLabel, parentTypeID);
     }
 
     private void initComponents() {
@@ -156,6 +164,46 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
             return !foreverValueValue.equals(value.getPrimitiveValue());
         }
         return false;
+    }
+
+    @Override
+    public boolean canWrite() {
+        if (!isWriteableByParentType()) {
+            return false;
+        }
+
+        return super.canWrite();
+    }
+
+    @Override
+    public boolean supportsCustomEditor() {
+        if (!isWriteableByParentType()) {
+            return false;
+        }
+
+        return super.supportsCustomEditor();
+    }
+    
+    private boolean isWriteableByParentType() {
+        if (component == null || component.get() == null) {
+            return false;
+        }
+
+        if (parentTypeID != null) {
+            final DesignComponent _component = component.get();
+            final DesignComponent[] parent = new DesignComponent[1];
+            _component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                public void run() {
+                    parent[0] = _component.getParentComponent();
+                }
+            });
+            
+            if (parent[0] != null && parentTypeID.equals(parent[0].getType())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private class CustomEditor extends JPanel implements ActionListener, DocumentListener, FocusListener {
