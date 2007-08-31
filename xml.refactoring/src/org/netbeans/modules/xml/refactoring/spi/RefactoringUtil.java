@@ -56,6 +56,8 @@ import org.openide.util.NbBundle;
  */
 public class RefactoringUtil {
     
+    public static final String BUILD = "build";
+    
     public static Project findCurrentProject(Referenceable referenced) {
         Model model = referenced instanceof Model ? (Model) referenced : ((Component)referenced).getModel();
         if (model == null) return null;
@@ -92,17 +94,31 @@ public class RefactoringUtil {
     }
     
     public static List<FileObject> findSourceFiles(FileObject folder) {
-        Enumeration children = folder.getChildren(true);
+        Enumeration children = folder.getChildren(true);           
         List<FileObject> ret = new ArrayList<FileObject>();
         while (children.hasMoreElements()) {
             FileObject fo = (FileObject) children.nextElement();
-            if (fo.isData()) {
+            //need to screen out files under the build directory
+            //if a project is build, then all the files under build are also included in the
+            //search resulting in dup. usages
+            //not sure how to look for files under build dir; 
+            //so scanning the complete file path
+            if (fo.isData() && !isBuildDirFile(fo)) {
                 ret.add(fo);
             }
         }
         return ret;
     }
     
+    public static boolean isBuildDirFile(FileObject fo) {
+        while(fo != null ){
+            if(fo.getName().equals(BUILD)){
+                return true;
+            }
+            fo = fo.getParent();
+        }
+        return false;
+    }
      
     public static ErrorItem precheckTarget(Model model, boolean autosave) {
         //Model model = request.getTargetModel();
