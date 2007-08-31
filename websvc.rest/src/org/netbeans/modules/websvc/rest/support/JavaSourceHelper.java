@@ -14,6 +14,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.MethodTree;
@@ -53,7 +54,6 @@ import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -247,6 +247,21 @@ public class JavaSourceHelper {
 
         return (TypeElement) trees.getElement(path);
     }
+    
+    public static Collection<String> getImports(CompilationController controller) {
+        Set<String> imports = new HashSet<String>();
+        CompilationUnitTree cu = controller.getCompilationUnit();
+        
+        if (cu != null) {
+            List<? extends ImportTree> importTrees = cu.getImports();
+            
+            for (ImportTree importTree : importTrees) {
+                imports.add(importTree.getQualifiedIdentifier().toString());
+            }
+        }
+        
+        return imports;
+    }
 
     public static MethodTree getDefaultConstructor(CompilationController controller) {
         TypeElement classElement = getTopLevelClassElement(controller);
@@ -358,13 +373,16 @@ public class JavaSourceHelper {
     }
 
     public static void addImports(WorkingCopy copy, String[] imports) {
+        Collection<String> existingImports = getImports(copy);
         TreeMaker maker = copy.getTreeMaker();
 
         CompilationUnitTree tree = copy.getCompilationUnit();
         CompilationUnitTree modifiedTree = tree;
 
         for (String imp : imports) {
-            modifiedTree = maker.addCompUnitImport(modifiedTree, maker.Import(maker.Identifier(imp), false));
+            if (!existingImports.contains(imp)) {
+                modifiedTree = maker.addCompUnitImport(modifiedTree, maker.Import(maker.Identifier(imp), false));
+            }
         }
 
         copy.rewrite(tree, modifiedTree);
